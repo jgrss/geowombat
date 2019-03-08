@@ -76,8 +76,6 @@ class GeoArray(GeoMethods, np.ndarray):
             obj.lib = 'gdal'
             obj.src = _wrap_gdal(src)
 
-        obj.no_data_ = 0
-
         obj.original_layers = 1
 
         if len(array.shape) == 2:
@@ -85,7 +83,9 @@ class GeoArray(GeoMethods, np.ndarray):
         else:
             obj.original_layers, obj.original_rows, obj.original_columns = array.shape
 
+        obj.no_data_ = 0
         obj.info = info
+        obj.layer_names = map(str, list(range(1, obj.original_layers+1)))
 
         return obj
 
@@ -117,14 +117,14 @@ class GeoArray(GeoMethods, np.ndarray):
 
         self.lib = getattr(obj, 'lib', None)
         self.no_data_ = getattr(obj, 'no_data_', None)
-        self.info = getattr(obj, 'info', None)
+        self.layer_names = getattr(obj, 'layer_names', None)
         self.src = getattr(obj, 'src', None)
         self.original_layers = getattr(obj, 'original_layers', None)
         self.original_rows = getattr(obj, 'original_rows', None)
         self.original_columns = getattr(obj, 'original_columns', None)
 
 
-class open(object):
+class open(GeoMethods):
 
     """
     A class to open Wombat GeoArrays
@@ -150,11 +150,11 @@ class open(object):
         self.file_name = file_name
         self.backend = backend
 
-    def read(self, lazy=False, **kwargs):
+    def read(self, names=None, **kwargs):
 
         """
         Args:
-            lazy (Optional[bool])
+            names (Optional[list])
             kwargs (Optional[dict])
         """
 
@@ -169,6 +169,9 @@ class open(object):
                 garray = GeoArray(src.read(**kwargs), src)
 
         src = None
+
+        if names:
+            garray.set_names(names)
 
         return garray
 

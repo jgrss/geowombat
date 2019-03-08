@@ -24,10 +24,23 @@ class GeoMethods(GeoProperties):
         else:
             self.layers_, self.rows_, self.cols_ = self.shape
 
-    # def norm_diff(self):
-    #     return
+    def set_names(self, names):
+
+        """
+        Sets array layer names
+        """
+
+        self.layer_names = names
+
+        for i in range(0, len(names)):
+            setattr(self, names[i], self[i])
 
     def set_no_data(self, value):
+
+        """
+        Sets array 'no data' value
+        """
+
         self.no_data_ = value
 
     def extract(self,
@@ -39,6 +52,8 @@ class GeoMethods(GeoProperties):
                 layers=None):
 
         """
+        Slices an array
+
         Examples:
             >>> # rows 1-10
             >>> # columns 0-20
@@ -108,13 +123,13 @@ class GeoMethods(GeoProperties):
 
         return sub_array
 
-    def to_crs(self, crs, **kwargs):
+    def to_crs(self, crs=4326, **kwargs):
 
         """
         Warps the array projection
 
         Args:
-            crs (int or str)
+            crs (Optional[int or str])
             kwargs (Optional[dict])
 
         Examples:
@@ -340,7 +355,17 @@ class GeoMethods(GeoProperties):
 
         return [im_left_crs, im_right_crs, im_top_crs, im_bottom_crs]
 
-    def show(self, bands=None):
+    def show(self, bands=None, scale_factor=1.0, cmap=None, percentiles=(5, 95)):
+
+        """
+        Plots the array
+
+        Args:
+            bands (Optional[int or list])
+            scale_factor (Optional[float])
+            cmap (Optional[str])
+            percentiles (Optional[tuple])
+        """
 
         plt.rcParams['figure.figsize'] = 3, 3
         plt.rcParams['axes.titlesize'] = 5
@@ -357,6 +382,8 @@ class GeoMethods(GeoProperties):
         plt.rcParams['xtick.color'] = 'none'
         plt.rcParams['ytick.color'] = 'none'
         plt.rcParams['figure.dpi'] = 300
+        plt.rcParams['savefig.bbox'] = 'tight'
+        plt.rcParams['savefig.pad_inches'] = 0.5
 
         extent = self._transform_plot_coords()
 
@@ -376,56 +403,68 @@ class GeoMethods(GeoProperties):
 
         if isinstance(bands, list):
             rgb = self[np.array(bands, dtype='int64')-1]
+        elif isinstance(bands, int):
+            rgb = self[bands-1]
         else:
             rgb = self.copy()
 
+        rgb = self._scale_array(rgb, scale_factor, percentiles)
+
+        rgb = np.ma.masked_where(rgb == 0, rgb)
+
         if (self.layers == 3) or isinstance(bands, list):
+            cmap = None
 
-            rgb = self._scale_rgb(rgb)
+        ax.imshow(rgb,
+                  interpolation='nearest',
+                  cmap=cmap,
+                  **crskwargs)
 
-            rgb = np.ma.masked_where(rgb == 0, rgb)
-
-            ax.imshow(rgb,
-                      interpolation='nearest',
-                      **crskwargs)
-
-        else:
-
-            ax.imshow(np.ma.masked_where((self == self.no_data) | (self == 0), self),
-                      interpolation='nearest',
-                      **crskwargs)
-
-        ax = self._set_grids(ax, **gkwargs)
         ax.outline_patch.set_linewidth(0)
+        ax = self._set_grids(ax, **gkwargs)
+
+        plt.tight_layout(pad=0.5)
 
         plt.show()
 
-    def _scale_rgb(self, rgb):
+    def _scale_array(self, rgb, scale_factor, percentiles):
 
         """
         Scales and adjusts values for display
         """
 
+        pmin, pmax = percentiles
+
         rgb = np.float32(rgb)
 
         rgb[(rgb == self.no_data) | (rgb == 0)] = np.nan
 
-        rgb[~np.isnan(rgb)] *= 0.0001
+        rgb[~np.isnan(rgb)] *= scale_factor
 
-        for lidx, layer in enumerate(rgb):
+        if len(rgb.shape) == 2:
 
-            rgb[lidx] = rescale_intensity(layer,
-                                          in_range=(np.nanpercentile(layer, 5),
-                                                    np.nanpercentile(layer, 95)),
-                                          out_range=(0, 1))
+            rgb = rescale_intensity(rgb,
+                                    in_range=(np.nanpercentile(rgb, pmin),
+                                              np.nanpercentile(rgb, pmax)),
+                                    out_range=(0, 1))
+
+        else:
+
+            for lidx, layer in enumerate(rgb):
+
+                rgb[lidx] = rescale_intensity(layer,
+                                              in_range=(np.nanpercentile(layer, pmin),
+                                                        np.nanpercentile(layer, pmax)),
+                                              out_range=(0, 1))
+
+            rgb = self.src._nd_to_rgb(rgb)
 
         rgb[np.isnan(rgb)] = 0
 
-        rgb = self.src._nd_to_rgb(rgb)
-
         return rgb
 
-    def _set_grids(self, ax, **gkwargs):
+    @staticmethod
+    def _set_grids(ax, **gkwargs):
 
         grids = ax.gridlines(**gkwargs)
 
@@ -435,7 +474,9 @@ class GeoMethods(GeoProperties):
         grids.ylabel_style = {'size': 3, 'color': 'gray'}
         grids.xlabel_style = {'size': 2, 'color': 'gray', 'rotation': 45}
 
+        grids.ylabels_left = True
         grids.ylabels_right = False
         grids.xlabels_top = False
+        grids.xlabels_bottom = True
 
         return ax
