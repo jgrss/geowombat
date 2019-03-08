@@ -8,6 +8,15 @@ Example usage:
 >>> import geowombat as gwo
 ```
 
+### Open directly from a file
+
+```python
+>>> with gwo.GeoWombat('example.tif', backend='rasterio') as gsrc:
+>>>     garray = gsrc.read(lazy=True)
+```
+
+### Convert NumPy arrays to GeoArrays
+
 [Rasterio](https://github.com/mapbox/rasterio)
 
 ```python
