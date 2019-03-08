@@ -8,6 +8,14 @@ import rasterio
 from osgeo import gdal
 
 
+def _wrap_gdal(src):
+    pass
+
+
+def _wrap_rasterio(src):
+    pass
+
+
 def _wrap_mpglue(src):
 
     # Wrap the array as a GeoArray
@@ -34,10 +42,10 @@ class GeoArray(GeoMethods, np.ndarray):
     >>> import mpglue as gl
     >>> from geoarray as GeoArray
     >>>
-    >>> src = gl.ropen('image.tif')
-    >>> array = src.read()
+    >>> with gl.ropen('image.tif') as src:
     >>>
-    >>> garray = GeoArray(array, src)
+    >>>     array = src.read()
+    >>>     garray = GeoArray(array, src)
     """
 
     def __new__(cls, array, src, info=None):
@@ -69,6 +77,10 @@ class GeoArray(GeoMethods, np.ndarray):
 
         return obj
 
+    # TODO: geo-aware math operations
+    # def __add__(self):
+    #     return
+
     def __array_finalize__(self, obj):
 
         if obj is None:
@@ -82,11 +94,45 @@ class GeoArray(GeoMethods, np.ndarray):
         self.original_rows = getattr(obj, 'original_rows', None)
         self.original_columns = getattr(obj, 'original_columns', None)
 
-    # def __array_wrap__(self, out_arr, src=None):
-    #     return super(GeoArray, self).__array_wrap__(self, out_arr, src)
 
+class GeoWombat(object):
 
-# class GeoArray(GeoMethods):
-#
-#     def __init__(self, data, src):
-#         self.values = NumPyView(data, src)
+    """
+    Args:
+        file_name (str)
+        backend (Optional[str])
+
+    Example:
+        >>> with GeoWombat('image.tif', backend='rasterio') as src:
+        >>>     garray = src.read(bands=-1)
+    """
+
+    def __init__(self, file_name, backend='rasterio', **kwargs):
+
+        self.file_name = file_name
+        self.backend = backend
+        self.kwargs = kwargs
+        self.src = None
+
+    def read(self, lazy=False):
+
+        if self.backend == 'mpglue':
+
+            with gl.ropen(self.file_name) as self.src:
+                garray = GeoArray(src.read(**self.kwargs), self.src)
+
+        elif self.backend == 'rasterio':
+
+            with rasterio.open(self.file_name) as self.src:
+                garray = GeoArray(src.read(**self.kwargs), self.src)
+
+        return garray
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.src = None
+
+    def __del__(self):
+        self.__exit__(None, None, None)
