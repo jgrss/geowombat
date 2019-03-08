@@ -1,3 +1,5 @@
+![](wombat.png)
+
 ## **GeoWombat** is a Python library to manage __geo-aware__ NumPy arrays
 
 ---
