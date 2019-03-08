@@ -107,24 +107,23 @@ class GeoWombat(object):
         >>>     garray = src.read(bands=-1)
     """
 
-    def __init__(self, file_name, backend='rasterio', **kwargs):
+    def __init__(self, file_name, backend='rasterio'):
 
         self.file_name = file_name
         self.backend = backend
-        self.kwargs = kwargs
         self.src = None
 
-    def read(self, lazy=False):
+    def read(self, lazy=False, **kwargs):
 
         if self.backend == 'mpglue':
 
             with gl.ropen(self.file_name) as self.src:
-                garray = GeoArray(src.read(**self.kwargs), self.src)
+                garray = GeoArray(src.read(**kwargs), self.src)
 
         elif self.backend == 'rasterio':
 
             with rasterio.open(self.file_name) as self.src:
-                garray = GeoArray(src.read(**self.kwargs), self.src)
+                garray = GeoArray(src.read(**kwargs), self.src)
 
         return garray
 

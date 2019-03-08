@@ -2,16 +2,25 @@
 
 ---
 
-Example usage:
+### Requirements
+
+* CartoPy
+* GDAL
+* GeoPandas
+* MpGlue
+* NumPy
+* Rasterio
+
+### Example usage:
 
 ```python
->>> import geowombat as gwo
+>>> import geowombat as gwb
 ```
 
 ### Open directly from a file
 
 ```python
->>> with gwo.GeoWombat('example.tif', backend='rasterio') as gsrc:
+>>> with gwb.GeoWombat('example.tif', backend='rasterio') as gsrc:
 >>>     garray = gsrc.read(lazy=True)
 ```
 
@@ -27,7 +36,7 @@ Example usage:
 >>>     array = src.read(1)
 >>>
 >>>     # Wrap GeoWombat
->>>     garray = gwo.GeoArray(array, src)
+>>>     garray = gwb.GeoArray(array, src)
 ```
 
 [MpGlue](https://github.com/jgrss/mpglue)
@@ -40,5 +49,5 @@ Example usage:
 >>>     array = src.read(bands=-1)
 >>>
 >>>     # Wrap GeoWombat
->>>     garray = gwo.GeoArray(array, src)
+>>>     garray = gwb.GeoArray(array, src)
 ```
