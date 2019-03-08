@@ -1,8 +1,5 @@
 from .methods import GeoMethods
 
-import mpglight.raster_tools as gl
-import mpglight.vector_tools as vl
-
 import numpy as np
 import rasterio
 from osgeo import gdal
@@ -13,10 +10,17 @@ def _wrap_gdal(src):
 
 
 def _wrap_rasterio(src):
-    pass
+    return
+
+
+def _warp_rasterio(src):
+    return
 
 
 def _wrap_mpglue(src):
+
+    import mpglight.raster_tools as gl
+    import mpglight.vector_tools as vl
 
     # Wrap the array as a GeoArray
     geo_src = src.copy()
