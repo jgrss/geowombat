@@ -1,8 +1,12 @@
 from .methods import GeoMethods
 
 # TODO: replace light version with real mpglue
-import mpglight.raster_tools as gl
-import mpglight.vector_tools as vl
+try:
+    from mpglue import raster_tools as gl
+    from mpglue import vector_tools as vl
+except:
+    import mpglight.raster_tools as gl
+    import mpglight.vector_tools as vl
 
 import numpy as np
 import rasterio
