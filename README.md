@@ -13,6 +13,12 @@ and `Rasterio` to wrap geo-information from satellite imagery onto n-dimensional
 git clone https://github.com/jgrss/geowombat.git
 ```
 
+### Installation
+
+```
+python3 setup.py install --process-dependency-links
+```
+
 #### Dependencies
 
 - CartoPy
