@@ -51,3 +51,35 @@
 >>>     # Wrap GeoWombat
 >>>     garray = gwb.GeoArray(array, src)
 ```
+
+### GeoArray properties
+
+GeoArrays maintain coordinates
+
+```python
+>>> print(garray.extent)
+>>> geo_sub = garray.extract(row_start=500, rows=500, col_start=500, cols=200)  
+>>> print(geo_sub.extent)
+```
+
+### Transformations
+
+Resample array and cell size
+
+```python
+>>> array_proj = garray.to_crs(cell_size=200.0, resample='near')
+```
+
+Re-project coordinates
+
+```python
+>>> array_proj = garray.to_crs(crs=4326)
+```
+
+### I/O
+
+Write array to geo-referenced file
+
+```python
+>>> garray.to_raster('image.tif')
+```
