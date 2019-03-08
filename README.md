@@ -1,6 +1,9 @@
 ![](wombat.png)
 
-## **GeoWombat** is a Python library to manage __geo-aware__ NumPy arrays
+## *GeoWombat* is a Python library to manage _geo-aware_ NumPy arrays
+
+Like wombats, `GeoWombat` is a simple interface with a powerful backend. `GeoWombat` utilizes libraries such as `NumPy` 
+and `Rasterio` to wrap geo-information from satellite imagery onto n-dimensional arrays.
 
 ---
 
