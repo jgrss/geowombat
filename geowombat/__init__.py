@@ -1,3 +1,4 @@
-from .geoarray import GeoArray, GeoWombat
+from .geoarray import GeoArray, open
+from .version import __version__
 
-__all__ = ['GeoArray', 'GeoWombat']
+__all__ = ['GeoArray', 'open', '__version__']

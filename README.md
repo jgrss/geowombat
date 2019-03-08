@@ -1,30 +1,36 @@
-## `GeoWombat` is a Python library designed to wrap NumPy arrays with geo-information
+## **GeoWombat** is a Python library to manage __geo-aware__ NumPy arrays
 
 ---
 
-### Requirements
+### Source code
 
-* CartoPy
-* GDAL
-* GeoPandas
-* MpGlue
-* NumPy
-* Rasterio
+```
+git clone https://github.com/jgrss/geowombat.git
+```
 
-### Example usage:
+#### Dependencies
+
+- CartoPy
+- GDAL
+- GeoPandas
+- MpGlue
+- NumPy
+- Rasterio
+
+#### Example usage:
 
 ```python
 >>> import geowombat as gwb
 ```
 
-### Open directly from a file
+#### Open directly from a file
 
 ```python
->>> with gwb.GeoWombat('example.tif', backend='rasterio') as gsrc:
->>>     garray = gsrc.read(lazy=True)
+>>> with gwb.open('example.tif') as gsrc:
+>>>     garray = gsrc.read(bands=-1)
 ```
 
-### Convert NumPy arrays to GeoArrays
+#### Convert NumPy arrays to GeoArrays
 
 [Rasterio](https://github.com/mapbox/rasterio)
 
@@ -52,17 +58,18 @@
 >>>     garray = gwb.GeoArray(array, src)
 ```
 
-### GeoArray properties
+#### GeoArray properties
 
 GeoArrays maintain coordinates
 
 ```python
->>> print(garray.extent)
 >>> geo_sub = garray.extract(row_start=500, rows=500, col_start=500, cols=200)  
+>>>
+>>> print(garray.extent)
 >>> print(geo_sub.extent)
 ```
 
-### Transformations
+#### Transformations
 
 Resample array and cell size
 
@@ -76,7 +83,7 @@ Re-project coordinates
 >>> array_proj = garray.to_crs(crs=4326)
 ```
 
-### I/O
+#### I/O
 
 Write array to geo-referenced file
 

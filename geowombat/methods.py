@@ -24,8 +24,8 @@ class GeoMethods(GeoProperties):
         else:
             self.layers_, self.rows_, self.cols_ = self.shape
 
-    def norm_diff(self):
-        return
+    # def norm_diff(self):
+    #     return
 
     def set_no_data(self, value):
         self.no_data_ = value
@@ -36,8 +36,7 @@ class GeoMethods(GeoProperties):
                 col_start=None,
                 cols=None,
                 layer_start=None,
-                layers=None,
-                inplace=False):
+                layers=None):
 
         """
         Examples:
@@ -46,13 +45,10 @@ class GeoMethods(GeoProperties):
             >>> print(geoarray.left, geoarray.top)
             >>>
             >>> # Use the `extract` method to maintain geo-coordinates
-            >>> new_array = geoarray.extract(row_start=1, row_end=10, col_start=20)
+            >>> new_array = geoarray.extract(row_start=1, rows=10, cols=20)
             >>>
             >>> # The extent is updated
             >>> print(new_array.left, new_array.top)
-            >>>
-            >>> # Subset inplace
-            >>> geoarray.extract(row_start=1, row_end=10, col_start=20, inplace=True)
         """
 
         if not isinstance(layer_start, int):
@@ -80,69 +76,51 @@ class GeoMethods(GeoProperties):
         src.top = self.src.top - (self.src.cellY * row_start)
         src.bottom = self.src.top - (self.src.cellY * (row_start+rows))
 
-        if inplace:
+        # if inplace:
+        #
+        #     if self.layers == 1:
+        #         self = self[row_start:row_start+rows, col_start:col_start+cols]
+        #     else:
+        #
+        #         self = self[layer_start:layer_start+layers,
+        #                     row_start:row_start+rows,
+        #                     col_start:col_start+cols]
+        #
+        #     # new_geo = GeoArray(array, src)
+        #     # self.__class__ = new_geo.__class__
+        #     # self = super(GeoArray, self).__init__(array, src)
+        #     # self = self.reinit(array, src)
+        #     # self = GeoArray(array, src)
+        #
+        #     # self.src = src
+        #     # self._update_inplace(self)
 
-            if self.layers == 1:
-                self = self[row_start:row_start+rows, col_start:col_start+cols]
-            else:
-
-                self = self[layer_start:layer_start+layers,
-                            row_start:row_start+rows,
-                            col_start:col_start+cols]
-
-            # new_geo = GeoArray(array, src)
-            # self.__class__ = new_geo.__class__
-            # self = super(GeoArray, self).__init__(array, src)
-            # self = self.reinit(array, src)
-            # self = GeoArray(array, src)
-
-            # self.src = src
-            # self._update_inplace(self)
-
+        if self.layers == 1:
+            sub_array = self[row_start:row_start+rows, col_start:col_start+cols]
         else:
 
-            if self.layers == 1:
-                sub_array = self[row_start:row_start+rows, col_start:col_start+cols]
-            else:
+            sub_array = self[layer_start:layer_start+layers,
+                             row_start:row_start+rows,
+                             col_start:col_start+cols]
 
-                sub_array = self[layer_start:layer_start+layers,
-                                 row_start:row_start+rows,
-                                 col_start:col_start+cols]
+        sub_array.src = src
+        sub_array.set_no_data(self.no_data)
 
-            sub_array.src = src
+        return sub_array
 
-            return sub_array
-
-    # def _update_inplace(self, result):
-    #     pass
-
-    def set_crs(self, crs):
-
-        """
-        Sets the CRS
-
-        Args:
-            crs (int or str)
-
-        Example:
-            >>> geoarray.set_crs(102033)
-        """
-
-        self.to_crs(crs, inplace=True)
-
-    def to_crs(self, crs, inplace=False, **kwargs):
+    def to_crs(self, crs, **kwargs):
 
         """
         Warps the array projection
 
         Args:
             crs (int or str)
-            inplace (Optional[bool])
+            kwargs (Optional[dict])
 
         Examples:
             >>> print(geoarray.left, geoarray.top, geoarray.projection)
             >>>
-            >>> geoarray.to_crs(102033, inplace=True)
+            >>> geoarray.to_crs(102033)
             >>>
             >>> print(geoarray.left, geoarray.top, geoarray.projection)
             >>>
@@ -188,36 +166,20 @@ class GeoMethods(GeoProperties):
                              srcNodata=self.no_data,
                              **kwargs)
 
-        if inplace:
+        self_cp = src.read(bands=list(range(1, n_layers+1)))
+        self_cp.src = src.copy()
 
-            # TODO: doesn't work
+        self_cp = self._attach_funcs(self_cp)
+        self_cp.set_no_data(self.no_data)
 
-            self = src.read(bands=list(range(1, n_layers+1))).copy()
-            self.src = src.copy()
+        try:
+            gdal.Unlink(src.output_image)
+        except:
+            pass
 
-            try:
-                gdal.Unlink(src.output_image)
-            except:
-                pass
+        src = None
 
-            src = None
-
-        else:
-
-            self_cp = src.read(bands=list(range(1, n_layers+1)))
-            self_cp.src = src.copy()
-
-            self_cp = self._attach_funcs(self_cp)
-            self_cp.set_no_data(self.no_data)
-
-            try:
-                gdal.Unlink(src.output_image)
-            except:
-                pass
-
-            src = None
-
-            return self_cp
+        return self_cp
 
     def _attach_funcs(self, self_cp):
 
@@ -238,6 +200,54 @@ class GeoMethods(GeoProperties):
 
         return left, right, top, bottom
 
+    def geo_add(self, garray):
+
+        """
+        Adds GeoArrays
+        """
+
+        # Find the overlap
+        left, right, top, bottom = self.overlap_bounds(garray.extent)
+
+        nrows = int((top - bottom) / self.cell_y)
+        ncols = int((right - left) / self.cell_y)
+
+        extent_list = [left, top, right, bottom, self.cell_x, self.cell_y]
+
+        l_a, t_a = self.src._get_xy_offsets(image_list=extent_list,
+                                            x=self.left,
+                                            y=self.top,
+                                            check_position=False)[2:]
+
+        l_b, t_b = self.src._get_xy_offsets(image_list=extent_list,
+                                            x=garray.left,
+                                            y=garray.top,
+                                            check_position=False)[2:]
+
+        if self.layers > 1:
+
+            slice_a = self[:, t_a:t_a+nrows, l_a:l_a+ncols]
+            slice_b = garray[:, t_b:t_b+nrows, l_b:l_b+ncols]
+
+        else:
+
+            slice_a = self[t_a:t_a+nrows, l_a:l_a+ncols]
+            slice_b = garray[t_b:t_b+nrows, l_b:l_b+ncols]
+
+        src = self.src.copy()
+
+        src.left = left
+        src.right = right
+        src.top = top
+        src.bottom = bottom
+
+        result = slice_a + slice_b
+
+        result.src = src
+        result.set_no_data(self.no_data)
+
+        return result
+
     def mask(self, mask_array):
 
         """
@@ -246,19 +256,17 @@ class GeoMethods(GeoProperties):
 
         left, right, top, bottom = self.overlap_bounds(mask_array.extent)
 
-        x, y, x_offset, y_offset = self.src._get_xy_offsets(image_list=[left,
-                                                                    top,
-                                                                    right,
-                                                                    bottom,
-                                                                    self.cell_x,
-                                                                    self.cell_y],
-                                                        x=mask_array.left,
-                                                        y=mask_array.top)
+        extent_list = [left, top, right, bottom, self.cell_x, self.cell_y]
+
+        x_offset, y_offset = self.src._get_xy_offsets(image_list=extent_list,
+                                                      x=self.left,
+                                                      y=self.top,
+                                                      check_position=False)[2:]
 
         if self.layers > 1:
-            self[:, y_offset:y_offset+mask_array.rows, x_offset:x_offset+mask_array.columns] = mask_array
+            self[:, y_offset:y_offset+mask_array.rows, x_offset:x_offset+mask_array.columns] = self.no_data
         else:
-            self[y_offset:y_offset+mask_array.rows, x_offset:x_offset+mask_array.columns] = mask_array
+            self[y_offset:y_offset+mask_array.rows, x_offset:x_offset+mask_array.columns] = self.no_data
 
         return self
 
@@ -284,14 +292,14 @@ class GeoMethods(GeoProperties):
     def to_raster(self, file_name, **kwargs):
 
         """
-        Writes an array to file
+        Writes an array to a raster file
 
         Args:
             file_name (str)
             kwargs (dict)
 
         Examples:
-            >>> geoarray.to_file('image.tif')
+            >>> geoarray.to_raster('image.tif')
         """
 
         self.src.update_info(bands=self.layers,
@@ -314,7 +322,7 @@ class GeoMethods(GeoProperties):
         out_rst.close_file()
         out_rst = None
 
-    def _transform_coords(self):
+    def _transform_plot_coords(self):
 
         in_sr = osr.SpatialReference()
         in_sr.ImportFromWkt(self.crs)
@@ -350,7 +358,7 @@ class GeoMethods(GeoProperties):
         plt.rcParams['ytick.color'] = 'none'
         plt.rcParams['figure.dpi'] = 300
 
-        extent = self._transform_coords()
+        extent = self._transform_plot_coords()
 
         crs = ccrs.PlateCarree()
 
@@ -365,8 +373,6 @@ class GeoMethods(GeoProperties):
         crskwargs = dict(origin='upper',
                          extent=extent,
                          transform=crs)
-
-        # import pdb;pdb.set_trace()
 
         if isinstance(bands, list):
             rgb = self[np.array(bands, dtype='int64')-1]

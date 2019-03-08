@@ -1,16 +1,12 @@
 from .methods import GeoMethods
 
+# TODO: replace light version with real mpglue
+import mpglight.raster_tools as gl
+import mpglight.vector_tools as vl
+
 import numpy as np
 import rasterio
 from osgeo import gdal
-
-
-def _wrap_gdal(src):
-    pass
-
-
-def _wrap_rasterio(src):
-    return
 
 
 def _warp_rasterio(src):
@@ -18,9 +14,6 @@ def _warp_rasterio(src):
 
 
 def _wrap_mpglue(src):
-
-    import mpglight.raster_tools as gl
-    import mpglight.vector_tools as vl
 
     # Wrap the array as a GeoArray
     geo_src = src.copy()
@@ -40,16 +33,24 @@ def _wrap_mpglue(src):
     return geo_src
 
 
+def _wrap_gdal(src):
+
+    with gl.ropen(file_name=src.GetFileList()[0]) as glsrc:
+        geo_src = _wrap_mpglue(glsrc)
+
+    return geo_src
+
+
 class GeoArray(GeoMethods, np.ndarray):
 
     """
     >>> import mpglue as gl
-    >>> from geoarray as GeoArray
+    >>> import geowombat as gwb
     >>>
     >>> with gl.ropen('image.tif') as src:
     >>>
     >>>     array = src.read()
-    >>>     garray = GeoArray(array, src)
+    >>>     garray = gwb.GeoArray(array, src)
     """
 
     def __new__(cls, array, src, info=None):
@@ -62,11 +63,14 @@ class GeoArray(GeoMethods, np.ndarray):
             obj.src = _wrap_mpglue(src)
 
         elif isinstance(src, rasterio.io.DatasetReader):
+
             obj.lib = 'rasterio'
             # TODO: set self.attrs for rasterio
+
         elif isinstance(src, gdal.Dataset):
+
             obj.lib = 'gdal'
-            # TODO: set self.attrs for GDAL
+            obj.src = _wrap_gdal(src)
 
         obj.no_data_ = 0
 
@@ -81,9 +85,26 @@ class GeoArray(GeoMethods, np.ndarray):
 
         return obj
 
+    # def __add__(self, other):
+    #     return self._rc(self + np.asarray(other))
+    #
+    # def _rc(self, a):
+    #
+    #     if len(shape(a)) == 0:
+    #         return a
+    #     else:
+    #         return self.__class__(a)
+
     # TODO: geo-aware math operations
-    # def __add__(self):
-    #     return
+    # def __add__(self, x):
+    #
+    #     try:
+    #         return self.geo_add(x)
+    #     except:
+    #         return self + x
+
+    # def __array_wrap__(self, result):
+    #     return GeoArray(result, self.src)
 
     def __array_finalize__(self, obj):
 
@@ -99,35 +120,51 @@ class GeoArray(GeoMethods, np.ndarray):
         self.original_columns = getattr(obj, 'original_columns', None)
 
 
-class GeoWombat(object):
+class open(object):
 
     """
+    A class to open Wombat GeoArrays
+
     Args:
         file_name (str)
         backend (Optional[str])
 
+    Attributes:
+        read
+        file_name
+        backend
+
     Example:
-        >>> with GeoWombat('image.tif', backend='rasterio') as src:
+        >>> import geowombat as gwb
+        >>>
+        >>> with gwb.GeoOpen('image.tif', backend='mpglue') as src:
         >>>     garray = src.read(bands=-1)
     """
 
-    def __init__(self, file_name, backend='rasterio'):
+    def __init__(self, file_name, backend='mpglue'):
 
         self.file_name = file_name
         self.backend = backend
-        self.src = None
 
     def read(self, lazy=False, **kwargs):
 
+        """
+        Args:
+            lazy (Optional[bool])
+            kwargs (Optional[dict])
+        """
+
         if self.backend == 'mpglue':
 
-            with gl.ropen(self.file_name) as self.src:
-                garray = GeoArray(src.read(**kwargs), self.src)
+            with gl.ropen(self.file_name) as src:
+                garray = GeoArray(src.read(**kwargs), src)
 
         elif self.backend == 'rasterio':
 
-            with rasterio.open(self.file_name) as self.src:
-                garray = GeoArray(src.read(**kwargs), self.src)
+            with rasterio.open(self.file_name) as src:
+                garray = GeoArray(src.read(**kwargs), src)
+
+        src = None
 
         return garray
 
