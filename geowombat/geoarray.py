@@ -8,7 +8,7 @@ from osgeo import osr
 from skimage.exposure import rescale_intensity
 
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
+from cartopy import crs as ccrs
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 # TODO: replace light version with real mpglue
@@ -24,7 +24,7 @@ import rasterio
 from osgeo import gdal
 
 
-def _warp_rasterio(src):
+def _wrap_rasterio(src):
     return
 
 
@@ -234,7 +234,9 @@ class GeoMethods(GeoProperties, MovingWindow):
                              srcNodata=self.no_data,
                              **kwargs)
 
-        self_cp = GeoArray(src.read(bands=list(range(1, n_layers+1))), src)
+        # TODO: update MpGlue `bands2open` to `bands`
+        # TODO: handle backend dependency when not using MpGlue
+        self_cp = GeoArray(src.read(bands2open=list(range(1, n_layers+1))), src)
         self_cp.src = src.copy()
 
         if os.path.isfile(src.output_image):
@@ -680,6 +682,10 @@ class open(GeoMethods):
         """
 
         if self.backend == 'mpglue':
+
+            # TODO: temporary hack
+            if 'bands' in kwargs:
+                kwargs['bands2open'] = kwargs['bands']
 
             with gl.ropen(self.file_name) as src:
                 garray = GeoArray(src.read(**kwargs), src)

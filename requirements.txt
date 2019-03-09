@@ -1,0 +1,6 @@
+ matplotlib
+ cartopy
+ GDAL
+ geopandas
+ numpy
+ rasterio
