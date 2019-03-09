@@ -2,6 +2,7 @@ import os
 from copy import copy
 
 from .properties import GeoProperties
+from .moving import MovingWindow
 
 from osgeo import osr
 from skimage.exposure import rescale_intensity
@@ -55,7 +56,7 @@ def _wrap_gdal(src):
     return geo_src
 
 
-class GeoMethods(GeoProperties):
+class GeoMethods(GeoProperties, MovingWindow):
 
     def _get_shape(self):
 
@@ -278,6 +279,9 @@ class GeoMethods(GeoProperties):
 
         """
         Adds GeoArrays
+
+        Args:
+            garray (GeoArray)
         """
 
         # Find the overlap
@@ -326,6 +330,9 @@ class GeoMethods(GeoProperties):
 
         """
         Masks the GeoArray with a secondary geo-array
+
+        Args:
+            mask_array (GeoArray)
         """
 
         left, right, top, bottom = self._get_min_overlap(mask_array.extent)
@@ -490,6 +497,11 @@ class GeoMethods(GeoProperties):
 
         """
         Scales and adjusts values for display
+
+        Args:
+            rgb (ndarray)
+            scale_factor (float)
+            percentiles (tuple)
         """
 
         pmin, pmax = percentiles
@@ -525,6 +537,12 @@ class GeoMethods(GeoProperties):
     @staticmethod
     def _set_grids(ax, **gkwargs):
 
+        """
+        Args:
+            ax (object)
+            kwargs (dict)
+        """
+
         grids = ax.gridlines(**gkwargs)
 
         grids.xformatter = LONGITUDE_FORMATTER
@@ -544,13 +562,20 @@ class GeoMethods(GeoProperties):
 class GeoArray(GeoMethods, np.ndarray):
 
     """
-    >>> import mpglue as gl
-    >>> import geowombat as gwb
-    >>>
-    >>> with gl.ropen('image.tif') as src:
-    >>>
-    >>>     array = src.read()
-    >>>     garray = gwb.GeoArray(array, src)
+    A class for geo-aware NumPy arrays
+
+    Args:
+        array (ndarray)
+        src (object)
+
+    Example:
+        >>> import mpglue as gl
+        >>> import geowombat as gwb
+        >>>
+        >>> with gl.ropen('image.tif') as src:
+        >>>
+        >>>     array = src.read()
+        >>>     garray = gwb.GeoArray(array, src)
     """
 
     def __new__(cls, array, src, info=None):
