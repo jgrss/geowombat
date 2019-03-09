@@ -110,3 +110,5 @@ _build/
 conf.py
 index.rst
 Makefile
+docs/
+

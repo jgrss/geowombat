@@ -1,6 +1,5 @@
 import setuptools
 from distutils.core import setup
-import platform
 
 import numpy as np
 
