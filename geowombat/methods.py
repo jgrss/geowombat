@@ -1,5 +1,6 @@
 from copy import copy
 
+from .geoarray import GeoArray
 from .properties import GeoProperties
 
 import numpy as np
@@ -181,7 +182,7 @@ class GeoMethods(GeoProperties):
                              srcNodata=self.no_data,
                              **kwargs)
 
-        self_cp = src.read(bands=list(range(1, n_layers+1)))
+        self_cp = GeoArray(src.read(bands=list(range(1, n_layers+1))), src)
         self_cp.src = src.copy()
 
         self_cp = self._attach_funcs(self_cp)
