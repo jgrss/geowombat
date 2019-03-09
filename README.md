@@ -94,6 +94,14 @@ Re-project coordinates
 >>> array_proj = garray.to_crs(crs=4326)
 ```
 
+#### Pandas-like window methods
+
+5x5 moving average
+
+```python
+>>> mean = garray.moving(5).mean()
+```
+
 #### I/O
 
 Write array to geo-referenced file
