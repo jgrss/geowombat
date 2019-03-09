@@ -21,13 +21,13 @@ class MovingMethods(object):
                                                   statistic='min',
                                                   window_size=self._window_size)
 
-            return self._array
-
         else:
 
-            return moving_window(self._array,
-                                 statistic='min',
-                                 window_size=self._window_size)
+            self._array[:] = moving_window(self._array,
+                                           statistic='min',
+                                           window_size=self._window_size)
+
+        return self._array
 
     def max(self):
 
@@ -41,13 +41,13 @@ class MovingMethods(object):
                                                   statistic='max',
                                                   window_size=self._window_size)
 
-            return self._array
-
         else:
 
-            return moving_window(self._array,
-                                 statistic='max',
-                                 window_size=self._window_size)
+            self._array[:] = moving_window(self._array,
+                                           statistic='max',
+                                           window_size=self._window_size)
+
+        return self._array
 
     def mean(self):
 
@@ -61,13 +61,13 @@ class MovingMethods(object):
                                                   statistic='mean',
                                                   window_size=self._window_size)
 
-            return self._array
-
         else:
 
-            return moving_window(self._array,
-                                 statistic='mean',
-                                 window_size=self._window_size)
+            self._array[:] = moving_window(self._array,
+                                           statistic='mean',
+                                           window_size=self._window_size)
+
+        return self._array
 
     def std(self):
 
@@ -81,13 +81,13 @@ class MovingMethods(object):
                                                   statistic='std',
                                                   window_size=self._window_size)
 
-            return self._array
-
         else:
 
-            return moving_window(self._array,
-                                 statistic='std',
-                                 window_size=self._window_size)
+            self._array[:] = moving_window(self._array,
+                                           statistic='std',
+                                           window_size=self._window_size)
+
+        return self._array
 
     def sum(self):
 
@@ -101,13 +101,13 @@ class MovingMethods(object):
                                                   statistic='sum',
                                                   window_size=self._window_size)
 
-            return self._array
-
         else:
 
-            return moving_window(self._array,
-                                 statistic='sum',
-                                 window_size=self._window_size)
+            self._array[:] = moving_window(self._array,
+                                           statistic='sum',
+                                           window_size=self._window_size)
+
+        return self._array
 
 
 class MovingWindow(object):
