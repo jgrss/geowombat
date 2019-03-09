@@ -133,3 +133,5 @@ Write array to geo-referenced file
 ```python
 >>> garray.to_raster('image.tif')
 ```
+
+#### See the [notebooks](https://github.com/jgrss/geowombat/tree/master/notebooks) for more detailed examples
