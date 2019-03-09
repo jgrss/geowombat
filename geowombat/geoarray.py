@@ -1,3 +1,5 @@
+from __future__ import division
+
 import os
 from copy import copy
 
@@ -279,10 +281,28 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         return left, right, top, bottom
 
-    def _get_slices(self, garray):
+    @staticmethod
+    def _do_slice(slice_a, slice_b, operator):
+
+        # Force to NumPy arrays to avoid recursion
+        if operator == 'add':
+            result = np.array(slice_a) + np.array(slice_b)
+        elif operator == 'subtract':
+            result = np.array(slice_a) - np.array(slice_b)
+        elif operator == 'multiply':
+            result = np.array(slice_a) * np.array(slice_b)
+
+        return result
+
+    def _get_slices(self, garray, operator, how):
 
         """
         Gets union slice of two arrays
+
+        Args:
+            garray (GeoArray)
+            operator (str)
+            how (str)
         """
 
         # Find the overlap
@@ -308,10 +328,30 @@ class GeoMethods(GeoProperties, MovingWindow):
             slice_a = self[:, t_a:t_a + nrows, l_a:l_a + ncols]
             slice_b = garray[:, t_b:t_b + nrows, l_b:l_b + ncols]
 
+            result = self._do_slice(slice_a, slice_b, operator)
+
+            if how == 'extent':
+                self[:, t_a:t_a+nrows, l_a:l_a+ncols] = result
+                result = self
+            elif how == 'union':
+                pass
+            elif how == 'intersection':
+                pass
+
         else:
 
             slice_a = self[t_a:t_a + nrows, l_a:l_a + ncols]
             slice_b = garray[t_b:t_b + nrows, l_b:l_b + ncols]
+
+            result = self._do_slice(slice_a, slice_b, operator)
+
+            if how == 'extent':
+                self[t_a:t_a+nrows, l_a:l_a+ncols] = result
+                result = self
+            elif how == 'union':
+                pass
+            elif how == 'intersection':
+                pass
 
         src = self.src.copy()
 
@@ -320,58 +360,67 @@ class GeoMethods(GeoProperties, MovingWindow):
         src.top = top
         src.bottom = bottom
 
-        return slice_a, slice_b, src
+        result = GeoArray(result, src)
+        result.set_no_data(self.no_data)
 
-    def geo_add(self, garray):
+        return result
+
+    def geo_add(self, garray, how='extent'):
 
         """
         Adds GeoArrays
 
         Args:
             garray (GeoArray)
+            how (Optional[str]): Choices are ['extent', 'intersection', 'union'].
+
+                'extent': Use the extent of `self`.
+                'intersection': Use the intersection between `self` and `garray`.
+                'union': Use the union (extent of `self` + extent of `garray`) between `self` and `garray`.
+
+        Returns:
+            GeoArray
         """
 
-        slice_a, slice_b, src = self._get_slices(garray)
+        return self._get_slices(garray, 'add', how)
 
-        result = np.array(slice_a) + np.array(slice_b)
-        result = GeoArray(result, src)
-        result.set_no_data(self.no_data)
-
-        return result
-
-    def geo_subtract(self, garray):
+    def geo_subtract(self, garray, how='extent'):
 
         """
         Subtracts GeoArrays
 
         Args:
             garray (GeoArray)
+            how (Optional[str]): Choices are ['extent', 'intersection', 'union'].
+
+                'extent': Use the extent of `self`.
+                'intersection': Use the intersection between `self` and `garray`.
+                'union': Use the union (extent of `self` + extent of `garray`) between `self` and `garray`.
+
+        Returns:
+            GeoArray
         """
 
-        slice_a, slice_b, src = self._get_slices(garray)
+        return self._get_slices(garray, 'subtract', how)
 
-        result = np.array(slice_a) - np.array(slice_b)
-        result = GeoArray(result, src)
-        result.set_no_data(self.no_data)
-
-        return result
-
-    def geo_multiply(self, garray):
+    def geo_multiply(self, garray, how='extent'):
 
         """
         Multiplies GeoArrays
 
         Args:
             garray (GeoArray)
+            how (Optional[str]): Choices are ['extent', 'intersection', 'union'].
+
+                'extent': Use the extent of `self`.
+                'intersection': Use the intersection between `self` and `garray`.
+                'union': Use the union (extent of `self` + extent of `garray`) between `self` and `garray`.
+
+        Returns:
+            GeoArray
         """
 
-        slice_a, slice_b, src = self._get_slices(garray)
-
-        result = np.array(slice_a) * np.array(slice_b)
-        result = GeoArray(result, src)
-        result.set_no_data(self.no_data)
-
-        return result
+        return self._get_slices(garray, 'multiply', how)
 
     def mask(self, mask_array):
 
