@@ -37,8 +37,8 @@ python3 setup.py install --process-dependency-links
 #### Open directly from a file
 
 ```python
->>> with gwb.open('example.tif') as gsrc:
->>>     garray = gsrc.read(bands=-1)
+>>> with gwb.open('example.tif') as src:
+>>>     garray = src.read(bands=-1)
 ```
 
 #### Convert NumPy arrays to GeoArrays
@@ -67,6 +67,21 @@ python3 setup.py install --process-dependency-links
 >>>
 >>>     # Wrap GeoWombat
 >>>     garray = gwb.GeoArray(array, src)
+```
+
+GDAL
+
+```python
+>>> from osgeo import gdal
+>>>
+>>> src = gdal.Open('example.tif')
+>>>
+>>> array = src.GetRasterBand(1).ReadAsArray()
+>>>
+>>> # Wrap GeoWombat
+>>> garray = gwb.GeoArray(array, src)
+>>>
+>>> src = None
 ```
 
 #### GeoArray properties

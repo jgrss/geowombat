@@ -51,6 +51,8 @@ def _wrap_mpglue(src):
 def _wrap_gdal(src):
 
     with gl.ropen(file_name=src.GetFileList()[0]) as glsrc:
+
+        __ = glsrc.read()
         geo_src = _wrap_mpglue(glsrc)
 
     return geo_src
@@ -87,7 +89,7 @@ class GeoMethods(GeoProperties, MovingWindow):
         """
 
         self.no_data_ = value
-
+        
     def extract(self,
                 row_start=None,
                 rows=None,
