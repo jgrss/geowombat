@@ -89,7 +89,7 @@ class GeoMethods(GeoProperties, MovingWindow):
         """
 
         self.no_data_ = value
-        
+
     def extract(self,
                 row_start=None,
                 rows=None,
@@ -279,13 +279,10 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         return left, right, top, bottom
 
-    def geo_add(self, garray):
+    def _get_slices(self, garray):
 
         """
-        Adds GeoArrays
-
-        Args:
-            garray (GeoArray)
+        Gets union slice of two arrays
         """
 
         # Find the overlap
@@ -308,13 +305,13 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         if self.layers > 1:
 
-            slice_a = self[:, t_a:t_a+nrows, l_a:l_a+ncols]
-            slice_b = garray[:, t_b:t_b+nrows, l_b:l_b+ncols]
+            slice_a = self[:, t_a:t_a + nrows, l_a:l_a + ncols]
+            slice_b = garray[:, t_b:t_b + nrows, l_b:l_b + ncols]
 
         else:
 
-            slice_a = self[t_a:t_a+nrows, l_a:l_a+ncols]
-            slice_b = garray[t_b:t_b+nrows, l_b:l_b+ncols]
+            slice_a = self[t_a:t_a + nrows, l_a:l_a + ncols]
+            slice_b = garray[t_b:t_b + nrows, l_b:l_b + ncols]
 
         src = self.src.copy()
 
@@ -323,9 +320,55 @@ class GeoMethods(GeoProperties, MovingWindow):
         src.top = top
         src.bottom = bottom
 
-        result = slice_a + slice_b
+        return slice_a, slice_b, src
 
-        result.src = src
+    def geo_add(self, garray):
+
+        """
+        Adds GeoArrays
+
+        Args:
+            garray (GeoArray)
+        """
+
+        slice_a, slice_b, src = self._get_slices(garray)
+
+        result = np.array(slice_a) + np.array(slice_b)
+        result = GeoArray(result, src)
+        result.set_no_data(self.no_data)
+
+        return result
+
+    def geo_subtract(self, garray):
+
+        """
+        Subtracts GeoArrays
+
+        Args:
+            garray (GeoArray)
+        """
+
+        slice_a, slice_b, src = self._get_slices(garray)
+
+        result = np.array(slice_a) - np.array(slice_b)
+        result = GeoArray(result, src)
+        result.set_no_data(self.no_data)
+
+        return result
+
+    def geo_multiply(self, garray):
+
+        """
+        Multiplies GeoArrays
+
+        Args:
+            garray (GeoArray)
+        """
+
+        slice_a, slice_b, src = self._get_slices(garray)
+
+        result = np.array(slice_a) * np.array(slice_b)
+        result = GeoArray(result, src)
         result.set_no_data(self.no_data)
 
         return result
@@ -563,6 +606,14 @@ class GeoMethods(GeoProperties, MovingWindow):
         return ax
 
 
+def _disables_array_ufunc(obj):
+
+    try:
+        return obj.__array_ufunc__ is None
+    except AttributeError:
+        return False
+
+
 class GeoArray(GeoMethods, np.ndarray):
 
     """
@@ -614,26 +665,26 @@ class GeoArray(GeoMethods, np.ndarray):
 
         return obj
 
-    # def __add__(self, other):
-    #     return self._rc(self + np.asarray(other))
-    #
-    # def _rc(self, a):
-    #
-    #     if len(shape(a)) == 0:
-    #         return a
-    #     else:
-    #         return self.__class__(a)
+    def __add__(self, other):
 
-    # TODO: geo-aware math operations
-    # def __add__(self, x):
-    #
-    #     try:
-    #         return self.geo_add(x)
-    #     except:
-    #         return self + x
+        if isinstance(other, GeoArray):
+            return self.geo_add(other)
+        else:
+            return np.add(self, other)
 
-    # def __array_wrap__(self, result):
-    #     return GeoArray(result, self.src)
+    def __sub__(self, other):
+
+        if isinstance(other, GeoArray):
+            return self.geo_subtract(other)
+        else:
+            return np.subtract(self, other)
+
+    def __mul__(self, other):
+
+        if isinstance(other, GeoArray):
+            return self.geo_multiply(other)
+        else:
+            return np.multiply(self, other)
 
     def __array_finalize__(self, obj):
 
