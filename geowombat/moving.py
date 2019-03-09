@@ -9,6 +9,46 @@ class MovingMethods(object):
         self._array = array
         self._window_size = window_size
 
+    def min(self):
+
+        if len(self._array.shape) > 2:
+
+            self._array = np.float32(self._array)
+
+            for lidx, layer in enumerate(self._array):
+
+                self._array[lidx] = moving_window(layer,
+                                                  statistic='min',
+                                                  window_size=self._window_size)
+
+            return self._array
+
+        else:
+
+            return moving_window(self._array,
+                                 statistic='min',
+                                 window_size=self._window_size)
+
+    def max(self):
+
+        if len(self._array.shape) > 2:
+
+            self._array = np.float32(self._array)
+
+            for lidx, layer in enumerate(self._array):
+
+                self._array[lidx] = moving_window(layer,
+                                                  statistic='max',
+                                                  window_size=self._window_size)
+
+            return self._array
+
+        else:
+
+            return moving_window(self._array,
+                                 statistic='max',
+                                 window_size=self._window_size)
+
     def mean(self):
 
         if len(self._array.shape) > 2:
@@ -27,6 +67,46 @@ class MovingMethods(object):
 
             return moving_window(self._array,
                                  statistic='mean',
+                                 window_size=self._window_size)
+
+    def std(self):
+
+        if len(self._array.shape) > 2:
+
+            self._array = np.float32(self._array)
+
+            for lidx, layer in enumerate(self._array):
+
+                self._array[lidx] = moving_window(layer,
+                                                  statistic='std',
+                                                  window_size=self._window_size)
+
+            return self._array
+
+        else:
+
+            return moving_window(self._array,
+                                 statistic='std',
+                                 window_size=self._window_size)
+
+    def sum(self):
+
+        if len(self._array.shape) > 2:
+
+            self._array = np.float32(self._array)
+
+            for lidx, layer in enumerate(self._array):
+
+                self._array[lidx] = moving_window(layer,
+                                                  statistic='sum',
+                                                  window_size=self._window_size)
+
+            return self._array
+
+        else:
+
+            return moving_window(self._array,
+                                 statistic='sum',
                                  window_size=self._window_size)
 
 
