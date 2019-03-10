@@ -77,6 +77,12 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         """
         Sets array layer names
+
+        Example:
+            >>> garray.set_names(['blue', 'green', 'red', 'nir'])
+
+        Returns:
+            None, sets names in place
         """
 
         self.layer_names = names
@@ -88,6 +94,12 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         """
         Sets array 'no data' value
+
+        Example:
+            >>> garray.set_no_data(0)
+
+        Returns:
+            None, sets `no data` value in place
         """
 
         self.no_data_ = value
@@ -103,7 +115,7 @@ class GeoMethods(GeoProperties, MovingWindow):
         """
         Slices an array
 
-        Examples:
+        Example:
             >>> # rows 1-10
             >>> # columns 0-20
             >>> print(geoarray.left, geoarray.top)
@@ -181,15 +193,15 @@ class GeoMethods(GeoProperties, MovingWindow):
             crs (Optional[int or str])
             kwargs (Optional[dict])
 
-        Examples:
+        Example:
             >>> print(geoarray.left, geoarray.top, geoarray.projection)
             >>>
-            >>> geoarray.to_crs(102033)
+            >>> geoarray = geoarray.to_crs(crs=102033)
             >>>
             >>> print(geoarray.left, geoarray.top, geoarray.projection)
             >>>
             >>> # Create a new array with warped bounds
-            >>> geoarray_warp = geoarray.to_crs(102033)
+            >>> geoarray_warp = geoarray.to_crs(crs=102033)
         """
 
         if isinstance(self.crs, int):
@@ -334,7 +346,10 @@ class GeoMethods(GeoProperties, MovingWindow):
                 self[:, t_a:t_a+nrows, l_a:l_a+ncols] = result
                 result = self
             elif how == 'union':
+                
+                # TODO: combine both extents
                 pass
+                
             elif how == 'intersection':
                 pass
 
@@ -369,6 +384,9 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         """
         Adds GeoArrays
+        
+        Example:
+            >>> result = garray.geo_add(other_garray)
 
         Args:
             garray (GeoArray)
@@ -407,7 +425,7 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         """
         Multiplies GeoArrays
-
+        
         Args:
             garray (GeoArray)
             how (Optional[str]): Choices are ['extent', 'intersection', 'union'].
@@ -429,6 +447,13 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         Args:
             mask_array (GeoArray)
+            
+        Example:
+            >>> garray.set_no_data(0)
+            >>> masked = garray.mask(mask_array)
+            
+        Returns:
+            GeoArray, where `mask_array` locations == `no data`.
         """
 
         left, right, top, bottom = self._get_min_overlap(mask_array.extent)
@@ -454,6 +479,9 @@ class GeoMethods(GeoProperties, MovingWindow):
 
         Example:
             >>> x, y = geoarray.to_coordinates()
+            
+        Returns:
+            x (GeoArray), y (GeoArray)
         """
 
         # Create the longitudes
@@ -475,8 +503,11 @@ class GeoMethods(GeoProperties, MovingWindow):
             file_name (str)
             kwargs (dict)
 
-        Examples:
+        Example:
             >>> geoarray.to_raster('image.tif')
+            
+        Returns:
+            None
         """
 
         self.src.update_info(bands=self.layers,
@@ -527,6 +558,9 @@ class GeoMethods(GeoProperties, MovingWindow):
             scale_factor (Optional[float])
             cmap (Optional[str])
             percentiles (Optional[tuple])
+            
+        Returns:
+            None
         """
 
         plt.rcParams['figure.figsize'] = 3, 3
@@ -655,14 +689,6 @@ class GeoMethods(GeoProperties, MovingWindow):
         return ax
 
 
-def _disables_array_ufunc(obj):
-
-    try:
-        return obj.__array_ufunc__ is None
-    except AttributeError:
-        return False
-
-
 class GeoArray(GeoMethods, np.ndarray):
 
     """
@@ -752,7 +778,7 @@ class GeoArray(GeoMethods, np.ndarray):
 class open(GeoMethods):
 
     """
-    A class to open Wombat GeoArrays
+    A class to open and read GeoWombat GeoArrays
 
     Args:
         file_name (str)
@@ -766,8 +792,12 @@ class open(GeoMethods):
     Example:
         >>> import geowombat as gwb
         >>>
-        >>> with gwb.GeoOpen('image.tif', backend='mpglue') as src:
+        >>> with gwb.open('image.tif') as src:
         >>>     garray = src.read(bands=-1)
+        >>>
+        >>> # Set band names
+        >>> with gwb.open('image.tif') as src:
+        >>>     garray = src.read(names=['red', 'green', 'blue', 'nir'], bands=-1)
     """
 
     def __init__(self, file_name, backend='mpglue'):
@@ -778,9 +808,14 @@ class open(GeoMethods):
     def read(self, names=None, **kwargs):
 
         """
+        Reads an image from file
+
         Args:
-            names (Optional[list])
-            kwargs (Optional[dict])
+            names (Optional[list]): A list of band names. Default is None.
+            kwargs (Optional[dict]): Keyword arguments to pass to the backend I/O manager.
+            
+        Returns:
+            GeoArray
         """
 
         if self.backend == 'mpglue':
