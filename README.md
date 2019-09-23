@@ -96,16 +96,16 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> # Open a 3-band image with blue, green, and red wavelengths
 >>> with gw.open('example.tif') as ds:
 >>>
->>>         ds.gw.apply('output.tif',
->>>                     user_func,
->>>                     n_jobs=8,
->>>                     row_chunks=512,
->>>                     col_chunks=512,
->>>                     pool_chunksize=50,
->>>                     tiled=True,
->>>                     blockxsize=2048,
->>>                     blockysize=2048,
->>>                     compress='lzw')
+>>>     ds.gw.apply('output.tif',
+>>>                 user_func,
+>>>                 n_jobs=8,
+>>>                 row_chunks=512,
+>>>                 col_chunks=512,
+>>>                 pool_chunksize=50,
+>>>                 tiled=True,
+>>>                 blockxsize=2048,
+>>>                 blockysize=2048,
+>>>                 compress='lzw')
 ```
 
 ---
