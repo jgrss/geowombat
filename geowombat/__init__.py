@@ -1,4 +1,5 @@
-from .geoarray import GeoArray, open
+from .core import open
+
 from .version import __version__
 
-__all__ = ['GeoArray', 'open', '__version__']
+__all__ = ['open', '__version__']

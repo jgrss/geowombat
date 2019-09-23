@@ -1,18 +1,19 @@
-![](wombat.png)
+[](#mit-license)[](#python-3.6)[](#package-version)
+
+[![MIT license](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-black.svg)](https://www.python.org/downloads/release/python-360/)
+![Package version](https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000)
+
+![](data/wombat.png)
 
 ## *GeoWombat* is a Python library to manage _geo-aware_ NumPy arrays
 
-Like wombats, [`GeoWombat`](https://github.com/jgrss/geowombat) is a simple interface with a strong backend. `GeoWombat` utilizes libraries such as 
-[`MpGlue`](https://github.com/jgrss/mpglue), [`GDAL`](https://pypi.org/project/GDAL/), and [`Rasterio`](https://github.com/mapbox/rasterio) to wrap geo-information from satellite imagery onto 
-[`NumPy`](http://www.numpy.org/) n-dimensional arrays.
+Like wombats, [`GeoWombat`](https://github.com/jgrss/geowombat) is a simple interface with a strong backend. `GeoWombat` uses
+[`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
+to apply geo-functions to satellite imagery. 
 
-`GeoWombat` arrays contain geo-information on top of `NumPy` functionality. Therefore, coordinates persist through 
-array slices, coordinate transforms can be applied at the array level, and `NumPy` vectorized math operations can occur
-on arrays of varying sizes and overlap.
-
-`GeoWombat` is designed to provide low-level functionality to `NumPy` arrays from overhead space- or -airborne imagery.
-For large image operations, libraries such as [`RIOS`](http://www.rioshome.org/en/latest/) or 
-[`rio-mucho`](https://github.com/mapbox/rio-mucho) are better suited for out-of-memory processing of satellite imagery.
+`GeoWombat` is designed to provide specialized functionality to `Xarray` and `Dask` data, using `Rasterio` for 
+overhead space- or -airborne imagery I/O.
 
 ---
 
@@ -25,30 +26,32 @@ git clone https://github.com/jgrss/geowombat.git
 ### Installation
 
 ```
-python3 setup.py install --process-dependency-links
+python3 install --user git+https://github.com/jgrss/geowombat
 ```
-
-#### Dependencies
-
-- CartoPy
-- GDAL
-- GeoPandas
-- MpGlue
-- NumPy
-- Rasterio
 
 ### Example usage:
 
 ```python
->>> import geowombat as gwb
+>>> import geowombat as gw
 ```
 
 ##### Open directly from a file
 
 ```python
->>> with gwb.open('example.tif') as src:
->>>     garray = src.read(bands=-1)
+>>> with gw.open('example.tif') as ds:
+>>>     print(ds)
 ```
+
+##### Write to GeoTiff
+
+```python
+>>> with gw.open('example.tif') as ds:
+>>>     ds.gw.to_raster('output.tif')
+```
+
+---
+
+### Old GeoNumPy functionality
 
 ##### Convert NumPy arrays to GeoArrays
 

@@ -3,7 +3,7 @@ from distutils.core import setup
 
 import numpy as np
 
-__version__ = '0.0.1dev'
+__version__ = '0.1.0'
 
 mappy_name = 'GeoWombat'
 maintainer = 'Jordan Graesser'
@@ -17,14 +17,15 @@ with open('README.md') as f:
 with open('LICENSE.txt') as f:
     license_file = f.read()
 
-MPGLUE_LINK = 'git+https://github.com/jgrss/mpglue.git@master#egg=mpglue-0'
+# MPGLUE_LINK = 'git+https://github.com/jgrss/mpglue.git@master#egg=mpglue-0'
 
 required_packages = ['matplotlib',
-                     'cartopy',
                      'GDAL',
                      'geopandas',
                      'numpy',
-                     'rasterio']
+                     'rasterio',
+                     'xarray',
+                     'dask']
 
 
 def get_packages():
@@ -32,12 +33,15 @@ def get_packages():
 
 
 def get_package_data():
-    return {'': ['*.md', '*.txt']}
+    return {'': ['*.md', '*.txt'],
+            'data': ['*.tif', '*.png']}
 
 
 def setup_package():
 
     include_dirs = [np.get_include()]
+
+    # dependency_links = [MPGLUE_LINK],
 
     metadata = dict(name=mappy_name,
                     maintainer=maintainer,
@@ -51,7 +55,6 @@ def setup_package():
                     zip_safe=False,
                     download_url=git_url,
                     install_requires=required_packages,
-                    dependency_links=[MPGLUE_LINK],
                     include_dirs=include_dirs)
 
     setup(**metadata)

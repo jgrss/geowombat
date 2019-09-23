@@ -6,31 +6,60 @@ from copy import copy
 from .properties import GeoProperties
 from .moving import MovingWindow
 
-from osgeo import osr
-from skimage.exposure import rescale_intensity
-
-import matplotlib.pyplot as plt
-from cartopy import crs as ccrs
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-
-# TODO: replace light version with real mpglue
-try:
-    from mpglue import raster_tools as gl
-    from mpglue import vector_tools as vl
-except:
-    import mpglight.raster_tools as gl
-    import mpglight.vector_tools as vl
+from mpglue import raster_tools
+from mpglue import vector_tools
 
 import numpy as np
+from osgeo import gdal, osr
 import rasterio
-from osgeo import gdal
+from skimage.exposure import rescale_intensity
+
+# import matplotlib.pyplot as plt
+# from cartopy import crs as ccrs
+# from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 
 def _wrap_rasterio(src):
-    return
+
+    """
+    Wraps attributes from a `rasterio` object
+    """
+
+    geo_src = src.meta.copy()
+
+    left = src.bounds.left + src.j*src.res[0]
+    right = left + src.ccols*src.res[0]
+    top = src.bounds.top - src.i*src.res[0]
+    bottom = top - src.rrows*src.res[0]
+
+    width = right - left
+    height = top - bottom
+
+    transform = rasterio.transform.from_bounds(left,
+                                               bottom,
+                                               right,
+                                               top,
+                                               width,
+                                               height)
+
+    geo_src.update({'width': width,
+                    'height': height,
+                    'transform': transform})
+
+    geo_src._create = raster_tools.create_raster
+    geo_src._warp = raster_tools.warp
+    geo_src._transform = vector_tools.Transform
+    geo_src._get_xy_offsets = vector_tools.get_xy_offsets
+    geo_src._nd_to_rgb = raster_tools.nd_to_rgb
+
+    return geo_src
 
 
 def _wrap_mpglue(src):
+
+    """
+    Wraps attributes from a `MpGlue` object
+    """
 
     # Wrap the array as a GeoArray
     geo_src = src.copy()
@@ -41,18 +70,22 @@ def _wrap_mpglue(src):
     geo_src.update_info(right=geo_src.left+(src.ccols*src.cellY),
                         bottom=geo_src.top-(src.rrows*src.cellY))
 
-    geo_src._create = gl.create_raster
-    geo_src._warp = gl.warp
-    geo_src._transform = vl.Transform
-    geo_src._get_xy_offsets = vl.get_xy_offsets
-    geo_src._nd_to_rgb = gl.nd_to_rgb
+    geo_src._create = raster_tools.create_raster
+    geo_src._warp = raster_tools.warp
+    geo_src._transform = vector_tools.Transform
+    geo_src._get_xy_offsets = vector_tools.get_xy_offsets
+    geo_src._nd_to_rgb = raster_tools.nd_to_rgb
 
     return geo_src
 
 
 def _wrap_gdal(src):
 
-    with gl.ropen(file_name=src.GetFileList()[0]) as glsrc:
+    """
+    Wraps attributes from a `GDAL` object
+    """
+
+    with raster_tools.ropen(file_name=src.GetFileList()[0]) as glsrc:
 
         __ = glsrc.read()
         geo_src = _wrap_mpglue(glsrc)
@@ -702,7 +735,7 @@ class GeoArray(GeoMethods, np.ndarray):
         >>> import mpglue as gl
         >>> import geowombat as gwb
         >>>
-        >>> with gl.ropen('image.tif') as src:
+        >>> with raster_tools.ropen('image.tif') as src:
         >>>
         >>>     array = src.read()
         >>>     garray = gwb.GeoArray(array, src)
@@ -712,7 +745,7 @@ class GeoArray(GeoMethods, np.ndarray):
 
         obj = np.asarray(array).view(cls)
 
-        if isinstance(src, gl.ropen):
+        if isinstance(src, raster_tools.ropen):
 
             obj.lib = 'mpglue'
             obj.src = _wrap_mpglue(src)
@@ -720,7 +753,7 @@ class GeoArray(GeoMethods, np.ndarray):
         elif isinstance(src, rasterio.io.DatasetReader):
 
             obj.lib = 'rasterio'
-            # TODO: set self.attrs for rasterio
+            obj.src = _wrap_rasterio(src)
 
         elif isinstance(src, gdal.Dataset):
 
@@ -800,7 +833,7 @@ class open(GeoMethods):
         >>>     garray = src.read(names=['red', 'green', 'blue', 'nir'], bands=-1)
     """
 
-    def __init__(self, file_name, backend='mpglue'):
+    def __init__(self, file_name, backend='rasterio'):
 
         self.file_name = file_name
         self.backend = backend
@@ -820,16 +853,27 @@ class open(GeoMethods):
 
         if self.backend == 'mpglue':
 
-            # TODO: temporary hack
-            if 'bands' in kwargs:
-                kwargs['bands2open'] = kwargs['bands']
-
-            with gl.ropen(self.file_name) as src:
+            with raster_tools.ropen(self.file_name) as src:
                 garray = GeoArray(src.read(**kwargs), src)
 
         elif self.backend == 'rasterio':
 
             with rasterio.open(self.file_name) as src:
+
+                if 'window' in kwargs:
+
+                    src.i = kwargs['window'][0][0]
+                    src.j = kwargs['window'][1][0]
+                    src.rrows = kwargs['window'][0][1]
+                    src.ccols = kwargs['window'][1][1]
+
+                else:
+
+                    src.i = 0
+                    src.j = 0
+                    src.rrows = src.shape[0]
+                    src.ccols = src.shape[1]
+
                 garray = GeoArray(src.read(**kwargs), src)
 
         src = None
