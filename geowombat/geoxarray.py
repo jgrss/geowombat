@@ -2,6 +2,7 @@ import os
 import time
 import ctypes
 import multiprocessing as multi
+import concurrent.futures
 
 from . import helpers
 from .errors import logger
@@ -143,13 +144,17 @@ def _xarray_writer(ds_data,
             else:
 
                 # Multiprocessing pool context
-                with multi.Pool(processes=n_jobs) as pool:
+                # with multi.Pool(processes=n_jobs) as pool:
+                #
+                #     # Iterate over each window
+                #     for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
+                #                                                     windows,
+                #                                                     chunksize=pool_chunksize),
+                #                                 total=len(windows)):
 
-                    # Iterate over each window
-                    for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
-                                                                    windows,
-                                                                    chunksize=pool_chunksize),
-                                                total=len(windows)):
+                with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+
+                    for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
 
                         # Prepend the band position index to the window slice
                         if len(data_shape) == 2:
@@ -571,9 +576,15 @@ class GeoWombatAccessor(object):
 
         if mask_corners:
 
+            if len(chunksize_) == 2:
+                chunksize_pym = chunksize_
+            else:
+                chunksize_pym = chunksize_[1:]
+
             try:
 
-                disk = pymorph.sedisk(r=int())
+                disk = da.from_array(pymorph.sedisk(r=int(rows/2.0))[:rows, :cols], chunks=chunksize_pym).astype('uint8')
+                ds_sub = ds_sub.where(disk == 1)
 
             except:
                 logger.warning('  Cannot mask corners without Pymorph and a square subset.')
