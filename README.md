@@ -86,6 +86,28 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> cluster.close()
 ```
 
+##### Let `GeoWombat` handle the cluster
+
+```python
+>>> def user_func(ds_):
+>>>     """Function to mask a DataArray where values are equal to 1"""
+>>>     return ds_.where(ds_ == 1)
+>>>
+>>> # Open a 3-band image with blue, green, and red wavelengths
+>>> with gw.open('example.tif') as ds:
+>>>
+>>>         ds.gw.apply('output.tif',
+>>>                     user_func,
+>>>                     n_jobs=8,
+>>>                     row_chunks=512,
+>>>                     col_chunks=512,
+>>>                     pool_chunksize=50,
+>>>                     tiled=True,
+>>>                     blockxsize=2048,
+>>>                     blockysize=2048,
+>>>                     compress='lzw')
+```
+
 ---
 
 ### Old GeoNumPy functionality
