@@ -59,10 +59,12 @@ def _xarray_writer(ds_data,
         if os.path.isfile(filename):
             os.remove(filename)
 
-    d_name = os.path.split(filename)[0]
+    d_name = os.path.dirname(filename)
 
-    if not os.path.isdir(d_name):
-        os.makedirs(d_name)
+    if d_name:
+
+        if not os.path.isdir(d_name):
+            os.makedirs(d_name)
 
     data_shape = ds_data.shape
 

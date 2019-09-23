@@ -35,18 +35,55 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> import geowombat as gw
 ```
 
-##### Open directly from a file
+##### Open directly from a file as an `Xarray.DataArray`
 
 ```python
 >>> with gw.open('example.tif') as ds:
->>>     print(ds)
+>>>     print(ds)    # `ds` is an `Xarray.DataArray`
 ```
 
-##### Write to GeoTiff
+##### Open as an `Xarray.Dataset`
 
 ```python
->>> with gw.open('example.tif') as ds:
->>>     ds.gw.to_raster('output.tif')
+>>> # Open a 3-band image with blue, green, and red wavelengths
+>>> with gw.open('example.tif',
+>>>              xarray_return='dataset', 
+>>>              band_names=['blue', 'green', 'red']) as ds:
+>>>
+>>>     print(ds)    # `ds` is an `Xarray.Dataset`
+```
+
+##### Write to GeoTiff on a Dask distributed cluster
+
+```python
+>>> import joblib
+>>> from dask.distributed import Client, LocalCluster
+>>>
+>>> cluster = LocalCluster(n_workers=8,
+>>>                        threads_per_worker=1,
+>>>                        scheduler_port=0,
+>>>                        processes=False)
+>>> 
+>>> client = Client(cluster)
+>>> 
+>>> with joblib.parallel_backend('dask'):
+>>>
+>>>     with gw.open('example.tif') as ds:
+>>>
+>>>         # ds = <do something>
+>>>
+>>>         ds.gw.to_raster('output.tif',
+>>>                         n_jobs=8,
+>>>                         row_chunks=512,
+>>>                         col_chunks=512,
+>>>                         pool_chunksize=50,
+>>>                         tiled=True,
+>>>                         blockxsize=2048,
+>>>                         blockysize=2048,
+>>>                         compress='lzw')
+>>>
+>>> client.close()
+>>> cluster.close()
 ```
 
 ---
