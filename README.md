@@ -29,6 +29,8 @@ git clone https://github.com/jgrss/geowombat.git
 python3 install --user git+https://github.com/jgrss/geowombat
 ```
 
+---
+
 ### Example usage:
 
 ```python
