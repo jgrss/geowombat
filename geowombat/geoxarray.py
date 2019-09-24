@@ -611,6 +611,10 @@ class GeoWombatAccessor(object):
     @property
     def bounds(self):
 
+        """
+        Returns the `DataArray` bounds
+        """
+
         Bounds = namedtuple('Bounds', 'left right top bottom')
 
         bounds = Bounds(left=self._obj.x.min().values,

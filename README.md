@@ -8,7 +8,7 @@
 
 ## *GeoWombat* is a Python package to apply geo-functions to `Xarray` and `Dask` data
 
-Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) is a simple interface with a strong backend. `GeoWombat` uses
+Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) has a simple interface with a strong backend. `GeoWombat` uses
 [`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
 to apply geo-functions to satellite imagery. 
 
