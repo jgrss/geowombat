@@ -38,7 +38,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> import xarray as xr
 ```
 
-##### Use `Xarray` and `GeoWombat` methods are automatically append to `Datasets` and `DataArrays`
+##### `GeoWombat` methods are automatically appended to `Xarray` `Datasets` and `DataArrays`
 
 ```python
 >>> with xr.open_rasterio('example.tif') as ds:
