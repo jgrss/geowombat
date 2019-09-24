@@ -68,6 +68,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 ```python
 >>> with gw.open('example.tif') as ds:
 >>>     df = ds.gw.extract('point.shp')
+```
 
 ##### Extract values for every pixel within polygon geometry (poly.gpkg)
 
