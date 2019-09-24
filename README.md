@@ -8,7 +8,7 @@
 
 ## *GeoWombat* is a Python package to apply geo-functions to `Xarray` and `Dask` data
 
-Like wombats, [`GeoWombat`](https://github.com/jgrss/geowombat) is a simple interface with a strong backend. `GeoWombat` uses
+Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) is a simple interface with a strong backend. `GeoWombat` uses
 [`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
 to apply geo-functions to satellite imagery. 
 
@@ -33,16 +33,24 @@ python3 install --user git+https://github.com/jgrss/geowombat
 
 ```python
 >>> import geowombat as gw
+>>> import xarray as xr
 ```
 
-##### Open directly from a file as an `Xarray.DataArray`
+##### Use `Xarray` and `GeoWombat` methods are automatically append to `Datasets` and `DataArrays`
+
+```python
+>>> with xr.open_rasterio('example.tif') as ds:
+>>>     print(ds.gw)
+```
+
+##### Use `GeoWombat` to open a file as an `Xarray.DataArray`
 
 ```python
 >>> with gw.open('example.tif') as ds:
 >>>     print(ds)    # `ds` is an `Xarray.DataArray`
 ```
 
-##### Open as an `Xarray.Dataset`
+##### Use `GeoWombat` to open a file as an `Xarray.Dataset`
 
 ```python
 >>> # Open a 3-band image with blue, green, and red wavelengths
@@ -53,7 +61,20 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     print(ds)    # `ds` is an `Xarray.Dataset`
 ```
 
-##### Write to GeoTiff on a Dask distributed cluster
+##### Extract values for every pixel intersecting point geometry (point.shp)
+
+```python
+>>> with gw.open('example.tif') as ds:
+>>>     df = ds.gw.extract('point.shp')
+
+##### Extract values for every pixel within polygon geometry (poly.gpkg)
+
+```python
+>>> with gw.open('example.tif') as ds:
+>>>     df = ds.gw.extract('poly.gpkg', bands=3, band_names=['red'], frac=0.1)
+```
+
+##### Write to GeoTiff on a `Dask` distributed cluster
 
 ```python
 >>> import joblib
@@ -86,7 +107,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> cluster.close()
 ```
 
-##### Let `GeoWombat` handle the cluster
+##### Let `GeoWombat` handle the distributed cluster
 
 ```python
 >>> def user_func(ds_):

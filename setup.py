@@ -17,15 +17,19 @@ with open('README.md') as f:
 with open('LICENSE.txt') as f:
     license_file = f.read()
 
-# MPGLUE_LINK = 'git+https://github.com/jgrss/mpglue.git@master#egg=mpglue-0'
-
 required_packages = ['matplotlib',
                      'GDAL',
+                     'pandas',
                      'geopandas',
                      'numpy',
                      'rasterio',
                      'xarray',
-                     'dask']
+                     'dask',
+                     'distributed',
+                     'affine',
+                     'joblib',
+                     'tqdm',
+                     'shapely']
 
 
 def get_packages():

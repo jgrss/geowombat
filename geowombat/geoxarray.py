@@ -1,6 +1,7 @@
 import os
 import time
 import ctypes
+from collections import namedtuple
 import multiprocessing as multi
 import concurrent.futures
 
@@ -8,12 +9,18 @@ from . import helpers
 from .errors import logger
 
 import numpy as np
+import pandas as pd
+import geopandas as gpd
 import xarray as xr
 import dask.array as da
 from dask.distributed import Client, LocalCluster
 import rasterio as rio
+from rasterio import features
+from affine import Affine
 import joblib
+from shapely import geometry
 from tqdm import tqdm
+import shapely
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -27,6 +34,8 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+shapely.speedups.enable()
 
 
 def _window_worker(w):
@@ -512,23 +521,25 @@ class GeoWombatAccessor(object):
         client = None
         cluster = None
 
-    def subset_by_coords(self,
-                         left,
-                         top,
-                         right=None,
-                         bottom=None,
-                         rows=None,
-                         cols=None,
-                         center=False,
-                         mask_corners=False,
-                         chunksize=None):
+    def subset(self,
+               by='coords',
+               left=None,
+               top=None,
+               right=None,
+               bottom=None,
+               rows=None,
+               cols=None,
+               center=False,
+               mask_corners=False,
+               chunksize=None):
 
         """
         Subsets the DataArray by coordinates
 
         Args:
-            left (float)
-            top (float)
+            by (str)
+            left (Optional[float])
+            top (Optional[float])
             right (Optional[float])
             bottom (Optional[float])
             rows (Optional[int])
@@ -546,13 +557,13 @@ class GeoWombatAccessor(object):
         """
 
         if isinstance(right, int) or isinstance(right, float):
-            cols = (right - left) / self._obj.res[0]
+            cols = int((right - left) / self._obj.res[0])
 
         if not isinstance(cols, int):
             raise AttributeError('The right coordinate or columns must be specified.')
 
         if isinstance(bottom, int) or isinstance(bottom, float):
-            rows = (top - bottom) / self._obj.res[0]
+            rows = int((top - bottom) / self._obj.res[0])
 
         if not isinstance(rows, int):
             raise AttributeError('The bottom coordinate or rows must be specified.')
@@ -596,3 +607,219 @@ class GeoWombatAccessor(object):
         ds_sub.attrs['transform'] = tuple(transform)
 
         return ds_sub
+
+    @property
+    def bounds(self):
+
+        Bounds = namedtuple('Bounds', 'left right top bottom')
+
+        bounds = Bounds(left=self._obj.x.min().values,
+                        right=self._obj.x.max().values,
+                        top=self._obj.y.max().values,
+                        bottom=self._obj.y.min().values)
+
+        return bounds
+
+    def poly_to_points(self, df, frac=1.0):
+
+        """
+        Converts polygons to points
+
+        Args:
+            df (GeoDataFrame)
+            frac (Optional[float]): A fractional subset of points to extract in each feature.
+
+        Returns:
+            (GeoDataFrame)
+        """
+
+        array_bounds = self._obj.gw.bounds
+
+        point_df = None
+
+        dataframes = list()
+
+        # TODO: parallel over features
+        for i in range(0, df.shape[0]):
+
+            # Get the current feature's geometry
+            geom = df.iloc[i].geometry
+
+            # Project to the DataArray's CRS
+            # dfs = gpd.GeoDataFrame([0], geometry=[geom], crs=df.crs)
+            # dfs = dfs.to_crs(self._obj.crs)
+            # geom = dfs.iloc[0].geometry
+
+            # Get the feature's bounding extent
+            minx, miny, maxx, maxy = geom.bounds
+            out_shape = (int((maxy - miny) / self._obj.res[0]), int((maxx - minx) / self._obj.res[0]))
+            transform = Affine(self._obj.res[0], 0.0, minx, 0.0, -self._obj.res[0], maxy)
+
+            # "Rasterize" the geometry into a NumPy array
+            feature_array = features.rasterize([geom],
+                                               out_shape=out_shape,
+                                               fill=0,
+                                               out=None,
+                                               transform=transform,
+                                               all_touched=False,
+                                               default_value=1,
+                                               dtype='int32')
+
+            # Get the indices of the feature's envelope
+            valid_samples = np.where(feature_array == 1)
+
+            # Convert the indices to map indices
+            y_samples = valid_samples[0] + int(round(abs(array_bounds.top - maxy)) / self._obj.res[0])
+            x_samples = valid_samples[1] + int(round(abs(minx - array_bounds.left)) / self._obj.res[0])
+
+            # Convert the indices to map coordinates
+            y_coords = array_bounds.top - y_samples * self._obj.res[0]
+            x_coords = array_bounds.left + x_samples * self._obj.res[0]
+
+            if frac < 1:
+
+                rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
+                                            size=int(y_coords.shape[0]*frac),
+                                            replace=False)
+
+                y_coords = y_coords[rand_idx]
+                x_coords = x_coords[rand_idx]
+
+            n_samples = y_coords.shape[0]
+
+            # Combine the coordinates into `Shapely` point geometry
+            if not isinstance(point_df, gpd.GeoDataFrame):
+
+                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
+                                                       np.arange(0, n_samples)],
+                                           geometry=gpd.points_from_xy(x_coords, y_coords),
+                                           crs=self._obj.crs,
+                                           columns=['poly', 'point'])
+
+                last_point = point_df.point.max() + 1
+
+            else:
+
+                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
+                                                       np.arange(last_point, last_point + n_samples)],
+                                            geometry=gpd.points_from_xy(x_coords, y_coords),
+                                            crs=self._obj.crs,
+                                            columns=['poly', 'point'])
+
+                last_point = last_point + point_df.point.max() + 1
+
+            dataframes.append(point_df)
+
+        return pd.concat(dataframes, axis=0)
+
+    def extract(self, aoi, bands=None, band_names=None, frac=1.0, **kwargs):
+
+        """
+        Extracts data within an area or points of interest. Projections do not
+        need to match, as they are handled 'on-the-fly'.
+
+        Args:
+            aoi (str or GeoDataFrame): A file or GeoDataFrame to extract data frame.
+            bands (Optional[int or 1d array-like]): A band or list of bands to extract.
+                If not given, all bands are used. *Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
+            band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
+            frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
+            kwargs (Optional[dict]): Keyword arguments passed to `Dask` compute.
+
+        Returns:
+            Extracted data for every data point within or intersecting the geometry (GeoDataFrame)
+        """
+
+        if isinstance(aoi, str):
+
+            if not os.path.isfile(aoi):
+                logger.exception('  The AOI file does not exist.')
+
+            df = gpd.read_file(aoi)
+
+        elif isinstance(aoi, gpd.GeoDataFrame):
+            df = aoi
+        else:
+            logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
+
+        shape_len = len(self._obj.shape)
+
+        bands_type = 'array'
+
+        if isinstance(bands, list):
+            bands_idx = np.array(bands, dtype='int64') - 1
+        elif isinstance(bands, np.ndarray):
+            bands_idx = bands - 1
+        elif isinstance(bands, int):
+
+            bands_idx = slice(bands, bands+1)
+            bands_type = 'slice'
+
+        else:
+
+            bands_type = 'slice'
+
+            if shape_len > 2:
+                bands_idx = slice(0, self._obj.shape[0])
+
+        # Re-project the data to match the image CRS
+        df = df.to_crs(self._obj.crs)
+
+        # Subset the DataArray
+        # minx, miny, maxx, maxy = df.total_bounds
+        #
+        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
+        #                                  top=float(maxy)+self._obj.res[0],
+        #                                  right=float(maxx)+self._obj.res[0],
+        #                                  bottom=float(miny)-self._obj.res[0])
+
+        # Convert polygons to points
+        if type(df.iloc[0].geometry) == geometry.Polygon:
+            df = self.poly_to_points(df, frac=frac)
+
+        x, y = df.geometry.x.values, df.geometry.y.values
+
+        left = self._obj.transform[2]
+        top = self._obj.transform[5]
+
+        x = np.int64(np.round(np.abs(x - left) / self._obj.res[0]))
+        y = np.int64(np.round(np.abs(top - y) / self._obj.res[0]))
+
+        if shape_len == 2:
+            res = self._obj.data.vindex[y, x].compute(**kwargs)
+        else:
+            res = self._obj.data.vindex[bands_idx, y, x].compute(**kwargs)
+
+        if shape_len == 2:
+
+            if band_names:
+                df[band_names[0]] = res.flatten()
+            else:
+                df['bd1'] = res.flatten()
+
+        else:
+
+            if bands_type in ['array', 'slice']:
+
+                if bands_type == 'array':
+                    enum = bands_idx.tolist()
+                else:
+                    enum = list(range(bands_idx.start, bands_idx.stop))
+
+                for i, band in enumerate(enum):
+
+                    if band_names:
+                        df[band_names[i]] = res[:, i]
+                    else:
+                        df['bd{:d}'.format(i+1)] = res[:, i]
+
+            else:
+
+                for band in range(1, self._obj.shape[0]+1):
+
+                    if band_names:
+                        df[band_names[band-1]] = res[:, band-1]
+                    else:
+                        df['bd{:d}'.format(band)] = res[:, band-1]
+
+        return df
