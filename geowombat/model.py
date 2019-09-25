@@ -372,8 +372,8 @@ class Model(object):
 
             with joblib.parallel_backend('dask'):
 
-                fitted_estimators = self._calibrate_classifiers(data[:, x].values,
-                                                                data[:, y].values.flatten(),
+                fitted_estimators = self._calibrate_classifiers(data.loc[:, x].values,
+                                                                data.loc[:, y].values.flatten(),
                                                                 sample_weight,
                                                                 X_calibrate,
                                                                 y_calibrate,
@@ -383,8 +383,8 @@ class Model(object):
 
         else:
 
-            fitted_estimators = self._calibrate_classifiers(data[:, x].values,
-                                                            data[:, y].values.flatten(),
+            fitted_estimators = self._calibrate_classifiers(data.loc[:, x].values,
+                                                            data.loc[:, y].values.flatten(),
                                                             sample_weight,
                                                             X_calibrate,
                                                             y_calibrate,

@@ -532,7 +532,7 @@ class GeoWombatAccessor(object):
 
                 # Store the predictions as an `Xarray` `DataArray`
                 predictions = xr.DataArray(data=predictions,
-                                           dims=['y', 'x'],
+                                           dims=('y', 'x'),
                                            coords={'y': ('y', self._obj.y),
                                                    'x': ('x', self._obj.x)},
                                            attrs=self._obj.attrs)
