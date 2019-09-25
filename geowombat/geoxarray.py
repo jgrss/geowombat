@@ -351,7 +351,10 @@ class GeoWombatAccessor(object):
                             dims=['y', 'x'],
                             coords={'y': self._obj.y, 'x': self._obj.x})
 
-    def show_rgb(self, wavelengths, mask=False, flip=False, dpi=150, **kwargs):
+    def show(self, wavelengths=None, mask=False, flip=False, dpi=150, **kwargs):
+
+        if (len(wavelengths) != 1) and (len(wavelengths) != 3):
+            logger.exception('  Only 1-band or 3-band arrays can be plotted.')
 
         # plt.rcParams['figure.figsize'] = 3, 3
         plt.rcParams['axes.titlesize'] = 5
@@ -377,14 +380,23 @@ class GeoWombatAccessor(object):
         rgb = self._obj['bands'].sel(wavelength=wavelengths)
 
         if mask:
-            rgb = rgb.where((self._obj['mask'] < 3) & (rgb.max(axis=0) > 0))
 
-        rgb = rgb.transpose('y', 'x', 'wavelength')
+            if len(wavelengths) == 1:
+                rgb = rgb.where((self._obj['mask'] < 3) & (rgb > 0))
+            else:
+                rgb = rgb.where((self._obj['mask'] < 3) & (rgb.max(axis=0) > 0))
 
-        if flip:
-            rgb = rgb[..., ::-1]
+        if len(wavelengths) == 3:
 
-        rgb.plot.imshow(rgb='wavelength', ax=self.ax, **kwargs)
+            rgb = rgb.transpose('y', 'x', 'wavelength')
+
+            if flip:
+                rgb = rgb[..., ::-1]
+
+            rgb.plot.imshow(rgb='wavelength', ax=self.ax, **kwargs)
+
+        else:
+            rgb.plot.imshow(ax=self.ax, **kwargs)
 
         self._show()
 
@@ -479,6 +491,73 @@ class GeoWombatAccessor(object):
                        nodata,
                        tags,
                        **kwargs)
+
+    def predict(self,
+                clf,
+                outname=None,
+                io_chunks=(512, 512),
+                x_chunks=(5000, 1),
+                overwrite=False,
+                n_jobs=1,
+                nodata=0,
+                dtype='uint8',
+                gdal_cache=512,
+                **kwargs):
+
+        """
+        Predicts an image using a pre-fit model
+
+        Args:
+            clf (object): A classifier `geowombat.model.Model` instance.
+            outname (Optional[str]): An outname file name for the predictions.
+            io_chunks (Optional[tuple]): The chunk size for I/O.
+            x_chunks (Optional[tuple]): The chunk size for the X predictors.
+            overwrite (Optional[bool]): Whether to overwrite an existing file.
+            nodata (Optional[int or float]): The 'no data' value in the predictors.
+            n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
+            dtype (Optional[str]): The output data type passed to `Rasterio`.
+            gdal_cache (Optional[int]): The GDAL cache (in MB) passed to `Rasterio`.
+            kwargs (Optional[dict]): Keyword arguments pass to `Rasterio`.
+                *The `blockxsize` and `blockysize` should be excluded.
+
+        Returns:
+            Predictions (Dask array) if `outname` is None, otherwise writes to `outname`.
+        """
+
+        if self.verbose > 0:
+            logger.info('  Predicting and saving to {} ...'.format(outname))
+
+        with joblib.parallel_backend('dask'):
+
+            n_dims, n_rows, n_cols = self._obj.shape
+
+            # Reshape the data for fitting and
+            #   return a Dask array
+            X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).fillna(nodata).data
+
+            # Apply the predictions
+            predictions = clf.model.predict(X).reshape(n_rows, n_cols).rechunk(io_chunks)
+
+            # Store the predictions as an `Xarray` `Dataset`
+            predictions = xr.Dataset({'pred': (['y', 'x'], predictions)},
+                                     coords={'y': ('y', self._obj.y),
+                                             'x': ('x', self._obj.x)},
+                                     attrs=self._obj.attrs)
+
+            if isinstance(outname, str):
+
+                predictions.gw.to_raster(outname,
+                                         attribute='pred',
+                                         n_jobs=n_jobs,
+                                         dtype=dtype,
+                                         gdal_cache=gdal_cache,
+                                         overwrite=overwrite,
+                                         blockxsize=io_chunks[0],
+                                         blockysize=io_chunks[1],
+                                         **kwargs)
+
+            else:
+                return predictions
 
     def apply(self, filename, user_func, n_jobs=1, **kwargs):
 

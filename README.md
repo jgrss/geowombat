@@ -132,6 +132,33 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>                 compress='lzw')
 ```
 
+##### Use `GeoWombat` for a machine learning pipeline
+
+```python
+>>> from geowombat.model import Model
+>>>
+>>> # Extract training samples
+>>> with gw.open('example.tif') as ds:
+>>>     df = ds.gw.extract('poly.gpkg', bands=3, band_names=['red', 'nir'], frac=0.1)
+>>>
+>>> df['response'] = np.random.randint(0, high=4, size=df.shape[0])
+>>> df['weights'] = np.random.randn(df.shape[0])
+>>>
+>>> # Fit a classifier
+>>> clf = Model(name='lightgbm', use_dask=True, n_jobs=4)
+>>> clf.fit(df, x=['red', 'nir'], y='response', sample_weight='weights')
+>>>
+>>> # Save the model to file
+>>> clf.to_file('lgm.model')
+>>>
+>>> # Load the model from file
+>>> clf.from_file('lgm.model')
+>>>
+>>> # Apply the model to an image
+>>> with gw.open('example.tif') as ds:
+>>>     ds.gw.predict(clf)
+```
+
 ---
 
 ### Old GeoNumPy functionality
