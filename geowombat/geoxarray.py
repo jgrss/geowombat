@@ -479,6 +479,7 @@ class GeoWombatAccessor(object):
                 overwrite=False,
                 return_as='array',
                 n_jobs=1,
+                verbose=0,
                 nodata=0,
                 dtype='uint8',
                 gdal_cache=512,
@@ -497,6 +498,7 @@ class GeoWombatAccessor(object):
                 *Only relevant if `outname` is not given.
             nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
+            verbose (Optional[int]): The verbosity level.
             dtype (Optional[str]): The output data type passed to `Rasterio`.
             gdal_cache (Optional[int]): The GDAL cache (in MB) passed to `Rasterio`.
             kwargs (Optional[dict]): Keyword arguments pass to `Rasterio`.
@@ -506,7 +508,7 @@ class GeoWombatAccessor(object):
             Predictions (Dask array) if `outname` is None, otherwise writes to `outname`.
         """
 
-        if self.verbose > 0:
+        if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))
 
         with joblib.parallel_backend('dask'):
