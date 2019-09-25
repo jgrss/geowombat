@@ -40,7 +40,7 @@ shapely.speedups.enable()
 
 def _window_worker(w):
     """Helper to return window slice"""
-    time.sleep(0.01)
+    time.sleep(0.001)
     return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
 
 
@@ -153,17 +153,18 @@ def _xarray_writer(ds_data,
             else:
 
                 # Multiprocessing pool context
-                # with multi.Pool(processes=n_jobs) as pool:
-                #
-                #     # Iterate over each window
-                #     for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
-                #                                                     windows,
-                #                                                     chunksize=pool_chunksize),
-                #                                 total=len(windows)):
+                # This context is I/O bound, so use the default 'loky' scheduler
+                with multi.Pool(processes=n_jobs) as pool:
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+                    # Iterate over each window
+                    for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
+                                                                    windows,
+                                                                    chunksize=pool_chunksize),
+                                                total=len(windows)):
 
-                    for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
+                # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+
+                    # for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
 
                         # Prepend the band position index to the window slice
                         if len(data_shape) == 2:
@@ -188,28 +189,6 @@ def _xarray_writer(ds_data,
                             dst.write(ds_data[window_slice_].squeeze().load().data,
                                       window=w,
                                       indexes=indexes)
-
-                        # Iterate over each band
-                        # for band_index in range(1, n_bands + 1):
-                        #
-                        #     # Prepend the band position index to the window slice
-                        #     if len(data_shape) == 2:
-                        #         window_slice_ = window_slice
-                        #     else:
-                        #         window_slice_ = tuple([band_index-1] + list(window_slice))
-                        #
-                        #     # Write the chunk to file
-                        #     if isinstance(nodata, int) or isinstance(nodata, float):
-                        #
-                        #         dst.write(ds_data[window_slice_].squeeze().fillna(nodata).load().data,
-                        #                   window=w,
-                        #                   indexes=band_index)
-                        #
-                        #     else:
-                        #
-                        #         dst.write(ds_data[window_slice_].squeeze().load().data,
-                        #                   window=w,
-                        #                   indexes=band_index)
 
     if verbose > 0:
         print('Finished writing')
@@ -498,6 +477,7 @@ class GeoWombatAccessor(object):
                 io_chunks=(512, 512),
                 x_chunks=(5000, 1),
                 overwrite=False,
+                return_as='array',
                 n_jobs=1,
                 nodata=0,
                 dtype='uint8',
@@ -513,6 +493,8 @@ class GeoWombatAccessor(object):
             io_chunks (Optional[tuple]): The chunk size for I/O.
             x_chunks (Optional[tuple]): The chunk size for the X predictors.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
+            return_as (Optional[str]): Whether to return the predictions as a `DataArray` or `Dataset`.
+                *Only relevant if `outname` is not given.
             nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
             dtype (Optional[str]): The output data type passed to `Rasterio`.
@@ -538,11 +520,22 @@ class GeoWombatAccessor(object):
             # Apply the predictions
             predictions = clf.model.predict(X).reshape(n_rows, n_cols).rechunk(io_chunks)
 
-            # Store the predictions as an `Xarray` `Dataset`
-            predictions = xr.Dataset({'pred': (['y', 'x'], predictions)},
-                                     coords={'y': ('y', self._obj.y),
-                                             'x': ('x', self._obj.x)},
-                                     attrs=self._obj.attrs)
+            if return_as == 'dataset':
+
+                # Store the predictions as an `Xarray` `Dataset`
+                predictions = xr.Dataset({'pred': (['y', 'x'], predictions)},
+                                         coords={'y': ('y', self._obj.y),
+                                                 'x': ('x', self._obj.x)},
+                                         attrs=self._obj.attrs)
+
+            else:
+
+                # Store the predictions as an `Xarray` `DataArray`
+                predictions = xr.DataArray(data=predictions,
+                                           dims=['y', 'x'],
+                                           coords={'y': ('y', self._obj.y),
+                                                   'x': ('x', self._obj.x)},
+                                           attrs=self._obj.attrs)
 
             if isinstance(outname, str):
 
