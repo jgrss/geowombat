@@ -152,7 +152,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     # Save the model to file (optional)
 >>>     clf.to_file('lgm.model')
 >>>
->>>     ds.gw.predict(clf)
+>>>     ds.gw.predict(clf.model)
 ```
 
 ```python
