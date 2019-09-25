@@ -139,18 +139,23 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>
 >>> # Extract training samples
 >>> with gw.open('example.tif') as ds:
+>>>
 >>>     df = ds.gw.extract('poly.gpkg', bands=3, band_names=['red', 'nir'], frac=0.1)
 >>>
->>> df['response'] = np.random.randint(0, high=4, size=df.shape[0])
->>> df['weights'] = np.random.randn(df.shape[0])
+>>>     df['response'] = np.random.randint(0, high=4, size=df.shape[0])
+>>>     df['weights'] = np.random.randn(df.shape[0])
 >>>
->>> # Fit a classifier
->>> clf = Model(name='lightgbm', use_dask=True, n_jobs=4)
->>> clf.fit(df, x=['red', 'nir'], y='response', sample_weight='weights')
+>>>     # Fit a classifier
+>>>     clf = Model(name='lightgbm', use_dask=True, n_jobs=4)
+>>>     clf.fit(df, x=['red', 'nir'], y='response', sample_weight='weights')
 >>>
->>> # Save the model to file
->>> clf.to_file('lgm.model')
+>>>     # Save the model to file (optional)
+>>>     clf.to_file('lgm.model')
 >>>
+>>>     ds.gw.predict(clf)
+```
+
+```python
 >>> # Load the model from file
 >>> clf.from_file('lgm.model')
 >>>
