@@ -161,7 +161,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>
 >>> # Apply the model to an image
 >>> with gw.open('example.tif') as ds:
->>>     ds.gw.predict(clf)
+>>>     ds.gw.predict(clf.model)
 ```
 
 ---

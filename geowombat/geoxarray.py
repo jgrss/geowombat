@@ -488,7 +488,7 @@ class GeoWombatAccessor(object):
         Predicts an image using a pre-fit model
 
         Args:
-            clf (object): A classifier `geowombat.model.Model` instance.
+            clf (object): A fitted classifier `geowombat.model.Model` instance with a `predict` method.
             outname (Optional[str]): An outname file name for the predictions.
             io_chunks (Optional[tuple]): The chunk size for I/O.
             x_chunks (Optional[tuple]): The chunk size for the X predictors.
@@ -518,7 +518,7 @@ class GeoWombatAccessor(object):
             X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).fillna(nodata).data
 
             # Apply the predictions
-            predictions = clf.model.predict(X).reshape(n_rows, n_cols).rechunk(io_chunks)
+            predictions = clf.predict(X).reshape(n_rows, n_cols).rechunk(io_chunks)
 
             if return_as == 'dataset':
 
