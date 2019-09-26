@@ -63,6 +63,25 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     print(ds)    # `ds` is an `Xarray.Dataset`
 ```
 
+##### Slice an array using a `Rasterio.window.Window`
+
+```python
+>>> # Open a list of images at a window slice
+>>> from rasterio.windows import Window
+>>> w = Window(row_off=0, col_off=0, height=100, width=100)
+>>>
+>>> # Stack two images, opening band 3
+>>> with gw.open(['image1.tif', 'image2.tif'],    # <-- list of images to stack
+>>>     time_names=['date1', 'date2'],            # <-- names to give the output time dimension   
+>>>     band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension  
+>>>     num_workers=8,                            # <-- dask workers
+>>>     indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
+>>>     window=w
+>>>     out_dtype='float32') as ds:
+>>>
+>>>     print(ds)
+```
+
 ##### Extract values for every pixel intersecting point geometry (point.shp)
 
 ```python

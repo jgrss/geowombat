@@ -1,12 +1,14 @@
 from contextlib import contextmanager
 
 from . import geoxarray
-from .errors import logger
+from . import conversion
 from . import helpers
+from .errors import logger
+from .io import read
 
 import rasterio as rio
+from rasterio.windows import Window
 import xarray as xr
-import dask.array as da
 
 
 IO_DICT = dict(rasterio=['.tif', '.img'],
@@ -19,6 +21,7 @@ def open(filename,
          xarray_return='array',
          band_names=None,
          dates=None,
+         num_workers=1,
          **kwargs):
 
     """
@@ -30,7 +33,33 @@ def open(filename,
         xarray_return (Optional[str]): When `use`='xarray', return `Xarray.DataArray` or `Xarray.Dataset`.
         band_names (Optional[array-like]): A list of band names if `xarray_return`='dataset'. Default is None.
         dates (Optional[array-like]): A list of dates if `filename`=`list` and `xarray_return`='dataset'. Default is None.
+        num_workers (Optional[int]): The number of parallel workers.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
+
+    Examples:
+        >>> import geowombat as gw
+        >>>
+        >>> # Open an image
+        >>> with gw.open('image.tif') as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Open a list of images
+        >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Open a list of images at a window slice
+        >>> from rasterio.windows import Window
+        >>> w = Window(row_off=0, col_off=0, height=100, width=100)
+        >>>
+        >>> # Stack two images, opening band 3
+        >>> with gw.open(['image1.tif', 'image2.tif'],
+        >>>     band_names=['date1', 'date2'],
+        >>>     num_workers=8,
+        >>>     indexes=3,
+        >>>     window=w
+        >>>     out_dtype='float32') as ds:
+        >>>
+        >>>     print(ds)
     """
 
     if use not in ['xarray', 'rasterio']:
@@ -42,43 +71,51 @@ def open(filename,
     if 'chunks' not in kwargs:
         kwargs['chunks'] = (1, 512, 512)
 
-    if isinstance(filename, list):
-
-        darray = [xr.open_rasterio(fn, **kwargs) for fn in filename]
-
-        # The Dataset variable 'bands' has 4 named dimensions
-        #   --time, component, y, x
-        yield helpers.xarray_to_xdataset(da.stack(darray),
-                                         band_names,
-                                         dates,
-                                         ycoords=darray[0].y,
-                                         xcoords=darray[0].x,
-                                         attrs=darray[0].attrs)
-
+    if 'window' in kwargs and isinstance(kwargs['window'], Window):
+        yield read(filename, band_names=band_names, num_workers=num_workers, **kwargs)
     else:
 
-        file_names = helpers.get_file_extension(filename)
+        if isinstance(filename, list):
 
-        if file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']:
-            logger.exception('  The file format is not recognized.')
+            if xarray_return == 'array':
+                yield xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='band')
+            else:
 
-        if file_names.f_ext.lower() in IO_DICT['rasterio']:
+                darray = xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='band')
 
-            if use == 'xarray':
+                # The Dataset variable 'bands' has 4 named dimensions
+                #   --time, component, y, x
+                yield conversion.xarray_to_xdataset(darray,
+                                                    band_names,
+                                                    dates,
+                                                    ycoords=darray.y,
+                                                    xcoords=darray.x,
+                                                    attrs=darray.attrs)
 
-                with xr.open_rasterio(filename, **kwargs) as src:
+        else:
 
-                    if xarray_return == 'dataset':
-                        yield helpers.xarray_to_xdataset(src, band_names, dates)
-                    else:
+            file_names = helpers.get_file_extension(filename)
+
+            if file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']:
+                logger.exception('  The file format is not recognized.')
+
+            if file_names.f_ext.lower() in IO_DICT['rasterio']:
+
+                if use == 'xarray':
+
+                    with xr.open_rasterio(filename, **kwargs) as src:
+
+                        if xarray_return == 'dataset':
+                            yield conversion.xarray_to_xdataset(src, band_names, dates)
+                        else:
+                            yield src
+
+                else:
+
+                    with rio.open(filename, **kwargs) as src:
                         yield src
 
             else:
 
-                with rio.open(filename, **kwargs) as src:
+                with xr.open_dataset(filename, **kwargs) as src:
                     yield src
-
-        else:
-
-            with xr.open_dataset(filename, **kwargs) as src:
-                yield src
