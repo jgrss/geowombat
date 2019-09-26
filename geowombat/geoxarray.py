@@ -3,10 +3,10 @@ import time
 import ctypes
 from collections import namedtuple
 import multiprocessing as multi
-import concurrent.futures
+# import concurrent.futures
 
-from . import helpers
 from .errors import logger
+from .windows import get_window_offsets
 
 import numpy as np
 import pandas as pd
@@ -15,7 +15,6 @@ import xarray as xr
 import dask.array as da
 from dask.distributed import Client, LocalCluster
 import rasterio as rio
-from rasterio.windows import Window
 from rasterio import features
 from affine import Affine
 import joblib
@@ -112,8 +111,8 @@ def _xarray_writer(ds_data,
         dtype = ds_data.dtype
 
     # Setup the windows
-    windows = helpers.setup_windows(n_rows, n_cols, row_chunks, col_chunks)
-    # windows = helpers.setup_windows(n_rows, n_cols, row_chunks, col_chunks, return_as='dict')
+    windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks)
+    # windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='dict')
 
     if n_bands > 1:
         indexes = list(range(1, n_bands + 1))

@@ -57,13 +57,13 @@ python3 install --user git+https://github.com/jgrss/geowombat
 ```python
 >>> # Open a 3-band image with blue, green, and red wavelengths
 >>> with gw.open('example.tif',
->>>              xarray_return='dataset', 
+>>>              return_as='dataset', 
 >>>              band_names=['blue', 'green', 'red']) as ds:
 >>>
 >>>     print(ds)    # `ds` is an `Xarray.Dataset`
 ```
 
-##### Slice an array using a `Rasterio.window.Window`
+##### Slice a raster using a `Rasterio.window.Window`
 
 ```python
 >>> # Open a list of images at a window slice
@@ -71,16 +71,32 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>> w = Window(row_off=0, col_off=0, height=100, width=100)
 >>>
 >>> # Stack two images, opening band 3
->>> with gw.open(['image1.tif', 'image2.tif'],    # <-- list of images to stack
->>>     time_names=['date1', 'date2'],            # <-- names to give the output time dimension   
->>>     band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension  
->>>     num_workers=8,                            # <-- dask workers
->>>     indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
->>>     window=w
->>>     out_dtype='float32') as ds:
+>>> with gw.open(['image1.tif', 'image2.tif'],             # <-- list of images to stack
+>>>              time_names=['date1', 'date2'],            # <-- names to give the output time dimension   
+>>>              band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension  
+>>>              num_workers=8,                            # <-- dask workers
+>>>              indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
+>>>              window=w,
+>>>              out_dtype='float32') as ds:
 >>>
 >>>     print(ds)
 ```
+
+##### ... or slice a raster using a bounding box
+
+```python
+>>> bounds = (left, bottom, right, top)
+>>>
+>>> # Stack two images, opening band 3
+>>> with gw.open(['image1.tif', 'image2.tif'],             # <-- list of images to stack
+>>>              time_names=['date1', 'date2'],            # <-- names to give the output time dimension   
+>>>              band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension
+>>>              bounds=bounds,                            # <-- provide a bounding box to subset to 
+>>>              num_workers=8,                            # <-- dask workers
+>>>              indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
+>>>              out_dtype='float32') as ds:
+>>>
+>>>     print(ds)
 
 ##### Extract values for every pixel intersecting point geometry (point.shp)
 

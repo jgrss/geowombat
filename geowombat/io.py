@@ -1,4 +1,5 @@
 from .errors import logger
+from .windows import from_bounds
 
 import numpy as np
 import xarray as xr
@@ -82,7 +83,12 @@ def read_list(file_list, **kwargs):
     return [read_delayed(fn, **kwargs) for fn in file_list]
 
 
-def read(filename, band_names=None, time_names=None, num_workers=1, **kwargs):
+def read(filename,
+         band_names=None,
+         time_names=None,
+         bounds=None,
+         num_workers=1,
+         **kwargs):
 
     """
     Reads a window slice in-memory
@@ -91,6 +97,8 @@ def read(filename, band_names=None, time_names=None, num_workers=1, **kwargs):
         filename (str or list): A file name or list of file names to open read.
         band_names (Optional[list]): A list of names to give the output band dimension.
         time_names (Optional[list]): A list of names to give the time dimension.
+        bounds (Optional[1d array-like]): A bounding box to subset to, given as
+            [minx, miny, maxx, maxy] or [left, bottom, right, top]. Default is None.
         num_workers (Optional[int]): The number of parallel `dask` workers.
         kwargs (Optional[dict]): Keyword arguments to pass to `Rasterio`.
 
@@ -98,8 +106,12 @@ def read(filename, band_names=None, time_names=None, num_workers=1, **kwargs):
         Stacked data at the window slice (Xarray DataArray)
     """
 
+    # Cannot pass 'chunks' to `rasterio`
     if 'chunks' in kwargs:
         del kwargs['chunks']
+
+    if bounds and ('window' not in kwargs):
+        kwargs['window'] = from_bounds(*bounds)
 
     if isinstance(filename, str):
 
