@@ -31,18 +31,32 @@ def n_rows_cols(pixel_index, block_size, rows_cols):
     return block_size if (pixel_index + block_size) < rows_cols else rows_cols - pixel_index
 
 
-def setup_windows(n_rows, n_cols, row_chunks, col_chunks):
+def setup_windows(n_rows, n_cols, row_chunks, col_chunks, return_as='list'):
 
-    window_list = list()
+    if return_as == 'list':
+        window_info = list()
+    else:
+        window_info = dict()
 
-    for i in range(0, n_rows, row_chunks):
+    i = 0
 
-        height = n_rows_cols(i, row_chunks, n_rows)
+    for row_off in range(0, n_rows, row_chunks):
 
-        for j in range(0, n_cols, col_chunks):
+        height = n_rows_cols(row_off, row_chunks, n_rows)
 
-            width = n_rows_cols(j, col_chunks, n_cols)
+        j = 0
 
-            window_list.append(Window(col_off=j, row_off=i, width=width, height=height))
+        for col_off in range(0, n_cols, col_chunks):
 
-    return window_list
+            width = n_rows_cols(col_off, col_chunks, n_cols)
+
+            if return_as == 'list':
+                window_info.append(Window(col_off=col_off, row_off=row_off, width=width, height=height))
+            else:
+                window_info['{:d}{:d}'.format(i, j)] = Window(col_off=col_off, row_off=row_off, width=width, height=height)
+
+            j += 1
+
+        i += 1
+
+    return window_info

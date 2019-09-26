@@ -15,6 +15,7 @@ import xarray as xr
 import dask.array as da
 from dask.distributed import Client, LocalCluster
 import rasterio as rio
+from rasterio.windows import Window
 from rasterio import features
 from affine import Affine
 import joblib
@@ -40,7 +41,7 @@ shapely.speedups.enable()
 
 def _window_worker(w):
     """Helper to return window slice"""
-    time.sleep(0.001)
+    # time.sleep(0.001)
     return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
 
 
@@ -112,6 +113,12 @@ def _xarray_writer(ds_data,
 
     # Setup the windows
     windows = helpers.setup_windows(n_rows, n_cols, row_chunks, col_chunks)
+    # windows = helpers.setup_windows(n_rows, n_cols, row_chunks, col_chunks, return_as='dict')
+
+    if n_bands > 1:
+        indexes = list(range(1, n_bands + 1))
+
+    outd = np.array([0], dtype='uint8')[None, None]
 
     if verbose > 0:
         print('Creating and writing to the file ...')
@@ -132,6 +139,35 @@ def _xarray_writer(ds_data,
                       driver=driver,
                       sharing=False,
                       **kwargs) as dst:
+
+            # def write_func(block, block_id=None):
+            #
+            #     # Current block upper left indices
+            #     if len(block_id) == 2:
+            #         i, j = block_id
+            #     else:
+            #         i, j = block_id[1:]
+            #
+            #     # Current block window
+            #     w = windows['{:d}{:d}'.format(i, j)]
+            #
+            #     if n_bands == 1:
+            #
+            #         dst.write(np.squeeze(block),
+            #                   window=w,
+            #                   indexes=1)
+            #
+            #     else:
+            #
+            #         dst.write(block,
+            #                   window=w,
+            #                   indexes=indexes)
+            #
+            #     return outd
+            #
+            # ds_data.data.map_blocks(write_func,
+            #                         dtype=ds_data.dtype,
+            #                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
 
             if n_jobs == 1:
 
@@ -167,9 +203,9 @@ def _xarray_writer(ds_data,
                     # for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
 
                         # Prepend the band position index to the window slice
-                        if len(data_shape) == 2:
+                        if n_bands == 1:
 
-                            window_slice_ = window_slice
+                            window_slice_ = tuple([slice(0, 1)] + list(window_slice))
                             indexes = 1
 
                         else:
