@@ -84,6 +84,20 @@ def read_list(file_list, **kwargs):
 
 def read(filename, band_names=None, time_names=None, num_workers=1, **kwargs):
 
+    """
+    Reads a window slice in-memory
+
+    Args:
+        filename (str or list): A file name or list of file names to open read.
+        band_names (Optional[list]): A list of names to give the output band dimension.
+        time_names (Optional[list]): A list of names to give the time dimension.
+        num_workers (Optional[int]): The number of parallel `dask` workers.
+        kwargs (Optional[dict]): Keyword arguments to pass to `Rasterio`.
+
+    Returns:
+        Stacked data at the window slice (Xarray DataArray)
+    """
+
     if 'chunks' in kwargs:
         del kwargs['chunks']
 
