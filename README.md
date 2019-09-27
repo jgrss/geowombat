@@ -97,6 +97,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              out_dtype='float32') as ds:
 >>>
 >>>     print(ds)
+```
 
 ##### Extract values for every pixel intersecting point geometry (point.shp)
 
@@ -177,17 +178,17 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>
 >>>     df = ds.gw.extract('poly.gpkg', bands=3, band_names=['red', 'nir'], frac=0.1)
 >>>
->>>     df['response'] = np.random.randint(0, high=4, size=df.shape[0])
+>>>     df['y'] = np.random.randint(0, high=4, size=df.shape[0])
 >>>     df['weights'] = np.random.randn(df.shape[0])
 >>>
 >>>     # Fit a classifier
 >>>     clf = Model(name='lightgbm', backend='dask', n_jobs=4)
->>>     clf.fit(df, x=['red', 'nir'], y='response', sample_weight='weights')
+>>>     clf.fit(df, x=['red', 'nir'], y='y', sample_weight='weights')
 >>>
 >>>     # Save the model to file (optional)
 >>>     clf.to_file('lgm.model')
 >>>
->>>     ds.gw.predict(clf.model)
+>>>     pred = ds.gw.predict(clf.model)
 ```
 
 ```python
@@ -196,7 +197,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>
 >>> # Apply the model to an image
 >>> with gw.open('example.tif') as ds:
->>>     ds.gw.predict(clf.model)
+>>>     pred = ds.gw.predict(clf.model)
 ```
 
 ---
