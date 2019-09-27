@@ -4,6 +4,16 @@ from collections import namedtuple
 
 def get_file_extension(filename):
 
+    """
+    Gets file and directory name information
+
+    Args:
+        filename (str): The file name.
+
+    Returns:
+        Name information (namedtuple)
+    """
+
     FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
 
     d_name, f_name = os.path.splitext(filename)

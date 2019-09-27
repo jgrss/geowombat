@@ -6,6 +6,7 @@ import multiprocessing as multi
 # import concurrent.futures
 
 from .errors import logger
+from .chunks import Chunks
 from .windows import get_window_offsets
 from .dask_ import Cluster
 
@@ -231,7 +232,7 @@ def _xarray_writer(ds_data,
 
 
 @xr.register_dataset_accessor('gw')
-class GeoWombatAccessor(object):
+class GeoWombatAccessor(Chunks):
 
     def __init__(self, xarray_obj):
 
@@ -424,7 +425,7 @@ class GeoWombatAccessor(object):
 
 
 @xr.register_dataarray_accessor('gw')
-class GeoWombatAccessor(object):
+class GeoWombatAccessor(Chunks):
 
     """
     Xarray IO class
@@ -553,7 +554,7 @@ class GeoWombatAccessor(object):
             logger.info('  Predicting and saving to {} ...'.format(outname))
 
         if isinstance(chunksize, str) and chunksize == 'same':
-            chunksize = self._obj.data.chunksize[1:]
+            chunksize = self.check_chunksize(self._obj.data.chunksize, output='3d')
         else:
 
             if not isinstance(chunksize, tuple):
@@ -565,8 +566,8 @@ class GeoWombatAccessor(object):
 
         if backend == 'dask':
 
-            cluster = Cluster(n_workers=n_jobs,
-                              threads_per_worker=1,
+            cluster = Cluster(n_workers=1,
+                              threads_per_worker=n_jobs,
                               scheduler_port=0,
                               processes=False)
 
@@ -584,13 +585,14 @@ class GeoWombatAccessor(object):
                 X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).data
 
             # Apply the predictions
-            predictions = clf.predict(X).reshape(n_rows, n_cols).rechunk(chunksize).astype(dtype)
+            predictions = clf.predict(X).reshape(1, n_rows, n_cols).rechunk(chunksize).astype(dtype)
 
             if return_as == 'dataset':
 
                 # Store the predictions as an `Xarray` `Dataset`
-                predictions = xr.Dataset({'pred': (['y', 'x'], predictions)},
-                                         coords={'y': ('y', self._obj.y),
+                predictions = xr.Dataset({'pred': (['band', 'y', 'x'], predictions)},
+                                         coords={'band': [1],
+                                                 'y': ('y', self._obj.y),
                                                  'x': ('x', self._obj.x)},
                                          attrs=self._obj.attrs)
 
@@ -598,8 +600,9 @@ class GeoWombatAccessor(object):
 
                 # Store the predictions as an `Xarray` `DataArray`
                 predictions = xr.DataArray(data=predictions,
-                                           dims=('y', 'x'),
-                                           coords={'y': ('y', self._obj.y),
+                                           dims=('band', 'y', 'x'),
+                                           coords={'band': [1],
+                                                   'y': ('y', self._obj.y),
                                                    'x': ('x', self._obj.x)},
                                            attrs=self._obj.attrs)
 

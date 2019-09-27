@@ -5,11 +5,13 @@ from . import conversion
 from . import helpers
 from .errors import logger
 from .io import read
+from .chunks import Chunks
 
 import rasterio as rio
 from rasterio.windows import Window
 import xarray as xr
 
+ch = Chunks()
 
 IO_DICT = dict(rasterio=['.tif', '.img'],
                xarray=['.nc'])
@@ -75,7 +77,9 @@ def open(filename,
     if return_as not in ['array', 'dataset']:
         logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
 
-    if 'chunks' not in kwargs:
+    if 'chunks' in kwargs:
+        ch.check_chunktype(kwargs['chunks'], output='3d')
+    else:
         kwargs['chunks'] = (1, 512, 512)
 
     if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
@@ -91,11 +95,21 @@ def open(filename,
 
         if isinstance(filename, list):
 
-            if return_as == 'array':
-                yield xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='band')
-            else:
+            darray = xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='time')
 
-                darray = xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='band')
+            if return_as == 'array':
+
+                if band_names:
+                    darray.coords['band'] = band_names
+
+                if time_names:
+                    darray.coords['time'] = time_names
+                else:
+                    darray.coords['time'] = list(range(1, darray.shape[0]+1))
+
+                yield darray
+
+            else:
 
                 # The Dataset variable 'bands' has 4 named dimensions
                 #   --time, component, y, x

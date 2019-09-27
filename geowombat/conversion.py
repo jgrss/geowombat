@@ -1,7 +1,7 @@
 import xarray as xr
 
 
-def xarray_to_xdataset(data_array, band_names, dates, ycoords=None, xcoords=None, attrs=None):
+def xarray_to_xdataset(data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None):
 
     if len(data_array.shape) == 2:
         data_array = data_array.expand_dims('band')
@@ -18,10 +18,10 @@ def xarray_to_xdataset(data_array, band_names, dates, ycoords=None, xcoords=None
         else:
             band_names = list(map(str, range(1, n_bands+1)))
 
-    if dates:
+    if time_names:
 
         return xr.Dataset({'bands': (['date', 'band', 'y', 'x'], data_array)},
-                             coords={'date': dates,
+                             coords={'date': time_names,
                                      'band': band_names,
                                      'y': ('y', ycoords),
                                      'x': ('x', xcoords)},
