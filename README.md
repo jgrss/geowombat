@@ -49,18 +49,26 @@ python3 install --user git+https://github.com/jgrss/geowombat
 
 ```python
 >>> with gw.open('example.tif') as ds:
->>>     print(ds)    # `ds` is an `Xarray.DataArray`
+>>>     print(ds)    # `ds` is a 1xNxN `Xarray.DataArray`
 ```
 
-##### Use `GeoWombat` to open a file as an `Xarray.Dataset`
+##### Open a file as an `Xarray.Dataset`
 
 ```python
 >>> # Open a 3-band image with blue, green, and red wavelengths
 >>> with gw.open('example.tif',
 >>>              return_as='dataset', 
 >>>              band_names=['blue', 'green', 'red']) as ds:
->>>
->>>     print(ds)    # `ds` is an `Xarray.Dataset`
+>>>     print(ds)    # `ds` is a 1xNxN `Xarray.Dataset`
+```
+
+##### Open a list of files as an `Xarray.DataArray`
+
+```python
+>>> with gw.open(['image1.tif', 'image2.tif'],
+>>>              band_names=['blue', 'green', 'red'],
+>>>              time_names=['t1', 't2']) as ds:
+>>>     print(ds)    # `ds` is a 2x3xNxN `Xarray.DataArray`
 ```
 
 ##### Slice a raster using a `Rasterio.window.Window`
@@ -78,7 +86,6 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              indexes=[1, 2, 3],                        # <-- rasterio.open keyword arguments
 >>>              window=w,
 >>>              out_dtype='float32') as ds:
->>>
 >>>     print(ds)
 ```
 
@@ -95,7 +102,6 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              num_workers=8,                            # <-- dask workers
 >>>              indexes=[1, 2, 3],                        # <-- rasterio.open keyword arguments
 >>>              out_dtype='float32') as ds:
->>>
 >>>     print(ds)
 ```
 
