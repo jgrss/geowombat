@@ -80,7 +80,9 @@ def open(filename,
     if 'chunks' in kwargs:
         ch.check_chunktype(kwargs['chunks'], output='3d')
     else:
-        kwargs['chunks'] = (1, 512, 512)
+
+        # GDAL's default chunk size is typically 256
+        kwargs['chunks'] = (1, 256, 256)
 
     if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
 

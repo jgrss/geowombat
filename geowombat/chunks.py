@@ -1,6 +1,10 @@
 class Chunks(object):
 
     @staticmethod
+    def get_chunk_dim(chunksize):
+        return '{:d}d'.format(len(chunksize))
+
+    @staticmethod
     def check_chunktype(chunksize, output='3d'):
 
         chunk_len = len(chunksize)
@@ -25,3 +29,5 @@ class Chunks(object):
                 return (1,) + chunksize
             elif (chunk_len == 3) and (output_len == 2):
                 return chunksize[1:]
+
+        return chunksize

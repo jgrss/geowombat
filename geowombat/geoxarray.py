@@ -437,8 +437,10 @@ class GeoWombatAccessor(Chunks):
 
         if len(self._obj.shape) == 2:
             self.row_chunks, self.col_chunks = self._obj.data.chunksize
-        else:
+        elif len(self._obj.shape) == 3:
             self.band_chunks, self.row_chunks, self.col_chunks = self._obj.data.chunksize
+        elif len(self._obj.shape) == 4:
+            self.time_chunks, self.band_chunks, self.row_chunks, self.col_chunks = self._obj.data.chunksize
 
     def to_raster(self,
                   filename,
@@ -855,7 +857,13 @@ class GeoWombatAccessor(Chunks):
 
         return pd.concat(dataframes, axis=0)
 
-    def extract(self, aoi, bands=None, band_names=None, frac=1.0, **kwargs):
+    def extract(self,
+                aoi,
+                bands=None,
+                time_names=None,
+                band_names=None,
+                frac=1.0,
+                **kwargs):
 
         """
         Extracts data within an area or points of interest. Projections do not
@@ -866,6 +874,7 @@ class GeoWombatAccessor(Chunks):
             bands (Optional[int or 1d array-like]): A band or list of bands to extract.
                 If not given, all bands are used. *Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
+            time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             kwargs (Optional[dict]): Keyword arguments passed to `Dask` compute.
 
@@ -887,23 +896,16 @@ class GeoWombatAccessor(Chunks):
 
         shape_len = len(self._obj.shape)
 
-        bands_type = 'array'
-
         if isinstance(bands, list):
-            bands_idx = np.array(bands, dtype='int64') - 1
+            bands_idx = (np.array(bands, dtype='int64') - 1).tolist()
         elif isinstance(bands, np.ndarray):
-            bands_idx = bands - 1
+            bands_idx = (bands - 1).tolist()
         elif isinstance(bands, int):
-
-            bands_idx = slice(bands, bands+1)
-            bands_type = 'slice'
-
+            bands_idx = [bands]
         else:
 
-            bands_type = 'slice'
-
             if shape_len > 2:
-                bands_idx = slice(0, self._obj.shape[0])
+                bands_idx = slice(0, None)
 
         # Re-project the data to match the image CRS
         df = df.to_crs(self._obj.crs)
@@ -929,11 +931,17 @@ class GeoWombatAccessor(Chunks):
         y = np.int64(np.round(np.abs(top - y) / self._obj.res[0]))
 
         if shape_len == 2:
-            res = self._obj.data.vindex[y, x].compute(**kwargs)
+            vidx = (y, x)
         else:
-            res = self._obj.data.vindex[bands_idx, y, x].compute(**kwargs)
 
-        if shape_len == 2:
+            vidx = (bands_idx, y.tolist(), x.tolist())
+
+            for b in range(0, shape_len-3):
+                vidx = (slice(0, None),) + vidx
+
+        res = self._obj.data.vindex[vidx].compute(**kwargs)
+
+        if len(res.shape) == 1:
 
             if band_names:
                 df[band_names[0]] = res.flatten()
@@ -942,12 +950,40 @@ class GeoWombatAccessor(Chunks):
 
         else:
 
-            if bands_type in ['array', 'slice']:
+            if isinstance(bands_idx, list):
+                enum = bands_idx.tolist()
+            elif isinstance(bands_idx, slice):
 
-                if bands_type == 'array':
-                    enum = bands_idx.tolist()
-                else:
+                if bands_idx.start and bands_idx.stop:
                     enum = list(range(bands_idx.start, bands_idx.stop))
+                else:
+                    enum = list(range(0, self._obj.shape[-3]))
+
+            else:
+                enum = list(range(0, self._obj.shape[-3]))
+
+            if len(res.shape) > 2:
+
+                for t in range(0, self._obj.shape[0]):
+
+                    if time_names:
+                        time_name = time_names[t]
+                    else:
+                        time_name = t + 1
+
+                    for i, band in enumerate(enum):
+
+                        if band_names:
+                            band_name = band_names[i]
+                        else:
+                            band_name = i + 1
+
+                        if band_names:
+                            df['{}_{}'.format(time_name, band_name)] = res[:, t, i].flatten()
+                        else:
+                            df['t{:d}_bd{:d}'.format(time_name, band_name)] = res[:, t, i].flatten()
+
+            else:
 
                 for i, band in enumerate(enum):
 
@@ -955,14 +991,5 @@ class GeoWombatAccessor(Chunks):
                         df[band_names[i]] = res[:, i]
                     else:
                         df['bd{:d}'.format(i+1)] = res[:, i]
-
-            else:
-
-                for band in range(1, self._obj.shape[0]+1):
-
-                    if band_names:
-                        df[band_names[band-1]] = res[:, band-1]
-                    else:
-                        df['bd{:d}'.format(band)] = res[:, band-1]
 
         return df
