@@ -7,13 +7,14 @@ import multiprocessing as multi
 
 from .errors import logger
 from .windows import get_window_offsets
+from .dask_ import Cluster
 
 import numpy as np
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
 import dask.array as da
-from dask.distributed import Client, LocalCluster
+from dask_ml.wrappers import ParallelPostFit
 import rasterio as rio
 from rasterio import features
 from affine import Affine
@@ -509,13 +510,14 @@ class GeoWombatAccessor(object):
     def predict(self,
                 clf,
                 outname=None,
-                io_chunks=(512, 512),
+                chunksize='same',
                 x_chunks=(5000, 1),
                 overwrite=False,
                 return_as='array',
                 n_jobs=1,
+                backend='dask',
                 verbose=0,
-                nodata=0,
+                nodata=None,
                 dtype='uint8',
                 gdal_cache=512,
                 **kwargs):
@@ -526,13 +528,14 @@ class GeoWombatAccessor(object):
         Args:
             clf (object): A fitted classifier `geowombat.model.Model` instance with a `predict` method.
             outname (Optional[str]): An outname file name for the predictions.
-            io_chunks (Optional[tuple]): The chunk size for I/O.
+            chunksize (Optional[str or tuple]): The chunk size for I/O. Default is 'same', or use the input chunk size.
             x_chunks (Optional[tuple]): The chunk size for the X predictors.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             return_as (Optional[str]): Whether to return the predictions as a `DataArray` or `Dataset`.
                 *Only relevant if `outname` is not given.
             nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
+            backend (Optional[str]): The `joblib` backend scheduler.
             verbose (Optional[int]): The verbosity level.
             dtype (Optional[str]): The output data type passed to `Rasterio`.
             gdal_cache (Optional[int]): The GDAL cache (in MB) passed to `Rasterio`.
@@ -543,19 +546,45 @@ class GeoWombatAccessor(object):
             Predictions (Dask array) if `outname` is None, otherwise writes to `outname`.
         """
 
+        if not isinstance(clf, ParallelPostFit):
+            clf = ParallelPostFit(estimator=clf)
+
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))
 
-        with joblib.parallel_backend('dask'):
+        if isinstance(chunksize, str) and chunksize == 'same':
+            chunksize = self._obj.data.chunksize[1:]
+        else:
+
+            if not isinstance(chunksize, tuple):
+                logger.warning('  The chunksize parameter should be a tuple.')
+
+            # TODO: make compatible with multi-layer predictions (e.g., probabilities)
+            if len(chunksize) != 2:
+                logger.warning('  The chunksize should be two-dimensional.')
+
+        if backend == 'dask':
+
+            cluster = Cluster(n_workers=n_jobs,
+                              threads_per_worker=1,
+                              scheduler_port=0,
+                              processes=False)
+
+            cluster.start()
+
+        with joblib.parallel_backend(backend, n_jobs=n_jobs):
 
             n_dims, n_rows, n_cols = self._obj.shape
 
             # Reshape the data for fitting and
             #   return a Dask array
-            X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).fillna(nodata).data
+            if isinstance(nodata, int) or isinstance(nodata, float):
+                X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).fillna(nodata).data
+            else:
+                X = self._obj.stack(z=('y', 'x')).transpose().chunk(x_chunks).data
 
             # Apply the predictions
-            predictions = clf.predict(X).reshape(n_rows, n_cols).rechunk(io_chunks)
+            predictions = clf.predict(X).reshape(n_rows, n_cols).rechunk(chunksize).astype(dtype)
 
             if return_as == 'dataset':
 
@@ -586,8 +615,10 @@ class GeoWombatAccessor(object):
                                          blockysize=io_chunks[1],
                                          **kwargs)
 
-            else:
-                return predictions
+        if backend == 'dask':
+            cluster.stop()
+
+        return predictions
 
     def apply(self, filename, user_func, n_jobs=1, **kwargs):
 
@@ -611,24 +642,20 @@ class GeoWombatAccessor(object):
             >>>     ds.io.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 
-        cluster = LocalCluster(n_workers=n_jobs,
-                               threads_per_worker=1,
-                               scheduler_port=0,
-                               processes=False)
+        cluster = Cluster(n_workers=n_jobs,
+                          threads_per_worker=1,
+                          scheduler_port=0,
+                          processes=False)
 
-        client = Client(cluster)
+        cluster.start()
 
-        with joblib.parallel_backend('dask'):
+        with joblib.parallel_backend('dask', n_jobs=n_jobs):
 
             ds_sub = user_func(self._obj)
             ds_sub.attrs = self._obj.attrs
-            ds_sub.io.to_raster(filename, n_jobs=1, **kwargs)
+            ds_sub.io.to_raster(filename, n_jobs=n_jobs, **kwargs)
 
-        client.close()
-        cluster.close()
-
-        client = None
-        cluster = None
+        cluster.stop()
 
     def subset(self,
                by='coords',

@@ -75,7 +75,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              time_names=['date1', 'date2'],            # <-- names to give the output time dimension   
 >>>              band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension  
 >>>              num_workers=8,                            # <-- dask workers
->>>              indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
+>>>              indexes=[1, 2, 3],                        # <-- rasterio.open keyword arguments
 >>>              window=w,
 >>>              out_dtype='float32') as ds:
 >>>
@@ -93,7 +93,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              band_names=['blue', 'green', 'red'],      # <-- names to give the output band dimension
 >>>              bounds=bounds,                            # <-- provide a bounding box to subset to 
 >>>              num_workers=8,                            # <-- dask workers
->>>              indexes=[1, 2, 3],                        # <-- Rasterio keyword arguments
+>>>              indexes=[1, 2, 3],                        # <-- rasterio.open keyword arguments
 >>>              out_dtype='float32') as ds:
 >>>
 >>>     print(ds)
@@ -181,7 +181,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     df['weights'] = np.random.randn(df.shape[0])
 >>>
 >>>     # Fit a classifier
->>>     clf = Model(name='lightgbm', use_dask=True, n_jobs=4)
+>>>     clf = Model(name='lightgbm', backend='dask', n_jobs=4)
 >>>     clf.fit(df, x=['red', 'nir'], y='response', sample_weight='weights')
 >>>
 >>>     # Save the model to file (optional)

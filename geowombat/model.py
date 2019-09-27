@@ -4,6 +4,7 @@ import ctypes
 import inspect
 
 from .errors import logger
+from .dask_ import Cluster
 
 import numpy as np
 import joblib
@@ -17,7 +18,6 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 import xarray as xr
 
-from dask.distributed import Client, LocalCluster
 from dask_ml.wrappers import ParallelPostFit
 
 try:
@@ -156,21 +156,14 @@ class Model(object):
                  bal_random_forest_kwargs=None,
                  bal_bagging_kwargs=None,
                  verbose=0,
-                 use_dask=True,
+                 backend='dask',
                  n_jobs=-1):
 
         if MKL_LIB:
             __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
 
-        self.use_dask = use_dask
+        self.backend = backend
         self.n_jobs = n_jobs
-
-        self.cluster = LocalCluster(n_workers=1,
-                                    threads_per_worker=self.n_jobs,
-                                    scheduler_port=0,
-                                    processes=False)
-
-        self.client = Client(self.cluster)
 
         self.name = name
         self.lightgbm_kwargs = lightgbm_kwargs
@@ -187,23 +180,23 @@ class Model(object):
 
     @property
     def classes_(self):
-        """Returns the class list from the first estimator"""
-        try:
-            return self.model.estimator.estimators[0][1].classes_
-        except:
-            return self.model.estimators[0][1].classes_
+
+        """
+        Returns the class list from the first estimator
+        """
+
+        if len(self.name_list) == 1:
+            return self.model.estimator.classes_
+        else:
+
+            try:
+                return self.model.estimator.estimators[0][1].classes_
+            except:
+                return self.model.estimators[0][1].classes_
 
     @property
     def class_count(self):
         return self.classes_.shape[0]
-
-    def close_client(self):
-
-        self.client.close()
-        self.cluster.close()
-
-        self.client = None
-        self.cluster = None
 
     def _setup_models(self):
 
@@ -250,14 +243,17 @@ class Model(object):
                                            n_jobs=self.n_jobs,
                                            verbose=0)
 
-        model_dict = {'lightgbm': lgb.LGBMClassifier(**self.lightgbm_kwargs),
-                      'extra trees': ensemble.ExtraTreesClassifier(**self.extra_trees_kwargs),
-                      'random forest': ensemble.RandomForestClassifier(**self.random_forest_kwargs),
-                      'bal random forest': imblearn.BalancedRandomForestClassifier(**self.bal_random_forest_kwargs),
-                      'bal bagging': imblearn.BalancedBaggingClassifier(**self.bal_bagging_kwargs)}
+        lgb_model_ = lgb.LGBMClassifier(**self.lightgbm_kwargs) if LIGHTGBM_INSTALLED else None
+        ext_model_ = ensemble.ExtraTreesClassifier(**self.extra_trees_kwargs)
+        rfr_model_ = ensemble.RandomForestClassifier(**self.random_forest_kwargs)
+        imb_model_ = imblearn.BalancedRandomForestClassifier(**self.bal_random_forest_kwargs) if IMBLEARN_INSTALLED else None
+        bal_model_ = imblearn.BalancedBaggingClassifier(**self.bal_bagging_kwargs) if IMBLEARN_INSTALLED else None
 
-        if isinstance(self.name, str):
-            self.name = [self.name]
+        model_dict = {'lightgbm': lgb_model_,
+                      'extra trees': ext_model_,
+                      'random forest': rfr_model_,
+                      'bal random forest': imb_model_,
+                      'bal bagging': bal_model_}
 
         if not self.name:
 
@@ -267,18 +263,23 @@ class Model(object):
                          'bal random forest',
                          'bal bagging']
 
-        for model_name in self.name:
+        if isinstance(self.name, str):
+            self.name_list = [self.name]
+        else:
+            self.name_list = self.name
+
+        for model_name in self.name_list:
             self.clf_dict[model_name] = model_dict[model_name]
 
-    def _calibrate_classifiers(self,
-                               X,
-                               y,
-                               sample_weight,
-                               X_calibrate,
-                               y_calibrate,
-                               sample_weight_calibrate,
-                               skf_cv,
-                               cv_calibrate):
+    def concat_classifiers(self,
+                           X,
+                           y,
+                           sample_weight,
+                           X_calibrate,
+                           y_calibrate,
+                           sample_weight_calibrate,
+                           skf_cv,
+                           cv_calibrate):
 
         """
         Calibrates a list of classifiers
@@ -338,11 +339,12 @@ class Model(object):
             x=None,
             y=None,
             sample_weight=None,
+            calibrate=True,
             cv_calibrate=True,
             cv_n_splits=3,
             cv_test_size=0.5,
             cv_train_size=0.5,
-            X_calibrate=None,
+            x_calibrate=None,
             y_calibrate=None,
             sample_weight_calibrate=None):
 
@@ -354,50 +356,68 @@ class Model(object):
             x (Optional[str list]): The X variable names.
             y (Optional[str]): The y response name.
             sample_weight (Optional[str]): The sample weight name.
+            calibrate (Optional[bool])
             cv_calibrate (Optional[bool])
             cv_n_splits (Optional[int])
             cv_test_size (Optional[int])
             cv_train_size (Optional[int])
-            X_calibrate (Optional[str])
+            x_calibrate (Optional[str])
             y_calibrate (Optional[str])
             sample_weight_calibrate (Optional[str])
         """
+
+        if not x:
+            logger.exception('  The x column(s) must be given.')
+
+        if not y:
+            logger.exception('  The y column must be given.')
+
+        estimators = None
 
         # Stratification object for calibrated cross-validation
         skf_cv = StratifiedShuffleSplit(n_splits=cv_n_splits,
                                         test_size=cv_test_size,
                                         train_size=cv_train_size)
 
-        if self.use_dask:
+        if self.backend == 'dask':
 
-            with joblib.parallel_backend('dask'):
+            cluster = Cluster(n_workers=self.n_jobs,
+                              threads_per_worker=1,
+                              scheduler_port=0,
+                              processes=False)
 
-                fitted_estimators = self._calibrate_classifiers(data.loc[:, x].values,
-                                                                data.loc[:, y].values.flatten(),
-                                                                sample_weight,
-                                                                X_calibrate,
-                                                                y_calibrate,
-                                                                sample_weight_calibrate,
-                                                                skf_cv,
-                                                                cv_calibrate)
+            cluster.start()
 
-        else:
+        with joblib.parallel_backend(self.backend, n_jobs=self.n_jobs):
 
-            fitted_estimators = self._calibrate_classifiers(data.loc[:, x].values,
-                                                            data.loc[:, y].values.flatten(),
-                                                            sample_weight,
-                                                            X_calibrate,
-                                                            y_calibrate,
-                                                            sample_weight_calibrate,
-                                                            skf_cv,
-                                                            cv_calibrate)
+            if calibrate and (len(self.name_list) > 1):
 
-        if len(fitted_estimators) == 1:
-            model_ = fitted_estimators[0]
-        else:
-            model_ = VotingClassifier(estimators=fitted_estimators, y=y)
+                estimators = self.concat_classifiers(data.loc[:, x].values,
+                                                     data.loc[:, y].values.flatten(),
+                                                     data.loc[:, sample_weight].values.flatten() if sample_weight else None,
+                                                     data.loc[:, x_calibrate].values if x_calibrate else None,
+                                                     data.loc[:, y_calibrate].values.flatten() if y_calibrate else None,
+                                                     data.loc[:, sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
+                                                     skf_cv,
+                                                     cv_calibrate)
+
+            else:
+
+                model_ = self.clf_dict[self.name]
+
+                model_.fit(data.loc[:, x].values,
+                           data.loc[:, y].values.flatten(),
+                           sample_weight=data.loc[:, sample_weight].values.flatten() if sample_weight else None)
+
+        if estimators:
+            model_ = VotingClassifier(estimators=estimators, y=y)
 
         self.model = ParallelPostFit(estimator=model_)
+
+        self.model.classes_ = copy(self.classes_)
+
+        if self.backend == 'dask':
+            cluster.stop()
 
     def to_file(self, filename, overwrite=False):
 

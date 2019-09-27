@@ -122,6 +122,10 @@ def open(filename,
                         if return_as == 'dataset':
                             yield conversion.xarray_to_xdataset(src, band_names, time_names)
                         else:
+
+                            if band_names:
+                                src.coords['band'] = band_names
+
                             yield src
 
                 else:
