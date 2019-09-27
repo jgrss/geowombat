@@ -1,5 +1,7 @@
 import setuptools
 from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Build import cythonize
 
 import numpy as np
 
@@ -17,7 +19,8 @@ with open('README.md') as f:
 with open('LICENSE.txt') as f:
     license_file = f.read()
 
-required_packages = ['matplotlib',
+required_packages = ['cython',
+                     'matplotlib',
                      'GDAL',
                      'pandas',
                      'geopandas',
@@ -37,15 +40,22 @@ def get_packages():
 
 
 def get_package_data():
+
     return {'': ['*.md', '*.txt'],
-            'data': ['*.tif', '*.png']}
+            'data': ['*.tif', '*.png'],
+            'geowombat': ['moving/*.so']}
+
+
+
+def get_extensions():
+
+    return [Extension('*',
+                      sources=['geowombat/moving/_moving.pyx'])]
 
 
 def setup_package():
 
     include_dirs = [np.get_include()]
-
-    # dependency_links = [MPGLUE_LINK],
 
     metadata = dict(name=mappy_name,
                     maintainer=maintainer,
@@ -56,6 +66,7 @@ def setup_package():
                     long_description=long_description,
                     packages=get_packages(),
                     package_data=get_package_data(),
+                    ext_modules=cythonize(get_extensions()),
                     zip_safe=False,
                     download_url=git_url,
                     install_requires=required_packages,

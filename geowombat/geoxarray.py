@@ -9,6 +9,7 @@ from .errors import logger
 from .chunks import Chunks
 from .windows import get_window_offsets
 from .dask_ import Cluster
+from .moving import moving_window
 
 import numpy as np
 import pandas as pd
@@ -993,3 +994,14 @@ class GeoWombatAccessor(Chunks):
                         df['bd{:d}'.format(i+1)] = res[:, i]
 
         return df
+
+    def moving(self, stat='mean', w=3, num_workers=1):
+
+        def move_func(block):
+            return moving_window(np.float64(np.squeeze(block)), stat=stat, w=w)
+
+        return self._obj.data.map_overlap(move_func,
+                                          depth=int(w/2.0),
+                                          trim=True,
+                                          boundary='reflect',
+                                          dtype='float64').compute(num_workers=num_workers)
