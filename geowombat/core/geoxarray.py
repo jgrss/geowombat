@@ -1036,13 +1036,35 @@ class GeoWombatAccessor(Chunks):
 
         return df
 
-    def moving(self, stat='mean', w=3, num_workers=1):
+    def moving(self, stat='mean', w=3):
 
-        def move_func(block):
-            return moving_window(np.float64(np.squeeze(block)), stat=stat, w=w)
+        """
+        Applies a moving window function to the DataArray
 
-        return self._obj.data.map_overlap(move_func,
-                                          depth=int(w/2.0),
-                                          trim=True,
-                                          boundary='reflect',
-                                          dtype='float64').compute(num_workers=num_workers)
+        Args:
+            stat (Optional[str]): The statistic to apply.
+            w (Optional[int]): The moving window size.
+            
+        Returns:
+            DataArray
+        """
+
+        def move_func(data):
+
+            if max(data.shape) < 2:
+                return data
+            else:
+                return moving_window(data, stat=stat, w=w)
+
+        results = self._obj.data.squeeze().astype('float64').map_overlap(move_func,
+                                                                         depth=int(w / 2.0),
+                                                                         trim=True,
+                                                                         boundary='reflect',
+                                                                         dtype='float64').reshape(self._obj.shape)
+
+        return xr.DataArray(data=results,
+                            dims=('band', 'y', 'x'),
+                            coords={'band': self._obj.coords['band'],
+                                    'y': ('y', self._obj.y),
+                                    'x': ('x', self._obj.x)},
+                            attrs=self._obj.attrs)
