@@ -1,3 +1,7 @@
+# https://github.com/pydata/xarray/issues/2560
+import netCDF4
+import h5netcdf
+
 from contextlib import contextmanager
 
 from ..errors import logger
@@ -300,6 +304,9 @@ def open(filename,
                         yield src
 
             else:
+
+                if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
+                    logger.exception('  The chunks should be a dictionary.')
 
                 with xr.open_dataset(filename, **kwargs) as src:
                     yield src

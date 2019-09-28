@@ -33,7 +33,8 @@ required_packages = ['cython',
                      'joblib',
                      'tqdm',
                      'shapely',
-                     'pycrs']
+                     'h5netcdf',
+                     'netCDF4']
 
 
 def get_packages():

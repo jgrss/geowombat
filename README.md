@@ -174,6 +174,17 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>                 compress='lzw')
 ```
 
+##### Use named coordinates for band math
+
+```python
+>>> with gw.open('example.tif') as ds:
+>>>
+>>>     ds.gw.set_sensor('l8')
+>>>
+>>>     evi2 = ds.gw.evi2()             # <-- returns a single-band Dask array
+>>>     ndvi = ds.gw.ndvi().compute()   # <-- returns a single-band NumPy array
+```
+
 ##### Use `GeoWombat` for a machine learning pipeline
 
 ```python

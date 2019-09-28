@@ -1,30 +1,21 @@
 import os
-import time
-import ctypes
 from collections import namedtuple
-import multiprocessing as multi
-# import concurrent.futures
 
-from ..util import Cluster
 from ..errors import logger
 from ..moving import moving_window
+from ..util import Cluster, DataArrayProperties, DatasetProperties
 
-from .util import Chunks, get_geometry_info
-from .windows import get_window_offsets
+from .io import xarray_to_raster
+from .util import Chunks, Converters, DataArrayBandMath, DatasetBandMath
 
 import numpy as np
-import pandas as pd
 import geopandas as gpd
 import xarray as xr
 import dask.array as da
 from dask_ml.wrappers import ParallelPostFit
-import rasterio as rio
-from rasterio import features
 from rasterio.crs import CRS
 from affine import Affine
 import joblib
-from tqdm import tqdm
-import shapely
 from shapely.geometry import Polygon
 
 import matplotlib.pyplot as plt
@@ -35,212 +26,18 @@ try:
 except:
     pass
 
-try:
-    MKL_LIB = ctypes.CDLL('libmkl_rt.so')
-except:
-    MKL_LIB = None
-
-shapely.speedups.enable()
-
-
-def _window_worker(w):
-    """Helper to return window slice"""
-    # time.sleep(0.001)
-    return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
-
-
-def _xarray_writer(ds_data,
-                   filename,
-                   crs,
-                   transform,
-                   driver,
-                   n_jobs,
-                   gdal_cache,
-                   dtype,
-                   row_chunks,
-                   col_chunks,
-                   pool_chunksize,
-                   verbose,
-                   overwrite,
-                   nodata,
-                   tags,
-                   **kwargs):
-
-    if MKL_LIB:
-        __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
-
-    if overwrite:
-
-        if os.path.isfile(filename):
-            os.remove(filename)
-
-    d_name = os.path.dirname(filename)
-
-    if d_name:
-
-        if not os.path.isdir(d_name):
-            os.makedirs(d_name)
-
-    data_shape = ds_data.shape
-
-    if len(data_shape) == 2:
-
-        n_bands = 1
-        n_rows = data_shape[0]
-        n_cols = data_shape[1]
-
-        if not isinstance(row_chunks, int):
-            row_chunks = ds_data.data.chunksize[0]
-
-        if not isinstance(col_chunks, int):
-            col_chunks = ds_data.data.chunksize[1]
-
-    else:
-
-        n_bands = data_shape[0]
-        n_rows = data_shape[1]
-        n_cols = data_shape[2]
-
-        if not isinstance(row_chunks, int):
-            row_chunks = ds_data.data.chunksize[1]
-
-        if not isinstance(col_chunks, int):
-            col_chunks = ds_data.data.chunksize[2]
-
-    if isinstance(dtype, str):
-
-        if ds_data.dtype != dtype:
-            ds_data = ds_data.astype(dtype)
-
-    else:
-        dtype = ds_data.dtype
-
-    # Setup the windows
-    windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks)
-    # windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='dict')
-
-    if n_bands > 1:
-        indexes = list(range(1, n_bands + 1))
-
-    outd = np.array([0], dtype='uint8')[None, None]
-
-    if verbose > 0:
-        print('Creating and writing to the file ...')
-
-    # Rasterio environment context
-    with rio.Env(GDAL_CACHEMAX=gdal_cache):
-
-        # Open the output file for writing
-        with rio.open(filename,
-                      mode='w',
-                      height=n_rows,
-                      width=n_cols,
-                      count=n_bands,
-                      dtype=dtype,
-                      nodata=nodata,
-                      crs=crs,
-                      transform=transform,
-                      driver=driver,
-                      sharing=False,
-                      **kwargs) as dst:
-
-            # def write_func(block, block_id=None):
-            #
-            #     # Current block upper left indices
-            #     if len(block_id) == 2:
-            #         i, j = block_id
-            #     else:
-            #         i, j = block_id[1:]
-            #
-            #     # Current block window
-            #     w = windows['{:d}{:d}'.format(i, j)]
-            #
-            #     if n_bands == 1:
-            #
-            #         dst.write(np.squeeze(block),
-            #                   window=w,
-            #                   indexes=1)
-            #
-            #     else:
-            #
-            #         dst.write(block,
-            #                   window=w,
-            #                   indexes=indexes)
-            #
-            #     return outd
-            #
-            # ds_data.data.map_blocks(write_func,
-            #                         dtype=ds_data.dtype,
-            #                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
-
-            if n_jobs == 1:
-
-                if isinstance(nodata, int) or isinstance(nodata, float):
-                    write_data = ds_data.squeeze().fillna(nodata).load().data
-                else:
-                    write_data = ds_data.squeeze().load().data
-
-                if n_bands == 1:
-                    dst.write(write_data, 1)
-                else:
-                    dst.write(write_data)
-
-                if isinstance(tags, dict):
-
-                    if tags:
-                        dst.update_tags(**tags)
-
-            else:
-
-                # Multiprocessing pool context
-                # This context is I/O bound, so use the default 'loky' scheduler
-                with multi.Pool(processes=n_jobs) as pool:
-
-                    # Iterate over each window
-                    for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
-                                                                    windows,
-                                                                    chunksize=pool_chunksize),
-                                                total=len(windows)):
-
-                # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-
-                    # for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
-
-                        # Prepend the band position index to the window slice
-                        if n_bands == 1:
-
-                            window_slice_ = tuple([slice(0, 1)] + list(window_slice))
-                            indexes = 1
-
-                        else:
-
-                            window_slice_ = tuple([slice(0, n_bands)] + list(window_slice))
-                            indexes = list(range(1, n_bands+1))
-
-                        # Write the chunk to file
-                        if isinstance(nodata, int) or isinstance(nodata, float):
-
-                            dst.write(ds_data[window_slice_].squeeze().fillna(nodata).load().data,
-                                      window=w,
-                                      indexes=indexes)
-
-                        else:
-
-                            dst.write(ds_data[window_slice_].squeeze().load().data,
-                                      window=w,
-                                      indexes=indexes)
-
-    if verbose > 0:
-        print('Finished writing')
-
 
 @xr.register_dataset_accessor('gw')
-class GeoWombatAccessor(Chunks):
+class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
 
     def __init__(self, xarray_obj):
 
         self._obj = xarray_obj
+        self.sensor = None
         self.ax = None
+
+    def set_sensor(self, sensor):
+        self.sensor = sensor
 
     def to_raster(self,
                   filename,
@@ -293,82 +90,22 @@ class GeoWombatAccessor(Chunks):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The Dataset does not have a `transform` attribute.')
 
-        _xarray_writer(self._obj[attribute],
-                       filename,
-                       self._obj.crs,
-                       self._obj.transform,
-                       driver,
-                       n_jobs,
-                       gdal_cache,
-                       dtype,
-                       row_chunks,
-                       col_chunks,
-                       pool_chunksize,
-                       verbose,
-                       overwrite,
-                       nodata,
-                       tags,
-                       **kwargs)
-
-    def evi2(self, mask=False):
-
-        result = (2.5 * ((self._obj['bands'].sel(wavelength='nir') - self._obj['bands'].sel(wavelength='red')) /
-                         (self._obj['bands'].sel(wavelength='nir') + 1.0 + (2.4 * (self._obj['bands'].sel(wavelength='red')))))).fillna(0)
-
-        if mask:
-            result = result.where(self._obj['mask'] < 3)
-
-        result = da.where(result < 0, 0, result)
-        result = da.where(result > 1, 1, result)
-
-        return xr.DataArray(result,
-                            dims=['y', 'x'],
-                            coords={'y': self._obj.y, 'x': self._obj.x})
-
-    def nbr(self, mask=False):
-
-        result = ((self._obj['bands'].sel(wavelength='nir') - self._obj['bands'].sel(wavelength='swir2')) /
-                  (self._obj['bands'].sel(wavelength='nir') + self._obj['bands'].sel(wavelength='swir2'))).fillna(0)
-
-        if mask:
-            result = result.where(self._obj['mask'] < 3)
-
-        result = da.where(result < -1, 0, result)
-        result = da.where(result > 1, 1, result)
-
-        return xr.DataArray(result,
-                            dims=['y', 'x'],
-                            coords={'y': self._obj.y, 'x': self._obj.x})
-
-    def ndvi(self, mask=False):
-
-        result = ((self._obj['bands'].sel(wavelength='nir') - self._obj['bands'].sel(wavelength='red')) /
-                  (self._obj['bands'].sel(wavelength='nir') + self._obj['bands'].sel(wavelength='red'))).fillna(0)
-
-        if mask:
-            result = result.where(self._obj['mask'] < 3)
-
-        result = da.where(result < -1, 0, result)
-        result = da.where(result > 1, 1, result)
-
-        return xr.DataArray(result,
-                            dims=['y', 'x'],
-                            coords={'y': self._obj.y, 'x': self._obj.x})
-
-    def wi(self, mask=False):
-
-        result = da.where((self._obj['bands'].sel(wavelength='swir1') + self._obj['bands'].sel(wavelength='red')) > 0.5, 0,
-                          1.0 - ((self._obj['bands'].sel(wavelength='swir1') + self._obj['bands'].sel(wavelength='red')) / 0.5))
-
-        if mask:
-            result = result.where(self._obj['mask'] < 3)
-
-        result = da.where(result < 0, 0, result)
-        result = da.where(result > 1, 1, result)
-
-        return xr.DataArray(result,
-                            dims=['y', 'x'],
-                            coords={'y': self._obj.y, 'x': self._obj.x})
+        xarray_to_raster(self._obj[attribute],
+                         filename,
+                         self._obj.crs,
+                         self._obj.transform,
+                         driver,
+                         n_jobs,
+                         gdal_cache,
+                         dtype,
+                         row_chunks,
+                         col_chunks,
+                         pool_chunksize,
+                         verbose,
+                         overwrite,
+                         nodata,
+                         tags,
+                         **kwargs)
 
     def show(self, wavelengths=None, mask=False, flip=False, dpi=150, **kwargs):
 
@@ -428,22 +165,14 @@ class GeoWombatAccessor(Chunks):
 
 
 @xr.register_dataarray_accessor('gw')
-class GeoWombatAccessor(Chunks):
+class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperties):
 
     """
     Xarray IO class
     """
 
     def __init__(self, xarray_obj):
-
         self._obj = xarray_obj
-
-        if len(self._obj.shape) == 2:
-            self.row_chunks, self.col_chunks = self._obj.data.chunksize
-        elif len(self._obj.shape) == 3:
-            self.band_chunks, self.row_chunks, self.col_chunks = self._obj.data.chunksize
-        elif len(self._obj.shape) == 4:
-            self.time_chunks, self.band_chunks, self.row_chunks, self.col_chunks = self._obj.data.chunksize
 
     def to_raster(self,
                   filename,
@@ -496,22 +225,22 @@ class GeoWombatAccessor(Chunks):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The DataArray does not have a `transform` attribute.')
 
-        _xarray_writer(self._obj,
-                       filename,
-                       self._obj.crs,
-                       self._obj.transform,
-                       driver,
-                       n_jobs,
-                       gdal_cache,
-                       dtype,
-                       row_chunks,
-                       col_chunks,
-                       pool_chunksize,
-                       verbose,
-                       overwrite,
-                       nodata,
-                       tags,
-                       **kwargs)
+        xarray_to_raster(self._obj,
+                         filename,
+                         self._obj.crs,
+                         self._obj.transform,
+                         driver,
+                         n_jobs,
+                         gdal_cache,
+                         dtype,
+                         row_chunks,
+                         col_chunks,
+                         pool_chunksize,
+                         verbose,
+                         overwrite,
+                         nodata,
+                         tags,
+                         **kwargs)
 
     def predict(self,
                 clf,
@@ -723,7 +452,7 @@ class GeoWombatAccessor(Chunks):
         if chunksize:
             chunksize_ = chunksize
         else:
-            chunksize_ = (self.band_chunks, self.row_chunks, self.col_chunks)
+            chunksize_ = (self.gw.band_chunks, self.gw.row_chunks, self.gw.col_chunks)
 
         ds_sub = self._obj.sel(y=y_idx,
                                x=x_idx,
@@ -781,98 +510,6 @@ class GeoWombatAccessor(Chunks):
                        bounds=bounds,
                        affine=Affine(*self._obj.transform),
                        geometry=geometry)
-
-    def polygons_to_points(self, df, frac=1.0, all_touched=False):
-
-        """
-        Converts polygons to points
-
-        Args:
-            df (GeoDataFrame): The `GeoDataFrame` with geometry to rasterize.
-            frac (Optional[float]): A fractional subset of points to extract in each feature.
-            all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
-
-        Returns:
-            (GeoDataFrame)
-        """
-
-        meta = self._obj.gw.meta
-
-        dataframes = list()
-
-        # TODO: parallel over features
-        for i in range(0, df.shape[0]):
-
-            # Get the current feature's geometry
-            geom = df.iloc[i].geometry
-
-            # Get the feature's bounding extent
-            geom_info = get_geometry_info(geom, self._obj.res[0])
-
-            # "Rasterize" the geometry into a NumPy array
-            feature_array = features.rasterize([geom],
-                                               out_shape=geom_info.shape,
-                                               fill=0,
-                                               out=None,
-                                               transform=geom_info.transform,
-                                               all_touched=all_touched,
-                                               default_value=1,
-                                               dtype='int32')
-
-            # Get the indices of the feature's envelope
-            valid_samples = np.where(feature_array == 1)
-
-            # Convert the indices to map indices
-            y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.maxy)) / self._obj.res[0])
-            x_samples = valid_samples[1] + int(round(abs(geom_info.minx - meta.left)) / self._obj.res[0])
-
-            # Convert the map indices to map coordinates
-            x_coords, y_coords = self.gw.affine * (x_samples, y_samples)
-
-            # y_coords = meta.top - y_samples * self._obj.res[0]
-            # x_coords = meta.left + x_samples * self._obj.res[0]
-
-            if frac < 1:
-
-                rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
-                                            size=int(y_coords.shape[0]*frac),
-                                            replace=False)
-
-                y_coords = y_coords[rand_idx]
-                x_coords = x_coords[rand_idx]
-
-            n_samples = y_coords.shape[0]
-
-            # Combine the coordinates into `Shapely` point geometry
-            if not dataframes:
-
-                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
-                                                       np.arange(0, n_samples)],
-                                            geometry=gpd.points_from_xy(x_coords, y_coords),
-                                            crs=self._obj.crs,
-                                            columns=['poly', 'point'])
-
-                if point_df.empty:
-                    continue
-
-                last_point = point_df.point.max() + 1
-
-            else:
-
-                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
-                                                       np.arange(last_point, last_point + n_samples)],
-                                            geometry=gpd.points_from_xy(x_coords, y_coords),
-                                            crs=self._obj.crs,
-                                            columns=['poly', 'point'])
-
-                if point_df.empty:
-                    continue
-
-                last_point = last_point + point_df.point.max() + 1
-
-            dataframes.append(point_df)
-
-        return pd.concat(dataframes, axis=0)
 
     def extract(self,
                 aoi,
@@ -962,7 +599,7 @@ class GeoWombatAccessor(Chunks):
 
         # Convert polygons to points
         if type(df.iloc[0].geometry) == Polygon:
-            df = self.polygons_to_points(df, frac=frac, all_touched=all_touched)
+            df = self.polygons_to_points(self._obj, df, frac=frac, all_touched=all_touched)
 
         x, y = df.geometry.x.values, df.geometry.y.values
 
@@ -1044,7 +681,7 @@ class GeoWombatAccessor(Chunks):
         Args:
             stat (Optional[str]): The statistic to apply.
             w (Optional[int]): The moving window size.
-            
+
         Returns:
             DataArray
         """

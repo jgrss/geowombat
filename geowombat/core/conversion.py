@@ -1,6 +1,28 @@
 import xarray as xr
 
 
+def dask_to_datarray(xarray_data, dask_data, band_name):
+
+    """
+    Converts a Dask array to an Xarray DataArray
+
+    Args:
+        xarray_data (DataArray)
+        dask_data (Dask Array)
+        band_name (str)
+
+    Returns:
+        DataArray
+    """
+
+    return xr.DataArray(dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1]),
+                        dims=['band', 'y', 'x'],
+                        coords={'band': [band_name],
+                                'y': xarray_data.y,
+                                'x': xarray_data.x},
+                        attrs=xarray_data.attrs)
+
+
 def xarray_to_xdataset(data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None):
 
     if len(data_array.shape) == 2:

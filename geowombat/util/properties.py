@@ -1,53 +1,77 @@
-class GeoProperties(object):
+from collections import namedtuple
+
+
+class DatasetProperties(object):
 
     @property
-    def layers(self):
-        self._get_shape()
-        return self.layers_
+    def wavelengths(self):
+
+        WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
+        WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2')
+
+        return dict(l5=WavelengthsL57(blue='blue',
+                                      green='green',
+                                      red='red',
+                                      nir='nir',
+                                      swir1='swir1',
+                                      swir2='swir2'),
+                    l7=WavelengthsL57(blue='blue',
+                                      green='green',
+                                      red='red',
+                                      nir='nir',
+                                      swir1='swir1',
+                                      swir2='swir2'),
+                    l8=WavelengthsL8(coastal='coastal',
+                                     blue='blue',
+                                     green='green',
+                                     red='red',
+                                     nir='nir',
+                                     swir1='swir1',
+                                     swir2='swir2'))
+
+
+class DataArrayProperties(object):
+
+    @property
+    def ndims(self):
+        return len(self._obj.shape)
+
+    @property
+    def row_chunks(self):
+        return self._obj.data.chunksize[-2]
+
+    @property
+    def col_chunks(self):
+        return self._obj.data.chunksize[-1]
+
+    @property
+    def band_chunks(self):
+
+        if self.ndims > 2:
+            return self._obj.data.chunksize[-3]
+        else:
+            return 1
+
+    @property
+    def time_chunks(self):
+
+        if self.ndims < 3:
+            return self._obj.data.chunksize[-4]
+        else:
+            return 1
+
+    @property
+    def bands(self):
+
+        if self.ndims > 2:
+            return self._obj.shape[-3]
+        else:
+            return 1
 
     @property
     def rows(self):
-        self._get_shape()
-        return self.rows_
+        return self._obj.shape[-2]
 
     @property
-    def columns(self):
-        self._get_shape()
-        return self.cols_
-
-    @property
-    def left(self):
-        return self.src.left
-
-    @property
-    def right(self):
-        return self.src.right
-
-    @property
-    def top(self):
-        return self.src.top
-
-    @property
-    def bottom(self):
-        return self.src.bottom
-
-    @property
-    def extent(self):
-        return [self.left, self.right, self.top, self.bottom]
-
-    @property
-    def crs(self):
-        return self.src.projection
-
-    @property
-    def cell_y(self):
-        return self.src.cellY
-
-    @property
-    def cell_x(self):
-        return self.src.cellX
-
-    @property
-    def no_data(self):
-        return self.no_data_
-        
+    def cols(self):
+        return self._obj.shape[-1]
