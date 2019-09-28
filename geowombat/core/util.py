@@ -4,10 +4,12 @@ import multiprocessing as multi
 
 from ..errors import logger
 from .conversion import dask_to_datarray
+from ..moving import moving_window
 
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+import xarray as xr
 import dask.array as da
 from rasterio import features
 import shapely
@@ -115,6 +117,69 @@ class Chunks(object):
                 return chunksize[1:]
 
         return chunksize
+
+
+class MapProcesses(object):
+
+    @staticmethod
+    def map_moving(data, stat, w, b, y, x, attrs, n_jobs):
+
+        """
+        Applies a moving window function over dask array blocks
+
+        Args:
+            data (dask.array)
+            stat (str)
+            w (int)
+            b (int or str or list)
+            y (1d array-like)
+            x (1d array-like)
+            attrs (dict)
+            n_jobs (int)
+
+        Returns:
+            (DataArray)
+        """
+
+        if n_jobs <= 0:
+
+            logger.warning('  The number of parallel jobs should be a positive integer, so setting n_jobs=1.')
+            n_jobs = 1
+
+        hw = int(w / 2.0)
+
+        def move_func(block_data):
+
+            if max(block_data.shape) <= hw:
+                return data
+            else:
+                return moving_window(block_data, stat=stat, w=w, n_jobs=n_jobs)
+
+        if len(data.shape) == 2:
+            out_shape = (1,) + data.shape
+        else:
+            out_shape = data.shape
+
+        result = data.reshape(out_shape).astype('float64').map_overlap(move_func,
+                                                                       depth=hw,
+                                                                       trim=True,
+                                                                       boundary='reflect',
+                                                                       dtype='float64').reshape(out_shape)
+
+        if isinstance(b, np.ndarray):
+            if isinstance(b.tolist(), str):
+                b = [b.tolist()]
+
+        if not isinstance(b, list):
+            if not isinstance(b, np.ndarray):
+                b = [b]
+
+        return xr.DataArray(data=result,
+                            dims=('band', 'y', 'x'),
+                            coords={'band': b,
+                                    'y': y,
+                                    'x': x},
+                            attrs=attrs)
 
 
 def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):

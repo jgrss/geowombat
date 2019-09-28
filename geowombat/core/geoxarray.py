@@ -2,11 +2,10 @@ import os
 from collections import namedtuple
 
 from ..errors import logger
-from ..moving import moving_window
 from ..util import Cluster, DataArrayProperties, DatasetProperties
 
 from .io import xarray_to_raster
-from .util import Chunks, Converters, DataArrayBandMath, DatasetBandMath
+from .util import Chunks, Converters, DataArrayBandMath, DatasetBandMath, MapProcesses
 
 import numpy as np
 import geopandas as gpd
@@ -28,7 +27,11 @@ except:
 
 
 @xr.register_dataset_accessor('gw')
-class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
+class GeoWombatAccessor(Chunks,
+                        Converters,
+                        DatasetBandMath,
+                        DatasetProperties,
+                        MapProcesses):
 
     def __init__(self, xarray_obj):
 
@@ -41,7 +44,7 @@ class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
 
     def to_raster(self,
                   filename,
-                  attribute='bands',
+                  variable='bands',
                   n_jobs=1,
                   verbose=0,
                   overwrite=False,
@@ -60,7 +63,7 @@ class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
 
         Args:
             filename (str): The output file name to write to.
-            attribute (Optional[str]): The attribute to write.
+            variable (Optional[str]): The variable to write.
             n_jobs (Optional[str]): The number of parallel chunks to write.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
@@ -90,7 +93,7 @@ class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The Dataset does not have a `transform` attribute.')
 
-        xarray_to_raster(self._obj[attribute],
+        xarray_to_raster(self._obj[variable],
                          filename,
                          self._obj.crs,
                          self._obj.transform,
@@ -163,9 +166,36 @@ class GeoWombatAccessor(Chunks, Converters, DatasetBandMath, DatasetProperties):
         plt.tight_layout(pad=0.5)
         plt.show()
 
+    def moving(self, variable='bands', band_coords='band', stat='mean', w=3):
+
+        """
+        Applies a moving window function to the DataArray
+
+        Args:
+            variable (Optional[str]): The variable to compute.
+            band_coords (Optional[str]): The band coordinate name.
+            stat (Optional[str]): The statistic to apply.
+            w (Optional[int]): The moving window size.
+
+        Returns:
+            DataArray
+        """
+
+        return self.map_moving(self._obj[variable].data,
+                               stat,
+                               w,
+                               self._obj.coords[band_coords].values,
+                               self._obj.y.values,
+                               self._obj.x.values,
+                               self._obj.attrs)
+
 
 @xr.register_dataarray_accessor('gw')
-class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperties):
+class GeoWombatAccessor(Chunks,
+                        Converters,
+                        DataArrayBandMath,
+                        DataArrayProperties,
+                        MapProcesses):
 
     """
     Xarray IO class
@@ -343,13 +373,13 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
             if isinstance(outname, str):
 
                 predictions.gw.to_raster(outname,
-                                         attribute='pred',
+                                         variable='pred',
                                          n_jobs=n_jobs,
                                          dtype=dtype,
                                          gdal_cache=gdal_cache,
                                          overwrite=overwrite,
-                                         blockxsize=io_chunks[0],
-                                         blockysize=io_chunks[1],
+                                         blockxsize=chunksize[0],
+                                         blockysize=chunksize[1],
                                          **kwargs)
 
         if backend == 'dask':
@@ -594,6 +624,11 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
 
         if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
 
+            if isinstance(mask, gpd.GeoDataFrame):
+
+                if CRS.from_dict(mask.crs).to_proj4() != CRS.from_dict(df.crs).to_proj4():
+                    mask = mask.to_crs(df.crs)
+
             if verbose > 0:
                 logger.info('  Clipping geometry ...')
 
@@ -693,12 +728,13 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
 
         return df
 
-    def moving(self, stat='mean', w=3):
+    def moving(self, band_coords='band', stat='mean', w=3):
 
         """
         Applies a moving window function to the DataArray
 
         Args:
+            band_coords (Optional[str]): The band coordinate name.
             stat (Optional[str]): The statistic to apply.
             w (Optional[int]): The moving window size.
 
@@ -706,22 +742,10 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
             DataArray
         """
 
-        def move_func(data):
-
-            if max(data.shape) < 2:
-                return data
-            else:
-                return moving_window(data, stat=stat, w=w)
-
-        results = self._obj.data.squeeze().astype('float64').map_overlap(move_func,
-                                                                         depth=int(w / 2.0),
-                                                                         trim=True,
-                                                                         boundary='reflect',
-                                                                         dtype='float64').reshape(self._obj.shape)
-
-        return xr.DataArray(data=results,
-                            dims=('band', 'y', 'x'),
-                            coords={'band': self._obj.coords['band'],
-                                    'y': ('y', self._obj.y),
-                                    'x': ('x', self._obj.x)},
-                            attrs=self._obj.attrs)
+        return self.map_moving(self._obj.data,
+                               stat,
+                               w,
+                               self._obj.coords[band_coords].values,
+                               self._obj.y.values,
+                               self._obj.x.values,
+                               self._obj.attrs)

@@ -48,11 +48,12 @@ def get_package_data():
             'geowombat': ['moving/*.so']}
 
 
-
 def get_extensions():
 
     return [Extension('*',
-                      sources=['geowombat/moving/_moving.pyx'])]
+                      sources=['geowombat/moving/_moving.pyx'],
+                      extra_compile_args=['-fopenmp'],
+                      extra_link_args=['-fopenmp'])]
 
 
 def setup_package():
