@@ -3,6 +3,34 @@ from collections import namedtuple
 
 from ..errors import logger
 
+from affine import Affine
+
+
+def get_geometry_info(geometry, res):
+
+    """
+    Gets information from a Shapely geometry object
+
+    Args:
+        geometry (object): A `shapely.geometry` object.
+        res (float): The cell resolution for the affine transform.
+
+    Returns:
+        Geometry information (namedtuple)
+    """
+
+    GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape transform')
+
+    minx, miny, maxx, maxy = geometry.bounds
+    out_shape = (int((maxy - miny) / res), int((maxx - minx) / res))
+
+    return GeomInfo(left=minx,
+                    bottom=miny,
+                    right=maxx,
+                    top=maxy,
+                    shape=out_shape,
+                    transform=Affine(res, 0.0, minx, 0.0, -res, maxy))
+
 
 def get_file_extension(filename):
 

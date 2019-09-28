@@ -9,7 +9,7 @@ from ..util import Cluster
 from ..errors import logger
 from ..moving import moving_window
 
-from .util import Chunks
+from .util import Chunks, get_geometry_info
 from .windows import get_window_offsets
 
 import numpy as np
@@ -20,11 +20,12 @@ import dask.array as da
 from dask_ml.wrappers import ParallelPostFit
 import rasterio as rio
 from rasterio import features
+from rasterio.crs import CRS
 from affine import Affine
 import joblib
-from shapely import geometry
 from tqdm import tqdm
 import shapely
+from shapely.geometry import Polygon
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -752,37 +753,50 @@ class GeoWombatAccessor(Chunks):
         return ds_sub
 
     @property
-    def bounds(self):
+    def meta(self):
 
         """
         Returns the `DataArray` bounds
         """
 
-        Bounds = namedtuple('Bounds', 'left right top bottom')
+        Profile = namedtuple('Profile', 'left right top bottom bounds affine geometry')
 
-        bounds = Bounds(left=self._obj.x.min().values,
-                        right=self._obj.x.max().values,
-                        top=self._obj.y.max().values,
-                        bottom=self._obj.y.min().values)
+        left = self._obj.x.min().values
+        right = self._obj.x.max().values
+        top = self._obj.y.max().values
+        bottom = self._obj.y.min().values
 
-        return bounds
+        geometry = Polygon([(left, bottom),
+                            (left, top),
+                            (right, top),
+                            (right, bottom),
+                            (left, bottom)])
 
-    def poly_to_points(self, df, frac=1.0):
+        bounds = (left, bottom, right, top)
+
+        return Profile(left=left,
+                       right=right,
+                       top=top,
+                       bottom=bottom,
+                       bounds=bounds,
+                       affine=Affine(*self._obj.transform),
+                       geometry=geometry)
+
+    def polygons_to_points(self, df, frac=1.0, all_touched=False):
 
         """
         Converts polygons to points
 
         Args:
-            df (GeoDataFrame)
+            df (GeoDataFrame): The `GeoDataFrame` with geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
+            all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
 
         Returns:
             (GeoDataFrame)
         """
 
-        array_bounds = self._obj.gw.bounds
-
-        point_df = None
+        meta = self._obj.gw.meta
 
         dataframes = list()
 
@@ -792,23 +806,16 @@ class GeoWombatAccessor(Chunks):
             # Get the current feature's geometry
             geom = df.iloc[i].geometry
 
-            # Project to the DataArray's CRS
-            # dfs = gpd.GeoDataFrame([0], geometry=[geom], crs=df.crs)
-            # dfs = dfs.to_crs(self._obj.crs)
-            # geom = dfs.iloc[0].geometry
-
             # Get the feature's bounding extent
-            minx, miny, maxx, maxy = geom.bounds
-            out_shape = (int((maxy - miny) / self._obj.res[0]), int((maxx - minx) / self._obj.res[0]))
-            transform = Affine(self._obj.res[0], 0.0, minx, 0.0, -self._obj.res[0], maxy)
+            geom_info = get_geometry_info(geom, self._obj.res[0])
 
             # "Rasterize" the geometry into a NumPy array
             feature_array = features.rasterize([geom],
-                                               out_shape=out_shape,
+                                               out_shape=geom_info.shape,
                                                fill=0,
                                                out=None,
-                                               transform=transform,
-                                               all_touched=False,
+                                               transform=geom_info.transform,
+                                               all_touched=all_touched,
                                                default_value=1,
                                                dtype='int32')
 
@@ -816,12 +823,14 @@ class GeoWombatAccessor(Chunks):
             valid_samples = np.where(feature_array == 1)
 
             # Convert the indices to map indices
-            y_samples = valid_samples[0] + int(round(abs(array_bounds.top - maxy)) / self._obj.res[0])
-            x_samples = valid_samples[1] + int(round(abs(minx - array_bounds.left)) / self._obj.res[0])
+            y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.maxy)) / self._obj.res[0])
+            x_samples = valid_samples[1] + int(round(abs(geom_info.minx - meta.left)) / self._obj.res[0])
 
-            # Convert the indices to map coordinates
-            y_coords = array_bounds.top - y_samples * self._obj.res[0]
-            x_coords = array_bounds.left + x_samples * self._obj.res[0]
+            # Convert the map indices to map coordinates
+            x_coords, y_coords = self.gw.affine * (x_samples, y_samples)
+
+            # y_coords = meta.top - y_samples * self._obj.res[0]
+            # x_coords = meta.left + x_samples * self._obj.res[0]
 
             if frac < 1:
 
@@ -835,13 +844,16 @@ class GeoWombatAccessor(Chunks):
             n_samples = y_coords.shape[0]
 
             # Combine the coordinates into `Shapely` point geometry
-            if not isinstance(point_df, gpd.GeoDataFrame):
+            if not dataframes:
 
                 point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
                                                        np.arange(0, n_samples)],
-                                           geometry=gpd.points_from_xy(x_coords, y_coords),
-                                           crs=self._obj.crs,
-                                           columns=['poly', 'point'])
+                                            geometry=gpd.points_from_xy(x_coords, y_coords),
+                                            crs=self._obj.crs,
+                                            columns=['poly', 'point'])
+
+                if point_df.empty:
+                    continue
 
                 last_point = point_df.point.max() + 1
 
@@ -852,6 +864,9 @@ class GeoWombatAccessor(Chunks):
                                             geometry=gpd.points_from_xy(x_coords, y_coords),
                                             crs=self._obj.crs,
                                             columns=['poly', 'point'])
+
+                if point_df.empty:
+                    continue
 
                 last_point = last_point + point_df.point.max() + 1
 
@@ -865,6 +880,8 @@ class GeoWombatAccessor(Chunks):
                 time_names=None,
                 band_names=None,
                 frac=1.0,
+                all_touched=False,
+                mask=None,
                 **kwargs):
 
         """
@@ -878,23 +895,27 @@ class GeoWombatAccessor(Chunks):
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
+            all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
+            mask (Optional[Shapely Polygon]): A `shapely.geometry.Polygon` mask to subset to.
             kwargs (Optional[dict]): Keyword arguments passed to `Dask` compute.
 
         Returns:
             Extracted data for every data point within or intersecting the geometry (GeoDataFrame)
         """
 
-        if isinstance(aoi, str):
-
-            if not os.path.isfile(aoi):
-                logger.exception('  The AOI file does not exist.')
-
-            df = gpd.read_file(aoi)
-
-        elif isinstance(aoi, gpd.GeoDataFrame):
+        if isinstance(aoi, gpd.GeoDataFrame):
             df = aoi
         else:
-            logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
+
+            if isinstance(aoi, str):
+
+                if not os.path.isfile(aoi):
+                    logger.exception('  The AOI file does not exist.')
+
+                df = gpd.read_file(aoi)
+
+            else:
+                logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
 
         shape_len = len(self._obj.shape)
 
@@ -909,8 +930,27 @@ class GeoWombatAccessor(Chunks):
             if shape_len > 2:
                 bands_idx = slice(0, None)
 
-        # Re-project the data to match the image CRS
-        df = df.to_crs(self._obj.crs)
+        if self._obj.crs != CRS.from_dict(df.crs).to_proj4():
+
+            # Re-project the data to match the image CRS
+            df = df.to_crs(self._obj.crs)
+
+        # Ensure all geometry is valid
+        df = df[df['geometry'].apply(lambda x_: x_ is not None)]
+
+        # Remove data outside of the image bounds
+        df = gpd.overlay(df,
+                         gpd.GeoDataFrame(data=[0],
+                                          geometry=[self._obj.gw.meta.geometry],
+                                          crs=df.crs),
+                         how='intersection')
+
+        if isinstance(mask, Polygon):
+
+            df = df[df.within(mask)]
+
+            if df.empty:
+                logger.exception('  No geometry intersects the user-provided mask.')
 
         # Subset the DataArray
         # minx, miny, maxx, maxy = df.total_bounds
@@ -921,8 +961,8 @@ class GeoWombatAccessor(Chunks):
         #                                  bottom=float(miny)-self._obj.res[0])
 
         # Convert polygons to points
-        if type(df.iloc[0].geometry) == geometry.Polygon:
-            df = self.poly_to_points(df, frac=frac)
+        if type(df.iloc[0].geometry) == Polygon:
+            df = self.polygons_to_points(df, frac=frac, all_touched=all_touched)
 
         x, y = df.geometry.x.values, df.geometry.y.values
 
