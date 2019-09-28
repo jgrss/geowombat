@@ -115,8 +115,20 @@ python3 install --user git+https://github.com/jgrss/geowombat
 ##### Extract values for every pixel within polygon geometry (poly.gpkg)
 
 ```python
+>>> import geopandas as gpd
+>>>
 >>> with gw.open('example.tif') as ds:
->>>     df = ds.gw.extract('poly.gpkg', bands=3, band_names=['red'], frac=0.1)
+>>>
+>>>     df = gpd.read_file('poly.gpkg')
+>>>
+>>>     df = ds.gw.extract(df,                          # <-- pass a file name or a GeoDataFrame
+>>>                        bands=3,                     # <-- only take values for the 3rd band
+>>>                        band_names=['red'],          # <-- supply the name for the output GeoDataFrame
+>>>                        frac=0.1,                    # <-- randomly sample 10% in each polygon feature
+>>>                        mask=df.iloc[:10],           # <-- use a mask to constrain extractions
+>>>                        n_jobs=8,                    # <-- rasterize polygon features in parallel
+>>>                        num_workers=8,               # <-- specify parallel workers for dask point indexing
+>>>                        verbose=1)
 ```
 
 ##### Write to GeoTiff on a `Dask` distributed cluster

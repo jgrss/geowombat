@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+import multiprocessing as multi
 
 from ..errors import logger
 from .conversion import dask_to_datarray
@@ -11,6 +12,7 @@ import dask.array as da
 from rasterio import features
 import shapely
 from affine import Affine
+from tqdm import tqdm
 
 
 shapely.speedups.enable()
@@ -115,10 +117,64 @@ class Chunks(object):
         return chunksize
 
 
+def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):
+
+    # Get the feature's bounding extent
+    geom_info = get_geometry_info(geom, res)
+
+    if min(geom_info.shape) == 0:
+        return gpd.GeoDataFrame([])
+
+    # "Rasterize" the geometry into a NumPy array
+    feature_array = features.rasterize([geom],
+                                       out_shape=geom_info.shape,
+                                       fill=0,
+                                       out=None,
+                                       transform=geom_info.transform,
+                                       all_touched=all_touched,
+                                       default_value=1,
+                                       dtype='int32')
+
+    # Get the indices of the feature's envelope
+    valid_samples = np.where(feature_array == 1)
+
+    # Convert the indices to map indices
+    y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.top)) / res)
+    x_samples = valid_samples[1] + int(round(abs(geom_info.left - meta.left)) / res)
+
+    # Convert the map indices to map coordinates
+    x_coords, y_coords = meta.affine * (x_samples, y_samples)
+
+    # y_coords = meta.top - y_samples * data.res[0]
+    # x_coords = meta.left + x_samples * data.res[0]
+
+    if frac < 1:
+
+        rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
+                                    size=int(y_coords.shape[0] * frac),
+                                    replace=False)
+
+        y_coords = y_coords[rand_idx]
+        x_coords = x_coords[rand_idx]
+
+    n_samples = y_coords.shape[0]
+
+    # Combine the coordinates into `Shapely` point geometry
+    return gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
+                                       np.arange(0, n_samples)],
+                            geometry=gpd.points_from_xy(x_coords, y_coords),
+                            crs=crs,
+                            columns=['poly', 'point'])
+
+
+def _iter_func(a):
+    return a
+
+
 class Converters(object):
 
     @staticmethod
-    def polygons_to_points(data, df, frac=1.0, all_touched=False):
+    def polygons_to_points(data, df, frac=1.0, all_touched=False, n_jobs=1):
 
         """
         Converts polygons to points
@@ -128,6 +184,7 @@ class Converters(object):
             df (GeoDataFrame): The `GeoDataFrame` with geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
             all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
+            n_jobs (Optional[int]): The number of features to rasterize in parallel.
 
         Returns:
             (GeoDataFrame)
@@ -137,79 +194,24 @@ class Converters(object):
 
         dataframes = list()
 
-        # TODO: parallel over features
-        for i in range(0, df.shape[0]):
+        with multi.Pool(processes=n_jobs) as pool:
 
-            # Get the current feature's geometry
-            geom = df.iloc[i].geometry
+            for i in tqdm(pool.imap(_iter_func, range(0, df.shape[0])), total=df.shape[0]):
 
-            # Get the feature's bounding extent
-            geom_info = get_geometry_info(geom, data.res[0])
+                # Get the current feature's geometry
+                geom = df.iloc[i].geometry
 
-            # "Rasterize" the geometry into a NumPy array
-            feature_array = features.rasterize([geom],
-                                               out_shape=geom_info.shape,
-                                               fill=0,
-                                               out=None,
-                                               transform=geom_info.transform,
-                                               all_touched=all_touched,
-                                               default_value=1,
-                                               dtype='int32')
+                point_df = rasterize_geometry(i, geom, data.crs, data.res[0], all_touched, meta, frac)
 
-            # Get the indices of the feature's envelope
-            valid_samples = np.where(feature_array == 1)
+                if not point_df.empty:
+                    dataframes.append(point_df)
 
-            # Convert the indices to map indices
-            y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.top)) / data.res[0])
-            x_samples = valid_samples[1] + int(round(abs(geom_info.left - meta.left)) / data.res[0])
+        dataframes = pd.concat(dataframes, axis=0)
 
-            # Convert the map indices to map coordinates
-            x_coords, y_coords = data.gw.meta.affine * (x_samples, y_samples)
+        # Make the points unique
+        dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
 
-            # y_coords = meta.top - y_samples * data.res[0]
-            # x_coords = meta.left + x_samples * data.res[0]
-
-            if frac < 1:
-
-                rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
-                                            size=int(y_coords.shape[0]*frac),
-                                            replace=False)
-
-                y_coords = y_coords[rand_idx]
-                x_coords = x_coords[rand_idx]
-
-            n_samples = y_coords.shape[0]
-
-            # Combine the coordinates into `Shapely` point geometry
-            if not dataframes:
-
-                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
-                                                       np.arange(0, n_samples)],
-                                            geometry=gpd.points_from_xy(x_coords, y_coords),
-                                            crs=data.crs,
-                                            columns=['poly', 'point'])
-
-                if point_df.empty:
-                    continue
-
-                last_point = point_df.point.max() + 1
-
-            else:
-
-                point_df = gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
-                                                       np.arange(last_point, last_point + n_samples)],
-                                            geometry=gpd.points_from_xy(x_coords, y_coords),
-                                            crs=data.crs,
-                                            columns=['poly', 'point'])
-
-                if point_df.empty:
-                    continue
-
-                last_point = last_point + point_df.point.max() + 1
-
-            dataframes.append(point_df)
-
-        return pd.concat(dataframes, axis=0)
+        return dataframes
 
 
 class BandMath(object):

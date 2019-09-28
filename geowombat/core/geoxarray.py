@@ -519,6 +519,8 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
                 frac=1.0,
                 all_touched=False,
                 mask=None,
+                n_jobs=8,
+                verbose=0,
                 **kwargs):
 
         """
@@ -533,7 +535,9 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
-            mask (Optional[Shapely Polygon]): A `shapely.geometry.Polygon` mask to subset to.
+            mask (Optional[GeoDataFrame or Shapely Polygon]): A `shapely.geometry.Polygon` mask to subset to.
+            n_jobs (Optional[int]): The number of features to rasterize in parallel.
+            verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to `Dask` compute.
 
         Returns:
@@ -572,8 +576,14 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
             # Re-project the data to match the image CRS
             df = df.to_crs(self._obj.crs)
 
+        if verbose > 0:
+            logger.info('  Checking geometry validity ...')
+
         # Ensure all geometry is valid
         df = df[df['geometry'].apply(lambda x_: x_ is not None)]
+
+        if verbose > 0:
+            logger.info('  Checking geometry extent ...')
 
         # Remove data outside of the image bounds
         df = gpd.overlay(df,
@@ -582,7 +592,10 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
                                           crs=df.crs),
                          how='intersection')
 
-        if isinstance(mask, Polygon):
+        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
+
+            if verbose > 0:
+                logger.info('  Clipping geometry ...')
 
             df = df[df.within(mask)]
 
@@ -599,7 +612,14 @@ class GeoWombatAccessor(Chunks, Converters, DataArrayBandMath, DataArrayProperti
 
         # Convert polygons to points
         if type(df.iloc[0].geometry) == Polygon:
-            df = self.polygons_to_points(self._obj, df, frac=frac, all_touched=all_touched)
+
+            if verbose > 0:
+                logger.info('  Converting polygons to points ...')
+
+            df = self.polygons_to_points(self._obj, df, frac=frac, all_touched=all_touched, n_jobs=n_jobs)
+
+        if verbose > 0:
+            logger.info('  Extracting data ...')
 
         x, y = df.geometry.x.values, df.geometry.y.values
 
