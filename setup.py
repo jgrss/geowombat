@@ -32,7 +32,8 @@ required_packages = ['cython',
                      'affine',
                      'joblib',
                      'tqdm',
-                     'shapely']
+                     'shapely',
+                     'pycrs']
 
 
 def get_packages():

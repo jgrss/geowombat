@@ -1,4 +1,4 @@
-from .core import open
+from .core.api import open
 
 from .version import __version__
 

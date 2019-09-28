@@ -1,4 +1,4 @@
-from .helpers import n_rows_cols
+from .util import n_rows_cols
 
 from rasterio.windows import from_bounds, Window
 

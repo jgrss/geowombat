@@ -5,11 +5,12 @@ from collections import namedtuple
 import multiprocessing as multi
 # import concurrent.futures
 
-from .errors import logger
-from .chunks import Chunks
+from ..util import Cluster
+from ..errors import logger
+from ..moving import moving_window
+
+from .util import Chunks
 from .windows import get_window_offsets
-from .dask_ import Cluster
-from .moving import moving_window
 
 import numpy as np
 import pandas as pd

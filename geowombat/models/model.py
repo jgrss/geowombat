@@ -3,8 +3,8 @@ from copy import copy
 import ctypes
 import inspect
 
-from .errors import logger
-from .dask_ import Cluster
+from ..errors import logger
+from ..util import Cluster
 
 import numpy as np
 import joblib
@@ -12,11 +12,11 @@ import six
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn import ensemble
-from sklearn.metrics import classification_report
+# from sklearn.metrics import classification_report
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedShuffleSplit
 
-import xarray as xr
+# import xarray as xr
 
 from dask_ml.wrappers import ParallelPostFit
 
