@@ -15,23 +15,25 @@ to apply geo-functions to satellite imagery.
 `GeoWombat` is designed to provide specialized functionality to `Xarray` and `Dask` data, using `Rasterio` for 
 overhead space- or -airborne imagery I/O.
 
+## Source code
 ---
 
-### Source code
+### Clone
 
 ```
 git clone https://github.com/jgrss/geowombat.git
 ```
 
-### Installation
+### Install the latest development version
 
 ```
 python3 install --user git+https://github.com/jgrss/geowombat
 ```
 
+## Example usage
 ---
 
-### Example usage:
+#### File opening
 
 ```python
 >>> import geowombat as gw
@@ -70,6 +72,8 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>              time_names=['t1', 't2']) as ds:
 >>>     print(ds)    # `ds` is a 2x3xNxN `Xarray.DataArray`
 ```
+
+#### Data extraction
 
 ##### Slice a raster using a `Rasterio.window.Window`
 
@@ -132,6 +136,8 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>                        verbose=1)
 ```
 
+#### File writing
+
 ##### Write to GeoTiff on a `Dask` distributed cluster
 
 ```python
@@ -187,6 +193,8 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>                 compress='lzw')
 ```
 
+#### Band math
+
 ##### Use named coordinates to calculate band math on a NetCDF Dataset
 
 ```python
@@ -197,6 +205,8 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     evi2 = ds.gw.evi2()             # <-- returns a single-band Dask array
 >>>     ndvi = ds.gw.ndvi().compute()   # <-- returns a single-band NumPy array
 ```
+
+#### Machine learning
 
 ##### Use `GeoWombat` for a machine learning pipeline
 
@@ -230,92 +240,7 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>     pred = ds.gw.predict(clf.model)
 ```
 
+## TODO
 ---
-
-### Old GeoNumPy functionality
-
-##### Convert NumPy arrays to GeoArrays
-
-[Rasterio](https://github.com/mapbox/rasterio)
-
-```python
->>> import rasterio
->>>
->>> with rasterio.open('example.tif') as src:
->>>
->>>     array = src.read(1)
->>>
->>>     # Wrap GeoWombat
->>>     garray = gwb.GeoArray(array, src)
-```
-
-[MpGlue](https://github.com/jgrss/mpglue)
-
-```python
->>> import mpglue as gl
->>>
->>> with gl.ropen('example.tif') as src:
->>>
->>>     array = src.read(bands=-1)
->>>
->>>     # Wrap GeoWombat
->>>     garray = gwb.GeoArray(array, src)
-```
-
-GDAL
-
-```python
->>> from osgeo import gdal
->>>
->>> src = gdal.Open('example.tif')
->>>
->>> array = src.GetRasterBand(1).ReadAsArray()
->>>
->>> # Wrap GeoWombat
->>> garray = gwb.GeoArray(array, src)
->>>
->>> src = None
-```
-
-##### GeoArray properties
-
-GeoArrays maintain coordinates
-
-```python
->>> geo_sub = garray.extract(row_start=500, rows=500, col_start=500, cols=200)  
->>>
->>> print(garray.extent)
->>> print(geo_sub.extent)
-```
-
-##### Transformations
-
-Resample array and cell size
-
-```python
->>> array_proj = garray.to_crs(cell_size=200.0, resample='near')
-```
-
-Re-project coordinates
-
-```python
->>> array_proj = garray.to_crs(crs=4326)
-```
-
-##### Pandas-like window methods
-
-5x5 moving average
-
-```python
->>> mean = garray.moving(5).mean()
-```
-
-##### I/O
-
-Write array to geo-referenced file
-
-```python
->>> garray.to_raster('image.tif')
-```
 
 #### See the [notebooks](https://github.com/jgrss/geowombat/tree/master/notebooks) for more detailed examples
