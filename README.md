@@ -174,10 +174,10 @@ python3 install --user git+https://github.com/jgrss/geowombat
 >>>                 compress='lzw')
 ```
 
-##### Use named coordinates for band math
+##### Use named coordinates to calculate band math on a NetCDF Dataset
 
 ```python
->>> with gw.open('example.tif') as ds:
+>>> with gw.open('example.nc', chunks={'wavelength': 1, 'y': 500, 'x': 500}) as ds:
 >>>
 >>>     ds.gw.set_sensor('l8')
 >>>
