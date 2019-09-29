@@ -18,7 +18,7 @@ overhead space- or -airborne imagery I/O.
 ## Documentation
 ---
 
-[Link](https://github.com/jgrss/geowombat/doc/build/html/index.html)
+[Link](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html)
 
 ## TODO
 ---
