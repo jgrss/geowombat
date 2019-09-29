@@ -1,0 +1,31 @@
+.. _attributes:
+
+Accessing raster attributes
+===========================
+
+GeoWombat has additional raster attributes on top of Xarray/Rasterio attributes
+-------------------------------------------------------------------------------
+
+Import GeoWombat
+
+.. ipython:: python
+
+    import geowombat as gw
+    from geowombat.data import rgbn
+
+Access raster attributes using the file opening API (:ref:`io`):
+
+.. ipython:: python
+
+    with gw.open(rgbn) as ds:
+        print(ds.gw.meta)
+        print(ds.gw.ndims)
+        print(ds.gw.bands)
+        print(ds.gw.rows)
+        print(ds.gw.cols)
+        print(ds.gw.left)
+        print(ds.gw.right)
+        print(ds.gw.top)
+        print(ds.gw.bottom)
+        print(ds.gw.bounds)
+        print(ds.gw.geometry)

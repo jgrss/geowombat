@@ -13,7 +13,6 @@ import xarray as xr
 import dask.array as da
 from dask_ml.wrappers import ParallelPostFit
 from rasterio.crs import CRS
-from affine import Affine
 import joblib
 from shapely.geometry import Polygon
 
@@ -510,36 +509,6 @@ class GeoWombatAccessor(Chunks,
         ds_sub.attrs['transform'] = tuple(transform)
 
         return ds_sub
-
-    @property
-    def meta(self):
-
-        """
-        Returns the `DataArray` bounds
-        """
-
-        Profile = namedtuple('Profile', 'left right top bottom bounds affine geometry')
-
-        left = self._obj.x.min().values
-        right = self._obj.x.max().values
-        top = self._obj.y.max().values
-        bottom = self._obj.y.min().values
-
-        geometry = Polygon([(left, bottom),
-                            (left, top),
-                            (right, top),
-                            (right, bottom),
-                            (left, bottom)])
-
-        bounds = (left, bottom, right, top)
-
-        return Profile(left=left,
-                       right=right,
-                       top=top,
-                       bottom=bottom,
-                       bounds=bounds,
-                       affine=Affine(*self._obj.transform),
-                       geometry=geometry)
 
     def extract(self,
                 aoi,

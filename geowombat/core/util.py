@@ -33,7 +33,7 @@ def get_geometry_info(geometry, res):
         Geometry information (namedtuple)
     """
 
-    GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape transform')
+    GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
     minx, miny, maxx, maxy = geometry.bounds
     out_shape = (int((maxy - miny) / res), int((maxx - minx) / res))
@@ -43,7 +43,7 @@ def get_geometry_info(geometry, res):
                     right=maxx,
                     top=maxy,
                     shape=out_shape,
-                    transform=Affine(res, 0.0, minx, 0.0, -res, maxy))
+                    affine=Affine(res, 0.0, minx, 0.0, -res, maxy))
 
 
 def get_file_extension(filename):
@@ -195,7 +195,7 @@ def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):
                                        out_shape=geom_info.shape,
                                        fill=0,
                                        out=None,
-                                       transform=geom_info.transform,
+                                       transform=geom_info.affine,
                                        all_touched=all_touched,
                                        default_value=1,
                                        dtype='int32')

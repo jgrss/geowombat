@@ -1,5 +1,8 @@
 from collections import namedtuple
 
+from affine import Affine
+from shapely.geometry import Polygon
+
 
 class DatasetProperties(object):
 
@@ -75,3 +78,45 @@ class DataArrayProperties(object):
     @property
     def cols(self):
         return self._obj.shape[-1]
+
+    @property
+    def left(self):
+        return float(self._obj.x.min().values)
+
+    @property
+    def right(self):
+        return float(self._obj.x.max().values)
+
+    @property
+    def top(self):
+        return float(self._obj.y.max().values)
+
+    @property
+    def bottom(self):
+        return float(self._obj.y.min().values)
+
+    @property
+    def bounds(self):
+        return self.left, self.bottom, self.right, self.top
+
+    @property
+    def geometry(self):
+
+        return Polygon([(self.left, self.bottom),
+                        (self.left, self.top),
+                        (self.right, self.top),
+                        (self.right, self.bottom),
+                        (self.left, self.bottom)])
+
+    @property
+    def meta(self):
+
+        Meta = namedtuple('Meta', 'left right top bottom bounds affine geometry')
+
+        return Meta(left=self.left,
+                    right=self.right,
+                    top=self.top,
+                    bottom=self.bottom,
+                    bounds=self.bounds,
+                    affine=Affine(*self._obj.transform),
+                    geometry=self.geometry)

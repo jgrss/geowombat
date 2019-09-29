@@ -133,10 +133,8 @@ def read(filename,
 
         data = dask.compute(read_delayed(filename, **kwargs), num_workers=num_workers)
 
-        if not band_names:
-            band_names = np.arange(1, data.shape[0]+1)
-
-        data.coords['band'] = band_names
+        # if not band_names:
+        #     band_names = np.arange(1, data.shape[0]+1)
 
     else:
 

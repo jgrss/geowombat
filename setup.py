@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 
 import numpy as np
 
-__version__ = '0.1.0'
+__version__ = '1.0.0a'
 
 mappy_name = 'GeoWombat'
 maintainer = 'Jordan Graesser'
@@ -28,6 +28,8 @@ required_packages = ['cython',
                      'rasterio',
                      'xarray',
                      'dask',
+                     'dask-ml',
+                     'dask[dataframe]',
                      'distributed',
                      'affine',
                      'joblib',
@@ -44,8 +46,9 @@ def get_packages():
 def get_package_data():
 
     return {'': ['*.md', '*.txt'],
-            'data': ['*.tif', '*.png'],
-            'geowombat': ['moving/*.so']}
+            'data': ['*.png'],
+            'geowombat': ['data/*.tif',
+                          'moving/*.so']}
 
 
 def get_extensions():
