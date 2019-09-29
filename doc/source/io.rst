@@ -3,8 +3,8 @@
 Reading and writing files
 =========================
 
-File opening with GeoWombat
----------------------------
+File opening with GeoWombat uses the :func:`geowombat.open` function to open raster files
+-----------------------------------------------------------------------------------------
 
 Import GeoWombat
 

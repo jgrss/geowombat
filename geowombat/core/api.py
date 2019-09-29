@@ -184,17 +184,12 @@ def open(filename,
 
     Args:
         filename (str or list): The file name or list of files to open.
-        use (Optional[str]): The package to use for file opening backend. Default is 'xarray'.
-            Choices are ['xarray', 'rasterio'].
-        return_as (Optional[str]): When `use`='xarray', return `Xarray.DataArray` or `Xarray.Dataset`.
-        band_names (Optional[1d array-like]): A list of band names if `return_as`='dataset' or
-            `bounds` is given or `window` is given. Default is None.
-        time_names (Optional[1d array-like]): A list of names to give the time dimension if `bounds` is given.
-            Default is None.
-        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
-            Default is None.
-        num_workers (Optional[int]): The number of parallel workers for `dask` if `bounds` is given or
-            `window` is given. Default is 1.
+        use (Optional[str]): The package to use for file opening backend. Default is "xarray". Choices are ["xarray", "rasterio"].
+        return_as (Optional[str]): When 'use'='xarray', return Xarray.DataArray or Xarray.Dataset.
+        band_names (Optional[1d array-like]): A list of band names if `return_as`='dataset' or `bounds` is given or `window` is given. Default is None.
+        time_names (Optional[1d array-like]): A list of names to give the time dimension if `bounds` is given. Default is None.
+        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx]. Default is None.
+        num_workers (Optional[int]): The number of parallel workers for Dask if `bounds` is given or 'window' is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
 
     Examples:

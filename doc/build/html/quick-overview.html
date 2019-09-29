@@ -98,6 +98,10 @@
 <li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
 
             
           
@@ -182,14 +186,14 @@
 
 In [5]: print(data)
 &lt;xarray.DataArray (x: 2, y: 3)&gt;
-array([[-0.18020986, -0.29022941,  0.68514423],
-       [-0.82013256, -0.38026649, -0.51783254]])
+array([[-0.76725812, -0.13829141,  0.56002384],
+       [-0.12522242,  1.03052347,  0.63181435]])
 Coordinates:
   * x        (x) int64 10 20
 Dimensions without coordinates: y
 
 In [6]: print(data.gw)
-&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f66d07e32b0&gt;</pre>
+&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f9c23029588&gt;</pre>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
@@ -216,7 +220,7 @@ In [6]: print(data.gw)
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f66efb44b00&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f9c230aacf8&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -242,7 +246,7 @@ In [6]: print(data.gw)
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Graesser
+        &copy; Copyright 2019, GeoWombat
 
     </p>
   </div>

@@ -1,0 +1,18 @@
+.. currentmodule:: geowombat
+
+#############
+API reference
+#############
+
+Top-level functions
+===================
+
+.. automodule:: geowombat
+   :members:
+
+    open
+
+.. automodule:: geowombat.core.api
+   :members:
+
+    read

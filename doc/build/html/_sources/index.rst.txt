@@ -46,3 +46,15 @@ Documentation
    extraction
    band-math
    machine-learning
+
+**Reference**
+
+* :doc:`api`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Reference
+
+   api
+
