@@ -40,6 +40,31 @@ def xarray_to_raster(ds_data,
                      tags,
                      **kwargs):
 
+    """
+    Writes an Xarray DataArray to a raster file
+
+    Args:
+        ds_data (DataArray)
+        filename (str)
+        crs (object)
+        transform (object)
+        driver (str)
+        n_jobs (int)
+        gdal_cache (int)
+        dtype (float)
+        row_chunks (int)
+        col_chunks (int)
+        pool_chunksize (int)
+        verbose (int)
+        overwrite (bool)
+        nodata (int or float)
+        tags (dict)
+        kwargs (dict)
+
+    Returns:
+        None
+    """
+
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
 

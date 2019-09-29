@@ -7,9 +7,9 @@ def dask_to_datarray(xarray_data, dask_data, band_name):
     Converts a Dask array to an Xarray DataArray
 
     Args:
-        xarray_data (DataArray)
-        dask_data (Dask Array)
-        band_name (str)
+        xarray_data (DataArray): The DataArray with attribute information.
+        dask_data (Dask Array): The Dask array to convert.
+        band_name (str): The band name.
 
     Returns:
         DataArray
@@ -24,6 +24,21 @@ def dask_to_datarray(xarray_data, dask_data, band_name):
 
 
 def xarray_to_xdataset(data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None):
+
+    """
+    Converts an Xarray DataArray to a Xarray Dataset
+
+    Args:
+        data_array (DataArray)
+        band_names (list)
+        time_names (list)
+        ycoords (1d array-like)
+        xcoords (1d array-like)
+        attrs (dict)
+
+    Returns:
+        Dataset
+    """
 
     if len(data_array.shape) == 2:
         data_array = data_array.expand_dims('band')

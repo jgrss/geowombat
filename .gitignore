@@ -22,6 +22,8 @@ __pycache__/
 
 # GeoWombat
 envs/
+doc/*.log
+doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd

@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="open" href="api/geowombat.open.html" />
     <link rel="prev" title="Use GeoWombat for a machine learning pipeline" href="machine-learning.html" /> 
 </head>
 
@@ -96,7 +97,34 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-geowombat">Top-level functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#top-level-functions">Top-level functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat">geowombat Package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat.core.conversion">geowombat.core.conversion Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat.core.geoxarray">geowombat.core.geoxarray Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat.core.io">geowombat.core.io Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat.core.util">geowombat.core.util Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-geowombat.core.windows">geowombat.core.windows Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -165,136 +193,227 @@
             
   <div class="section" id="api-reference">
 <h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="top-level-functions">
+<h2>Top-level functions<a class="headerlink" href="#top-level-functions" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-geowombat">
-<span id="top-level-functions"></span><h2>Top-level functions<a class="headerlink" href="#module-geowombat" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="geowombat.open">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">use='xarray'</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
-<dd><p>Opens a file</p>
-<dl>
-<dt>Args:</dt><dd><p>filename (str or list): The file name or list of files to open.
-use (Optional[str]): The package to use for file opening backend. Default is ‘xarray’.</p>
-<blockquote>
-<div><p>Choices are [‘xarray’, ‘rasterio’].</p>
-</div></blockquote>
-<p>return_as (Optional[str]): When <cite>use`=’xarray’, return `Xarray.DataArray</cite> or <cite>Xarray.Dataset</cite>.
-band_names (Optional[1d array-like]): A list of band names if <a href="#id1"><span class="problematic" id="id2">`</span></a>return_as`=’dataset’ or</p>
-<blockquote>
-<div><p><cite>bounds</cite> is given or <cite>window</cite> is given. Default is None.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>time_names (Optional[1d array-like]): A list of names to give the time dimension if <cite>bounds</cite> is given.</dt><dd><p>Default is None.</p>
-</dd>
-<dt>bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].</dt><dd><p>Default is None.</p>
-</dd>
-<dt>num_workers (Optional[int]): The number of parallel workers for <cite>dask</cite> if <cite>bounds</cite> is given or</dt><dd><p><cite>window</cite> is given. Default is 1.</p>
-</dd>
-</dl>
-<p>kwargs (Optional[dict]): Keyword arguments passed to the file opener.</p>
-</dd>
-<dt>Examples:</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open an image</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images at a window slice</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="k">import</span> <span class="n">Window</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Stack two images, opening band 3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;date1&#39;</span><span class="p">,</span> <span class="s1">&#39;date2&#39;</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">indexes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-</pre></div>
+<span id="geowombat-package"></span><h3>geowombat Package<a class="headerlink" href="#module-geowombat" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="functions">
+<h4>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">open</span></code></a>(filename[, use, return_as, band_names, …])</p></td>
+<td><p>Opens a raster file</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-</dd>
-</dl>
-</dd></dl>
-
-<span class="target" id="module-geowombat.core.api"></span><dl class="function">
-<dt id="geowombat.core.api.open">
-<code class="sig-prename descclassname">geowombat.core.api.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">use='xarray'</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.api.open" title="Permalink to this definition">¶</a></dt>
-<dd><p>Opens a file</p>
-<dl>
-<dt>Args:</dt><dd><p>filename (str or list): The file name or list of files to open.
-use (Optional[str]): The package to use for file opening backend. Default is ‘xarray’.</p>
-<blockquote>
-<div><p>Choices are [‘xarray’, ‘rasterio’].</p>
-</div></blockquote>
-<p>return_as (Optional[str]): When <cite>use`=’xarray’, return `Xarray.DataArray</cite> or <cite>Xarray.Dataset</cite>.
-band_names (Optional[1d array-like]): A list of band names if <a href="#id3"><span class="problematic" id="id4">`</span></a>return_as`=’dataset’ or</p>
-<blockquote>
-<div><p><cite>bounds</cite> is given or <cite>window</cite> is given. Default is None.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>time_names (Optional[1d array-like]): A list of names to give the time dimension if <cite>bounds</cite> is given.</dt><dd><p>Default is None.</p>
-</dd>
-<dt>bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].</dt><dd><p>Default is None.</p>
-</dd>
-<dt>num_workers (Optional[int]): The number of parallel workers for <cite>dask</cite> if <cite>bounds</cite> is given or</dt><dd><p><cite>window</cite> is given. Default is 1.</p>
-</dd>
-</dl>
-<p>kwargs (Optional[dict]): Keyword arguments passed to the file opener.</p>
-</dd>
-<dt>Examples:</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open an image</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images at a window slice</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="k">import</span> <span class="n">Window</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Stack two images, opening band 3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;date1&#39;</span><span class="p">,</span> <span class="s1">&#39;date2&#39;</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">indexes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-</pre></div>
 </div>
-</dd>
+<div class="section" id="module-geowombat.core.conversion">
+<span id="geowombat-core-conversion-module"></span><h3>geowombat.core.conversion Module<a class="headerlink" href="#module-geowombat.core.conversion" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.conversion.dask_to_datarray.html#geowombat.core.conversion.dask_to_datarray" title="geowombat.core.conversion.dask_to_datarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dask_to_datarray</span></code></a>(xarray_data, dask_data, …)</p></td>
+<td><p>Converts a Dask array to an Xarray DataArray</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.conversion.xarray_to_xdataset.html#geowombat.core.conversion.xarray_to_xdataset" title="geowombat.core.conversion.xarray_to_xdataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray_to_xdataset</span></code></a>(data_array, band_names, …)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.core.geoxarray">
+<span id="geowombat-core-geoxarray-module"></span><h3>geowombat.core.geoxarray Module<a class="headerlink" href="#module-geowombat.core.geoxarray" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="classes">
+<h4>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRS</span></code>([initialdata])</p></td>
+<td><p>A geographic or projected coordinate reference system</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chunks</span></code></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cluster</span></code>(**kwargs)</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Converters</span></code></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataArrayBandMath</span></code></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataArrayProperties</span></code></p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><p></p></dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="geowombat.core.api.read">
-<code class="sig-prename descclassname">geowombat.core.api.</code><code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.api.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads a window slice in-memory</p>
-<dl>
-<dt>Args:</dt><dd><p>filename (str or list): A file name or list of file names to open read.
-band_names (Optional[list]): A list of names to give the output band dimension.
-time_names (Optional[list]): A list of names to give the time dimension.
-bounds (Optional[1d array-like]): A bounding box to subset to, given as</p>
-<blockquote>
-<div><p>[minx, miny, maxx, maxy] or [left, bottom, right, top]. Default is None.</p>
-</div></blockquote>
-<p>num_workers (Optional[int]): The number of parallel <cite>dask</cite> workers.
-kwargs (Optional[dict]): Keyword arguments to pass to <cite>Rasterio</cite>.</p>
-</dd>
-<dt>Returns:</dt><dd><p>Stacked data at the window slice (Xarray DataArray)</p>
-</dd>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetBandMath</span></code></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetProperties</span></code></p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><p></p></dd>
 </dl>
-</dd></dl>
-
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor" title="geowombat.core.geoxarray.GeoWombatAccessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoWombatAccessor</span></code></a>(xarray_obj)</p></td>
+<td><p>Xarray IO class</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MapProcesses</span></code></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParallelPostFit</span></code>([estimator, scoring])</p></td>
+<td><p>Meta-estimator for parallel predict and transform.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Polygon</span></code>([shell, holes])</p></td>
+<td><p>A two-dimensional figure bounded by a linear ring</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.core.io">
+<span id="geowombat-core-io-module"></span><h3>geowombat.core.io Module<a class="headerlink" href="#module-geowombat.core.io" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h4>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_window_offsets</span></code>(n_rows, n_cols, …[, …])</p></td>
+<td><p>Gets window offset indices from image dimensions and chunk sizes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.io.xarray_to_raster.html#geowombat.core.io.xarray_to_raster" title="geowombat.core.io.xarray_to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray_to_raster</span></code></a>(ds_data, filename, crs, …)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.core.util">
+<span id="geowombat-core-util-module"></span><h3>geowombat.core.util Module<a class="headerlink" href="#module-geowombat.core.util" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h4>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dask_to_datarray</span></code>(xarray_data, dask_data, …)</p></td>
+<td><p>Converts a Dask array to an Xarray DataArray</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.util.get_file_extension.html#geowombat.core.util.get_file_extension" title="geowombat.core.util.get_file_extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_file_extension</span></code></a>(filename)</p></td>
+<td><p>Gets file and directory name information</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.get_geometry_info.html#geowombat.core.util.get_geometry_info" title="geowombat.core.util.get_geometry_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geometry_info</span></code></a>(geometry, res)</p></td>
+<td><p>Gets information from a Shapely geometry object</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving_window</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.n_rows_cols.html#geowombat.core.util.n_rows_cols" title="geowombat.core.util.n_rows_cols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_rows_cols</span></code></a>(pixel_index, block_size, rows_cols)</p></td>
+<td><p>Adjusts block size for the end of image rows and columns.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code>(typename, field_names, \*[, …])</p></td>
+<td><p>Returns a new subclass of tuple with named fields.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.rasterize_geometry.html#geowombat.core.util.rasterize_geometry" title="geowombat.core.util.rasterize_geometry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rasterize_geometry</span></code></a>(i, geom, crs, res, …)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h4>Classes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Affine</span></code></p></td>
+<td><p>Two dimensional affine transform for 2D linear mapping.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.util.BandMath.html#geowombat.core.util.BandMath" title="geowombat.core.util.BandMath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BandMath</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.Chunks.html#geowombat.core.util.Chunks" title="geowombat.core.util.Chunks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chunks</span></code></a></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.util.Converters.html#geowombat.core.util.Converters" title="geowombat.core.util.Converters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Converters</span></code></a></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.DataArrayBandMath.html#geowombat.core.util.DataArrayBandMath" title="geowombat.core.util.DataArrayBandMath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataArrayBandMath</span></code></a></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.util.DatasetBandMath.html#geowombat.core.util.DatasetBandMath" title="geowombat.core.util.DatasetBandMath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetBandMath</span></code></a></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.util.MapProcesses.html#geowombat.core.util.MapProcesses" title="geowombat.core.util.MapProcesses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MapProcesses</span></code></a></p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tqdm</span></code>([iterable, desc, total, leave, file, …])</p></td>
+<td><p>Decorate an iterable object, returning an iterator which acts exactly like the original iterable, but prints a dynamically updating progressbar every time a value is requested.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.core.windows">
+<span id="geowombat-core-windows-module"></span><h3>geowombat.core.windows Module<a class="headerlink" href="#module-geowombat.core.windows" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h4>Functions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_bounds</span></code>(left, bottom, right, top[, …])</p></td>
+<td><p>Get the window corresponding to the bounding coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.core.windows.get_window_offsets.html#geowombat.core.windows.get_window_offsets" title="geowombat.core.windows.get_window_offsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_window_offsets</span></code></a>(n_rows, n_cols, …[, …])</p></td>
+<td><p>Gets window offset indices from image dimensions and chunk sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_rows_cols</span></code>(pixel_index, block_size, rows_cols)</p></td>
+<td><p>Adjusts block size for the end of image rows and columns.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 
@@ -305,6 +424,8 @@ kwargs (Optional[dict]): Keyword arguments to pass to <cite>Rasterio</cite>.</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api/geowombat.open.html" class="btn btn-neutral float-right" title="open" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="machine-learning.html" class="btn btn-neutral float-left" title="Use GeoWombat for a machine learning pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

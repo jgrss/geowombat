@@ -38,6 +38,8 @@ extensions = ['IPython.sphinxext.ipython_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.inheritance_diagram',
+              'sphinx_automodapi.automodapi',
+              'sphinx.ext.napoleon',
               'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
