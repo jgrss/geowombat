@@ -35,6 +35,7 @@ Documentation
 * :doc:`extraction`
 * :doc:`band-math`
 * :doc:`machine-learning`
+* :doc:`config`
 
 .. toctree::
    :maxdepth: 1
@@ -46,6 +47,7 @@ Documentation
    extraction
    band-math
    machine-learning
+   config
 
 **Reference**
 

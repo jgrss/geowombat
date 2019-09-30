@@ -91,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -173,12 +174,12 @@
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of names to give the time dimension.</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as
 [minx, miny, maxx, maxy] or [left, bottom, right, top]. Default is None.</p></li>
-<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel <cite>dask</cite> workers.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments to pass to <cite>Rasterio</cite>.</p></li>
+<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel <code class="docutils literal notranslate"><span class="pre">dask</span></code> workers.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Stacked data at the window slice (Xarray DataArray)</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>

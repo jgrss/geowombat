@@ -5,6 +5,7 @@ import inspect
 
 from ..errors import logger
 from ..util import Cluster
+from ..core.util import Chunks
 
 import numpy as np
 import joblib
@@ -449,3 +450,133 @@ class Model(object):
                 logger.info('  Loading the model from file ...')
 
         self.model = joblib.load(filename)
+
+
+class Predict(object):
+
+    @staticmethod
+    def predict(data,
+                clf,
+                outname=None,
+                chunksize='same',
+                x_chunks=(5000, 1),
+                overwrite=False,
+                return_as='array',
+                n_jobs=1,
+                backend='dask',
+                verbose=0,
+                nodata=None,
+                dtype='uint8',
+                gdal_cache=512,
+                **kwargs):
+
+        """
+        Predicts an image using a pre-fit model
+
+        Args:
+            data (DataArray): An ``xarray.DataArray`` to extract data from.
+            clf (object): A fitted classifier ``geowombat.model.Model`` instance with a ``predict`` method.
+            outname (Optional[str]): An file name for the predictions.
+            chunksize (Optional[str or tuple]): The chunk size for I/O. Default is 'same', or use the input chunk size.
+            x_chunks (Optional[tuple]): The chunk size for the X predictors (or ``data``).
+            overwrite (Optional[bool]): Whether to overwrite an existing file.
+            return_as (Optional[str]): Whether to return the predictions as a ``xarray.DataArray`` or ``xarray.Dataset``.
+                *Only relevant if ``outname`` is not given.
+            nodata (Optional[int or float]): The 'no data' value in the predictors.
+            n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
+            backend (Optional[str]): The ``joblib`` backend scheduler.
+            verbose (Optional[int]): The verbosity level.
+            dtype (Optional[str]): The output data type passed to ``rasterio.write``.
+            gdal_cache (Optional[int]): The GDAL cache (in MB) passed to ``rasterio.write``.
+            kwargs (Optional[dict]): Additional keyword arguments passed to ``rasterio.write``.
+                *The ``blockxsize`` and ``blockysize`` should be excluded because they are taken from ``chunksize``.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>> from sklearn import ensemble
+            >>>
+            >>> clf = ensemble.RandomForestClassifier()
+            >>> clf.fit(X, y)
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     pred = gw.predict(ds, clf)
+        """
+
+        if not isinstance(clf, ParallelPostFit):
+            clf = ParallelPostFit(estimator=clf)
+
+        if verbose > 0:
+            logger.info('  Predicting and saving to {} ...'.format(outname))
+
+        if isinstance(chunksize, str) and chunksize == 'same':
+            chunksize = Chunks().check_chunksize(data.data.chunksize, output='3d')
+        else:
+
+            if not isinstance(chunksize, tuple):
+                logger.warning('  The chunksize parameter should be a tuple.')
+
+            # TODO: make compatible with multi-layer predictions (e.g., probabilities)
+            if len(chunksize) != 2:
+                logger.warning('  The chunksize should be two-dimensional.')
+
+        if backend == 'dask':
+
+            cluster = Cluster(n_workers=1,
+                              threads_per_worker=n_jobs,
+                              scheduler_port=0,
+                              processes=False)
+
+            cluster.start()
+
+        with joblib.parallel_backend(backend, n_jobs=n_jobs):
+
+            n_dims, n_rows, n_cols = data.shape
+
+            # Reshape the data for fitting and
+            #   return a Dask array
+            if isinstance(nodata, int) or isinstance(nodata, float):
+                X = data.stack(z=('y', 'x')).transpose().chunk(x_chunks).fillna(nodata).data
+            else:
+                X = data.stack(z=('y', 'x')).transpose().chunk(x_chunks).data
+
+            # Apply the predictions
+            predictions = clf.predict(X).reshape(1, n_rows, n_cols).rechunk(chunksize).astype(dtype)
+
+            if return_as == 'dataset':
+
+                # Store the predictions as an xarray.Dataset
+                predictions = xr.Dataset({'pred': (['band', 'y', 'x'], predictions)},
+                                         coords={'band': [1],
+                                                 'y': ('y', data.y),
+                                                 'x': ('x', data.x)},
+                                         attrs=data.attrs)
+
+            else:
+
+                # Store the predictions as an xarray.DataArray
+                predictions = xr.DataArray(data=predictions,
+                                           dims=('band', 'y', 'x'),
+                                           coords={'band': [1],
+                                                   'y': ('y', data.y),
+                                                   'x': ('x', data.x)},
+                                           attrs=data.attrs)
+
+            if isinstance(outname, str):
+
+                predictions.gw.to_raster(outname,
+                                         variable='pred',
+                                         n_jobs=n_jobs,
+                                         dtype=dtype,
+                                         gdal_cache=gdal_cache,
+                                         overwrite=overwrite,
+                                         blockxsize=chunksize[0],
+                                         blockysize=chunksize[1],
+                                         **kwargs)
+
+        if backend == 'dask':
+            cluster.stop()
+
+        return predictions

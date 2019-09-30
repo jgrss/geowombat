@@ -47,7 +47,8 @@ def get_package_data():
 
     return {'': ['*.md', '*.txt'],
             'data': ['*.png'],
-            'geowombat': ['data/*.tif',
+            'geowombat': ['config.ini',
+                          'data/*.tif',
                           'moving/*.so']}
 
 

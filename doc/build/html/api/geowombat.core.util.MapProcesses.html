@@ -35,9 +35,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="get_window_offsets" href="geowombat.core.windows.get_window_offsets.html" />
-    <link rel="prev" title="DatasetBandMath" href="geowombat.core.util.DatasetBandMath.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,25 +91,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../api.html#top-level-functions">Top-level functions</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat">geowombat Package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.conversion">geowombat.core.conversion Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.geoxarray">geowombat.core.geoxarray Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.io">geowombat.core.io Module</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="../api.html#module-geowombat.core.util">geowombat.core.util Module</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../api.html#id3">Functions</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="../api.html#id4">Classes</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.windows">geowombat.core.windows Module</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
             
@@ -157,8 +141,6 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../api.html">API reference</a> &raquo;</li>
-        
       <li>MapProcesses</li>
     
     
@@ -191,8 +173,8 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.util.MapProcesses.map_moving" title="geowombat.core.util.MapProcesses.map_moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_moving</span></code></a>(data, stat, w, b, y, x, attrs, n_jobs)</p></td>
-<td><p>Applies a moving window function over dask array blocks</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code>(data, b, y, x, attrs[, stat, w, n_jobs])</p></td>
+<td><p>Applies a moving window function over Dask array blocks</p></td>
 </tr>
 </tbody>
 </table>
@@ -203,35 +185,12 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.util.MapProcesses.map_moving" title="geowombat.core.util.MapProcesses.map_moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_moving</span></code></a>(data, stat, w, b, y, x, attrs, n_jobs)</p></td>
-<td><p>Applies a moving window function over dask array blocks</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MapProcesses.map_moving</span></code></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="geowombat.core.util.MapProcesses.map_moving">
-<em class="property">static </em><code class="sig-name descname">map_moving</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">stat</em>, <em class="sig-param">w</em>, <em class="sig-param">b</em>, <em class="sig-param">y</em>, <em class="sig-param">x</em>, <em class="sig-param">attrs</em>, <em class="sig-param">n_jobs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.util.MapProcesses.map_moving" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a moving window function over dask array blocks</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>dask.array</em>) – </p></li>
-<li><p><strong>stat</strong> (<em>str</em>) – </p></li>
-<li><p><strong>w</strong> (<em>int</em>) – </p></li>
-<li><p><strong>b</strong> (<em>int</em><em> or </em><em>str</em><em> or </em><em>list</em>) – </p></li>
-<li><p><strong>y</strong> (<em>1d array-like</em>) – </p></li>
-<li><p><strong>x</strong> (<em>1d array-like</em>) – </p></li>
-<li><p><strong>attrs</strong> (<em>dict</em>) – </p></li>
-<li><p><strong>n_jobs</strong> (<em>int</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(DataArray)</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -241,15 +200,6 @@
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="geowombat.core.windows.get_window_offsets.html" class="btn btn-neutral float-right" title="get_window_offsets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="geowombat.core.util.DatasetBandMath.html" class="btn btn-neutral float-left" title="DatasetBandMath" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

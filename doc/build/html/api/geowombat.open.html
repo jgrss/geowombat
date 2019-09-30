@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="dask_to_datarray" href="geowombat.core.conversion.dask_to_datarray.html" />
+    <link rel="next" title="extract" href="geowombat.extract.html" />
     <link rel="prev" title="API reference" href="../api.html" /> 
 </head>
 
@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
@@ -102,11 +103,6 @@
 <li class="toctree-l4 current"><a class="reference internal" href="../api.html#functions">Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.conversion">geowombat.core.conversion Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.geoxarray">geowombat.core.geoxarray Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.io">geowombat.core.io Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.util">geowombat.core.util Module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.windows">geowombat.core.windows Module</a></li>
 </ul>
 </li>
 </ul>
@@ -189,7 +185,7 @@
 <li><p><strong>filename</strong> (<em>str</em><em> or </em><em>list</em>) – The file name or list of files to open.</p></li>
 <li><p><strong>use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The package to use for file opening backend. Default is ‘xarray’.
 Choices are [‘xarray’, ‘rasterio’].</p></li>
-<li><p><strong>return_as</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – When ‘use’=’xarray’, return <code class="docutils literal notranslate"><span class="pre">Xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">Xarray.Dataset</span></code>.</p></li>
+<li><p><strong>return_as</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – When ‘use’=’xarray’, return <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>.</p></li>
 <li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A list of band names if <code class="docutils literal notranslate"><span class="pre">return_as</span></code> = ‘dataset’ or <code class="docutils literal notranslate"><span class="pre">bounds</span></code>
 is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is None.</p></li>
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A list of names to give the time dimension if <code class="docutils literal notranslate"><span class="pre">bounds</span></code> is given.
@@ -197,9 +193,12 @@ Default is None.</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as [minx, maxy, miny, maxx].
 Default is None.</p></li>
 <li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for Dask if <code class="docutils literal notranslate"><span class="pre">bounds</span></code>
-is given or ‘window’ is given. Default is 1.</p></li>
+is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is 1.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to the file opener.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -240,7 +239,7 @@ is given or ‘window’ is given. Default is 1.</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="geowombat.core.conversion.dask_to_datarray.html" class="btn btn-neutral float-right" title="dask_to_datarray" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="geowombat.extract.html" class="btn btn-neutral float-right" title="extract" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../api.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -24,8 +24,53 @@ IO_DICT = dict(rasterio=['.tif', '.img'],
                xarray=['.nc'])
 
 
+def get_attrs(src, **kwargs):
+
+    ycoords = np.linspace(src.bounds.top - (kwargs['window'].row_off * src.res[0]),
+                          src.bounds.top - (kwargs['window'].row_off * src.res[0]) -
+                          (kwargs['window'].height * src.res[0]), kwargs['window'].height)
+
+    xcoords = np.linspace(src.bounds.left + (kwargs['window'].col_off * src.res[0]),
+                          src.bounds.left + (kwargs['window'].col_off * src.res[0]) +
+                          (kwargs['window'].width * src.res[0]), kwargs['window'].width)
+
+    attrs = dict()
+
+    attrs['transform'] = tuple(src.transform)[:6]
+
+    if hasattr(src, 'crs') and src.crs:
+
+        try:
+            attrs['crs'] = src.crs.to_proj4()
+        except:
+            attrs['crs'] = src.crs.to_string()
+
+    if hasattr(src, 'res'):
+        attrs['res'] = src.res
+
+    if hasattr(src, 'is_tiled'):
+        attrs['is_tiled'] = np.uint8(src.is_tiled)
+
+    if hasattr(src, 'nodatavals'):
+        attrs['nodatavals'] = tuple(np.nan if nodataval is None else nodataval for nodataval in src.nodatavals)
+
+    if hasattr(src, 'offsets'):
+        attrs['offsets'] = src.scales
+
+    if hasattr(src, 'offsets'):
+        attrs['offsets'] = src.offsets
+
+    if hasattr(src, 'descriptions') and any(src.descriptions):
+        attrs['descriptions'] = src.descriptions
+
+    if hasattr(src, 'units') and any(src.units):
+        attrs['units'] = src.units
+
+    return ycoords, xcoords, attrs
+
+
 @dask.delayed
-def read_delayed(fname, **kwargs):
+def read_delayed(fname, extra_dim, **kwargs):
 
     with rio.open(fname) as src:
 
@@ -36,11 +81,13 @@ def read_delayed(fname, **kwargs):
         yblock = src.block_shapes[0][0]
         xblock = src.block_shapes[0][1]
 
-        if single_band:
+        if extra_dim == 0:
 
-            # Expand to 1 band and the z dimension
-            data_slice = da.from_array(data_slice[np.newaxis, np.newaxis, :, :],
-                                       chunks=(1, yblock, xblock))
+            if single_band:
+
+                # Expand to 1 band and the z dimension
+                data_slice = da.from_array(data_slice[np.newaxis, :, :],
+                                           chunks=(1, yblock, xblock))
 
         else:
 
@@ -48,55 +95,30 @@ def read_delayed(fname, **kwargs):
             data_slice = da.from_array(data_slice[np.newaxis, :, :, :],
                                        chunks=(1, 1, yblock, xblock))
 
-        ycoords = np.linspace(src.bounds.top - (kwargs['window'].row_off * src.res[0]),
-                              src.bounds.top - (kwargs['window'].row_off * src.res[0]) - (kwargs['window'].height * src.res[0]), kwargs['window'].height)
+        ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
-        xcoords = np.linspace(src.bounds.left + (kwargs['window'].col_off * src.res[0]),
-                              src.bounds.left + (kwargs['window'].col_off * src.res[0]) + (kwargs['window'].width * src.res[0]), kwargs['window'].width)
+        if extra_dim == 0:
 
-        attrs = dict()
+            return xr.DataArray(data_slice,
+                                dims=('band', 'y', 'x'),
+                                coords={'band': np.arange(1, data_slice.shape[0]+1),
+                                        'y': ycoords,
+                                        'x': xcoords},
+                                attrs=attrs)
 
-        attrs['transform'] = tuple(src.transform)[:6]
+        else:
 
-        if hasattr(src, 'crs') and src.crs:
-
-            try:
-                attrs['crs'] = src.crs.to_proj4()
-            except:
-                attrs['crs'] = src.crs.to_string()
-
-        if hasattr(src, 'res'):
-            attrs['res'] = src.res
-
-        if hasattr(src, 'is_tiled'):
-            attrs['is_tiled'] = np.uint8(src.is_tiled)
-
-        if hasattr(src, 'nodatavals'):
-            attrs['nodatavals'] = tuple(np.nan if nodataval is None else nodataval for nodataval in src.nodatavals)
-
-        if hasattr(src, 'offsets'):
-            attrs['offsets'] = src.scales
-
-        if hasattr(src, 'offsets'):
-            attrs['offsets'] = src.offsets
-
-        if hasattr(src, 'descriptions') and any(src.descriptions):
-            attrs['descriptions'] = src.descriptions
-
-        if hasattr(src, 'units') and any(src.units):
-            attrs['units'] = src.units
-
-        return xr.DataArray(data_slice,
-                            dims=('time', 'band', 'y', 'x'),
-                            coords={'time': np.arange(1, data_slice.shape[0]+1),
-                                    'band': np.arange(1, data_slice.shape[1]+1),
-                                    'y': ycoords,
-                                    'x': xcoords},
-                            attrs=attrs)
+            return xr.DataArray(data_slice,
+                                dims=('time', 'band', 'y', 'x'),
+                                coords={'time': np.arange(1, data_slice.shape[0]+1),
+                                        'band': np.arange(1, data_slice.shape[1]+1),
+                                        'y': ycoords,
+                                        'x': xcoords},
+                                attrs=attrs)
 
 
 def read_list(file_list, **kwargs):
-    return [read_delayed(fn, **kwargs) for fn in file_list]
+    return [read_delayed(fn, 1, **kwargs) for fn in file_list]
 
 
 def read(filename,
@@ -115,26 +137,41 @@ def read(filename,
         time_names (Optional[list]): A list of names to give the time dimension.
         bounds (Optional[1d array-like]): A bounding box to subset to, given as
             [minx, miny, maxx, maxy] or [left, bottom, right, top]. Default is None.
-        num_workers (Optional[int]): The number of parallel `dask` workers.
-        kwargs (Optional[dict]): Keyword arguments to pass to `Rasterio`.
+        num_workers (Optional[int]): The number of parallel ``dask`` workers.
+        kwargs (Optional[dict]): Keyword arguments to pass to ``rasterio.write``.
 
     Returns:
-        Stacked data at the window slice (Xarray DataArray)
+        ``xarray.DataArray``
     """
 
-    # Cannot pass 'chunks' to `rasterio`
+    # Cannot pass 'chunks' to rasterio
     if 'chunks' in kwargs:
         del kwargs['chunks']
 
-    if bounds and ('window' not in kwargs):
-        kwargs['window'] = from_bounds(*bounds)
-
     if isinstance(filename, str):
 
-        data = dask.compute(read_delayed(filename, **kwargs), num_workers=num_workers)
+        with rio.open(filename) as src:
 
-        # if not band_names:
-        #     band_names = np.arange(1, data.shape[0]+1)
+            if bounds and ('window' not in kwargs):
+                kwargs['window'] = from_bounds(*bounds, transform=src.transform)
+
+            ycoords, xcoords, attrs = get_attrs(src, **kwargs)
+
+        data = dask.compute(read_delayed(filename, 0, **kwargs),
+                            num_workers=num_workers)[0]
+
+        if not band_names:
+            band_names = np.arange(1, data.shape[0]+1)
+
+        if len(band_names) != data.shape[0]:
+            logger.exception('  The band names do not match the output dimensions.')
+
+        data = xr.DataArray(data,
+                            dims=('band', 'y', 'x'),
+                            coords={'band': band_names,
+                                    'y': ycoords,
+                                    'x': xcoords},
+                            attrs=attrs)
 
     else:
 
@@ -153,9 +190,15 @@ def read(filename,
             with rio.open(filename[0]) as src:
                 count = src.count
 
+        with rio.open(filename[0]) as src:
+
+            if bounds and ('window' not in kwargs):
+                kwargs['window'] = from_bounds(*bounds, transform=src.transform)
+
         data = xr.concat(dask.compute(read_list(filename,
                                                 **kwargs),
-                                      num_workers=num_workers)[0], dim='time')
+                                      num_workers=num_workers),
+                         dim='time')
 
         if not band_names:
             band_names = np.arange(1, count+1)
@@ -186,7 +229,7 @@ def open(filename,
         filename (str or list): The file name or list of files to open.
         use (Optional[str]): The package to use for file opening backend. Default is 'xarray'.
             Choices are ['xarray', 'rasterio'].
-        return_as (Optional[str]): When 'use'='xarray', return ``Xarray.DataArray`` or ``Xarray.Dataset``.
+        return_as (Optional[str]): When 'use'='xarray', return ``xarray.DataArray`` or ``xarray.Dataset``.
         band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
             is given or ``window`` is given. Default is None.
         time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
@@ -194,8 +237,11 @@ def open(filename,
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
-            is given or 'window' is given. Default is 1.
+            is given or ``window`` is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
+
+    Returns:
+        ``xarray.DataArray`` or ``xarray.Dataset``
 
     Examples:
         >>> import geowombat as gw

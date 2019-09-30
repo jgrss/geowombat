@@ -19,27 +19,27 @@ Slice a subset using a Rasterio window
 
 .. ipython:: python
 
-    #with gw.open(rgbn,
-    #             band_names=['blue', 'green', 'red', 'nir'],
-    #             num_workers=8,
-    #             indexes=[1, 2, 3],
-    #             window=w,
-    #             out_dtype='float32') as ds:
-    #    print(ds)
+    with gw.open(rgbn,
+                 band_names=['blue', 'green', 'red'],
+                 num_workers=8,
+                 indexes=[1, 2, 3],
+                 window=w,
+                 out_dtype='float32') as ds:
+        print(ds)
 
-Slice a subset using a bounds tuple
+Slice a subset using a tuple of bounded coordinates
 
 .. ipython:: python
 
-    #bounds = (left, bottom, right, top)
+    bounds = (793000.0, 2049000.0, 794000.0, 2050000.0)
 
-    #with gw.open(rgbn,
-    #             band_names=['blue', 'green', 'red', 'nir'],
-    #             num_workers=8,
-    #             indexes=[1, 2, 3],
-    #             bounds=bounds,
-    #             out_dtype='float32') as ds:
-    #    print(ds)
+    with gw.open(rgbn,
+                 band_names=['green', 'red', 'nir'],
+                 num_workers=8,
+                 indexes=[2, 3, 4],
+                 bounds=bounds,
+                 out_dtype='float32') as ds:
+        print(ds)
 
 Extract values at point locations
 

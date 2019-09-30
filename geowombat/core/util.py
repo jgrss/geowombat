@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+from abc import ABC, abstractmethod
 import multiprocessing as multi
 
 from ..errors import logger
@@ -122,23 +123,29 @@ class Chunks(object):
 class MapProcesses(object):
 
     @staticmethod
-    def map_moving(data, stat, w, b, y, x, attrs, n_jobs):
+    def moving(data, b, y, x, attrs, stat='mean', w=3, n_jobs=1):
 
         """
-        Applies a moving window function over dask array blocks
+        Applies a moving window function over Dask array blocks
 
         Args:
-            data (dask.array)
-            stat (str)
-            w (int)
-            b (int or str or list)
-            y (1d array-like)
-            x (1d array-like)
-            attrs (dict)
-            n_jobs (int)
+            data (``dask.array``): The ``dask.array`` to process.
+            b (int or str or list): The output band name(s).
+            y (1d array-like): The y output ``xarray.DataArray`` coordinates.
+            x (1d array-like): The x output ``xarray.DataArray`` coordinates.
+            attrs (dict): The output ``xarray.DataArray`` attributes.
+            stat (Optional[str]): The statistic to compute.
+            w (Optional[int]): The moving window size (in pixels).
+            n_jobs (Optional[int]): The number of bands to process in parallel.
 
         Returns:
-            (DataArray)
+            ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = gw.moving(ds.data, ['red'], ds.y, ds.x, ds.attr)
         """
 
         if n_jobs <= 0:
@@ -148,7 +155,7 @@ class MapProcesses(object):
 
         hw = int(w / 2.0)
 
-        def move_func(block_data):
+        def _move_func(block_data):
 
             if max(block_data.shape) <= hw:
                 return data
@@ -160,7 +167,7 @@ class MapProcesses(object):
         else:
             out_shape = data.shape
 
-        result = data.reshape(out_shape).astype('float64').map_overlap(move_func,
+        result = data.reshape(out_shape).astype('float64').map_overlap(_move_func,
                                                                        depth=hw,
                                                                        trim=True,
                                                                        boundary='reflect',
@@ -232,10 +239,6 @@ def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):
                             columns=['poly', 'point'])
 
 
-def _iter_func(a):
-    return a
-
-
 class Converters(object):
 
     @staticmethod
@@ -245,14 +248,14 @@ class Converters(object):
         Converts polygons to points
 
         Args:
-            data (DataArray or Dataset)
-            df (GeoDataFrame): The `GeoDataFrame` with geometry to rasterize.
+            data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset`.
+            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` containing the geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
-            all_touched (Optional[bool]): The `all_touched` argument is passed to `rasterio.features.rasterize`.
+            all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
 
         Returns:
-            (GeoDataFrame)
+            ``geopandas.GeoDataFrame``
         """
 
         meta = data.gw.meta
@@ -277,6 +280,10 @@ class Converters(object):
         dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
 
         return dataframes
+
+
+def _iter_func(a):
+    return a
 
 
 class BandMath(object):

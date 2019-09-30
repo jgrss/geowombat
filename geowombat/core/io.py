@@ -23,43 +23,43 @@ def _window_worker(w):
     return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
 
 
-def xarray_to_raster(ds_data,
-                     filename,
-                     crs,
-                     transform,
-                     driver,
-                     n_jobs,
-                     gdal_cache,
-                     dtype,
-                     row_chunks,
-                     col_chunks,
-                     pool_chunksize,
-                     verbose,
-                     overwrite,
-                     nodata,
-                     tags,
-                     **kwargs):
+def to_raster(ds_data,
+              filename,
+              crs,
+              transform,
+              driver='GTiff',
+              n_jobs=1,
+              gdal_cache=512,
+              dtype='float64',
+              row_chunks=512,
+              col_chunks=512,
+              pool_chunksize=1000,
+              verbose=0,
+              overwrite=False,
+              nodata=0,
+              tags=None,
+              **kwargs):
 
     """
-    Writes an Xarray DataArray to a raster file
+    Writes an Xarray DataArray or Dataset to a raster file
 
     Args:
-        ds_data (DataArray)
-        filename (str)
-        crs (object)
-        transform (object)
-        driver (str)
-        n_jobs (int)
-        gdal_cache (int)
-        dtype (float)
-        row_chunks (int)
-        col_chunks (int)
-        pool_chunksize (int)
-        verbose (int)
-        overwrite (bool)
-        nodata (int or float)
-        tags (dict)
-        kwargs (dict)
+        ds_data (DataArray): The ``xarray.DataArray`` or ``xarray.Dataset`` to write.
+        filename (str): The output file name to write to.
+        crs (object): A ``rasterio.crs.CRS`` object.
+        transform (object): An ``affine.Affine`` transform.
+        n_jobs (Optional[str]): The number of parallel chunks to write.
+        verbose (Optional[int]): The verbosity level.
+        overwrite (Optional[bool]): Whether to overwrite an existing file.
+        driver (Optional[str]): The raster driver.
+        gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+        dtype (Optional[int]): The output data type.
+        row_chunks (Optional[int]): The processing row chunk size.
+        col_chunks (Optional[int]): The processing column chunk size.
+        pool_chunksize (Optional[int]): The `multiprocessing.Pool` chunk size.
+        nodata (Optional[int]): A 'no data' value.
+        tags (Optional[dict]): Image tags to write to file.
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
         None

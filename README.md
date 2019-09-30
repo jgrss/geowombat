@@ -15,12 +15,9 @@ to apply geo-functions to satellite imagery.
 `GeoWombat` is designed to provide specialized functionality to `Xarray` and `Dask` data, using `Rasterio` for 
 overhead space- or -airborne imagery I/O.
 
-## Documentation
+## Documentation (temporary location)
 ---
 
-Add link to documentation
-
-## TODO
----
+Read the documentation by open the [HTML file](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html).
 
 #### See the [notebooks](https://github.com/jgrss/geowombat/tree/master/notebooks) for more detailed examples

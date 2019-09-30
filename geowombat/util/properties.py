@@ -100,6 +100,14 @@ class DataArrayProperties(object):
         return self.left, self.bottom, self.right, self.top
 
     @property
+    def celly(self):
+        return self._obj.res[0]
+
+    @property
+    def cellx(self):
+        return self._obj.res[1]
+
+    @property
     def geometry(self):
 
         return Polygon([(self.left, self.bottom),
