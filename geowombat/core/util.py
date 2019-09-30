@@ -18,6 +18,30 @@ from tqdm import tqdm
 shapely.speedups.enable()
 
 
+def project_coords(x, y, src_crs, dst_crs):
+
+    """
+    Projects coordinates to a new CRS
+
+    Args:
+        x (1d array-like)
+        y (1d array-like)
+        src_crs (str, dict, object)
+        dst_crs (str, dict, object)
+
+    Returns:
+        ``numpy.array``, ``numpy.array``
+    """
+
+    df_tmp = gpd.GeoDataFrame(np.arange(0, x.shape[0]),
+                              geometry=gpd.points_from_xy(x, y),
+                              crs=src_crs)
+
+    df_tmp = df_tmp.to_crs(dst_crs)
+
+    return df_tmp.x.values, df_tmp.y.values
+
+
 def get_geometry_info(geometry, res):
 
     """
