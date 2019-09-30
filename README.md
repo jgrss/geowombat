@@ -2,7 +2,7 @@
 
 [![MIT license](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-black.svg)](https://www.python.org/downloads/release/python-360/)
-![Package version](https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000)
+![Package version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
 
 ![](data/wombat.png)
 

@@ -402,6 +402,9 @@ class BandMath(object):
 
 class DatasetBandMath(BandMath):
 
+    def evi(self, bands='bands', mask=False):
+        return self._evi2(self._obj[bands], self._obj.gw.sensor, self._obj.gw.wavelengths, mask=mask)
+
     def evi2(self, bands='bands', mask=False):
         return self._evi2(self._obj[bands], self._obj.gw.sensor, self._obj.gw.wavelengths, mask=mask)
 
@@ -416,6 +419,9 @@ class DatasetBandMath(BandMath):
 
 
 class DataArrayBandMath(BandMath):
+
+    def evi(self):
+        return self._evi2(self._obj, self._obj.gw.sensor, self._obj.gw.wavelengths)
 
     def evi2(self):
         return self._evi2(self._obj, self._obj.gw.sensor, self._obj.gw.wavelengths)
