@@ -3,7 +3,7 @@
 GeoWombat configuration
 =======================
 
-GeoWombat has a context manager (:func:`geowombat.config`) to assist in configurations
+GeoWombat has a context manager (:class:`geowombat.config`) to assist in configurations
 ------------------------------------------------------------------------------------
 
 Import GeoWombat
@@ -16,6 +16,16 @@ Wrap functions in a context manager to control global arguments
 
 .. ipython:: python
 
-    with gw.config.set(sensor='planetscope'):
+    with gw.config.update(sensor='l8', scale_factor=0.0001):
         with gw.open(rgbn) as ds:
-            print(ds.gw.config)
+            for k, v in ds.gw.config.items():
+                print(k, v)
+
+    with gw.config.update(sensor='planetscope', tiled=False):
+        with gw.open(rgbn) as ds:
+            for k, v in ds.gw.config.items():
+                print(k, v)
+
+    with gw.open(rgbn) as ds:
+        for k, v in ds.gw.config.items():
+            print(k, v)

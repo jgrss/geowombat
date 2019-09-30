@@ -29,6 +29,12 @@ release = gw.__version__
 
 # -- General configuration ---------------------------------------------------
 
+# Should special members (like __membername__) and private members
+# (like _membername) members be included in the documentation if they
+# have docstrings.
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = False
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -41,6 +47,8 @@ extensions = ['IPython.sphinxext.ipython_directive',
               'sphinx_automodapi.automodapi',
               'sphinx.ext.napoleon',
               'numpydoc']
+
+mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
