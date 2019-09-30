@@ -214,8 +214,8 @@ class SpatialOperations(object):
 
         return df
 
-    @staticmethod
-    def subset(data,
+    def subset(self,
+               data,
                by='coords',
                left=None,
                top=None,
@@ -276,7 +276,8 @@ class SpatialOperations(object):
         if chunksize:
             chunksize_ = chunksize
         else:
-            chunksize_ = (self.gw.band_chunks, self.gw.row_chunks, self.gw.col_chunks)
+            # TODO: fix
+            chunksize_ = (self.band_chunks, self.row_chunks, self.col_chunks)
 
         ds_sub = data.sel(y=y_idx,
                           x=x_idx,
