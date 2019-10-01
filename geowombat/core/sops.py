@@ -98,11 +98,18 @@ class SpatialOperations(object):
             logger.info('  Checking geometry extent ...')
 
         # Remove data outside of the image bounds
-        df = gpd.overlay(df,
-                         gpd.GeoDataFrame(data=[0],
-                                          geometry=[data.gw.meta.geometry],
-                                          crs=df.crs),
-                         how='intersection')
+        if type(df.iloc[0].geometry) == Polygon:
+
+            df = gpd.overlay(df,
+                             gpd.GeoDataFrame(data=[0],
+                                              geometry=[data.gw.meta.geometry],
+                                              crs=df.crs),
+                             how='intersection')
+
+        else:
+
+            # Clip points to the image bounds
+            df = df[df.geometry.intersects(data.gw.meta.geometry.unary_union)]
 
         if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
 
@@ -184,7 +191,7 @@ class SpatialOperations(object):
 
             if len(res.shape) > 2:
 
-                for t in range(0, data.gw.rows):
+                for t in range(0, res.shape[1]):
 
                     if time_names:
                         time_name = time_names[t]

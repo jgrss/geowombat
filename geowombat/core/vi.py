@@ -41,9 +41,14 @@ class BandMath(object):
         c2 = 7.5
         g = 2.5
 
-        nir = wavelengths[sensor].nir
-        red = wavelengths[sensor].red
-        blue = wavelengths[sensor].blue
+        if 'nir' in data.coords['band'].values.tolist():
+            nir = 'nir'
+            red = 'red'
+            blue = 'blue'
+        else:
+            nir = wavelengths[sensor].nir
+            red = wavelengths[sensor].red
+            blue = wavelengths[sensor].blue
 
         result = (g * (data.sel(wavelength=nir) - data.sel(wavelength=red)) /
                   (data.sel(wavelength=nir) * c1 * data.sel(wavelength=red) - c2 * data.sel(wavelength=blue) + l)).fillna(0)
@@ -63,8 +68,12 @@ class BandMath(object):
         Two-band enhanced vegetation index
         """
 
-        nir = wavelengths[sensor].nir
-        red = wavelengths[sensor].red
+        if 'nir' in data.coords['band'].values.tolist():
+            nir = 'nir'
+            red = 'red'
+        else:
+            nir = wavelengths[sensor].nir
+            red = wavelengths[sensor].red
 
         result = (2.5 * ((data.sel(wavelength=nir) - data.sel(wavelength=red)) /
                          (data.sel(wavelength=nir) + 1.0 + (2.4 * (data.sel(wavelength=red)))))).fillna(0)
@@ -83,8 +92,12 @@ class BandMath(object):
         Normalized burn ratio
         """
 
-        nir = wavelengths[sensor].nir
-        swir2 = wavelengths[sensor].swir2
+        if 'nir' in data.coords['band'].values.tolist():
+            nir = 'nir'
+            swir2 = 'swir2'
+        else:
+            nir = wavelengths[sensor].nir
+            swir2 = wavelengths[sensor].swir2
 
         return self.norm_diff_math(data, swir2, nir, 'nbr', mask=mask)
 
@@ -94,8 +107,12 @@ class BandMath(object):
         Normalized difference vegetation index
         """
 
-        nir = wavelengths[sensor].nir
-        red = wavelengths[sensor].red
+        if 'nir' in data.coords['band'].values.tolist():
+            nir = 'nir'
+            red = 'red'
+        else:
+            nir = wavelengths[sensor].nir
+            red = wavelengths[sensor].red
 
         return self.norm_diff_math(data, red, nir, 'ndvi', mask=mask)
 
@@ -106,8 +123,12 @@ class BandMath(object):
         Woody index
         """
 
-        swir1 = wavelengths[sensor].swir1
-        red = wavelengths[sensor].red
+        if 'swir1' in data.coords['band'].values.tolist():
+            swir1 = 'swir1'
+            red = 'red'
+        else:
+            swir1 = wavelengths[sensor].swir1
+            red = wavelengths[sensor].red
 
         result = da.where((data.sel(wavelength=swir1) + data.sel(wavelength=red)) > 0.5, 0,
                           1.0 - ((data.sel(wavelength=swir1) + data.sel(wavelength=red)) / 0.5))
@@ -193,6 +214,11 @@ class VegetationIndices(BandMath):
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
             mask (Optional[bool]): Whether to mask the results.
+
+        Equation:
+
+            .. math::
+                NDVI = (NIR - red) / (NIR + red)
 
         Returns:
             ``xarray.DataArray``

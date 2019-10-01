@@ -174,6 +174,9 @@ class Model(object):
         self.bal_bagging_kwargs = bal_bagging_kwargs
         self.verbose = verbose
 
+        self.x = None
+        self.y = None
+
         self.clf_dict = dict()
         self.model = None
 
@@ -375,6 +378,9 @@ class Model(object):
 
         estimators = None
 
+        self.x = x
+        self.y = y
+
         # Stratification object for calibrated cross-validation
         skf_cv = StratifiedShuffleSplit(n_splits=cv_n_splits,
                                         test_size=cv_test_size,
@@ -432,7 +438,7 @@ class Model(object):
             if self.verbose > 0:
                 logger.info('  Saving model to file ...')
 
-            joblib.dump(self.model,
+            joblib.dump((self.x, self.y, self.model),
                         filename,
                         compress=('zlib', 5),
                         protocol=-1)
@@ -449,7 +455,7 @@ class Model(object):
             if self.verbose > 0:
                 logger.info('  Loading the model from file ...')
 
-        self.model = joblib.load(filename)
+        self.x, self.y, self.model = joblib.load(filename)
 
 
 class Predict(object):
@@ -507,6 +513,11 @@ class Predict(object):
 
         if not isinstance(clf, ParallelPostFit):
             clf = ParallelPostFit(estimator=clf)
+
+        if isinstance(clf, Model):
+
+            # Select the bands that were used to train the model
+            data = data.sel(band=clf.x)
 
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))

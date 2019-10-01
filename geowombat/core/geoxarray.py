@@ -21,6 +21,11 @@ class _UpdateConfig(object):
 
             for k, v in self.config.items():
 
+                # Set the satellite sensor
+                if v in self.wavelengths:
+                    setattr(self, k, v)
+
+                # rasterio.write keyword arguments
                 if k in kwargs:
                     kwargs[k] = v
 
