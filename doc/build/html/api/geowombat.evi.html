@@ -25,7 +25,7 @@
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
         <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -178,17 +178,27 @@
 <h1>evi<a class="headerlink" href="#evi" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.evi">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">evi</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mask=False</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.evi" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">evi</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=False</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.evi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the enhanced vegetation index</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
+<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dl>
+<p>Equation:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[EVI = 2.5 \times \frac{NIR - red}{NIR \times 6 \times red - 7.5 \times blue + 1}\]</div>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>

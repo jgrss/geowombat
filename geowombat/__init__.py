@@ -2,6 +2,7 @@ from . import config
 from .core.api import open
 from .core import extract
 from .core import subset
+from .core import clip
 from .core import polygons_to_points
 from .core import to_raster
 from .core import moving
@@ -19,6 +20,7 @@ __all__ = ['config',
            'open',
            'extract',
            'subset',
+           'clip',
            'polygons_to_points',
            'to_raster',
            'moving',

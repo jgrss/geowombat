@@ -48,7 +48,7 @@ extensions = ['IPython.sphinxext.ipython_directive',
               'sphinx.ext.napoleon',
               'numpydoc']
 
-mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
+# mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

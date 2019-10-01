@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, moving, extract, subset
+from . import to_raster, moving, extract, subset, clip
 from . import norm_diff, evi, evi2, nbr, ndvi, wi
 from ..errors import logger
 from ..util import Cluster, DataProperties
@@ -199,23 +199,23 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       self._obj.attrs,
                       n_jobs)
 
-    def norm_diff(self, b1, b2, variable='bands', mask=False):
-        return norm_diff(self._obj[variable], b1, b2, mask=mask)
+    def norm_diff(self, b1, b2, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi(self, variable='bands', mask=False):
-        return evi(self._obj[variable], mask=mask)
+    def evi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return evi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def evi2(self, variable='bands', mask=False):
-        return evi2(self._obj[variable], mask=mask)
+    def evi2(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return evi2(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def nbr(self, variable='bands', mask=False):
-        return nbr(self._obj[variable], mask=mask)
+    def nbr(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return nbr(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def ndvi(self, variable='bands', mask=False):
-        return ndvi(self._obj[variable], mask=mask)
+    def ndvi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return ndvi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def wi(self, variable='bands', mask=False):
-        return wi(self._obj[variable], mask=mask)
+    def wi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return wi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
 
 @xr.register_dataarray_accessor('gw')
@@ -397,8 +397,22 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         cluster.stop()
 
+    def clip(self, df, query=None):
+
+        """
+        Clips a DataArray
+
+        Args:
+            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
+            query (Optional[str]): A query to apply to ``df``.
+
+        Returns:
+             ``xarray.DataArray``
+        """
+
+        return clip(self._obj, df, query=query)
+
     def subset(self,
-               by='coords',
                left=None,
                top=None,
                right=None,
@@ -413,7 +427,6 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         Subsets a DataArray
 
         Args:
-            by (str): TODO: give subsetting options
             left (Optional[float]): The left coordinate.
             top (Optional[float]): The top coordinate.
             right (Optional[float]): The right coordinate.
@@ -435,7 +448,6 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         """
 
         return subset(self._obj,
-                      by='coords',
                       left=left,
                       top=top,
                       right=right,
@@ -529,20 +541,20 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       w=w,
                       n_jobs=n_jobs)
 
-    def norm_diff(self, b1, b2, mask=False):
-        return norm_diff(self._obj, b1, b2, mask=mask)
+    def norm_diff(self, b1, b2, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi(self, mask=False):
-        return evi(self._obj, mask=mask)
+    def evi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def evi2(self, mask=False):
-        return evi2(self._obj, mask=mask)
+    def evi2(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def nbr(self, mask=False):
-        return nbr(self._obj, mask=mask)
+    def nbr(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def ndvi(self, mask=False):
-        return ndvi(self._obj, mask=mask)
+    def ndvi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def wi(self, mask=False):
-        return wi(self._obj, mask=mask)
+    def wi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        return wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)

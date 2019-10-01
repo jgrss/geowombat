@@ -222,9 +222,53 @@ class SpatialOperations(object):
 
         return df
 
+    def clip(self,
+             data,
+             df,
+             query=None):
+
+        """
+        Clips a DataArray
+
+        Args:
+            data (DataArray): An ``xarray.DataArray`` to subset.
+            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
+            query (Optional[str]): A query to apply to ``df``.
+
+        Returns:
+             ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = gw.clip(ds, df, query="Id == 1")
+            >>>
+            >>> # or
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = ds.gw.clip(df, query="Id == 1")
+        """
+
+        if query:
+            df = df.query(query)
+
+        if data.crs != CRS.from_dict(df.crs).to_proj4():
+
+            # Re-project the DataFrame to match the image CRS
+            df = df.to_crs(data.crs)
+
+        left, bottom, right, top = df.total_bounds
+
+        return self.subset(data,
+                           left=left,
+                           bottom=bottom,
+                           right=right,
+                           top=top,
+                           chunksize=data.data.chunksize)
+
     def subset(self,
                data,
-               by='coords',
                left=None,
                top=None,
                right=None,
@@ -239,7 +283,7 @@ class SpatialOperations(object):
         Subsets a DataArray
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to extract data from.
+            data (DataArray): An ``xarray.DataArray`` to subset.
             by (str): TODO: give subsetting options
             left (Optional[float]): The left coordinate.
             top (Optional[float]): The top coordinate.

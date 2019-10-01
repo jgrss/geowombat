@@ -25,7 +25,7 @@
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
         <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -202,19 +202,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.apply" title="geowombat.core.geoxarray.GeoWombatAccessor.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(self, filename, user_func[, n_jobs])</p></td>
 <td><p>Applies a user function to an Xarray Dataset or DataArray and writes to file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.extract" title="geowombat.core.geoxarray.GeoWombatAccessor.extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract</span></code></a>(self, aoi[, bands, time_names, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code>(self, df[, query])</p></td>
+<td><p>Clips a DataArray</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.extract" title="geowombat.core.geoxarray.GeoWombatAccessor.extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract</span></code></a>(self, aoi[, bands, time_names, …])</p></td>
 <td><p>Extracts data within an area or points of interest.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(self[, band_coords, stat, w, n_jobs])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(self[, band_coords, stat, w, n_jobs])</p></td>
 <td><p>Applies a moving window function to the DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, by, left, top, right, bottom, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, n_jobs, verbose, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, n_jobs, verbose, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
 </tbody>
@@ -264,7 +267,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, by, left, top, right, bottom, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, n_jobs, verbose, …])</p></td>
@@ -403,12 +406,11 @@ If not given, all bands are used. <a href="#id1"><span class="problematic" id="i
 
 <dl class="method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.subset">
-<code class="sig-name descname">subset</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">by='coords'</em>, <em class="sig-param">left=None</em>, <em class="sig-param">top=None</em>, <em class="sig-param">right=None</em>, <em class="sig-param">bottom=None</em>, <em class="sig-param">rows=None</em>, <em class="sig-param">cols=None</em>, <em class="sig-param">center=False</em>, <em class="sig-param">mask_corners=False</em>, <em class="sig-param">chunksize=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">subset</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">left=None</em>, <em class="sig-param">top=None</em>, <em class="sig-param">right=None</em>, <em class="sig-param">bottom=None</em>, <em class="sig-param">rows=None</em>, <em class="sig-param">cols=None</em>, <em class="sig-param">center=False</em>, <em class="sig-param">mask_corners=False</em>, <em class="sig-param">chunksize=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subsets a DataArray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>by</strong> (<em>str</em>) – TODO: give subsetting options</p></li>
 <li><p><strong>left</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The left coordinate.</p></li>
 <li><p><strong>top</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The top coordinate.</p></li>
 <li><p><strong>right</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The right coordinate.</p></li>

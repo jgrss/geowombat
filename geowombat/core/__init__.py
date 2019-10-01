@@ -5,6 +5,7 @@ from .vi import VegetationIndices
 
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
+clip = SpatialOperations().clip
 polygons_to_points = Converters().polygons_to_points
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
@@ -17,6 +18,7 @@ wi = VegetationIndices().wi
 __all__ = ['to_raster',
            'extract',
            'subset',
+           'clip',
            'polygons_to_points',
            'moving',
            'norm_diff',

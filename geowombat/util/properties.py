@@ -21,7 +21,7 @@ class DataProperties(object):
                     rgbn=WavelengthsRGBN(blue=1,
                                          green=2,
                                          red=3,
-                                         nir=3),
+                                         nir=4),
                     l5=WavelengthsL57(blue=1,
                                       green=2,
                                       red=3,

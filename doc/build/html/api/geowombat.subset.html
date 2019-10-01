@@ -25,7 +25,7 @@
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
         <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="polygons_to_points" href="geowombat.polygons_to_points.html" />
+    <link rel="next" title="clip" href="geowombat.clip.html" />
     <link rel="prev" title="extract" href="geowombat.extract.html" /> 
 </head>
 
@@ -178,12 +178,12 @@
 <h1>subset<a class="headerlink" href="#subset" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.subset">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">subset</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">by='coords'</em>, <em class="sig-param">left=None</em>, <em class="sig-param">top=None</em>, <em class="sig-param">right=None</em>, <em class="sig-param">bottom=None</em>, <em class="sig-param">rows=None</em>, <em class="sig-param">cols=None</em>, <em class="sig-param">center=False</em>, <em class="sig-param">mask_corners=False</em>, <em class="sig-param">chunksize=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.subset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">subset</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">left=None</em>, <em class="sig-param">top=None</em>, <em class="sig-param">right=None</em>, <em class="sig-param">bottom=None</em>, <em class="sig-param">rows=None</em>, <em class="sig-param">cols=None</em>, <em class="sig-param">center=False</em>, <em class="sig-param">mask_corners=False</em>, <em class="sig-param">chunksize=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.subset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subsets a DataArray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to extract data from.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to subset.</p></li>
 <li><p><strong>by</strong> (<em>str</em>) – TODO: give subsetting options</p></li>
 <li><p><strong>left</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The left coordinate.</p></li>
 <li><p><strong>top</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The top coordinate.</p></li>
@@ -219,7 +219,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="geowombat.polygons_to_points.html" class="btn btn-neutral float-right" title="polygons_to_points" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="geowombat.clip.html" class="btn btn-neutral float-right" title="clip" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="geowombat.extract.html" class="btn btn-neutral float-left" title="extract" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
