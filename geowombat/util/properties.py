@@ -9,6 +9,10 @@ class DataProperties(object):
     @property
     def wavelengths(self):
 
+        """
+        Get a dictionary of sensor wavelengths
+        """
+
         WavelengthsRGB = namedtuple('WavelengthsRGB', 'blue green red')
         WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'blue green red nir')
         WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
@@ -49,18 +53,25 @@ class DataProperties(object):
 
     @property
     def ndims(self):
+        """Get the number of array dimensions"""
         return len(self._obj.shape)
 
     @property
     def row_chunks(self):
+        """Get the row chunk size"""
         return self._obj.data.chunksize[-2]
 
     @property
     def col_chunks(self):
+        """Get the column chunk size"""
         return self._obj.data.chunksize[-1]
 
     @property
     def band_chunks(self):
+
+        """
+        Get the band chunk size
+        """
 
         if self.ndims > 2:
             return self._obj.data.chunksize[-3]
@@ -70,6 +81,10 @@ class DataProperties(object):
     @property
     def time_chunks(self):
 
+        """
+        Get the time chunk size
+        """
+
         if self.ndims < 3:
             return self._obj.data.chunksize[-4]
         else:
@@ -78,6 +93,10 @@ class DataProperties(object):
     @property
     def bands(self):
 
+        """
+        Get the number of array bands
+        """
+
         if self.ndims > 2:
             return self._obj.shape[-3]
         else:
@@ -85,42 +104,55 @@ class DataProperties(object):
 
     @property
     def rows(self):
+        """Get the number of array rows"""
         return self._obj.shape[-2]
 
     @property
     def cols(self):
+        """Get the number of array columns"""
         return self._obj.shape[-1]
 
     @property
     def left(self):
+        """Get the array bounding box left coordinate"""
         return float(self._obj.x.min().values)
 
     @property
     def right(self):
+        """Get the array bounding box right coordinate"""
         return float(self._obj.x.max().values)
 
     @property
     def top(self):
+        """Get the array bounding box top coordinate"""
         return float(self._obj.y.max().values)
 
     @property
     def bottom(self):
+        """Get the array bounding box bottom coordinate"""
         return float(self._obj.y.min().values)
 
     @property
     def bounds(self):
+        """Get the array bounding box (left, bottom, right, top)"""
         return self.left, self.bottom, self.right, self.top
 
     @property
     def celly(self):
-        return self._obj.res[0]
-
-    @property
-    def cellx(self):
+        """Get the cell size in the y direction"""
         return self._obj.res[1]
 
     @property
+    def cellx(self):
+        """Get the cell size in the x direction"""
+        return self._obj.res[0]
+
+    @property
     def geometry(self):
+
+        """
+        Get the polygon geometry of the array bounding box
+        """
 
         return Polygon([(self.left, self.bottom),
                         (self.left, self.top),
@@ -130,6 +162,10 @@ class DataProperties(object):
 
     @property
     def meta(self):
+
+        """
+        Get the array metdata
+        """
 
         Meta = namedtuple('Meta', 'left right top bottom bounds affine geometry')
 
