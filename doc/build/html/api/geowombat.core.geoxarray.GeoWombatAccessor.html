@@ -36,7 +36,9 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="open" href="geowombat.open.html" />
+    <link rel="prev" title="API reference" href="../api.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,8 +97,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#top-level-functions">Top-level functions</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../api.html#module-geowombat.core.geoxarray">geowombat.core.geoxarray Module</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../api.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat">geowombat Package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             
@@ -141,6 +153,8 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">API reference</a> &raquo;</li>
         
       <li>GeoWombatAccessor</li>
     
@@ -205,46 +219,38 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code>(self, df[, query])</p></td>
 <td><p>Clips a DataArray</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<td><p>Calculates the enhanced vegetation index</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi2</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<td><p>Calculates the two-band modified enhanced vegetation index</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.extract" title="geowombat.core.geoxarray.GeoWombatAccessor.extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract</span></code></a>(self, aoi[, bands, time_names, …])</p></td>
 <td><p>Extracts data within an area or points of interest.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(self[, band_coords, stat, w, n_jobs])</p></td>
 <td><p>Applies a moving window function to the DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<td><p>Calculates the normalized burn ratio</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<td><p>Calculates the normalized difference vegetation index</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code>(self, b1, b2[, nodata, mask, …])</p></td>
+<td><p>Calculates the normalized difference band ratio</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, n_jobs, verbose, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, n_jobs, verbose, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 57%" />
-<col style="width: 43%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><strong>evi</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>evi2</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p><strong>nbr</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>ndvi</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p><strong>norm_diff</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>wi</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<td><p>Calculates the woody vegetation index</p></td>
 </tr>
 </tbody>
 </table>
@@ -472,6 +478,15 @@ If not given, all bands are used. <a href="#id1"><span class="problematic" id="i
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="geowombat.open.html" class="btn btn-neutral float-right" title="open" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../api.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

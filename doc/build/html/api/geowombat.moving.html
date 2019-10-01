@@ -100,6 +100,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../api.html#top-level-functions">Top-level functions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-geowombat.core.geoxarray">geowombat.core.geoxarray Module</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../api.html#module-geowombat">geowombat Package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="../api.html#functions">Functions</a></li>
 </ul>
@@ -178,16 +179,13 @@
 <h1>moving<a class="headerlink" href="#moving" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.moving">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">moving</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">b</em>, <em class="sig-param">y</em>, <em class="sig-param">x</em>, <em class="sig-param">attrs</em>, <em class="sig-param">stat='mean'</em>, <em class="sig-param">w=3</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.moving" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">moving</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">stat='mean'</em>, <em class="sig-param">w=3</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.moving" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies a moving window function over Dask array blocks</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<code class="docutils literal notranslate"><span class="pre">dask.array</span></code>) – The <code class="docutils literal notranslate"><span class="pre">dask.array</span></code> to process.</p></li>
-<li><p><strong>b</strong> (<em>int</em><em> or </em><em>str</em><em> or </em><em>list</em>) – The output band name(s).</p></li>
-<li><p><strong>y</strong> (<em>1d array-like</em>) – The y output <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> coordinates.</p></li>
-<li><p><strong>x</strong> (<em>1d array-like</em>) – The x output <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> coordinates.</p></li>
-<li><p><strong>attrs</strong> (<em>dict</em>) – The output <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> attributes.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
+<li><p><strong>band_names</strong> (<em>int</em><em> or </em><em>str</em><em> or </em><em>list</em>) – The output band name(s).</p></li>
 <li><p><strong>stat</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The statistic to compute.</p></li>
 <li><p><strong>w</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The moving window size (in pixels).</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of bands to process in parallel.</p></li>
@@ -201,7 +199,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ds</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">attr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ds</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>

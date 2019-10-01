@@ -144,17 +144,14 @@ class Chunks(object):
 class MapProcesses(object):
 
     @staticmethod
-    def moving(data, b, y, x, attrs, stat='mean', w=3, n_jobs=1):
+    def moving(data, band_names=None, stat='mean', w=3, n_jobs=1):
 
         """
         Applies a moving window function over Dask array blocks
 
         Args:
-            data (``dask.array``): The ``dask.array`` to process.
-            b (int or str or list): The output band name(s).
-            y (1d array-like): The y output ``xarray.DataArray`` coordinates.
-            x (1d array-like): The x output ``xarray.DataArray`` coordinates.
-            attrs (dict): The output ``xarray.DataArray`` attributes.
+            data (DataArray): The ``xarray.DataArray`` to process.
+            band_names (int or str or list): The output band name(s).
             stat (Optional[str]): The statistic to compute.
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
@@ -166,8 +163,17 @@ class MapProcesses(object):
             >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.moving(ds.data, ['red'], ds.y, ds.x, ds.attr)
+            >>>     ds = gw.moving(ds, band_names=['red'])
         """
+
+        if not isinstance(data, xr.DataArray):
+            logger.exception('  The input data must be an Xarray DataArray.')
+
+        y = data.y.values
+        x = data.x.values
+        attrs = data.attrs
+
+        data_array = data.data
 
         if n_jobs <= 0:
 
@@ -179,32 +185,32 @@ class MapProcesses(object):
         def _move_func(block_data):
 
             if max(block_data.shape) <= hw:
-                return data
+                return block_data
             else:
                 return moving_window(block_data, stat=stat, w=w, n_jobs=n_jobs)
 
         if len(data.shape) == 2:
-            out_shape = (1,) + data.shape
+            out_shape = (1,) + data_array.shape
         else:
-            out_shape = data.shape
+            out_shape = data_array.shape
 
-        result = data.reshape(out_shape).astype('float64').map_overlap(_move_func,
-                                                                       depth=hw,
-                                                                       trim=True,
-                                                                       boundary='reflect',
-                                                                       dtype='float64').reshape(out_shape)
+        result = data_array.reshape(out_shape).astype('float64').map_overlap(_move_func,
+                                                                             depth=hw,
+                                                                             trim=True,
+                                                                             boundary='reflect',
+                                                                             dtype='float64').reshape(out_shape)
 
-        if isinstance(b, np.ndarray):
-            if isinstance(b.tolist(), str):
-                b = [b.tolist()]
+        if isinstance(band_names, np.ndarray):
+            if isinstance(band_names.tolist(), str):
+                band_names = [band_names.tolist()]
 
-        if not isinstance(b, list):
-            if not isinstance(b, np.ndarray):
-                b = [b]
+        if not isinstance(band_names, list):
+            if not isinstance(band_names, np.ndarray):
+                band_names = np.arange(1, data_array.shape[0]+1)
 
         return xr.DataArray(data=result,
                             dims=('band', 'y', 'x'),
-                            coords={'band': b,
+                            coords={'band': band_names,
                                     'y': y,
                                     'x': x},
                             attrs=attrs)

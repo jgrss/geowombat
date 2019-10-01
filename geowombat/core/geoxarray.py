@@ -190,14 +190,11 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             DataArray
         """
 
-        return moving(self._obj[variable].data,
-                      stat,
-                      w,
-                      self._obj.coords[band_coords].values,
-                      self._obj.y.values,
-                      self._obj.x.values,
-                      self._obj.attrs,
-                      n_jobs)
+        return moving(self._obj[variable],
+                      band_names=self._obj.coords[band_coords].values,
+                      w=w,
+                      stat=stat,
+                      n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
         return norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
@@ -532,13 +529,10 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             >>>     ds = ds.gw.moving()
         """
 
-        return moving(self._obj.data,
-                      self._obj.coords[band_coords].values,
-                      self._obj.y.values,
-                      self._obj.x.values,
-                      self._obj.attrs,
-                      stat=stat,
+        return moving(self._obj,
+                      band_names=self._obj.coords[band_coords].values,
                       w=w,
+                      stat=stat,
                       n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, nodata=0, mask=False, sensor=None, scale_factor=1.0):
