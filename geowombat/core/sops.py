@@ -168,6 +168,7 @@ class SpatialOperations(object):
 
         res = data.data.vindex[vidx].compute(**kwargs)
 
+        # TODO: reshape output ``res`` instead of iterating over dimensions
         if len(res.shape) == 1:
 
             if band_names:

@@ -4,7 +4,7 @@ from affine import Affine
 from shapely.geometry import Polygon
 
 
-class DatasetProperties(object):
+class DataProperties(object):
 
     @property
     def wavelengths(self):
@@ -46,9 +46,6 @@ class DatasetProperties(object):
                                          green=2,
                                          red=3,
                                          nir=3))
-
-
-class DataArrayProperties(object):
 
     @property
     def ndims(self):

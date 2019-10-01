@@ -3,7 +3,7 @@ from ..config import config
 from . import to_raster, moving, extract, subset
 from . import norm_diff, evi, evi2, nbr, ndvi, wi
 from ..errors import logger
-from ..util import Cluster, DataArrayProperties, DatasetProperties
+from ..util import Cluster, DataProperties
 from ..models import predict
 
 import xarray as xr
@@ -15,15 +15,18 @@ import matplotlib as mpl
 
 class _UpdateConfig(object):
 
-    def _update_config(self, **kwargs):
+    def _update_attrs(self):
 
         if self.config:
 
             for k, v in self.config.items():
+                setattr(self, k, v)
 
-                # Set the satellite sensor
-                if v in self.wavelengths:
-                    setattr(self, k, v)
+    def _update_kwargs(self, **kwargs):
+
+        if self.config:
+
+            for k, v in self.config.items():
 
                 # rasterio.write keyword arguments
                 if k in kwargs:
@@ -33,7 +36,7 @@ class _UpdateConfig(object):
 
 
 @xr.register_dataset_accessor('gw')
-class GeoWombatAccessor(_UpdateConfig, DatasetProperties):
+class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
     def __init__(self, xarray_obj):
 
@@ -42,6 +45,8 @@ class GeoWombatAccessor(_UpdateConfig, DatasetProperties):
         self.ax = None
 
         self.config = config
+
+        self._update_attrs()
 
     def to_raster(self,
                   filename,
@@ -89,7 +94,7 @@ class GeoWombatAccessor(_UpdateConfig, DatasetProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The Dataset does not have a `transform` attribute.')
 
-        kwargs = self._update_config(**kwargs)
+        kwargs = self._update_kwargs(**kwargs)
 
         to_raster(self._obj[variable],
                   filename,
@@ -214,7 +219,7 @@ class GeoWombatAccessor(_UpdateConfig, DatasetProperties):
 
 
 @xr.register_dataarray_accessor('gw')
-class GeoWombatAccessor(_UpdateConfig, DataArrayProperties):
+class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
     """
     Xarray IO class
@@ -224,6 +229,8 @@ class GeoWombatAccessor(_UpdateConfig, DataArrayProperties):
 
         self._obj = xarray_obj
         self.config = config
+
+        self._update_attrs()
 
     def to_raster(self,
                   filename,
@@ -268,7 +275,7 @@ class GeoWombatAccessor(_UpdateConfig, DataArrayProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The DataArray does not have a `transform` attribute.')
 
-        kwargs = self._update_config(**kwargs)
+        kwargs = self._update_kwargs(**kwargs)
 
         to_raster(self._obj,
                   filename,
@@ -336,7 +343,7 @@ class GeoWombatAccessor(_UpdateConfig, DataArrayProperties):
             >>>     pred = ds.gw.predict(clf)
         """
 
-        kwargs = self._update_config(**kwargs)
+        kwargs = self._update_kwargs(**kwargs)
 
         return predict(self._obj,
                        clf,
@@ -478,7 +485,7 @@ class GeoWombatAccessor(_UpdateConfig, DataArrayProperties):
             >>>     df = ds.gw.extract('poly.gpkg')
         """
 
-        kwargs = self._update_config(**kwargs)
+        kwargs = self._update_kwargs(**kwargs)
 
         return extract(self._obj,
                        aoi,

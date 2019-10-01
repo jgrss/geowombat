@@ -6,12 +6,24 @@ Use named coordinates for band math
 .. ipython:: python
 
     import geowombat as gw
+    from geowombat.data import rgbn
+
+Calculate a vegetation index, returning an `Xarray.DataArray`
 
 .. ipython:: python
 
-    #with gw.open('example.nc', chunks={'wavelength': 1, 'y': 500, 'x': 500}) as ds:
-    #
-    #    ds.gw.set_sensor('l8')
-    #
-    #    evi2 = ds.gw.evi2()
-    #    ndvi = ds.gw.ndvi().compute()
+    with gw.config.update(sensor='rgbn'):
+        with gw.open(rgbn) as ds:
+            print(ds)
+            evi = ds.gw.evi()
+            print(evi)
+
+Load the data to return a `NumPy` array
+
+.. ipython:: python
+
+    with gw.config.update(sensor='rgbn'):
+        with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
+            print(ds)
+            evi2 = ds.gw.evi2().squeeze().load().data
+            print(evi2)

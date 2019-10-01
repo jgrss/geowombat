@@ -1,6 +1,5 @@
 from .dask_ import Cluster
-from .properties import DataArrayProperties, DatasetProperties
+from .properties import DataProperties
 
 __all__ = ['Cluster',
-           'DataArrayProperties',
-           'DatasetProperties']
+           'DataProperties']

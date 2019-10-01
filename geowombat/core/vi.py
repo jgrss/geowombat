@@ -19,7 +19,17 @@ class BandMath(object):
             mask (Optional[bool])
         """
 
-        result = ((b2 - b1) / (b2 + b1)).fillna(0)
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if band_variable == 'wavelength':
+
+            result = ((data.sel(wavelength=b2) - data.sel(wavelength=b1)).fillna(0) /
+                      (data.sel(wavelength=b2) + data.sel(wavelength=b1)).fillna(0)).fillna(0)
+
+        else:
+
+            result = ((data.sel(band=b2) - data.sel(band=b1)).fillna(0) /
+                      (data.sel(band=b2) + data.sel(band=b1)).fillna(0)).fillna(0)
 
         if mask:
             result = result.where(data['mask'] < 3)
@@ -41,7 +51,9 @@ class BandMath(object):
         c2 = 7.5
         g = 2.5
 
-        if 'nir' in data.coords['band'].values.tolist():
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
             nir = 'nir'
             red = 'red'
             blue = 'blue'
@@ -50,8 +62,15 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
-        result = (g * (data.sel(wavelength=nir) - data.sel(wavelength=red)) /
-                  (data.sel(wavelength=nir) * c1 * data.sel(wavelength=red) - c2 * data.sel(wavelength=blue) + l)).fillna(0)
+        if band_variable == 'wavelength':
+
+            result = (g * (data.sel(wavelength=nir) - data.sel(wavelength=red)) /
+                      (data.sel(wavelength=nir) * c1 * data.sel(wavelength=red) - c2 * data.sel(wavelength=blue) + l)).fillna(0)
+
+        else:
+
+            result = (g * (data.sel(band=nir) - data.sel(band=red)) /
+                      (data.sel(band=nir) * c1 * data.sel(band=red) - c2 * data.sel(band=blue) + l)).fillna(0)
 
         if mask:
             result = result.where(data['mask'] < 3)
@@ -68,15 +87,24 @@ class BandMath(object):
         Two-band enhanced vegetation index
         """
 
-        if 'nir' in data.coords['band'].values.tolist():
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
             nir = 'nir'
             red = 'red'
         else:
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        result = (2.5 * ((data.sel(wavelength=nir) - data.sel(wavelength=red)) /
-                         (data.sel(wavelength=nir) + 1.0 + (2.4 * (data.sel(wavelength=red)))))).fillna(0)
+        if band_variable == 'wavelength':
+
+            result = (2.5 * ((data.sel(wavelength=nir) - data.sel(wavelength=red)) /
+                             (data.sel(wavelength=nir) + 1.0 + (2.4 * (data.sel(wavelength=red)))))).fillna(0)
+
+        else:
+
+            result = (2.5 * ((data.sel(band=nir) - data.sel(band=red)) /
+                             (data.sel(band=nir) + 1.0 + (2.4 * (data.sel(band=red)))))).fillna(0)
 
         if mask:
             result = result.where(data['mask'] < 3)
@@ -92,7 +120,9 @@ class BandMath(object):
         Normalized burn ratio
         """
 
-        if 'nir' in data.coords['band'].values.tolist():
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
             nir = 'nir'
             swir2 = 'swir2'
         else:
@@ -107,7 +137,9 @@ class BandMath(object):
         Normalized difference vegetation index
         """
 
-        if 'nir' in data.coords['band'].values.tolist():
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
             nir = 'nir'
             red = 'red'
         else:
@@ -123,15 +155,24 @@ class BandMath(object):
         Woody index
         """
 
-        if 'swir1' in data.coords['band'].values.tolist():
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'swir1' in data.coords[band_variable].values.tolist():
             swir1 = 'swir1'
             red = 'red'
         else:
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
 
-        result = da.where((data.sel(wavelength=swir1) + data.sel(wavelength=red)) > 0.5, 0,
-                          1.0 - ((data.sel(wavelength=swir1) + data.sel(wavelength=red)) / 0.5))
+        if band_variable == 'wavelength':
+
+            result = da.where((data.sel(wavelength=swir1) + data.sel(wavelength=red)) > 0.5, 0,
+                              1.0 - ((data.sel(wavelength=swir1) + data.sel(wavelength=red)) / 0.5))
+
+        else:
+
+            result = da.where((data.sel(band=swir1) + data.sel(band=red)) > 0.5, 0,
+                              1.0 - ((data.sel(band=swir1) + data.sel(band=red)) / 0.5))
 
         if mask:
             result = result.where(data['mask'] < 3)
