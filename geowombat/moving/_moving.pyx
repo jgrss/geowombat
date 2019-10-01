@@ -159,6 +159,7 @@ cdef _moving_window3d(double[:, :, ::1] input,
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
         double[:, :, ::1] output = np.zeros((dims, rows, cols), dtype='float64')
+        double[:, :, ::1] output_view = output
         metric_ptr window_function
 
     if stat == 'mean':
@@ -178,7 +179,7 @@ cdef _moving_window3d(double[:, :, ::1] input,
 
             for i in range(0, row_dims):
                 for j in range(0, col_dims):
-                    output[z, i+hw, j+hw] = window_function(input, z, i, j, dims, window_size, w_samples)
+                    output_view[z, i+hw, j+hw] = window_function(input, z, i, j, dims, window_size, w_samples)
 
     return np.float64(output)
 

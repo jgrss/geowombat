@@ -542,7 +542,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        
+
         r"""
         Calculates the normalized difference band ratio
 
