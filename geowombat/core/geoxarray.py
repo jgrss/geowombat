@@ -542,19 +542,143 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+        
+        r"""
+        Calculates the normalized difference band ratio
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            b1 (str): The band name of the first band.
+            b2 (str): The band name of the second band.
+            sensor (Optional[str]): sensor (Optional[str]): The data's sensor.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                {norm}_{diff} = \frac{b2 - b1}{b2 + b1}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def evi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the enhanced vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                EVI = 2.5 \times \frac{NIR - red}{NIR \times 6 \times red - 7.5 \times blue + 1}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def evi2(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the two-band modified enhanced vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def nbr(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the normalized burn ratio
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def ndvi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the normalized difference vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                NDVI = \frac{NIR - red}{NIR + red}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def wi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the woody vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                WI = SWIR1 + red
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
         return wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
