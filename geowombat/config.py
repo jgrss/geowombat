@@ -6,7 +6,9 @@ config = {}
 
 ASSOCIATIONS = {'sensor': 'satellite',
                 'scale_factor': 'satellite',
-                'bounds': 'geography',
+                'extent': 'geography',
+                'region': 'geography',
+                'ref_image': 'geography',
                 'blockxsize': 'io',
                 'blockysize': 'io',
                 'compress': 'io',

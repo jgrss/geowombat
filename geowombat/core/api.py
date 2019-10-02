@@ -2,9 +2,13 @@
 import netCDF4
 import h5netcdf
 
+import warnings
+
 from contextlib import contextmanager
 
 from ..errors import logger
+from ..util import concat as gw_concat
+from ..util import mosaic as gw_mosaic
 
 from . import geoxarray
 from .conversion import xarray_to_xdataset
@@ -17,6 +21,10 @@ import rasterio as rio
 from rasterio.windows import Window
 import dask
 import dask.array as da
+
+
+warnings.filterwarnings('ignore')
+
 
 ch = Chunks()
 
@@ -219,6 +227,7 @@ def open(filename,
          band_names=None,
          time_names=None,
          bounds=None,
+         mosaic=False,
          num_workers=1,
          **kwargs):
 
@@ -236,6 +245,7 @@ def open(filename,
             Default is None.
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
+        mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
             is given or ``window`` is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
@@ -295,30 +305,42 @@ def open(filename,
 
         if isinstance(filename, list):
 
-            darray = xr.concat([xr.open_rasterio(fn, **kwargs) for fn in filename], dim='time')
-
-            if return_as == 'array':
+            if mosaic:
 
                 if band_names:
+
+                    darray = gw_mosaic(filename, **kwargs)
                     darray.coords['band'] = band_names
 
-                if time_names:
-                    darray.coords['time'] = time_names
                 else:
-                    darray.coords['time'] = list(range(1, darray.shape[0]+1))
-
-                yield darray
+                    yield gw_mosaic(filename, **kwargs)
 
             else:
 
-                # The Dataset variable 'bands' has 4 named dimensions
-                #   --time, component, y, x
-                yield xarray_to_xdataset(darray,
-                                         band_names,
-                                         time_names,
-                                         ycoords=darray.y,
-                                         xcoords=darray.x,
-                                         attrs=darray.attrs)
+                darray = gw_concat(filename, **kwargs)
+
+                if return_as == 'array':
+
+                    if band_names:
+                        darray.coords['band'] = band_names
+
+                    if time_names:
+                        darray.coords['time'] = time_names
+                    else:
+                        darray.coords['time'] = list(range(1, darray.shape[0]+1))
+
+                    yield darray
+
+                else:
+
+                    # The Dataset variable 'bands' has 4 named dimensions
+                    #   --time, component, y, x
+                    yield xarray_to_xdataset(darray,
+                                             band_names,
+                                             time_names,
+                                             ycoords=darray.y,
+                                             xcoords=darray.x,
+                                             attrs=darray.attrs)
 
         else:
 

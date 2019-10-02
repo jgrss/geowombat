@@ -43,6 +43,29 @@ Open a list of files as a DataArray
                  time_names=['t1', 't2']) as ds:
         print(ds)
 
+Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned". If images are
+not target aligned, Xarray will not concatenate a stack of images. With GeoWombat, we can use a context manager to
+handle image alignment.
+
+In the example below, we specify a reference image using GeoWombat's configuration manager:
+
+.. note::
+
+    The two images in this example are identical. The point here is just to illustrate the use of the configuration manager.
+
+.. ipython:: python
+
+    # Use an image as a reference for grid alignment and CRS-handling
+    #
+    # Within the configuration context, every image
+    # in ``concat_list`` will conform to the reference grid.
+    with gw.config.update(ref_image=rgbn):
+        concat_list = [rgbn, rgbn]
+        with gw.open(concat_list,
+                     band_names=['blue', 'green', 'red', 'nir'],
+                     time_names=['t1', 't2']) as ds:
+            print(ds)
+
 Write to GeoTiff on a Dask distributed cluster
 
 .. ipython:: python
