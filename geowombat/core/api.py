@@ -312,6 +312,8 @@ def open(filename,
                     darray = gw_mosaic(filename, **kwargs)
                     darray.coords['band'] = band_names
 
+                    yield darray
+
                 else:
                     yield gw_mosaic(filename, **kwargs)
 
