@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+from ..errors import logger
+
 import rasterio as rio
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
@@ -47,6 +49,11 @@ def union(filenames, crs=None, resampling='nearest'):
     Returns:
         ``list``
     """
+
+    if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
+                          'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
+
+        logger.exception('  The resampling method is not supported by rasterio.')
 
     with rio.open(filenames[0]) as src:
 

@@ -4,13 +4,11 @@ from . import to_raster, moving, extract, subset, clip
 from . import norm_diff, evi, evi2, nbr, ndvi, wi
 from ..errors import logger
 from ..util import Cluster, DataProperties
+from ..util import imshow as gw_imshow
 from ..models import predict
 
 import xarray as xr
 import joblib
-
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 
 class _UpdateConfig(object):
@@ -47,6 +45,46 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         self.config = config
 
         self._update_attrs()
+
+    def imshow(self,
+               variable='bands',
+               band_names=None,
+               mask=False,
+               nodata=0,
+               flip=False,
+               text_color='black',
+               rot=30,
+               **kwargs):
+
+        """
+        Shows an image on a plot
+
+        Args:
+            variable (Optional[str]): The ``Dataset`` variable to write.
+            band_names (Optional[list or str]): The band name or list of band names to plot.
+            mask (Optional[bool]): Whether to mask 'no data' values (given by ``nodata``).
+            nodata (Optional[int or float]): The 'no data' value.
+            flip (Optional[bool]): Whether to flip an RGB array's band order.
+            text_color (Optional[str]): The text color.
+            rot (Optional[int]): The degree rotation for the x-axis tick labels.
+            kwargs (Optional[dict]): Keyword arguments passed to ``xarray.plot.imshow``.
+
+        Returns:
+            None
+
+        Examples:
+            >>> with gw.open('image.tif', return_as='dataset') as ds:
+            >>>     ds.gw.imshow(band_names=['red', 'green', 'red'], mask=True, vmin=0.1, vmax=0.9, robust=True)
+        """
+
+        gw_imshow(self._obj[variable],
+                  band_names=band_names,
+                  mask=mask,
+                  nodata=nodata,
+                  flip=flip,
+                  text_color=text_color,
+                  rot=rot,
+                  **kwargs)
 
     def to_raster(self,
                   filename,
@@ -113,62 +151,6 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   tags=tags,
                   **kwargs)
 
-    def show(self, wavelengths=None, mask=False, flip=False, dpi=150, **kwargs):
-
-        if (len(wavelengths) != 1) and (len(wavelengths) != 3):
-            logger.exception('  Only 1-band or 3-band arrays can be plotted.')
-
-        # plt.rcParams['figure.figsize'] = 3, 3
-        plt.rcParams['axes.titlesize'] = 5
-        plt.rcParams['axes.titlepad'] = 5
-        # plt.rcParams['axes.grid'] = False
-        # plt.rcParams['axes.spines.left'] = False
-        # plt.rcParams['axes.spines.top'] = False
-        # plt.rcParams['axes.spines.right'] = False
-        # plt.rcParams['axes.spines.bottom'] = False
-        # plt.rcParams['xtick.top'] = True
-        # plt.rcParams['ytick.right'] = True
-        # plt.rcParams['xtick.direction'] = 'in'
-        # plt.rcParams['ytick.direction'] = 'in'
-        # plt.rcParams['xtick.color'] = 'none'
-        # plt.rcParams['ytick.color'] = 'none'
-        plt.rcParams['figure.dpi'] = dpi
-        plt.rcParams['savefig.bbox'] = 'tight'
-        plt.rcParams['savefig.pad_inches'] = 0.5
-
-        fig = plt.figure()
-        self.ax = fig.add_subplot(111)
-
-        rgb = self._obj['bands'].sel(wavelength=wavelengths)
-
-        if mask:
-
-            if len(wavelengths) == 1:
-                rgb = rgb.where((self._obj['mask'] < 3) & (rgb > 0))
-            else:
-                rgb = rgb.where((self._obj['mask'] < 3) & (rgb.max(axis=0) > 0))
-
-        if len(wavelengths) == 3:
-
-            rgb = rgb.transpose('y', 'x', 'wavelength')
-
-            if flip:
-                rgb = rgb[..., ::-1]
-
-            rgb.plot.imshow(rgb='wavelength', ax=self.ax, **kwargs)
-
-        else:
-            rgb.plot.imshow(ax=self.ax, **kwargs)
-
-        self._show()
-
-    def _show(self):
-
-        self.ax.xaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-        self.ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-        plt.tight_layout(pad=0.5)
-        plt.show()
-
     def moving(self,
                variable='bands',
                band_coords='band',
@@ -228,6 +210,44 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         self.config = config
 
         self._update_attrs()
+
+    def imshow(self,
+               band_names=None,
+               mask=False,
+               nodata=0,
+               flip=False,
+               text_color='black',
+               rot=30,
+               **kwargs):
+
+        """
+        Shows an image on a plot
+
+        Args:
+            band_names (Optional[list or str]): The band name or list of band names to plot.
+            mask (Optional[bool]): Whether to mask 'no data' values (given by ``nodata``).
+            nodata (Optional[int or float]): The 'no data' value.
+            flip (Optional[bool]): Whether to flip an RGB array's band order.
+            text_color (Optional[str]): The text color.
+            rot (Optional[int]): The degree rotation for the x-axis tick labels.
+            kwargs (Optional[dict]): Keyword arguments passed to ``xarray.plot.imshow``.
+
+        Returns:
+            None
+
+        Examples:
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds.gw.imshow(band_names=['red', 'green', 'red'], mask=True, vmin=0.1, vmax=0.9, robust=True)
+        """
+
+        gw_imshow(self._obj,
+                  band_names=band_names,
+                  mask=mask,
+                  nodata=nodata,
+                  flip=flip,
+                  text_color=text_color,
+                  rot=rot,
+                  **kwargs)
 
     def to_raster(self,
                   filename,

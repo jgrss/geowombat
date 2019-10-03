@@ -58,7 +58,19 @@ class BandMath(object):
         new_attrs['drange'] = (clip_min, clip_max)
 
         result.clip(min=clip_min, max=clip_max)
-        result = result.assign_coords(coords={band_variable: new_name})
+
+        if 'time' in result.coords:
+
+            if band_variable == 'wavelength':
+                result = result.assign_coords(wavelength=new_name)
+            else:
+                result = result.assign_coords(band=new_name)
+
+            result = result.expand_dims(dim=band_variable)
+
+        else:
+            result = result.assign_coords(coords={band_variable: new_name})
+
         result = result.assign_attrs(**new_attrs)
 
         return result
