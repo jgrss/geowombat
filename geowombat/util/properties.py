@@ -91,6 +91,18 @@ class DataProperties(object):
             return 1
 
     @property
+    def tdims(self):
+
+        """
+        Get the number of time dimensions
+        """
+
+        if self.ndims > 3:
+            return self._obj.shape[-4]
+        else:
+            return 1
+
+    @property
     def bands(self):
 
         """
