@@ -226,7 +226,10 @@ def open(filename,
          band_names=None,
          time_names=None,
          bounds=None,
+         how='reference',
+         resampling='nearest',
          mosaic=False,
+         overlap='max',
          num_workers=1,
          **kwargs):
 
@@ -243,7 +246,18 @@ def open(filename,
             Default is None.
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
+        how (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
+            Choices are ['intersection', 'union', 'reference'].
+
+            * reference: Use the bounds of the reference image
+            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+            * union: Use the union (i.e., maximum extent) of all the image bounds
+
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
+        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``mosaic`` = ``True``.
+            Choices are ['min', 'max', 'mean'].
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
             is given or ``window`` is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
@@ -310,11 +324,18 @@ def open(filename,
                     yield darray
 
                 else:
-                    yield gw_mosaic(filename, **kwargs)
+
+                    yield gw_mosaic(filename,
+                                    overlap=overlap,
+                                    resampling=resampling,
+                                    **kwargs)
 
             else:
 
-                darray = gw_concat(filename, **kwargs)
+                darray = gw_concat(filename,
+                                   how=how,
+                                   resampling=resampling,
+                                   **kwargs)
 
                 if return_as == 'array':
 

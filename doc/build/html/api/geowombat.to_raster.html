@@ -179,7 +179,7 @@
 <h1>to_raster<a class="headerlink" href="#to-raster" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_raster">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">ds_data</em>, <em class="sig-param">filename</em>, <em class="sig-param">crs</em>, <em class="sig-param">transform</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">row_chunks=512</em>, <em class="sig-param">col_chunks=512</em>, <em class="sig-param">pool_chunksize=1000</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">ds_data</em>, <em class="sig-param">filename</em>, <em class="sig-param">crs</em>, <em class="sig-param">transform</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">time_chunks=1</em>, <em class="sig-param">band_chunks=1</em>, <em class="sig-param">row_chunks=512</em>, <em class="sig-param">col_chunks=512</em>, <em class="sig-param">pool_chunksize=1000</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes an Xarray DataArray or Dataset to a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -194,6 +194,8 @@
 <li><p><strong>driver</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The raster driver.</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
 <li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output data type.</p></li>
+<li><p><strong>time_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing time chunk size.</p></li>
+<li><p><strong>band_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing band chunk size.</p></li>
 <li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing row chunk size.</p></li>
 <li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing column chunk size.</p></li>
 <li><p><strong>pool_chunksize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <cite>multiprocessing.Pool</cite> chunk size.</p></li>

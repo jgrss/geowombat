@@ -2,7 +2,7 @@ import os
 
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, union, warp_to_vrt
+from .rasterio_ import get_ref_image_meta, union, warp_to_vrt, get_file_bounds
 
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
@@ -67,19 +67,28 @@ def mosaic(filenames, overlap='max', resampling='nearest', **kwargs):
     return ds.assign_attrs(**attrs)
 
 
-def concat(filenames, resampling='nearest', **kwargs):
+def concat(filenames, how='reference', resampling='nearest', **kwargs):
 
     """
     Concatenates a list of images
 
     Args:
         filenames (list): A list of file names to concatenate.
+        how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
+
+            * reference: Use the bounds of the reference image
+            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+            * union: Use the union (i.e., maximum extent) of all the image bounds
+
         resampling (Optional[str]): The resampling method.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
         ``xarray.DataArray``
     """
+
+    if how not in ['intersection', 'union', 'reference']:
+        logger.exception("  Only 'intersection', 'union', and 'reference' are supported.")
 
     ref_image = None
     ref_kwargs = {'bounds': None, 'crs': None, 'res': None}
@@ -97,6 +106,24 @@ def concat(filenames, resampling='nearest', **kwargs):
                       'crs': ref_meta.crs,
                       'res': ref_meta.res}
 
+    if how == 'intersection':
+
+        # Get the intersecting bounds of all images
+        ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                               how='intersection',
+                                               crs=ref_kwargs['crs'],
+                                               return_bounds=True)
+
+    elif how == 'union':
+
+        # Get the union bounds of all images
+        ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                               how='union',
+                                               crs=ref_kwargs['crs'],
+                                               return_bounds=True)
+
     # Warp all images and concatenate into a DataArray
-    return xr.concat([xr.open_rasterio(warp_to_vrt(fn, resampling=resampling, **ref_kwargs), **kwargs)
+    return xr.concat([xr.open_rasterio(warp_to_vrt(fn,
+                                                   resampling=resampling,
+                                                   **ref_kwargs), **kwargs)
                       for fn in filenames], dim='time')

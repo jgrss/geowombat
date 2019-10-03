@@ -6,6 +6,7 @@ import rasterio as rio
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, transform_bounds
+from rasterio.transform import array_bounds
 from affine import Affine
 
 
@@ -35,6 +36,81 @@ def align_bounds(minx, miny, maxx, maxy, res):
     return aligned_target(new_transform, new_width, new_height, res)
 
 
+def get_file_bounds(filenames, how='intersection', crs=None, return_bounds=False):
+
+    """
+    Gets the union of all files
+
+    Args:
+        filenames (list): The file names to mosaic.
+        how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
+        crs (Optional[crs]): The CRS to warp to.
+        return_bounds (Optional[bool]): Whether to return the bounds tuple.
+
+    Returns:
+        transform, width, height
+    """
+
+    if how not in ['intersection', 'union']:
+        logger.exception("  Only 'intersection' and 'union' are supported.")
+
+    with rio.open(filenames[0]) as src:
+
+        if not crs:
+            crs = src.crs
+
+        res = src.res
+
+        # Transform the extent to the reference CRS
+        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
+                                                                                crs,
+                                                                                src.bounds.left,
+                                                                                src.bounds.bottom,
+                                                                                src.bounds.right,
+                                                                                src.bounds.top,
+                                                                                densify_pts=21)
+
+    for fn in filenames[1:]:
+
+        with rio.open(fn) as src:
+
+            # Transform the extent to the reference CRS
+            left, bottom, right, top = transform_bounds(src.crs,
+                                                        crs,
+                                                        src.bounds.left,
+                                                        src.bounds.bottom,
+                                                        src.bounds.right,
+                                                        src.bounds.top,
+                                                        densify_pts=21)
+
+        # Update the mosaic bounds
+        if how == 'union':
+
+            bounds_left = min(bounds_left, left)
+            bounds_bottom = min(bounds_bottom, bottom)
+            bounds_right = max(bounds_right, right)
+            bounds_top = max(bounds_top, top)
+
+        elif how == 'intersection':
+
+            bounds_left = max(bounds_left, left)
+            bounds_bottom = max(bounds_bottom, bottom)
+            bounds_right = min(bounds_right, right)
+            bounds_top = min(bounds_top, top)
+
+    # Align the cells
+    bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
+                                                                 bounds_bottom,
+                                                                 bounds_right,
+                                                                 bounds_top,
+                                                                 res)
+
+    if return_bounds:
+        return array_bounds(bounds_height, bounds_width, bounds_transform)
+    else:
+        return bounds_transform, bounds_width, bounds_height
+
+
 def union(filenames, crs=None, resampling='nearest'):
 
     """
@@ -55,47 +131,8 @@ def union(filenames, crs=None, resampling='nearest'):
 
         logger.exception('  The resampling method is not supported by rasterio.')
 
-    with rio.open(filenames[0]) as src:
-
-        if not crs:
-            crs = src.crs
-
-        res = src.res
-
-        # Transform the extent to the reference CRS
-        min_left, min_bottom, max_right, max_top = transform_bounds(src.crs,
-                                                                    crs,
-                                                                    src.bounds.left,
-                                                                    src.bounds.bottom,
-                                                                    src.bounds.right,
-                                                                    src.bounds.top,
-                                                                    densify_pts=21)
-
-    for fn in filenames[1:]:
-
-        with rio.open(fn) as src:
-
-            # Transform the extent to the reference CRS
-            left, bottom, right, top = transform_bounds(src.crs,
-                                                        crs,
-                                                        src.bounds.left,
-                                                        src.bounds.bottom,
-                                                        src.bounds.right,
-                                                        src.bounds.top,
-                                                        densify_pts=21)
-
-        # Update the mosaic bounds
-        min_left = min(min_left, left)
-        min_bottom = min(min_bottom, bottom)
-        max_right = max(max_right, right)
-        max_top = max(max_top, top)
-
-    # Align the cells
-    dst_transform, dst_width, dst_height = align_bounds(min_left,
-                                                        min_bottom,
-                                                        max_right,
-                                                        max_top,
-                                                        res)
+    # Get the union bounds of all images
+    dst_transform, dst_width, dst_height = get_file_bounds(filenames, how='union', crs=None)
 
     vrt_options = {'resampling': getattr(Resampling, resampling),
                    'crs': crs,

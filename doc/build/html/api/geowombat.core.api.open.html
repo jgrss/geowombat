@@ -165,22 +165,33 @@
 <h1>open<a class="headerlink" href="#open" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.core.api.open">
-<code class="sig-prename descclassname">geowombat.core.api.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">use='xarray'</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.api.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.core.api.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">how='reference'</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">overlap='max'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.api.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em><em> or </em><em>list</em>) – The file name or list of files to open.</p></li>
-<li><p><strong>use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The package to use for file opening backend. Default is ‘xarray’.
-Choices are [‘xarray’, ‘rasterio’].</p></li>
-<li><p><strong>return_as</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – When ‘use’=’xarray’, return <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>.</p></li>
+<li><p><strong>return_as</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The Xarray data type to return.
+Choices are [‘array’, ‘dataset’] which correspond to <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> and <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>.</p></li>
 <li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A list of band names if <code class="docutils literal notranslate"><span class="pre">return_as</span></code> = ‘dataset’ or <code class="docutils literal notranslate"><span class="pre">bounds</span></code>
 is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is None.</p></li>
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A list of names to give the time dimension if <code class="docutils literal notranslate"><span class="pre">bounds</span></code> is given.
 Default is None.</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as [minx, maxy, miny, maxx].
 Default is None.</p></li>
+<li><p><strong>how</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.
+Choices are [‘intersection’, ‘union’, ‘reference’].</p>
+<ul>
+<li><p>reference: Use the bounds of the reference image</p></li>
+<li><p>intersection: Use the intersection (i.e., minimum extent) of all the image bounds</p></li>
+<li><p>union: Use the union (i.e., maximum extent) of all the image bounds</p></li>
+</ul>
+</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
+Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
 <li><p><strong>mosaic</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, whether to mosaic the arrays instead of stacking.</p></li>
+<li><p><strong>overlap</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The keyword that determines how to handle overlapping data if <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+Choices are [‘min’, ‘max’, ‘mean’].</p></li>
 <li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for Dask if <code class="docutils literal notranslate"><span class="pre">bounds</span></code>
 is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is 1.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to the file opener.</p></li>
