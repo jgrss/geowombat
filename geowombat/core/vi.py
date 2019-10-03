@@ -68,8 +68,15 @@ class BandMath(object):
 
             result = result.expand_dims(dim=band_variable)
 
+            # Ensure expected order
+            result = result.transpose('time', 'band', 'y', 'x')
+
         else:
+
             result = result.assign_coords(coords={band_variable: new_name})
+
+            # Ensure expected order
+            result = result.transpose('band', 'y', 'x')
 
         result = result.assign_attrs(**new_attrs)
 
