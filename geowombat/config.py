@@ -15,12 +15,33 @@ ASSOCIATIONS = {'sensor': 'satellite',
                 'driver': 'io',
                 'tiled': 'io'}
 
+config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
+
+config_parser = configparser.ConfigParser()
+
+config_parser.read(config_file)
+
+for section in config_parser.sections():
+
+    for k, v in config_parser[section].items():
+
+        if v in ['True', 'False']:
+
+            if v.lower() == 'true':
+                config[k] = True
+            else:
+                config[k] = False
+        else:
+
+            try:
+                config[k] = float(v)
+            except:
+                config[k] = v
+
 
 class update(object):
 
     """
-    Args:
-
     >>> with gw.config.update(sensor='l8'):
     >>>
     >>>     with gw.open('image.tif') as ds:
@@ -28,8 +49,6 @@ class update(object):
     """
 
     def __init__(self, config=config, **kwargs):
-
-        self.config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
 
         self.config = config
         self._set_defaults(config)
@@ -44,11 +63,10 @@ class update(object):
         d = self.config
         self._set_defaults(d)
 
-    def _set_defaults(self, d):
+    @staticmethod
+    def _set_defaults(d):
 
-        config_parser = configparser.ConfigParser()
-
-        config_parser.read(self.config_file)
+        config_parser.read(config_file)
 
         for section in config_parser.sections():
 
@@ -67,11 +85,10 @@ class update(object):
                     except:
                         d[k] = v
 
-    def _assign(self, d, **kwargs):
+    @staticmethod
+    def _assign(d, **kwargs):
 
-        config_parser = configparser.ConfigParser()
-
-        config_parser.read(self.config_file)
+        config_parser.read(config_file)
 
         if kwargs:
 

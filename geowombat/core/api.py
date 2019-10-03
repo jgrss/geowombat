@@ -222,7 +222,6 @@ def read(filename,
 
 @contextmanager
 def open(filename,
-         use='xarray',
          return_as='array',
          band_names=None,
          time_names=None,
@@ -236,9 +235,8 @@ def open(filename,
 
     Args:
         filename (str or list): The file name or list of files to open.
-        use (Optional[str]): The package to use for file opening backend. Default is 'xarray'.
-            Choices are ['xarray', 'rasterio'].
-        return_as (Optional[str]): When 'use'='xarray', return ``xarray.DataArray`` or ``xarray.Dataset``.
+        return_as (Optional[str]): The Xarray data type to return.
+            Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
         band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
             is given or ``window`` is given. Default is None.
         time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
@@ -278,9 +276,6 @@ def open(filename,
         >>>
         >>>     print(ds)
     """
-
-    if use not in ['xarray', 'rasterio']:
-        logger.exception("  The `use` backend must be one of ['xarray', 'rasterio']")
 
     if return_as not in ['array', 'dataset']:
         logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
@@ -353,22 +348,15 @@ def open(filename,
 
             if file_names.f_ext.lower() in IO_DICT['rasterio']:
 
-                if use == 'xarray':
+                with xr.open_rasterio(filename, **kwargs) as src:
 
-                    with xr.open_rasterio(filename, **kwargs) as src:
+                    if return_as == 'dataset':
+                        yield xarray_to_xdataset(src, band_names, time_names)
+                    else:
 
-                        if return_as == 'dataset':
-                            yield xarray_to_xdataset(src, band_names, time_names)
-                        else:
+                        if band_names:
+                            src.coords['band'] = band_names
 
-                            if band_names:
-                                src.coords['band'] = band_names
-
-                            yield src
-
-                else:
-
-                    with rio.open(filename, **kwargs) as src:
                         yield src
 
             else:

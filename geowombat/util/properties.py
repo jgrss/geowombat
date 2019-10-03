@@ -126,23 +126,31 @@ class DataProperties(object):
 
     @property
     def left(self):
-        """Get the array bounding box left coordinate"""
-        return float(self._obj.x.min().values)
+
+        """
+        Get the array bounding box left coordinate
+
+        Pixel shift reference:
+            https://github.com/pydata/xarray/blob/master/xarray/backends/rasterio_.py
+            http://web.archive.org/web/20160326194152/http://remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2
+        """
+
+        return float(self._obj.x.min().values) - self.cellx_half
 
     @property
     def right(self):
         """Get the array bounding box right coordinate"""
-        return float(self._obj.x.max().values)
+        return float(self._obj.x.max().values) + self.cellx_half
 
     @property
     def top(self):
         """Get the array bounding box top coordinate"""
-        return float(self._obj.y.max().values)
+        return float(self._obj.y.max().values) + self.celly_half
 
     @property
     def bottom(self):
         """Get the array bounding box bottom coordinate"""
-        return float(self._obj.y.min().values)
+        return float(self._obj.y.min().values) - self.celly_half
 
     @property
     def bounds(self):
@@ -158,6 +166,16 @@ class DataProperties(object):
     def cellx(self):
         """Get the cell size in the x direction"""
         return self._obj.res[0]
+
+    @property
+    def celly_half(self):
+        """Get the half width of the cell size in the y direction"""
+        return self.celly / 2.0
+
+    @property
+    def cellx_half(self):
+        """Get the half width of the cell size in the x direction"""
+        return self.cellx / 2.0
 
     @property
     def geometry(self):
