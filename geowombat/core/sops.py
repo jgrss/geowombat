@@ -1,9 +1,15 @@
+import os
+
 from ..errors import logger
+from ..util.rasterio_ import align_bounds, array_bounds
 from .util import Converters
 
 import numpy as np
 import geopandas as gpd
+import xarray as xr
+import dask.array as da
 from rasterio.crs import CRS
+from rasterio import features
 from shapely.geometry import Polygon
 
 try:
@@ -228,11 +234,11 @@ class SpatialOperations(object):
              query=None):
 
         """
-        Clips a DataArray
+        Clips a DataArray by vector polygon geometry
 
         Args:
             data (DataArray): An ``xarray.DataArray`` to subset.
-            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
+            df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to clip to.
             query (Optional[str]): A query to apply to ``df``.
 
         Returns:
@@ -250,6 +256,9 @@ class SpatialOperations(object):
             >>>     ds = ds.gw.clip(df, query="Id == 1")
         """
 
+        if isinstance(df, str) and os.path.isfile(df):
+            df = gpd.read_file(df)
+
         if query:
             df = df.query(query)
 
@@ -260,12 +269,40 @@ class SpatialOperations(object):
 
         left, bottom, right, top = df.total_bounds
 
-        return self.subset(data,
-                           left=left,
-                           bottom=bottom,
-                           right=right,
-                           top=top,
+        # Align the geometry grid to the array
+        align_transform, align_width, align_height = align_bounds(left,
+                                                                  bottom,
+                                                                  right,
+                                                                  top,
+                                                                  data.res)
+
+        # Get the new bounds
+        new_bounds = array_bounds(align_height, align_width, align_transform)
+
+        # Subset the array
+        data = self.subset(data,
+                           left=new_bounds.bounds.left,
+                           bottom=new_bounds.bounds.bottom,
+                           right=new_bounds.bounds.right,
+                           top=new_bounds.bounds.top,
                            chunksize=data.data.chunksize)
+
+        # Rasterize the geometry and store as a DataArray
+        mask = xr.DataArray(data=da.from_array(features.rasterize(df.geometry.values.tolist(),
+                                                                  out_shape=(align_height, align_width),
+                                                                  transform=align_transform,
+                                                                  fill=0,
+                                                                  out=None,
+                                                                  all_touched=True,
+                                                                  default_value=1,
+                                                                  dtype='int32'),
+                                               chunks=(data.gw.row_chunks, data.gw.col_chunks)),
+                            dims=['y', 'x'],
+                            coords={'y': data.y.values,
+                                    'x': data.x.values})
+
+        # Return the clipped array
+        return data.where(mask == 1)
 
     def subset(self,
                data,
@@ -284,7 +321,6 @@ class SpatialOperations(object):
 
         Args:
             data (DataArray): An ``xarray.DataArray`` to subset.
-            by (str): TODO: give subsetting options
             left (Optional[float]): The left coordinate.
             top (Optional[float]): The top coordinate.
             right (Optional[float]): The right coordinate.
@@ -309,13 +345,13 @@ class SpatialOperations(object):
             cols = int((right - left) / data.gw.celly)
 
         if not isinstance(cols, int):
-            raise AttributeError('The right coordinate or columns must be specified.')
+            logger.exception('  The right coordinate or columns must be specified.')
 
         if isinstance(bottom, int) or isinstance(bottom, float):
             rows = int((top - bottom) / data.gw.celly)
 
         if not isinstance(rows, int):
-            raise AttributeError('The bottom coordinate or rows must be specified.')
+            logger.exception('  The bottom coordinate or rows must be specified.')
 
         x_idx = np.linspace(left, left + (cols * data.gw.celly), cols)
         y_idx = np.linspace(top, top - (rows * data.gw.celly), rows)

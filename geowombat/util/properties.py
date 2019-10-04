@@ -49,7 +49,7 @@ class DataProperties(object):
                     s210=WavelengthsS210(blue=1,
                                          green=2,
                                          red=3,
-                                         nir=3))
+                                         nir=4))
 
     @property
     def ndims(self):
@@ -91,7 +91,7 @@ class DataProperties(object):
             return 1
 
     @property
-    def tdims(self):
+    def ntime(self):
 
         """
         Get the number of time dimensions
@@ -103,7 +103,7 @@ class DataProperties(object):
             return 1
 
     @property
-    def bands(self):
+    def nbands(self):
 
         """
         Get the number of array bands
@@ -115,12 +115,12 @@ class DataProperties(object):
             return 1
 
     @property
-    def rows(self):
+    def nrows(self):
         """Get the number of array rows"""
         return self._obj.shape[-2]
 
     @property
-    def cols(self):
+    def ncols(self):
         """Get the number of array columns"""
         return self._obj.shape[-1]
 
@@ -135,22 +135,22 @@ class DataProperties(object):
             http://web.archive.org/web/20160326194152/http://remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2
         """
 
-        return float(self._obj.x.min().values) - self.cellx_half
+        return float(self._obj.x.min().values) - self.cellxh
 
     @property
     def right(self):
         """Get the array bounding box right coordinate"""
-        return float(self._obj.x.max().values) + self.cellx_half
+        return float(self._obj.x.max().values) + self.cellxh
 
     @property
     def top(self):
         """Get the array bounding box top coordinate"""
-        return float(self._obj.y.max().values) + self.celly_half
+        return float(self._obj.y.max().values) + self.cellyh
 
     @property
     def bottom(self):
         """Get the array bounding box bottom coordinate"""
-        return float(self._obj.y.min().values) - self.celly_half
+        return float(self._obj.y.min().values) - self.cellyh
 
     @property
     def bounds(self):
@@ -168,12 +168,12 @@ class DataProperties(object):
         return self._obj.res[0]
 
     @property
-    def celly_half(self):
+    def cellyh(self):
         """Get the half width of the cell size in the y direction"""
         return self.celly / 2.0
 
     @property
-    def cellx_half(self):
+    def cellxh(self):
         """Get the half width of the cell size in the x direction"""
         return self.cellx / 2.0
 

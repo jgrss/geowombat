@@ -2,7 +2,6 @@ from ..config import config
 
 from . import to_raster, moving, extract, subset, clip
 from . import norm_diff, evi, evi2, nbr, ndvi, wi
-from ..errors import logger
 from ..util import Cluster, DataProperties
 from ..util import imshow as gw_imshow
 from ..models import predict
@@ -389,7 +388,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             kwargs (Optional[dict]): Keyword arguments passed to `to_raster`.
 
         Example:
-            >>> from cube import xarray_accessor
+            >>> import geowombat as gw
             >>> import xarray as xr
             >>>
             >>> def user_func(ds_):

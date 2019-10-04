@@ -1,6 +1,4 @@
-from .conversion import dask_to_datarray
-
-import dask.array as da
+import xarray as xr
 
 
 class BandMath(object):
@@ -253,6 +251,17 @@ class BandMath(object):
         result = result.where(result > 0.5, 0, 1.0 - (result / 0.5)).fillna(nodata)
 
         return self.mask_and_assign(data, result, band_variable, 'wi', mask, 0, 1, scale_factor, sensor)
+
+
+class TasseledCap(BandMath):
+
+    def transform(self):
+
+        """
+        TODO: tasseled cap transformations
+        """
+
+        return
 
 
 class VegetationIndices(BandMath):

@@ -9,6 +9,17 @@ from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
 
 
+def _update_kwarg(ref_obj, ref_kwargs, key):
+
+    if isinstance(ref_obj, str) and os.path.isfile(ref_obj):
+
+        # Get the metadata from the reference image
+        ref_meta = get_ref_image_meta(ref_obj)
+        ref_kwargs[key] = getattr(ref_meta, key)
+
+    return ref_kwargs
+
+
 def mosaic(filenames,
            overlap='max',
            resampling='nearest',
@@ -47,26 +58,10 @@ def mosaic(filenames,
                           'res': ref_meta.res}
 
     elif 'ref_crs' in config:
-
-        ref_crs = config['ref_crs']
-
-        if isinstance(ref_crs, str) and os.path.isfile(ref_crs):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_crs)
-
-            ref_kwargs['crs'] = ref_meta.crs
+        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
     elif 'ref_res' in config:
-
-        ref_res = config['ref_res']
-
-        if isinstance(ref_res, str) and os.path.isfile(ref_res):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_res)
-
-            ref_kwargs['res'] = ref_meta.res
+        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     # Get the union of all images
     union_grids = union(filenames,
@@ -141,34 +136,13 @@ def concat(filenames,
                           'res': ref_meta.res}
 
     elif 'ref_bounds' in config:
-
-        ref_bounds = config['ref_bounds']
-
-        if isinstance(ref_bounds, str) and os.path.isfile(ref_bounds):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_bounds)
-            ref_kwargs['bounds'] = ref_meta.bounds
+        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
 
     elif 'ref_crs' in config:
-
-        ref_crs = config['ref_crs']
-
-        if isinstance(ref_crs, str) and os.path.isfile(ref_crs):
-            # Get the metadata from the reference image
-
-            ref_meta = get_ref_image_meta(ref_crs)
-            ref_kwargs['crs'] = ref_meta.crs
+        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
     elif 'ref_res' in config:
-
-        ref_res = config['ref_res']
-
-        if isinstance(ref_res, str) and os.path.isfile(ref_res):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_res)
-            ref_kwargs['res'] = ref_meta.res
+        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     if how == 'intersection':
 
