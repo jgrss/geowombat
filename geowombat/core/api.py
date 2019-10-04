@@ -256,7 +256,7 @@ def open(filename,
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
-        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``mosaic`` = ``True``.
+        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
             is given or ``window`` is given. Default is 1.
@@ -272,9 +272,34 @@ def open(filename,
         >>> with gw.open('image.tif') as ds:
         >>>     print(ds)
         >>>
-        >>> # Open a list of images
+        >>> # Open a list of images, stacke along the 'time' dimension
         >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
         >>>     print(ds)
+        >>>
+        >>> # Use a context manager to handle images of difference sizes and projections
+        >>> with gw.config.update(ref_image='image1.tif'):
+        >>>
+        >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
+        >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
+        >>>
+        >>>         # The first two images were acquired on the same date
+        >>>         #   and will be merged into a single time layer
+        >>>         time_names=['date1', 'date1', 'date2']) as ds:
+        >>>
+        >>>         print(ds)
+        >>>
+        >>> # Mosaic images across space using a reference
+        >>> #   image for the CRS and cell resolution
+        >>> with gw.config.update(ref_image='image1.tif'):
+        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Mix configuration keywords
+        >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
+        >>>
+        >>>     # The ``how`` keyword overrides the extent bounds
+        >>>     with gw.open(['image1.tif', 'image2.tif'], how='union') as ds:
+        >>>         print(ds)
         >>>
         >>> # Open a list of images at a window slice
         >>> from rasterio.windows import Window
@@ -316,6 +341,7 @@ def open(filename,
 
             if mosaic:
 
+                # Mosaic images over space
                 if band_names:
 
                     darray = gw_mosaic(filename, **kwargs)
@@ -332,9 +358,12 @@ def open(filename,
 
             else:
 
+                # Stack images along the 'time' axis
                 darray = gw_concat(filename,
                                    how=how,
                                    resampling=resampling,
+                                   time_names=time_names,
+                                   overlap=overlap,
                                    **kwargs)
 
                 if return_as == 'array':

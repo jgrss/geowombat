@@ -4,22 +4,17 @@ import configparser
 
 config = {}
 
-ASSOCIATIONS = {'sensor': 'satellite',
-                'scale_factor': 'satellite',
-                'extent': 'geography',
-                'region': 'geography',
-                'ref_image': 'geography',
-                'blockxsize': 'io',
-                'blockysize': 'io',
-                'compress': 'io',
-                'driver': 'io',
-                'tiled': 'io'}
-
 config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
 
 config_parser = configparser.ConfigParser()
 
 config_parser.read(config_file)
+
+ASSOCIATIONS = {}
+
+for section in config_parser.sections():
+    for k, v in config_parser[section].items():
+        ASSOCIATIONS[v] = k
 
 for section in config_parser.sections():
 

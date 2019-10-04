@@ -123,7 +123,7 @@ def union(filenames, crs=None, resampling='nearest'):
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
 
     Returns:
-        ``list``
+        ``list`` of ``rasterio.vrt.WarpedVRT`` objects
     """
 
     if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
@@ -179,7 +179,12 @@ def get_ref_image_meta(filename):
     return WarpInfo(bounds=bounds, crs=crs, res=res)
 
 
-def warp_to_vrt(filename, bounds=None, crs=None, res=None, resampling='nearest'):
+def warp_to_vrt(filename,
+                bounds=None,
+                crs=None,
+                res=None,
+                resampling='nearest',
+                warp_mem_limit=512):
 
     """
     Warps an image to a VRT object
@@ -191,6 +196,7 @@ def warp_to_vrt(filename, bounds=None, crs=None, res=None, resampling='nearest')
         res (Optional[tuple]): The cell resolution to warp to.
         resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
 
     Returns:
         ``rasterio.vrt.WarpedVRT``
@@ -228,7 +234,7 @@ def warp_to_vrt(filename, bounds=None, crs=None, res=None, resampling='nearest')
                            'height': dst_height,
                            'width': dst_width,
                            'nodata': 0,
-                           'warp_mem_limit': 512,
+                           'warp_mem_limit': warp_mem_limit,
                            'warp_extras': {'multi': True}}
 
             # 'warp_extras': {'warp_option': 'NUM_THREADS=ALL_CPUS'}
