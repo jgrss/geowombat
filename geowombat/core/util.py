@@ -10,7 +10,9 @@ import pandas as pd
 import geopandas as gpd
 import xarray as xr
 from rasterio import features
+from rasterio.crs import CRS
 import shapely
+from shapely.geometry import Polygon
 from affine import Affine
 from tqdm import tqdm
 
@@ -273,7 +275,133 @@ def _iter_func(a):
 class Converters(object):
 
     @staticmethod
-    def polygons_to_points(data, df, frac=1.0, all_touched=False, n_jobs=1):
+    def ij_to_xy(j, i, transform):
+
+        """
+        Converts map coordinates to array indices
+
+        Args:
+            j (float or 1d array): The column index.
+            i (float or 1d array): The row index.
+            transform (object): The affine transform.
+
+        Returns:
+            x, y
+        """
+
+        return transform * (j, i)
+
+    @staticmethod
+    def xy_to_ij(x, y, transform):
+
+        """
+        Converts map coordinates to array indices
+
+        Args:
+            x (float or 1d array): The x coordinates.
+            y (float or 1d array): The y coordinates.
+            transform (object): The affine transform.
+
+        Returns:
+            j, i
+        """
+
+        return ~transform * (x, y)
+
+    def prepare_points(self,
+                       data,
+                       aoi,
+                       frac=1.0,
+                       all_touched=False,
+                       mask=None,
+                       n_jobs=8,
+                       verbose=0):
+
+        if isinstance(aoi, gpd.GeoDataFrame):
+            df = aoi
+        else:
+
+            if isinstance(aoi, str):
+
+                if not os.path.isfile(aoi):
+                    logger.exception('  The AOI file does not exist.')
+
+                df = gpd.read_file(aoi)
+
+            else:
+                logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
+
+        if data.crs != CRS.from_dict(df.crs).to_proj4():
+
+            # Re-project the data to match the image CRS
+            df = df.to_crs(data.crs)
+
+        if verbose > 0:
+            logger.info('  Checking geometry validity ...')
+
+        # Ensure all geometry is valid
+        df = df[df['geometry'].apply(lambda x_: x_ is not None)]
+
+        if verbose > 0:
+            logger.info('  Checking geometry extent ...')
+
+        # Remove data outside of the image bounds
+        if type(df.iloc[0].geometry) == Polygon:
+
+            df = gpd.overlay(df,
+                             gpd.GeoDataFrame(data=[0],
+                                              geometry=[data.gw.meta.geometry],
+                                              crs=df.crs),
+                             how='intersection')
+
+        else:
+
+            # Clip points to the image bounds
+            df = df[df.geometry.intersects(data.gw.meta.geometry.unary_union)]
+
+        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
+
+            if isinstance(mask, gpd.GeoDataFrame):
+
+                if CRS.from_dict(mask.crs).to_proj4() != CRS.from_dict(df.crs).to_proj4():
+                    mask = mask.to_crs(df.crs)
+
+            if verbose > 0:
+                logger.info('  Clipping geometry ...')
+
+            df = df[df.within(mask)]
+
+            if df.empty:
+                logger.exception('  No geometry intersects the user-provided mask.')
+
+        # Subset the DataArray
+        # minx, miny, maxx, maxy = df.total_bounds
+        #
+        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
+        #                                  top=float(maxy)+self._obj.res[0],
+        #                                  right=float(maxx)+self._obj.res[0],
+        #                                  bottom=float(miny)-self._obj.res[0])
+
+        # Convert polygons to points
+        if type(df.iloc[0].geometry) == Polygon:
+
+            if verbose > 0:
+                logger.info('  Converting polygons to points ...')
+
+            df = self.polygons_to_points(data,
+                                         df,
+                                         frac=frac,
+                                         all_touched=all_touched,
+                                         n_jobs=n_jobs)
+
+        return df
+
+    @staticmethod
+    def polygons_to_points(data,
+                           df,
+                           frac=1.0,
+                           all_touched=False,
+                           n_jobs=1):
 
         """
         Converts polygons to points

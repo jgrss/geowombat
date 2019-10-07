@@ -1,5 +1,6 @@
 # import time
 import os
+import fnmatch
 import ctypes
 from datetime import datetime
 import multiprocessing as multi
@@ -17,6 +18,33 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+
+def parse_wildcard(string):
+
+    """
+    Parses a search wildcard from a string
+
+    Args:
+        string (str): The string to parse.
+
+    Returns:
+        ``list``
+    """
+
+    if os.path.dirname(string):
+        d_name, wildcard = os.path.split(string)
+    else:
+
+        d_name = '.'
+        wildcard = string
+
+    matches = fnmatch.filter(d_name, wildcard)
+
+    if matches:
+        matches = [os.path.join(d_name, fn) for fn in matches]
+
+    return matches
 
 
 def _window_worker(w):

@@ -1,4 +1,4 @@
-from .io import to_raster
+from .io import to_raster, parse_wildcard
 from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
@@ -16,6 +16,7 @@ ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
 
 __all__ = ['to_raster',
+           'parse_wildcard',
            'extract',
            'subset',
            'clip',

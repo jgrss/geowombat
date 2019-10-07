@@ -12,6 +12,7 @@ from ..util import mosaic as gw_mosaic
 
 from . import geoxarray
 from .conversion import xarray_to_xdataset
+from .io import parse_wildcard
 from .util import Chunks, get_file_extension
 from .windows import from_bounds
 
@@ -237,7 +238,7 @@ def open(filename,
     Opens a raster file
 
     Args:
-        filename (str or list): The file name or list of files to open.
+        filename (str or list): The file name, search string, or a list of files to open.
         return_as (Optional[str]): The Xarray data type to return.
             Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
         band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
@@ -272,8 +273,12 @@ def open(filename,
         >>> with gw.open('image.tif') as ds:
         >>>     print(ds)
         >>>
-        >>> # Open a list of images, stacke along the 'time' dimension
+        >>> # Open a list of images, stack along the 'time' dimension
         >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Open a all GeoTiffs in a directory, stack along the 'time' dimension
+        >>> with gw.open('*.tif') as ds:
         >>>     print(ds)
         >>>
         >>> # Use a context manager to handle images of difference sizes and projections
@@ -337,7 +342,11 @@ def open(filename,
 
     else:
 
-        if isinstance(filename, list):
+        if (isinstance(filename, str) and '*' in filename) or isinstance(filename, list):
+
+            # Build the filename list
+            if isinstance(filename, str):
+                filename = parse_wildcard(filename)
 
             if mosaic:
 

@@ -5,12 +5,12 @@ from ..util.rasterio_ import align_bounds, array_bounds
 from .util import Converters
 
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 import xarray as xr
 import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
-from shapely.geometry import Polygon
 
 try:
     import pymorph
@@ -20,6 +20,60 @@ except:
 
 
 class SpatialOperations(object):
+
+    @staticmethod
+    def sample(data, frac=0.1, nodata=0):
+
+        """
+        Creates samples from the array
+
+        Args:
+            data (DataArray): An ``xarray.DataArray`` to stratify.
+            frac (Optional[float]): The sample fraction for each block.
+            nodata (Optional[int]): The 'no data' value, which will be ignored.
+
+        Returns:
+            ``geopandas.GeoDataFrame``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     df = gw.sample(ds)
+        """
+
+        def _sample_func(block_data):
+
+            results = list()
+
+            x, y = np.meshgrid(block_data.x.values,
+                               block_data.y.values)
+
+            for cidx in block_data.unique():
+
+                if cidx == nodata:
+                    continue
+
+                idx = np.where(block_data == cidx)
+                xx = x[idx]
+                yy = y[idx]
+
+                n_samps = idx[0].shape[0]
+                n_samps_frac = int(n_samps*frac)
+                drange = list(range(0, n_samps))
+
+                rand_idx = np.random.choice(drange, size=n_samps_frac, replace=False)
+
+                xx = xx.flatten()[rand_idx]
+                yy = yy.flatten()[rand_idx]
+
+                df_tmp = gpd.GeoDataFrame(np.arange(0, n_samps_frac),
+                                          geometry=gpd.points_from_xy(xx, yy),
+                                          crs=data.crs)
+
+                results.append(df_tmp)
+
+            return pd.concat(results, axis=0)
 
     @staticmethod
     def extract(data,
@@ -62,20 +116,6 @@ class SpatialOperations(object):
             >>>     df = gw.extract(ds, 'poly.gpkg')
         """
 
-        if isinstance(aoi, gpd.GeoDataFrame):
-            df = aoi
-        else:
-
-            if isinstance(aoi, str):
-
-                if not os.path.isfile(aoi):
-                    logger.exception('  The AOI file does not exist.')
-
-                df = gpd.read_file(aoi)
-
-            else:
-                logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
-
         shape_len = data.gw.ndims
 
         if isinstance(bands, list):
@@ -89,79 +129,21 @@ class SpatialOperations(object):
             if shape_len > 2:
                 bands_idx = slice(0, None)
 
-        if data.crs != CRS.from_dict(df.crs).to_proj4():
-
-            # Re-project the data to match the image CRS
-            df = df.to_crs(data.crs)
-
-        if verbose > 0:
-            logger.info('  Checking geometry validity ...')
-
-        # Ensure all geometry is valid
-        df = df[df['geometry'].apply(lambda x_: x_ is not None)]
-
-        if verbose > 0:
-            logger.info('  Checking geometry extent ...')
-
-        # Remove data outside of the image bounds
-        if type(df.iloc[0].geometry) == Polygon:
-
-            df = gpd.overlay(df,
-                             gpd.GeoDataFrame(data=[0],
-                                              geometry=[data.gw.meta.geometry],
-                                              crs=df.crs),
-                             how='intersection')
-
-        else:
-
-            # Clip points to the image bounds
-            df = df[df.geometry.intersects(data.gw.meta.geometry.unary_union)]
-
-        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
-
-            if isinstance(mask, gpd.GeoDataFrame):
-
-                if CRS.from_dict(mask.crs).to_proj4() != CRS.from_dict(df.crs).to_proj4():
-                    mask = mask.to_crs(df.crs)
-
-            if verbose > 0:
-                logger.info('  Clipping geometry ...')
-
-            df = df[df.within(mask)]
-
-            if df.empty:
-                logger.exception('  No geometry intersects the user-provided mask.')
-
-        # Subset the DataArray
-        # minx, miny, maxx, maxy = df.total_bounds
-        #
-        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
-        #                                  top=float(maxy)+self._obj.res[0],
-        #                                  right=float(maxx)+self._obj.res[0],
-        #                                  bottom=float(miny)-self._obj.res[0])
-
-        # Convert polygons to points
-        if type(df.iloc[0].geometry) == Polygon:
-
-            if verbose > 0:
-                logger.info('  Converting polygons to points ...')
-
-            df = Converters().polygons_to_points(data,
-                                                 df,
-                                                 frac=frac,
-                                                 all_touched=all_touched,
-                                                 n_jobs=n_jobs)
+        df = Converters().prepare_points(data,
+                                         aoi,
+                                         frac=frac,
+                                         all_touched=all_touched,
+                                         mask=mask,
+                                         n_jobs=n_jobs,
+                                         verbose=verbose)
 
         if verbose > 0:
             logger.info('  Extracting data ...')
 
-        x, y = df.geometry.x.values, df.geometry.y.values
-
-        left = data.gw.left
-        top = data.gw.top
-
-        x = np.int64(np.round(np.abs(x - left) / data.gw.celly))
-        y = np.int64(np.round(np.abs(top - y) / data.gw.celly))
+        # Convert the map coordinates to indices
+        x, y = Converters().xy_to_ij(df.geometry.x.values,
+                                     df.geometry.y.values,
+                                     data.transform)
 
         if shape_len == 2:
             vidx = (y, x)
@@ -172,6 +154,7 @@ class SpatialOperations(object):
             for b in range(0, shape_len - 3):
                 vidx = (slice(0, None),) + vidx
 
+        # Get the raster values for each point
         res = data.data.vindex[vidx].compute(**kwargs)
 
         # TODO: reshape output ``res`` instead of iterating over dimensions
