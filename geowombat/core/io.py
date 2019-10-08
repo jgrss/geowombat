@@ -1,10 +1,10 @@
-# import time
+import time
 import os
 import fnmatch
 import ctypes
 from datetime import datetime
 import multiprocessing as multi
-# import concurrent.futures
+import concurrent.futures
 
 from ..errors import logger
 from .windows import get_window_offsets
@@ -49,7 +49,7 @@ def parse_wildcard(string):
 
 def _window_worker(w):
     """Helper to return window slice"""
-    # time.sleep(0.001)
+    time.sleep(0.01)
     return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
 
 
@@ -109,10 +109,10 @@ def to_raster(ds_data,
         if not os.path.isdir(d_name):
             os.makedirs(d_name)
 
-    n_time = ds_data.gw.tdims
-    n_bands = ds_data.gw.bands
-    n_rows = ds_data.gw.rows
-    n_cols = ds_data.gw.cols
+    n_time = ds_data.gw.ntime
+    n_bands = ds_data.gw.nbands
+    n_rows = ds_data.gw.nrows
+    n_cols = ds_data.gw.ncols
 
     if not isinstance(time_chunks, int):
         time_chunks = ds_data.gw.time_chunks
@@ -233,13 +233,13 @@ def to_raster(ds_data,
                                 # Write the chunk to file
                                 if isinstance(nodata, int) or isinstance(nodata, float):
 
-                                    dst.write(ds_data[window_slice_].squeeze().fillna(nodata).load().data,
+                                    dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
                                               window=w,
                                               indexes=indexes)
 
                                 else:
 
-                                    dst.write(ds_data[window_slice_].squeeze().load().data,
+                                    dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
                                               window=w,
                                               indexes=indexes)
 
@@ -296,9 +296,9 @@ def to_raster(ds_data,
                 if n_jobs == 1:
 
                     if isinstance(nodata, int) or isinstance(nodata, float):
-                        write_data = ds_data.squeeze().fillna(nodata).load().data
+                        write_data = ds_data.squeeze().fillna(nodata).data.compute(num_workers=n_jobs)
                     else:
-                        write_data = ds_data.squeeze().load().data
+                        write_data = ds_data.squeeze().data.compute(num_workers=n_jobs)
 
                     if n_bands == 1:
                         dst.write(write_data, 1)
@@ -316,15 +316,14 @@ def to_raster(ds_data,
                     # This context is I/O bound, so use the default 'loky' scheduler
                     with multi.Pool(processes=n_jobs) as pool:
 
-                        # Iterate over each window
-                        for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
-                                                                        windows,
-                                                                        chunksize=pool_chunksize),
+                        for w, window_slice in tqdm(pool.imap(_window_worker,
+                                                              windows,
+                                                              chunksize=pool_chunksize),
                                                     total=len(windows)):
 
                     # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-
-                        # for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
+                    #
+                    #     for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
 
                             # Prepend the band position index to the window slice
                             if n_bands == 1:
@@ -340,13 +339,13 @@ def to_raster(ds_data,
                             # Write the chunk to file
                             if isinstance(nodata, int) or isinstance(nodata, float):
 
-                                dst.write(ds_data[window_slice_].squeeze().fillna(nodata).load().data,
+                                dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
                                           window=w,
                                           indexes=indexes)
 
                             else:
 
-                                dst.write(ds_data[window_slice_].squeeze().load().data,
+                                dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
                                           window=w,
                                           indexes=indexes)
 
