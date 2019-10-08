@@ -184,10 +184,10 @@ def to_raster(ds_data,
               n_jobs=1,
               gdal_cache=512,
               dtype='float64',
-              time_chunks=1,
-              band_chunks=1,
-              row_chunks=512,
-              col_chunks=512,
+              time_chunks=None,
+              band_chunks=None,
+              row_chunks=None,
+              col_chunks=None,
               verbose=0,
               overwrite=False,
               nodata=0,
@@ -210,8 +210,9 @@ def to_raster(ds_data,
         dtype (Optional[int]): The output data type.
         time_chunks (Optional[int]): The processing time chunk size.
         band_chunks (Optional[int]): The processing band chunk size.
-        row_chunks (Optional[int]): The processing row chunk size.
-        col_chunks (Optional[int]): The processing column chunk size.
+        row_chunks (Optional[int]): The processing row chunk size. In general, this should be left as None and
+            the chunk size will be taken from the ``dask`` array.
+        col_chunks (Optional[int]): The processing column chunk size. Same as ``row_chunks``.
         nodata (Optional[int]): A 'no data' value.
         tags (Optional[dict]): Image tags to write to file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
@@ -249,6 +250,12 @@ def to_raster(ds_data,
 
     if not isinstance(col_chunks, int):
         col_chunks = ds_data.gw.col_chunks
+
+    if 'blockysize' not in kwargs:
+        kwargs['blockysize'] = row_chunks
+
+    if 'blockxsize' not in kwargs:
+        kwargs['blockxsize'] = col_chunks
 
     if isinstance(dtype, str):
 
