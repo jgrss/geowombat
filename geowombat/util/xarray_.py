@@ -11,11 +11,26 @@ from xarray.ufuncs import minimum as xr_mininum
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
 
+    """
+    Updates keyword arguments for global config parameters
+
+    Args:
+        ref_obj (str or object)
+        ref_kwargs (dict)
+        key (str)
+
+    Returns:
+        ``dict``
+    """
+
     if isinstance(ref_obj, str) and os.path.isfile(ref_obj):
 
         # Get the metadata from the reference image
         ref_meta = get_ref_image_meta(ref_obj)
         ref_kwargs[key] = getattr(ref_meta, key)
+
+    else:
+        ref_kwargs[key] = ref_obj
 
     return ref_kwargs
 
