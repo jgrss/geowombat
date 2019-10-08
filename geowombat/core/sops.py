@@ -374,8 +374,8 @@ class SpatialOperations(object):
 
         # Update the left and top coordinates
         transform = list(data.transform)
-        transform[2] = x_idx[0]
-        transform[5] = y_idx[0]
+        transform[2] = ds_sub.gw.left
+        transform[5] = ds_sub.gw.top
 
         ds_sub.attrs['transform'] = tuple(transform)
 
