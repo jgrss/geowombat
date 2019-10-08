@@ -20,9 +20,9 @@ Access raster attributes using the file opening API (:ref:`io`):
     with gw.open(rgbn) as ds:
         print(ds.gw.meta)
         print(ds.gw.ndims)
-        print(ds.gw.bands)
-        print(ds.gw.rows)
-        print(ds.gw.cols)
+        print(ds.gw.nbands)
+        print(ds.gw.nrows)
+        print(ds.gw.ncols)
         print(ds.gw.left)
         print(ds.gw.right)
         print(ds.gw.top)

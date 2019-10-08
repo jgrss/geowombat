@@ -42,7 +42,7 @@ def mosaic(filenames,
     if overlap not in ['min', 'max', 'mean']:
         logger.exception("  The overlap argument must be one of ['min', 'max', 'mean'].")
 
-    ref_kwargs = {'crs': None, 'res': None}
+    ref_kwargs = {'crs': None}
 
     # Check if there is a reference image
     if 'ref_image' in config:
@@ -54,14 +54,10 @@ def mosaic(filenames,
             # Get the metadata from the reference image
             ref_meta = get_ref_image_meta(ref_image)
 
-            ref_kwargs = {'crs': ref_meta.crs,
-                          'res': ref_meta.res}
+            ref_kwargs = {'crs': ref_meta.crs}
 
     elif 'ref_crs' in config:
         ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
-
-    elif 'ref_res' in config:
-        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     # Get the union of all images
     union_grids = union(filenames,

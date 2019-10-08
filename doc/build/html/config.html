@@ -182,9 +182,10 @@
    ...: 
 sensor l8
 scale_factor 0.0001
-region None
 ref_image None
-extent None
+ref_bounds None
+ref_crs None
+ref_res None
 blockxsize 512.0
 blockysize 512.0
 compress lzw
@@ -198,9 +199,10 @@ In [3]: with gw.config.update(sensor='planetscope', tiled=False):
    ...: 
 sensor planetscope
 scale_factor 1.0
-region None
 ref_image None
-extent None
+ref_bounds None
+ref_crs None
+ref_res None
 blockxsize 512.0
 blockysize 512.0
 compress lzw
@@ -213,9 +215,10 @@ In [4]: with gw.open(rgbn) as ds:
    ...: 
 sensor rgb
 scale_factor 1.0
-region None
 ref_image None
-extent None
+ref_bounds None
+ref_crs None
+ref_res None
 blockxsize 512.0
 blockysize 512.0
 compress lzw

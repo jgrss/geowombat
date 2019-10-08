@@ -14,7 +14,7 @@ ASSOCIATIONS = {}
 
 for section in config_parser.sections():
     for k, v in config_parser[section].items():
-        ASSOCIATIONS[v] = k
+        ASSOCIATIONS[k] = section
 
 for section in config_parser.sections():
 
