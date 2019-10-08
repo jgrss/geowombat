@@ -15,6 +15,21 @@ to apply geo-functions to satellite imagery.
 `GeoWombat` is designed to provide specialized functionality to `Xarray` and `Dask` data, using `Rasterio` for 
 overhead space- or -airborne imagery I/O.
 
+## Basic usage
+
+```python
+>>> import geowombat as gw
+>>>
+>>> # Open images as Xarray DataArrays
+>>> with gw.open('image.tif', chunks=(1, 512, 512)) as ds:
+>>>
+>>>     # Do Xarray and Dask operations
+>>>     dss = ds * 10.0
+>>>
+>>>     # Write the computation task to file
+>>>     dss.gw.to_raster('output.tif', n_jobs=8)
+```
+
 ## Documentation (temporary location)
 ---
 
