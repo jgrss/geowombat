@@ -85,7 +85,7 @@ class DataProperties(object):
         Get the time chunk size
         """
 
-        if self.ndims < 3:
+        if self.ndims > 3:
             return self._obj.data.chunksize[-4]
         else:
             return 1
