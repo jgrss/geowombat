@@ -190,10 +190,10 @@ def get_ref_image_meta(filename):
 
 
 def warp_to_vrt(filename,
+                resampling='nearest',
                 bounds=None,
                 crs=None,
                 res=None,
-                resampling='nearest',
                 warp_mem_limit=512):
 
     """
@@ -201,11 +201,11 @@ def warp_to_vrt(filename,
 
     Args:
         filename (str): The input file name.
+        resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
+            'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         bounds (Optional[tuple]): The extent bounds to warp to.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
-        resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
-            'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
 
     Returns:

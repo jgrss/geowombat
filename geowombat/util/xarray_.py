@@ -30,7 +30,9 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
         ref_kwargs[key] = getattr(ref_meta, key)
 
     else:
-        ref_kwargs[key] = ref_obj
+
+        if ref_obj:
+            ref_kwargs[key] = ref_obj
 
     return ref_kwargs
 
@@ -209,7 +211,8 @@ def concat(filenames,
                 # Warp the date
                 concat_list.append(xr.open_rasterio(warp_to_vrt(filenames[tidx],
                                                                 resampling=resampling,
-                                                                **ref_kwargs), **kwargs))
+                                                                **ref_kwargs),
+                                                    **kwargs))
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
         output = xr.concat(concat_list, dim='time')
