@@ -113,8 +113,10 @@ class Chunks(object):
     def get_chunk_dim(chunksize):
         return '{:d}d'.format(len(chunksize))
 
-    @staticmethod
-    def check_chunktype(chunksize, output='3d'):
+    def check_chunktype(self, chunksize, output='3d'):
+
+        if isinstance(chunksize, int):
+            chunksize = (1, chunksize, chunksize)
 
         chunk_len = len(chunksize)
         output_len = int(output[0])
@@ -125,7 +127,7 @@ class Chunks(object):
 
         # TODO: make compatible with multi-layer predictions (e.g., probabilities)
         if chunk_len != output_len:
-            logger.warning('  The chunksize should be two-dimensional.')
+            self.check_chunksize(chunksize, output=output)
 
     @staticmethod
     def check_chunksize(chunksize, output='3d'):
