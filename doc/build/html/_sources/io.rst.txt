@@ -163,7 +163,8 @@ If the images in the mosaic list have different CRSs, use a context manager to w
     with gw.config.update(ref_image=rgbn):
         with gw.open([rgbn_suba, rgbn_subb],
                      band_names=['b', 'g', 'r', 'n'],
-                     mosaic=True) as ds:
+                     mosaic=True,
+                     chunks=512) as ds:
             print(ds)
 
 Writing DataArrays to file
