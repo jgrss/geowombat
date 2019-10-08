@@ -405,7 +405,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         cluster.start()
 
-        with joblib.parallel_backend('dask', n_jobs=n_jobs):
+        with joblib.parallel_backend('loky', n_jobs=n_jobs):
 
             ds_sub = user_func(self._obj)
             ds_sub.attrs = self._obj.attrs

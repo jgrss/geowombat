@@ -4,20 +4,25 @@ import fnmatch
 import ctypes
 from datetime import datetime
 import multiprocessing as multi
-import concurrent.futures
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from ..errors import logger
 from .windows import get_window_offsets
 
 import numpy as np
+import dask
+from dask.diagnostics import ProgressBar
 import rasterio as rio
 from tqdm import tqdm
-
+import joblib
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+SCHEDULERS = dict(threads=ThreadPoolExecutor,
+                  processes=ProcessPoolExecutor)
 
 
 def parse_wildcard(string):
@@ -47,10 +52,125 @@ def parse_wildcard(string):
     return matches
 
 
-def _window_worker(w):
-    """Helper to return window slice"""
-    time.sleep(0.01)
-    return w, (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width))
+def _window_worker(w, n_bands, indexes_multi):
+
+    """
+    Helper to return window slice
+    """
+
+    window_slice = (slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width))
+
+    # Prepend the band position index to the window slice
+    if n_bands == 1:
+
+        window_slice = tuple([slice(0, 1)] + list(window_slice))
+        indexes = 1
+
+    else:
+
+        window_slice = tuple([slice(0, n_bands)] + list(window_slice))
+        indexes = indexes_multi
+
+    return window_slice, indexes
+
+
+def _window_worker_time(w, n_bands, indexes_multi):
+
+    """
+    Helper to return window slice
+    """
+
+    window_slice = (slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width))
+
+    # Prepend the band position index to the window slice
+    if n_bands == 1:
+
+        window_slice = tuple([slice(tidx, tidx + 1)] + [slice(0, 1)] + list(window_slice))
+        indexes = 1
+
+    else:
+
+        window_slice = tuple([slice(tidx, tidx + 1)] + [slice(0, n_bands)] + list(window_slice))
+        indexes = indexes_multi
+
+    return window_slice, indexes
+
+
+# def _old():
+#
+# Concurrent.futures environment context
+# with SCHEDULERS[scheduler](max_workers=n_jobs) as executor:
+#
+#     def write(wr, window_slicer):
+#
+#         # Prepend the band position index to the window slice
+#         if n_bands == 1:
+#
+#             window_slice_ = tuple([slice(0, 1)] + list(window_slicer))
+#             indexes = 1
+#
+#         else:
+#
+#             window_slice_ = tuple([slice(0, n_bands)] + list(window_slicer))
+#             indexes = indexes_multi
+#
+#         # Write the chunk to file
+#         if isinstance(nodata, int) or isinstance(nodata, float):
+#
+#             dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
+#                       window=wr,
+#                       indexes=indexes)
+#
+#         else:
+#
+#             dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
+#                       window=wr,
+#                       indexes=indexes)
+#
+#     joblib.Parallel(n_jobs=n_jobs,
+#                     max_nbytes=None)(joblib.delayed(write)(w, window_slice)
+#                                      for w, window_slice in map(_window_worker, windows))
+#
+#     # Multiprocessing pool context
+#     # This context is I/O bound, so use the default 'loky' scheduler
+#     with multi.Pool(processes=n_jobs) as pool:
+#
+#         for w, window_slice in tqdm(pool.imap(_window_worker,
+#                                               windows,
+#                                               chunksize=pool_chunksize),
+#                                     total=len(windows)):
+#
+#             write(wr, window_slice)
+
+
+# def write_func(block, block_id=None):
+#
+#     # Current block upper left indices
+#     if len(block_id) == 2:
+#         i, j = block_id
+#     else:
+#         i, j = block_id[1:]
+#
+#     # Current block window
+#     w = windows['{:d}{:d}'.format(i, j)]
+#
+#     if n_bands == 1:
+#
+#         dst.write(np.squeeze(block),
+#                   window=w,
+#                   indexes=1)
+#
+#     else:
+#
+#         dst.write(block,
+#                   window=w,
+#                   indexes=indexes)
+#
+#     return outd
+#
+# ds_data.data.map_blocks(write_func,
+#                         dtype=ds_data.dtype,
+#                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
 
 
 def to_raster(ds_data,
@@ -65,7 +185,6 @@ def to_raster(ds_data,
               band_chunks=1,
               row_chunks=512,
               col_chunks=512,
-              pool_chunksize=1000,
               verbose=0,
               overwrite=False,
               nodata=0,
@@ -90,7 +209,6 @@ def to_raster(ds_data,
         band_chunks (Optional[int]): The processing band chunk size.
         row_chunks (Optional[int]): The processing row chunk size.
         col_chunks (Optional[int]): The processing column chunk size.
-        pool_chunksize (Optional[int]): The `multiprocessing.Pool` chunk size.
         nodata (Optional[int]): A 'no data' value.
         tags (Optional[dict]): Image tags to write to file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
@@ -98,6 +216,9 @@ def to_raster(ds_data,
     Returns:
         None
     """
+
+    # if scheduler not in ['threads', 'processes']:
+    #     logger.exception("  The scheduler must be 'threads' or 'processes'.")
 
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
@@ -134,17 +255,18 @@ def to_raster(ds_data,
     else:
         dtype = ds_data.dtype
 
+    if verbose > 0:
+        logger.info('  Creating and writing to the file ...')
+
     # Setup the windows
     windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks)
-    # windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='dict')
 
     if n_bands > 1:
         indexes_multi = list(range(1, n_bands + 1))
+    else:
+        indexes_multi = None
 
     # outd = np.array([0], dtype='uint8')[None, None]
-
-    if verbose > 0:
-        logger.info('  Creating and writing to the file ...')
 
     # Rasterio environment context
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
@@ -209,39 +331,33 @@ def to_raster(ds_data,
 
                     else:
 
-                        # Multiprocessing pool context
-                        # This context is I/O bound, so use the default 'loky' scheduler
-                        with multi.Pool(processes=n_jobs) as pool:
+                        @dask.delayed
+                        def write_func(output, out_window, out_indexes, last_write=None):
 
-                            # Iterate over each window
-                            for w, window_slice in tqdm(pool.imap_unordered(_window_worker,
-                                                                            windows,
-                                                                            chunksize=pool_chunksize),
-                                                        total=len(windows)):
+                            """
+                            Writes a NumPy array to file
 
-                                # Prepend the band position index to the window slice
-                                if n_bands == 1:
+                            Reference:
+                                https://github.com/dask/dask/issues/3600
+                            """
 
-                                    window_slice_ = tuple([slice(tidx, tidx+1)] + [slice(0, 1)] + list(window_slice))
-                                    indexes = 1
+                            del last_write
+                            dst.write(output, window=out_window, indexes=out_indexes)
 
-                                else:
+                        # Create the Dask.delayed writers
+                        writer = None
+                        for w in windows:
 
-                                    window_slice_ = tuple([slice(tidx, tidx+1)] + [slice(0, n_bands)] + list(window_slice))
-                                    indexes = indexes_multi
+                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi)
 
-                                # Write the chunk to file
-                                if isinstance(nodata, int) or isinstance(nodata, float):
+                            if isinstance(nodata, int) or isinstance(nodata, float):
+                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes,writer)
+                            else:
+                                writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
 
-                                    dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
-                                              window=w,
-                                              indexes=indexes)
-
-                                else:
-
-                                    dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
-                                              window=w,
-                                              indexes=indexes)
+                        # Write the data to file
+                        with ProgressBar():
+                            writer.compute(num_workers=n_jobs)
 
         else:
 
@@ -264,41 +380,12 @@ def to_raster(ds_data,
                           sharing=False,
                           **kwargs) as dst:
 
-                # def write_func(block, block_id=None):
-                #
-                #     # Current block upper left indices
-                #     if len(block_id) == 2:
-                #         i, j = block_id
-                #     else:
-                #         i, j = block_id[1:]
-                #
-                #     # Current block window
-                #     w = windows['{:d}{:d}'.format(i, j)]
-                #
-                #     if n_bands == 1:
-                #
-                #         dst.write(np.squeeze(block),
-                #                   window=w,
-                #                   indexes=1)
-                #
-                #     else:
-                #
-                #         dst.write(block,
-                #                   window=w,
-                #                   indexes=indexes)
-                #
-                #     return outd
-                #
-                # ds_data.data.map_blocks(write_func,
-                #                         dtype=ds_data.dtype,
-                #                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
-
                 if n_jobs == 1:
 
                     if isinstance(nodata, int) or isinstance(nodata, float):
-                        write_data = ds_data.squeeze().fillna(nodata).data.compute(num_workers=n_jobs)
+                        write_data = ds_data.squeeze().fillna(nodata).load().data
                     else:
-                        write_data = ds_data.squeeze().data.compute(num_workers=n_jobs)
+                        write_data = ds_data.squeeze().load().data
 
                     if n_bands == 1:
                         dst.write(write_data, 1)
@@ -312,42 +399,33 @@ def to_raster(ds_data,
 
                 else:
 
-                    # Multiprocessing pool context
-                    # This context is I/O bound, so use the default 'loky' scheduler
-                    with multi.Pool(processes=n_jobs) as pool:
+                    @dask.delayed
+                    def write_func(output, out_window, out_indexes, last_write=None):
 
-                        for w, window_slice in tqdm(pool.imap(_window_worker,
-                                                              windows,
-                                                              chunksize=pool_chunksize),
-                                                    total=len(windows)):
+                        """
+                        Writes a NumPy array to file
 
-                    # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-                    #
-                    #     for w, window_slice in tqdm(executor.map(_window_worker, windows), total=len(windows)):
+                        Reference:
+                            https://github.com/dask/dask/issues/3600
+                        """
 
-                            # Prepend the band position index to the window slice
-                            if n_bands == 1:
+                        del last_write
+                        dst.write(output, window=out_window, indexes=out_indexes)
 
-                                window_slice_ = tuple([slice(0, 1)] + list(window_slice))
-                                indexes = 1
+                    # Create the Dask.delayed writers
+                    writer = None
+                    for w in windows:
 
-                            else:
+                        window_slice, indexes = _window_worker(w, n_bands, None)
 
-                                window_slice_ = tuple([slice(0, n_bands)] + list(window_slice))
-                                indexes = indexes_multi
+                        if isinstance(nodata, int) or isinstance(nodata, float):
+                            writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes, writer)
+                        else:
+                            writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
 
-                            # Write the chunk to file
-                            if isinstance(nodata, int) or isinstance(nodata, float):
-
-                                dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
-                                          window=w,
-                                          indexes=indexes)
-
-                            else:
-
-                                dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
-                                          window=w,
-                                          indexes=indexes)
+                    # Write the data to file
+                    with ProgressBar():
+                        writer.compute(num_workers=n_jobs)
 
     if verbose > 0:
         logger.info('  Finished writing')

@@ -253,6 +253,37 @@ class BandMath(object):
         return self.mask_and_assign(data, result, band_variable, 'wi', mask, 0, 1, scale_factor, sensor)
 
 
+def linear_transform(data, bands, scale, offset):
+
+    r"""
+    Linearly scales bands using a scale and an offset
+
+    Args:
+        data (DataArray): The ``xarray.DataArray`` to transform.
+        bands (1d array-like): The list of bands to transform.
+        scale (1d array): The scale coefficients.
+        offset (1d array): The offset coefficients.
+
+    Equation:
+
+        .. math::
+            y = scale \times band + offset
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    scalexr = xr.DataArray(scale,
+                           coords=[bands],
+                           dims=['band'])
+
+    offsetxr = xr.DataArray(offset,
+                            coords=[bands],
+                            dims=['band'])
+
+    return data * scalexr + offsetxr
+
+
 class TasseledCap(BandMath):
 
     def transform(self):

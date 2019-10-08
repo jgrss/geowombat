@@ -132,37 +132,16 @@ Xarray accessor :func:`to_raster` to write chunks in parallel.
 
 .. ipython:: python
 
-    #with gw.open(rgbn, chunks=(1, 1024, 1024)) as ds:
-    #    ds_res = <do something>
-    #    ds_res.gw.to_raster('output.tif', n_jobs=4)
-
-Write to GeoTiff on a Dask distributed cluster
-
-.. ipython:: python
-
-    from geowombat.util import Cluster
-
-    cluster = Cluster(n_workers=8,
-                      threads_per_worker=1,
-                      scheduler_port=0,
-                      processes=False)
-
-    #cluster.start()
+    #with gw.open('example.tif', chunks=(1, 1024, 1024)) as ds:
     #
-    #with joblib.parallel_backend('dask'):
+    #   ds = <do something>
     #
-    #    with gw.open('example.tif') as ds:
-    #
-    #        # ds = <do something>
-    #
-    #        ds.gw.to_raster('output.tif',
-    #                        n_jobs=8,
-    #                        row_chunks=512,
-    #                        col_chunks=512,
-    #                        pool_chunksize=50,
-    #                        tiled=True,
-    #                        blockxsize=2048,
-    #                        blockysize=2048,
-    #                        compress='lzw')
-    #
-    #cluster.stop()
+    #   ds.gw.to_raster('output.tif',
+    #                    n_jobs=8,
+    #                    row_chunks=512,
+    #                    col_chunks=512,
+    #                    pool_chunksize=50,
+    #                    tiled=True,
+    #                    blockxsize=2048,
+    #                    blockysize=2048,
+    #                    compress='lzw')
