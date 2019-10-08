@@ -1,4 +1,5 @@
 import os
+import ast
 import configparser
 
 
@@ -16,22 +17,29 @@ for section in config_parser.sections():
     for k, v in config_parser[section].items():
         ASSOCIATIONS[k] = section
 
-for section in config_parser.sections():
 
-    for k, v in config_parser[section].items():
+def _update_config(config_parser, config_dict):
 
-        if v in ['True', 'False']:
+    for section in config_parser.sections():
 
-            if v.lower() == 'true':
-                config[k] = True
+        for k, v in config_parser[section].items():
+
+            if v in ['True', 'False']:
+                config_dict[k] = True if v == 'True' else False
+
+            elif v == 'None':
+                config_dict[k] = None
             else:
-                config[k] = False
-        else:
 
-            try:
-                config[k] = float(v)
-            except:
-                config[k] = v
+                try:
+                    config_dict[k] = ast.literal_eval(v)
+                except:
+                    config_dict[k] = v
+
+    return config_dict
+
+
+config = _update_config(config_parser, config)
 
 
 class update(object):
@@ -62,47 +70,14 @@ class update(object):
     def _set_defaults(d):
 
         config_parser.read(config_file)
-
-        for section in config_parser.sections():
-
-            for k, v in config_parser[section].items():
-
-                if v in ['True', 'False']:
-
-                    if v.lower() == 'true':
-                        d[k] = True
-                    else:
-                        d[k] = False
-                else:
-
-                    try:
-                        d[k] = float(v)
-                    except:
-                        d[k] = v
+        d = _update_config(config_parser, d)
 
     @staticmethod
     def _assign(d, **kwargs):
-
-        config_parser.read(config_file)
 
         if kwargs:
 
             for k, v in kwargs.items():
                 config_parser[ASSOCIATIONS[k]][k] = str(v)
 
-        for section in config_parser.sections():
-
-            for k, v in config_parser[section].items():
-
-                if v in ['True', 'False']:
-
-                    if v.lower() == 'true':
-                        d[k] = True
-                    else:
-                        d[k] = False
-                else:
-
-                    try:
-                        d[k] = float(v)
-                    except:
-                        d[k] = v
+        d = _update_config(config_parser, d)
