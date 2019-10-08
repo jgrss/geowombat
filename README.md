@@ -33,6 +33,6 @@ overhead space- or -airborne imagery I/O.
 ## Documentation (temporary location)
 ---
 
-Read the documentation by open the [HTML file](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html).
+Read the documentation by opening the [HTML file](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html).
 
 #### See the [notebooks](https://github.com/jgrss/geowombat/tree/master/notebooks) for more detailed examples
