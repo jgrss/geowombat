@@ -16,6 +16,11 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     # Load a 4-band test image
     from geowombat.data import rgbn
 
+.. ipython:: python
+
+    # Load two images that partially overlap
+    from geowombat.data import rgbn_suba, rgbn_subb
+
 To open individual images, GeoWombat wraps :func:`xarray.open_rasterio` and :func:`xarray.open_dataset`:
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -68,36 +73,73 @@ In the example below, we specify a reference image using GeoWombat's configurati
     #
     # Within the configuration context, every image
     # in concat_list will conform to the reference grid.
+    concat_list = [rgbn, rgbn]
     with gw.config.update(ref_image=rgbn):
-        concat_list = [rgbn, rgbn]
         with gw.open(concat_list,
                      band_names=['blue', 'green', 'red', 'nir'],
                      time_names=['t1', 't2']) as ds:
             print(ds)
 
+Stack the intersection of all images
+
+.. ipython:: python
+
+    concat_list = [rgbn, rgbn_subb, rgbn_suba]
+    with gw.open(concat_list,
+                 band_names=['blue', 'green', 'red', 'nir'],
+                 time_names=['t1', 't2', 't3'],
+                 how='intersection') as ds:
+        print(ds)
+
+Stack the union of all images
+
+.. ipython:: python
+
+    concat_list = [rgbn, rgbn_subb, rgbn_suba]
+    with gw.open(concat_list,
+                 band_names=['blue', 'green', 'red', 'nir'],
+                 time_names=['t1', 't2', 't3'],
+                 how='union') as ds:
+        print(ds)
+
+Keyword arguments always overwrite config settings. In this example, the reference image 'rgbn' is used to set the
+CRS, bounds, and cell size. Using how='intersection' overrides the reference image bounds.
+
+.. ipython:: python
+
+    concat_list = [rgbn, rgbn_subb, rgbn_suba]
+    with gw.config.update(ref_image=rgbn):
+        with gw.open(concat_list,
+                     band_names=['blue', 'green', 'red', 'nir'],
+                     time_names=['t1', 't2', 't3'],
+                     how='intersection') as ds:
+            print(ds)
+
+When multiple images have matching dates, the arrays are merged into one layer
+
+.. ipython:: python
+
+    concat_list = [rgbn_suba, rgbn_subb, rgbn_suba]
+    with gw.open(concat_list,
+                 band_names=['blue', 'green', 'red', 'nir'],
+                 time_names=['t1', 't1', 't2']) as ds:
+        print(ds)
+
+Use search wildcards to open a list of images
+
+.. ipython:: python
+
+    import os
+    search = os.path.join(os.path.dirname(rgbn), '*sub*.tif')
+
+.. ipython:: python
+
+    with gw.open(search,
+                 band_names=['blue', 'green', 'red', 'nir']) as ds:
+        print(ds)
+
 Image mosaicking
 ++++++++++++++++
-
-Images can be mosaicked into a single DataArray
-
-.. ipython:: python
-
-    # Load two images that partially overlap
-    from geowombat.data import rgbn_suba, rgbn_subb
-
-Examine the first image subset
-
-.. ipython:: python
-
-    with gw.open(rgbn_suba, band_names=['b', 'g', 'r', 'n']) as ds:
-        print(ds)
-
-Examine the second image subset
-
-.. ipython:: python
-
-    with gw.open(rgbn_subb, band_names=['b', 'g', 'r', 'n']) as ds:
-        print(ds)
 
 Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
 is needed.
@@ -132,16 +174,14 @@ Xarray accessor :func:`to_raster` to write chunks in parallel.
 
 .. ipython:: python
 
-    #with gw.open('example.tif', chunks=(1, 1024, 1024)) as ds:
-    #
-    #   ds = <do something>
-    #
-    #   ds.gw.to_raster('output.tif',
-    #                    n_jobs=8,
-    #                    row_chunks=512,
-    #                    col_chunks=512,
-    #                    pool_chunksize=50,
-    #                    tiled=True,
-    #                    blockxsize=2048,
-    #                    blockysize=2048,
-    #                    compress='lzw')
+    with gw.open(rgbn, chunks=(1, 256, 256)) as ds:
+        dss = ds * 10.0
+        dss.attrs = ds.attrs
+        dss.gw.to_raster('output.tif',
+                          n_jobs=4,
+                          gdal_cache=512,
+                          verbose=1,
+                          tiled=True,
+                          blockxsize=256,
+                          blockysize=256,
+                          compress='lzw')

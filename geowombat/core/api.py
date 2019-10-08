@@ -380,9 +380,7 @@ def open(filename,
                     if band_names:
                         darray.coords['band'] = band_names
 
-                    if time_names:
-                        darray.coords['time'] = time_names
-                    else:
+                    if not time_names:
                         darray.coords['time'] = list(range(1, darray.shape[0]+1))
 
                     yield darray

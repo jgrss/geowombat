@@ -36,7 +36,11 @@ def align_bounds(minx, miny, maxx, maxy, res):
     return aligned_target(new_transform, new_width, new_height, res)
 
 
-def get_file_bounds(filenames, how='intersection', crs=None, return_bounds=False):
+def get_file_bounds(filenames,
+                    how='intersection',
+                    crs=None,
+                    res=None,
+                    return_bounds=False):
 
     """
     Gets the union of all files
@@ -45,6 +49,7 @@ def get_file_bounds(filenames, how='intersection', crs=None, return_bounds=False
         filenames (list): The file names to mosaic.
         how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         crs (Optional[crs]): The CRS to warp to.
+        res (Optional[tuple]): The cell resolution to warp to.
         return_bounds (Optional[bool]): Whether to return the bounds tuple.
 
     Returns:
@@ -59,7 +64,8 @@ def get_file_bounds(filenames, how='intersection', crs=None, return_bounds=False
         if not crs:
             crs = src.crs
 
-        res = src.res
+        if not res:
+            res = src.res
 
         # Transform the extent to the reference CRS
         bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
@@ -111,14 +117,15 @@ def get_file_bounds(filenames, how='intersection', crs=None, return_bounds=False
         return bounds_transform, bounds_width, bounds_height
 
 
-def union(filenames, crs=None, resampling='nearest'):
+def union(filenames, crs=None, res=None, resampling='nearest'):
 
     """
     Transforms a list of images to the union of all the files
 
     Args:
         filenames (list): The file names to mosaic.
-        crs (Optional[crs]): The CRS to warp to.
+        crs (Optional[object]): The CRS to warp to.
+        res (Optional[tuple]): The cell resolution to warp to.
         resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
 
@@ -132,7 +139,10 @@ def union(filenames, crs=None, resampling='nearest'):
         logger.exception('  The resampling method is not supported by rasterio.')
 
     # Get the union bounds of all images
-    dst_transform, dst_width, dst_height = get_file_bounds(filenames, how='union', crs=None)
+    dst_transform, dst_width, dst_height = get_file_bounds(filenames,
+                                                           how='union',
+                                                           crs=crs,
+                                                           res=res)
 
     vrt_options = {'resampling': getattr(Resampling, resampling),
                    'crs': crs,
@@ -192,7 +202,7 @@ def warp_to_vrt(filename,
     Args:
         filename (str): The input file name.
         bounds (Optional[tuple]): The extent bounds to warp to.
-        crs (Optional[crs]): The CRS to warp to.
+        crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
         resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].

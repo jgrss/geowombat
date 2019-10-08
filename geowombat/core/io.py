@@ -1,10 +1,10 @@
-import time
+# import time
 import os
 import fnmatch
 import ctypes
 from datetime import datetime
-import multiprocessing as multi
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+# import multiprocessing as multi
+# from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from ..errors import logger
 from .windows import get_window_offsets
@@ -13,16 +13,16 @@ import numpy as np
 import dask
 from dask.diagnostics import ProgressBar
 import rasterio as rio
-from tqdm import tqdm
-import joblib
+# from tqdm import tqdm
+# import joblib
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
 
-SCHEDULERS = dict(threads=ThreadPoolExecutor,
-                  processes=ProcessPoolExecutor)
+# SCHEDULERS = dict(threads=ThreadPoolExecutor,
+#                   processes=ProcessPoolExecutor)
 
 
 def parse_wildcard(string):
@@ -44,10 +44,13 @@ def parse_wildcard(string):
         d_name = '.'
         wildcard = string
 
-    matches = fnmatch.filter(d_name, wildcard)
+    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
 
     if matches:
         matches = [os.path.join(d_name, fn) for fn in matches]
+
+    if not matches:
+        logger.exception('  There were no images found with the string search.')
 
     return matches
 

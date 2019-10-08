@@ -42,7 +42,7 @@ def mosaic(filenames,
     if overlap not in ['min', 'max', 'mean']:
         logger.exception("  The overlap argument must be one of ['min', 'max', 'mean'].")
 
-    ref_kwargs = {'crs': None}
+    ref_kwargs = {'crs': None, 'res': None}
 
     # Check if there is a reference image
     if 'ref_image' in config:
@@ -54,10 +54,14 @@ def mosaic(filenames,
             # Get the metadata from the reference image
             ref_meta = get_ref_image_meta(ref_image)
 
-            ref_kwargs = {'crs': ref_meta.crs}
+            ref_kwargs = {'crs': ref_meta.crs,
+                          'res': ref_meta.res}
 
-    elif 'ref_crs' in config:
+    if 'ref_crs' in config:
         ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
+
+    if 'ref_res' in config:
+        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     # Get the union of all images
     union_grids = union(filenames,
@@ -131,21 +135,23 @@ def concat(filenames,
                           'crs': ref_meta.crs,
                           'res': ref_meta.res}
 
-    elif 'ref_bounds' in config:
+    if 'ref_bounds' in config:
         ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
 
-    elif 'ref_crs' in config:
+    if 'ref_crs' in config:
         ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
-    elif 'ref_res' in config:
+    if 'ref_res' in config:
         ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
+    # Replace the bounds keyword, if needed
     if how == 'intersection':
 
         # Get the intersecting bounds of all images
         ref_kwargs['bounds'] = get_file_bounds(filenames,
                                                how='intersection',
                                                crs=ref_kwargs['crs'],
+                                               res=ref_kwargs['res'],
                                                return_bounds=True)
 
     elif how == 'union':
@@ -154,6 +160,7 @@ def concat(filenames,
         ref_kwargs['bounds'] = get_file_bounds(filenames,
                                                how='union',
                                                crs=ref_kwargs['crs'],
+                                               res=ref_kwargs['res'],
                                                return_bounds=True)
 
     if time_names:
@@ -177,6 +184,8 @@ def concat(filenames,
                                               overlap=overlap,
                                               resampling=resampling,
                                               **kwargs))
+
+                    new_time_names.append(time_names[tidx])
 
             else:
 

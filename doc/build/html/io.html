@@ -184,14 +184,18 @@
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Load two images that partially overlap</span>
+<span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span>
+</pre></div>
+</div>
 <div class="section" id="to-open-individual-images-geowombat-wraps-xarray-open-rasterio-and-xarray-open-dataset">
 <h3>To open individual images, GeoWombat wraps <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_dataset()</span></code>:<a class="headerlink" href="#to-open-individual-images-geowombat-wraps-xarray-open-rasterio-and-xarray-open-dataset" title="Permalink to this headline">¶</a></h3>
 <p>Open a raster as a DataArray</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-dfba9c99a2b23bc7d840a76316011b78&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-c1cdaad0a6e0ae55fc46587f7a090c7f&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -209,7 +213,7 @@
 </pre></div>
 </div>
 <p>Open a raster as a Dataset</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">return_as</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">return_as</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.Dataset&gt;</span>
@@ -233,11 +237,11 @@
 </pre></div>
 </div>
 <p>Specify band names</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-dfba9c99a2b23bc7d840a76316011b78&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-c1cdaad0a6e0ae55fc46587f7a090c7f&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -258,7 +262,7 @@
 <div class="section" id="to-open-multiple-images-as-a-time-stack-change-the-input-to-a-list-of-files">
 <h3>To open multiple images as a time stack, change the input to a list of files<a class="headerlink" href="#to-open-multiple-images-as-a-time-stack-change-the-input-to-a-list-of-files" title="Permalink to this headline">¶</a></h3>
 <p>Open a list of files as a DataArray</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
@@ -266,8 +270,8 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
+<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
@@ -294,8 +298,9 @@ a reference image to handle image alignment.</p>
 <span class="go">#</span>
 <span class="go"># Within the configuration context, every image</span>
 <span class="go"># in concat_list will conform to the reference grid.</span>
-<span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
-<span class="gp">   ...: </span>    <span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">]</span>
+<span class="gp">In [8]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">]</span>
+
+<span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
 <span class="gp">   ...: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ...: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -304,8 +309,8 @@ a reference image to handle image alignment.</p>
 <span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
+<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
@@ -320,61 +325,141 @@ a reference image to handle image alignment.</p>
 <span class="go">    DataType:       Generic</span>
 </pre></div>
 </div>
+<p>Stack the intersection of all images</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
+
+<span class="gp">In [11]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">how</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 372, x: 305)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
+<span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:  (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
+<span class="go">    crs:        +init=epsg:32618</span>
+<span class="go">    res:        (2.0, 2.0)</span>
+<span class="go">    is_tiled:   0</span>
+<span class="go">    scales:     (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:    (0.0, 0.0, 0.0, 0.0)</span>
+</pre></div>
+</div>
+<p>Stack the union of all images</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
+
+<span class="gp">In [13]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">how</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 1008, x: 1317)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 1008, 1317), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
+<span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:  (2.0, 0.0, 792928.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:        +init=epsg:32618</span>
+<span class="go">    res:        (2.0, 2.0)</span>
+<span class="go">    is_tiled:   1</span>
+<span class="go">    scales:     (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:    (0.0, 0.0, 0.0, 0.0)</span>
+</pre></div>
+</div>
+<p>Keyword arguments always overwrite config settings. In this example, the reference image ‘rgbn’ is used to set the
+CRS, bounds, and cell size. Using how=’intersection’ overrides the reference image bounds.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [14]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
+
+<span class="gp">In [15]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
+<span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">how</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 372, x: 305)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
+<span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:  (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
+<span class="go">    crs:        +init=epsg:32618</span>
+<span class="go">    res:        (2.0, 2.0)</span>
+<span class="go">    is_tiled:   0</span>
+<span class="go">    scales:     (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:    (0.0, 0.0, 0.0, 0.0)</span>
+</pre></div>
+</div>
+<p>When multiple images have matching dates, the arrays are merged into one layer</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [16]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
+
+<span class="gp">In [17]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 706, x: 1120)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 706, 1120), dtype=float64, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.049e+06 2.049e+06 2.049e+06 ... 2.05e+06 2.05e+06</span>
+<span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.952e+05 7.952e+05</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:   (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
+<span class="go">    crs:         +init=epsg:32618</span>
+<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    nodatavals:  (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
+</pre></div>
+</div>
+<p>Use search wildcards to open a list of images</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [18]: </span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="gp">In [19]: </span><span class="n">search</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rgbn</span><span class="p">),</span> <span class="s1">&#39;*sub*.tif&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [20]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">search</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 706, x: 1120)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 706, 1120), dtype=float64, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.049e+06 2.049e+06 2.049e+06 ... 2.05e+06 2.05e+06</span>
+<span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.952e+05 7.952e+05</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
+<span class="go">  * time     (time) int64 1 2</span>
+<span class="go">Attributes:</span>
+<span class="go">    crs:            +init=epsg:32618</span>
+<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    is_tiled:       0</span>
+<span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    DataType:       Generic</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="image-mosaicking">
 <h3>Image mosaicking<a class="headerlink" href="#image-mosaicking" title="Permalink to this headline">¶</a></h3>
-<p>Images can be mosaicked into a single DataArray</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Load two images that partially overlap</span>
-<span class="gp">In [8]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span>
-</pre></div>
-</div>
-<p>Examine the first image subset</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 530, x: 691)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0ba4e0bdef7a45d7a82c18f30153b645&lt;this-array&gt;, shape=(4, 530, 691), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39; &#39;n&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
-<span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
-<span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
-<span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-</pre></div>
-</div>
-<p>Examine the second image subset</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 548, x: 734)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-d20cf65418bff06d9291db18fb9d7ff5&lt;this-array&gt;, shape=(4, 548, 734), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39; &#39;n&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
-<span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.952e+05 7.952e+05</span>
-<span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
-<span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-</pre></div>
-</div>
 <p>Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
 is needed.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [21]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
@@ -401,7 +486,7 @@ is needed.</p>
 <p>The two images in this example have the same CRS. The point here is just to illustrate the use of the configuration manager.</p>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Use a reference CRS</span>
-<span class="gp">In [12]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
+<span class="gp">In [22]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -428,19 +513,29 @@ is needed.</p>
 <h3>Writing DataArrays to file<a class="headerlink" href="#writing-dataarrays-to-file" title="Permalink to this headline">¶</a></h3>
 <p>In the example below, <code class="docutils literal notranslate"><span class="pre">ds_res</span></code> is an <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.DataArray()</span></code>. Using Rasterio as a backend, we use the
 Xarray accessor <code class="xref py py-func docutils literal notranslate"><span class="pre">to_raster()</span></code> to write chunks in parallel.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="c1">#with gw.open(&#39;example.tif&#39;, chunks=(1, 1024, 1024)) as ds:</span>
-<span class="c1">#</span>
-<span class="c1">#   ds = &lt;do something&gt;</span>
-<span class="c1">#</span>
-<span class="c1">#   ds.gw.to_raster(&#39;output.tif&#39;,</span>
-<span class="c1">#                    n_jobs=8,</span>
-<span class="c1">#                    row_chunks=512,</span>
-<span class="c1">#                    col_chunks=512,</span>
-<span class="c1">#                    pool_chunksize=50,</span>
-<span class="c1">#                    tiled=True,</span>
-<span class="c1">#                    blockxsize=2048,</span>
-<span class="c1">#                    blockysize=2048,</span>
-<span class="c1">#                    compress=&#39;lzw&#39;)</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [23]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">dss</span> <span class="o">=</span> <span class="n">ds</span> <span class="o">*</span> <span class="mf">10.0</span>
+<span class="gp">   ....: </span>    <span class="n">dss</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span>
+<span class="gp">   ....: </span>    <span class="n">dss</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">gdal_cache</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">tiled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">blockxsize</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">blockysize</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+<span class="gp">   ....: </span>                      <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+
+<span class="go">[                                        ] | 0% Completed |  0.0s</span>
+<span class="go">[########################                ] | 60% Completed |  0.1s</span>
+<span class="go">[#####################################   ] | 94% Completed |  0.2s</span>
+<span class="go">[######################################  ] | 95% Completed |  0.3s</span>
+<span class="go">[######################################  ] | 95% Completed |  0.4s</span>
+<span class="go">[######################################  ] | 97% Completed |  0.5s</span>
+<span class="go">[####################################### ] | 98% Completed |  0.6s</span>
+<span class="go">[####################################### ] | 98% Completed |  0.7s</span>
+<span class="go">[####################################### ] | 99% Completed |  0.8s</span>
+<span class="go">[########################################] | 100% Completed |  0.9s</span>
 </pre></div>
 </div>
 </div>
