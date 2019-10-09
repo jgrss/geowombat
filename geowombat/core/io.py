@@ -3,8 +3,7 @@ import os
 import fnmatch
 import ctypes
 from datetime import datetime
-# import multiprocessing as multi
-# from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import concurrent.futures
 
 from ..errors import logger
 from .windows import get_window_offsets
@@ -13,8 +12,7 @@ import numpy as np
 import dask
 from dask.diagnostics import ProgressBar
 import rasterio as rio
-# from tqdm import tqdm
-# import joblib
+from tqdm import tqdm
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -439,3 +437,90 @@ def to_raster(ds_data,
 
     if verbose > 0:
         logger.info('  Finished writing')
+
+
+def apply(infile,
+          outfile,
+          block_func,
+          gdal_cache=512,
+          count=1,
+          dtype='float64',
+          nodata=0,
+          compress='lzw',
+          tiled=True,
+          blockxsize=512,
+          blockysize=512,
+          n_jobs=4,
+          overwrite=False):
+
+    """
+    Applies a function and writes results to file
+
+    Args:
+        infile (str)
+        outfile (str)
+        block_func (func)
+        gdal_cache (Optional[int])
+        count (Optional[int])
+        dtype (Optional[str])
+        nodata (Optional[int or float])
+        compress (Optional[str])
+        tiled (Optional[bool])
+        blockxsize (Optional[int])
+        blockysize (Optional[int])
+        n_jobs (Optional[int])
+        overwrite (Optional[bool])
+
+    Examples:
+        >>> import geowombat as gw
+        >>>
+        >>> gw.apply('input.tif', 'output.tif', my_func, n_jobs=8)
+
+    Returns:
+        None
+    """
+
+    if overwrite:
+
+        if os.path.isfile(outfile):
+            os.remove(outfile)
+
+    with rasterio.Env(gdal_cache=gdal_cache):
+
+        with rasterio.open(infile) as src:
+
+            # Create a destination dataset based on source params. The
+            # destination will be tiled, and we'll process the tiles
+            # concurrently.
+            profile = src.profile
+
+            profile.update(count=count,
+                           blockxsize=blockxsize,
+                           blockysize=blockysize,
+                           dtype=dtype,
+                           nodata=nodata,
+                           compress=compress,
+                           tiled=tiled)
+
+            with rasterio.open(outfile, 'w', **profile) as dst:
+
+                # Materialize a list of destination block windows
+                # that we will use in several statements below.
+                windows = get_window_offsets(src.height, src.width, blockysize, blockxsize, return_as='list')
+
+                # This generator comprehension gives us raster data
+                # arrays for each window. Later we will zip a mapping
+                # of it with the windows list to get (window, result)
+                # pairs.
+                data_gen = (src.read(window=window, out_dtype='float64') for window in windows)
+
+                # scales_ = (scales for window in windows)
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+
+                    # We map the compute() function over the raster
+                    # data generator, zip the resulting iterator with
+                    # the windows list, and as pairs come back we
+                    # write data to the destination dataset.
+                    for window, result in tqdm(zip(windows, executor.map(block_func, data_gen)), total=len(windows)):
+                        dst.write(result, window=window, indexes=count)
