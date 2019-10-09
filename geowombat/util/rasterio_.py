@@ -1,11 +1,13 @@
 from collections import namedtuple
 
 from ..errors import logger
+from ..core.util import project_coords
 
+import numpy as np
 import rasterio as rio
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.warp import aligned_target, transform_bounds
+from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
 from rasterio.transform import array_bounds
 from affine import Affine
 
@@ -189,12 +191,13 @@ def get_ref_image_meta(filename):
     return WarpInfo(bounds=bounds, crs=crs, res=res)
 
 
-def warp_to_vrt(filename,
-                resampling='nearest',
-                bounds=None,
-                crs=None,
-                res=None,
-                warp_mem_limit=512):
+def warp(filename,
+         resampling='nearest',
+         bounds=None,
+         crs=None,
+         res=None,
+         nodata=0,
+         warp_mem_limit=512):
 
     """
     Warps an image to a VRT object
@@ -206,6 +209,7 @@ def warp_to_vrt(filename,
         bounds (Optional[tuple]): The extent bounds to warp to.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
+        nodata (Optional[int or float]): The 'no data' value.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
 
     Returns:
@@ -223,27 +227,43 @@ def warp_to_vrt(filename,
         if not res:
             res = src.res
 
-        xres, yres = res
-
         left, bottom, right, top = bounds
 
-        dst_height = (top - bottom) / yres
-        dst_width = (right - left) / xres
+        dst_height = (top - bottom) / abs(res[1])
+        dst_width = (right - left) / abs(res[0])
+
+        # Output image transform
+        dst_transform = Affine(res[0], 0.0, left, 0.0, -res[1], top)
+
+        if src.crs != crs:
+
+            dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
+                                                                               crs,
+                                                                               src.width,
+                                                                               src.height,
+                                                                               *src.bounds,
+                                                                               dst_width=src.width,
+                                                                               dst_height=src.height)
+
+            res = (dst_transform[0], -dst_transform[4])
 
         # Do not warp if all the key metadata match the reference information
         if (src.bounds == bounds) and (src.res == res) and (src.crs == crs) and (src.width == dst_width) and (src.height == dst_height):
             return filename
         else:
 
-            # Output image transform
-            dst_transform = Affine(xres, 0.0, left, 0.0, -yres, top)
+            # Align the cells
+            dst_transform, dst_width, dst_height = aligned_target(dst_transform,
+                                                                  dst_width,
+                                                                  dst_height,
+                                                                  res)
 
             vrt_options = {'resampling': getattr(Resampling, resampling),
                            'crs': crs,
                            'transform': dst_transform,
                            'height': dst_height,
                            'width': dst_width,
-                           'nodata': 0,
+                           'nodata': nodata,
                            'warp_mem_limit': warp_mem_limit,
                            'warp_extras': {'multi': True}}
 

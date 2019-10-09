@@ -14,6 +14,7 @@ from . import geoxarray
 from .conversion import xarray_to_xdataset
 from .io import parse_wildcard
 from .util import Chunks, get_file_extension
+from ..util import warp_open
 from .windows import from_bounds
 
 import numpy as np
@@ -405,16 +406,21 @@ def open(filename,
 
             if file_names.f_ext.lower() in IO_DICT['rasterio']:
 
-                with xr.open_rasterio(filename, **kwargs) as src:
+                yield warp_open(filename,
+                                band_names=band_names,
+                                resampling=resampling,
+                                **kwargs)
 
-                    if return_as == 'dataset':
-                        yield xarray_to_xdataset(src, band_names, time_names)
-                    else:
-
-                        if band_names:
-                            src.coords['band'] = band_names
-
-                        yield src
+                # with xr.open_rasterio(filename, **kwargs) as src:
+                #
+                #     if return_as == 'dataset':
+                #         yield xarray_to_xdataset(src, band_names, time_names)
+                #     else:
+                #
+                #         if band_names:
+                #             src.coords['band'] = band_names
+                #
+                #         yield src
 
             else:
 

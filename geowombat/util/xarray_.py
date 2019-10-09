@@ -2,7 +2,7 @@ import os
 
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, union, warp_to_vrt, get_file_bounds
+from .rasterio_ import get_ref_image_meta, union, warp, get_file_bounds
 
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
@@ -35,6 +35,57 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
             ref_kwargs[key] = ref_obj
 
     return ref_kwargs
+
+
+def warp_open(filename, band_names=None, resampling='nearest', **kwargs):
+
+    """
+    Warps and opens a file
+
+    Args:
+        filename (str): The file to open.
+        band_names (Optional[int, str, or list]): The band names.
+        resampling (Optional[str]): The resampling method.
+        kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    ref_kwargs = {'bounds': None, 'crs': None, 'res': None}
+
+    # Check if there is a reference image
+    if 'ref_image' in config:
+
+        ref_image = config['ref_image']
+
+        if isinstance(ref_image, str) and os.path.isfile(ref_image):
+
+            # Get the metadata from the reference image
+            ref_meta = get_ref_image_meta(ref_image)
+
+            ref_kwargs = {'bounds': ref_meta.bounds,
+                          'crs': ref_meta.crs,
+                          'res': ref_meta.res}
+
+    if 'ref_bounds' in config:
+        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
+
+    if 'ref_crs' in config:
+        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
+
+    if 'ref_res' in config:
+        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
+
+    with xr.open_rasterio(warp(filename,
+                               resampling=resampling,
+                               **ref_kwargs),
+                          **kwargs) as src:
+
+        if band_names:
+            src.coords['band'] = band_names
+
+        return src
 
 
 def mosaic(filenames,
@@ -209,9 +260,9 @@ def concat(filenames,
                 new_time_names.append(time_names[tidx])
 
                 # Warp the date
-                concat_list.append(xr.open_rasterio(warp_to_vrt(filenames[tidx],
-                                                                resampling=resampling,
-                                                                **ref_kwargs),
+                concat_list.append(xr.open_rasterio(warp(filenames[tidx],
+                                                         resampling=resampling,
+                                                         **ref_kwargs),
                                                     **kwargs))
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
@@ -223,7 +274,7 @@ def concat(filenames,
     else:
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
-        return xr.concat([xr.open_rasterio(warp_to_vrt(fn,
-                                                       resampling=resampling,
-                                                       **ref_kwargs), **kwargs)
+        return xr.concat([xr.open_rasterio(warp(fn,
+                                                resampling=resampling,
+                                                **ref_kwargs), **kwargs)
                           for fn in filenames], dim='time')
