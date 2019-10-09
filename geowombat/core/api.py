@@ -274,11 +274,11 @@ def open(filename,
         >>> with gw.open('image.tif') as ds:
         >>>     print(ds)
         >>>
-        >>> # Open a list of images, stack along the 'time' dimension
+        >>> # Open a list of images, stacking along the 'time' dimension
         >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
         >>>     print(ds)
         >>>
-        >>> # Open a all GeoTiffs in a directory, stack along the 'time' dimension
+        >>> # Open all GeoTiffs in a directory, stack along the 'time' dimension
         >>> with gw.open('*.tif') as ds:
         >>>     print(ds)
         >>>
@@ -305,6 +305,12 @@ def open(filename,
         >>>
         >>>     # The ``how`` keyword overrides the extent bounds
         >>>     with gw.open(['image1.tif', 'image2.tif'], how='union') as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Resample an image to 10m x 10m cell size
+        >>> with gw.config.update(ref_crs=(10, 10)):
+        >>>
+        >>>     with gw.open('image.tif', resampling='cubic') as ds:
         >>>         print(ds)
         >>>
         >>> # Open a list of images at a window slice
