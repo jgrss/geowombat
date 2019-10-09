@@ -46,6 +46,7 @@ extensions = ['IPython.sphinxext.ipython_directive',
               'sphinx.ext.inheritance_diagram',
               'sphinx_automodapi.automodapi',
               'sphinx.ext.napoleon',
+              'sphinxcontrib.bibtex',
               'numpydoc']
 
 # mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'

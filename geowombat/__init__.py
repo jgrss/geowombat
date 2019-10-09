@@ -12,6 +12,7 @@ from .core import evi2
 from .core import nbr
 from .core import ndvi
 from .core import wi
+from .core import tasseled_cap
 from .models import predict
 
 from .version import __version__
@@ -30,5 +31,6 @@ __all__ = ['config',
            'nbr',
            'ndvi',
            'wi',
+           'tasseled_cap',
            'predict',
            '__version__']

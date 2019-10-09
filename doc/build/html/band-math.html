@@ -92,7 +92,11 @@
 <li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Use named coordinates for band math</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Use named coordinates for band math</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#vegetation-indices">Vegetation indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tasseled-cap-transformations">Tasseled cap transformations</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 </ul>
@@ -165,6 +169,8 @@
             
   <div class="section" id="use-named-coordinates-for-band-math">
 <span id="band-math"></span><h1>Use named coordinates for band math<a class="headerlink" href="#use-named-coordinates-for-band-math" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="vegetation-indices">
+<h2>Vegetation indices<a class="headerlink" href="#vegetation-indices" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
@@ -177,7 +183,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-dfaedb974f584aaf5830aa0abcdd14a4&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-7e2a6a7a90c0725268d7eb0bd7179e57&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -287,6 +293,33 @@
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (-1, 1)</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="tasseled-cap-transformations">
+<h2>Tasseled cap transformations<a class="headerlink" href="#tasseled-cap-transformations" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;quickbird&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+<span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ...: </span>        <span class="n">tcap</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">tasseled_cap</span><span class="p">()</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">tcap</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 3, y: 1008, x: 1287)&gt;</span>
+<span class="go">dask.array&lt;transpose, shape=(3, 1008, 1287), dtype=float64, chunksize=(3, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
+<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * band     (band) &lt;U10 &#39;brightness&#39; &#39;greenness&#39; &#39;wetness&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:            +init=epsg:32618</span>
+<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    is_tiled:       0</span>
+<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    DataType:       Generic</span>
+</pre></div>
+</div>
 </div>
 </div>
 

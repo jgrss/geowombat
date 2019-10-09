@@ -2,6 +2,7 @@ from .io import to_raster, parse_wildcard
 from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
+from .vi import TasseledCap
 
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
@@ -14,6 +15,7 @@ evi2 = VegetationIndices().evi2
 nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
+tasseled_cap = TasseledCap().tasseled_cap
 
 __all__ = ['to_raster',
            'parse_wildcard',
@@ -27,4 +29,5 @@ __all__ = ['to_raster',
            'evi2',
            'nbr',
            'ndvi',
-           'wi']
+           'wi',
+           'tasseled_cap']

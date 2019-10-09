@@ -348,7 +348,7 @@ class SpatialOperations(object):
             chunksize_ = chunksize
         else:
             # TODO: fix
-            chunksize_ = (self.band_chunks, self.row_chunks, self.col_chunks)
+            chunksize_ = (self._obj.band_chunks, self._obj.row_chunks, self._obj.col_chunks)
 
         ds_sub = data.sel(y=y_idx,
                           x=x_idx,

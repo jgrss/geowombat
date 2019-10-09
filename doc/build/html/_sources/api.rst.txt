@@ -12,4 +12,3 @@ Top-level functions
     :no-inherited-members:
 
 .. automodapi:: geowombat
-

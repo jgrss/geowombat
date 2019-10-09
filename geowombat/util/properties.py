@@ -17,7 +17,6 @@ class DataProperties(object):
         WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'blue green red nir')
         WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
         WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
-        WavelengthsS210 = namedtuple('WavelengthsS210', 'blue green red nir')
 
         return dict(rgb=WavelengthsRGB(blue=1,
                                        green=2,
@@ -46,10 +45,22 @@ class DataProperties(object):
                                      swir1=6,
                                      swir2=7,
                                      cirrus=8),
-                    s210=WavelengthsS210(blue=1,
+                    s210=WavelengthsRGBN(blue=1,
                                          green=2,
                                          red=3,
-                                         nir=4))
+                                         nir=4),
+                    planet=WavelengthsRGBN(blue=1,
+                                           green=2,
+                                           red=3,
+                                           nir=4),
+                    quickbird=WavelengthsRGBN(blue=1,
+                                           green=2,
+                                           red=3,
+                                           nir=4),
+                    ikonos=WavelengthsRGBN(blue=1,
+                                           green=2,
+                                           red=3,
+                                           nir=4))
 
     @property
     def ndims(self):

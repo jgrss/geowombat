@@ -1,7 +1,13 @@
 from ..config import config
 
 from . import to_raster, moving, extract, subset, clip
-from . import norm_diff, evi, evi2, nbr, ndvi, wi
+from . import norm_diff as gw_norm_diff
+from . import evi as gw_evi
+from . import evi2 as gw_evi2
+from . import nbr as gw_nbr
+from . import ndvi as gw_ndvi
+from . import wi as gw_wi
+from . import tasseled_cap as gw_tasseled_cap
 from ..util import Cluster, DataProperties
 from ..util import imshow as gw_imshow
 from ..models import predict
@@ -178,22 +184,25 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return gw_norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def evi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return evi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def evi2(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return evi2(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi2(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def nbr(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return nbr(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_nbr(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def ndvi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return ndvi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_ndvi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def wi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
-        return wi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_wi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+
+    def tasseled_cap(self, variable='bands', nodata=0, sensor=None, scale_factor=1.0):
+        return gw_tasseled_cap(self._obj[variable], nodata=nodata, sensor=sensor, scale_factor=scale_factor)
 
 
 @xr.register_dataarray_accessor('gw')
@@ -577,7 +586,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return gw_norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def evi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
 
@@ -601,7 +610,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def evi2(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
 
@@ -625,7 +634,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def nbr(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
 
@@ -648,7 +657,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def ndvi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
 
@@ -671,7 +680,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def wi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
 
@@ -694,4 +703,27 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             ``xarray.DataArray``
         """
 
-        return wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+
+    def tasseled_cap(self, nodata=0, sensor=None, scale_factor=1.0):
+
+        r"""
+        Applies a tasseled cap transformation
+
+        Args:
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+            >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
+            >>>         tcap = ds.gw.tasseled_cap()
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return gw_tasseled_cap(self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor)

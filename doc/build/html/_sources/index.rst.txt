@@ -59,4 +59,3 @@ Documentation
    :caption: Reference
 
    api
-

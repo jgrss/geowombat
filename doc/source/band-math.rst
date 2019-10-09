@@ -3,6 +3,9 @@
 Use named coordinates for band math
 ===================================
 
+Vegetation indices
+++++++++++++++++++
+
 .. ipython:: python
 
     import geowombat as gw
@@ -43,3 +46,13 @@ Use the generic :func:`norm_diff` function with any two-band combination
         with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
             d = ds.gw.norm_diff('red', 'nir')
             print(d)
+
+Tasseled cap transformations
+++++++++++++++++++++++++++++
+
+.. ipython:: python
+
+    with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+        with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
+            tcap = ds.gw.tasseled_cap()
+            print(tcap)
