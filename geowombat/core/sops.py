@@ -1,7 +1,8 @@
 import os
+import math
 
 from ..errors import logger
-from ..util.rasterio_ import align_bounds, array_bounds
+from ..util.rasterio_ import align_bounds, array_bounds, aligned_target
 from .util import Converters
 
 import numpy as np
@@ -11,6 +12,7 @@ import xarray as xr
 import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
+from affine import Affine
 
 try:
     import pymorph
@@ -336,13 +338,13 @@ class SpatialOperations(object):
         if not isinstance(rows, int):
             logger.exception('  The bottom coordinate or rows must be specified.')
 
-        x_idx = np.linspace(left, left + (cols * data.gw.celly), cols)
-        y_idx = np.linspace(top, top - (rows * data.gw.celly), rows)
+        x_idx = np.linspace(math.ceil(left), math.ceil(left) + (cols * abs(data.gw.cellx)), cols) + abs(data.gw.cellxh)
+        y_idx = np.linspace(math.ceil(top), math.ceil(top) - (rows * abs(data.gw.celly)), rows) - abs(data.gw.cellyh)
 
         if center:
 
-            y_idx += ((rows / 2.0) * data.gw.celly)
-            x_idx -= ((cols / 2.0) * data.gw.celly)
+            y_idx += ((rows / 2.0) * abs(data.gw.celly))
+            x_idx -= ((cols / 2.0) * abs(data.gw.cellx))
 
         if chunksize:
             chunksize_ = chunksize
@@ -374,9 +376,16 @@ class SpatialOperations(object):
 
         # Update the left and top coordinates
         transform = list(data.transform)
-        transform[2] = ds_sub.gw.left
-        transform[5] = ds_sub.gw.top
 
-        ds_sub.attrs['transform'] = tuple(transform)
+        transform[2] = x_idx[0]
+        transform[5] = y_idx[0]
+
+        # Align the coordinates to the target grid
+        dst_transform, dst_width, dst_height = aligned_target(Affine(*transform),
+                                                              ds_sub.shape[1],
+                                                              ds_sub.shape[0],
+                                                              data.res)
+
+        ds_sub.attrs['transform'] = dst_transform
 
         return ds_sub
