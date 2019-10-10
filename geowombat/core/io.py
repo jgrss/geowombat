@@ -439,19 +439,25 @@ def to_raster(ds_data,
         logger.info('  Finished writing')
 
 
+def _arg_gen(arg_, windows):
+    for w in windows:
+        yield arg_
+
+
 def apply(infile,
           outfile,
           block_func,
+          args=None,
           gdal_cache=512,
+          n_jobs=4,
+          overwrite=False,
           count=1,
           dtype='float64',
           nodata=0,
           compress='lzw',
           tiled=True,
           blockxsize=512,
-          blockysize=512,
-          n_jobs=4,
-          overwrite=False):
+          blockysize=512):
 
     """
     Applies a function and writes results to file
@@ -460,7 +466,10 @@ def apply(infile,
         infile (str)
         outfile (str)
         block_func (func)
+        args (Optional[tuple])
         gdal_cache (Optional[int])
+        n_jobs (Optional[int])
+        overwrite (Optional[bool])
         count (Optional[int])
         dtype (Optional[str])
         nodata (Optional[int or float])
@@ -468,13 +477,11 @@ def apply(infile,
         tiled (Optional[bool])
         blockxsize (Optional[int])
         blockysize (Optional[int])
-        n_jobs (Optional[int])
-        overwrite (Optional[bool])
 
     Examples:
         >>> import geowombat as gw
         >>>
-        >>> gw.apply('input.tif', 'output.tif', my_func, n_jobs=8)
+        >>> gw.apply('input.tif', 'output.tif', my_func, args=(arg1,), n_jobs=8)
 
     Returns:
         None
@@ -514,6 +521,9 @@ def apply(infile,
                 # pairs.
                 data_gen = (src.read(window=window, out_dtype='float64') for window in windows)
 
+                if args:
+                    args = [_arg_gen(arg, windows) for arg in args]
+
                 # scales_ = (scales for window in windows)
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
@@ -522,5 +532,10 @@ def apply(infile,
                     # data generator, zip the resulting iterator with
                     # the windows list, and as pairs come back we
                     # write data to the destination dataset.
-                    for window, result in tqdm(zip(windows, executor.map(block_func, data_gen)), total=len(windows)):
+                    for window, result in tqdm(zip(windows,
+                                                   executor.map(block_func,
+                                                                data_gen,
+                                                                *args)),
+                                               total=len(windows)):
+
                         dst.write(result, window=window, indexes=count)
