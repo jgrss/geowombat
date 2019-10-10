@@ -43,18 +43,25 @@ Slice a subset using a tuple of bounded coordinates
 
 Extract values at point locations
 
-.. ipython:: python
+.. code:: python
 
-    #with gw.open(rgbn,
-    #    df = ds.gw.extract('point.shp')
+    with gw.open(rgbn,
+        df = ds.gw.extract('point.shp')
 
 Extract values within polygons
 
-.. ipython:: python
+.. code:: python
 
     import geopandas as gpd
 
-    #df = gpd.read_file('poly.gpkg')
+    df = gpd.read_file('poly.gpkg')
 
-    #with gw.open(rgbn,
-    #    df = ds.gw.extract(df, bands=3, band_names=['red'], frac=0.1, n_jobs=8, num_workers=8, verbose=1)
+    with gw.open(rgbn,
+
+        df = ds.gw.extract(df,
+                           bands=3,
+                           band_names=['red'],
+                           frac=0.1,
+                           n_jobs=8,
+                           num_workers=8,
+                           verbose=1)

@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -208,11 +209,11 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images, stack along the &#39;time&#39; dimension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images, stacking along the &#39;time&#39; dimension</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a all GeoTiffs in a directory, stack along the &#39;time&#39; dimension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open all GeoTiffs in a directory, stack along the &#39;time&#39; dimension</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;*.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -239,6 +240,12 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># The ``how`` keyword overrides the extent bounds</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Resample an image to 10m x 10m cell size</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)):</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a list of images at a window slice</span>

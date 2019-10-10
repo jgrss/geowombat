@@ -1,4 +1,4 @@
-from .io import to_raster, parse_wildcard
+from .io import apply, parse_wildcard, to_raster
 from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
@@ -17,8 +17,9 @@ ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
 
-__all__ = ['to_raster',
+__all__ = ['apply',
            'parse_wildcard',
+           'to_raster',
            'extract',
            'subset',
            'clip',

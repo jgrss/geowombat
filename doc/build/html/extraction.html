@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -271,16 +272,24 @@
 </pre></div>
 </div>
 <p>Extract values at point locations</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="c1">#with gw.open(rgbn,</span>
-<span class="c1">#    df = ds.gw.extract(&#39;point.shp&#39;)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;point.shp&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Extract values within polygons</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
 
-<span class="go">#df = gpd.read_file(&#39;poly.gpkg&#39;)</span>
-<span class="go">#with gw.open(rgbn,</span>
-<span class="go">#    df = ds.gw.extract(df, bands=3, band_names=[&#39;red&#39;], frac=0.1, n_jobs=8, num_workers=8, verbose=1)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                       <span class="n">bands</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                       <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span>
+                       <span class="n">frac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                       <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                       <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                       <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -36,6 +36,7 @@ Documentation
 * :doc:`band-math`
 * :doc:`machine-learning`
 * :doc:`config`
+* :doc:`apply`
 
 .. toctree::
    :maxdepth: 1
@@ -48,6 +49,7 @@ Documentation
    band-math
    machine-learning
    config
+   apply
 
 **Reference**
 

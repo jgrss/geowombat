@@ -118,7 +118,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
         return X_probas / self.weights.sum()
 
 
-class Model(object):
+class GeoWombatClassifier(object):
 
     """
     A class for model fitting models with Dask
@@ -134,7 +134,7 @@ class Model(object):
         n_jobs (Optional[int]): The number of parallel processes.
 
     Examples:
-        >>> ml = Model(['lightgbm', 'random forest'], n_jobs=8)
+        >>> ml = GeoWombatClassifier(['lightgbm', 'random forest'], n_jobs=8)
         >>>
         >>> # Fit a model
         >>> ml.fit(X, y)

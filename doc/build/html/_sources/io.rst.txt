@@ -173,16 +173,15 @@ Writing DataArrays to file
 In the example below, ``ds_res`` is an :func:`xarray.DataArray`. Using Rasterio as a backend, we use the
 Xarray accessor :func:`to_raster` to write chunks in parallel.
 
-.. ipython:: python
+.. code:: python
 
-    with gw.open(rgbn, chunks=(1, 256, 256)) as ds:
+    with gw.open(rgbn, chunks=1024) as ds:
+
         dss = ds * 10.0
         dss.attrs = ds.attrs
+
         dss.gw.to_raster('output.tif',
-                          n_jobs=4,
-                          gdal_cache=512,
-                          verbose=1,
-                          tiled=True,
-                          blockxsize=256,
-                          blockysize=256,
-                          compress='lzw')
+                         n_jobs=4,
+                         verbose=1,
+                         tiled=True,
+                         compress='lzw')

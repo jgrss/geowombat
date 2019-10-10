@@ -4,6 +4,7 @@ from .core import extract
 from .core import subset
 from .core import clip
 from .core import polygons_to_points
+from .core import apply
 from .core import to_raster
 from .core import moving
 from .core import norm_diff
@@ -23,6 +24,7 @@ __all__ = ['config',
            'subset',
            'clip',
            'polygons_to_points',
+           'apply',
            'to_raster',
            'moving',
            'norm_diff',

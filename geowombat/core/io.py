@@ -75,7 +75,7 @@ def _window_worker(w, n_bands, indexes_multi):
     return window_slice, indexes
 
 
-def _window_worker_time(w, n_bands, indexes_multi):
+def _window_worker_time(w, n_bands, indexes_multi, tidx, n_time):
 
     """
     Helper to return window slice
@@ -86,12 +86,12 @@ def _window_worker_time(w, n_bands, indexes_multi):
     # Prepend the band position index to the window slice
     if n_bands == 1:
 
-        window_slice = tuple([slice(tidx, tidx + 1)] + [slice(0, 1)] + list(window_slice))
+        window_slice = tuple([slice(tidx, n_time)] + [slice(0, 1)] + list(window_slice))
         indexes = 1
 
     else:
 
-        window_slice = tuple([slice(tidx, tidx + 1)] + [slice(0, n_bands)] + list(window_slice))
+        window_slice = tuple([slice(tidx, n_time)] + [slice(0, n_bands)] + list(window_slice))
         indexes = indexes_multi
 
     return window_slice, indexes
@@ -178,6 +178,10 @@ def to_raster(ds_data,
               filename,
               crs,
               transform,
+              separate=False,
+              user_func=None,
+              user_args=None,
+              user_count=None,
               driver='GTiff',
               n_jobs=1,
               gdal_cache=512,
@@ -200,6 +204,7 @@ def to_raster(ds_data,
         filename (str): The output file name to write to.
         crs (object): A ``rasterio.crs.CRS`` object.
         transform (object): An ``affine.Affine`` transform.
+        separate (Optional[bool]): Whether to keep time outputs as separate images.
         n_jobs (Optional[str]): The number of parallel chunks to write.
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
@@ -236,6 +241,11 @@ def to_raster(ds_data,
     n_bands = ds_data.gw.nbands
     n_rows = ds_data.gw.nrows
     n_cols = ds_data.gw.ncols
+
+    if isinstance(user_count, int) or isinstance(user_count, list) or isinstance(user_count, np.ndarray):
+        out_count = user_count
+    else:
+        out_count = n_bands
 
     if not isinstance(time_chunks, int):
         time_chunks = ds_data.gw.time_chunks
@@ -279,7 +289,7 @@ def to_raster(ds_data,
     # Rasterio environment context
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
-        if n_time > 1:
+        if (n_time > 1) and separate:
 
             d_name, f_name = os.path.split(filename)
             f_base, f_ext = os.path.splitext(filename)
@@ -311,7 +321,7 @@ def to_raster(ds_data,
                               mode='w',
                               height=n_rows,
                               width=n_cols,
-                              count=n_bands,
+                              count=out_count,
                               dtype=dtype,
                               nodata=nodata,
                               crs=crs,
@@ -327,7 +337,7 @@ def to_raster(ds_data,
                         else:
                             write_data = ds_data.squeeze().load().data
 
-                        if n_bands == 1:
+                        if out_count == 1:
                             dst.write(write_data, 1)
                         else:
                             dst.write(write_data)
@@ -350,16 +360,27 @@ def to_raster(ds_data,
                             """
 
                             del last_write
-                            dst.write(output, window=out_window, indexes=out_indexes)
+
+                            if user_func:
+
+                                output_ = user_func(np.float64(output), *user_args)
+                                out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0]+1)
+
+                                dst.write(output_,
+                                          window=out_window,
+                                          indexes=out_indexes_)
+
+                            else:
+                                dst.write(output, window=out_window, indexes=out_indexes)
 
                         # Create the Dask.delayed writers
                         writer = None
                         for w in windows:
 
-                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi)
+                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, tidx, tidx+1)
 
                             if isinstance(nodata, int) or isinstance(nodata, float):
-                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes,writer)
+                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes, writer)
                             else:
                                 writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
 
@@ -379,7 +400,7 @@ def to_raster(ds_data,
                           mode='w',
                           height=n_rows,
                           width=n_cols,
-                          count=n_bands,
+                          count=out_count,
                           dtype=dtype,
                           nodata=nodata,
                           crs=crs,
@@ -395,7 +416,7 @@ def to_raster(ds_data,
                     else:
                         write_data = ds_data.squeeze().load().data
 
-                    if n_bands == 1:
+                    if out_count == 1:
                         dst.write(write_data, 1)
                     else:
                         dst.write(write_data)
@@ -418,13 +439,27 @@ def to_raster(ds_data,
                         """
 
                         del last_write
-                        dst.write(output, window=out_window, indexes=out_indexes)
+
+                        if user_func:
+
+                            output_ = user_func(np.float64(output), *user_args)
+                            out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0] + 1)
+
+                            dst.write(output_,
+                                      window=out_window,
+                                      indexes=out_indexes_)
+
+                        else:
+                            dst.write(output, window=out_window, indexes=out_indexes)
 
                     # Create the Dask.delayed writers
                     writer = None
                     for w in windows:
 
-                        window_slice, indexes = _window_worker(w, n_bands, None)
+                        if n_time > 1:
+                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, 0, n_time)
+                        else:
+                            window_slice, indexes = _window_worker(w, n_bands, None)
 
                         if isinstance(nodata, int) or isinstance(nodata, float):
                             writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes, writer)
