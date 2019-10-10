@@ -174,6 +174,61 @@ def _window_worker_time(w, n_bands, indexes_multi, tidx, n_time):
 #                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
 
 
+@dask.delayed
+def write_func(output,
+               out_window,
+               out_indexes,
+               filename,
+               n_rows,
+               n_cols,
+               out_count,
+               dtype,
+               nodata,
+               crs,
+               transform,
+               driver,
+               last_write=None,
+               **kwargs):
+
+    """
+    Writes a NumPy array to file
+
+    Reference:
+        https://github.com/dask/dask/issues/3600
+    """
+
+    del last_write
+
+    with rio.open(filename,
+                  mode='r+',
+                  height=n_rows,
+                  width=n_cols,
+                  count=out_count,
+                  dtype=dtype,
+                  nodata=nodata,
+                  crs=crs,
+                  transform=transform,
+                  driver=driver,
+                  sharing=False,
+                  **kwargs) as dst:
+
+        dst.write(output,
+                  window=out_window,
+                  indexes=out_indexes)
+
+    # if user_func:
+    #
+    #     output_ = user_func(np.float64(output), *user_args)
+    #     out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0] + 1)
+    #
+    #     dst.write(output_,
+    #               window=out_window,
+    #               indexes=out_indexes_)
+    #
+    # else:
+    #     dst.write(output, window=out_window, indexes=out_indexes)
+
+
 def to_raster(ds_data,
               filename,
               crs,
@@ -182,8 +237,10 @@ def to_raster(ds_data,
               user_func=None,
               user_args=None,
               user_count=None,
+              client=None,
               driver='GTiff',
               n_jobs=1,
+              scheduler='threaded',
               gdal_cache=512,
               dtype='float64',
               time_chunks=None,
@@ -349,29 +406,29 @@ def to_raster(ds_data,
 
                     else:
 
-                        @dask.delayed
-                        def write_func(output, out_window, out_indexes, last_write=None):
-
-                            """
-                            Writes a NumPy array to file
-
-                            Reference:
-                                https://github.com/dask/dask/issues/3600
-                            """
-
-                            del last_write
-
-                            if user_func:
-
-                                output_ = user_func(np.float64(output), *user_args)
-                                out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0]+1)
-
-                                dst.write(output_,
-                                          window=out_window,
-                                          indexes=out_indexes_)
-
-                            else:
-                                dst.write(output, window=out_window, indexes=out_indexes)
+                        # @dask.delayed
+                        # def write_func(output, out_window, out_indexes, last_write=None):
+                        #
+                        #     """
+                        #     Writes a NumPy array to file
+                        #
+                        #     Reference:
+                        #         https://github.com/dask/dask/issues/3600
+                        #     """
+                        #
+                        #     del last_write
+                        #
+                        #     if user_func:
+                        #
+                        #         output_ = user_func(np.float64(output), *user_args)
+                        #         out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0]+1)
+                        #
+                        #         dst.write(output_,
+                        #                   window=out_window,
+                        #                   indexes=out_indexes_)
+                        #
+                        #     else:
+                        #         dst.write(output, window=out_window, indexes=out_indexes)
 
                         # Create the Dask.delayed writers
                         writer = None
@@ -385,8 +442,12 @@ def to_raster(ds_data,
                                 writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
 
                         # Write the data to file
-                        with ProgressBar():
-                            writer.compute(num_workers=n_jobs)
+                        if client:
+                            client.persist(writer)
+                        else:
+
+                            with ProgressBar():
+                                writer.compute(num_workers=n_jobs, scheduler=scheduler)
 
         else:
 
@@ -395,7 +456,7 @@ def to_raster(ds_data,
                 if os.path.isfile(filename):
                     os.remove(filename)
 
-            # Open the output file for writing
+            # Create the file
             with rio.open(filename,
                           mode='w',
                           height=n_rows,
@@ -409,66 +470,69 @@ def to_raster(ds_data,
                           sharing=False,
                           **kwargs) as dst:
 
-                if n_jobs == 1:
+                pass
+
+            if n_jobs == 1:
+
+                if isinstance(nodata, int) or isinstance(nodata, float):
+                    write_data = ds_data.squeeze().fillna(nodata).load().data
+                else:
+                    write_data = ds_data.squeeze().load().data
+
+                if out_count == 1:
+                    dst.write(write_data, 1)
+                else:
+                    dst.write(write_data)
+
+                if isinstance(tags, dict):
+
+                    if tags:
+                        dst.update_tags(**tags)
+
+            else:
+
+                # Create the Dask.delayed writers
+                writer = None
+                for w in windows:
+
+                    if n_time > 1:
+                        window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, 0, n_time)
+                    else:
+                        window_slice, indexes = _window_worker(w, n_bands, None)
 
                     if isinstance(nodata, int) or isinstance(nodata, float):
-                        write_data = ds_data.squeeze().fillna(nodata).load().data
+
+                        writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes,
+                                            filename,
+                                            n_rows,
+                                            n_cols,
+                                            out_count,
+                                            dtype,
+                                            nodata,
+                                            crs,
+                                            transform,
+                                            driver,
+                                            last_write=writer,
+                                            **kwargs)
+
                     else:
-                        write_data = ds_data.squeeze().load().data
 
-                    if out_count == 1:
-                        dst.write(write_data, 1)
-                    else:
-                        dst.write(write_data)
+                        writer = write_func(ds_data[window_slice].squeeze().data, w, indexes,
+                                            filename,
+                                            n_rows,
+                                            n_cols,
+                                            out_count,
+                                            dtype,
+                                            nodata,
+                                            crs,
+                                            transform,
+                                            driver,
+                                            last_write=writer,
+                                            **kwargs)
 
-                    if isinstance(tags, dict):
-
-                        if tags:
-                            dst.update_tags(**tags)
-
-                else:
-
-                    @dask.delayed
-                    def write_func(output, out_window, out_indexes, last_write=None):
-
-                        """
-                        Writes a NumPy array to file
-
-                        Reference:
-                            https://github.com/dask/dask/issues/3600
-                        """
-
-                        del last_write
-
-                        if user_func:
-
-                            output_ = user_func(np.float64(output), *user_args)
-                            out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0] + 1)
-
-                            dst.write(output_,
-                                      window=out_window,
-                                      indexes=out_indexes_)
-
-                        else:
-                            dst.write(output, window=out_window, indexes=out_indexes)
-
-                    # Create the Dask.delayed writers
-                    writer = None
-                    for w in windows:
-
-                        if n_time > 1:
-                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, 0, n_time)
-                        else:
-                            window_slice, indexes = _window_worker(w, n_bands, None)
-
-                        if isinstance(nodata, int) or isinstance(nodata, float):
-                            writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes, writer)
-                        else:
-                            writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
-
-                    # Write the data to file
-                    with ProgressBar():
-                        writer.compute(num_workers=n_jobs)
+                # Write the data to file
+                with ProgressBar():
+                    writer.compute(num_workers=n_jobs)
 
     if verbose > 0:
         logger.info('  Finished writing')
@@ -527,9 +591,11 @@ def apply(infile,
         if os.path.isfile(outfile):
             os.remove(outfile)
 
-    with rasterio.Env(gdal_cache=gdal_cache):
+    out_indexes = np.arange(1, count+1) if count > 1 else count
 
-        with rasterio.open(infile) as src:
+    with rio.Env(gdal_cache=gdal_cache):
+
+        with rio.open(infile) as src:
 
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
@@ -544,7 +610,7 @@ def apply(infile,
                            compress=compress,
                            tiled=tiled)
 
-            with rasterio.open(outfile, 'w', **profile) as dst:
+            with rio.open(outfile, 'w', **profile) as dst:
 
                 # Materialize a list of destination block windows
                 # that we will use in several statements below.
@@ -573,4 +639,4 @@ def apply(infile,
                                                                 *args)),
                                                total=len(windows)):
 
-                        dst.write(result, window=window, indexes=count)
+                        dst.write(result, window=window, indexes=out_indexes)
