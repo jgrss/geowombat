@@ -249,7 +249,7 @@ def warp(filename,
 
         # Do not warp if all the key metadata match the reference information
         if (src.bounds == bounds) and (src.res == res) and (src.crs == crs) and (src.width == dst_width) and (src.height == dst_height):
-            return filename
+            output = filename
         else:
 
             # Align the cells
@@ -270,4 +270,6 @@ def warp(filename,
             # 'warp_extras': {'warp_option': 'NUM_THREADS=ALL_CPUS'}
 
             with WarpedVRT(src, **vrt_options) as vrt:
-                return vrt
+                output = vrt
+
+    return output

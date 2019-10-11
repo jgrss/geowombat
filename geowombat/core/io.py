@@ -11,6 +11,8 @@ from .windows import get_window_offsets
 import numpy as np
 import dask
 from dask.diagnostics import ProgressBar
+from dask.distributed import progress
+
 import rasterio as rio
 from tqdm import tqdm
 
@@ -178,17 +180,7 @@ def _window_worker_time(w, n_bands, indexes_multi, tidx, n_time):
 def write_func(output,
                out_window,
                out_indexes,
-               filename,
-               n_rows,
-               n_cols,
-               out_count,
-               dtype,
-               nodata,
-               crs,
-               transform,
-               driver,
-               last_write=None,
-               **kwargs):
+               filename):
 
     """
     Writes a NumPy array to file
@@ -197,20 +189,9 @@ def write_func(output,
         https://github.com/dask/dask/issues/3600
     """
 
-    del last_write
-
     with rio.open(filename,
                   mode='r+',
-                  height=n_rows,
-                  width=n_cols,
-                  count=out_count,
-                  dtype=dtype,
-                  nodata=nodata,
-                  crs=crs,
-                  transform=transform,
-                  driver=driver,
-                  sharing=False,
-                  **kwargs) as dst:
+                  sharing=False) as dst:
 
         dst.write(output,
                   window=out_window,
@@ -240,7 +221,7 @@ def to_raster(ds_data,
               client=None,
               driver='GTiff',
               n_jobs=1,
-              scheduler='threaded',
+              scheduler='threading',
               gdal_cache=512,
               dtype='float64',
               time_chunks=None,
@@ -287,6 +268,13 @@ def to_raster(ds_data,
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
 
+    if client:
+
+        if 'compress' in kwargs:
+            logger.warning("  Distributed writing is not allowed on compressed rasters. Therefore, setting compress='none'")
+
+        kwargs['compress'] = 'none'
+
     d_name = os.path.dirname(filename)
 
     if d_name:
@@ -331,7 +319,7 @@ def to_raster(ds_data,
         dtype = ds_data.dtype
 
     if verbose > 0:
-        logger.info('  Creating and writing to the file ...')
+        logger.info('  Creating the file ...')
 
     # Setup the windows
     windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks)
@@ -437,13 +425,27 @@ def to_raster(ds_data,
                             window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, tidx, tidx+1)
 
                             if isinstance(nodata, int) or isinstance(nodata, float):
-                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes, writer)
+
+                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data,
+                                                    w,
+                                                    indexes,
+                                                    writer,
+                                                    filename_time)
+
                             else:
-                                writer = write_func(ds_data[window_slice].squeeze().data, w, indexes, writer)
+
+                                writer = write_func(ds_data[window_slice].squeeze().data,
+                                                    w,
+                                                    indexes,
+                                                    writer,
+                                                    filename_time)
 
                         # Write the data to file
                         if client:
-                            client.persist(writer)
+
+                            writer = client.persist(writer)
+                            progress(writer)
+
                         else:
 
                             with ProgressBar():
@@ -491,8 +493,11 @@ def to_raster(ds_data,
 
             else:
 
+                if verbose > 0:
+                    logger.info('  Building the Dask task graph ...')
+
                 # Create the Dask.delayed writers
-                writer = None
+                writers = list()
                 for w in windows:
 
                     if n_time > 1:
@@ -502,37 +507,33 @@ def to_raster(ds_data,
 
                     if isinstance(nodata, int) or isinstance(nodata, float):
 
-                        writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data, w, indexes,
-                                            filename,
-                                            n_rows,
-                                            n_cols,
-                                            out_count,
-                                            dtype,
-                                            nodata,
-                                            crs,
-                                            transform,
-                                            driver,
-                                            last_write=writer,
-                                            **kwargs)
+                        writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data,
+                                            w,
+                                            indexes,
+                                            filename)
 
                     else:
 
-                        writer = write_func(ds_data[window_slice].squeeze().data, w, indexes,
-                                            filename,
-                                            n_rows,
-                                            n_cols,
-                                            out_count,
-                                            dtype,
-                                            nodata,
-                                            crs,
-                                            transform,
-                                            driver,
-                                            last_write=writer,
-                                            **kwargs)
+                        writer = write_func(ds_data[window_slice].squeeze().data,
+                                            w,
+                                            indexes,
+                                            filename)
+
+                    writers.append(writer)
+
+                if verbose > 0:
+                    logger.info('  Writing results to file ...')
 
                 # Write the data to file
-                with ProgressBar():
-                    writer.compute(num_workers=n_jobs)
+                if client:
+
+                    client.persist(writers)
+                    # progress(x)
+
+                else:
+
+                    with ProgressBar():
+                        writers.compute(num_workers=n_jobs, scheduler=scheduler)
 
     if verbose > 0:
         logger.info('  Finished writing')
