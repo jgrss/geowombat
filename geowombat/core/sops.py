@@ -269,8 +269,7 @@ class SpatialOperations(object):
                            left=new_bounds.bounds.left,
                            bottom=new_bounds.bounds.bottom,
                            right=new_bounds.bounds.right,
-                           top=new_bounds.bounds.top,
-                           chunksize=data.data.chunksize)
+                           top=new_bounds.bounds.top)
 
         # Rasterize the geometry and store as a DataArray
         mask = xr.DataArray(data=da.from_array(features.rasterize(df.geometry.values.tolist(),
@@ -298,8 +297,7 @@ class SpatialOperations(object):
                rows=None,
                cols=None,
                center=False,
-               mask_corners=False,
-               chunksize=None):
+               mask_corners=False):
 
         """
         Subsets a DataArray
@@ -314,7 +312,6 @@ class SpatialOperations(object):
             cols (Optional[int]): The number of output rows.
             center (Optional[bool]): Whether to center the subset on ``left`` and ``top``.
             mask_corners (Optional[bool]): Whether to mask corners (*requires ``pymorph``).
-            chunksize (Optional[tuple]): A new chunk size for the output.
 
         Returns:
             ``xarray.DataArray``
@@ -346,28 +343,20 @@ class SpatialOperations(object):
             y_idx += ((rows / 2.0) * abs(data.gw.celly))
             x_idx -= ((cols / 2.0) * abs(data.gw.cellx))
 
-        if chunksize:
-            chunksize_ = chunksize
-        else:
-            # TODO: fix
-            chunksize_ = (self._obj.band_chunks, self._obj.row_chunks, self._obj.col_chunks)
-
         ds_sub = data.sel(y=y_idx,
                           x=x_idx,
-                          method='nearest').chunk(chunksize_)
+                          method='nearest')
 
         if mask_corners:
 
             if PYMORPH_INSTALLED:
 
-                if len(chunksize_) == 2:
-                    chunksize_pym = chunksize_
-                else:
-                    chunksize_pym = chunksize_[1:]
-
                 try:
-                    disk = da.from_array(pymorph.sedisk(r=int(rows/2.0))[:rows, :cols], chunks=chunksize_pym).astype('uint8')
+
+                    disk = da.from_array(pymorph.sedisk(r=int(rows/2.0))[:rows, :cols],
+                                         chunks=ds_sub.data.chunksize).astype('uint8')
                     ds_sub = ds_sub.where(disk == 1)
+
                 except:
                     logger.warning('  Cannot mask corners without a square subset.')
 
