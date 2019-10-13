@@ -15,13 +15,11 @@ import dask
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
-from dask.distributed import progress
+from dask.distributed import progress, Client
 
 import rasterio as rio
 
 from tqdm import tqdm
-
-ProgressBar().register()
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -582,7 +580,7 @@ def to_raster_old(ds_data,
 
 def to_raster(data,
               filename,
-              client=None,
+              cluster=None,
               verbose=0,
               overwrite=False,
               n_jobs=1,
@@ -595,7 +593,7 @@ def to_raster(data,
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
-        client: TODO
+        cluster: TODO
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         n_jobs (Optional[str]): The number of parallel chunks to write.
@@ -630,6 +628,8 @@ def to_raster(data,
     if not is_dask_collection(data.data):
         logger.exception('  The data should be a dask array.')
 
+    ProgressBar().register()
+
     with WriteDaskArray(filename, gdal_cache=gdal_cache, **kwargs) as dst:
 
         res = da.store(da.squeeze(data.data), dst, lock=False, compute=False)
@@ -637,13 +637,17 @@ def to_raster(data,
         if verbose > 0:
             logger.info('  Writing data to file ...')
 
-        if client:
+        if cluster:
 
             if verbose > 0:
                 logger.info('  Sending delayed futures to the distributed client ...')
 
+            # Connect to an existing client
+            client = Client(cluster)
+
             x = client.persist(res)
             progress(x)
+            x.compute()
 
         else:
 
