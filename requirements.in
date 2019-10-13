@@ -1,13 +1,13 @@
 cython
 matplotlib
-GDAL
+GDAL==2.4.0
 pandas
 geopandas
 numpy
 rasterio
 xarray
 dask
-dask[dataframe]
+dask[array,dataframe]
 dask-ml
 distributed
 affine
@@ -16,4 +16,5 @@ tqdm
 shapely
 h5netcdf
 netCDF4
+scikit-learn
 

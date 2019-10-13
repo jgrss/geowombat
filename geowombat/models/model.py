@@ -4,7 +4,7 @@ import ctypes
 import inspect
 
 from ..errors import logger
-from ..util import Cluster
+from ..backends import Cluster
 from ..core.util import Chunks
 
 import numpy as np

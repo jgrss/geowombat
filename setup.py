@@ -21,7 +21,7 @@ with open('LICENSE.txt') as f:
 
 required_packages = ['cython',
                      'matplotlib',
-                     'GDAL',
+                     'GDAL==2.4.0',
                      'pandas',
                      'geopandas',
                      'numpy',
@@ -29,14 +29,15 @@ required_packages = ['cython',
                      'xarray',
                      'dask',
                      'dask-ml',
-                     'dask[dataframe]',
+                     'dask[array,dataframe]',
                      'distributed',
                      'affine',
                      'joblib',
                      'tqdm',
                      'shapely',
                      'h5netcdf',
-                     'netCDF4']
+                     'netCDF4',
+                     'scikit-learn']
 
 
 def get_packages():

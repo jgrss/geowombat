@@ -183,5 +183,4 @@ Xarray accessor :func:`to_raster` to write chunks in parallel.
         dss.gw.to_raster('output.tif',
                          n_jobs=4,
                          verbose=1,
-                         tiled=True,
-                         compress='lzw')
+                         tiled=True)

@@ -1,15 +1,66 @@
 from collections import namedtuple
 
 from ..errors import logger
-from ..core.util import project_coords
 
-import numpy as np
 import rasterio as rio
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
 from rasterio.transform import array_bounds
+from rasterio.windows import Window
+
 from affine import Affine
+
+
+class WriteDaskArray(object):
+
+    """
+    ``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
+    """
+
+    def __init__(self, filename, gdal_cache=512, **kwargs):
+
+        self.filename = filename
+        self.gdal_cache = gdal_cache
+        self.kwargs = kwargs
+
+    def __setitem__(self, key, item):
+
+        if len(key) == 3:
+
+            index_range, y, x = key
+            indexes = list(range(index_range.start + 1, index_range.stop + 1, index_range.step or 1))
+
+        else:
+
+            indexes = 1
+            y, x = key
+
+        with rio.Env(GDAL_CACHEMAX=self.gdal_cache):
+
+            with rio.open(self.filename, mode='r+', **self.kwargs) as dst_:
+
+                dst_.write(item,
+                           window=Window(x.start, y.start, x.stop - x.start, y.stop - y.start),
+                           indexes=indexes)
+
+    def __enter__(self):
+
+        if 'compress' in self.kwargs:
+
+            logger.warning('  Cannot write concurrently to a compressed raster.')
+            del self.kwargs['compress']
+
+        with rio.Env(GDAL_CACHEMAX=self.gdal_cache):
+
+            # Create the output file
+            with rio.open(self.filename, mode='w', **self.kwargs) as dst_:
+                pass
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
 
 
 def align_bounds(minx, miny, maxx, maxy, res):

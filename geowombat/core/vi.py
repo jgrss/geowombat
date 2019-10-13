@@ -71,7 +71,9 @@ class BandMath(object):
             result = result.transpose('time', 'band', 'y', 'x')
 
         else:
+
             result = result.assign_coords(coords={band_variable: new_name})
+            result = result.expand_dims(dim='band')
 
         result = result.assign_attrs(**new_attrs)
 

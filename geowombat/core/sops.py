@@ -2,7 +2,7 @@ import os
 import math
 
 from ..errors import logger
-from ..util.rasterio_ import align_bounds, array_bounds, aligned_target
+from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .util import Converters
 
 import numpy as np

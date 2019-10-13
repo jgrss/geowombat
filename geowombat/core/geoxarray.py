@@ -8,7 +8,8 @@ from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
-from ..util import Cluster, DataProperties
+from ..backends import Cluster
+from ..util import DataProperties
 from ..util import imshow as gw_imshow
 from ..models import predict
 
@@ -94,15 +95,11 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
     def to_raster(self,
                   filename,
                   variable='bands',
-                  n_jobs=1,
                   verbose=0,
                   overwrite=False,
                   driver='GTiff',
                   gdal_cache=512,
                   dtype=None,
-                  row_chunks=None,
-                  col_chunks=None,
-                  pool_chunksize=10,
                   nodata=None,
                   tags=None,
                   **kwargs):
@@ -129,6 +126,22 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         Returns:
             None
+
+        Examples:
+            >>> import geowombat as gw
+            >>> from geowombat.backends import Cluster
+            >>>
+            >>> cluster = Cluster(n_workers=4,
+            >>>                   threads_per_worker=2,
+            >>>                   scheduler_port=0,
+            >>>                   processes=False)
+            >>>
+            >>> cluster.start()
+            >>>
+            >>> with gw.open('input.tif') as ds:
+            >>>     ds.gw.to_raster('output.tif', n_jobs=8)
+            >>>
+            >>> cluster.stop()
         """
 
         if not hasattr(self._obj, 'crs'):
@@ -141,17 +154,13 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         to_raster(self._obj[variable],
                   filename,
-                  self._obj.crs,
-                  self._obj.transform,
-                  driver=driver,
-                  n_jobs=n_jobs,
                   gdal_cache=gdal_cache,
-                  dtype=dtype,
-                  row_chunks=row_chunks,
-                  col_chunks=col_chunks,
-                  pool_chunksize=pool_chunksize,
                   verbose=verbose,
                   overwrite=overwrite,
+                  crs=self._obj.crs,
+                  transform=self._obj.transform,
+                  driver=driver,
+                  dtype=dtype,
                   nodata=nodata,
                   tags=tags,
                   **kwargs)
@@ -259,19 +268,15 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
     def to_raster(self,
                   filename,
-                  user_func=None,
-                  user_args=None,
-                  user_kwargs=None,
-                  n_jobs=1,
                   verbose=0,
                   overwrite=False,
-                  driver='GTiff',
+                  client=None,
                   gdal_cache=512,
-                  dtype=None,
-                  row_chunks=None,
-                  col_chunks=None,
-                  pool_chunksize=10,
+                  driver='GTiff',
                   nodata=None,
+                  tiled=True,
+                  blockxsize=512,
+                  blockysize=512,
                   tags=None,
                   **kwargs):
 
@@ -280,15 +285,11 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         Args:
             filename (str): The output file name to write to.
-            n_jobs (Optional[str]): The number of parallel chunks to write.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             driver (Optional[str]): The raster driver.
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
             dtype (Optional[int]): The output data type.
-            row_chunks (Optional[int]): The processing row chunk size.
-            col_chunks (Optional[int]): The processing column chunk size.
-            pool_chunksize (Optional[int]): The `multiprocessing.Pool` chunk size.
             nodata (Optional[int]): A 'no data' value.
             tags (Optional[dict]): Image tags to write to file.
             kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
@@ -307,21 +308,22 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         to_raster(self._obj,
                   filename,
-                  self._obj.crs,
-                  self._obj.transform,
-                  user_func=user_func,
-                  user_args=user_args,
-                  user_kwargs=user_kwargs,
-                  driver=driver,
-                  n_jobs=n_jobs,
-                  gdal_cache=gdal_cache,
-                  dtype=dtype,
-                  row_chunks=row_chunks,
-                  col_chunks=col_chunks,
-                  pool_chunksize=pool_chunksize,
+                  client=client,
                   verbose=verbose,
                   overwrite=overwrite,
+                  gdal_cache=gdal_cache,
+                  crs=self._obj.crs,
+                  transform=self._obj.transform,
+                  width=self._obj.gw.ncols,
+                  height=self._obj.gw.nrows,
+                  count=self._obj.gw.nbands,
+                  driver=driver,
+                  sharing=False,
+                  dtype=self._obj.data.dtype,
                   nodata=nodata,
+                  tiled=True,
+                  blockxsize=blockxsize,
+                  blockysize=blockysize,
                   tags=tags,
                   **kwargs)
 

@@ -6,15 +6,22 @@ from datetime import datetime
 import concurrent.futures
 
 from ..errors import logger
+from ..backends.rasterio_ import WriteDaskArray
 from .windows import get_window_offsets
 
 import numpy as np
+
 import dask
+import dask.array as da
+from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
 from dask.distributed import progress
 
 import rasterio as rio
+
 from tqdm import tqdm
+
+ProgressBar().register()
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -55,13 +62,7 @@ def parse_wildcard(string):
     return matches
 
 
-def _window_worker(w, n_bands, indexes_multi):
-
-    """
-    Helper to return window slice
-    """
-
-    window_slice = (slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width))
+def get_norm_indices(n_bands, window_slice, indexes_multi):
 
     # Prepend the band position index to the window slice
     if n_bands == 1:
@@ -77,7 +78,16 @@ def _window_worker(w, n_bands, indexes_multi):
     return window_slice, indexes
 
 
-def _window_worker_time(w, n_bands, indexes_multi, tidx, n_time):
+def _window_worker(w):
+
+    """
+    Helper to return window slice
+    """
+
+    return slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width)
+
+
+def _window_worker_time(w, n_bands, tidx, n_time):
 
     """
     Helper to return window slice
@@ -87,16 +97,11 @@ def _window_worker_time(w, n_bands, indexes_multi, tidx, n_time):
 
     # Prepend the band position index to the window slice
     if n_bands == 1:
-
         window_slice = tuple([slice(tidx, n_time)] + [slice(0, 1)] + list(window_slice))
-        indexes = 1
-
     else:
-
         window_slice = tuple([slice(tidx, n_time)] + [slice(0, n_bands)] + list(window_slice))
-        indexes = indexes_multi
 
-    return window_slice, indexes
+    return window_slice
 
 
 # def _old():
@@ -193,24 +198,30 @@ def write_func(output,
                   mode='r+',
                   sharing=False) as dst:
 
-        dst.write(output,
+        dst.write(np.squeeze(output),
                   window=out_window,
                   indexes=out_indexes)
 
-    # if user_func:
-    #
-    #     output_ = user_func(np.float64(output), *user_args)
-    #     out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0] + 1)
-    #
-    #     dst.write(output_,
-    #               window=out_window,
-    #               indexes=out_indexes_)
-    #
-    # else:
-    #     dst.write(output, window=out_window, indexes=out_indexes)
+
+def generate_futures(data, outfile, windows, n_bands):
+
+    futures = list()
+
+    out_indexes = 1 if n_bands == 1 else np.arange(1, n_bands + 1)
+
+    for w in windows:
+
+        futures.append(write_func(data[:,
+                                  w.row_off:w.row_off + w.height,
+                                  w.col_off:w.col_off + w.width].data,
+                                  outfile,
+                                  w,
+                                  out_indexes))
+
+    return futures
 
 
-def to_raster(ds_data,
+def to_raster_old(ds_data,
               filename,
               crs,
               transform,
@@ -422,7 +433,8 @@ def to_raster(ds_data,
                         writer = None
                         for w in windows:
 
-                            window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, tidx, tidx+1)
+                            window_slice = _window_worker_time(w, n_bands, tidx, tidx+1)
+                            window_slice, indexes = get_norm_indices(n_bands, window_slice, indexes_multi)
 
                             if isinstance(nodata, int) or isinstance(nodata, float):
 
@@ -471,7 +483,6 @@ def to_raster(ds_data,
                           driver=driver,
                           sharing=False,
                           **kwargs) as dst:
-
                 pass
 
             if n_jobs == 1:
@@ -493,33 +504,63 @@ def to_raster(ds_data,
 
             else:
 
+                # data_gen = (ds_data[get_norm_indices(n_bands,
+                #                                      _window_worker(w),
+                #                                      indexes_multi)[0]] for w in windows)
+                #
+                # def _block_func(block):
+                #     return np.squeeze(block.values)
+                #
+                # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+                #
+                #     for w, result in tqdm(zip(windows,
+                #                               executor.map(_block_func,
+                #                                            data_gen)),
+                #                           total=len(windows)):
+                #
+                #         dst.write(result,
+                #                   window=w,
+                #                   indexes=get_norm_indices(n_bands,
+                #                                            _window_worker(w),
+                #                                            indexes_multi)[1])
+                #
+                #     # for w, wslice in tqdm(zip(windows, executor.map(_window_worker, windows)), total=len(windows)):
+                #     #
+                #     #     dst.write(np.squeeze(ds_data[get_norm_indices(n_bands, wslice, indexes_multi)[0]].values),
+                #     #               window=w,
+                #     #               indexes=get_norm_indices(n_bands, wslice, indexes_multi)[1])
+
                 if verbose > 0:
                     logger.info('  Building the Dask task graph ...')
 
                 # Create the Dask.delayed writers
-                writers = list()
-                for w in windows:
+                # writers = list()
+                # for w in windows:
+                #
+                #     if n_time > 1:
+                #         window_slice = _window_worker_time(w, n_bands, 0, n_time)
+                #     else:
+                #         window_slice = _window_worker(w)
+                #
+                #     window_slice, indexes = get_norm_indices(n_bands, window_slice, indexes_multi)
+                #
+                #     if isinstance(nodata, int) or isinstance(nodata, float):
+                #
+                #         writer = write_func(ds_data[window_slice].fillna(nodata).data,
+                #                             w,
+                #                             indexes,
+                #                             filename)
+                #
+                #     else:
+                #
+                #         writer = write_func(ds_data[window_slice].data,
+                #                             w,
+                #                             indexes,
+                #                             filename)
+                #
+                #     writers.append(writer)
 
-                    if n_time > 1:
-                        window_slice, indexes = _window_worker_time(w, n_bands, indexes_multi, 0, n_time)
-                    else:
-                        window_slice, indexes = _window_worker(w, n_bands, None)
-
-                    if isinstance(nodata, int) or isinstance(nodata, float):
-
-                        writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data,
-                                            w,
-                                            indexes,
-                                            filename)
-
-                    else:
-
-                        writer = write_func(ds_data[window_slice].squeeze().data,
-                                            w,
-                                            indexes,
-                                            filename)
-
-                    writers.append(writer)
+                futures = generate_futures(ds_data, filename, windows, n_bands)
 
                 if verbose > 0:
                     logger.info('  Writing results to file ...')
@@ -527,16 +568,90 @@ def to_raster(ds_data,
                 # Write the data to file
                 if client:
 
-                    client.persist(writers)
+                    client.persist(futures)
                     # progress(x)
 
-                else:
-
-                    with ProgressBar():
-                        writers.compute(num_workers=n_jobs, scheduler=scheduler)
+                # else:
+                #
+                #     with ProgressBar():
+                #         writers.compute(num_workers=n_jobs, scheduler=scheduler)
 
     if verbose > 0:
         logger.info('  Finished writing')
+
+
+def to_raster(data,
+              filename,
+              client=None,
+              verbose=0,
+              overwrite=False,
+              n_jobs=1,
+              gdal_cache=512,
+              **kwargs):
+
+    """
+    Writes a ``dask`` array to file
+
+    Args:
+        data (DataArray): The ``xarray.DataArray`` to write.
+        filename (str): The output file name to write to.
+        client: TODO
+        verbose (Optional[int]): The verbosity level.
+        overwrite (Optional[bool]): Whether to overwrite an existing file.
+        n_jobs (Optional[str]): The number of parallel chunks to write.
+        gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
+
+    Returns:
+        ``dask.delayed`` object
+
+    Examples:
+        >>> import geowombat as gw
+        >>> from geowombat.backends import Cluster
+        >>>
+        >>> cluster = Cluster(n_workers=4,
+        >>>                   threads_per_worker=2,
+        >>>                   scheduler_port=0,
+        >>>                   processes=False)
+        >>>
+        >>> cluster.start()
+        >>>
+        >>> with gw.open('input.tif') as ds:
+        >>>     gw.to_raster(ds, 'output.tif', n_jobs=8)
+        >>>
+        >>> cluster.stop()
+    """
+
+    if overwrite:
+
+        if os.path.isfile(filename):
+            os.remove(filename)
+
+    if not is_dask_collection(data.data):
+        logger.exception('  The data should be a dask array.')
+
+    with WriteDaskArray(filename, gdal_cache=gdal_cache, **kwargs) as dst:
+
+        res = da.store(da.squeeze(data.data), dst, lock=False, compute=False)
+
+        if verbose > 0:
+            logger.info('  Writing data to file ...')
+
+        if client:
+
+            if verbose > 0:
+                logger.info('  Sending delayed futures to the distributed client ...')
+
+            x = client.persist(res)
+            progress(x)
+
+        else:
+
+            with ProgressBar():
+                res.compute(num_workers=n_jobs)
+
+            if verbose > 0:
+                logger.info('  Finished writing data to file.')
 
 
 def _arg_gen(arg_, windows):
@@ -554,7 +669,6 @@ def apply(infile,
           count=1,
           dtype='float64',
           nodata=0,
-          compress='lzw',
           tiled=True,
           blockxsize=512,
           blockysize=512):
@@ -573,7 +687,6 @@ def apply(infile,
         count (Optional[int])
         dtype (Optional[str])
         nodata (Optional[int or float])
-        compress (Optional[str])
         tiled (Optional[bool])
         blockxsize (Optional[int])
         blockysize (Optional[int])
@@ -608,7 +721,6 @@ def apply(infile,
                            blockysize=blockysize,
                            dtype=dtype,
                            nodata=nodata,
-                           compress=compress,
                            tiled=tiled)
 
             with rio.open(outfile, 'w', **profile) as dst:
@@ -621,7 +733,7 @@ def apply(infile,
                 # arrays for each window. Later we will zip a mapping
                 # of it with the windows list to get (window, result)
                 # pairs.
-                data_gen = (src.read(window=window, out_dtype='float64') for window in windows)
+                data_gen = (src.read(window=window, out_dtype=dtype) for window in windows)
 
                 if args:
                     args = [_arg_gen(arg, windows) for arg in args]
