@@ -192,8 +192,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cluster</span></code>(**kwargs)</p></td>
-<td><p><p class="rubric">Methods</p>
-</p></td>
+<td><p>Wrapper for <code class="docutils literal notranslate"><span class="pre">dask</span></code> clients</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataProperties</span></code></p></td>
 <td><p><dl class="field-list simple">
@@ -237,8 +236,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(infile, outfile, block_func[, args, …])</p></td>
 <td><p>Applies a function and writes results to file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(ds_data, filename, crs, transform)</p></td>
-<td><p>Writes an Xarray DataArray or Dataset to a raster file</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, cluster, …])</p></td>
+<td><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, w, n_jobs])</p></td>
 <td><p>Applies a moving window function over Dask array blocks</p></td>

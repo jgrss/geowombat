@@ -184,7 +184,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-9e57044f3c4d3e1c428d89482839976a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-4811f0fd96cfa7fbc55ed5722b7b6349&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -199,12 +199,12 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">&lt;xarray.DataArray (y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;where, shape=(1008, 1287), dtype=float64, chunksize=(256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
+<span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
-<span class="go">    band     &lt;U3 &#39;evi&#39;</span>
+<span class="go">  * band     (band) &lt;U3 &#39;evi&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
@@ -226,12 +226,12 @@
 <span class="gp">   ...: </span>        <span class="n">evi</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi</span><span class="p">()</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;where, shape=(1008, 1287), dtype=float64, chunksize=(256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
+<span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
-<span class="go">    band     &lt;U3 &#39;evi&#39;</span>
+<span class="go">  * band     (band) &lt;U3 &#39;evi&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
@@ -274,12 +274,12 @@
 <span class="gp">   ...: </span>        <span class="n">d</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">)</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;where, shape=(1008, 1287), dtype=float64, chunksize=(256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
+<span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
-<span class="go">    band     &lt;U9 &#39;norm-diff&#39;</span>
+<span class="go">  * band     (band) &lt;U9 &#39;norm-diff&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>

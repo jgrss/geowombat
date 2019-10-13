@@ -170,18 +170,32 @@ If the images in the mosaic list have different CRSs, use a context manager to w
 Writing DataArrays to file
 ++++++++++++++++++++++++++
 
-In the example below, ``ds_res`` is an :func:`xarray.DataArray`. Using Rasterio as a backend, we use the
-Xarray accessor :func:`to_raster` to write chunks in parallel.
+In the example below, ``ds`` is an ``xarray.DataArray``. Using Rasterio's :func:`write` and Dask.array :func:`store`
+as backends, we use the Xarray accessor :func:`to_raster` to write array chunks in parallel.
 
 .. code:: python
+
+    import geowombat as gw
+    from geowombat.backends import Cluster
+
+    # Setup a distributed cluster with 8 workers
+    cluster = Cluster(n_workers=4,
+                      threads_per_worker=2,
+                      scheduler_port=0,
+                      processes=False)
+
+    cluster.start()
 
     with gw.open(rgbn, chunks=1024) as ds:
 
         dss = ds * 10.0
+
+        # Xarray drops attributes
         dss.attrs = ds.attrs
 
+        # Write the data
         dss.gw.to_raster('output.tif',
-                         n_jobs=4,
-                         verbose=1,
-                         tiled=True,
-                         compress='lzw')
+                         n_jobs=8,
+                         verbose=1)
+
+    cluster.stop()

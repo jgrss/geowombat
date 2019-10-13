@@ -180,35 +180,42 @@
 <h1>to_raster<a class="headerlink" href="#to-raster" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_raster">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">ds_data</em>, <em class="sig-param">filename</em>, <em class="sig-param">crs</em>, <em class="sig-param">transform</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">time_chunks=None</em>, <em class="sig-param">band_chunks=None</em>, <em class="sig-param">row_chunks=None</em>, <em class="sig-param">col_chunks=None</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes an Xarray DataArray or Dataset to a raster file</p>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">cluster=None</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds_data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> to write.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
-<li><p><strong>crs</strong> (<em>object</em>) – A <code class="docutils literal notranslate"><span class="pre">rasterio.crs.CRS</span></code> object.</p></li>
-<li><p><strong>transform</strong> (<em>object</em>) – An <code class="docutils literal notranslate"><span class="pre">affine.Affine</span></code> transform.</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The number of parallel chunks to write.</p></li>
+<li><p><strong>cluster</strong> – TODO</p></li>
 <li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
 <li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing file.</p></li>
-<li><p><strong>driver</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The raster driver.</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The number of parallel chunks to write.</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
-<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output data type.</p></li>
-<li><p><strong>time_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing time chunk size.</p></li>
-<li><p><strong>band_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing band chunk size.</p></li>
-<li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing row chunk size. In general, this should be left as None and
-the chunk size will be taken from the <code class="docutils literal notranslate"><span class="pre">dask</span></code> array.</p></li>
-<li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The processing column chunk size. Same as <code class="docutils literal notranslate"><span class="pre">row_chunks</span></code>.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – A ‘no data’ value.</p></li>
-<li><p><strong>tags</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Image tags to write to file.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">dask.delayed</span></code> object</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.backends</span> <span class="k">import</span> <span class="n">Cluster</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">threads_per_worker</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">scheduler_port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">processes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
