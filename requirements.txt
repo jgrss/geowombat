@@ -19,7 +19,7 @@ dask[array,dataframe]==2.5.2
 distributed==2.5.2
 fiona==1.8.8              # via geopandas
 fsspec==0.5.2             # via dask
-gdal==2.4.0
+gdal
 geopandas==0.6.1
 h5netcdf==0.7.4
 h5py==2.10.0              # via h5netcdf

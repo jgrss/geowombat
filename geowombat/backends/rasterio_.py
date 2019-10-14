@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 
 from ..errors import logger
@@ -18,11 +19,17 @@ class WriteDaskArray(object):
     ``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
     """
 
-    def __init__(self, filename, gdal_cache=512, **kwargs):
+    def __init__(self, filename, separate=False, gdal_cache=512, **kwargs):
 
         self.filename = filename
+        self.separate = separate
         self.gdal_cache = gdal_cache
         self.kwargs = kwargs
+
+        self.d_name, f_name = os.path.split(self.filename)
+        self.f_ext, self.f_base = os.path.splitext(f_name)
+
+        self.sub_dir = os.path.join(self.d_name, 'sub')
 
     def __setitem__(self, key, item):
 
@@ -36,13 +43,35 @@ class WriteDaskArray(object):
             indexes = 1
             y, x = key
 
-        with rio.Env(GDAL_CACHEMAX=self.gdal_cache):
+        if self.separate:
 
-            with rio.open(self.filename, mode='r+', **self.kwargs) as dst_:
+            out_filename = os.path.join(self.sub_dir, '{BASE}_y{Y:d}x{X:d}{EXT}'.format(BASE=self.f_base,
+                                                                                        Y=y.start,
+                                                                                        X=x.start,
+                                                                                        EXT=self.f_ext))
 
-                dst_.write(item,
-                           window=Window(x.start, y.start, x.stop - x.start, y.stop - y.start),
-                           indexes=indexes)
+            mode = 'w'
+            w = Window(col_off=0, row_off=0, width=x.stop - x.start, height=y.stop - y.start)
+
+            # xres, 0, minx, 0, yres, maxy
+            self.kwargs['transform'] = Affine(self.kwargs['transform'][0],
+                                              0.0,
+                                              self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
+                                              0.0,
+                                              self.kwargs['transform'][4],
+                                              self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4]))
+
+        else:
+
+            out_filename = self.filename
+            mode = 'r+'
+            w = Window(col_off=x.start, row_off=y.start, width=x.stop - x.start, height=y.stop - y.start)
+
+        with rio.open(out_filename, mode=mode, **self.kwargs) as dst_:
+
+            dst_.write(item,
+                       window=w,
+                       indexes=indexes)
 
     def __enter__(self):
 
@@ -51,7 +80,12 @@ class WriteDaskArray(object):
             logger.warning('  Cannot write concurrently to a compressed raster.')
             del self.kwargs['compress']
 
-        with rio.Env(GDAL_CACHEMAX=self.gdal_cache):
+        if self.separate:
+
+            if not os.path.isdir(self.sub_dir):
+                os.makedirs(self.sub_dir)
+
+        else:
 
             # Create the output file
             with rio.open(self.filename, mode='w', **self.kwargs) as dst_:

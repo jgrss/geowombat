@@ -580,6 +580,7 @@ def to_raster_old(ds_data,
 
 def to_raster(data,
               filename,
+              separate=False,
               cluster=None,
               verbose=0,
               overwrite=False,
@@ -593,6 +594,7 @@ def to_raster(data,
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
+        separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
         cluster: TODO
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
@@ -630,32 +632,42 @@ def to_raster(data,
 
     ProgressBar().register()
 
-    with WriteDaskArray(filename, gdal_cache=gdal_cache, **kwargs) as dst:
+    with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
-        res = da.store(da.squeeze(data.data), dst, lock=False, compute=False)
+        with WriteDaskArray(filename,
+                            separate=separate,
+                            gdal_cache=gdal_cache,
+                            **kwargs) as dst:
 
-        if verbose > 0:
-            logger.info('  Writing data to file ...')
-
-        if cluster:
-
-            if verbose > 0:
-                logger.info('  Sending delayed futures to the distributed client ...')
-
-            # Connect to an existing client
-            client = Client(cluster)
-
-            x = client.persist(res)
-            progress(x)
-            x.compute()
-
-        else:
-
-            with ProgressBar():
-                res.compute(num_workers=n_jobs)
+            # Store the data and return a lazy evaluator
+            res = da.store(da.squeeze(data.data),
+                           dst,
+                           lock=False,
+                           compute=False)
 
             if verbose > 0:
-                logger.info('  Finished writing data to file.')
+                logger.info('  Writing data to file ...')
+
+            if cluster:
+
+                if verbose > 0:
+                    logger.info('  Sending delayed futures to the distributed client ...')
+
+                # Connect to an existing client
+                client = Client(cluster)
+
+                x = client.persist(res)
+                progress(x)
+                x.compute()
+
+            else:
+
+                # Send the data to file
+                with ProgressBar():
+                    res.compute(num_workers=n_jobs)
+
+                if verbose > 0:
+                    logger.info('  Finished writing data to file.')
 
 
 def _arg_gen(arg_, windows):

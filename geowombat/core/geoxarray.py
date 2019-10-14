@@ -268,13 +268,13 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
     def to_raster(self,
                   filename,
+                  separate=False,
                   verbose=0,
                   overwrite=False,
                   client=None,
                   gdal_cache=512,
                   driver='GTiff',
                   nodata=None,
-                  tiled=True,
                   blockxsize=512,
                   blockysize=512,
                   tags=None,
@@ -285,12 +285,15 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         Args:
             filename (str): The output file name to write to.
+            separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
-            driver (Optional[str]): The raster driver.
+            client: TODO
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-            dtype (Optional[int]): The output data type.
+            driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
+            blockxsize (Optional[int]): The x block size.
+            blockysize (Optional[int]): The y block size.
             tags (Optional[dict]): Image tags to write to file.
             kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
@@ -308,6 +311,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         to_raster(self._obj,
                   filename,
+                  separate=separate,
                   client=client,
                   verbose=verbose,
                   overwrite=overwrite,
@@ -453,8 +457,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                rows=None,
                cols=None,
                center=False,
-               mask_corners=False,
-               chunksize=None):
+               mask_corners=False):
 
         """
         Subsets a DataArray
@@ -488,8 +491,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       rows=rows,
                       cols=cols,
                       center=center,
-                      mask_corners=mask_corners,
-                      chunksize=chunksize)
+                      mask_corners=mask_corners)
 
     def extract(self,
                 aoi,
