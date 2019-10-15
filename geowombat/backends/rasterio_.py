@@ -63,15 +63,18 @@ class WriteDaskArray(object):
 
         else:
 
-            out_filename = self.filename
-            mode = 'r+'
-            w = Window(col_off=x.start, row_off=y.start, width=x.stop - x.start, height=y.stop - y.start)
+            w = Window(col_off=x.start,
+                       row_off=y.start,
+                       width=x.stop - x.start,
+                       height=y.stop - y.start)
 
-        with rio.open(out_filename, mode=mode, **self.kwargs) as dst_:
+            with rio.open(self.filename,
+                          mode='r+',
+                          **self.kwargs) as dst_:
 
-            dst_.write(item,
-                       window=w,
-                       indexes=indexes)
+                dst_.write(item,
+                           window=w,
+                           indexes=indexes)
 
     def __enter__(self):
 
@@ -86,6 +89,10 @@ class WriteDaskArray(object):
                 os.makedirs(self.sub_dir)
 
         else:
+
+            # An alternative here is to leave the writeable object open as self.
+            # However, this does not seem to work when used within a Dask
+            #   client environment.
 
             # Create the output file
             with rio.open(self.filename, mode='w', **self.kwargs) as dst_:

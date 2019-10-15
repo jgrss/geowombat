@@ -10,7 +10,8 @@ from ..backends.rasterio_ import WriteDaskArray
 from .windows import get_window_offsets
 
 import numpy as np
-
+import distributed
+from distributed import as_completed
 import dask
 import dask.array as da
 from dask import is_dask_collection
@@ -654,17 +655,18 @@ def to_raster(data,
                     logger.info('  Sending delayed futures to the distributed client ...')
 
                 # Connect to an existing client
-                client = Client(cluster)
+                # client = Client(cluster)
 
-                x = client.persist(res)
-                progress(x)
-                x.compute()
+                x = client.persist(res).result()
+                # progress(x)
 
             else:
 
                 # Send the data to file
+                #
+                # *Note that the progress bar will not work with a cluster.
                 with ProgressBar():
-                    res.compute(num_workers=n_jobs)
+                    res.compute(num_workers=n_jobs)#, optimize_graph=True)
 
                 if verbose > 0:
                     logger.info('  Finished writing data to file.')
@@ -687,7 +689,8 @@ def apply(infile,
           nodata=0,
           tiled=True,
           blockxsize=512,
-          blockysize=512):
+          blockysize=512,
+          **kwargs):
 
     """
     Applies a function and writes results to file
@@ -710,7 +713,11 @@ def apply(infile,
     Examples:
         >>> import geowombat as gw
         >>>
-        >>> gw.apply('input.tif', 'output.tif', my_func, args=(arg1,), n_jobs=8)
+        >>> gw.apply('input.tif',
+        >>>          'output.tif',
+        >>>           my_func,
+        >>>           args=(arg1,),
+        >>>           n_jobs=8)
 
     Returns:
         None
@@ -721,51 +728,61 @@ def apply(infile,
         if os.path.isfile(outfile):
             os.remove(outfile)
 
+    io_mode = 'r+' if os.path.isfile(outfile) else 'w'
+
     out_indexes = np.arange(1, count+1) if count > 1 else count
 
     with rio.Env(gdal_cache=gdal_cache):
 
         with rio.open(infile) as src:
 
+            nbands = src.count
+
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
             # concurrently.
-            profile = src.profile
+            profile = src.profile.copy()
 
             profile.update(count=count,
                            blockxsize=blockxsize,
                            blockysize=blockysize,
                            dtype=dtype,
                            nodata=nodata,
-                           tiled=tiled)
+                           tiled=tiled,
+                           sharing=False,
+                           **kwargs)
 
-            with rio.open(outfile, 'w', **profile) as dst:
+        with rio.open(outfile, io_mode, **profile) as dst:
 
-                # Materialize a list of destination block windows
-                # that we will use in several statements below.
-                windows = get_window_offsets(src.height, src.width, blockysize, blockxsize, return_as='list')
+            # Materialize a list of destination block windows
+            # that we will use in several statements below.
+            windows = get_window_offsets(src.height, src.width, blockysize, blockxsize, return_as='list')
 
-                # This generator comprehension gives us raster data
-                # arrays for each window. Later we will zip a mapping
-                # of it with the windows list to get (window, result)
-                # pairs.
+            # This generator comprehension gives us raster data
+            # arrays for each window. Later we will zip a mapping
+            # of it with the windows list to get (window, result)
+            # pairs.
+            if nbands == 1:
                 data_gen = (src.read(window=window, out_dtype=dtype) for window in windows)
+            else:
 
-                if args:
-                    args = [_arg_gen(arg, windows) for arg in args]
+                data_gen = (np.array([rio.open(fn).read(window=w,
+                                                        out_dtype=dtype) for fn in infiles], dtype=dtype)
+                            for w in windows)
 
-                # scales_ = (scales for window in windows)
+            if args:
+                args = [_arg_gen(arg, windows) for arg in args]
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
 
-                    # We map the compute() function over the raster
-                    # data generator, zip the resulting iterator with
-                    # the windows list, and as pairs come back we
-                    # write data to the destination dataset.
-                    for window, result in tqdm(zip(windows,
-                                                   executor.map(block_func,
-                                                                data_gen,
-                                                                *args)),
-                                               total=len(windows)):
+                # We map the block_func() function over the raster
+                # data generator, zip the resulting iterator with
+                # the windows list, and as pairs come back we
+                # write data to the destination dataset.
+                for window, result in tqdm(zip(windows,
+                                               executor.map(block_func,
+                                                            data_gen,
+                                                            *args)),
+                                           total=len(windows)):
 
-                        dst.write(result, window=window, indexes=out_indexes)
+                    dst.write(result, window=window, indexes=out_indexes)
