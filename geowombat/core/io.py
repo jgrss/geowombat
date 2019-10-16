@@ -819,7 +819,7 @@ def apply(infile,
             blockxsize = src_window.width
             blockysize = src_window.height
 
-            nbands = src.count
+            # nbands = src.count
 
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
@@ -848,13 +848,13 @@ def apply(infile,
                 # arrays for each window. Later we will zip a mapping
                 # of it with the windows list to get (window, result)
                 # pairs.
-                if nbands == 1:
-                    data_gen = (src.read(window=w, out_dtype=dtype) for ij, w in src.block_windows(1))
-                else:
-
-                    data_gen = (np.array([rio.open(fn).read(window=w,
-                                                            out_dtype=dtype) for fn in infiles], dtype=dtype)
-                                for ij, w in src.block_windows(1))
+                # if nbands == 1:
+                data_gen = (src.read(window=w, out_dtype=dtype) for ij, w in src.block_windows(1))
+                # else:
+                #
+                #     data_gen = (np.array([rio.open(fn).read(window=w,
+                #                                             out_dtype=dtype) for fn in infile], dtype=dtype)
+                #                 for ij, w in src.block_windows(1))
 
                 if args:
                     args = [_arg_gen(arg, src.block_windows(1)) for arg in args]
