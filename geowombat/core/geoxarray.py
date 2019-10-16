@@ -271,8 +271,12 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   separate=False,
                   verbose=0,
                   overwrite=False,
-                  client=None,
                   gdal_cache=512,
+                  n_jobs=1,
+                  n_workers=1,
+                  n_threads=1,
+                  use_client=False,
+                  total_memory=48,
                   driver='GTiff',
                   nodata=None,
                   blockxsize=512,
@@ -288,8 +292,12 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
-            client: TODO
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+            n_jobs (Optional[int]): The total number of parallel jobs.
+            n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
+            n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+            use_client (Optional[bool]): Whether to use a ``dask`` client.
+            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
             blockxsize (Optional[int]): The x block size.
@@ -299,6 +307,21 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         Returns:
             None
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Use dask.compute()
+            >>> with gw.open('input.tif') as ds:
+            >>>     ds.gw.to_raster('output.tif', n_jobs=8)
+            >>>
+            >>> # Use a dask client
+            >>> with gw.open('input.tif') as ds:
+            >>>     ds.gw.to_raster('output.tif', use_client=True, n_workers=8, n_threads=4)
+            >>>
+            >>> # Compress the output
+            >>> with gw.open('input.tif') as ds:
+            >>>     ds.gw.to_raster('output.tif', n_jobs=8, compress='lzw')
         """
 
         if not hasattr(self._obj, 'crs'):
@@ -312,10 +335,14 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         to_raster(self._obj,
                   filename,
                   separate=separate,
-                  client=client,
                   verbose=verbose,
                   overwrite=overwrite,
                   gdal_cache=gdal_cache,
+                  n_jobs=n_jobs,
+                  n_workers=n_workers,
+                  n_threads=n_threads,
+                  use_client=use_client,
+                  total_memory=total_memory,
                   crs=self._obj.crs,
                   transform=self._obj.transform,
                   width=self._obj.gw.ncols,

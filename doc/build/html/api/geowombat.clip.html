@@ -180,7 +180,7 @@
 <h1>clip<a class="headerlink" href="#clip" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.clip">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">df</em>, <em class="sig-param">query=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.clip" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">df</em>, <em class="sig-param">query=None</em>, <em class="sig-param">mask_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.clip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clips a DataArray by vector polygon geometry</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -188,6 +188,7 @@
 <li><p><strong>data</strong> (<em>DataArray</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to subset.</p></li>
 <li><p><strong>df</strong> (<em>GeoDataFrame</em><em> or </em><em>str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> or filename to clip to.</p></li>
 <li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to apply to <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
+<li><p><strong>mask_data</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask values outside of the <code class="docutils literal notranslate"><span class="pre">df</span></code> geometry envelope.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

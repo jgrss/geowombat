@@ -4,6 +4,7 @@ import fnmatch
 import ctypes
 from datetime import datetime
 import concurrent.futures
+from contextlib import contextmanager
 
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
@@ -16,7 +17,7 @@ import dask
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
-from dask.distributed import progress, Client
+from dask.distributed import progress, Client, LocalCluster
 
 import rasterio as rio
 
@@ -579,14 +580,27 @@ def to_raster_old(ds_data,
         logger.info('  Finished writing')
 
 
+@contextmanager
+def cluster_dummy(**kwargs):
+    yield None
+
+
+@contextmanager
+def client_dummy(**kwargs):
+    yield None
+
+
 def to_raster(data,
               filename,
               separate=False,
-              cluster=None,
               verbose=0,
               overwrite=False,
-              n_jobs=1,
               gdal_cache=512,
+              n_jobs=1,
+              n_workers=None,
+              n_threads=None,
+              use_client=False,
+              total_memory=48,
               **kwargs):
 
     """
@@ -596,11 +610,14 @@ def to_raster(data,
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-        cluster: TODO
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
-        n_jobs (Optional[str]): The number of parallel chunks to write.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+        n_jobs (Optional[int]): The total number of parallel jobs.
+        n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
+        n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+        use_client (Optional[bool]): Whether to use a ``dask`` client.
+        total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
@@ -608,19 +625,18 @@ def to_raster(data,
 
     Examples:
         >>> import geowombat as gw
-        >>> from geowombat.backends import Cluster
         >>>
-        >>> cluster = Cluster(n_workers=4,
-        >>>                   threads_per_worker=2,
-        >>>                   scheduler_port=0,
-        >>>                   processes=False)
-        >>>
-        >>> cluster.start()
-        >>>
+        >>> # Use dask.compute()
         >>> with gw.open('input.tif') as ds:
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8)
         >>>
-        >>> cluster.stop()
+        >>> # Use a dask client
+        >>> with gw.open('input.tif') as ds:
+        >>>     gw.to_raster(ds, 'output.tif', use_client=True, n_workers=8, n_threads=4)
+        >>>
+        >>> # Compress the output
+        >>> with gw.open('input.tif') as ds:
+        >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, compress='lzw')
     """
 
     if overwrite:
@@ -643,63 +659,78 @@ def to_raster(data,
     else:
         compress = False
 
+    if use_client:
+
+        cluster_object = LocalCluster
+        client_object = Client
+
+    else:
+
+        cluster_object = cluster_dummy
+        client_object = client_dummy
+
+    if isinstance(n_workers, int) and isinstance(n_threads, int):
+        n_jobs = n_workers * n_threads
+    else:
+
+        n_workers = n_jobs
+        n_threads = 1
+
+    mem_per_core = int(total_memory / n_workers)
+
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
-        with WriteDaskArray(filename,
-                            separate=separate,
-                            gdal_cache=gdal_cache,
-                            **kwargs) as dst:
+        with cluster_object(n_workers=n_workers,
+                            threads_per_worker=n_threads,
+                            scheduler_port=0,
+                            processes=False,
+                            memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
 
-            # Store the data and return a lazy evaluator
-            res = da.store(da.squeeze(data.data),
-                           dst,
-                           lock=False,
-                           compute=False)
+            with client_object(address=cluster) as client:
 
-            if verbose > 0:
-                logger.info('  Writing data to file ...')
+                with WriteDaskArray(filename,
+                                    separate=separate,
+                                    gdal_cache=gdal_cache,
+                                    **kwargs) as dst:
 
-            if cluster:
+                    # Store the data and return a lazy evaluator
+                    res = da.store(da.squeeze(data.data),
+                                   dst,
+                                   lock=False,
+                                   compute=False)
 
-                if verbose > 0:
-                    logger.info('  Sending delayed futures to the distributed client ...')
+                    if verbose > 0:
+                        logger.info('  Writing data to file ...')
 
-                # Connect to an existing client
-                # client = Client(cluster)
+                    # Send the data to file
+                    #
+                    # *Note that the progress bar will
+                    #   not work with a client.
+                    with ProgressBar():
+                        res.compute(num_workers=n_jobs)
 
-                x = client.persist(res).result()
-                # progress(x)
+                    if verbose > 0:
+                        logger.info('  Finished writing data to file.')
 
-            else:
+                if compress:
 
-                # Send the data to file
-                #
-                # *Note that the progress bar will not work with a cluster.
-                with ProgressBar():
-                    res.compute(num_workers=n_jobs)#, optimize_graph=True)
+                    d_name, f_name = os.path.split(filename)
+                    f_ext, f_base = os.path.splitext(f_name)
+                    temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
 
-                if verbose > 0:
-                    logger.info('  Finished writing data to file.')
+                    if verbose > 0:
+                        logger.info('  Compressing output file ...')
 
-        if compress:
+                    compress_raster(filename,
+                                    temp_file,
+                                    n_jobs=n_jobs,
+                                    gdal_cache=gdal_cache,
+                                    compress=compress_type)
 
-            d_name, f_name = os.path.split(filename)
-            f_ext, f_base = os.path.splitext(f_name)
-            temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+                    if verbose > 0:
+                        logger.info('  Finished compressing')
 
-            if verbose > 0:
-                logger.info('  Compressing output file ...')
-
-            compress_raster(filename,
-                            temp_file,
-                            n_jobs=n_jobs,
-                            gdal_cache=gdal_cache,
-                            compress=compress_type)
-
-            if verbose > 0:
-                logger.info('  Finished compressing')
-
-            os.rename(temp_file, filename)
+                    os.rename(temp_file, filename)
 
 
 def _arg_gen(arg_, iter_):

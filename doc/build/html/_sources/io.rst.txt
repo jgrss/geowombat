@@ -176,15 +176,6 @@ as backends, we use the Xarray accessor :func:`to_raster` to write array chunks 
 .. code:: python
 
     import geowombat as gw
-    from geowombat.backends import Cluster
-
-    # Setup a distributed cluster with 8 workers
-    cluster = Cluster(n_workers=4,
-                      threads_per_worker=2,
-                      scheduler_port=0,
-                      processes=False)
-
-    cluster.start()
 
     with gw.open(rgbn, chunks=1024) as ds:
 
@@ -195,7 +186,7 @@ as backends, we use the Xarray accessor :func:`to_raster` to write array chunks 
 
         # Write the data
         dss.gw.to_raster('output.tif',
-                         n_jobs=8,
-                         verbose=1)
-
-    cluster.stop()
+                         verbose=1,
+                         n_worker=4,
+                         n_threads=2,
+                         use_client=True)
