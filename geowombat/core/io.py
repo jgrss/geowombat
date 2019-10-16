@@ -776,15 +776,34 @@ def apply(infile,
     Examples:
         >>> import geowombat as gw
         >>>
+        >>> # The function should always return the window,
+        >>> #  the data, and at least one argument.
+        >>>
+        >>> # Here is a function with no arguments
+        >>> def my_func0(w, block, arg):
+        >>>     return w, block
+        >>>
         >>> gw.apply('input.tif',
         >>>          'output.tif',
-        >>>           my_func,
-        >>>           args=(arg1,),
+        >>>           my_func0,
+        >>>           n_jobs=8)
+        >>>
+        >>> # Here is a function with 1 argument
+        >>> def my_func1(w, block, arg):
+        >>>     return w, block * arg
+        >>>
+        >>> gw.apply('input.tif',
+        >>>          'output.tif',
+        >>>           my_func1,
+        >>>           args=(10.0,),
         >>>           n_jobs=8)
 
     Returns:
         None
     """
+
+    if not args:
+        args = (None,)
 
     if overwrite:
 
@@ -801,7 +820,7 @@ def apply(infile,
 
         with rio.open(infile) as src:
 
-            n_windows = len(list(src.block_windows(1)))
+            # n_windows = len(list(src.block_windows(1)))
 
             nbands = src.count
 
@@ -855,7 +874,7 @@ def apply(infile,
 
                         out_window, out_block = f.result()
 
-                        dst.write(out_block,
+                        dst.write(np.squeeze(out_block),
                                   window=out_window,
                                   indexes=out_indexes)
 
@@ -880,7 +899,7 @@ def _compress_dummy(w, block, dummy):
     Dummy function to pass to concurrent writing
     """
 
-    return w, np.squeeze(block)
+    return w, block
 
 
 def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
