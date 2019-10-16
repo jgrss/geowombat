@@ -205,10 +205,26 @@
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The function should always return the window,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#  the data, and at least one argument.</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with no arguments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func0</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span>
+<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">arg1</span><span class="p">,),</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with 1 argument</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func1</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func1</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span>
 <span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
