@@ -742,11 +742,11 @@ def apply(infile,
           outfile,
           block_func,
           args=None,
-          scheduler='threads',
+          count=1,
+          scheduler='processes',
           gdal_cache=512,
           n_jobs=4,
           overwrite=False,
-          count=1,
           dtype='float64',
           nodata=0,
           **kwargs):
@@ -761,11 +761,11 @@ def apply(infile,
             the data, and at least one argument. The block data inside the function will be a 2d array if the
             input image has 1 band, otherwise a 3d array.
         args (Optional[tuple]): Additional arguments to pass to ``block_func``.
+        count (Optional[int]): The band count for the output file.
         scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['threads', 'processes'].
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
         n_jobs (Optional[int]): The number of blocks to process in parallel.
         overwrite (Optional[bool]): Whether to overwrite an existing output file.
-        count (Optional[int]): The band count for the output file.
         dtype (Optional[str]): The data type for the output file.
         nodata (Optional[int or float]): The 'no data' value for the output file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.open``.
@@ -814,18 +814,22 @@ def apply(infile,
 
         with rio.open(infile) as src:
 
-            src_window = list(src.block_windows(1))[0][1]
+            profile = src.profile.copy()
 
-            blockxsize = src_window.width
-            blockysize = src_window.height
+            if not dtype:
+                dtype = profile['dtype']
+
+            if not dtype:
+                nodata = profile['nodata']
+
+            blockxsize = profile['blockxsize']
+            blockysize = profile['blockysize']
 
             # nbands = src.count
 
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
             # concurrently.
-            profile = src.profile.copy()
-
             profile.update(count=count,
                            blockxsize=blockxsize,
                            blockysize=blockysize,
