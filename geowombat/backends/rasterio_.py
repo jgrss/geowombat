@@ -17,6 +17,15 @@ class WriteDaskArray(object):
 
     """
     ``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
+
+    Args:
+        filename (str): The file to write to.
+        separate (Optional[bool]): TODO
+        gdal_cache (Optional[int]): The GDAL cache size (in MB).
+        kwargs (Optional[dict]): Other keyword arguments passed to ``rasterio``.
+
+    Returns:
+        None
     """
 
     def __init__(self, filename, separate=False, gdal_cache=512, **kwargs):
@@ -70,7 +79,7 @@ class WriteDaskArray(object):
 
             with rio.open(self.filename,
                           mode='r+',
-                          **self.kwargs) as dst_:
+                          sharing=False) as dst_:
 
                 dst_.write(item,
                            window=w,
@@ -80,7 +89,7 @@ class WriteDaskArray(object):
 
         if 'compress' in self.kwargs:
 
-            logger.warning('  Cannot write concurrently to a compressed raster.')
+            logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')
             del self.kwargs['compress']
 
         if self.separate:
@@ -92,7 +101,7 @@ class WriteDaskArray(object):
 
             # An alternative here is to leave the writeable object open as self.
             # However, this does not seem to work when used within a Dask
-            #   client environment.
+            #   client environment because the `self.dst_` object cannot be pickled.
 
             # Create the output file
             with rio.open(self.filename, mode='w', **self.kwargs) as dst_:

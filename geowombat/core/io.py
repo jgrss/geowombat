@@ -1,5 +1,5 @@
-# import time
 import os
+import time
 import fnmatch
 import ctypes
 from datetime import datetime
@@ -633,6 +633,16 @@ def to_raster(data,
 
     ProgressBar().register()
 
+    if 'compress' in kwargs:
+
+        # Store the compression type because
+        #   it is removed in concurrent writing
+        compress = True
+        compress_type = kwargs['compress']
+
+    else:
+        compress = False
+
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
         with WriteDaskArray(filename,
@@ -671,15 +681,36 @@ def to_raster(data,
                 if verbose > 0:
                     logger.info('  Finished writing data to file.')
 
+        if compress:
 
-def _arg_gen(arg_, windows):
-    for w in windows:
+            d_name, f_name = os.path.split(filename)
+            f_ext, f_base = os.path.splitext(f_name)
+            temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+
+            if verbose > 0:
+                logger.info('  Compressing output file ...')
+
+            compress_raster(filename,
+                            temp_file,
+                            n_jobs=n_jobs,
+                            gdal_cache=gdal_cache,
+                            compress=compress_type)
+
+            if verbose > 0:
+                logger.info('  Finished compressing')
+
+            os.rename(temp_file, filename)
+
+
+def _arg_gen(arg_, iter_):
+    for i_ in iter_:
         yield arg_
 
 
 def apply(infile,
           outfile,
           block_func,
+          scheduler='threads',
           args=None,
           gdal_cache=512,
           n_jobs=4,
@@ -699,8 +730,9 @@ def apply(infile,
         infile (str)
         outfile (str)
         block_func (func)
+        scheduler (Optional[str]): 'threads' or 'processes'
         args (Optional[tuple])
-        gdal_cache (Optional[int])
+        gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
         n_jobs (Optional[int])
         overwrite (Optional[bool])
         count (Optional[int])
@@ -730,11 +762,15 @@ def apply(infile,
 
     io_mode = 'r+' if os.path.isfile(outfile) else 'w'
 
-    out_indexes = np.arange(1, count+1) if count > 1 else count
+    out_indexes = 1 if count == 1 else list(range(1, count+1))
+
+    futures_executor = concurrent.futures.ThreadPoolExecutor if scheduler == 'threads' else concurrent.futures.ProcessPoolExecutor
 
     with rio.Env(gdal_cache=gdal_cache):
 
         with rio.open(infile) as src:
+
+            n_windows = len(list(src.block_windows(1)))
 
             nbands = src.count
 
@@ -752,37 +788,103 @@ def apply(infile,
                            sharing=False,
                            **kwargs)
 
-        with rio.open(outfile, io_mode, **profile) as dst:
+            with rio.open(outfile, io_mode, **profile) as dst:
 
-            # Materialize a list of destination block windows
-            # that we will use in several statements below.
-            windows = get_window_offsets(src.height, src.width, blockysize, blockxsize, return_as='list')
+                # Materialize a list of destination block windows
+                # that we will use in several statements below.
+                # windows = get_window_offsets(src.height,
+                #                              src.width,
+                #                              blockysize,
+                #                              blockxsize, return_as='list')
 
-            # This generator comprehension gives us raster data
-            # arrays for each window. Later we will zip a mapping
-            # of it with the windows list to get (window, result)
-            # pairs.
-            if nbands == 1:
-                data_gen = (src.read(window=window, out_dtype=dtype) for window in windows)
-            else:
+                # This generator comprehension gives us raster data
+                # arrays for each window. Later we will zip a mapping
+                # of it with the windows list to get (window, result)
+                # pairs.
+                if nbands == 1:
+                    data_gen = (src.read(window=w, out_dtype=dtype) for ij, w in src.block_windows(1))
+                else:
 
-                data_gen = (np.array([rio.open(fn).read(window=w,
-                                                        out_dtype=dtype) for fn in infiles], dtype=dtype)
-                            for w in windows)
+                    data_gen = (np.array([rio.open(fn).read(window=w,
+                                                            out_dtype=dtype) for fn in infiles], dtype=dtype)
+                                for ij, w in src.block_windows(1))
 
-            if args:
-                args = [_arg_gen(arg, windows) for arg in args]
+                if args:
+                    args = [_arg_gen(arg, src.block_windows(1)) for arg in args]
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+                with futures_executor(max_workers=n_jobs) as executor:
 
-                # We map the block_func() function over the raster
-                # data generator, zip the resulting iterator with
-                # the windows list, and as pairs come back we
-                # write data to the destination dataset.
-                for window, result in tqdm(zip(windows,
-                                               executor.map(block_func,
-                                                            data_gen,
-                                                            *args)),
-                                           total=len(windows)):
+                    # Submit all of the tasks as futures
+                    futures = [executor.submit(block_func,
+                                               iter_[0][1],    # window object
+                                               *iter_[1:])     # other arguments
+                               for iter_ in zip(list(src.block_windows(1)), data_gen, *args)]
 
-                    dst.write(result, window=window, indexes=out_indexes)
+                    for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+
+                        out_window, out_block = f.result()
+
+                        dst.write(out_block,
+                                  window=out_window,
+                                  indexes=out_indexes)
+
+                    # We map the block_func() function over the raster
+                    # data generator, zip the resulting iterator with
+                    # the windows list, and as pairs come back we
+                    # write data to the destination dataset.
+                    # for window_tuple, result in tqdm(zip(list(src.block_windows(1)),
+                    #                                      executor.map(block_func,
+                    #                                                   data_gen,
+                    #                                                   *args)),
+                    #                                  total=n_windows):
+                    #
+                    #     dst.write(result,
+                    #               window=window_tuple[1],
+                    #               indexes=out_indexes)
+
+
+def _compress_dummy(w, block, dummy):
+
+    """
+    Dummy function to pass to concurrent writing
+    """
+
+    return w, np.squeeze(block)
+
+
+def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
+
+    """
+    Compresses a raster file
+
+    Args:
+        infile (str): The file to compress.
+        outfile (str): The output file.
+        n_jobs (Optional[int]): The number of concurrent blocks to write.
+        gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+        compress (Optional[str]): The compression method.
+
+    Returns:
+        None
+    """
+
+    with rio.open(infile) as src:
+
+        profile = src.profile.copy()
+
+        profile.update(compress=compress)
+
+        apply(infile,
+              outfile,
+              _compress_dummy,
+              scheduler='processes',
+              args=(None,),
+              gdal_cache=gdal_cache,
+              n_jobs=n_jobs,
+              count=src.count,
+              dtype=src.profile['dtype'],
+              nodata=src.profile['nodata'],
+              tiled=src.profile['tiled'],
+              blockxsize=src.profile['blockxsize'],
+              blockysize=src.profile['blockysize'],
+              compress=compress)

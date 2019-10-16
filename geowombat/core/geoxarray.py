@@ -434,7 +434,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         cluster.stop()
 
-    def clip(self, df, query=None):
+    def clip(self, df, query=None, mask_data=False):
 
         """
         Clips a DataArray
@@ -442,12 +442,13 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         Args:
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
             query (Optional[str]): A query to apply to ``df``.
+            mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
 
         Returns:
              ``xarray.DataArray``
         """
 
-        return clip(self._obj, df, query=query)
+        return clip(self._obj, df, query=query, mask_data=mask_data)
 
     def subset(self,
                left=None,

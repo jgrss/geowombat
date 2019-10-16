@@ -216,7 +216,8 @@ class SpatialOperations(object):
     def clip(self,
              data,
              df,
-             query=None):
+             query=None,
+             mask_data=False):
 
         """
         Clips a DataArray by vector polygon geometry
@@ -225,6 +226,7 @@ class SpatialOperations(object):
             data (DataArray): An ``xarray.DataArray`` to subset.
             df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to clip to.
             query (Optional[str]): A query to apply to ``df``.
+            mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
 
         Returns:
              ``xarray.DataArray``
@@ -252,6 +254,9 @@ class SpatialOperations(object):
             # Re-project the DataFrame to match the image CRS
             df = df.to_crs(data.crs)
 
+        row_chunks = data.gw.row_chunks
+        col_chunks = data.gw.col_chunks
+
         left, bottom, right, top = df.total_bounds
 
         # Align the geometry grid to the array
@@ -262,31 +267,38 @@ class SpatialOperations(object):
                                                                   data.res)
 
         # Get the new bounds
-        new_bounds = array_bounds(align_height, align_width, align_transform)
+        new_left, new_bottom, new_right, new_top = array_bounds(align_height,
+                                                                align_width,
+                                                                align_transform)
 
         # Subset the array
         data = self.subset(data,
-                           left=new_bounds.bounds.left,
-                           bottom=new_bounds.bounds.bottom,
-                           right=new_bounds.bounds.right,
-                           top=new_bounds.bounds.top)
+                           left=new_left,
+                           bottom=new_bottom,
+                           right=new_right,
+                           top=new_top)
 
-        # Rasterize the geometry and store as a DataArray
-        mask = xr.DataArray(data=da.from_array(features.rasterize(df.geometry.values.tolist(),
-                                                                  out_shape=(align_height, align_width),
-                                                                  transform=align_transform,
-                                                                  fill=0,
-                                                                  out=None,
-                                                                  all_touched=True,
-                                                                  default_value=1,
-                                                                  dtype='int32'),
-                                               chunks=(data.gw.row_chunks, data.gw.col_chunks)),
-                            dims=['y', 'x'],
-                            coords={'y': data.y.values,
-                                    'x': data.x.values})
+        if mask_data:
 
-        # Return the clipped array
-        return data.where(mask == 1)
+            # Rasterize the geometry and store as a DataArray
+            mask = xr.DataArray(data=da.from_array(features.rasterize(list(df.geometry.values),
+                                                                      out_shape=(align_height, align_width),
+                                                                      transform=align_transform,
+                                                                      fill=0,
+                                                                      out=None,
+                                                                      all_touched=True,
+                                                                      default_value=1,
+                                                                      dtype='int32'),
+                                                   chunks=(row_chunks, col_chunks)),
+                                dims=['y', 'x'],
+                                coords={'y': data.y.values,
+                                        'x': data.x.values})
+
+            # Return the clipped array
+            return data.where(mask == 1)
+
+        else:
+            return data
 
     def subset(self,
                data,
