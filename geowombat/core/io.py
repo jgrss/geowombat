@@ -741,43 +741,40 @@ def _arg_gen(arg_, iter_):
 def apply(infile,
           outfile,
           block_func,
-          scheduler='threads',
           args=None,
+          scheduler='threads',
           gdal_cache=512,
           n_jobs=4,
           overwrite=False,
           count=1,
           dtype='float64',
           nodata=0,
-          tiled=True,
-          blockxsize=512,
-          blockysize=512,
           **kwargs):
 
     """
     Applies a function and writes results to file
 
     Args:
-        infile (str)
-        outfile (str)
-        block_func (func)
-        scheduler (Optional[str]): 'threads' or 'processes'
-        args (Optional[tuple])
+        infile (str): The input file to process.
+        outfile (str): The output file.
+        block_func (func): The user function to apply to each block. *The function should always return the window,
+            the data, and at least one argument. The block data inside the function will be a 2d array if the
+            input image has 1 band, otherwise a 3d array.
+        args (Optional[tuple]): Additional arguments to pass to ``block_func``.
+        scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['threads', 'processes'].
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-        n_jobs (Optional[int])
-        overwrite (Optional[bool])
-        count (Optional[int])
-        dtype (Optional[str])
-        nodata (Optional[int or float])
-        tiled (Optional[bool])
-        blockxsize (Optional[int])
-        blockysize (Optional[int])
+        n_jobs (Optional[int]): The number of blocks to process in parallel.
+        overwrite (Optional[bool]): Whether to overwrite an existing output file.
+        count (Optional[int]): The band count for the output file.
+        dtype (Optional[str]): The data type for the output file.
+        nodata (Optional[int or float]): The 'no data' value for the output file.
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.open``.
+
+    Returns:
+        None
 
     Examples:
         >>> import geowombat as gw
-        >>>
-        >>> # The function should always return the window,
-        >>> #  the data, and at least one argument.
         >>>
         >>> # Here is a function with no arguments
         >>> def my_func0(w, block, arg):
@@ -797,9 +794,6 @@ def apply(infile,
         >>>           my_func1,
         >>>           args=(10.0,),
         >>>           n_jobs=8)
-
-    Returns:
-        None
     """
 
     if not args:
@@ -820,7 +814,10 @@ def apply(infile,
 
         with rio.open(infile) as src:
 
-            # n_windows = len(list(src.block_windows(1)))
+            src_window = list(src.block_windows(1))[0][1]
+
+            blockxsize = src_window.width
+            blockysize = src_window.height
 
             nbands = src.count
 
@@ -834,7 +831,7 @@ def apply(infile,
                            blockysize=blockysize,
                            dtype=dtype,
                            nodata=nodata,
-                           tiled=tiled,
+                           tiled=True,
                            sharing=False,
                            **kwargs)
 

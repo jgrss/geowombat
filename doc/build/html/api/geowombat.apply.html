@@ -180,33 +180,33 @@
 <h1>apply<a class="headerlink" href="#apply" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.apply">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param">infile</em>, <em class="sig-param">outfile</em>, <em class="sig-param">block_func</em>, <em class="sig-param">scheduler='threads'</em>, <em class="sig-param">args=None</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=4</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">count=1</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">tiled=True</em>, <em class="sig-param">blockxsize=512</em>, <em class="sig-param">blockysize=512</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param">infile</em>, <em class="sig-param">outfile</em>, <em class="sig-param">block_func</em>, <em class="sig-param">args=None</em>, <em class="sig-param">scheduler='threads'</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=4</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">count=1</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies a function and writes results to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>infile</strong> (<em>str</em>) – </p></li>
-<li><p><strong>outfile</strong> (<em>str</em>) – </p></li>
-<li><p><strong>block_func</strong> (<em>func</em>) – </p></li>
-<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – ‘threads’ or ‘processes’</p></li>
-<li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – </p></li>
+<li><p><strong>infile</strong> (<em>str</em>) – The input file to process.</p></li>
+<li><p><strong>outfile</strong> (<em>str</em>) – The output file.</p></li>
+<li><p><strong>block_func</strong> (<em>func</em>) – The user function to apply to each block. <a href="#id1"><span class="problematic" id="id2">*</span></a>The function should always return the window,
+the data, and at least one argument. The block data inside the function will be a 2d array if the
+input image has 1 band, otherwise a 3d array.</p></li>
+<li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Additional arguments to pass to <code class="docutils literal notranslate"><span class="pre">block_func</span></code>.</p></li>
+<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> scheduler to use. Choices are [‘threads’, ‘processes’].</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
-<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – </p></li>
-<li><p><strong>count</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
-<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – </p></li>
-<li><p><strong>tiled</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – </p></li>
-<li><p><strong>blockxsize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
-<li><p><strong>blockysize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of blocks to process in parallel.</p></li>
+<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing output file.</p></li>
+<li><p><strong>count</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The band count for the output file.</p></li>
+<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data type for the output file.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value for the output file.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.open</span></code>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The function should always return the window,</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1">#  the data, and at least one argument.</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with no arguments</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func0</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
@@ -228,11 +228,6 @@
 <span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
