@@ -20,7 +20,8 @@ class WriteDaskArray(object):
 
     Args:
         filename (str): The file to write to.
-        separate (Optional[bool]): TODO
+        overwrite (Optional[bool]): Whether to overwrite an existing output file.
+        separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to the same file.
         gdal_cache (Optional[int]): The GDAL cache size (in MB).
         kwargs (Optional[dict]): Other keyword arguments passed to ``rasterio``.
 
@@ -28,17 +29,28 @@ class WriteDaskArray(object):
         None
     """
 
-    def __init__(self, filename, separate=False, gdal_cache=512, **kwargs):
+    def __init__(self,
+                 filename,
+                 overwrite=False,
+                 separate=False,
+                 gdal_cache=512,
+                 **kwargs):
 
         self.filename = filename
+        self.overwrite = overwrite
         self.separate = separate
         self.gdal_cache = gdal_cache
         self.kwargs = kwargs
 
         self.d_name, f_name = os.path.split(self.filename)
-        self.f_ext, self.f_base = os.path.splitext(f_name)
+        self.f_base, self.f_ext = os.path.splitext(f_name)
 
         self.sub_dir = os.path.join(self.d_name, 'sub')
+
+        if self.separate:
+
+            if not os.path.isdir(self.sub_dir):
+                os.makedirs(self.sub_dir)
 
     def __setitem__(self, key, item):
 
@@ -54,50 +66,75 @@ class WriteDaskArray(object):
 
         if self.separate:
 
-            out_filename = os.path.join(self.sub_dir, '{BASE}_y{Y:d}x{X:d}{EXT}'.format(BASE=self.f_base,
-                                                                                        Y=y.start,
-                                                                                        X=x.start,
-                                                                                        EXT=self.f_ext))
+            out_filename = os.path.join(self.sub_dir,
+                                        '{BASE}_y{Y:06d}_x{X:06d}_h{H:06d}_w{W:06d}{EXT}'.format(BASE=self.f_base,
+                                                                                                 Y=y.start,
+                                                                                                 X=x.start,
+                                                                                                 H=y.stop - y.start,
+                                                                                                 W=x.stop - x.start,
+                                                                                                 EXT=self.f_ext))
 
-            mode = 'w'
-            w = Window(col_off=0, row_off=0, width=x.stop - x.start, height=y.stop - y.start)
+            if self.overwrite:
+
+                if os.path.isfile(out_filename):
+                    os.remove(out_filename)
+
+            io_mode = 'w'
+
+            # Every block starts at (0, 0) for the output
+            w = Window(col_off=0,
+                       row_off=0,
+                       width=x.stop - x.start,
+                       height=y.stop - y.start)
 
             # xres, 0, minx, 0, yres, maxy
-            self.kwargs['transform'] = Affine(self.kwargs['transform'][0],
-                                              0.0,
-                                              self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
-                                              0.0,
-                                              self.kwargs['transform'][4],
-                                              self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4]))
+            # TODO: hardcoded driver type
+            kwargs = dict(driver=self.kwargs['driver'],
+                          width=w.width,
+                          height=w.height,
+                          count=self.kwargs['count'],
+                          dtype=self.kwargs['dtype'],
+                          nodata=self.kwargs['nodata'],
+                          blockxsize=self.kwargs['blockxsize'],
+                          blockysize=self.kwargs['blockysize'],
+                          crs=self.kwargs['crs'],
+                          transform=Affine(self.kwargs['transform'][0],
+                                           0.0,
+                                           self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
+                                           0.0,
+                                           self.kwargs['transform'][4],
+                                           self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4])),
+                          compress=self.kwargs['compress'] if 'compress' in self.kwargs else 'none',
+                          tiled=True)
 
         else:
+
+            out_filename = self.filename
 
             w = Window(col_off=x.start,
                        row_off=y.start,
                        width=x.stop - x.start,
                        height=y.stop - y.start)
 
-            with rio.open(self.filename,
-                          mode='r+',
-                          sharing=False) as dst_:
+            io_mode = 'r+'
+            kwargs = {}
 
-                dst_.write(item,
-                           window=w,
-                           indexes=indexes)
+        with rio.open(out_filename,
+                      mode=io_mode,
+                      sharing=False,
+                      **kwargs) as dst_:
+
+            dst_.write(item,
+                       window=w,
+                       indexes=indexes)
 
     def __enter__(self):
 
-        if 'compress' in self.kwargs:
+        if not self.separate:
 
-            logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')
-            del self.kwargs['compress']
-
-        if self.separate:
-
-            if not os.path.isdir(self.sub_dir):
-                os.makedirs(self.sub_dir)
-
-        else:
+            if 'compress' in self.kwargs:
+                logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')
+                del self.kwargs['compress']
 
             # An alternative here is to leave the writeable object open as self.
             # However, this does not seem to work when used within a Dask

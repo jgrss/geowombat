@@ -41,7 +41,7 @@ def project_coords(x, y, src_crs, dst_crs):
 
     df_tmp = df_tmp.to_crs(dst_crs)
 
-    return df_tmp.x.values, df_tmp.y.values
+    return df_tmp.geometry.x.values, df_tmp.geometry.y.values
 
 
 def get_geometry_info(geometry, res):

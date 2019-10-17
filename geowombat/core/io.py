@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 import fnmatch
 import ctypes
@@ -20,6 +21,7 @@ from dask.diagnostics import ProgressBar
 from dask.distributed import progress, Client, LocalCluster
 
 import rasterio as rio
+from rasterio.windows import Window
 
 from tqdm import tqdm
 
@@ -590,6 +592,10 @@ def client_dummy(**kwargs):
     yield None
 
 
+def block_write_func(w_, data_):
+    return w_, 1 if len(np.squeeze(data_).shape) == 2 else list(range(1, np.squeeze(data_).shape[0]+1)), data_
+
+
 def to_raster(data,
               filename,
               separate=False,
@@ -678,6 +684,24 @@ def to_raster(data,
 
     mem_per_core = int(total_memory / n_workers)
 
+    if 'blockxsize' not in kwargs:
+        kwargs['blockxsize'] = data.gw.col_chunks
+
+    if 'blockysize' not in kwargs:
+        kwargs['blockysize'] = data.gw.row_chunks
+
+    if 'driver' not in kwargs:
+        kwargs['driver'] = 'GTiff'
+
+    if 'count' not in kwargs:
+        kwargs['count'] = data.gw.nbands
+
+    if 'width' not in kwargs:
+        kwargs['width'] = data.gw.ncols
+
+    if 'height' not in kwargs:
+        kwargs['height'] = data.gw.nrows
+
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
         with cluster_object(n_workers=n_workers,
@@ -689,6 +713,7 @@ def to_raster(data,
             with client_object(address=cluster) as client:
 
                 with WriteDaskArray(filename,
+                                    overwrite=overwrite,
                                     separate=separate,
                                     gdal_cache=gdal_cache,
                                     **kwargs) as dst:
@@ -712,25 +737,58 @@ def to_raster(data,
                     if verbose > 0:
                         logger.info('  Finished writing data to file.')
 
-                if compress:
+                    sub_dir = dst.sub_dir
 
-                    d_name, f_name = os.path.split(filename)
-                    f_ext, f_base = os.path.splitext(f_name)
-                    temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+                if compress:
 
                     if verbose > 0:
                         logger.info('  Compressing output file ...')
 
-                    compress_raster(filename,
-                                    temp_file,
-                                    n_jobs=n_jobs,
-                                    gdal_cache=gdal_cache,
-                                    compress=compress_type)
+                    if separate:
+
+                        outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
+                        outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
+
+                        data_gen = ((Window(row_off=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-4][1:]),
+                                            col_off=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-3][1:]),
+                                            height=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-2][1:]),
+                                            width=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-1][1:])),
+                                     rio.open(fn).read()) for fn in outfiles)
+
+                        # Compress into one file
+                        with rio.open(filename, mode='w', **kwargs) as dst:
+
+                            with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+
+                                # Submit all of the tasks as futures
+                                futures = [executor.submit(block_write_func, w, data) for w, data in data_gen]
+
+                                for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+
+                                    out_window, out_indexes, out_block = f.result()
+
+                                    dst.write(np.squeeze(out_block),
+                                              window=out_window,
+                                              indexes=out_indexes)
+
+                        shutil.rmtree(sub_dir)
+
+                    else:
+
+                        d_name, f_name = os.path.split(filename)
+                        f_base, f_ext = os.path.splitext(f_name)
+                        temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+
+                        compress_raster(filename,
+                                        temp_file,
+                                        n_jobs=n_jobs,
+                                        gdal_cache=gdal_cache,
+                                        compress=compress_type)
+
+                        os.rename(temp_file, filename)
 
                     if verbose > 0:
                         logger.info('  Finished compressing')
-
-                    os.rename(temp_file, filename)
 
 
 def _arg_gen(arg_, iter_):

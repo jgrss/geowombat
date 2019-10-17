@@ -8,11 +8,14 @@ from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
+from . import norm_brdf as gw_norm_brdf
+from .properties import DataProperties
+from .util import project_coords
 from ..backends import Cluster
-from ..util import DataProperties
 from ..util import imshow as gw_imshow
 from ..models import predict
 
+import numpy as np
 import xarray as xr
 import joblib
 
@@ -300,8 +303,8 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
-            blockxsize (Optional[int]): The x block size.
-            blockysize (Optional[int]): The y block size.
+            blockxsize (Optional[int]): The output x block size. Ignored if ``separate`` = ``True``.
+            blockysize (Optional[int]): The output y block size. Ignored if ``separate`` = ``True``.
             tags (Optional[dict]): Image tags to write to file.
             kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
@@ -349,8 +352,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   height=self._obj.gw.nrows,
                   count=self._obj.gw.nbands,
                   driver=driver,
-                  sharing=False,
-                  dtype=self._obj.data.dtype,
+                  dtype=self._obj.data.dtype.name,
                   nodata=nodata,
                   tiled=True,
                   blockxsize=blockxsize,
@@ -753,15 +755,74 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             sensor (Optional[str]): The data's sensor.
             scale_factor (Optional[float]): A scale factor to apply to the data.
 
+        Returns:
+            ``xarray.DataArray``
+
         Examples:
             >>> import geowombat as gw
             >>>
             >>> with gw.config.update(sensor='quickbird', scale_factor=0.0001):
             >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
             >>>         tcap = ds.gw.tasseled_cap()
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         return gw_tasseled_cap(self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor)
+
+    def norm_brdf(self,
+                  solar_zenith,
+                  solar_azimuth,
+                  sensor_zenith,
+                  sensor_azimuth,
+                  nodata=0,
+                  mask=None,
+                  scale_factor=1.0,
+                  scale_angles=True):
+
+        r"""
+        Applies Bidirectional Reflectance Distribution Function (BRDF) normalization
+
+        Args:
+            solar_zenith (DataArray): The solar zenith angles for each pixel.
+            solar_azimuth (DataArray): The solar azimuth angles for each pixel.
+            sensor_zenith (DataArray): The sensor zenith angles for each pixel.
+            sensor_azimuth (DataArray): The sensor azimuth angles for each pixel.
+            mask (DataArray): A mask array where 0 values indicate clear sky.
+            nodata (Optional[int or float]): A 'no data' value.
+            mask (Optional[bool]): Whether to mask the results.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+            scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Example where pixel angles are stored in separate GeoTiff files
+            >>> with gw.config.update(scale_factor=0.0001, nodata=0):
+            >>>
+            >>>     with gw.open('solarz.tif') as solarz, gw.open('solara.tif') as solara, gw.open('sensorz.tif') as sensorz, gw.open('sensora.tif') as sensora:
+            >>>
+            >>>         with gw.open('landsat.tif') as ds:
+            >>>             ds_brdf = ds.gw.norm_brdf(solarz, solara, sensorz, sensora)
+        """
+
+        wavelength_list = self._obj.band.values.tolist()
+
+        # Get the central latitude
+        central_lat = project_coords(np.array([self._obj.x.values[int(self._obj.x.shape[0] / 2)]], dtype='float64'),
+                                     np.array([self._obj.y.values[int(self._obj.y.shape[0] / 2)]], dtype='float64'),
+                                     self._obj.crs,
+                                     {'init': 'epsg:4326'})[1][0]
+
+        return gw_norm_brdf(wavelength_list,
+                            self._obj,
+                            solar_zenith,
+                            solar_azimuth,
+                            sensor_zenith,
+                            sensor_azimuth,
+                            central_lat,
+                            nodata=nodata,
+                            mask=mask,
+                            scale_factor=scale_factor,
+                            scale_angles=scale_angles)

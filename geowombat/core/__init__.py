@@ -3,6 +3,7 @@ from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
+from .radiometrics import BRDF
 
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
@@ -16,6 +17,7 @@ nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
+norm_brdf = BRDF().norm_brdf
 
 __all__ = ['apply',
            'parse_wildcard',
@@ -31,4 +33,5 @@ __all__ = ['apply',
            'nbr',
            'ndvi',
            'wi',
-           'tasseled_cap']
+           'tasseled_cap',
+           'norm_brdf']
