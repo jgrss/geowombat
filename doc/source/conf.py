@@ -70,8 +70,7 @@ html_theme = 'alabaster'
 # documentation.
 html_theme_options = {'description': 'GeoWombat is a Python package for geo-utilities with Xarray and Dask arrays',
                       'description_font_style': 'Candara',
-                      'page_width': '1000px',
-                      'sidebar_width': '250px',
+                      'page_width': '80%',
                       'fixed_sidebar': True,
                       'logo': 'wombat.png',
                       'logo_name': True,
