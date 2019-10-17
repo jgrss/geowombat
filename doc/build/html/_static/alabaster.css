@@ -13,7 +13,7 @@ body {
 
 
 div.document {
-    width: 940px;
+    width: 1000px;
     margin: 30px auto 0 auto;
 }
 
@@ -23,11 +23,11 @@ div.documentwrapper {
 }
 
 div.bodywrapper {
-    margin: 0 0 0 220px;
+    margin: 0 0 0 250px;
 }
 
 div.sphinxsidebar {
-    width: 220px;
+    width: 250px;
     font-size: 14px;
     line-height: 1.5;
 }
@@ -47,7 +47,7 @@ div.body > .section {
 }
 
 div.footer {
-    width: 940px;
+    width: 1000px;
     margin: 20px auto 30px auto;
     font-size: 14px;
     color: #888;
@@ -102,7 +102,7 @@ div.sphinxsidebarwrapper h1.logo-name {
 
 div.sphinxsidebarwrapper p.blurb {
     margin-top: 0;
-    font-style: normal;
+    font-style: Candara;
 }
 
 div.sphinxsidebar h3,
@@ -571,7 +571,7 @@ a:hover tt, a:hover code {
         display: block;
         float: none;
         width: 102.5%;
-        margin: 50px -30px -20px -30px;
+        margin: -20px -30px 20px -30px;
         padding: 10px 20px;
         background: #333;
         color: #FFF;
@@ -626,6 +626,12 @@ a:hover tt, a:hover code {
 
     .github {
         display: none;
+    }
+}
+@media screen and (min-width: 876px) {
+    div.sphinxsidebar {
+        position: fixed;
+        margin-left: 0;
     }
 }
 

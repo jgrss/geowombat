@@ -37,7 +37,8 @@ required_packages = ['cython',
                      'shapely',
                      'h5netcdf',
                      'netCDF4',
-                     'scikit-learn']
+                     'scikit-learn',
+                     'numexpr']
 
 
 def get_packages():

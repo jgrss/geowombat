@@ -59,18 +59,26 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build']
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'logo_only': True}
+html_theme_options = {'description': 'GeoWombat is a Python package for geo-utilities with Xarray and Dask arrays',
+                      'description_font_style': 'Candara',
+                      'page_width': '1000px',
+                      'sidebar_width': '250px',
+                      'fixed_sidebar': True,
+                      'logo': 'wombat.png',
+                      'logo_name': True,
+                      'github_banner': True,
+                      'github_button': True,
+                      'github_user': 'jgrss',
+                      'github_repo': 'geowombat'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
