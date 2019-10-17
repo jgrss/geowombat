@@ -78,7 +78,10 @@ html_theme_options = {'description': 'GeoWombat is a Python package for geo-util
                       'github_banner': True,
                       'github_button': True,
                       'github_user': 'jgrss',
-                      'github_repo': 'geowombat'}
+                      'github_repo': 'geowombat',
+                      'anchor': '#d37a7a',
+                      'anchor_hover_bg': '#d37a7a',
+                      'anchor_hover_fg': '#d37a7a'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

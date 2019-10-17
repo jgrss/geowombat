@@ -593,7 +593,8 @@ def client_dummy(**kwargs):
 
 
 def block_write_func(w_, data_):
-    return w_, 1 if len(np.squeeze(data_).shape) == 2 else list(range(1, np.squeeze(data_).shape[0]+1)), data_
+    out_data_ = np.squeeze(data_)
+    return w_, 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1)), out_data_
 
 
 def to_raster(data,
@@ -767,7 +768,7 @@ def to_raster(data,
 
                                     out_window, out_indexes, out_block = f.result()
 
-                                    dst.write(np.squeeze(out_block),
+                                    dst.write(out_block,
                                               window=out_window,
                                               indexes=out_indexes)
 

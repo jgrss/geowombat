@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections import namedtuple
 
 from ..errors import logger
@@ -45,12 +46,14 @@ class WriteDaskArray(object):
         self.d_name, f_name = os.path.split(self.filename)
         self.f_base, self.f_ext = os.path.splitext(f_name)
 
-        self.sub_dir = os.path.join(self.d_name, 'sub')
+        self.sub_dir = os.path.join(self.d_name, 'sub_tmp_')
 
         if self.separate:
 
-            if not os.path.isdir(self.sub_dir):
-                os.makedirs(self.sub_dir)
+            if os.path.isdir(self.sub_dir):
+                shutil.rmtree(self.sub_dir)
+
+            os.makedirs(self.sub_dir)
 
     def __setitem__(self, key, item):
 

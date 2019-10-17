@@ -211,14 +211,14 @@ div.body h5 { font-size: 100%; }
 div.body h6 { font-size: 100%; }
 
 a.headerlink {
-    color: #DDD;
+    color: #d37a7a;
     padding: 0 4px;
     text-decoration: none;
 }
 
 a.headerlink:hover {
-    color: #444;
-    background: #EAEAEA;
+    color: #d37a7a;
+    background: #d37a7a;
 }
 
 div.body p, div.body dd, div.body li {
