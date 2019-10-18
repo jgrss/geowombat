@@ -278,8 +278,11 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   overwrite=False,
                   gdal_cache=512,
                   n_jobs=1,
-                  n_workers=1,
-                  n_threads=1,
+                  n_workers=None,
+                  n_threads=None,
+                  n_chunks=None,
+                  overviews=False,
+                  resampling='nearest',
                   use_client=False,
                   address=None,
                   total_memory=48,
@@ -306,6 +309,10 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             n_jobs (Optional[int]): The total number of parallel jobs.
             n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
             n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` * 3.
+            overviews (Optional[bool or list]): Whether to build overview layers.
+            resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
+                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
             use_client (Optional[bool]): Whether to use a ``dask`` client.
             address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
@@ -354,6 +361,9 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   n_jobs=n_jobs,
                   n_workers=n_workers,
                   n_threads=n_threads,
+                  n_chunks=n_chunks,
+                  overviews=overviews,
+                  resampling=resampling,
                   use_client=use_client,
                   address=address,
                   total_memory=total_memory,

@@ -21,7 +21,7 @@ distributed==2.5.2
 fasteners==0.15           # via zarr
 fiona==1.8.8              # via geopandas
 fsspec==0.5.2             # via dask
-gdal==3.0.1
+gdal
 geopandas==0.6.1
 h5netcdf==0.7.4
 h5py==2.10.0              # via h5netcdf

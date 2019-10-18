@@ -13,7 +13,7 @@ def get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='list')
         n_cols (int): The number of columns to iterate over.
         row_chunks (int): The row chunk size.
         col_chunks (int): The column chunk size.
-        return_as (Optional[str]): Whether to return the window information as a list or a dictionary.
+        return_as (Optional[str]): How to return the window information. Choices are ['dict', 'list'].
 
     Returns:
         Window information (list or dict)

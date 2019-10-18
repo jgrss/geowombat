@@ -334,7 +334,9 @@ def union(filenames, crs=None, res=None, resampling='nearest'):
     if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
                           'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
 
-        logger.exception('  The resampling method is not supported by rasterio.')
+        logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+
+        resampling = 'nearest'
 
     # Get the union bounds of all images
     dst_transform, dst_width, dst_height = get_file_bounds(filenames,

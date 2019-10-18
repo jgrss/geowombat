@@ -414,7 +414,6 @@ def open(filename,
                 yield warp_open(filename,
                                 band_names=band_names,
                                 resampling=resampling,
-                                return_windows=True,
                                 **kwargs)
 
                 # with xr.open_rasterio(filename, **kwargs) as src:

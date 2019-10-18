@@ -20,10 +20,9 @@ from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
 from dask.distributed import progress, Client, LocalCluster
 
-# import graphchain
-
 import rasterio as rio
 from rasterio.windows import Window
+from rasterio.enums import Resampling
 
 import zarr
 from tqdm import tqdm
@@ -604,7 +603,12 @@ def _return_window(window, block, num_workers):
     if len(dshape) > 2:
         out_data_ = np.squeeze(out_data_)
 
-    return window, 1 if len(dshape) == 2 else list(range(1, dshape[0]+1)), out_data_
+    if len(dshape) == 2:
+        indexes = 1
+    else:
+        indexes = 1 if dshape[0] == 1 else list(range(1, dshape[0]+1))
+
+    return window, indexes, out_data_
 
 
 def block_write_func(fn_, g_, t_):
@@ -645,6 +649,9 @@ def to_raster(data,
               n_jobs=1,
               n_workers=None,
               n_threads=None,
+              n_chunks=None,
+              overviews=False,
+              resampling='nearest',
               use_client=False,
               address=None,
               total_memory=48,
@@ -667,6 +674,10 @@ def to_raster(data,
         n_jobs (Optional[int]): The total number of parallel jobs.
         n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
         n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+        n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` * 10.
+        overviews (Optional[bool or list]): Whether to build overview layers.
+        resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         use_client (Optional[bool]): Whether to use a ``dask`` client.
         address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
         total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
@@ -678,17 +689,21 @@ def to_raster(data,
     Examples:
         >>> import geowombat as gw
         >>>
-        >>> # Use dask.compute()
+        >>> # Use 8 parallel workers
         >>> with gw.open('input.tif') as ds:
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8)
         >>>
-        >>> # Use a dask client
+        >>> # Use 4 process workers and 2 thread workers
         >>> with gw.open('input.tif') as ds:
-        >>>     gw.to_raster(ds, 'output.tif', use_client=True, n_workers=8, n_threads=4)
+        >>>     gw.to_raster(ds, 'output.tif', n_workers=4, n_threads=2)
         >>>
-        >>> # Compress the output
+        >>> # Control the window chunks passed to concurrent.futures
         >>> with gw.open('input.tif') as ds:
-        >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, compress='lzw')
+        >>>     gw.to_raster(ds, 'output.tif', n_workers=4, n_threads=2, n_chunks=16)
+        >>>
+        >>> # Compress the output and build overviews
+        >>> with gw.open('input.tif') as ds:
+        >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
     if overwrite:
@@ -734,6 +749,9 @@ def to_raster(data,
 
     mem_per_core = int(total_memory / n_workers)
 
+    if not isinstance(n_chunks, int):
+        n_chunks = n_workers * 10
+
     if 'blockxsize' not in kwargs:
         kwargs['blockxsize'] = data.gw.col_chunks
 
@@ -752,43 +770,77 @@ def to_raster(data,
     if 'height' not in kwargs:
         kwargs['height'] = data.gw.nrows
 
+    if verbose > 0:
+        logger.info('  Writing data to file ...\n')
+
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
+
+        windows = get_window_offsets(data.gw.nrows,
+                                     data.gw.ncols,
+                                     data.gw.row_chunks,
+                                     data.gw.col_chunks,
+                                     return_as='list')
+
+        n_windows = len(windows)
 
         # TODO: option without dask.array.store
         with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
-            data_gen = (w for w in data.block_windows)
-
             with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
 
-                if len(data.shape) == 2:
+                # Iterate over the windows in chunks
+                for wchunk in range(0, n_windows, n_chunks):
+
+                    window_slice = windows[wchunk:wchunk+n_chunks]
+                    n_windows_slice = len(window_slice)
+
+                    if verbose > 0:
+
+                        logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
+                                                                                 wchunk+n_windows_slice,
+                                                                                 n_windows))
+
+                    if len(data.shape) == 2:
+                        data_gen = (data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                    elif len(data.shape) == 3:
+                        data_gen = (data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                    else:
+                        data_gen = (data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
 
                     futures = [executor.submit(_return_window,
-                                               w,
-                                               data[w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
-                                               n_threads) for w in data_gen]
+                                               wch,
+                                               data_slice,
+                                               n_threads) for wch, data_slice in zip(window_slice, data_gen)]
 
-                elif len(data.shape) == 3:
+                    for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
 
-                    futures = [executor.submit(_return_window,
-                                               w,
-                                               data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
-                                               n_threads) for w in data_gen]
+                        out_window, out_indexes, out_block = f.result()
 
-                else:
+                        rio_dst.write(out_block,
+                                      window=out_window,
+                                      indexes=out_indexes)
 
-                    futures = [executor.submit(_return_window,
-                                               w,
-                                               data[:, :, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
-                                               n_threads) for w in data_gen]
+                        del out_window, out_indexes, out_block
 
-                for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+                    futures = None
 
-                    out_window, out_indexes, out_block = f.result()
+            if overviews:
 
-                    rio_dst.write(out_block,
-                                  window=out_window,
-                                  indexes=out_indexes)
+                if not isinstance(overviews, list):
+                    overviews = [2, 4, 8, 16]
+
+                if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
+                                      'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
+
+                    logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+
+                    resampling = 'nearest'
+
+                if verbose > 0:
+                    logger.info('  Building pyramid overviews ...')
+
+                rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
+                rio_dst.update_tags(ns='overviews', resampling=resampling)
 
         # with cluster_object(n_workers=n_workers,
         #                     threads_per_worker=n_threads,
@@ -890,6 +942,9 @@ def to_raster(data,
         #
         #     if verbose > 0:
         #         logger.info('  Finished compressing')
+
+    if verbose > 0:
+        logger.info('\nFinished writing the data.')
 
 
 def _arg_gen(arg_, iter_):
