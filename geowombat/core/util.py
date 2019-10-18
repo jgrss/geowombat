@@ -123,7 +123,8 @@ class Chunks(object):
 
         if not isinstance(chunksize, tuple):
             if not isinstance(chunksize, dict):
-                logger.warning('  The chunksize parameter should be a tuple or a dictionary.')
+                if not isinstance(chunksize, int):
+                    logger.warning('  The chunksize parameter should be a tuple, dictionary, or integer.')
 
         # TODO: make compatible with multi-layer predictions (e.g., probabilities)
         if chunk_len != output_len:

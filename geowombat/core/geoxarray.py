@@ -281,6 +281,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   n_workers=1,
                   n_threads=1,
                   use_client=False,
+                  address=None,
                   total_memory=48,
                   driver='GTiff',
                   nodata=None,
@@ -306,6 +307,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
             n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
             use_client (Optional[bool]): Whether to use a ``dask`` client.
+            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
@@ -353,6 +355,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   n_workers=n_workers,
                   n_threads=n_threads,
                   use_client=use_client,
+                  address=address,
                   total_memory=total_memory,
                   crs=self._obj.crs,
                   transform=self._obj.transform,

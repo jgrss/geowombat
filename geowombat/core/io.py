@@ -20,6 +20,8 @@ from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
 from dask.distributed import progress, Client, LocalCluster
 
+# import graphchain
+
 import rasterio as rio
 from rasterio.windows import Window
 
@@ -595,6 +597,10 @@ def client_dummy(**kwargs):
 
 def block_write_func(fn_, g_, t_):
 
+    """
+    Function for block writing with ``concurrent.futures``
+    """
+
     if t_ == 'zarr':
 
         w_ = Window(row_off=fn_[g_].attrs['row_off'],
@@ -602,7 +608,7 @@ def block_write_func(fn_, g_, t_):
                     height=fn_[g_].attrs['height'],
                     width=fn_[g_].attrs['width'])
 
-        out_data_ = np.squeeze(r_[g_]['data'][:])
+        out_data_ = np.squeeze(fn_[g_]['data'][:])
 
     else:
 
@@ -628,6 +634,7 @@ def to_raster(data,
               n_workers=None,
               n_threads=None,
               use_client=False,
+              address=None,
               total_memory=48,
               **kwargs):
 
@@ -649,6 +656,7 @@ def to_raster(data,
         n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
         n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
         use_client (Optional[bool]): Whether to use a ``dask`` client.
+        address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
         total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
@@ -693,7 +701,11 @@ def to_raster(data,
 
     if use_client:
 
-        cluster_object = LocalCluster
+        if address:
+            cluster_object = cluster_dummy
+        else:
+            cluster_object = LocalCluster
+
         client_object = Client
 
     else:
@@ -728,6 +740,8 @@ def to_raster(data,
     if 'height' not in kwargs:
         kwargs['height'] = data.gw.nrows
 
+    # with dask.config.set(delayed_optimize=graphchain.optimize):
+
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
         with cluster_object(n_workers=n_workers,
@@ -736,7 +750,9 @@ def to_raster(data,
                             processes=False,
                             memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
 
-            with client_object(address=cluster) as client:
+            cluster_address = address if address else cluster
+
+            with client_object(address=cluster_address) as client:
 
                 with WriteDaskArray(filename,
                                     overwrite=overwrite,
@@ -759,66 +775,73 @@ def to_raster(data,
                     #
                     # *Note that the progress bar will
                     #   not work with a client.
-                    with ProgressBar():
+                    if use_client:
                         res.compute(num_workers=n_jobs)
+                    else:
+
+                        with ProgressBar():
+                            res.compute(num_workers=n_jobs)
 
                     if verbose > 0:
                         logger.info('  Finished writing data to file.')
 
-                if compress:
+                    out_block_type = dst.out_block_type
+                    keep_blocks = dst.keep_blocks
+                    zarr_file = dst.zarr_file
+                    sub_dir = dst.sub_dir
 
-                    if verbose > 0:
-                        logger.info('  Compressing output file ...')
+        if compress:
 
-                    if separate:
+            if verbose > 0:
+                logger.info('  Compressing output file ...')
 
-                        if dst.out_block_type.lower() == 'zarr':
+            if separate:
 
-                            root = zarr.open(dst.zarr_file, mode='r')
-                            data_gen = ((root, group, 'zarr') for group in root.group_keys())
+                if out_block_type.lower() == 'zarr':
 
-                        else:
+                    root = zarr.open(zarr_file, mode='r')
+                    data_gen = ((root, group, 'zarr') for group in root.group_keys())
 
-                            outfiles = sorted(fnmatch.filter(os.listdir(dst.sub_dir), '*.tif'))
-                            outfiles = [os.path.join(dst.sub_dir, fn) for fn in outfiles]
+                else:
 
-                            data_gen = ((fn, None, 'gtiff') for fn in outfiles)
+                    outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
+                    outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
 
-                        # Compress into one file
-                        with rio.open(filename, mode='w', **kwargs) as rio_dst:
+                    data_gen = ((fn, None, 'gtiff') for fn in outfiles)
 
-                            with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+                # Compress into one file
+                with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
-                                # Submit all of the tasks as futures
-                                futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
+                    with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+                        # Submit all of the tasks as futures
+                        futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
 
-                                for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+                        for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+                            out_window, out_indexes, out_block = f.result()
 
-                                    out_window, out_indexes, out_block = f.result()
+                            rio_dst.write(out_block,
+                                          window=out_window,
+                                          indexes=out_indexes)
 
-                                    rio_dst.write(out_block,
-                                                  window=out_window,
-                                                  indexes=out_indexes)
+                if not keep_blocks:
+                    shutil.rmtree(sub_dir)
 
-                        if not dst.keep_blocks:
-                            shutil.rmtree(dst.sub_dir)
+            else:
 
-                    else:
+                d_name, f_name = os.path.split(filename)
+                f_base, f_ext = os.path.splitext(f_name)
+                temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
 
-                        d_name, f_name = os.path.split(filename)
-                        f_base, f_ext = os.path.splitext(f_name)
-                        temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+                compress_raster(filename,
+                                temp_file,
+                                n_jobs=n_jobs,
+                                gdal_cache=gdal_cache,
+                                compress=compress_type)
 
-                        compress_raster(filename,
-                                        temp_file,
-                                        n_jobs=n_jobs,
-                                        gdal_cache=gdal_cache,
-                                        compress=compress_type)
+                os.rename(temp_file, filename)
 
-                        os.rename(temp_file, filename)
-
-                    if verbose > 0:
-                        logger.info('  Finished compressing')
+            if verbose > 0:
+                logger.info('  Finished compressing')
 
 
 def _arg_gen(arg_, iter_):
