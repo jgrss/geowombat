@@ -595,6 +595,18 @@ def client_dummy(**kwargs):
     yield None
 
 
+def _return_window(window, block, num_workers):
+
+    out_data_ = block.data.compute(num_workers=num_workers)
+
+    dshape = out_data_.shape
+
+    if len(dshape) > 2:
+        out_data_ = np.squeeze(out_data_)
+
+    return window, 1 if len(dshape) == 2 else list(range(1, dshape[0]+1)), out_data_
+
+
 def block_write_func(fn_, g_, t_):
 
     """
@@ -740,108 +752,144 @@ def to_raster(data,
     if 'height' not in kwargs:
         kwargs['height'] = data.gw.nrows
 
-    # with dask.config.set(delayed_optimize=graphchain.optimize):
-
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
-        with cluster_object(n_workers=n_workers,
-                            threads_per_worker=n_threads,
-                            scheduler_port=0,
-                            processes=False,
-                            memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
+        # TODO: option without dask.array.store
+        with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
-            cluster_address = address if address else cluster
+            data_gen = (w for w in data.block_windows)
 
-            with client_object(address=cluster_address) as client:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
 
-                with WriteDaskArray(filename,
-                                    overwrite=overwrite,
-                                    separate=separate,
-                                    out_block_type=out_block_type,
-                                    keep_blocks=keep_blocks,
-                                    gdal_cache=gdal_cache,
-                                    **kwargs) as dst:
+                if len(data.shape) == 2:
 
-                    # Store the data and return a lazy evaluator
-                    res = da.store(da.squeeze(data.data),
-                                   dst,
-                                   lock=False,
-                                   compute=False)
+                    futures = [executor.submit(_return_window,
+                                               w,
+                                               data[w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
+                                               n_threads) for w in data_gen]
 
-                    if verbose > 0:
-                        logger.info('  Writing data to file ...')
+                elif len(data.shape) == 3:
 
-                    # Send the data to file
-                    #
-                    # *Note that the progress bar will
-                    #   not work with a client.
-                    if use_client:
-                        res.compute(num_workers=n_jobs)
-                    else:
-
-                        with ProgressBar():
-                            res.compute(num_workers=n_jobs)
-
-                    if verbose > 0:
-                        logger.info('  Finished writing data to file.')
-
-                    out_block_type = dst.out_block_type
-                    keep_blocks = dst.keep_blocks
-                    zarr_file = dst.zarr_file
-                    sub_dir = dst.sub_dir
-
-        if compress:
-
-            if verbose > 0:
-                logger.info('  Compressing output file ...')
-
-            if separate:
-
-                if out_block_type.lower() == 'zarr':
-
-                    root = zarr.open(zarr_file, mode='r')
-                    data_gen = ((root, group, 'zarr') for group in root.group_keys())
+                    futures = [executor.submit(_return_window,
+                                               w,
+                                               data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
+                                               n_threads) for w in data_gen]
 
                 else:
 
-                    outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
-                    outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
+                    futures = [executor.submit(_return_window,
+                                               w,
+                                               data[:, :, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width],
+                                               n_threads) for w in data_gen]
 
-                    data_gen = ((fn, None, 'gtiff') for fn in outfiles)
+                for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
 
-                # Compress into one file
-                with rio.open(filename, mode='w', **kwargs) as rio_dst:
+                    out_window, out_indexes, out_block = f.result()
 
-                    with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
-                        # Submit all of the tasks as futures
-                        futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
+                    rio_dst.write(out_block,
+                                  window=out_window,
+                                  indexes=out_indexes)
 
-                        for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
-                            out_window, out_indexes, out_block = f.result()
-
-                            rio_dst.write(out_block,
-                                          window=out_window,
-                                          indexes=out_indexes)
-
-                if not keep_blocks:
-                    shutil.rmtree(sub_dir)
-
-            else:
-
-                d_name, f_name = os.path.split(filename)
-                f_base, f_ext = os.path.splitext(f_name)
-                temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
-
-                compress_raster(filename,
-                                temp_file,
-                                n_jobs=n_jobs,
-                                gdal_cache=gdal_cache,
-                                compress=compress_type)
-
-                os.rename(temp_file, filename)
-
-            if verbose > 0:
-                logger.info('  Finished compressing')
+        # with cluster_object(n_workers=n_workers,
+        #                     threads_per_worker=n_threads,
+        #                     scheduler_port=0,
+        #                     processes=False,
+        #                     memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
+        #
+        #     cluster_address = address if address else cluster
+        #
+        #     with client_object(address=cluster_address) as client:
+        #
+        #         with WriteDaskArray(filename,
+        #                             overwrite=overwrite,
+        #                             separate=separate,
+        #                             out_block_type=out_block_type,
+        #                             keep_blocks=keep_blocks,
+        #                             gdal_cache=gdal_cache,
+        #                             **kwargs) as dst:
+        #
+        #             # Store the data and return a lazy evaluator
+        #             res = da.store(da.squeeze(data.data),
+        #                            dst,
+        #                            lock=False,
+        #                            compute=False)
+        #
+        #             if verbose > 0:
+        #                 logger.info('  Writing data to file ...')
+        #
+        #             # Send the data to file
+        #             #
+        #             # *Note that the progress bar will
+        #             #   not work with a client.
+        #             if use_client:
+        #                 res.compute(num_workers=n_jobs)
+        #             else:
+        #
+        #                 with ProgressBar():
+        #                     res.compute(num_workers=n_jobs)
+        #
+        #             if verbose > 0:
+        #                 logger.info('  Finished writing data to file.')
+        #
+        #             out_block_type = dst.out_block_type
+        #             keep_blocks = dst.keep_blocks
+        #             zarr_file = dst.zarr_file
+        #             sub_dir = dst.sub_dir
+        #
+        # if compress:
+        #
+        #     if verbose > 0:
+        #         logger.info('  Compressing output file ...')
+        #
+        #     if separate:
+        #
+        #         if out_block_type.lower() == 'zarr':
+        #
+        #             root = zarr.open(zarr_file, mode='r')
+        #             data_gen = ((root, group, 'zarr') for group in root.group_keys())
+        #
+        #         else:
+        #
+        #             outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
+        #             outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
+        #
+        #             data_gen = ((fn, None, 'gtiff') for fn in outfiles)
+        #
+        #         # Compress into one file
+        #         with rio.open(filename, mode='w', **kwargs) as rio_dst:
+        #
+        #             with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+        #
+        #                 # Submit all of the tasks as futures
+        #                 futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
+        #
+        #                 for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+        #
+        #                     out_window, out_indexes, out_block = f.result()
+        #
+        #                     rio_dst.write(out_block,
+        #                                   window=out_window,
+        #                                   indexes=out_indexes)
+        #
+        #         if not keep_blocks:
+        #             shutil.rmtree(sub_dir)
+        #
+        #     else:
+        #
+        #         d_name, f_name = os.path.split(filename)
+        #         f_base, f_ext = os.path.splitext(f_name)
+        #         temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+        #
+        #         compress_raster(filename,
+        #                         temp_file,
+        #                         n_jobs=n_jobs,
+        #                         gdal_cache=gdal_cache,
+        #                         compress=compress_type)
+        #
+        #         os.rename(temp_file, filename)
+        #
+        #     if verbose > 0:
+        #         logger.info('  Finished compressing')
 
 
 def _arg_gen(arg_, iter_):

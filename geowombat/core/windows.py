@@ -37,9 +37,18 @@ def get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='list')
             width = n_rows_cols(col_off, col_chunks, n_cols)
 
             if return_as == 'list':
-                window_info.append(Window(col_off=col_off, row_off=row_off, width=width, height=height))
+
+                window_info.append(Window(col_off=col_off,
+                                          row_off=row_off,
+                                          width=width,
+                                          height=height))
+
             else:
-                window_info['{:d}{:d}'.format(i, j)] = Window(col_off=col_off, row_off=row_off, width=width, height=height)
+
+                window_info['{:d}{:d}'.format(i, j)] = Window(col_off=col_off,
+                                                              row_off=row_off,
+                                                              width=width,
+                                                              height=height)
 
             j += 1
 

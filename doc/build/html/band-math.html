@@ -126,7 +126,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-5e8afb96d6646b2721c26075ea9ff754&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-d303d1a812697c72ed867efeaf57ad7a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -135,12 +135,13 @@
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
 <span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
+<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
@@ -151,12 +152,13 @@
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
 <span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
+<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (0, 1)</span>
@@ -178,12 +180,13 @@
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
 <span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
+<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (0, 1)</span>
@@ -226,12 +229,13 @@
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
 <span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
+<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    1.0</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (-1, 1)</span>
@@ -255,12 +259,13 @@
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
 <span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       0</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
+<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 </pre></div>
 </div>
 </div>

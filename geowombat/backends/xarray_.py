@@ -1,5 +1,6 @@
 import os
 
+from ..core.windows import get_window_offsets
 from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, union, warp, get_file_bounds
@@ -37,7 +38,11 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
-def warp_open(filename, band_names=None, resampling='nearest', **kwargs):
+def warp_open(filename,
+              band_names=None,
+              resampling='nearest',
+              return_windows=False,
+              **kwargs):
 
     """
     Warps and opens a file
@@ -46,6 +51,7 @@ def warp_open(filename, band_names=None, resampling='nearest', **kwargs):
         filename (str): The file to open.
         band_names (Optional[int, str, or list]): The band names.
         resampling (Optional[str]): The resampling method.
+        return_windows (Optional[bool]): Whether to return block windows.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
@@ -84,6 +90,19 @@ def warp_open(filename, band_names=None, resampling='nearest', **kwargs):
 
         if band_names:
             src.coords['band'] = band_names
+
+        if return_windows:
+
+            if isinstance(kwargs['chunks'], tuple):
+                chunksize = kwargs['chunks'][-1]
+            else:
+                chunksize = kwargs['chunks']
+
+            src.attrs['block_windows'] = get_window_offsets(src.shape[-2],
+                                                            src.shape[-1],
+                                                            chunksize,
+                                                            chunksize,
+                                                            return_as='list')
 
         return src
 

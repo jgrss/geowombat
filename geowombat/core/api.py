@@ -14,7 +14,7 @@ from ..backends import warp_open
 from .conversion import xarray_to_xdataset
 from .io import parse_wildcard
 from .util import Chunks, get_file_extension
-from .windows import from_bounds
+from .windows import from_bounds, get_window_offsets
 
 import numpy as np
 import xarray as xr
@@ -414,6 +414,7 @@ def open(filename,
                 yield warp_open(filename,
                                 band_names=band_names,
                                 resampling=resampling,
+                                return_windows=True,
                                 **kwargs)
 
                 # with xr.open_rasterio(filename, **kwargs) as src:

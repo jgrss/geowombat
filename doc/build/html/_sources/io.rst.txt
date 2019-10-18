@@ -31,13 +31,6 @@ Open a raster as a DataArray
     with gw.open(rgbn) as ds:
         print(ds)
 
-Open a raster as a Dataset
-
-.. ipython:: python
-
-    with gw.open(rgbn, return_as='dataset') as ds:
-        print(ds)
-
 Specify band names
 
 .. ipython:: python
