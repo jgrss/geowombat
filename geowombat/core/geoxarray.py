@@ -272,6 +272,8 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
     def to_raster(self,
                   filename,
                   separate=False,
+                  out_block_type='zarr',
+                  keep_blocks=False,
                   verbose=0,
                   overwrite=False,
                   gdal_cache=512,
@@ -293,6 +295,10 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         Args:
             filename (str): The output file name to write to.
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
+            out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
+                *Only used if ``separate`` = ``True``.
+            keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
+                *Only used if ``separate`` = ``True``.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
@@ -338,6 +344,8 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         to_raster(self._obj,
                   filename,
                   separate=separate,
+                  out_block_type=out_block_type,
+                  keep_blocks=keep_blocks,
                   verbose=verbose,
                   overwrite=overwrite,
                   gdal_cache=gdal_cache,

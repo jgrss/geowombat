@@ -12,6 +12,8 @@ from rasterio.transform import array_bounds
 from rasterio.windows import Window
 
 from affine import Affine
+import zarr
+import numcodecs
 
 
 class WriteDaskArray(object):
@@ -23,6 +25,10 @@ class WriteDaskArray(object):
         filename (str): The file to write to.
         overwrite (Optional[bool]): Whether to overwrite an existing output file.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to the same file.
+        out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
+            *Only used if ``separate`` = ``True``.
+        keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
+            *Only used if ``separate`` = ``True``.
         gdal_cache (Optional[int]): The GDAL cache size (in MB).
         kwargs (Optional[dict]): Other keyword arguments passed to ``rasterio``.
 
@@ -34,21 +40,40 @@ class WriteDaskArray(object):
                  filename,
                  overwrite=False,
                  separate=False,
+                 out_block_type='zarr',
+                 keep_blocks=False,
                  gdal_cache=512,
                  **kwargs):
 
         self.filename = filename
         self.overwrite = overwrite
         self.separate = separate
+        self.out_block_type = out_block_type
+        self.keep_blocks = keep_blocks
         self.gdal_cache = gdal_cache
         self.kwargs = kwargs
 
         self.d_name, f_name = os.path.split(self.filename)
         self.f_base, self.f_ext = os.path.splitext(f_name)
 
-        self.sub_dir = os.path.join(self.d_name, 'sub_tmp_')
+        self.root = None
+        self.compressor = None
+        self.sub_dir = None
+        self.zarr_file = None
 
         if self.separate:
+
+            if self.out_block_type.lower() not in ['gtiff', 'zarr']:
+
+                logger.warning('  The output block type is not recognized. Save blocks as zarr files.')
+                self.out_block_type = 'zarr'
+
+            self.sub_dir = os.path.join(self.d_name, 'sub_tmp_')
+            self.zarr_file = os.path.join(self.sub_dir, 'data.zarr')
+
+            self.compressor = numcodecs.Blosc(cname='zstd',
+                                              clevel=3,
+                                              shuffle=numcodecs.Blosc.BITSHUFFLE)
 
             if os.path.isdir(self.sub_dir):
                 shutil.rmtree(self.sub_dir)
@@ -69,46 +94,69 @@ class WriteDaskArray(object):
 
         if self.separate:
 
-            out_filename = os.path.join(self.sub_dir,
-                                        '{BASE}_y{Y:06d}_x{X:06d}_h{H:06d}_w{W:06d}{EXT}'.format(BASE=self.f_base,
-                                                                                                 Y=y.start,
-                                                                                                 X=x.start,
-                                                                                                 H=y.stop - y.start,
-                                                                                                 W=x.stop - x.start,
-                                                                                                 EXT=self.f_ext))
+            if self.out_block_type.lower() == 'zarr':
 
-            if self.overwrite:
+                group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(BASE=self.f_base,
+                                                                                 Y=y.start,
+                                                                                 X=x.start,
+                                                                                 H=y.stop - y.start,
+                                                                                 W=x.stop - x.start)
 
-                if os.path.isfile(out_filename):
-                    os.remove(out_filename)
+                group = self.root.create_group(group_name)
 
-            io_mode = 'w'
+                z = group.array('data',
+                                item,
+                                compressor=self.compressor,
+                                dtype=item.dtype.name,
+                                chunks=(self.kwargs['blockysize'], self.kwargs['blockxsize']))
 
-            # Every block starts at (0, 0) for the output
-            w = Window(col_off=0,
-                       row_off=0,
-                       width=x.stop - x.start,
-                       height=y.stop - y.start)
+                group.attrs['row_off'] = y.start
+                group.attrs['col_off'] = x.start
+                group.attrs['height'] = y.stop - y.start
+                group.attrs['width'] = x.stop - x.start
 
-            # xres, 0, minx, 0, yres, maxy
-            # TODO: hardcoded driver type
-            kwargs = dict(driver=self.kwargs['driver'],
-                          width=w.width,
-                          height=w.height,
-                          count=self.kwargs['count'],
-                          dtype=self.kwargs['dtype'],
-                          nodata=self.kwargs['nodata'],
-                          blockxsize=self.kwargs['blockxsize'],
-                          blockysize=self.kwargs['blockysize'],
-                          crs=self.kwargs['crs'],
-                          transform=Affine(self.kwargs['transform'][0],
-                                           0.0,
-                                           self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
-                                           0.0,
-                                           self.kwargs['transform'][4],
-                                           self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4])),
-                          compress=self.kwargs['compress'] if 'compress' in self.kwargs else 'none',
-                          tiled=True)
+            else:
+
+                out_filename = os.path.join(self.sub_dir,
+                                            '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}{EXT}'.format(BASE=self.f_base,
+                                                                                                     Y=y.start,
+                                                                                                     X=x.start,
+                                                                                                     H=y.stop - y.start,
+                                                                                                     W=x.stop - x.start,
+                                                                                                     EXT=self.f_ext))
+
+                if self.overwrite:
+
+                    if os.path.isfile(out_filename):
+                        os.remove(out_filename)
+
+                io_mode = 'w'
+
+                # Every block starts at (0, 0) for the output
+                w = Window(col_off=0,
+                           row_off=0,
+                           width=x.stop - x.start,
+                           height=y.stop - y.start)
+
+                # xres, 0, minx, 0, yres, maxy
+                # TODO: hardcoded driver type
+                kwargs = dict(driver=self.kwargs['driver'],
+                              width=w.width,
+                              height=w.height,
+                              count=self.kwargs['count'],
+                              dtype=self.kwargs['dtype'],
+                              nodata=self.kwargs['nodata'],
+                              blockxsize=self.kwargs['blockxsize'],
+                              blockysize=self.kwargs['blockysize'],
+                              crs=self.kwargs['crs'],
+                              transform=Affine(self.kwargs['transform'][0],
+                                               0.0,
+                                               self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
+                                               0.0,
+                                               self.kwargs['transform'][4],
+                                               self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4])),
+                              compress=self.kwargs['compress'] if 'compress' in self.kwargs else 'none',
+                              tiled=True)
 
         else:
 
@@ -122,18 +170,25 @@ class WriteDaskArray(object):
             io_mode = 'r+'
             kwargs = {}
 
-        with rio.open(out_filename,
-                      mode=io_mode,
-                      sharing=False,
-                      **kwargs) as dst_:
+        if not self.separate or (self.separate and self.out_block_type.lower() == 'gtiff'):
 
-            dst_.write(item,
-                       window=w,
-                       indexes=indexes)
+            with rio.open(out_filename,
+                          mode=io_mode,
+                          sharing=False,
+                          **kwargs) as dst_:
+
+                dst_.write(item,
+                           window=w,
+                           indexes=indexes)
 
     def __enter__(self):
 
-        if not self.separate:
+        if self.separate:
+
+            if self.out_block_type.lower() == 'zarr':
+                self.root = zarr.open(self.zarr_file, mode='w')
+
+        else:
 
             if 'compress' in self.kwargs:
                 logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')

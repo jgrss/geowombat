@@ -23,6 +23,7 @@ from dask.distributed import progress, Client, LocalCluster
 import rasterio as rio
 from rasterio.windows import Window
 
+import zarr
 from tqdm import tqdm
 
 try:
@@ -592,14 +593,34 @@ def client_dummy(**kwargs):
     yield None
 
 
-def block_write_func(w_, data_):
-    out_data_ = np.squeeze(data_)
+def block_write_func(fn_, g_, t_):
+
+    if t_ == 'zarr':
+
+        w_ = Window(row_off=fn_[g_].attrs['row_off'],
+                    col_off=fn_[g_].attrs['col_off'],
+                    height=fn_[g_].attrs['height'],
+                    width=fn_[g_].attrs['width'])
+
+        out_data_ = np.squeeze(r_[g_]['data'][:])
+
+    else:
+
+        w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
+                    col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
+                    height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
+                    width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
+
+        out_data_ = np.squeeze(rio.open(fn_).read(window=w_))
+
     return w_, 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1)), out_data_
 
 
 def to_raster(data,
               filename,
               separate=False,
+              out_block_type='zarr',
+              keep_blocks=False,
               verbose=0,
               overwrite=False,
               gdal_cache=512,
@@ -617,6 +638,10 @@ def to_raster(data,
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
+        out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
+            *Only used if ``separate`` = ``True``.
+        keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
+            *Only used if ``separate`` = ``True``.
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
@@ -654,7 +679,7 @@ def to_raster(data,
     if not is_dask_collection(data.data):
         logger.exception('  The data should be a dask array.')
 
-    ProgressBar().register()
+    # ProgressBar().register()
 
     if 'compress' in kwargs:
 
@@ -716,6 +741,8 @@ def to_raster(data,
                 with WriteDaskArray(filename,
                                     overwrite=overwrite,
                                     separate=separate,
+                                    out_block_type=out_block_type,
+                                    keep_blocks=keep_blocks,
                                     gdal_cache=gdal_cache,
                                     **kwargs) as dst:
 
@@ -738,8 +765,6 @@ def to_raster(data,
                     if verbose > 0:
                         logger.info('  Finished writing data to file.')
 
-                    sub_dir = dst.sub_dir
-
                 if compress:
 
                     if verbose > 0:
@@ -747,32 +772,36 @@ def to_raster(data,
 
                     if separate:
 
-                        outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
-                        outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
+                        if dst.out_block_type.lower() == 'zarr':
 
-                        data_gen = ((Window(row_off=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-4][1:]),
-                                            col_off=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-3][1:]),
-                                            height=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-2][1:]),
-                                            width=int(os.path.splitext(os.path.basename(fn))[0].split('_')[-1][1:])),
-                                     rio.open(fn).read()) for fn in outfiles)
+                            root = zarr.open(dst.zarr_file, mode='r')
+                            data_gen = ((root, group, 'zarr') for group in root.group_keys())
+
+                        else:
+
+                            outfiles = sorted(fnmatch.filter(os.listdir(dst.sub_dir), '*.tif'))
+                            outfiles = [os.path.join(dst.sub_dir, fn) for fn in outfiles]
+
+                            data_gen = ((fn, None, 'gtiff') for fn in outfiles)
 
                         # Compress into one file
-                        with rio.open(filename, mode='w', **kwargs) as dst:
+                        with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
                             with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
 
                                 # Submit all of the tasks as futures
-                                futures = [executor.submit(block_write_func, w, data) for w, data in data_gen]
+                                futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
 
                                 for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
 
                                     out_window, out_indexes, out_block = f.result()
 
-                                    dst.write(out_block,
-                                              window=out_window,
-                                              indexes=out_indexes)
+                                    rio_dst.write(out_block,
+                                                  window=out_window,
+                                                  indexes=out_indexes)
 
-                        shutil.rmtree(sub_dir)
+                        if not dst.keep_blocks:
+                            shutil.rmtree(dst.sub_dir)
 
                     else:
 

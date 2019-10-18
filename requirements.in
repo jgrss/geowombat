@@ -18,3 +18,5 @@ h5netcdf
 netCDF4
 scikit-learn
 numexpr
+numcodecs
+zarr
