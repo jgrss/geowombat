@@ -20,3 +20,4 @@ scikit-learn
 numexpr
 numcodecs
 zarr
+dateparser

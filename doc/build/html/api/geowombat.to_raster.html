@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_raster &#8212; GeoWombat 1.0.0a documentation</title>
+    <title>to_raster &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -70,6 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
@@ -116,7 +120,7 @@
 <h1>to_raster<a class="headerlink" href="#to-raster" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_raster">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">use_dask_store=False</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -124,16 +128,20 @@
 <li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
 <li><p><strong>separate</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to write blocks as separate files. Otherwise, write to a single file.</p></li>
-<li><p><strong>out_block_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output block type. Choices are [‘GTiff’, ‘zarr’].
-<a href="#id1"><span class="problematic" id="id2">*</span></a>Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>keep_blocks</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to keep the blocks stored on disk.
-<a href="#id3"><span class="problematic" id="id4">*</span></a>Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>use_dask_store</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use <code class="docutils literal notranslate"><span class="pre">dask.array.store</span></code> to save with Dask task graphs.</p></li>
+<li><p><strong>out_block_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output block type. Choices are [‘gtiff’, ‘zarr’].
+Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>keep_blocks</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to keep the blocks stored on disk. Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
 <li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing file.</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total number of parallel jobs.</p></li>
 <li><p><strong>n_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of processes. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>n_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>n_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The chunk size of windows. If not given, equal to <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> x 10.</p></li>
+<li><p><strong>overviews</strong> (<em>Optional</em><em>[</em><em>bool</em><em> or </em><em>list</em><em>]</em>) – Whether to build overview layers.</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method for overviews when <code class="docutils literal notranslate"><span class="pre">overviews</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> or a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
+Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
 <li><p><strong>use_client</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use a <code class="docutils literal notranslate"><span class="pre">dask</span></code> client.</p></li>
 <li><p><strong>address</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A cluster address to pass to client. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>total_memory</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total memory (in GB) required when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
@@ -147,17 +155,21 @@
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use dask.compute()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use 8 parallel workers</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use a dask client</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use 4 process workers and 2 thread workers</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">use_client</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compress the output</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Control the window chunks passed to concurrent.futures</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_chunks</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compress the output and build overviews</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">overviews</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

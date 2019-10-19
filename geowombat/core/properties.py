@@ -13,15 +13,24 @@ class DataProperties(object):
         Get a dictionary of sensor wavelengths
         """
 
-        WavelengthsRGB = namedtuple('WavelengthsRGB', 'blue green red')
-        WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'blue green red nir')
+        WavelengthsBGR = namedtuple('WavelengthsBGR', 'blue green red')
+        WavelengthsRGB = namedtuple('WavelengthsRGB', 'red green blue')
+        WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
+        WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'red green blue nir')
         WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
         WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
 
-        return dict(rgb=WavelengthsRGB(blue=1,
+        return dict(rgb=WavelengthsRGB(red=1,
+                                       green=2,
+                                       blue=3),
+                    rgbn=WavelengthsRGBN(red=1,
+                                         green=2,
+                                         blue=3,
+                                         nir=4),
+                    bgr=WavelengthsBGR(blue=1,
                                        green=2,
                                        red=3),
-                    rgbn=WavelengthsRGBN(blue=1,
+                    bgrn=WavelengthsBGRN(blue=1,
                                          green=2,
                                          red=3,
                                          nir=4),
@@ -45,19 +54,19 @@ class DataProperties(object):
                                      swir1=6,
                                      swir2=7,
                                      cirrus=8),
-                    s210=WavelengthsRGBN(blue=1,
+                    s210=WavelengthsBGRN(blue=1,
                                          green=2,
                                          red=3,
                                          nir=4),
-                    planet=WavelengthsRGBN(blue=1,
-                                           green=2,
-                                           red=3,
-                                           nir=4),
-                    quickbird=WavelengthsRGBN(blue=1,
-                                           green=2,
-                                           red=3,
-                                           nir=4),
-                    ikonos=WavelengthsRGBN(blue=1,
+                    planetscope=WavelengthsBGRN(blue=1,
+                                                green=2,
+                                                red=3,
+                                                nir=4),
+                    quickbird=WavelengthsBGRN(blue=1,
+                                              green=2,
+                                              red=3,
+                                              nir=4),
+                    ikonos=WavelengthsBGRN(blue=1,
                                            green=2,
                                            red=3,
                                            nir=4))

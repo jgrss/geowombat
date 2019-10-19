@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Use named coordinates for band math &#8212; GeoWombat 1.0.0a documentation</title>
+    <title>Use named coordinates for band math &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -70,6 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+</ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
@@ -126,7 +130,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-d303d1a812697c72ed867efeaf57ad7a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-dbef47ede02d4e72bfc2724c509e7252&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -141,7 +145,6 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
@@ -158,7 +161,6 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (0, 1)</span>
@@ -186,7 +188,6 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (0, 1)</span>
@@ -235,7 +236,6 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 <span class="go">    pre-scaling:    1.0</span>
 <span class="go">    sensor:         rgbn</span>
 <span class="go">    drange:         (-1, 1)</span>
@@ -265,7 +265,6 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    block_windows:  [Window(col_off=0, row_off=0, width=256, height=256), Win...</span>
 </pre></div>
 </div>
 </div>

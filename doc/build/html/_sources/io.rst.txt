@@ -38,6 +38,14 @@ Specify band names
     with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
         print(ds)
 
+Use the sensor name to set band names
+
+.. ipython:: python
+
+    with gw.config.update(sensor='quickbird'):
+        with gw.open(rgbn) as ds:
+            print(ds)
+
 To open multiple images as a time stack, change the input to a list of files
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -49,6 +57,19 @@ Open a list of files as a DataArray
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2']) as ds:
         print(ds)
+
+If `time_names` is not provided, GeoWombat will attempt to parse date strings using :func:`dateparser.search.search_dates`.
+
+.. ipython:: python
+
+    import os
+    from geowombat.data import rgbn_time_list
+
+    print('\n', ', '.join([os.path.basename(fn) for fn in rgbn_time_list]))
+
+    with gw.config.update(sensor='rgbn'):
+        with gw.open(rgbn_time_list) as ds:
+            print(ds)
 
 Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned". If images are
 not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and
@@ -180,6 +201,6 @@ as backends, we use the Xarray accessor :func:`to_raster` to write array chunks 
         # Write the data
         dss.gw.to_raster('output.tif',
                          verbose=1,
-                         n_worker=4,
-                         n_threads=2,
-                         use_client=True)
+                         n_worker=4,    # number of process workers sent to ``concurrent.futures``
+                         n_threads=2,   # number of thread workers sent to ``dask.compute``
+                         n_chunks=200)  # number of window chunks to send as concurrent futures

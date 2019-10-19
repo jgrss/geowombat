@@ -16,7 +16,7 @@ Wrap functions in a context manager to control global arguments
 
 .. ipython:: python
 
-    with gw.config.update(sensor='l8', scale_factor=0.0001):
+    with gw.config.update(sensor='quickbird', scale_factor=0.0001):
         with gw.open(rgbn) as ds:
             for k, v in ds.gw.config.items():
                 print(k, v)

@@ -299,17 +299,16 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         Args:
             filename (str): The output file name to write to.
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-            out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
-                *Only used if ``separate`` = ``True``.
-            keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
-                *Only used if ``separate`` = ``True``.
+            out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
+                Only used if ``separate`` = ``True``.
+            keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
             n_jobs (Optional[int]): The total number of parallel jobs.
             n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
             n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
-            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` * 3.
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 3.
             overviews (Optional[bool or list]): Whether to build overview layers.
             resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
@@ -406,7 +405,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             x_chunks (Optional[tuple]): The chunk size for the X predictors (or ``data``).
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             return_as (Optional[str]): Whether to return the predictions as a ``xarray.DataArray`` or ``xarray.Dataset``.
-                *Only relevant if ``outname`` is not given.
+                Only relevant if ``outname`` is not given.
             nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
             backend (Optional[str]): The ``joblib`` backend scheduler.
@@ -414,7 +413,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             dtype (Optional[str]): The output data type passed to ``rasterio.write``.
             gdal_cache (Optional[int]): The GDAL cache (in MB) passed to ``rasterio.write``.
             kwargs (Optional[dict]): Additional keyword arguments passed to ``rasterio.write``.
-                *The ``blockxsize`` and ``blockysize`` should be excluded because they are taken from ``chunksize``.
+                The ``blockxsize`` and ``blockysize`` should be excluded because they are taken from ``chunksize``.
 
         Returns:
             ``xarray.DataArray``
@@ -521,7 +520,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             rows (Optional[int]): The number of output rows.
             cols (Optional[int]): The number of output rows.
             center (Optional[bool]): Whether to center the subset on ``left`` and ``top``.
-            mask_corners (Optional[bool]): Whether to mask corners (*requires ``pymorph``).
+            mask_corners (Optional[bool]): Whether to mask corners (requires ``pymorph``).
             chunksize (Optional[tuple]): A new chunk size for the output.
 
         Returns:
@@ -563,7 +562,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
         Args:
             aoi (str or GeoDataFrame): A file or ``geopandas.GeoDataFrame`` to extract data frame.
             bands (Optional[int or 1d array-like]): A band or list of bands to extract.
-                If not given, all bands are used. *Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
+                If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.

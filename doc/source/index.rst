@@ -51,6 +51,17 @@ Documentation
    config
    apply
 
+**Change Log**
+
+* :doc:`changelog`
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Change Log
+
+   changelog
+
 **Reference**
 
 * :doc:`api`

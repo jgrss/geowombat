@@ -26,6 +26,7 @@ from rasterio.enums import Resampling
 
 import zarr
 from tqdm import tqdm
+from dateparser.search import search_dates
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -34,6 +35,43 @@ except:
 
 # SCHEDULERS = dict(threads=ThreadPoolExecutor,
 #                   processes=ProcessPoolExecutor)
+
+
+def parse_filename_dates(filenames):
+
+    """
+    Parses dates from file names
+
+    Args:
+        filenames (list): A list of files to parse.
+
+    Returns:
+        ``list``
+    """
+
+    date_filenames = list()
+
+    for fn in filenames:
+
+        d_name, f_name = os.path.split(fn)
+        f_base, f_ext = os.path.splitext(f_name)
+
+        try:
+
+            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
+                                           settings={'DATE_ORDER': 'YMD',
+                                                     'STRICT_PARSING': False,
+                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
+
+        except:
+            return list(range(1, len(filenames) + 1))
+
+        if not dt:
+            return list(range(1, len(filenames) + 1))
+
+        date_filenames.append(dt[0])
+
+    return date_filenames
 
 
 def parse_wildcard(string):
@@ -108,83 +146,6 @@ def _window_worker_time(w, n_bands, tidx, n_time):
     return window_slice
 
 
-# def _old():
-#
-# Concurrent.futures environment context
-# with SCHEDULERS[scheduler](max_workers=n_jobs) as executor:
-#
-#     def write(wr, window_slicer):
-#
-#         # Prepend the band position index to the window slice
-#         if n_bands == 1:
-#
-#             window_slice_ = tuple([slice(0, 1)] + list(window_slicer))
-#             indexes = 1
-#
-#         else:
-#
-#             window_slice_ = tuple([slice(0, n_bands)] + list(window_slicer))
-#             indexes = indexes_multi
-#
-#         # Write the chunk to file
-#         if isinstance(nodata, int) or isinstance(nodata, float):
-#
-#             dst.write(ds_data[window_slice_].squeeze().fillna(nodata).data.compute(num_workers=n_jobs),
-#                       window=wr,
-#                       indexes=indexes)
-#
-#         else:
-#
-#             dst.write(ds_data[window_slice_].squeeze().data.compute(num_workers=n_jobs),
-#                       window=wr,
-#                       indexes=indexes)
-#
-#     joblib.Parallel(n_jobs=n_jobs,
-#                     max_nbytes=None)(joblib.delayed(write)(w, window_slice)
-#                                      for w, window_slice in map(_window_worker, windows))
-#
-#     # Multiprocessing pool context
-#     # This context is I/O bound, so use the default 'loky' scheduler
-#     with multi.Pool(processes=n_jobs) as pool:
-#
-#         for w, window_slice in tqdm(pool.imap(_window_worker,
-#                                               windows,
-#                                               chunksize=pool_chunksize),
-#                                     total=len(windows)):
-#
-#             write(wr, window_slice)
-
-
-# def write_func(block, block_id=None):
-#
-#     # Current block upper left indices
-#     if len(block_id) == 2:
-#         i, j = block_id
-#     else:
-#         i, j = block_id[1:]
-#
-#     # Current block window
-#     w = windows['{:d}{:d}'.format(i, j)]
-#
-#     if n_bands == 1:
-#
-#         dst.write(np.squeeze(block),
-#                   window=w,
-#                   indexes=1)
-#
-#     else:
-#
-#         dst.write(block,
-#                   window=w,
-#                   indexes=indexes)
-#
-#     return outd
-#
-# ds_data.data.map_blocks(write_func,
-#                         dtype=ds_data.dtype,
-#                         chunks=(1, 1, 1)).compute(num_workers=n_jobs)
-
-
 @dask.delayed
 def write_func(output,
                out_window,
@@ -223,365 +184,6 @@ def generate_futures(data, outfile, windows, n_bands):
                                   out_indexes))
 
     return futures
-
-
-def to_raster_old(ds_data,
-              filename,
-              crs,
-              transform,
-              separate=False,
-              user_func=None,
-              user_args=None,
-              user_count=None,
-              client=None,
-              driver='GTiff',
-              n_jobs=1,
-              scheduler='threading',
-              gdal_cache=512,
-              dtype='float64',
-              time_chunks=None,
-              band_chunks=None,
-              row_chunks=None,
-              col_chunks=None,
-              verbose=0,
-              overwrite=False,
-              nodata=0,
-              tags=None,
-              **kwargs):
-
-    """
-    Writes an Xarray DataArray or Dataset to a raster file
-
-    Args:
-        ds_data (DataArray): The ``xarray.DataArray`` or ``xarray.Dataset`` to write.
-        filename (str): The output file name to write to.
-        crs (object): A ``rasterio.crs.CRS`` object.
-        transform (object): An ``affine.Affine`` transform.
-        separate (Optional[bool]): Whether to keep time outputs as separate images.
-        n_jobs (Optional[str]): The number of parallel chunks to write.
-        verbose (Optional[int]): The verbosity level.
-        overwrite (Optional[bool]): Whether to overwrite an existing file.
-        driver (Optional[str]): The raster driver.
-        gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-        dtype (Optional[int]): The output data type.
-        time_chunks (Optional[int]): The processing time chunk size.
-        band_chunks (Optional[int]): The processing band chunk size.
-        row_chunks (Optional[int]): The processing row chunk size. In general, this should be left as None and
-            the chunk size will be taken from the ``dask`` array.
-        col_chunks (Optional[int]): The processing column chunk size. Same as ``row_chunks``.
-        nodata (Optional[int]): A 'no data' value.
-        tags (Optional[dict]): Image tags to write to file.
-        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
-
-    Returns:
-        None
-    """
-
-    # if scheduler not in ['threads', 'processes']:
-    #     logger.exception("  The scheduler must be 'threads' or 'processes'.")
-
-    if MKL_LIB:
-        __ = MKL_LIB.MKL_Set_Num_Threads(n_jobs)
-
-    if client:
-
-        if 'compress' in kwargs:
-            logger.warning("  Distributed writing is not allowed on compressed rasters. Therefore, setting compress='none'")
-
-        kwargs['compress'] = 'none'
-
-    d_name = os.path.dirname(filename)
-
-    if d_name:
-
-        if not os.path.isdir(d_name):
-            os.makedirs(d_name)
-
-    n_time = ds_data.gw.ntime
-    n_bands = ds_data.gw.nbands
-    n_rows = ds_data.gw.nrows
-    n_cols = ds_data.gw.ncols
-
-    if isinstance(user_count, int) or isinstance(user_count, list) or isinstance(user_count, np.ndarray):
-        out_count = user_count
-    else:
-        out_count = n_bands
-
-    if not isinstance(time_chunks, int):
-        time_chunks = ds_data.gw.time_chunks
-
-    if not isinstance(band_chunks, int):
-        band_chunks = ds_data.gw.band_chunks
-
-    if not isinstance(row_chunks, int):
-        row_chunks = ds_data.gw.row_chunks
-
-    if not isinstance(col_chunks, int):
-        col_chunks = ds_data.gw.col_chunks
-
-    if 'blockysize' not in kwargs:
-        kwargs['blockysize'] = row_chunks
-
-    if 'blockxsize' not in kwargs:
-        kwargs['blockxsize'] = col_chunks
-
-    if isinstance(dtype, str):
-
-        if ds_data.dtype != dtype:
-            ds_data = ds_data.astype(dtype)
-
-    else:
-        dtype = ds_data.dtype
-
-    if verbose > 0:
-        logger.info('  Creating the file ...')
-
-    # Setup the windows
-    windows = get_window_offsets(n_rows, n_cols, row_chunks, col_chunks)
-
-    if n_bands > 1:
-        indexes_multi = list(range(1, n_bands + 1))
-    else:
-        indexes_multi = None
-
-    # outd = np.array([0], dtype='uint8')[None, None]
-
-    # Rasterio environment context
-    with rio.Env(GDAL_CACHEMAX=gdal_cache):
-
-        if (n_time > 1) and separate:
-
-            d_name, f_name = os.path.split(filename)
-            f_base, f_ext = os.path.splitext(filename)
-
-            # Write each temporal layer separately
-            for tidx in range(0, n_time):
-
-                time_value = ds_data.coords['time'].values[tidx]
-
-                if isinstance(time_value, np.datetime64):
-
-                    time_value_dt = datetime.utcfromtimestamp(int(time_value) * 1e-9)
-                    time_value = time_value_dt.strftime('%Y-%m-%d')
-
-                else:
-                    time_value = str(time_value)
-
-                filename_time = os.path.join(d_name, '{BASE}_{INTV}{EXT}'.format(BASE=f_base,
-                                                                                 INTV=time_value,
-                                                                                 EXT=f_ext))
-
-                if overwrite:
-
-                    if os.path.isfile(filename_time):
-                        os.remove(filename_time)
-
-                # Open the output file for writing
-                with rio.open(filename_time,
-                              mode='w',
-                              height=n_rows,
-                              width=n_cols,
-                              count=out_count,
-                              dtype=dtype,
-                              nodata=nodata,
-                              crs=crs,
-                              transform=transform,
-                              driver=driver,
-                              sharing=False,
-                              **kwargs) as dst:
-
-                    if n_jobs == 1:
-
-                        if isinstance(nodata, int) or isinstance(nodata, float):
-                            write_data = ds_data.squeeze().fillna(nodata).load().data
-                        else:
-                            write_data = ds_data.squeeze().load().data
-
-                        if out_count == 1:
-                            dst.write(write_data, 1)
-                        else:
-                            dst.write(write_data)
-
-                        if isinstance(tags, dict):
-
-                            if tags:
-                                dst.update_tags(**tags)
-
-                    else:
-
-                        # @dask.delayed
-                        # def write_func(output, out_window, out_indexes, last_write=None):
-                        #
-                        #     """
-                        #     Writes a NumPy array to file
-                        #
-                        #     Reference:
-                        #         https://github.com/dask/dask/issues/3600
-                        #     """
-                        #
-                        #     del last_write
-                        #
-                        #     if user_func:
-                        #
-                        #         output_ = user_func(np.float64(output), *user_args)
-                        #         out_indexes_ = 1 if len(output_.shape) == 2 else np.arange(1, output_.shape[0]+1)
-                        #
-                        #         dst.write(output_,
-                        #                   window=out_window,
-                        #                   indexes=out_indexes_)
-                        #
-                        #     else:
-                        #         dst.write(output, window=out_window, indexes=out_indexes)
-
-                        # Create the Dask.delayed writers
-                        writer = None
-                        for w in windows:
-
-                            window_slice = _window_worker_time(w, n_bands, tidx, tidx+1)
-                            window_slice, indexes = get_norm_indices(n_bands, window_slice, indexes_multi)
-
-                            if isinstance(nodata, int) or isinstance(nodata, float):
-
-                                writer = write_func(ds_data[window_slice].squeeze().fillna(nodata).data,
-                                                    w,
-                                                    indexes,
-                                                    writer,
-                                                    filename_time)
-
-                            else:
-
-                                writer = write_func(ds_data[window_slice].squeeze().data,
-                                                    w,
-                                                    indexes,
-                                                    writer,
-                                                    filename_time)
-
-                        # Write the data to file
-                        if client:
-
-                            writer = client.persist(writer)
-                            progress(writer)
-
-                        else:
-
-                            with ProgressBar():
-                                writer.compute(num_workers=n_jobs, scheduler=scheduler)
-
-        else:
-
-            if overwrite:
-
-                if os.path.isfile(filename):
-                    os.remove(filename)
-
-            # Create the file
-            with rio.open(filename,
-                          mode='w',
-                          height=n_rows,
-                          width=n_cols,
-                          count=out_count,
-                          dtype=dtype,
-                          nodata=nodata,
-                          crs=crs,
-                          transform=transform,
-                          driver=driver,
-                          sharing=False,
-                          **kwargs) as dst:
-                pass
-
-            if n_jobs == 1:
-
-                if isinstance(nodata, int) or isinstance(nodata, float):
-                    write_data = ds_data.squeeze().fillna(nodata).load().data
-                else:
-                    write_data = ds_data.squeeze().load().data
-
-                if out_count == 1:
-                    dst.write(write_data, 1)
-                else:
-                    dst.write(write_data)
-
-                if isinstance(tags, dict):
-
-                    if tags:
-                        dst.update_tags(**tags)
-
-            else:
-
-                # data_gen = (ds_data[get_norm_indices(n_bands,
-                #                                      _window_worker(w),
-                #                                      indexes_multi)[0]] for w in windows)
-                #
-                # def _block_func(block):
-                #     return np.squeeze(block.values)
-                #
-                # with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-                #
-                #     for w, result in tqdm(zip(windows,
-                #                               executor.map(_block_func,
-                #                                            data_gen)),
-                #                           total=len(windows)):
-                #
-                #         dst.write(result,
-                #                   window=w,
-                #                   indexes=get_norm_indices(n_bands,
-                #                                            _window_worker(w),
-                #                                            indexes_multi)[1])
-                #
-                #     # for w, wslice in tqdm(zip(windows, executor.map(_window_worker, windows)), total=len(windows)):
-                #     #
-                #     #     dst.write(np.squeeze(ds_data[get_norm_indices(n_bands, wslice, indexes_multi)[0]].values),
-                #     #               window=w,
-                #     #               indexes=get_norm_indices(n_bands, wslice, indexes_multi)[1])
-
-                if verbose > 0:
-                    logger.info('  Building the Dask task graph ...')
-
-                # Create the Dask.delayed writers
-                # writers = list()
-                # for w in windows:
-                #
-                #     if n_time > 1:
-                #         window_slice = _window_worker_time(w, n_bands, 0, n_time)
-                #     else:
-                #         window_slice = _window_worker(w)
-                #
-                #     window_slice, indexes = get_norm_indices(n_bands, window_slice, indexes_multi)
-                #
-                #     if isinstance(nodata, int) or isinstance(nodata, float):
-                #
-                #         writer = write_func(ds_data[window_slice].fillna(nodata).data,
-                #                             w,
-                #                             indexes,
-                #                             filename)
-                #
-                #     else:
-                #
-                #         writer = write_func(ds_data[window_slice].data,
-                #                             w,
-                #                             indexes,
-                #                             filename)
-                #
-                #     writers.append(writer)
-
-                futures = generate_futures(ds_data, filename, windows, n_bands)
-
-                if verbose > 0:
-                    logger.info('  Writing results to file ...')
-
-                # Write the data to file
-                if client:
-
-                    client.persist(futures)
-                    # progress(x)
-
-                # else:
-                #
-                #     with ProgressBar():
-                #         writers.compute(num_workers=n_jobs, scheduler=scheduler)
-
-    if verbose > 0:
-        logger.info('  Finished writing')
 
 
 @contextmanager
@@ -640,6 +242,7 @@ def block_write_func(fn_, g_, t_):
 
 def to_raster(data,
               filename,
+              use_dask_store=False,
               separate=False,
               out_block_type='zarr',
               keep_blocks=False,
@@ -664,17 +267,17 @@ def to_raster(data,
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-        out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
-            *Only used if ``separate`` = ``True``.
-        keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
-            *Only used if ``separate`` = ``True``.
+        use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
+        out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
+            Only used if ``separate`` = ``True``.
+        keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
         n_jobs (Optional[int]): The total number of parallel jobs.
         n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
         n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
-        n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` * 10.
+        n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 10.
         overviews (Optional[bool or list]): Whether to build overview layers.
         resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
@@ -713,8 +316,6 @@ def to_raster(data,
 
     if not is_dask_collection(data.data):
         logger.exception('  The data should be a dask array.')
-
-    # ProgressBar().register()
 
     if 'compress' in kwargs:
 
@@ -775,173 +376,177 @@ def to_raster(data,
 
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
-        windows = get_window_offsets(data.gw.nrows,
-                                     data.gw.ncols,
-                                     data.gw.row_chunks,
-                                     data.gw.col_chunks,
-                                     return_as='list')
+        if not use_dask_store:
 
-        n_windows = len(windows)
+            windows = get_window_offsets(data.gw.nrows,
+                                         data.gw.ncols,
+                                         data.gw.row_chunks,
+                                         data.gw.col_chunks,
+                                         return_as='list')
 
-        # TODO: option without dask.array.store
-        with rio.open(filename, mode='w', **kwargs) as rio_dst:
+            n_windows = len(windows)
 
-            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
+            # TODO: option without dask.array.store
+            with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
-                # Iterate over the windows in chunks
-                for wchunk in range(0, n_windows, n_chunks):
+                with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
 
-                    window_slice = windows[wchunk:wchunk+n_chunks]
-                    n_windows_slice = len(window_slice)
+                    # Iterate over the windows in chunks
+                    for wchunk in range(0, n_windows, n_chunks):
+
+                        window_slice = windows[wchunk:wchunk+n_chunks]
+                        n_windows_slice = len(window_slice)
+
+                        if verbose > 0:
+
+                            logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
+                                                                                     wchunk+n_windows_slice,
+                                                                                     n_windows))
+
+                        if len(data.shape) == 2:
+                            data_gen = (data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                        elif len(data.shape) == 3:
+                            data_gen = (data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                        else:
+                            data_gen = (data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+
+                        futures = [executor.submit(_return_window,
+                                                   wch,
+                                                   data_slice,
+                                                   n_threads) for wch, data_slice in zip(window_slice, data_gen)]
+
+                        for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+
+                            out_window, out_indexes, out_block = f.result()
+
+                            rio_dst.write(out_block,
+                                          window=out_window,
+                                          indexes=out_indexes)
+
+                            del out_window, out_indexes, out_block
+
+                        futures = None
+
+                if overviews:
+
+                    if not isinstance(overviews, list):
+                        overviews = [2, 4, 8, 16]
+
+                    if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
+                                          'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
+
+                        logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+
+                        resampling = 'nearest'
 
                     if verbose > 0:
+                        logger.info('  Building pyramid overviews ...')
 
-                        logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
-                                                                                 wchunk+n_windows_slice,
-                                                                                 n_windows))
+                    rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
+                    rio_dst.update_tags(ns='overviews', resampling=resampling)
 
-                    if len(data.shape) == 2:
-                        data_gen = (data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
-                    elif len(data.shape) == 3:
-                        data_gen = (data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
-                    else:
-                        data_gen = (data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+        else:
 
-                    futures = [executor.submit(_return_window,
-                                               wch,
-                                               data_slice,
-                                               n_threads) for wch, data_slice in zip(window_slice, data_gen)]
+            with cluster_object(n_workers=n_workers,
+                                threads_per_worker=n_threads,
+                                scheduler_port=0,
+                                processes=False,
+                                memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
 
-                    for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                cluster_address = address if address else cluster
 
-                        out_window, out_indexes, out_block = f.result()
+                with client_object(address=cluster_address) as client:
 
-                        rio_dst.write(out_block,
-                                      window=out_window,
-                                      indexes=out_indexes)
+                    with WriteDaskArray(filename,
+                                        overwrite=overwrite,
+                                        separate=separate,
+                                        out_block_type=out_block_type,
+                                        keep_blocks=keep_blocks,
+                                        gdal_cache=gdal_cache,
+                                        **kwargs) as dst:
 
-                        del out_window, out_indexes, out_block
+                        # Store the data and return a lazy evaluator
+                        res = da.store(da.squeeze(data.data),
+                                       dst,
+                                       lock=False,
+                                       compute=False)
 
-                    futures = None
+                        if verbose > 0:
+                            logger.info('  Writing data to file ...')
 
-            if overviews:
+                        # Send the data to file
+                        #
+                        # *Note that the progress bar will
+                        #   not work with a client.
+                        if use_client:
+                            res.compute(num_workers=n_jobs)
+                        else:
 
-                if not isinstance(overviews, list):
-                    overviews = [2, 4, 8, 16]
+                            with ProgressBar():
+                                res.compute(num_workers=n_jobs)
 
-                if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
-                                      'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
+                        if verbose > 0:
+                            logger.info('  Finished writing data to file.')
 
-                    logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+                        out_block_type = dst.out_block_type
+                        keep_blocks = dst.keep_blocks
+                        zarr_file = dst.zarr_file
+                        sub_dir = dst.sub_dir
 
-                    resampling = 'nearest'
+            if compress:
 
                 if verbose > 0:
-                    logger.info('  Building pyramid overviews ...')
+                    logger.info('  Compressing output file ...')
 
-                rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
-                rio_dst.update_tags(ns='overviews', resampling=resampling)
+                if separate:
 
-        # with cluster_object(n_workers=n_workers,
-        #                     threads_per_worker=n_threads,
-        #                     scheduler_port=0,
-        #                     processes=False,
-        #                     memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
-        #
-        #     cluster_address = address if address else cluster
-        #
-        #     with client_object(address=cluster_address) as client:
-        #
-        #         with WriteDaskArray(filename,
-        #                             overwrite=overwrite,
-        #                             separate=separate,
-        #                             out_block_type=out_block_type,
-        #                             keep_blocks=keep_blocks,
-        #                             gdal_cache=gdal_cache,
-        #                             **kwargs) as dst:
-        #
-        #             # Store the data and return a lazy evaluator
-        #             res = da.store(da.squeeze(data.data),
-        #                            dst,
-        #                            lock=False,
-        #                            compute=False)
-        #
-        #             if verbose > 0:
-        #                 logger.info('  Writing data to file ...')
-        #
-        #             # Send the data to file
-        #             #
-        #             # *Note that the progress bar will
-        #             #   not work with a client.
-        #             if use_client:
-        #                 res.compute(num_workers=n_jobs)
-        #             else:
-        #
-        #                 with ProgressBar():
-        #                     res.compute(num_workers=n_jobs)
-        #
-        #             if verbose > 0:
-        #                 logger.info('  Finished writing data to file.')
-        #
-        #             out_block_type = dst.out_block_type
-        #             keep_blocks = dst.keep_blocks
-        #             zarr_file = dst.zarr_file
-        #             sub_dir = dst.sub_dir
-        #
-        # if compress:
-        #
-        #     if verbose > 0:
-        #         logger.info('  Compressing output file ...')
-        #
-        #     if separate:
-        #
-        #         if out_block_type.lower() == 'zarr':
-        #
-        #             root = zarr.open(zarr_file, mode='r')
-        #             data_gen = ((root, group, 'zarr') for group in root.group_keys())
-        #
-        #         else:
-        #
-        #             outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
-        #             outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
-        #
-        #             data_gen = ((fn, None, 'gtiff') for fn in outfiles)
-        #
-        #         # Compress into one file
-        #         with rio.open(filename, mode='w', **kwargs) as rio_dst:
-        #
-        #             with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
-        #
-        #                 # Submit all of the tasks as futures
-        #                 futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
-        #
-        #                 for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
-        #
-        #                     out_window, out_indexes, out_block = f.result()
-        #
-        #                     rio_dst.write(out_block,
-        #                                   window=out_window,
-        #                                   indexes=out_indexes)
-        #
-        #         if not keep_blocks:
-        #             shutil.rmtree(sub_dir)
-        #
-        #     else:
-        #
-        #         d_name, f_name = os.path.split(filename)
-        #         f_base, f_ext = os.path.splitext(f_name)
-        #         temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
-        #
-        #         compress_raster(filename,
-        #                         temp_file,
-        #                         n_jobs=n_jobs,
-        #                         gdal_cache=gdal_cache,
-        #                         compress=compress_type)
-        #
-        #         os.rename(temp_file, filename)
-        #
-        #     if verbose > 0:
-        #         logger.info('  Finished compressing')
+                    if out_block_type.lower() == 'zarr':
+
+                        root = zarr.open(zarr_file, mode='r')
+                        data_gen = ((root, group, 'zarr') for group in root.group_keys())
+
+                    else:
+
+                        outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
+                        outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
+
+                        data_gen = ((fn, None, 'gtiff') for fn in outfiles)
+
+                    # Compress into one file
+                    with rio.open(filename, mode='w', **kwargs) as rio_dst:
+
+                        with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+
+                            # Submit all of the tasks as futures
+                            futures = [executor.submit(block_write_func, r, g, t) for r, g, t in data_gen]
+
+                            for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+
+                                out_window, out_indexes, out_block = f.result()
+
+                                rio_dst.write(out_block,
+                                              window=out_window,
+                                              indexes=out_indexes)
+
+                    if not keep_blocks:
+                        shutil.rmtree(sub_dir)
+
+                else:
+
+                    d_name, f_name = os.path.split(filename)
+                    f_base, f_ext = os.path.splitext(f_name)
+                    temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+
+                    compress_raster(filename,
+                                    temp_file,
+                                    n_jobs=n_jobs,
+                                    gdal_cache=gdal_cache,
+                                    compress=compress_type)
+
+                    os.rename(temp_file, filename)
+
+                if verbose > 0:
+                    logger.info('  Finished compressing')
 
     if verbose > 0:
         logger.info('\nFinished writing the data.')
@@ -971,7 +576,7 @@ def apply(infile,
     Args:
         infile (str): The input file to process.
         outfile (str): The output file.
-        block_func (func): The user function to apply to each block. *The function should always return the window,
+        block_func (func): The user function to apply to each block. The function should always return the window,
             the data, and at least one argument. The block data inside the function will be a 2d array if the
             input image has 1 band, otherwise a 3d array.
         args (Optional[tuple]): Additional arguments to pass to ``block_func``.

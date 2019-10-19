@@ -1,5 +1,19 @@
+from ..errors import logger
+
 import numpy as np
 import xarray as xr
+
+
+def _check_sensor(data, sensor):
+
+    if not sensor:
+
+        if data.gw.sensor:
+            sensor = data.gw.sensor
+        else:
+            logger.exception('  A sensor must be provided.')
+
+    return sensor
 
 
 class BandMath(object):
@@ -403,8 +417,7 @@ class TasseledCap(TasseledCapLookup):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -443,8 +456,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -473,8 +485,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -503,8 +514,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -532,8 +542,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -561,8 +570,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -590,8 +598,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        if not sensor:
-            sensor = data.gw.sensor
+        sensor = _check_sensor(data, sensor)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor

@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 
 import numpy as np
 
-__version__ = '1.0.0a'
+__version__ = '1.0.0b'
 
 mappy_name = 'GeoWombat'
 maintainer = 'Jordan Graesser'
@@ -40,7 +40,8 @@ required_packages = ['cython',
                      'scikit-learn',
                      'numexpr',
                      'numcodecs',
-                     'zarr']
+                     'zarr',
+                     'dateparser']
 
 
 def get_packages():

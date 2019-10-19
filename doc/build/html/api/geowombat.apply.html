@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>apply &#8212; GeoWombat 1.0.0a documentation</title>
+    <title>apply &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -70,6 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
@@ -123,7 +127,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>infile</strong> (<em>str</em>) – The input file to process.</p></li>
 <li><p><strong>outfile</strong> (<em>str</em>) – The output file.</p></li>
-<li><p><strong>block_func</strong> (<em>func</em>) – The user function to apply to each block. <a href="#id1"><span class="problematic" id="id2">*</span></a>The function should always return the window,
+<li><p><strong>block_func</strong> (<em>func</em>) – The user function to apply to each block. The function should always return the window,
 the data, and at least one argument. The block data inside the function will be a 2d array if the
 input image has 1 band, otherwise a 3d array.</p></li>
 <li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Additional arguments to pass to <code class="docutils literal notranslate"><span class="pre">block_func</span></code>.</p></li>

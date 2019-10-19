@@ -12,9 +12,9 @@ from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
 from .conversion import xarray_to_xdataset
-from .io import parse_wildcard
+from .io import parse_wildcard, parse_filename_dates
 from .util import Chunks, get_file_extension
-from .windows import from_bounds, get_window_offsets
+from .windows import from_bounds
 
 import numpy as np
 import xarray as xr
@@ -357,19 +357,10 @@ def open(filename,
             if mosaic:
 
                 # Mosaic images over space
-                if band_names:
-
-                    darray = gw_mosaic(filename, **kwargs)
-                    darray.coords['band'] = band_names
-
-                    yield darray
-
-                else:
-
-                    yield gw_mosaic(filename,
-                                    overlap=overlap,
-                                    resampling=resampling,
-                                    **kwargs)
+                darray = gw_mosaic(filename,
+                                   overlap=overlap,
+                                   resampling=resampling,
+                                   **kwargs)
 
             else:
 
@@ -381,26 +372,33 @@ def open(filename,
                                    overlap=overlap,
                                    **kwargs)
 
-                if return_as == 'array':
+                if not time_names:
+                    darray.coords['time'] = parse_filename_dates(filename)
 
-                    if band_names:
-                        darray.coords['band'] = band_names
+                # if return_as == 'array':
+                # else:
+                #
+                #     # The Dataset variable 'bands' has 4 named dimensions
+                #     #   --time, component, y, x
+                #     yield xarray_to_xdataset(darray,
+                #                              band_names,
+                #                              time_names,
+                #                              ycoords=darray.y,
+                #                              xcoords=darray.x,
+                #                              attrs=darray.attrs)
 
-                    if not time_names:
-                        darray.coords['time'] = list(range(1, darray.shape[0]+1))
+            if band_names:
+                darray.coords['band'] = band_names
+            else:
 
-                    yield darray
+                if darray.gw.sensor:
 
-                else:
+                    if darray.gw.sensor not in list(darray.gw.wavelengths.keys()):
+                        logger.warning('  The sensor is not currently supported.')
+                    else:
+                        darray.coords['band'] = list(darray.gw.wavelengths[darray.gw.sensor]._fields)
 
-                    # The Dataset variable 'bands' has 4 named dimensions
-                    #   --time, component, y, x
-                    yield xarray_to_xdataset(darray,
-                                             band_names,
-                                             time_names,
-                                             ycoords=darray.y,
-                                             xcoords=darray.x,
-                                             attrs=darray.attrs)
+            yield darray
 
         else:
 
@@ -415,17 +413,6 @@ def open(filename,
                                 band_names=band_names,
                                 resampling=resampling,
                                 **kwargs)
-
-                # with xr.open_rasterio(filename, **kwargs) as src:
-                #
-                #     if return_as == 'dataset':
-                #         yield xarray_to_xdataset(src, band_names, time_names)
-                #     else:
-                #
-                #         if band_names:
-                #             src.coords['band'] = band_names
-                #
-                #         yield src
 
             else:
 

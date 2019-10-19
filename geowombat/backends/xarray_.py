@@ -90,6 +90,10 @@ def warp_open(filename,
 
         if band_names:
             src.coords['band'] = band_names
+        else:
+
+            if src.gw.sensor:
+                src.coords['band'] = list(src.gw.wavelengths[src.gw.sensor]._fields)
 
         if return_windows:
 

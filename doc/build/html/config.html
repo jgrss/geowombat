@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>GeoWombat configuration &#8212; GeoWombat 1.0.0a documentation</title>
+    <title>GeoWombat configuration &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -70,6 +70,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+</ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
@@ -119,12 +123,12 @@
 </pre></div>
 </div>
 <p>Wrap functions in a context manager to control global arguments</p>
-<pre class="literal-block">In [2]: with gw.config.update(sensor='l8', scale_factor=0.0001):
+<pre class="literal-block">In [2]: with gw.config.update(sensor='quickbird', scale_factor=0.0001):
    ...:     with gw.open(rgbn) as ds:
    ...:         for k, v in ds.gw.config.items():
    ...:             print(k, v)
    ...: 
-sensor l8
+sensor quickbird
 scale_factor 0.0001
 nodata 0
 ref_image None
@@ -159,7 +163,7 @@ In [4]: with gw.open(rgbn) as ds:
    ...:     for k, v in ds.gw.config.items():
    ...:         print(k, v)
    ...: 
-sensor rgb
+sensor None
 scale_factor 1.0
 nodata 0
 ref_image None
