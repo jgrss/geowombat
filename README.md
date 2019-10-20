@@ -4,7 +4,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-black.svg)](https://www.python.org/downloads/release/python-360/)
 ![Package version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
 
-![][data/logo.png]
+![](data/logo.png)
 
 ## *GeoWombat* is a Python package for geo-utilities with `Xarray` and `Dask` arrays
 
