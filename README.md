@@ -6,12 +6,9 @@
 
 ### *GeoWombat* is a Python package for geo-utilities applied to air- and space-borne imagery
 
-Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) has a simple interface with a strong backend. `GeoWombat` uses
+Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) has a simple interface with a strong backend. GeoWombat uses
 [`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
-to apply geo-functions to satellite imagery. 
-
-`GeoWombat` is designed to provide specialized functionality to `Xarray` and `Dask` data, using `Rasterio` for 
-overhead space- or -airborne imagery I/O.
+for I/O and distributed computing with named coordinates.
 
 ## Basic usage
 
