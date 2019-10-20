@@ -16,9 +16,9 @@ from sklearn import ensemble
 # from sklearn.metrics import classification_report
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.utils.multiclass import unique_labels
 
-# import xarray as xr
-
+import xarray as xr
 from dask_ml.wrappers import ParallelPostFit
 
 try:
@@ -43,6 +43,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
 
     """
     A voting classifier class to use prefit models instead of re-fitting
+
     Args:
         estimators (list of tuples): The fitted estimators.
         weights (Optional[list, 1d array-like): The estimator weights.
@@ -70,9 +71,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
             self.weights = np.ones(len(self.estimators), dtype='float32')
 
         if len(self.weights) != len(self.estimators):
-
-            logger.error('  The length of the weights must match the length of the estimators.')
-            raise ArrayShapeError
+            logger.exception('  The length of the weights must match the length of the estimators.')
 
         if isinstance(self.classes_, np.ndarray) or isinstance(self.classes_, list):
             self.n_classes_ = len(self.classes_)
@@ -83,6 +82,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
 
         """
         Predicts discrete classes by soft probability averaging
+
         Args:
             X (2d array): The predictive variables.
         """
@@ -102,6 +102,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
 
         """
         Predicts class posterior probabilities by soft probability averaging
+
         Args:
             X (2d array): The predictive variables.
         """
@@ -124,8 +125,8 @@ class GeoWombatClassifier(object):
     A class for model fitting models with Dask
 
     Args:
-        name (str or list): A model or list of models to use.
-            Choices are ['lightgbm', 'extra trees', 'random forest', 'bal random forest', 'bag bagging'].
+        name (str or list): A model or list of models to use. Choices are ['lightgbm', 'extra trees',
+            'random forest', 'bal random forest', 'bag bagging'].
         lightgbm_kwargs (dict): Keyword arguments for LightGBM.
         extra_trees_kwargs (dict): Keyword arguments for Extra Trees.
         random_forest_kwargs (dict): Keyword arguments for Random Forest.
@@ -514,7 +515,7 @@ class Predict(object):
         if not isinstance(clf, ParallelPostFit):
             clf = ParallelPostFit(estimator=clf)
 
-        if isinstance(clf, Model):
+        if isinstance(clf, GeoWombatClassifier):
 
             # Select the bands that were used to train the model
             data = data.sel(band=clf.x)
