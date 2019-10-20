@@ -3,7 +3,7 @@
 Change Log
 ==========
 
-1.0.0b (19 October 2019)
+1.0.0b (20 October 2019)
 ------------------------
 
 Changes
@@ -15,6 +15,7 @@ New
 ~~~
 
 - Added automatic date parsing when concatenating a list of files.
+- Added BRDF normalization using the c-factor method.
 
 1.0.0a
 ------

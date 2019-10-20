@@ -1,4 +1,5 @@
 from copy import copy
+from collections import namedtuple
 
 from ..errors import logger
 
@@ -7,6 +8,432 @@ import numexpr as ne
 import xarray as xr
 import dask
 import dask.array as da
+
+
+def dtor(x):
+    """Converts degrees to radians"""
+    return x * np.pi / 180.0
+
+
+def __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args):
+
+    """
+    Calculates the Phase angle component of kernel
+    """
+
+    # __cosphaang = (da.from_delayed(__cos1, shape=(global_args.size,), dtype=global_args.dtype) *
+    #                da.from_delayed(__cos2, shape=(global_args.size,), dtype=global_args.dtype) +
+    #                da.from_delayed(__sin1, shape=(global_args.size,), dtype=global_args.dtype) *
+    #                da.from_delayed(__sin2, shape=(global_args.size,), dtype=global_args.dtype) *
+    #                da.from_delayed(__cos3, shape=(global_args.size,), dtype=global_args.dtype))
+
+    __cosphaang = __cos1 * __cos2 + __sin1 * __sin2 * __cos3
+
+    # better check the bounds before arccos ... just to be safe
+
+    __cosphaang = da.clip(__cosphaang, -1, 1)
+
+    # w = np.where(__cosphaang < -1)[0]
+    # __cosphaang[w] = -1.0
+    # w = np.where(__cosphaang > 1)[0]
+    # __cosphaang[w] = 1.0
+
+    __phaang = da.arccos(__cosphaang)
+    __sinphaang = da.sin(__phaang)
+
+    return __cosphaang, __phaang, __sinphaang
+
+
+def __ross_kernel_part_delayed(angle_info, global_args):
+
+    """
+    Calculates the main part of Ross kernel
+    """
+
+    RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+
+    __cos1 = da.cos(da.from_delayed(angle_info.vza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+    __cos2 = da.cos(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+
+    __sin1 = da.sin(da.from_delayed(angle_info.vza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+    __sin2 = da.sin(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+    __cos3 = da.cos(da.from_delayed(angle_info.raa, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args)
+
+    rosselement = (global_args.m_pi2 - __phaang) * __cosphaang + __sinphaang
+
+    return RossKernelOutputs(cos1=__cos1,
+                             cos2=__cos2,
+                             sin1=__sin1,
+                             sin2=__sin2,
+                             cos3=__cos3,
+                             rosselement=rosselement,
+                             cosphaang=__cosphaang,
+                             phaang=__phaang,
+                             sinphaang=__sinphaang,
+                             ross=None)
+
+
+def ross_thin_delayed(angle_info, global_args):
+
+    """
+    Public method - call to calculate RossThin kernel
+    """
+
+    RossThinOutputs = namedtuple('RossThinOutputs', 'ross phaang')
+
+    # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+    ross_kernel_outputs = __ross_kernel_part_delayed(angle_info, global_args)
+
+    rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 * ross_kernel_outputs.cos2)
+
+    return RossThinOutputs(ross=rosselement_, phaang=ross_kernel_outputs.phaang)
+
+
+def ross_thick_delayed(angle_info, global_args):
+
+    """
+    Public method - call to calculate RossThick kernel
+    """
+
+    RossThickOutputs = namedtuple('RossThickOutputs', 'ross phaang')
+
+    # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+    ross_kernel_outputs = __ross_kernel_part_delayed(angle_info, global_args)
+
+    rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 + ross_kernel_outputs.cos2)
+
+    return RossThickOutputs(ross=rosselement_, phaang=ross_kernel_outputs.phaang)
+
+
+def ross_kernel_delayed(angle_info, global_args):
+
+    """Public method - call to calculate Ross Kernel"""
+
+    # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+    if global_args.ross_type.lower() == 'thin':
+        ross_kernel_outputs = ross_thin_delayed(angle_info, global_args)
+    else:
+        ross_kernel_outputs = ross_thick_delayed(angle_info, global_args)
+
+    if global_args.ross_hs:
+        ross = ross_kernel_outputs.ross * (1.0 + 1.0 / (1.0 + ross_kernel_outputs.phaang / 0.25))
+    else:
+        ross = ross_kernel_outputs.ross
+
+    return ross
+
+
+def get_pangles_delayed(tan1, global_args):
+
+    """
+    Applies B/R transformation for ellipse shape
+    """
+
+    t = global_args.br * tan1
+
+    t = da.where(t < 0, 0, t)
+
+    # w = np.where(t < 0.)[0]
+    # t[w] = 0.0
+
+    angp = da.arctan(t)
+    s = da.sin(angp)
+    c = da.cos(angp)
+
+    # have to make sure c is not 0
+    c = da.where(c == 0, global_args.nearly_zero, c)
+
+    # w = np.where(c == 0)[0]
+    # c[w] = global_args.nearly_zero
+
+    return c, s, t
+
+
+def get_distance_delayed(__tan1, __tan2, __cos3):
+
+    """
+    Gets distance component of Li kernels
+    """
+
+    temp = __tan1 * __tan1 + __tan2 * __tan2 - 2.0 * __tan1 * __tan2 * __cos3
+
+    temp = da.where(temp < 0, 0, temp)
+
+    # w = np.where(temp < 0)[0]
+    # temp[w] = 0.0
+
+    # TODO
+    # self.__temp = temp  # used by other functions ??
+
+    return da.sqrt(temp)
+
+
+def get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args):
+
+    """
+    Applies HB ratio transformation
+    """
+
+    OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
+
+    __temp = 1.0 / __cos1 + 1.0 / __cos2
+
+    __cost = global_args.hb * da.sqrt(__distance * __distance + __tan1 * __tan1 * __tan2 * __tan2 * __sin3 * __sin3) / __temp
+
+    __cost = da.clip(__cost, -1, 1)
+
+    # w = np.where(__cost < -1)[0]
+    # __cost[w] = -1.0
+    # w = np.where(__cost > 1.0)[0]
+    # __cost[w] = 1.0
+
+    __tvar = da.arccos(__cost)
+    __sint = da.sin(__tvar)
+    __overlap = global_args.m_1_pi * (__tvar - __sint * __cost) * __temp
+
+    __overlap = da.where(__overlap < 0, 0, __overlap)
+
+    # w = np.where(__overlap < 0)[0]
+    # __overlap[w] = 0.0
+
+    return OverlapInfo(tvar=__tvar, sint=__sint, overlap=__overlap, temp=__temp)
+
+
+def li_kernel_delayed(angle_info, global_args):
+
+    """Private method - call to calculate Li Kernel"""
+
+    # LiKernelOutputs = namedtuple('LiKernelOutputs', 'li phi cos1 cos2 cos3 sin1 sin2 sin3 tan1 tan2 tanti tantv cosphaang phaang sinphaang distance')
+
+    # at some point add in LiGround kernel & LiTransit
+    # TODO
+    # if self.LiType == 'Roujean':
+    #     return self.RoujeanKernel()
+
+    # first make sure its in range 0 to 2 pi
+    __phi = da.fabs((da.from_delayed(angle_info.raa, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks) % (2.0 * global_args.m_pi)))
+    __cos3 = da.cos(__phi)
+    __sin3 = da.sin(__phi)
+    __tanti = da.tan(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+    __tantv = da.tan(da.from_delayed(angle_info.vza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
+    __cos1, __sin1, __tan1 = get_pangles_delayed(__tantv, global_args)
+    __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
+
+    # sets cos & sin phase angle terms
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args)
+
+    __distance = get_distance_delayed(__tan1, __tan2, __cos3)
+
+    # OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
+    overlap_info = get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
+
+    if global_args.li_type.lower() == 'sparse':
+
+        if global_args.recip_flag == True:
+            li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1 / __cos2
+        else:
+            li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1
+
+    # TODO
+    # else:
+    #     if self.LiType == 'Dense':
+    #         if self.RecipFlag:
+    #             self.Li = (1.0 + self.__cosphaang) / (
+    #             self.__cos1 * self.__cos2 * (self.__temp - self.__overlap)) - 2.0;
+    #         else:
+    #             self.Li = (1.0 + self.__cosphaang) / (self.__cos1 * (self.__temp - self.__overlap)) - 2.0;
+    #     else:
+    #         B = self.__temp - self.__overlap
+    #         w = np.where(B <= 2.0)
+    #         self.Li = B * 0.0
+    #         if self.RecipFlag == True:
+    #             Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1 / self.__cos2;
+    #         else:
+    #             Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1;
+    #         self.Li[w] = Li[w]
+    #
+    #         w = np.where(B > 2.0)
+    #         if self.RecipFlag:
+    #             Li = (1.0 + self.__cosphaang) / (self.__cos1 * self.__cos2 * (self.__temp - self.__overlap)) - 2.0;
+    #         else:
+    #             Li = (1.0 + self.__cosphaang) / (self.__cos1 * (self.__temp - self.__overlap)) - 2.0;
+    #         self.Li[w] = Li[w]
+
+    # return LiKernelOutputs(li=li, phi=__phi, cos1=__cos1, cos2=__cos2, cos3=__cos3, sin1=__sin1, sin2=__sin2, sin3=__sin3,
+    #                        tan1=__tan1, tan2=__tan2, tanti=__tanti,
+    #                        tantv=__tantv, cosphaang=__cosphaang, phaang=__phaang, sinphaang=__sinphaang,
+    #                        distance=__distance)
+
+    return li
+
+
+@dask.delayed
+def set_angle_info_delayed(vza, sza, raa, global_args):
+
+    """
+    Store and organizes the input angle data
+    """
+
+    AngleInfo = namedtuple('AngleInfo', 'n vza_degrees sza_degrees raa_degrees vza sza raa')
+
+    vza_degrees = np.array(vza).flatten()
+    sza_degrees = np.array(sza).flatten()
+    raa_degrees = np.array(raa).flatten()
+
+    n = vza_degrees.shape[0]
+
+    if n != len(sza_degrees) or n != len(raa_degrees):
+
+        logger.error('kernels: inconsistent number of samples in vza, sza and raa data: ' + str(len(vza_degrees)) + ', ' + str(len(sza_degrees)) + ', ' + str(len(raa_degrees)))
+        print(vza_degrees)
+        print(sza_degrees)
+        print(raa_degrees)
+        return [-1]
+
+    if global_args.normalize >= 1:
+
+        # calculate nadir term by extending array
+        vza_degrees = np.array(vza_degrees.tolist() + [0.0]).flatten()
+        sza_degrees = np.array(sza_degrees.tolist() + [global_args.nbar]).flatten()
+        raa_degrees = np.array(raa_degrees.tolist() + [0.0]).flatten()
+
+        n = len(vza_degrees)
+
+    vza = dtor(vza_degrees)
+    sza = dtor(sza_degrees)  # -1 to make HS direction for raa = 0
+    raa = dtor(raa_degrees)
+
+    w = np.where(vza < 0)[0]
+    vza[w] = -vza[w]
+    raa[w] = raa[w] + global_args.m_pi
+    w = np.where(sza < 0)[0]
+    sza[w] = -sza[w]
+    raa[w] = raa[w] + global_args.m_pi
+
+    return AngleInfo(n=n,
+                     vza_degrees=vza_degrees,
+                     sza_degrees=sza_degrees,
+                     raa_degrees=raa_degrees,
+                     vza=vza,
+                     sza=sza,
+                     raa=raa)
+
+
+def post_process_ross_delayed(ross, angle_info, global_args):
+
+    # li_norm = 0.0
+    # ross_norm = 0.0
+    # isotropic_norm = 0.0
+
+    # if we are normalising the last element of self.Isotropic, self.Ross and self.Li contain the nadir-nadir kernel
+
+    if global_args.normalize >= 1:
+
+        # normalise nbar-nadir (so kernel is 0 at nbar-nadir)
+        ross_norm = ross[-1]
+        ross = ross - ross_norm
+
+        # depreciate length of arrays
+        # ross = ross[0:-1]
+
+        # TODO
+        # if hasattr(self, 'Isotropic'):
+        #     self.Isotropic = self.Isotropic[0:-1]
+
+        # angle_info = angle_info._update(vza_degrees=angle_info.vza_degrees[0:-1])
+        # angle_info = angle_info._update(sza_degrees=angle_info.sza_degrees[0:-1])
+        # angle_info = angle_info._update(raa_degrees=angle_info.raa_degrees[0:-1])
+
+        # angle_info = angle_info._update(n=len(angle_info.vza_degrees))
+        # angle_info = angle_info._update(vza=angle_info.vza[0:-1])
+        # angle_info = angle_info._update(sza=angle_info.sza[0:-1])
+        # angle_info = angle_info._update(raa=angle_info.raa[0:-1])
+
+        # return angle_info, ross_kernel_outputs, li_kernel_outputs
+
+    return ross
+
+
+def post_process_li_delayed(li, angle_info, global_args):
+
+    """
+    Handles with normalisation
+    """
+
+    # li_norm = 0.0
+    # ross_norm = 0.0
+    # isotropic_norm = 0.0
+
+    # if we are normalising the last element of self.Isotropic, self.Ross and self.Li contain the nadir-nadir kernel
+
+    if global_args.normalize >= 1:
+
+        # normalise nbar-nadir (so kernel is 0 at nbar-nadir)
+        li_norm = li[-1]
+        li = li - li_norm
+
+        # depreciate length of arrays
+        # li = li[0:-1]
+
+        # TODO
+        # if hasattr(self, 'Isotropic'):
+        #     self.Isotropic = self.Isotropic[0:-1]
+
+        # angle_info = angle_info._update(vza_degrees=angle_info.vza_degrees[0:-1])
+        # angle_info = angle_info._update(sza_degrees=angle_info.sza_degrees[0:-1])
+        # angle_info = angle_info._update(raa_degrees=angle_info.raa_degrees[0:-1])
+
+        # angle_info = angle_info._update(n=len(angle_info.vza_degrees))
+        # angle_info = angle_info._update(vza=angle_info.vza[0:-1])
+        # angle_info = angle_info._update(sza=angle_info.sza[0:-1])
+        # angle_info = angle_info._update(raa=angle_info.raa[0:-1])
+
+        # return angle_info, ross_kernel_outputs, li_kernel_outputs
+
+    return li
+
+
+@dask.delayed
+def post_process_delayed(ross_kernel_outputs, li_kernel_outputs, angle_info, global_args):
+
+    """
+    Handles with normalisation
+    """
+
+    li_norm = 0.0
+    ross_norm = 0.0
+    isotropic_norm = 0.0
+
+    # if we are normalising the last element of self.Isotropic, self.Ross and self.Li contain the nadir-nadir kernel
+
+    if global_args.normalize >= 1:
+
+        # normalise nbar-nadir (so kernel is 0 at nbar-nadir)
+        ross_norm = ross_kernel_outputs.ross[-1]
+        li_norm = li_kernel_outputs.li[-1]
+        ross_kernel_outputs = ross_kernel_outputs._update(ross=ross_kernel_outputs.ross - ross_norm)
+        li_kernel_outputs = li_kernel_outputs._update(li=li_kernel_outputs.li - li_norm)
+
+        # depreciate length of arrays
+        ross_kernel_outputs = ross_kernel_outputs._update(ross=ross_kernel_outputs.ross[0:-1])
+        li_kernel_outputs = li_kernel_outputs._update(li=li_kernel_outputs.li[0:-1])
+
+        # TODO
+        # if hasattr(self, 'Isotropic'):
+        #     self.Isotropic = self.Isotropic[0:-1]
+
+        angle_info = angle_info._update(vza_degrees=angle_info.vza_degrees[0:-1])
+        angle_info = angle_info._update(sza_degrees=angle_info.sza_degrees[0:-1])
+        angle_info = angle_info._update(raa_degrees=angle_info.raa_degrees[0:-1])
+
+        angle_info = angle_info._update(n=len(angle_info.vza_degrees))
+        angle_info = angle_info._update(vza=angle_info.vza[0:-1])
+        angle_info = angle_info._update(sza=angle_info.sza[0:-1])
+        angle_info = angle_info._update(raa=angle_info.raa[0:-1])
+
+        return angle_info, ross_kernel_outputs, li_kernel_outputs
 
 
 class Kernels(object):
@@ -23,20 +450,21 @@ class Kernels(object):
                  vza,
                  sza,
                  raa,
+                 delayed=False,
                  critical=1,
                  RossHS=True,
                  RecipFlag=True,
-                 HB=2.,
-                 BR=1.,
+                 HB=2.0,
+                 BR=1.0,
                  MODISSPARSE=True,
                  MODISDENSE=False,
                  RossType='Thick',
                  normalise=1,
                  normalize=0,
-                 LiType='Transit',
+                 LiType='sparse',
                  doIntegrals=True,
                  BSAangles=None,
-                 nbar=0.):
+                 nbar=0.0):
 
         """
         The class creator sets up the kernels for some angle set. Default Li is MODISSPARSE parameter set
@@ -89,6 +517,8 @@ class Kernels(object):
         If you want to mimic the results in Wanner et al. 1995, I've set a special function called self.mimic at the end here.
         """
 
+        GlobalArgs = namedtuple('GlobalArgs', 'nrows ncols size dtype flat_chunks nbar nearly_zero critical file_ outputfile li_type ross_type ross_hs do_integrals hb br normalize recip_flag m_pi m_pi2 m_pi4 m_1_pi')
+
         self.__setup(critical=critical,
                      RecipFlag=RecipFlag,
                      RossHS=RossHS,
@@ -104,16 +534,50 @@ class Kernels(object):
                      BSAangles=BSAangles,
                      nbar=nbar)
 
-        self.setAngleInfo(vza, sza, raa)
-        self.__doKernels()
-        self.__postProcess()
+        if delayed:
+
+            # TODO: make `flat_chunks` a user argument
+            global_args = GlobalArgs(nrows=vza.shape[0], ncols=vza.shape[1], size=vza.size, dtype=vza.dtype.name,
+                                     flat_chunks=np.array(list(vza.chunksize)).sum(),
+                                     nbar=nbar, nearly_zero=self.__NEARLYZERO, critical=self.critical,
+                                     file_=self.FILE, outputfile=self.outputFile,
+                                     li_type=self.LiType, ross_type=self.RossType, ross_hs=self.RossHS,
+                                     do_integrals=self.doIntegrals, hb=self.HB, br=self.BR, normalize=self.normalise,
+                                     recip_flag=self.RecipFlag,
+                                     m_pi=self.__M_PI, m_pi2=self.__M_PI_2, m_pi4=self.__M_PI_4, m_1_pi=self.__M_1_PI)
+
+            # AngleInfo = namedtuple('AngleInfo', 'n vza_degrees sza_degrees raa_degrees vza sza raa')
+            angle_info = set_angle_info_delayed(vza, sza, raa, global_args)
+
+            # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+            ross = ross_kernel_delayed(angle_info, global_args)
+
+            # LiKernelOutputs = namedtuple('LiKernelOutputs','li phi cos1 cos2 cos3 sin1 sin2 sin3 tan1 tan2 tanti tantv cosphaang phaang sinphaang distance')
+            li = li_kernel_delayed(angle_info, global_args)
+
+            ross = post_process_ross_delayed(ross, angle_info, global_args)
+            li = post_process_li_delayed(li, angle_info, global_args)
+
+            # angle_info, ross_kernel_outputs, li_kernel_outputs = post_process_delayed(ross_kernel_outputs,
+            #                                                                           li_kernel_outputs,
+            #                                                                           angle_info,
+            #                                                                           global_args)
+
+            self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk(vza.chunksize)
+            self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk(vza.chunksize)
+
+        else:
+
+            self.set_angle_info(vza, sza, raa)
+            self.__doKernels()
+            self.__postProcess()
 
     def __setup(self,
                 critical=1,
                 RecipFlag=True,
                 RossHS=True,
-                HB=2.,
-                BR=1.,
+                HB=2.0,
+                BR=1.0,
                 MODISSPARSE=True,
                 MODISDENSE=False,
                 RossType='Thick',
@@ -122,7 +586,7 @@ class Kernels(object):
                 LiType='Sparse',
                 doIntegrals=True,
                 BSAangles=None,
-                nbar=0.):
+                nbar=0.0):
 
         self.nbar = nbar
         self.__NEARLYZERO = 1e-20
@@ -145,8 +609,8 @@ class Kernels(object):
             if MODISSPARSE:
 
                 LiType = 'Sparse'
-                self.HB = 2.
-                self.BR = 1.
+                self.HB = 2.0
+                self.BR = 1.0
 
             else:
 
@@ -160,14 +624,15 @@ class Kernels(object):
 
         # some useful numbers
         self.__M_PI = np.pi
-        self.__M_PI_2 = self.__M_PI * .5
-        self.__M_PI_4 = self.__M_PI * .25
-        self.__M_1_PI = 1. / self.__M_PI
+        self.__M_PI_2 = self.__M_PI * 0.5
+        self.__M_PI_4 = self.__M_PI * 0.25
+        self.__M_1_PI = 1.0 / self.__M_PI
 
         self.normalize = self.normalise
 
-        if self.doIntegrals:
-            self.__integrateKernels(BSAangles=BSAangles)
+        # TODO
+        # if self.doIntegrals:
+        #     self.__integrateKernels(BSAangles=BSAangles)
 
         if (normalise >= 1) or (normalize >= 1):
             self.normalise = max(normalise, normalize)
@@ -212,7 +677,7 @@ class Kernels(object):
         self.RossKernel()
         self.LiKernel()
 
-    def setAngleInfo(self, vza, sza, raa):
+    def set_angle_info(self, vza, sza, raa):
 
         """Private method to store and organise the input angle data"""
 
@@ -585,7 +1050,7 @@ def RossFunctionForIntegral(phi, mu, sza, self):
     # print '========'
     vza = np.arccos(mu)
     raa = self.rtod(phi)
-    self.setAngleInfo(vza, sza, raa)
+    self.set_angle_info(vza, sza, raa)
     self.RossKernel()
     return mu * self.Ross[0] / np.pi
 
@@ -597,7 +1062,7 @@ def LiFunctionForIntegral(phi, mu, sza, self):
     # print '========'
     vza = np.arccos(mu)
     raa = self.rtod(phi)
-    self.setAngleInfo(vza, sza, raa)
+    self.set_angle_info(vza, sza, raa)
     self.LiKernel()
     return mu * self.Li[0] / np.pi
 
@@ -1132,12 +1597,8 @@ class RelativeBRDFNorm(object):
         Args:
             central_latitude (float)
 
-        Coefficients:
-
-            Taken from:
-
-                Roy et al. (2016) A general method to normalize Landsat reflectance
-                    data to nadir BRDF adjusted reflectance, Remote Sensing of Environment, 176.
+        Returns:
+            ``float``
         """
 
         return 31.0076 + \
@@ -1170,7 +1631,7 @@ class RossLiKernels(object):
         # Get the volume scattering kernel.
         #
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
-        kl = dask.delayed(Kernels)(sensor_za, solar_za, solar_az - sensor_az, doIntegrals=False)
+        kl = Kernels(sensor_za, solar_za, solar_az - sensor_az, delayed=True, doIntegrals=False)
 
         self.geo_sensor = kl.Li
         self.vol_sensor = kl.Ross
@@ -1251,37 +1712,60 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         return self.coeff_dict[sensor_band]
 
     def norm_brdf(self,
-                  sensor_bands,
                   data,
                   solar_za,
                   solar_az,
                   sensor_za,
                   sensor_az,
                   central_latitude,
+                  sensor=None,
+                  wavelengths=None,
                   nodata=0,
                   mask=None,
                   scale_factor=1.0,
-                  scale_angles=True):
+                  scale_angles=True,
+                  num_threads=1):
 
         """
-        Applies Bidirectional Reflectance Distribution Function (BRDF) normalization
+        Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
+        introduced by Roy et al. (2016)
 
         Args:
-            sensor_bands (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             data (2d or 3d array): The data to normalize.
             solar_za (2d array): The solar zenith angles (degrees).
             solar_az (2d array): The solar azimuth angles (degrees).
             sensor_za (2d array): The sensor azimuth angles (degrees).
             sensor_az (2d array): The sensor azimuth angles (degrees).
             central_latitude (float): The central latitude.
+            sensor (Optional[str]): The satellite sensor.
+            wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
             mask (Optional[bool]): Whether to mask the results.
             scale_factor (Optional[float]): A scale factor to apply to the data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
+            num_threads (Optional[int]): The number of threads to pass to ``numexpr``.
+
+        References:
+
+            See :cite:`roy_etal_2016`
 
         Returns:
             ``numpy.ndarray``
         """
+
+        if not sensor:
+            wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
+
+        if not wavelengths:
+            logger.exception('  The sensor or wavelength must be supplied.')
+
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
+        ne.set_num_threads(num_threads)
 
         attrs = data.attrs
 
@@ -1305,12 +1789,12 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             sensor_az = sensor_az * 0.01
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude, solar_za, solar_az, sensor_za, sensor_az)
+        self.get_kernels(central_latitude, solar_za.data, solar_az.data, sensor_za.data, sensor_az.data)
 
-        if len(sensor_bands) == 1:
+        if len(wavelengths) == 1:
 
             # Get the band iso, geo, and vol coefficients.
-            coeffs = self.get_coeffs(sensor_bands[0])
+            coeffs = self.get_coeffs(wavelengths[0])
 
             # Apply the adjustment.
             data = dask.delayed(ne.evaluate)(self.c_equation,
@@ -1327,37 +1811,42 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
             results = list()
 
-            for si, sensor_band in enumerate(sensor_bands):
+            for si, wavelength in enumerate(wavelengths):
 
                 # Get the band iso, geo,
                 #   and vol coefficients.
-                coeffs = self.get_coeffs(sensor_band)
+                coeffs = self.get_coeffs(wavelength)
 
-                # Apply the adjustment to
-                #   the current layer.
-                results.append(da.from_delayed(dask.delayed(ne.evaluate)(self.c_equation,
-                                                                         local_dict=dict(fiso=coeffs['fiso'],
-                                                                                         fgeo=coeffs['fgeo'],
-                                                                                         fvol=coeffs['fvol'],
-                                                                                         SA=data.sel(band=sensor_band),
-                                                                                         geo_norm=self.geo_norm,
-                                                                                         geo_sensor=self.geo_sensor,
-                                                                                         vol_norm=self.vol_norm,
-                                                                                         vol_sensor=self.vol_sensor)),
-                                               shape=(1,) + data.data.shape[1:],
-                                               dtype=data.dtype.name))
+                # Apply the adjustment to the current layer.
+                results.append(data.sel(band=wavelength) * ((coeffs['fiso'] +
+                                                             coeffs['fvol']*self.vol_norm +
+                                                             coeffs['fgeo']*self.geo_norm) / (coeffs['fiso'] +
+                                                                                              coeffs['fvol']*self.vol_sensor +
+                                                                                              coeffs['fgeo']*self.geo_sensor)))
 
-            data = xr.DataArray(data=da.concatenate(results, axis=0).rechunk(data.data.chunksize),
-                                coords={'band': sensor_bands,
-                                        'y': data.y,
-                                        'x': data.x},
-                                dims=('band', 'y', 'x'))
+                # results.append(da.from_delayed(dask.delayed(ne.evaluate)(self.c_equation,
+                #                                                          local_dict=dict(fiso=coeffs['fiso'],
+                #                                                                          fgeo=coeffs['fgeo'],
+                #                                                                          fvol=coeffs['fvol'],
+                #                                                                          SA=data.sel(band=wavelength),
+                #                                                                          geo_norm=self.geo_norm,
+                #                                                                          geo_sensor=self.geo_sensor,
+                #                                                                          vol_norm=self.vol_norm,
+                #                                                                          vol_sensor=self.vol_sensor)),
+                #                                shape=(1,) + data.data.shape[1:],
+                #                                dtype=data.dtype.name))
+
+            data = xr.concat(results, dim='band')
+
+        data = data.transpose('band', 'y', 'x')
 
         # Mask data
         if isinstance(mask, xr.DataArray) or isinstance(mask, np.ndarray):
-            data = xr.where((mask == 0) & (solar_za != -32768), data, nodata)
+            data = xr.where((mask == 0) & (solar_za != -32768), data, nodata).astype('float64')
         else:
-            data = xr.where(solar_za != -32768, data, nodata)
+            data = xr.where(solar_za != -32768, data, nodata).astype('float64')
+
+        data = data.transpose('band', 'y', 'x')
 
         # Return the adjusted array, scaled
         #   back to the original range.

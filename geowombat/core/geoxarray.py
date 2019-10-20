@@ -793,6 +793,8 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   solar_azimuth,
                   sensor_zenith,
                   sensor_azimuth,
+                  sensor=None,
+                  wavelengths=None,
                   nodata=0,
                   mask=None,
                   scale_factor=1.0,
@@ -807,6 +809,8 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             sensor_zenith (DataArray): The sensor zenith angles for each pixel.
             sensor_azimuth (DataArray): The sensor azimuth angles for each pixel.
             mask (DataArray): A mask array where 0 values indicate clear sky.
+            sensor (Optional[str]): The satellite sensor.
+            wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             nodata (Optional[int or float]): A 'no data' value.
             mask (Optional[bool]): Whether to mask the results.
             scale_factor (Optional[float]): A scale factor to apply to the data.
@@ -827,21 +831,20 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             >>>             ds_brdf = ds.gw.norm_brdf(solarz, solara, sensorz, sensora)
         """
 
-        wavelength_list = self._obj.band.values.tolist()
-
         # Get the central latitude
         central_lat = project_coords(np.array([self._obj.x.values[int(self._obj.x.shape[0] / 2)]], dtype='float64'),
                                      np.array([self._obj.y.values[int(self._obj.y.shape[0] / 2)]], dtype='float64'),
                                      self._obj.crs,
                                      {'init': 'epsg:4326'})[1][0]
 
-        return gw_norm_brdf(wavelength_list,
-                            self._obj,
+        return gw_norm_brdf(self._obj,
                             solar_zenith,
                             solar_azimuth,
                             sensor_zenith,
                             sensor_azimuth,
                             central_lat,
+                            sensor=sensor,
+                            wavelengths=wavelengths,
                             nodata=nodata,
                             mask=mask,
                             scale_factor=scale_factor,

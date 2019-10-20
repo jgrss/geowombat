@@ -68,12 +68,10 @@ html_theme = 'alabaster'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'description': 'GeoWombat is a Python package for geo-utilities with Xarray and Dask arrays',
-                      'description_font_style': 'Candara',
-                      'page_width': '80%',
+html_theme_options = {'page_width': '80%',
                       'fixed_sidebar': True,
-                      'logo': 'wombat.png',
-                      'logo_name': True,
+                      'logo': 'logo.png',
+                      'logo_name': False,
                       'github_banner': True,
                       'github_button': True,
                       'github_user': 'jgrss',

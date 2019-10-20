@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API reference" href="api.html" />
-    <link rel="prev" title="Applying custom user functions" href="apply.html" />
+    <link rel="prev" title="BRDF normalization" href="radiometrics.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,16 +31,12 @@
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/wombat.png" alt="Logo"/>
-    
-    <h1 class="logo logo-name">GeoWombat</h1>
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
     
   </a>
 </p>
 
 
-
-<p class="blurb">GeoWombat is a Python package for geo-utilities with Xarray and Dask arrays</p>
 
 
 
@@ -69,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radiometrics.html">BRDF normalization</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul class="current">
@@ -83,7 +80,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="apply.html" title="previous chapter">Applying custom user functions</a></li>
+      <li>Previous: <a href="radiometrics.html" title="previous chapter">BRDF normalization</a></li>
       <li>Next: <a href="api.html" title="next chapter">API reference</a></li>
   </ul></li>
 </ul>
@@ -116,8 +113,8 @@
             
   <div class="section" id="change-log">
 <span id="changelog"></span><h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="b-19-october-2019">
-<h2>1.0.0b (19 October 2019)<a class="headerlink" href="#b-19-october-2019" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="b-20-october-2019">
+<h2>1.0.0b (20 October 2019)<a class="headerlink" href="#b-20-october-2019" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="changes">
 <h3>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -128,6 +125,7 @@
 <h3>New<a class="headerlink" href="#new" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added automatic date parsing when concatenating a list of files.</p></li>
+<li><p>Added BRDF normalization using the c-factor method.</p></li>
 </ul>
 </div>
 </div>
