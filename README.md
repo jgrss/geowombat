@@ -4,7 +4,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-black.svg)](https://www.python.org/downloads/release/python-360/)
 ![Package version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
 
-### *GeoWombat* is a Python package for geo-utilities for air- and space-borne imagery
+### *GeoWombat* is a Python package for geo-utilities applied to air- and space-borne imagery
 
 Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) has a simple interface with a strong backend. `GeoWombat` uses
 [`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
