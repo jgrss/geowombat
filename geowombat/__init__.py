@@ -14,6 +14,7 @@ from .core import nbr
 from .core import ndvi
 from .core import wi
 from .core import tasseled_cap
+from .core import norm_brdf
 from .models import predict
 
 from .version import __version__
@@ -34,5 +35,6 @@ __all__ = ['config',
            'ndvi',
            'wi',
            'tasseled_cap',
+           'norm_brdf',
            'predict',
            '__version__']

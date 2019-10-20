@@ -816,19 +816,19 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             scale_factor (Optional[float]): A scale factor to apply to the data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
 
-        Returns:
-            ``xarray.DataArray``
-
         Examples:
             >>> import geowombat as gw
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
-            >>> with gw.config.update(scale_factor=0.0001, nodata=0):
+            >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
             >>>
             >>>     with gw.open('solarz.tif') as solarz, gw.open('solara.tif') as solara, gw.open('sensorz.tif') as sensorz, gw.open('sensora.tif') as sensora:
             >>>
             >>>         with gw.open('landsat.tif') as ds:
             >>>             ds_brdf = ds.gw.norm_brdf(solarz, solara, sensorz, sensora)
+
+        Returns:
+            ``xarray.DataArray``
         """
 
         # Get the central latitude

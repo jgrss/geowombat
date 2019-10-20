@@ -1749,8 +1749,19 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
             See :cite:`roy_etal_2016`
 
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Example where pixel angles are stored in separate GeoTiff files
+            >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
+            >>>
+            >>>     with gw.open('solarz.tif') as solarz, gw.open('solara.tif') as solara, gw.open('sensorz.tif') as sensorz, gw.open('sensora.tif') as sensora:
+            >>>
+            >>>         with gw.open('landsat.tif') as ds:
+            >>>             ds_brdf = gw.norm_brdf(ds, solarz, solara, sensorz, sensora)
+
         Returns:
-            ``numpy.ndarray``
+            ``xarray.DataArray``
         """
 
         if not sensor:

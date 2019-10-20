@@ -5,5 +5,5 @@ tasseled_cap
 
 .. autofunction:: tasseled_cap
 
-.. bibliography:: references.bib
+.. bibliography:: references_tcap.bib
    :cited:
