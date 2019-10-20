@@ -242,6 +242,8 @@ def block_write_func(fn_, g_, t_):
 
 def to_raster(data,
               filename,
+              readxsize=None,
+              readysize=None,
               use_dask_store=False,
               separate=False,
               out_block_type='zarr',
@@ -266,6 +268,10 @@ def to_raster(data,
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
+        readxsize (Optional[int]): The size of column chunks to read. If not given, ``readxsize`` defaults to Dask
+            chunk size.
+        readysize (Optional[int]): The size of row chunks to read. If not given, ``readysize`` defaults to Dask
+            chunk size.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
         use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
         out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
@@ -353,6 +359,12 @@ def to_raster(data,
     if not isinstance(n_chunks, int):
         n_chunks = n_workers * 10
 
+    if not isinstance(readxsize, int):
+        readxsize = data.gw.col_chunks
+
+    if not isinstance(readysize, int):
+        readysize = data.gw.row_chunks
+
     if 'blockxsize' not in kwargs:
         kwargs['blockxsize'] = data.gw.col_chunks
 
@@ -380,8 +392,8 @@ def to_raster(data,
 
             windows = get_window_offsets(data.gw.nrows,
                                          data.gw.ncols,
-                                         data.gw.row_chunks,
-                                         data.gw.col_chunks,
+                                         readysize,
+                                         readxsize,
                                          return_as='list')
 
             n_windows = len(windows)
@@ -423,7 +435,7 @@ def to_raster(data,
                                           window=out_window,
                                           indexes=out_indexes)
 
-                            del out_window, out_indexes, out_block
+                            # del out_window, out_indexes, out_block
 
                         futures = None
 
