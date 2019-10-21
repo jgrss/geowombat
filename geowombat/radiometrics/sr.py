@@ -1,7 +1,8 @@
+import math
 from collections import namedtuple
 
-import math
-import numpy as np
+import pandas as pd
+import xarray as xr
 import dask.array as da
 
 
@@ -75,6 +76,15 @@ def s_atm(r):
     return (0.92*r) * math.exp(-r)
 
 
+def _format_coeff(dataframe, key):
+
+    dataframe_ = dataframe[dataframe.iloc[:, 0].str.startswith(key)].values
+    dataframe_[:, 1] = dataframe_[:, 1].astype(float)
+    dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
+
+    return dict(dataframe_)
+
+
 class SurfaceReflectance(object):
 
     """
@@ -94,12 +104,27 @@ class SurfaceReflectance(object):
             ``namedtuple``
         """
 
-        # TODO: get coefficients from a file
-        MetaCoeffs = namedtuple('MetaCoeffs', 'm_l a_l m_p a_p')
+        associations = {'LANDSAT_8': 'l8'}
 
-        return MetaCoeffs(m_l=None, a_l=None, m_p=None, a_p=None)
+        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p')
 
-    def dn_to_sr(self, dn, solar_za, sensor_za, method='srem', meta=None):
+        df = pd.read_csv(meta_file, sep='=')
+
+        df.iloc[:, 0] = df.iloc[:, 0].str.strip()
+        df.iloc[:, 1] = df.iloc[:, 1].str.strip()
+
+        m_l = _format_coeff(df, 'RADIANCE_MULT_BAND_')
+        a_l = _format_coeff(df, 'RADIANCE_ADD_BAND_')
+        m_p = _format_coeff(df, 'REFLECTANCE_MULT_BAND_')
+        a_p = _format_coeff(df, 'REFLECTANCE_ADD_BAND_')
+
+        spacecraft_id = dict(df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values)
+        spacecraft_id['SPACECRAFT_ID'] = spacecraft_id['SPACECRAFT_ID'].replace('"', '')
+        sensor = associations[spacecraft_id['SPACECRAFT_ID']]
+
+        return MetaCoeffs(sensor=sensor, m_l=m_l, a_l=a_l, m_p=m_p, a_p=a_p)
+
+    def dn_to_sr(self, dn, solar_za, sensor_za, sensor=None, method='srem', meta=None):
 
         """
         Converts digital numbers to surface reflectance
@@ -108,6 +133,7 @@ class SurfaceReflectance(object):
             dn (DataArray): The digital number data to calibrate.
             solar_za (DataArray): The solar zenith angle.
             sensor_za (DataArray): The sensor zenith angle.
+            sensor (Optional[str]): The data's sensor.
             method (Optional[str]): The method to use. Only 'srem' is supported.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
 
@@ -136,8 +162,29 @@ class SurfaceReflectance(object):
         """
 
         if meta:
-            toar = self.dn_to_toar(dn, meta.m_p, meta.a_p)
+
+            # Get the sensor wavelengths
+            wavelengths = dn.gw.wavelengths[meta.sensor]
+
+            # Get the data band names and positional indices
+            band_names = dn.band.values.tolist()
+            band_indices = [getattr(wavelengths, p) for p in band_names]
+
+            # Get the gain and offsets and
+            #   convert the gain and offsets
+            #   to named coordinates.
+            m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_indices], coords={'band': band_names}, dims='band')
+            a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_indices], coords={'band': band_names}, dims='band')
+
+            toar = self.dn_to_toar(dn, m_p, a_p)
+
+            # TOAR with correctin sun angle
+            # toar / da.cos(solar_za)
+
         else:
+
+            if not sensor:
+                sensor = dn.gw.sensor
 
             # d = distance between the Earth and Sun in the astronomical unit
             # ESUN = mean solar exoatmospheric radiation
@@ -146,7 +193,7 @@ class SurfaceReflectance(object):
             # TODO: set global arguments
             global_args = GlobalArgs(pi=math.pi, d=None, esun=None)
 
-            radiance = self.dn_to_radiance(dn)
+            radiance = self.dn_to_radiance(dn, None, None)
 
             toar = self.radiance_to_toar(radiance, solar_za, global_args)
 

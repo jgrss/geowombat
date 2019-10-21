@@ -41,7 +41,8 @@ required_packages = ['cython',
                      'numexpr',
                      'numcodecs',
                      'zarr',
-                     'dateparser']
+                     'dateparser',
+                     'wget']
 
 
 def get_packages():

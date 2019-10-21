@@ -28,4 +28,5 @@ geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
 logo/
+bin/ESPA/
 

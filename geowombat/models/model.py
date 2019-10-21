@@ -481,8 +481,8 @@ class Predict(object):
 
         return data_concat
 
-    @staticmethod
-    def predict(data,
+    def predict(self,
+                data,
                 clf,
                 outname=None,
                 chunksize='same',
@@ -541,8 +541,8 @@ class Predict(object):
             # Select the bands that were used to train the model
             data = data.sel(band=clf.x)
 
-        if use_xy:
-            data = self.append_xy(data, read_chunks)
+        # if use_xy:
+        #     data = self.append_xy(data, read_chunks)
 
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))
