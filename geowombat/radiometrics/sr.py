@@ -178,7 +178,7 @@ class SurfaceReflectance(object):
 
             toar = self.dn_to_toar(dn, m_p, a_p)
 
-            # TOAR with correctin sun angle
+            # TOAR with sun angle correction
             # toar / da.cos(solar_za)
 
         else:
