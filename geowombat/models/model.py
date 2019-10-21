@@ -462,11 +462,32 @@ class GeoWombatClassifier(object):
 class Predict(object):
 
     @staticmethod
+    def append_xy(data, chunk_size):
+
+        ycoords, xcoords = np.meshgrid(data.y, data.x)
+
+        ycoords = xr.DataArray(da.from_array(ycoords[np.newaxis, :, :],
+                                             chunks=(1, chunk_size, chunk_size)),
+                               dims=('band', 'y', 'x'),
+                               coords={'band': ['lat'], 'y': data.y, 'x': data.x})
+
+        xcoords = xr.DataArray(da.from_array(xcoords[np.newaxis, :, :],
+                                             chunks=(1, chunk_size, chunk_size)),
+                               dims=('band', 'y', 'x'),
+                               coords={'band': ['lon'], 'y': data.y, 'x': data.x})
+
+        data_concat = xr.concat((data, xcoords, ycoords), dim='band')
+        data_concat.attrs = data.attrs
+
+        return data_concat
+
+    @staticmethod
     def predict(data,
                 clf,
                 outname=None,
                 chunksize='same',
                 x_chunks=(5000, 1),
+                use_xy=False,
                 overwrite=False,
                 return_as='array',
                 n_jobs=1,
@@ -519,6 +540,9 @@ class Predict(object):
 
             # Select the bands that were used to train the model
             data = data.sel(band=clf.x)
+
+        if use_xy:
+            data = self.append_xy(data, read_chunks)
 
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))

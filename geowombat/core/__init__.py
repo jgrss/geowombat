@@ -3,7 +3,7 @@ from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
-from .radiometrics import BRDF
+from ..radiometrics import BRDF
 
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
