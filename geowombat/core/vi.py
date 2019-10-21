@@ -2,6 +2,7 @@ from ..errors import logger
 
 import numpy as np
 import xarray as xr
+import dask.array as da
 
 
 def _check_sensor(data, sensor):
@@ -14,6 +15,25 @@ def _check_sensor(data, sensor):
             logger.exception('  A sensor must be provided.')
 
     return sensor
+
+
+def _create_nodata_array(data, nodata, band_name, var_name):
+
+    """
+    Creates a 'no data' Xarray
+
+    Args:
+        data (Xarray)
+    """
+
+    return xr.DataArray(data=da.zeros((1, data.gw.nrows, data.gw.ncols),
+                                      chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                                      dtype=data.dtype.name) + nodata,
+                        coords={band_name: [var_name],
+                                'y': data.y.values,
+                                'x': data.x.values},
+                        dims=(band_name, 'y', 'x'),
+                        attrs=data.attrs)
 
 
 class BandMath(object):
@@ -93,7 +113,7 @@ class BandMath(object):
 
         return result
 
-    def norm_diff_math(self, data, b1, b2, name, sensor, nodata=0, mask=False, scale_factor=1.0):
+    def norm_diff_math(self, data, b1, b2, name, sensor, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Normalized difference index --> (b2 - b1) / (b2 + b1)
@@ -114,6 +134,9 @@ class BandMath(object):
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
+        if float(data.sel(band=b1).max().data.compute().values) == nodata:
+            return _create_nodata_array(data, nodata, band_variable, name)
+
         data = self.scale_and_assign(data, band_variable, scale_factor, [b1, b2], [b1, b2])
 
         if band_variable == 'wavelength':
@@ -128,7 +151,7 @@ class BandMath(object):
 
         return self.mask_and_assign(data, result, band_variable, name, mask, -1, 1, scale_factor, sensor)
 
-    def evi_math(self, data, sensor, wavelengths, nodata=0, mask=False, scale_factor=1.0):
+    def evi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Enhanced vegetation index
@@ -153,6 +176,9 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
+        if float(data.sel(band='nir').max().data.compute().values) == nodata:
+            return _create_nodata_array(data, nodata, band_variable, 'evi')
+
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
 
         if band_variable == 'wavelength':
@@ -167,7 +193,7 @@ class BandMath(object):
 
         return self.mask_and_assign(data, result, band_variable, 'evi', mask, 0, 1, scale_factor, sensor)
 
-    def evi2_math(self, data, sensor, wavelengths, nodata=0, mask=False, scale_factor=1.0):
+    def evi2_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Two-band enhanced vegetation index
@@ -185,6 +211,9 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
+        if float(data.sel(band='nir').max().data.compute().values) == nodata:
+            return _create_nodata_array(data, nodata, band_variable, 'evi2')
+
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red], ['nir', 'red'])
 
         if band_variable == 'wavelength':
@@ -199,7 +228,7 @@ class BandMath(object):
 
         return self.mask_and_assign(data, result, band_variable, 'evi2', mask, 0, 1, scale_factor, sensor)
 
-    def nbr_math(self, data, sensor, wavelengths, nodata=0, mask=False, scale_factor=1.0):
+    def nbr_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Normalized burn ratio
@@ -219,7 +248,7 @@ class BandMath(object):
 
         return self.norm_diff_math(data, swir2, nir, 'nbr', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def ndvi_math(self, data, sensor, wavelengths, nodata=0, mask=False, scale_factor=1.0):
+    def ndvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Normalized difference vegetation index
@@ -239,7 +268,7 @@ class BandMath(object):
 
         return self.norm_diff_math(data, red, nir, 'ndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def wi_math(self, data, sensor, wavelengths, nodata=0, mask=False, scale_factor=1.0):
+    def wi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
         Woody index
@@ -256,6 +285,9 @@ class BandMath(object):
         else:
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
+
+        if float(data.sel(band='red').max().data.compute().values) == nodata:
+            return _create_nodata_array(data, nodata, band_variable, 'wi')
 
         data = self.scale_and_assign(data, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
 
@@ -369,7 +401,7 @@ class TasseledCapLookup(object):
 
 class TasseledCap(TasseledCapLookup):
 
-    def tasseled_cap(self, data, nodata=0, sensor=None, scale_factor=1.0):
+    def tasseled_cap(self, data, nodata=None, sensor=None, scale_factor=1.0):
 
         r"""
         Applies a tasseled cap transformation
@@ -419,6 +451,9 @@ class TasseledCap(TasseledCapLookup):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
@@ -433,7 +468,7 @@ class TasseledCap(TasseledCapLookup):
 
 class VegetationIndices(BandMath):
 
-    def norm_diff(self, data, b1, b2, sensor=None, nodata=0, mask=False, scale_factor=1.0):
+    def norm_diff(self, data, b1, b2, sensor=None, nodata=None, mask=False, scale_factor=1.0):
 
         r"""
         Calculates the normalized difference band ratio
@@ -458,12 +493,15 @@ class VegetationIndices(BandMath):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
         return self.norm_diff_math(data, b1, b2, 'norm-diff', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi(self, data, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the enhanced vegetation index
@@ -487,12 +525,15 @@ class VegetationIndices(BandMath):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
         return self.evi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi2(self, data, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi2(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the two-band modified enhanced vegetation index
@@ -516,12 +557,15 @@ class VegetationIndices(BandMath):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
         return self.evi2_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def nbr(self, data, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def nbr(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the normalized burn ratio
@@ -544,12 +588,15 @@ class VegetationIndices(BandMath):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
         return self.nbr_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def ndvi(self, data, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def ndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the normalized difference vegetation index
@@ -572,12 +619,15 @@ class VegetationIndices(BandMath):
 
         sensor = _check_sensor(data, sensor)
 
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
         return self.ndvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def wi(self, data, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def wi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the woody vegetation index
@@ -599,6 +649,9 @@ class VegetationIndices(BandMath):
         """
 
         sensor = _check_sensor(data, sensor)
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor

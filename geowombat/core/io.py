@@ -365,6 +365,10 @@ def to_raster(data,
     if not isinstance(readysize, int):
         readysize = data.gw.row_chunks
 
+    # Force tiled outputs with no file sharing
+    kwargs['tiled'] = True
+    kwargs['sharing'] = False
+
     if 'blockxsize' not in kwargs:
         kwargs['blockxsize'] = data.gw.col_chunks
 

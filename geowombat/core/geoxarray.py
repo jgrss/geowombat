@@ -195,25 +195,25 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       stat=stat,
                       n_jobs=n_jobs)
 
-    def norm_diff(self, b1, b2, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def norm_diff(self, b1, b2, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_evi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def evi2(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi2(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_evi2(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def nbr(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def nbr(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_nbr(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def ndvi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def ndvi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_ndvi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def wi(self, variable='bands', nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def wi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
         return gw_wi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def tasseled_cap(self, variable='bands', nodata=0, sensor=None, scale_factor=1.0):
+    def tasseled_cap(self, variable='bands', nodata=None, sensor=None, scale_factor=1.0):
         return gw_tasseled_cap(self._obj[variable], nodata=nodata, sensor=sensor, scale_factor=scale_factor)
 
 
@@ -374,7 +374,6 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   driver=driver,
                   dtype=self._obj.data.dtype.name,
                   nodata=nodata,
-                  tiled=True,
                   blockxsize=blockxsize,
                   blockysize=blockysize,
                   tags=tags,
@@ -623,7 +622,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                       stat=stat,
                       n_jobs=n_jobs)
 
-    def norm_diff(self, b1, b2, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def norm_diff(self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the normalized difference band ratio
@@ -648,7 +647,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
-    def evi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the enhanced vegetation index
@@ -672,7 +671,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def evi2(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def evi2(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the two-band modified enhanced vegetation index
@@ -696,7 +695,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def nbr(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def nbr(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the normalized burn ratio
@@ -719,7 +718,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def ndvi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def ndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the normalized difference vegetation index
@@ -742,7 +741,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def wi(self, nodata=0, mask=False, sensor=None, scale_factor=1.0):
+    def wi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
         r"""
         Calculates the woody vegetation index
@@ -765,7 +764,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
         return gw_wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
-    def tasseled_cap(self, nodata=0, sensor=None, scale_factor=1.0):
+    def tasseled_cap(self, nodata=None, sensor=None, scale_factor=1.0):
 
         r"""
         Applies a tasseled cap transformation
@@ -795,7 +794,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   sensor_azimuth,
                   sensor=None,
                   wavelengths=None,
-                  nodata=0,
+                  nodata=None,
                   mask=None,
                   scale_factor=1.0,
                   scale_angles=True):
