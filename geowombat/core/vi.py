@@ -134,7 +134,7 @@ class BandMath(object):
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
-        if float(data.sel(band=b1).max().data.compute().values) == nodata:
+        if data.sel(band=b1).max().data.compute() == nodata:
             return _create_nodata_array(data, nodata, band_variable, name)
 
         data = self.scale_and_assign(data, band_variable, scale_factor, [b1, b2], [b1, b2])
@@ -176,7 +176,7 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
-        if float(data.sel(band='nir').max().data.compute().values) == nodata:
+        if data.sel(band='nir').max().data.compute() == nodata:
             return _create_nodata_array(data, nodata, band_variable, 'evi')
 
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
@@ -211,7 +211,7 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        if float(data.sel(band='nir').max().data.compute().values) == nodata:
+        if data.sel(band='nir').max().data.compute() == nodata:
             return _create_nodata_array(data, nodata, band_variable, 'evi2')
 
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red], ['nir', 'red'])
@@ -286,7 +286,7 @@ class BandMath(object):
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
 
-        if float(data.sel(band='red').max().data.compute().values) == nodata:
+        if data.sel(band='red').max().data.compute() == nodata:
             return _create_nodata_array(data, nodata, band_variable, 'wi')
 
         data = self.scale_and_assign(data, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
