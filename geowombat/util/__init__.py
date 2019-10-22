@@ -1,7 +1,6 @@
 from .plotting import Plotting
-from .web import Downloads
+from .web import GeoDownloads
 
 imshow = Plotting().imshow
-download = Downloads().download
 
-__all__ = ['imshow', 'download']
+__all__ = ['imshow', 'GeoDownloads']

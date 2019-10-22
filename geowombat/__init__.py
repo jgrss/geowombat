@@ -15,6 +15,8 @@ from .core import ndvi
 from .core import wi
 from .core import tasseled_cap
 from .core import norm_brdf
+from .core import SurfaceReflectance
+from .core import gen_pixel_angles
 from .models import predict
 
 from .version import __version__
@@ -36,5 +38,7 @@ __all__ = ['config',
            'wi',
            'tasseled_cap',
            'norm_brdf',
+           'SurfaceReflectance',
+           'gen_pixel_angles',
            'predict',
            '__version__']

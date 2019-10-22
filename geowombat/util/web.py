@@ -1,4 +1,6 @@
 import os
+import subprocess
+from pathlib import Path
 import wget
 from datetime import datetime
 from collections import namedtuple
@@ -50,7 +52,7 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     return file_info
 
 
-class Downloads(object):
+class GeoDownloads(object):
 
     def __init__(self):
 
@@ -58,6 +60,88 @@ class Downloads(object):
 
         self.landsat_parts = ['le07', 'lt05', 'lc08']
         self.sentinel_parts = ['s2a']
+
+    @staticmethod
+    def list_gcp(query):
+
+        """
+        Lists files from Google Cloud Platform
+
+        Args:
+            query (str)
+
+        Examples:
+            >>> dl = GeoDownloads()
+            >>>
+            >>> # Query from a known directory
+            >>> dl.list_gcp('LC08/01/042/034/LC08_L1TP_042034_20161104_20170219_01_T1/')
+            >>>
+            >>> # Query a date
+            >>> dl.list_gcp('LC08/01/042/034/*_2016*_*_01_T1*/')
+
+        Returns:
+            ``list``
+        """
+
+        proc = subprocess.Popen('gsutil ls -r gs://gcp-public-data-landsat/{}'.format(query),
+                                stdout=subprocess.PIPE,
+                                shell=True)
+
+        output = proc.stdout.read()
+
+        return [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+
+    @staticmethod
+    def download_gcp(filename, outdir='.', verbose=0):
+
+        """
+        Downloads a file from Google Cloud platform
+
+        Args:
+            filename (str or list): The file or list of files to download.
+            outdir (Optional[str]): The output directory.
+            verbose (Optional[int]): The verbosity level.
+
+        Returns:
+            ``namedtuple`` or ``list``
+        """
+
+        if not isinstance(filename, list):
+            filename = [filename]
+
+        FileInfo = namedtuple('FileInfo', 'name key')
+
+        downloads_ = list()
+
+        for fn in filename:
+
+            down_file = Path(outdir).joinpath(Path(fn).name).as_posix()
+
+            if down_file.endswith('_ANG.txt'):
+                key = 'angle'
+            elif down_file.endswith('_MTL.txt'):
+                key = 'meta'
+            else:
+                key = 'band'
+
+            if not Path(down_file).exists():
+
+                if verbose > 0:
+                    logger.info('  Downloading {} ...'.format(Path(fn).name))
+
+                if fn.lower().startswith('gs://gcp-public-data'):
+                    com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                else:
+                    com = 'gsutil cp -r gs://gcp-public-data-landsat/{} {}'.format(fn, outdir)
+
+                subprocess.call(com, shell=True)
+
+            downloads_.append(FileInfo(name=down_file, key=key))
+
+        if len(downloads_) == 1:
+            return downloads_[0]
+        else:
+            return downloads_
 
     def download_landsat_range(self, sensors, bands, path_range, row_range, date_range, **kwargs):
 
@@ -113,7 +197,7 @@ class Downloads(object):
         Downloads an individual file
 
         Args:
-            filename (str): The file to download.
+            filename (str or list): The file to download.
             outdir (Optional[str]): The output directory.
             from_google (Optional[bool]): Whether to download from Google Cloud storage
             metadata (Optional[bool]): Whether to download metadata files.
@@ -131,29 +215,49 @@ class Downloads(object):
             None
         """
 
-        if from_google:
+        outputs = list()
 
-            file_info = _parse_google_filename(filename,
-                                               self.landsat_parts,
-                                               self.sentinel_parts,
-                                               self.gcp_public)
+        if not isinstance(filename, list):
+            filename = [filename]
 
-            file_on_disc = os.path.join(outdir, file_info.url_file)
+        FileInfo = namedtuple('FileInfo', 'band meta angles')
 
-            if file_info.url:
+        if outdir != '.':
+            Path(outdir).mkdir(parents=True, exist_ok=True)
 
-                if overwrite:
+        for fn in filename:
 
-                    if os.path.isfile(file_on_disc):
-                        os.remove(file_on_disc)
+            if from_google:
 
-                if os.path.isfile(file_on_disc):
-                    logger.warning('  The file already exists.')
-                else:
+                file_info = _parse_google_filename(fn,
+                                                   self.landsat_parts,
+                                                   self.sentinel_parts,
+                                                   self.gcp_public)
 
-                    wget.download(file_info.url_file, out=outdir)
+                file_on_disc = Path(outdir).joinpath(fn)
+                meta_on_disc = Path(outdir).joinpath(Path(file_info.meta).name)
+                angles_on_disc = Path(outdir).joinpath(Path(file_info.angles).name)
 
-                    if metadata:
+                if file_info.url:
 
-                        wget.download(file_info.meta, out=outdir)
-                        wget.download(file_info.angles, out=outdir)
+                    if overwrite:
+
+                        if file_on_disc.exists():
+                            file_on_disc.unlink()
+
+                    if file_on_disc.exists():
+                        logger.warning('  The file already exists.')
+                    else:
+
+                        wget.download(file_info.url_file, out=outdir)
+
+                        if metadata:
+
+                            wget.download(file_info.meta, out=outdir)
+                            wget.download(file_info.angles, out=outdir)
+
+                outputs.append(FileInfo(band=file_on_disc.as_posix(),
+                                        meta=meta_on_disc.as_posix(),
+                                        angles=angles_on_disc.as_posix()))
+
+        return outputs

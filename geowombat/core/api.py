@@ -375,7 +375,7 @@ def open(filename,
                                    overlap=overlap,
                                    **kwargs)
 
-                if not time_names:
+                if not time_names and (stack_dim == 'time'):
                     darray.coords['time'] = parse_filename_dates(filename)
 
                 # if return_as == 'array':

@@ -3,7 +3,9 @@ from .sops import SpatialOperations
 from .util import Converters, MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
-from ..radiometrics import BRDF
+from ..radiometry import BRDF
+from ..radiometry import SurfaceReflectance
+from ..radiometry import gen_pixel_angles
 
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
@@ -34,4 +36,6 @@ __all__ = ['apply',
            'ndvi',
            'wi',
            'tasseled_cap',
-           'norm_brdf']
+           'norm_brdf',
+           'SurfaceReflectance',
+           'gen_pixel_angles']

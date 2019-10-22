@@ -1,12 +1,17 @@
 import os
+from pathlib import Path
 import fnmatch
 import subprocess
 from collections import namedtuple
 
+from ..errors import logger
+
 import rasterio as rio
+from rasterio.warp import reproject
+from affine import Affine
 
 
-def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
+def gen_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path='.', l8_angles_path='.', verbose=0):
 
     """
     Prepares Landsat pixel angles
@@ -16,6 +21,9 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
         ref_file (str): A reference file.
         outdir (str): The output directory.
         sensor (str): The sensor.
+        l57_angles_path (str)
+        l8_angles_path (str)
+        verbose (Optional[int]): The verbosity level.
 
     Returns:
         ``namedtuple``
@@ -27,20 +35,28 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
     # example file = LE07_L1TP_225098_20160911_20161008_01_T1_sr_band1.tif
 
     with rio.open(ref_file) as src:
-        image_extent = src.bounds
+
+        ref_height = src.height
+        ref_width = src.width
+        ref_extent = src.bounds
 
     ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
 
+    opath = Path(outdir)
+
+    opath.mkdir(parents=True, exist_ok=True)
+
     # Set output angle file names.
-    sensor_azimuth_file = os.path.join(outdir, ref_base + '_sensor_azimuth.tif')
-    sensor_zenith_file = os.path.join(outdir, ref_base + '_sensor_zenith.tif')
-    solar_azimuth_file = os.path.join(outdir, ref_base + '_solar_azimuth.tif')
-    solar_zenith_file = os.path.join(outdir, ref_base + '_solar_zenith.tif')
+    sensor_azimuth_file = opath.joinpath(ref_base + '_sensor_azimuth.tif').as_posix()
+    sensor_zenith_file = opath.joinpath(ref_base + '_sensor_zenith.tif').as_posix()
+    solar_azimuth_file = opath.joinpath(ref_base + '_solar_azimuth.tif').as_posix()
+    solar_zenith_file = opath.joinpath(ref_base + '_solar_zenith.tif').as_posix()
 
     # Setup the command.
-    if sensor.upper() in ['ETM', 'TM', 'MSS']:
+    if sensor.lower() in ['l5', 'l7']:
 
-        angle_command = 'landsat_angles {META} -s 1 -b 1'.format(META=angles_file)
+        angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles'),
+                                                         META=angles_file)
 
         # 1=zenith, 2=azimuth
         out_order = dict(azimuth=2, zenith=1)
@@ -48,17 +64,17 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
 
     else:
 
-        angle_command = 'l8_angles {META} BOTH 1 -f -32768 -b 4'.format(META=angles_file)
+        angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles'),
+                                                                     META=angles_file)
 
         # 1=azimuth, 2=zenith
         out_order = dict(azimuth=1, zenith=2)
         # out_order = [1, 2, 1, 2]
 
-    # Set the working directory
-    if not os.path.isdir(outdir):
-        return None
-
     os.chdir(outdir)
+
+    if verbose > 0:
+        logger.info('  Generating pixel angles ...')
 
     # Create the angle files.
     subprocess.call(angle_command, shell=True)
@@ -67,8 +83,8 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
     sensor_angles = fnmatch.filter(os.listdir(outdir), '*sensor_B04.img')[0]
     solar_angles = fnmatch.filter(os.listdir(outdir), '*solar_B04.img')[0]
 
-    sensor_angles_fn_in = os.path.join(outdir, sensor_angles)
-    solar_angles_fn_in = os.path.join(outdir, solar_angles)
+    sensor_angles_fn_in = opath.joinpath(sensor_angles).as_posix()
+    solar_angles_fn_in = opath.joinpath(solar_angles).as_posix()
 
     # Convert the data
     for in_angle, out_angle, band_pos in zip([sensor_angles_fn_in,
@@ -84,18 +100,43 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor):
                                               'azimuth',
                                               'zenith']):
 
+        with rio.open(in_angle) as src:
+
+            profile = src.profile.copy()
+
+            profile.update(transform=Affine(src.res[0], 0.0, ref_extent.left, 0.0, -src.res[1], ref_extent.top),
+                           height=ref_height,
+                           width=ref_width,
+                           nodata=-32768,
+                           dtype='int16',
+                           count=1,
+                           driver='GTiff',
+                           tiled=True,
+                           compress='lzw')
+
+            src_band = rio.Band(src, out_order[band_pos], 'int16', (src.height, src.width))
+
+            with rio.open(out_angle, mode='w', **profile) as dst:
+
+                dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
+
+                # TODO: num_threads
+                reproject(src_band,
+                          destination=dst_band,
+                          num_threads=8)
+
         # TODO: replace with rasterio
-        raster_tools.translate(in_angle,
-                               out_angle,
-                               noData=-32768,
-                               cell_size=30.0,
-                               d_type='int16',
-                               bandList=[out_order[band_pos]],
-                               projWin=[image_extent.left,
-                                        image_extent.top,
-                                        image_extent.right,
-                                        image_extent.bottom],
-                               creationOptions=['TILED=YES'])
+        # raster_tools.translate(in_angle,
+        #                        out_angle,
+        #                        noData=-32768,
+        #                        cell_size=30.0,
+        #                        d_type='int16',
+        #                        bandList=[out_order[band_pos]],
+        #                        projWin=[image_extent.left,
+        #                                 image_extent.top,
+        #                                 image_extent.right,
+        #                                 image_extent.bottom],
+        #                        creationOptions=['TILED=YES'])
 
     return AngleInfo(senaz=sensor_azimuth_file,
                      senze=sensor_zenith_file,

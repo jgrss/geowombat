@@ -4,7 +4,37 @@ from affine import Affine
 from shapely.geometry import Polygon
 
 
+WavelengthsBGR = namedtuple('WavelengthsBGR', 'blue green red')
+WavelengthsRGB = namedtuple('WavelengthsRGB', 'red green blue')
+WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
+WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'red green blue nir')
+WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
+WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
+
+
 class DataProperties(object):
+
+    @property
+    def micrometers(self):
+
+        """
+        Get a dictionary of wavelength micrometers
+        """
+
+        return dict(l7=WavelengthsL57(blue=0.48,
+                                      green=0.56,
+                                      red=0.66,
+                                      nir=0.84,
+                                      swir1=1.65,
+                                      swir2=2.22),
+                    l8=WavelengthsL8(coastal=0.44,
+                                     blue=0.48,
+                                     green=0.56,
+                                     red=0.655,
+                                     nir=0.865,
+                                     swir1=1.61,
+                                     swir2=2.2,
+                                     cirrus=1.37))
 
     @property
     def wavelengths(self):
@@ -12,13 +42,6 @@ class DataProperties(object):
         """
         Get a dictionary of sensor wavelengths
         """
-
-        WavelengthsBGR = namedtuple('WavelengthsBGR', 'blue green red')
-        WavelengthsRGB = namedtuple('WavelengthsRGB', 'red green blue')
-        WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
-        WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'red green blue nir')
-        WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
-        WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
 
         return dict(rgb=WavelengthsRGB(red=1,
                                        green=2,
