@@ -226,6 +226,7 @@ def open(filename,
          return_as='array',
          band_names=None,
          time_names=None,
+         stack_dim='time',
          bounds=None,
          how='reference',
          resampling='nearest',
@@ -245,6 +246,7 @@ def open(filename,
             is given or ``window`` is given. Default is None.
         time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
             Default is None.
+        stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
         how (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
@@ -366,6 +368,7 @@ def open(filename,
 
                 # Stack images along the 'time' axis
                 darray = gw_concat(filename,
+                                   stack_dim=stack_dim,
                                    how=how,
                                    resampling=resampling,
                                    time_names=time_names,

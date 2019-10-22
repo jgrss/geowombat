@@ -180,6 +180,7 @@ def mosaic(filenames,
 
 
 def concat(filenames,
+           stack_dim='time',
            how='reference',
            resampling='nearest',
            time_names=None,
@@ -191,6 +192,7 @@ def concat(filenames,
 
     Args:
         filenames (list): A list of file names to concatenate.
+        stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
         how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
 
             * reference: Use the bounds of the reference image
@@ -207,7 +209,10 @@ def concat(filenames,
         ``xarray.DataArray``
     """
 
-    if how not in ['intersection', 'union', 'reference']:
+    if stack_dim.lower() not in ['band', 'time']:
+        logger.exception("  The stack dimension should be 'band' or 'time'")
+
+    if how.lower() not in ['intersection', 'union', 'reference']:
         logger.exception("  Only 'intersection', 'union', and 'reference' are supported.")
 
     ref_kwargs = {'bounds': None, 'crs': None, 'res': None}
@@ -236,7 +241,7 @@ def concat(filenames,
         ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     # Replace the bounds keyword, if needed
-    if how == 'intersection':
+    if how.lower() == 'intersection':
 
         # Get the intersecting bounds of all images
         ref_kwargs['bounds'] = get_file_bounds(filenames,
@@ -245,7 +250,7 @@ def concat(filenames,
                                                res=ref_kwargs['res'],
                                                return_bounds=True)
 
-    elif how == 'union':
+    elif how.lower() == 'union':
 
         # Get the union bounds of all images
         ref_kwargs['bounds'] = get_file_bounds(filenames,
@@ -289,7 +294,7 @@ def concat(filenames,
                                                     **kwargs))
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
-        output = xr.concat(concat_list, dim='time')
+        output = xr.concat(concat_list, dim=stack_dim.lower())
 
         # Assign the new time band names
         return output.assign_coords(time=new_time_names)
@@ -300,4 +305,4 @@ def concat(filenames,
         return xr.concat([xr.open_rasterio(warp(fn,
                                                 resampling=resampling,
                                                 **ref_kwargs), **kwargs)
-                          for fn in filenames], dim='time')
+                          for fn in filenames], dim=stack_dim.lower())
