@@ -44,17 +44,27 @@ class BandMath(object):
         attrs = data.attrs
 
         if band_variable == 'wavelength':
-            data = data.sel(wavelength=names) * scale_factor
+            band_data = data.sel(wavelength=names) * scale_factor
         else:
-            data = data.sel(band=names) * scale_factor
+            band_data = data.sel(band=names) * scale_factor
 
-        data = data.assign_coords(coords={band_variable: new_names})
-        data = data.assign_attrs(**attrs)
+        band_data = band_data.assign_coords(coords={band_variable: new_names})
+        band_data = band_data.assign_attrs(**attrs)
 
-        return data
+        return band_data
 
     @staticmethod
-    def mask_and_assign(data, result, band_variable, new_name, mask, clip_min, clip_max, scale_factor, sensor):
+    def mask_and_assign(data,
+                        result,
+                        band_variable,
+                        band_name,
+                        nodata,
+                        new_name,
+                        mask,
+                        clip_min,
+                        clip_max,
+                        scale_factor,
+                        sensor):
 
         """
         Masks a DataArray
@@ -63,6 +73,8 @@ class BandMath(object):
             data (DataArray or Dataset)
             result (DataArray)
             band_variable (str)
+            band_name (str)
+            nodata (int or float)
             new_name (str)
             mask (bool)
             clip_min (int)
@@ -73,6 +85,13 @@ class BandMath(object):
         Returns:
             ``xarray.DataArray``
         """
+
+        if isinstance(nodata, int) or isinstance(nodata, float):
+
+            if band_variable == 'wavelength':
+                result = xr.where(data.sel(wavelength=band_name) == nodata, nodata, result)
+            else:
+                result = xr.where(data.sel(band=band_name) == nodata, nodata, result)
 
         if mask:
 
@@ -134,22 +153,19 @@ class BandMath(object):
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
-        if data.sel(band=b1).max().data.compute() == nodata:
-            return _create_nodata_array(data, nodata, band_variable, name)
-
-        data = self.scale_and_assign(data, band_variable, scale_factor, [b1, b2], [b1, b2])
+        band_data = self.scale_and_assign(data, band_variable, scale_factor, [b1, b2], [b1, b2])
 
         if band_variable == 'wavelength':
 
-            result = ((data.sel(wavelength=b2) - data.sel(wavelength=b1)) /
-                      (data.sel(wavelength=b2) + data.sel(wavelength=b1))).fillna(nodata)
+            result = ((band_data.sel(wavelength=b2) - band_data.sel(wavelength=b1)) /
+                      (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))).fillna(nodata)
 
         else:
 
-            result = ((data.sel(band=b2) - data.sel(band=b1)) /
-                      (data.sel(band=b2) + data.sel(band=b1))).fillna(nodata)
+            result = ((band_data.sel(band=b2) - band_data.sel(band=b1)) /
+                      (band_data.sel(band=b2) + band_data.sel(band=b1))).fillna(nodata)
 
-        return self.mask_and_assign(data, result, band_variable, name, mask, -1, 1, scale_factor, sensor)
+        return self.mask_and_assign(band_data, result, band_variable, b2, nodata, name, mask, -1, 1, scale_factor, sensor)
 
     def evi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
@@ -176,9 +192,6 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
-        if data.sel(band='nir').max().data.compute() == nodata:
-            return _create_nodata_array(data, nodata, band_variable, 'evi')
-
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
 
         if band_variable == 'wavelength':
@@ -191,7 +204,7 @@ class BandMath(object):
             result = (g * (data.sel(band='nir') - data.sel(band='red')) /
                       (data.sel(band='nir') * c1 * data.sel(band='red') - c2 * data.sel(band='blue') + l)).fillna(nodata)
 
-        return self.mask_and_assign(data, result, band_variable, 'evi', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi', mask, 0, 1, scale_factor, sensor)
 
     def evi2_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
@@ -211,9 +224,6 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        if data.sel(band='nir').max().data.compute() == nodata:
-            return _create_nodata_array(data, nodata, band_variable, 'evi2')
-
         data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red], ['nir', 'red'])
 
         if band_variable == 'wavelength':
@@ -226,7 +236,7 @@ class BandMath(object):
             result = (2.5 * ((data.sel(band='nir') - data.sel(band='red')) /
                              (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red')))))).fillna(nodata)
 
-        return self.mask_and_assign(data, result, band_variable, 'evi2', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi2', mask, 0, 1, scale_factor, sensor)
 
     def nbr_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
@@ -286,9 +296,6 @@ class BandMath(object):
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
 
-        if data.sel(band='red').max().data.compute() == nodata:
-            return _create_nodata_array(data, nodata, band_variable, 'wi')
-
         data = self.scale_and_assign(data, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
 
         if band_variable == 'wavelength':
@@ -298,7 +305,7 @@ class BandMath(object):
 
         result = result.where(result > 0.5, 0, 1.0 - (result / 0.5)).fillna(nodata)
 
-        return self.mask_and_assign(data, result, band_variable, 'wi', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(data, result, band_variable, 'red', nodata, 'wi', mask, 0, 1, scale_factor, sensor)
 
 
 def linear_transform(data, bands, scale, offset):

@@ -277,6 +277,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   verbose=0,
                   overwrite=False,
                   gdal_cache=512,
+                  scheduler='processes',
                   n_jobs=1,
                   n_workers=None,
                   n_threads=None,
@@ -305,6 +306,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             verbose (Optional[int]): The verbosity level.
             overwrite (Optional[bool]): Whether to overwrite an existing file.
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
+            scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads'].
             n_jobs (Optional[int]): The total number of parallel jobs.
             n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
             n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
@@ -357,6 +359,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                   verbose=verbose,
                   overwrite=overwrite,
                   gdal_cache=gdal_cache,
+                  scheduler=scheduler,
                   n_jobs=n_jobs,
                   n_workers=n_workers,
                   n_threads=n_threads,

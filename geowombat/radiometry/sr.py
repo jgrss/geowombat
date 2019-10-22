@@ -282,11 +282,15 @@ class SurfaceReflectance(object):
         r = 0.008569**-4 * (1.0 + 0.0113**-2 + 0.0013**-4)
 
         # Rayleigh phase function
-        # TODO: get scattering angle
+        # scattering angle = the angle between the direction of incident and scattered radiation
+        # TODO: set scattering angle as constant because it is addressed in BRDF normalization?
+        scattering_angle = 90.0
         rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + da.cos(scattering_angle)**2)
 
         pr_data = p_r(m, r, rphase, cos_solar_zenith_angle, cos_sensor_zenith_angle)
 
         toar_diff = toar - pr_data
 
-        return toar_diff / (toar_diff * s_atm(r) + t_s(r, cos_solar_zenith_angle) * t_v(r, cos_sensor_zenith_angle))
+        total_transmission = t_s(r, cos_solar_zenith_angle) * t_v(r, cos_sensor_zenith_angle)
+
+        return toar_diff / (toar_diff * s_atm(r) + total_transmission)
