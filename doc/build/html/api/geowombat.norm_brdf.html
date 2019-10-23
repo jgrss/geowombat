@@ -16,8 +16,6 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="predict" href="geowombat.predict.html" />
-    <link rel="prev" title="tasseled_cap" href="geowombat.tasseled_cap.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -72,18 +70,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.tasseled_cap.html" title="previous chapter">tasseled_cap</a></li>
-      <li>Next: <a href="geowombat.predict.html" title="next chapter">predict</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -115,53 +109,8 @@
             
   <div class="section" id="norm-brdf">
 <h1>norm_brdf<a class="headerlink" href="#norm-brdf" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="geowombat.norm_brdf">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">scale_angles=True</em>, <em class="sig-param">num_threads=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.norm_brdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
-introduced by Roy et al. (2016)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>2d</em><em> or </em><em>3d array</em>) – The data to normalize.</p></li>
-<li><p><strong>solar_za</strong> (<em>2d array</em>) – The solar zenith angles (degrees).</p></li>
-<li><p><strong>solar_az</strong> (<em>2d array</em>) – The solar azimuth angles (degrees).</p></li>
-<li><p><strong>sensor_za</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
-<li><p><strong>sensor_az</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
-<li><p><strong>central_latitude</strong> (<em>float</em>) – The central latitude.</p></li>
-<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The satellite sensor.</p></li>
-<li><p><strong>wavelengths</strong> (<em>str list</em>) – Choices are [‘blue’, ‘green’, ‘red’, ‘nir’, ‘swir1’, ‘swir2’].</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
-<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
-<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
-<li><p><strong>scale_angles</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to scale the pixel angle arrays.</p></li>
-<li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads to pass to <code class="docutils literal notranslate"><span class="pre">numexpr</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">References</p>
-<p>See <a class="bibtex reference internal" href="#roy-etal-2016" id="id1">[RZJ+16]</a></p>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solarz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solara.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solara</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensorz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensora.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensora</span><span class="p">:</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;landsat.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>            <span class="n">ds_brdf</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <p id="bibtex-bibliography-api/geowombat.norm_brdf-0"><dl class="citation">
-<dt class="bibtex label" id="roy-etal-2016"><span class="brackets"><a class="fn-backref" href="#id1">RZJ+16</a></span></dt>
+<dt class="bibtex label" id="roy-etal-2016"><span class="brackets">RZJ+16</span></dt>
 <dd><p>David P Roy, HK Zhang, Junchang Ju, Jose Luis Gomez-Dans, Philip E Lewis, CB Schaaf, Qingsong Sun, Jian Li, Haiyan Huang, and V Kovalskyy. A general method to normalize Landsat reflectance data to nadir BRDF adjusted reflectance. <em>Remote Sensing of Environment</em>, 176:255–271, 2016.</p>
 </dd>
 </dl>

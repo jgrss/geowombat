@@ -3,6 +3,19 @@
 Change Log
 ==========
 
+1.0.0b (23 October 2019)
+------------------------
+
+Changes
+~~~~~~~
+
+- Added fixes for surface reflectance
+
+New
+~~~
+
+- Added support for band stacking (in addition to time stacking) in :func:`geowombat.open`.
+
 1.0.0b (20 October 2019)
 ------------------------
 

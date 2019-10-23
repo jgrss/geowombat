@@ -117,7 +117,7 @@
 <h1>open<a class="headerlink" href="#open" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.open">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">how='reference'</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">overlap='max'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">stack_dim='time'</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">how='reference'</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">overlap='max'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -129,6 +129,7 @@ Choices are [‘array’, ‘dataset’] which correspond to <code class="docuti
 is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is None.</p></li>
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A list of names to give the time dimension if <code class="docutils literal notranslate"><span class="pre">bounds</span></code> is given.
 Default is None.</p></li>
+<li><p><strong>stack_dim</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The stack dimension. Choices are [‘time’, ‘band’].</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as [minx, maxy, miny, maxx].
 Default is None.</p></li>
 <li><p><strong>how</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.

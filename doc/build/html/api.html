@@ -125,16 +125,6 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cluster</span></code>(**kwargs)</p></td>
-<td><p>Wrapper for <code class="docutils literal notranslate"><span class="pre">dask</span></code> clients</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataProperties</span></code></p></td>
-<td><p><dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
-<dd class="field-odd"><p></p></dd>
-</dl>
-</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor" title="geowombat.core.geoxarray.GeoWombatAccessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoWombatAccessor</span></code></a>(xarray_obj)</p></td>
 <td><p>Xarray IO class</p></td>
 </tr>
@@ -170,7 +160,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(infile, outfile, block_func[, args, …])</p></td>
 <td><p>Applies a function and writes results to file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, use_dask_store, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, readxsize, …])</p></td>
 <td><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, w, n_jobs])</p></td>
@@ -197,11 +187,70 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.tasseled_cap.html#geowombat.tasseled_cap" title="geowombat.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(data[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.norm_brdf.html#geowombat.norm_brdf" title="geowombat.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(data, solar_za, solar_az, …[, …])</p></td>
-<td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method introduced by Roy et al.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.predict.html#geowombat.predict" title="geowombat.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(data, clf[, outname, chunksize, …])</p></td>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.models">
+<span id="geowombat-models-package"></span><h3>geowombat.models Package<a class="headerlink" href="#module-geowombat.models" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.models.predict.html#geowombat.models.predict" title="geowombat.models.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(data, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id2">
+<h4>Classes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.models.GeoWombatClassifier.html#geowombat.models.GeoWombatClassifier" title="geowombat.models.GeoWombatClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoWombatClassifier</span></code></a>([name, lightgbm_kwargs, …])</p></td>
+<td><p>A class for model fitting models with Dask</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.radiometry">
+<span id="geowombat-radiometry-package"></span><h3>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h4>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.gen_pixel_angles.html#geowombat.radiometry.gen_pixel_angles" title="geowombat.radiometry.gen_pixel_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gen_pixel_angles</span></code></a>(angles_file, ref_file, …)</p></td>
+<td><p>Prepares Landsat pixel angles</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h4>Classes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BRDF</span></code></a>()</p></td>
+<td><p>Global BRDF normalization</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance" title="geowombat.radiometry.SurfaceReflectance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SurfaceReflectance</span></code></a></p></td>
+<td><p>A general class for surface reflectance calibration methods</p></td>
 </tr>
 </tbody>
 </table>

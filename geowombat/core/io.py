@@ -8,7 +8,8 @@ import ctypes
 from datetime import datetime
 import concurrent.futures
 from contextlib import contextmanager
-import multiprocessing
+import multiprocessing as multi
+import threading
 
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
@@ -157,13 +158,25 @@ def client_dummy(**kwargs):
     yield None
 
 
+def _compressor(*args):
+
+    w_, b_, f_, o_ = list(itertools.chain(*args))
+
+    with rio.open(f_, mode='r+', sharing=False) as dst_:
+
+        dst_.write(np.squeeze(b_),
+                   window=w_,
+                   indexes=o_)
+
+
 def _block_write_func(fn_, g_, t_):
+# def _block_write_func(*args):
 
     """
     Function for block writing with ``concurrent.futures``
     """
 
-    # ofn_, fn_, g_, t_ = list(itertools.chain(*args))
+    # fn_, g_, t_ = list(itertools.chain(*args))
 
     if t_ == 'zarr':
 
@@ -196,7 +209,8 @@ def _block_write_func(fn_, g_, t_):
 
 def _return_window(window_, block, num_workers):
 
-    out_data_ = block.data.compute(num_workers=num_workers)
+    with threading.Lock():
+        out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
     dshape = out_data_.shape
 
@@ -222,7 +236,7 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    filename, block, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
+    block, filename, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
 
     output, out_window, out_indexes = _return_window(block_window, block, n_threads)
 
@@ -230,13 +244,15 @@ def _write_xarray(*args):
         zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
     else:
 
-        with rio.open(filename,
-                      mode='r+',
-                      sharing=False) as dst:
+        with threading.Lock():
 
-            dst.write(output,
-                      window=out_window,
-                      indexes=out_indexes)
+            with rio.open(filename,
+                          mode='r+',
+                          sharing=False) as dst_:
+
+                dst_.write(output,
+                           window=out_window,
+                           indexes=out_indexes)
 
     return zarr_file
 
@@ -252,7 +268,7 @@ def to_raster(data,
               verbose=0,
               overwrite=False,
               gdal_cache=512,
-              scheduler='processes',
+              scheduler='mpool',
               n_jobs=1,
               n_workers=None,
               n_threads=None,
@@ -282,7 +298,12 @@ def to_raster(data,
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-        scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads'].
+        scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+
+            mpool: process pool of workers using ``multiprocessing.Pool``
+            processes: process pool of workers using ``concurrent.futures``
+            threads: thread pool of workers using ``concurrent.futures``
+
         n_jobs (Optional[int]): The total number of parallel jobs.
         n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
         n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
@@ -318,7 +339,10 @@ def to_raster(data,
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
-    pool_executor = concurrent.futures.ProcessPoolExecutor if scheduler.lower() == 'processes' else concurrent.futures.ThreadPoolExecutor
+    if scheduler.lower() == 'mpool':
+        pool_executor = multi.Pool
+    else:
+        pool_executor = concurrent.futures.ProcessPoolExecutor if scheduler.lower() == 'processes' else concurrent.futures.ThreadPoolExecutor
 
     if overwrite:
 
@@ -445,7 +469,7 @@ def to_raster(data,
 
             n_windows = len(windows)
 
-            with pool_executor(max_workers=n_workers) as executor:
+            with pool_executor(n_workers) as executor:
 
                 # Iterate over the windows in chunks
                 for wchunk in range(0, n_windows, n_chunks):
@@ -460,22 +484,21 @@ def to_raster(data,
                                                                                  n_windows))
 
                     if len(data.shape) == 2:
-                        data_gen = (data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                        data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
                     elif len(data.shape) == 3:
-                        data_gen = (data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                        data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
                     else:
-                        data_gen = (data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width] for w in window_slice)
+                        data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
 
-                    for zarr_file in tqdm(executor.map(_write_xarray,
-                                                       zip((filename for w in window_slice),
-                                                           data_gen,
-                                                           (w for w in window_slice),
-                                                           (n_threads for w in window_slice),
-                                                           (separate for w in window_slice),
-                                                           (chunksize for w in window_slice),
-                                                           (root for w in window_slice))),
-                                          total=n_windows_slice):
-                        pass
+                    if scheduler == 'mpool':
+
+                        for zarr_file in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                            pass
+
+                    else:
+
+                        for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
+                            pass
 
             if overviews:
 
@@ -570,7 +593,7 @@ def to_raster(data,
                 # Compress into one file
                 with rio.open(filename, mode='w', **kwargs) as dst_:
 
-                    with concurrent.futures.ProcessPoolExecutor(max_workers=min(n_jobs, 8)) as executor:
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
 
                         # Iterate over the windows in chunks
                         for wchunk in range(0, n_groups, n_chunks):
@@ -578,13 +601,28 @@ def to_raster(data,
                             group_keys_slice = group_keys[wchunk:wchunk + n_chunks]
                             n_windows_slice = len(group_keys_slice)
 
-                        #     for zarr_file in tqdm(executor.map(_block_write_func,
-                        #                                        zip((filename for w in range(n_windows_slice)),
-                        #                                            (root for w in range(n_windows_slice)),
-                        #                                            (group for group in group_keys_slice),
-                        #                                            ('zarr' for w in range(n_windows_slice)))),
-                        #                           total=n_windows_slice):
-                        #         pass
+                            ################################################
+                            # data_gen = ((Window(row_off=root[group].attrs['row_off'],
+                            #                     col_off=root[group].attrs['col_off'],
+                            #                     height=root[group].attrs['height'],
+                            #                     width=root[group].attrs['width']),
+                            #              root[group]['data'][:],
+                            #              filename,
+                            #              out_indexes_) for group in group_keys_slice)
+                            #
+                            # for f in tqdm(executor.map(_compressor, data_gen), total=n_windows_slice):
+                            #     pass
+                            #
+                            # futures = [executor.submit(_compress_dummy, iter_[0], iter_[1], None) for iter_ in data_gen]
+                            #
+                            # for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                            #
+                            #     out_window, out_block = f.result()
+                            #
+                            #     dst_.write(np.squeeze(out_block),
+                            #                window=out_window,
+                            #                indexes=out_indexes_)
+                            ################################################
 
                             data_gen = ((root, group, 'zarr') for group in group_keys_slice)
 
@@ -599,14 +637,18 @@ def to_raster(data,
                                            window=out_window,
                                            indexes=out_indexes)
 
+                            futures = None
+
                 if not keep_blocks:
                     shutil.rmtree(sub_dir)
 
             else:
 
-                d_name, f_name = os.path.split(filename)
-                f_base, f_ext = os.path.splitext(f_name)
-                temp_file = os.path.join(d_name, '{}_temp{}'.format(f_base, f_ext))
+                p = Path(filename)
+
+                d_name = p.parent
+                f_base, f_ext = os.path.splitext(d_name.name)
+                temp_file = d_name.joinpath('{}_temp{}'.format(f_base, f_ext))
 
                 compress_raster(filename,
                                 temp_file,
@@ -614,7 +656,7 @@ def to_raster(data,
                                 gdal_cache=gdal_cache,
                                 compress=compress_type)
 
-                os.rename(temp_file, filename)
+                Path(temp_file).rename(filename)
 
             if verbose > 0:
                 logger.info('  Finished compressing')

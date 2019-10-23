@@ -8,12 +8,12 @@ from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
-from . import norm_brdf as gw_norm_brdf
-from .properties import DataProperties
+from .properties import DataProperties as _DataProperties
 from .util import project_coords
-from ..backends import Cluster
+from ..backends import Cluster as _Cluster
 from ..util import imshow as gw_imshow
 from ..models import predict
+from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
@@ -43,7 +43,7 @@ class _UpdateConfig(object):
 
 
 @xr.register_dataset_accessor('gw')
-class GeoWombatAccessor(_UpdateConfig, DataProperties):
+class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def __init__(self, xarray_obj):
 
@@ -218,7 +218,7 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
 
 
 @xr.register_dataarray_accessor('gw')
-class GeoWombatAccessor(_UpdateConfig, DataProperties):
+class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     """
     Xarray IO class
@@ -470,10 +470,10 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
             >>>     ds.io.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 
-        cluster = Cluster(n_workers=n_jobs,
-                          threads_per_worker=1,
-                          scheduler_port=0,
-                          processes=False)
+        cluster = _Cluster(n_workers=n_jobs,
+                           threads_per_worker=1,
+                           scheduler_port=0,
+                           processes=False)
 
         cluster.start()
 
@@ -839,15 +839,17 @@ class GeoWombatAccessor(_UpdateConfig, DataProperties):
                                      self._obj.crs,
                                      {'init': 'epsg:4326'})[1][0]
 
-        return gw_norm_brdf(self._obj,
-                            solar_zenith,
-                            solar_azimuth,
-                            sensor_zenith,
-                            sensor_azimuth,
-                            central_lat,
-                            sensor=sensor,
-                            wavelengths=wavelengths,
-                            nodata=nodata,
-                            mask=mask,
-                            scale_factor=scale_factor,
-                            scale_angles=scale_angles)
+        gw_brdf = _BRDF()
+
+        return gw_brdf.norm_brdf(self._obj,
+                                 solar_zenith,
+                                 solar_azimuth,
+                                 sensor_zenith,
+                                 sensor_azimuth,
+                                 central_lat,
+                                 sensor=sensor,
+                                 wavelengths=wavelengths,
+                                 nodata=nodata,
+                                 mask=mask,
+                                 scale_factor=scale_factor,
+                                 scale_angles=scale_angles)

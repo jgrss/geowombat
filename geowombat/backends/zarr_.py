@@ -5,7 +5,7 @@ import numcodecs
 
 
 compressor = numcodecs.Blosc(cname='zstd',
-                             clevel=3,
+                             clevel=2,
                              shuffle=numcodecs.Blosc.BITSHUFFLE)
 
 

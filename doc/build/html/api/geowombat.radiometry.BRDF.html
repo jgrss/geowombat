@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>BRDF &#8212; GeoWombat 1.0.0b documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SurfaceReflectance" href="geowombat.radiometry.SurfaceReflectance.html" />
+    <link rel="prev" title="gen_pixel_angles" href="geowombat.radiometry.gen_pixel_angles.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometrics.html">BRDF normalization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.gen_pixel_angles.html" title="previous chapter">gen_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.SurfaceReflectance.html" title="next chapter">SurfaceReflectance</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="brdf">
+<h1>BRDF<a class="headerlink" href="#brdf" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="geowombat.radiometry.BRDF">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">BRDF</code><a class="headerlink" href="#geowombat.radiometry.BRDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.RelativeBRDFNorm</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.RossLiKernels</span></code></p>
+<p>Global BRDF normalization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The <cite>sensor_array</cite> scale factor. <a href="#id1"><span class="problematic" id="id2">*</span></a>Not the angle array scale factors, which
+are scaled automatically.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>Li &amp; Strahler (1992) Geometric-Optical Bidirectional Reflectance Modeling of the</dt><dd><p>Discrete Crown Vegetation Canopy: Effect of Crown Shape and Mutual Shadowing,
+IEEE Transactions.</p>
+</dd>
+<dt>Roujean et al. (1992) A Bidirectional Reflectance Model of the Earth’s Surface</dt><dd><p>for the Correction of Remote Sensing Data, Journal of Geophysical Research.</p>
+</dd>
+<dt>Schaaf et al. (2002) First operational BRDF, albedo nadir reflectance products</dt><dd><p>from MODIS, Remote Sensing of Environment, 83.</p>
+</dd>
+<dt>Roy et al. (2016) Characterization of Landsat-7 to Landsat-8 reflective wavelength and</dt><dd><p>normalized difference vegetation index continuity, Remote Sensing of Environment, 185.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gbn</span> <span class="o">=</span> <span class="n">GlobalBRDFNorm</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gbn</span><span class="o">.</span><span class="n">normalize</span><span class="p">([</span><span class="s1">&#39;blue&#39;</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_array</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">solar_za</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">solar_az</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_za</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_az</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">mask</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
+<td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method introduced by Roy et al.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sza</span></code>(central_latitude)</p></td>
+<td><p>Returns the mean sun zenith angle (SZA) as a function of the central latitude</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 60%" />
+<col style="width: 40%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>get_coeffs</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_kernels</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Summary</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.get_coeffs" title="geowombat.radiometry.BRDF.get_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeffs</span></code></a>(self, sensor_band)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
+<td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method introduced by Roy et al.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Documentation</p>
+<dl class="method">
+<dt id="geowombat.radiometry.BRDF.get_coeffs">
+<code class="sig-name descname">get_coeffs</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sensor_band</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.get_coeffs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="geowombat.radiometry.BRDF.norm_brdf">
+<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">scale_angles=True</em>, <em class="sig-param">num_threads=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
+introduced by Roy et al. (2016)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>2d</em><em> or </em><em>3d array</em>) – The data to normalize.</p></li>
+<li><p><strong>solar_za</strong> (<em>2d array</em>) – The solar zenith angles (degrees).</p></li>
+<li><p><strong>solar_az</strong> (<em>2d array</em>) – The solar azimuth angles (degrees).</p></li>
+<li><p><strong>sensor_za</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
+<li><p><strong>sensor_az</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
+<li><p><strong>central_latitude</strong> (<em>float</em>) – The central latitude.</p></li>
+<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The satellite sensor.</p></li>
+<li><p><strong>wavelengths</strong> (<em>str list</em>) – Choices are [‘blue’, ‘green’, ‘red’, ‘nir’, ‘swir1’, ‘swir2’].</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
+<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+<li><p><strong>scale_angles</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to scale the pixel angle arrays.</p></li>
+<li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads to pass to <code class="docutils literal notranslate"><span class="pre">numexpr</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>See <a class="bibtex reference internal" href="geowombat.norm_brdf.html#roy-etal-2016" id="id3">[RZJ+16]</a></p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solarz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solara.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solara</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensorz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensora.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensora</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;landsat.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>            <span class="n">ds_brdf</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.radiometry.BRDF.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>GeoWombatClassifier &#8212; GeoWombat 1.0.0b documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gen_pixel_angles" href="geowombat.radiometry.gen_pixel_angles.html" />
+    <link rel="prev" title="predict" href="geowombat.models.predict.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometrics.html">BRDF normalization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.models.predict.html" title="previous chapter">predict</a></li>
+      <li>Next: <a href="geowombat.radiometry.gen_pixel_angles.html" title="next chapter">gen_pixel_angles</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="geowombatclassifier">
+<h1>GeoWombatClassifier<a class="headerlink" href="#geowombatclassifier" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="geowombat.models.GeoWombatClassifier">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">GeoWombatClassifier</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">lightgbm_kwargs=None</em>, <em class="sig-param">extra_trees_kwargs=None</em>, <em class="sig-param">random_forest_kwargs=None</em>, <em class="sig-param">bal_random_forest_kwargs=None</em>, <em class="sig-param">bal_bagging_kwargs=None</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">backend='dask'</em>, <em class="sig-param">n_jobs=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.GeoWombatClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for model fitting models with Dask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> or </em><em>list</em>) – A model or list of models to use. Choices are [‘lightgbm’, ‘extra trees’,
+‘random forest’, ‘bal random forest’, ‘bag bagging’].</p></li>
+<li><p><strong>lightgbm_kwargs</strong> (<em>dict</em>) – Keyword arguments for LightGBM.</p></li>
+<li><p><strong>extra_trees_kwargs</strong> (<em>dict</em>) – Keyword arguments for Extra Trees.</p></li>
+<li><p><strong>random_forest_kwargs</strong> (<em>dict</em>) – Keyword arguments for Random Forest.</p></li>
+<li><p><strong>bal_random_forest_kwargs</strong> (<em>dict</em>) – Keyword arguments for Balanced Random Forest.</p></li>
+<li><p><strong>bal_bagging_kwargs</strong> (<em>dict</em>) – Keyword arguments for Balanced Bagging.</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel processes.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ml</span> <span class="o">=</span> <span class="n">GeoWombatClassifier</span><span class="p">([</span><span class="s1">&#39;lightgbm&#39;</span><span class="p">,</span> <span class="s1">&#39;random forest&#39;</span><span class="p">],</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit a model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Save the model to file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ml</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s1">&#39;clf.model&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load a model from file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ml</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">&#39;clf.model&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Requires:</dt><dd><p>pip install –upgrade dask[dataframe] dask-ml</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.class_count" title="geowombat.models.GeoWombatClassifier.class_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_count</span></code></a></dt><dd><p>Get the class count</p>
+</dd>
+<dt><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.classes_" title="geowombat.models.GeoWombatClassifier.classes_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classes_</span></code></a></dt><dd><p>Get the class list from the first estimator</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.fit" title="geowombat.models.GeoWombatClassifier.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(self, data[, x, y, sample_weight, …])</p></td>
+<td><p>Fits a model</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>from_file</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_file</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes Summary</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.class_count" title="geowombat.models.GeoWombatClassifier.class_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_count</span></code></a></p></td>
+<td><p>Get the class count</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.classes_" title="geowombat.models.GeoWombatClassifier.classes_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classes_</span></code></a></p></td>
+<td><p>Get the class list from the first estimator</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Summary</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoWombatClassifier.concat_classifiers</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.fit" title="geowombat.models.GeoWombatClassifier.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(self, data[, x, y, sample_weight, …])</p></td>
+<td><p>Fits a model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.from_file" title="geowombat.models.GeoWombatClassifier.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(self, filename)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.models.GeoWombatClassifier.to_file" title="geowombat.models.GeoWombatClassifier.to_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_file</span></code></a>(self, filename[, overwrite])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes Documentation</p>
+<dl class="attribute">
+<dt id="geowombat.models.GeoWombatClassifier.class_count">
+<code class="sig-name descname">class_count</code><a class="headerlink" href="#geowombat.models.GeoWombatClassifier.class_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the class count</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="geowombat.models.GeoWombatClassifier.classes_">
+<code class="sig-name descname">classes_</code><a class="headerlink" href="#geowombat.models.GeoWombatClassifier.classes_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the class list from the first estimator</p>
+</dd></dl>
+
+<p class="rubric">Methods Documentation</p>
+<dl class="method">
+<dt id="geowombat.models.GeoWombatClassifier.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">sample_weight=None</em>, <em class="sig-param">calibrate=True</em>, <em class="sig-param">cv_calibrate=True</em>, <em class="sig-param">cv_n_splits=3</em>, <em class="sig-param">cv_test_size=0.5</em>, <em class="sig-param">cv_train_size=0.5</em>, <em class="sig-param">x_calibrate=None</em>, <em class="sig-param">y_calibrate=None</em>, <em class="sig-param">sample_weight_calibrate=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.GeoWombatClassifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataFrame</em><em> or </em><em>GeoDataFrame</em>) – </p></li>
+<li><p><strong>x</strong> (<em>Optional</em><em>[</em><em>str list</em><em>]</em>) – The X variable names.</p></li>
+<li><p><strong>y</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The y response name.</p></li>
+<li><p><strong>sample_weight</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sample weight name.</p></li>
+<li><p><strong>calibrate</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – </p></li>
+<li><p><strong>cv_calibrate</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – </p></li>
+<li><p><strong>cv_n_splits</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+<li><p><strong>cv_test_size</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+<li><p><strong>cv_train_size</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+<li><p><strong>x_calibrate</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>y_calibrate</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>sample_weight_calibrate</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="geowombat.models.GeoWombatClassifier.from_file">
+<code class="sig-name descname">from_file</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.GeoWombatClassifier.from_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="geowombat.models.GeoWombatClassifier.to_file">
+<code class="sig-name descname">to_file</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.GeoWombatClassifier.to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.models.GeoWombatClassifier.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

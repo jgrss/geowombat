@@ -187,7 +187,7 @@ class GeoWombatClassifier(object):
     def classes_(self):
 
         """
-        Returns the class list from the first estimator
+        Get the class list from the first estimator
         """
 
         if len(self.name_list) == 1:
@@ -201,6 +201,7 @@ class GeoWombatClassifier(object):
 
     @property
     def class_count(self):
+        """Get the class count"""
         return self.classes_.shape[0]
 
     def _setup_models(self):
@@ -276,15 +277,15 @@ class GeoWombatClassifier(object):
         for model_name in self.name_list:
             self.clf_dict[model_name] = model_dict[model_name]
 
-    def concat_classifiers(self,
-                           X,
-                           y,
-                           sample_weight,
-                           X_calibrate,
-                           y_calibrate,
-                           sample_weight_calibrate,
-                           skf_cv,
-                           cv_calibrate):
+    def _concat_classifiers(self,
+                            X,
+                            y,
+                            sample_weight,
+                            X_calibrate,
+                            y_calibrate,
+                            sample_weight_calibrate,
+                            skf_cv,
+                            cv_calibrate):
 
         """
         Calibrates a list of classifiers
@@ -400,14 +401,17 @@ class GeoWombatClassifier(object):
 
             if calibrate and (len(self.name_list) > 1):
 
-                estimators = self.concat_classifiers(data.loc[:, x].values,
-                                                     data.loc[:, y].values.flatten(),
-                                                     data.loc[:, sample_weight].values.flatten() if sample_weight else None,
-                                                     data.loc[:, x_calibrate].values if x_calibrate else None,
-                                                     data.loc[:, y_calibrate].values.flatten() if y_calibrate else None,
-                                                     data.loc[:, sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
-                                                     skf_cv,
-                                                     cv_calibrate)
+                estimators = self._concat_classifiers(data.loc[:, x].values,
+                                                      data.loc[:, y].values.flatten(),
+                                                      data.loc[:,
+                                                      sample_weight].values.flatten() if sample_weight else None,
+                                                      data.loc[:, x_calibrate].values if x_calibrate else None,
+                                                      data.loc[:,
+                                                      y_calibrate].values.flatten() if y_calibrate else None,
+                                                      data.loc[:,
+                                                      sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
+                                                      skf_cv,
+                                                      cv_calibrate)
 
             else:
 
@@ -462,7 +466,7 @@ class GeoWombatClassifier(object):
 class Predict(object):
 
     @staticmethod
-    def append_xy(data, chunk_size):
+    def _append_xy(data, chunk_size):
 
         ycoords, xcoords = np.meshgrid(data.y, data.x)
 
@@ -542,7 +546,7 @@ class Predict(object):
             data = data.sel(band=clf.x)
 
         # if use_xy:
-        #     data = self.append_xy(data, read_chunks)
+        #     data = self._append_xy(data, read_chunks)
 
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))

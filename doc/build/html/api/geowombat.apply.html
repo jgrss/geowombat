@@ -117,7 +117,7 @@
 <h1>apply<a class="headerlink" href="#apply" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.apply">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param">infile</em>, <em class="sig-param">outfile</em>, <em class="sig-param">block_func</em>, <em class="sig-param">args=None</em>, <em class="sig-param">count=1</em>, <em class="sig-param">scheduler='processes'</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=4</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">dtype='float64'</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param">infile</em>, <em class="sig-param">outfile</em>, <em class="sig-param">block_func</em>, <em class="sig-param">args=None</em>, <em class="sig-param">count=1</em>, <em class="sig-param">scheduler='processes'</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=4</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies a function and writes results to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -133,8 +133,6 @@ input image has 1 band, otherwise a 3d array.</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of blocks to process in parallel.</p></li>
 <li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing output file.</p></li>
-<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data type for the output file.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value for the output file.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.open</span></code>.</p></li>
 </ul>
 </dd>

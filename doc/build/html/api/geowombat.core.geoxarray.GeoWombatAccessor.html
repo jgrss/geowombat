@@ -145,6 +145,8 @@
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></dt><dd><p>Get the array metdata</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">micrometers</span></code></dt><dd><p>Get a dictionary of wavelength micrometers</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbands</span></code></dt><dd><p>Get the number of array bands</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">ncols</span></code></dt><dd><p>Get the number of array columns</p>
@@ -414,7 +416,7 @@ The <code class="docutils literal notranslate"><span class="pre">blockxsize</spa
 
 <dl class="method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.to_raster">
-<code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">nodata=None</em>, <em class="sig-param">blockxsize=512</em>, <em class="sig-param">blockysize=512</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='processes'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">nodata=None</em>, <em class="sig-param">blockxsize=512</em>, <em class="sig-param">blockysize=512</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes an Xarray DataArray to a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -427,6 +429,7 @@ Only used if <code class="docutils literal notranslate"><span class="pre">separa
 <li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
 <li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing file.</p></li>
 <li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
+<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> scheduler to use. Choices are [‘processes’, ‘threads’].</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total number of parallel jobs.</p></li>
 <li><p><strong>n_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of processes. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>n_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>

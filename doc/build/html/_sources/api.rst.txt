@@ -12,3 +12,11 @@ Top-level functions
     :no-inherited-members:
 
 .. automodapi:: geowombat
+
+.. automodapi:: geowombat.models
+    :no-inheritance-diagram:
+    :no-inherited-members:
+
+.. automodapi:: geowombat.radiometry
+    :no-inheritance-diagram:
+    :no-inherited-members:

@@ -89,9 +89,9 @@ class BandMath(object):
         if isinstance(nodata, int) or isinstance(nodata, float):
 
             if band_variable == 'wavelength':
-                result = xr.where(data.sel(wavelength=band_name) == nodata, nodata, result)
+                result = xr.where(data.sel(wavelength=band_name) == nodata, nodata, result).astype('float64')
             else:
-                result = xr.where(data.sel(band=band_name) == nodata, nodata, result)
+                result = xr.where(data.sel(band=band_name) == nodata, nodata, result).astype('float64')
 
         if mask:
 
@@ -158,12 +158,12 @@ class BandMath(object):
         if band_variable == 'wavelength':
 
             result = ((band_data.sel(wavelength=b2) - band_data.sel(wavelength=b1)) /
-                      (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))).fillna(nodata)
+                      (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))).fillna(nodata).astype('float64')
 
         else:
 
             result = ((band_data.sel(band=b2) - band_data.sel(band=b1)) /
-                      (band_data.sel(band=b2) + band_data.sel(band=b1))).fillna(nodata)
+                      (band_data.sel(band=b2) + band_data.sel(band=b1))).fillna(nodata).astype('float64')
 
         return self.mask_and_assign(band_data, result, band_variable, b2, nodata, name, mask, -1, 1, scale_factor, sensor)
 
@@ -197,12 +197,12 @@ class BandMath(object):
         if band_variable == 'wavelength':
 
             result = (g * (data.sel(wavelength='nir') - data.sel(wavelength='red')) /
-                      (data.sel(wavelength='nir') * c1 * data.sel(wavelength='red') - c2 * data.sel(wavelength='blue') + l)).fillna(nodata)
+                      (data.sel(wavelength='nir') * c1 * data.sel(wavelength='red') - c2 * data.sel(wavelength='blue') + l)).fillna(nodata).astype('float64')
 
         else:
 
             result = (g * (data.sel(band='nir') - data.sel(band='red')) /
-                      (data.sel(band='nir') * c1 * data.sel(band='red') - c2 * data.sel(band='blue') + l)).fillna(nodata)
+                      (data.sel(band='nir') * c1 * data.sel(band='red') - c2 * data.sel(band='blue') + l)).fillna(nodata).astype('float64')
 
         return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi', mask, 0, 1, scale_factor, sensor)
 
@@ -229,12 +229,12 @@ class BandMath(object):
         if band_variable == 'wavelength':
 
             result = (2.5 * ((data.sel(wavelength='nir') - data.sel(wavelength='red')) /
-                             (data.sel(wavelength='nir') + 1.0 + (2.4 * (data.sel(wavelength='red')))))).fillna(nodata)
+                             (data.sel(wavelength='nir') + 1.0 + (2.4 * (data.sel(wavelength='red')))))).fillna(nodata).astype('float64')
 
         else:
 
             result = (2.5 * ((data.sel(band='nir') - data.sel(band='red')) /
-                             (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red')))))).fillna(nodata)
+                             (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red')))))).fillna(nodata).astype('float64')
 
         return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi2', mask, 0, 1, scale_factor, sensor)
 
@@ -303,7 +303,7 @@ class BandMath(object):
         else:
             result = data.sel(band='swir1') + data.sel(band='red')
 
-        result = result.where(result > 0.5, 0, 1.0 - (result / 0.5)).fillna(nodata)
+        result = result.where(result > 0.5, 0, 1.0 - (result / 0.5)).fillna(nodata).astype('float64')
 
         return self.mask_and_assign(data, result, band_variable, 'red', nodata, 'wi', mask, 0, 1, scale_factor, sensor)
 

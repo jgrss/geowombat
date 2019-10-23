@@ -134,9 +134,12 @@ ref_crs None
 ref_res None
 blockxsize 512
 blockysize 512
-compress lzw
+compress None
 driver GTiff
 tiled True
+bigtiff NO
+l57_angles_path None
+l8_angles_path None
 
 In [3]: with gw.config.update(sensor='planetscope', tiled=False):
    ...:     with gw.open(rgbn) as ds:
@@ -152,9 +155,12 @@ ref_crs None
 ref_res None
 blockxsize 512
 blockysize 512
-compress lzw
+compress None
 driver GTiff
 tiled False
+bigtiff NO
+l57_angles_path None
+l8_angles_path None
 
 In [4]: with gw.open(rgbn) as ds:
    ...:     for k, v in ds.gw.config.items():
@@ -169,9 +175,12 @@ ref_crs None
 ref_res None
 blockxsize 512
 blockysize 512
-compress lzw
+compress None
 driver GTiff
-tiled True</pre>
+tiled True
+bigtiff NO
+l57_angles_path None
+l8_angles_path None</pre>
 </div>
 </div>
 
