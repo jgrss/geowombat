@@ -139,7 +139,16 @@ class RadTransforms(object):
 
         return MetaCoeffs(sensor=sensor, m_l=m_l, a_l=a_l, m_p=m_p, a_p=a_p)
 
-    def dn_to_sr(self, dn, solar_za, solar_az, sensor_za, sensor_az, sensor=None, method='srem', meta=None):
+    def dn_to_sr(self,
+                 dn,
+                 solar_za,
+                 solar_az,
+                 sensor_za,
+                 sensor_az,
+                 nodata=-32768,
+                 sensor=None,
+                 method='srem',
+                 meta=None):
 
         """
         Converts digital numbers to surface reflectance
@@ -150,6 +159,7 @@ class RadTransforms(object):
             solar_az (DataArray): The solar azimuth angle.
             sensor_za (DataArray): The sensor, or view, zenith angle.
             sensor_az (DataArray): The sensor, or view, azimuth angle.
+            nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
             sensor (Optional[str]): The data's sensor.
             method (Optional[str]): The method to use. Only 'srem' is supported.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
@@ -165,9 +175,9 @@ class RadTransforms(object):
             https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product
 
         Examples:
-            >>> from geowombat.radiometry import SurfaceReflectance
+            >>> from geowombat.radiometry import RadTransforms
             >>>
-            >>> sr = SurfaceReflectance()
+            >>> sr = RadTransforms()
             >>> meta = sr.get_coefficients('file.MTL')
             >>>
             >>> # Convert DNs to surface reflectance using Landsat metadata
@@ -221,7 +231,14 @@ class RadTransforms(object):
         band_um = [getattr(micrometers, p) for p in band_names]
         um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
 
-        sr_data = self.toar_to_sr(toar, solar_za, sensor_za, solar_az, sensor_az, um)
+        sr_data = self.toar_to_sr(toar, solar_za, sensor_za, solar_az, sensor_az, um).fillna(nodata).clip(0, 1).astype('float64')
+        sr_data = sr_data.where(sr_data != nodata)
+
+        attrs['sensor'] = sensor
+        attrs['nodata'] = nodata
+        attrs['method'] = method
+        attrs['drange'] = (0, 1)
+
         sr_data.attrs = attrs
 
         return sr_data

@@ -9,8 +9,12 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
+
 from rasterio import features
 from rasterio.crs import CRS
+from rasterio.warp import reproject, transform_bounds
+from rasterio.transform import from_bounds
+
 import shapely
 from shapely.geometry import Polygon
 from affine import Affine
@@ -20,7 +24,7 @@ from tqdm import tqdm
 shapely.speedups.enable()
 
 
-def project_coords(x, y, src_crs, dst_crs):
+def project_coords(x, y, src_crs, dst_crs, **kwargs):
 
     """
     Projects coordinates to a new CRS
@@ -30,18 +34,46 @@ def project_coords(x, y, src_crs, dst_crs):
         y (1d array-like)
         src_crs (str, dict, object)
         dst_crs (str, dict, object)
+        kwargs (Optional[dict]): Keyword arguments passed to ``rasterio.warp.reproject``.
 
     Returns:
-        ``numpy.array``, ``numpy.array``
+        ``numpy.array``, ``numpy.array`` or ``xr.DataArray``
     """
 
-    df_tmp = gpd.GeoDataFrame(np.arange(0, x.shape[0]),
-                              geometry=gpd.points_from_xy(x, y),
-                              crs=src_crs)
+    if isinstance(x, float) or (isinstance(x, np.ndarray) and (len(x.shape) == 1)):
 
-    df_tmp = df_tmp.to_crs(dst_crs)
+        df_tmp = gpd.GeoDataFrame(np.arange(0, x.shape[0]),
+                                  geometry=gpd.points_from_xy(x, y),
+                                  crs=src_crs)
 
-    return df_tmp.geometry.x.values, df_tmp.geometry.y.values
+        df_tmp = df_tmp.to_crs(dst_crs)
+
+        return df_tmp.geometry.x.values, df_tmp.geometry.y.values
+
+    elif isinstance(x, np.ndarray):
+
+        yy = np.meshgrid(x, y)[1]
+
+        latitudes = np.zeros(yy.shape, dtype='float64')
+
+        src_transform = from_bounds(x[0], y[-1], x[-1], y[0], latitudes.shape[1], latitudes.shape[0])
+
+        west, south, east, north = transform_bounds(src_crs, CRS(dst_crs), x[0], y[-1], x[-1], y[0])
+        dst_transform = from_bounds(west, south, east, north, latitudes.shape[1], latitudes.shape[0])
+
+        latitudes = reproject(yy,
+                              destination=latitudes,
+                              src_transform=src_transform,
+                              dst_transform=dst_transform,
+                              src_crs=CRS.from_epsg(src_crs.split(':')[1]),
+                              dst_crs=CRS(dst_crs),
+                              **kwargs)[0]
+
+        return xr.DataArray(data=latitudes[np.newaxis, :, :],
+                            dims=('band', 'y', 'x'),
+                            coords={'band': ['lat'],
+                                    'y': ('y', latitudes[:, 0]),
+                                    'x': ('x', np.arange(1, latitudes.shape[1]+1))})
 
 
 def get_geometry_info(geometry, res):

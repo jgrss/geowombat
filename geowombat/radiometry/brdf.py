@@ -1,6 +1,7 @@
 from copy import copy
 from collections import namedtuple
 
+from ..core.util import project_coords
 from ..errors import logger
 
 import numpy as np
@@ -537,7 +538,7 @@ class Kernels(object):
         if delayed:
 
             # TODO: make `flat_chunks` a user argument
-            global_args = GlobalArgs(nrows=vza.shape[0], ncols=vza.shape[1], size=vza.size, dtype=vza.dtype.name,
+            global_args = GlobalArgs(nrows=vza.shape[-2], ncols=vza.shape[-1], size=vza.size, dtype=vza.dtype.name,
                                      flat_chunks=np.array(list(vza.chunksize)).sum(),
                                      nbar=nbar, nearly_zero=self.__NEARLYZERO, critical=self.critical,
                                      file_=self.FILE, outputfile=self.outputFile,
@@ -563,8 +564,8 @@ class Kernels(object):
             #                                                                           angle_info,
             #                                                                           global_args)
 
-            self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk(vza.chunksize)
-            self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk(vza.chunksize)
+            self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
+            self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
 
         else:
 
@@ -1614,12 +1615,17 @@ class RossLiKernels(object):
 
     def get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
 
+        # if isinstance(central_latitude, np.ndarray) or isinstance(central_latitude, xr.DataArray):
+        #     delayed = True
+        # else:
+        #     delayed = False
+
         # Get the geometric scattering kernel.
         #
         # HLS uses a constant (per location) sun zenith angle (`solar_za`).
         # HLS uses 0 for sun azimuth angle (`solar_az`).
         # theta_v, theta_s, delta_gamma
-        kl = Kernels(0.0, self.sza(central_latitude), 0.0, doIntegrals=False)
+        kl = Kernels(0.0, self.sza(central_latitude), 0.0, delayed=False, doIntegrals=False)
 
         # Copy the geometric scattering
         #   coefficients so they are
@@ -1631,7 +1637,11 @@ class RossLiKernels(object):
         # Get the volume scattering kernel.
         #
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
-        kl = Kernels(sensor_za, solar_za, solar_az - sensor_az, delayed=True, doIntegrals=False)
+        kl = Kernels(sensor_za,
+                     solar_za,
+                     solar_az - sensor_az,
+                     delayed=True,
+                     doIntegrals=False)
 
         self.geo_sensor = kl.Li
         self.vol_sensor = kl.Ross
@@ -1717,7 +1727,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                   solar_az,
                   sensor_za,
                   sensor_az,
-                  central_latitude,
+                  central_latitude=None,
                   sensor=None,
                   wavelengths=None,
                   nodata=0,
@@ -1735,7 +1745,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             solar_az (2d array): The solar azimuth angles (degrees).
             sensor_za (2d array): The sensor azimuth angles (degrees).
             sensor_az (2d array): The sensor azimuth angles (degrees).
-            central_latitude (float): The central latitude.
+            central_latitude (Optional[float or 2d array]): The central latitude.
             sensor (Optional[str]): The satellite sensor.
             wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
@@ -1762,14 +1772,16 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             ``xarray.DataArray``
         """
 
-        if sensor:
-            wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
-        else:
+        if not wavelengths:
 
-            if not data.gw.sensor:
-                logger.exception('  The sensor must be supplied.')
+            if sensor:
+                wavelengths = list(data.gw.wavelengths[sensor]._fields)
+            else:
 
-            wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
+                if not data.gw.sensor:
+                    logger.exception('  The sensor must be supplied.')
+
+                wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
 
         if not wavelengths:
             logger.exception('  The sensor or wavelength must be supplied.')
@@ -1781,6 +1793,24 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             nodata = data.gw.nodata
 
         # ne.set_num_threads(num_threads)
+
+        if not isinstance(central_latitude, np.ndarray):
+            if not isinstance(central_latitude, xr.DataArray):
+                if not isinstance(central_latitude, float):
+
+                    central_latitude = \
+                    project_coords(np.array([data.x.values[int(data.x.shape[0] / 2)]], dtype='float64'),
+                                   np.array([data.y.values[int(data.y.shape[0] / 2)]], dtype='float64'),
+                                   data.crs,
+                                   {'init': 'epsg:4326'})[1][0]
+
+                    # Create the 2d latitudes
+                    # central_latitude = project_coords(data.x.values,
+                    #                                   data.y.values,
+                    #                                   data.crs,
+                    #                                   {'init': 'epsg:4326'},
+                    #                                   num_threads=1,
+                    #                                   warp_mem_limit=512)
 
         attrs = data.attrs
 
@@ -1804,7 +1834,11 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             sensor_az = sensor_az * 0.01
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude, solar_za.data, solar_az.data, sensor_za.data, sensor_az.data)
+        self.get_kernels(central_latitude,
+                         solar_za.data,
+                         solar_az.data,
+                         sensor_za.data,
+                         sensor_az.data)
 
         if len(wavelengths) == 1:
 
@@ -1856,12 +1890,12 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         data = data.transpose('band', 'y', 'x')
 
         # Mask data
-        if isinstance(mask, xr.DataArray) or isinstance(mask, np.ndarray):
-            data = xr.where((mask == 0) & (solar_za != -32768), data, nodata).astype('float64')
-        else:
-            data = xr.where(solar_za != -32768, data, nodata).astype('float64')
+        # if isinstance(mask, xr.DataArray) or isinstance(mask, np.ndarray):
+        #     data = data.where((mask == 0) & (solar_za != -32768))
+        # else:
+        #     data = data.where(solar_za != -32768)
 
-        data = data.transpose('band', 'y', 'x')
+        # data = data.transpose('band', 'y', 'x')
 
         # Return the adjusted array, scaled
         #   back to the original range.

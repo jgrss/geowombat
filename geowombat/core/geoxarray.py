@@ -839,9 +839,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                      self._obj.crs,
                                      {'init': 'epsg:4326'})[1][0]
 
-        gw_brdf = _BRDF()
-
-        return gw_brdf.norm_brdf(self._obj,
+        return _BRDF().norm_brdf(self._obj,
                                  solar_zenith,
                                  solar_azimuth,
                                  sensor_zenith,
