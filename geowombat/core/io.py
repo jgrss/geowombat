@@ -376,7 +376,7 @@ def to_raster(data,
     mem_per_core = int(total_memory / n_workers)
 
     if not isinstance(n_chunks, int):
-        n_chunks = n_workers * 10
+        n_chunks = n_workers * 50
 
     if not isinstance(readxsize, int):
         readxsize = data.gw.col_chunks

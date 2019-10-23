@@ -29,7 +29,7 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path='.',
         ``namedtuple``
     """
 
-    AngleInfo = namedtuple('AngleInfo', 'senaz senze solaz solze')
+    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
 
     # Setup the angles name.
     # example file = LE07_L1TP_225098_20160911_20161008_01_T1_sr_band1.tif
@@ -125,20 +125,7 @@ def gen_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path='.',
                           destination=dst_band,
                           num_threads=8)
 
-        # TODO: replace with rasterio
-        # raster_tools.translate(in_angle,
-        #                        out_angle,
-        #                        noData=-32768,
-        #                        cell_size=30.0,
-        #                        d_type='int16',
-        #                        bandList=[out_order[band_pos]],
-        #                        projWin=[image_extent.left,
-        #                                 image_extent.top,
-        #                                 image_extent.right,
-        #                                 image_extent.bottom],
-        #                        creationOptions=['TILED=YES'])
-
-    return AngleInfo(senaz=sensor_azimuth_file,
-                     senze=sensor_zenith_file,
-                     solaz=solar_azimuth_file,
-                     solze=solar_zenith_file)
+    return AngleInfo(vaa=sensor_azimuth_file,
+                     vza=sensor_zenith_file,
+                     saa=solar_azimuth_file,
+                     sza=solar_zenith_file)

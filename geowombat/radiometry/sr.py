@@ -100,10 +100,10 @@ def _format_coeff(dataframe, key):
     return dict(dataframe_)
 
 
-class SurfaceReflectance(object):
+class RadTransforms(object):
 
     """
-    A general class for surface reflectance calibration methods
+    A general class for radiometric transformations
     """
 
     @staticmethod
@@ -139,7 +139,7 @@ class SurfaceReflectance(object):
 
         return MetaCoeffs(sensor=sensor, m_l=m_l, a_l=a_l, m_p=m_p, a_p=a_p)
 
-    def dn_to_sr(self, dn, solar_za, sensor_za, solar_az, sensor_az, sensor=None, method='srem', meta=None):
+    def dn_to_sr(self, dn, solar_za, solar_az, sensor_za, sensor_az, sensor=None, method='srem', meta=None):
 
         """
         Converts digital numbers to surface reflectance
@@ -147,9 +147,9 @@ class SurfaceReflectance(object):
         Args:
             dn (DataArray): The digital number data to calibrate.
             solar_za (DataArray): The solar zenith angle.
-            sensor_za (DataArray): The sensor zenith angle.
             solar_az (DataArray): The solar azimuth angle.
-            sensor_az (DataArray): The sensor azimuth angle.
+            sensor_za (DataArray): The sensor, or view, zenith angle.
+            sensor_az (DataArray): The sensor, or view, azimuth angle.
             sensor (Optional[str]): The data's sensor.
             method (Optional[str]): The method to use. Only 'srem' is supported.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
@@ -299,21 +299,44 @@ class SurfaceReflectance(object):
             ``xarray.DataArray``
         """
 
-        # Scale the angles
-        solar_zenith_angle = solar_za * 0.01
-        sensor_zenith_angle = sensor_za * 0.01
-        solar_azimuth_angle = solar_az * 0.01
-        sensor_azimuth_angle = sensor_az * 0.01
+        # kwargs = dict(readxsize=1024, readysize=1024, n_workers=4, n_threads=4)
 
-        # Cosine(angles)
-        cos_solar_zenith_angle = xr.ufuncs.cos(solar_zenith_angle)
-        cos_sensor_zenith_angle = xr.ufuncs.cos(sensor_zenith_angle)
+        # Scale the angles to degrees
+        sza = solar_za * 0.01
+        saa = solar_az * 0.01
+        vza = sensor_za * 0.01
+        vaa = sensor_az * 0.01
+
+        # Convert to radians
+        rad_sza = xr.ufuncs.deg2rad(sza)
+        rad_vza = xr.ufuncs.deg2rad(vza)
+
+        # sza.attrs = solar_za.attrs
+        # saa.attrs = solar_az.attrs
+        # vza.attrs = sensor_za.attrs
+        # vaa.attrs = sensor_az.attrs
+        # sza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/sza.tif', **kwargs)
+        # saa.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/saa.tif', **kwargs)
+        # vza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/vza.tif', **kwargs)
+        # vaa.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/vaa.tif', **kwargs)
+
+        # Cosine(deg2rad(angles)) = angles x (pi / 180)
+        cos_sza = xr.ufuncs.cos(rad_sza)
+        cos_vza = xr.ufuncs.cos(rad_vza)
+
+        # cos_sza.attrs = solar_za.attrs
+        # cos_vza.attrs = solar_za.attrs
+        # cos_sza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/cos_sza.tif', **kwargs)
+        # cos_vza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/cos_vza.tif', **kwargs)
 
         # air mass
-        m = (1.0 / cos_solar_zenith_angle) + (1.0 / cos_sensor_zenith_angle)
+        m = (1.0 / cos_sza) + (1.0 / cos_vza)
 
         m = xr.concat([m]*len(toar.band), dim='band')
         m.coords['band'] = toar.band.values
+
+        # m.attrs = solar_za.attrs
+        # m.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/m.tif', **kwargs)
 
         # Rayleigh optical depth
         # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
@@ -325,20 +348,33 @@ class SurfaceReflectance(object):
 
         # Relative azimuth angle
         # http://stcorp.github.io/harp/doc/html/algorithms/derivations/relative_azimuth_angle.html
-        rel_azimuth_angle = xr.ufuncs.fabs(solar_azimuth_angle - sensor_azimuth_angle - 180.0)
+        rel_azimuth_angle = xr.ufuncs.fabs(saa - vaa - 180.0)
+
+        # rel_azimuth_angle.attrs = solar_za.attrs
+        # rel_azimuth_angle.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/rel_azimuth_angle.tif', **kwargs)
 
         # http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
-        scattering_angle = xr.ufuncs.arccos(-xr.ufuncs.cos(solar_zenith_angle)*xr.ufuncs.cos(sensor_zenith_angle) -
-                                            xr.ufuncs.sin(solar_zenith_angle)*xr.ufuncs.sin(sensor_zenith_angle)*xr.ufuncs.cos(rel_azimuth_angle))
+        scattering_angle = xr.ufuncs.arccos(-xr.ufuncs.cos(rad_sza)*xr.ufuncs.cos(rad_vza) -
+                                            xr.ufuncs.sin(rad_sza)*xr.ufuncs.sin(rad_vza) *
+                                            xr.ufuncs.cos(xr.ufuncs.deg2rad(rel_azimuth_angle)))
 
         rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + xr.ufuncs.cos(scattering_angle)**2)
 
-        pr_data = p_r(m, r, rphase, cos_solar_zenith_angle, cos_sensor_zenith_angle)
+        # rphase.attrs = solar_za.attrs
+        # rphase.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/rphase.tif', **kwargs)
+
+        pr_data = p_r(m, r, rphase, cos_sza, cos_vza)
+
+        # pr_data.attrs = solar_za.attrs
+        # pr_data.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/pr_data.tif', **kwargs)
 
         # da.nan_to_num(pr_data).max().compute()
 
         toar_diff = toar - pr_data
 
-        total_transmission = t_s(r, cos_solar_zenith_angle) * t_v(r, cos_sensor_zenith_angle)
+        total_transmission = t_s(r, cos_sza) * t_v(r, cos_vza)
+
+        # total_transmission.attrs = solar_za.attrs
+        # total_transmission.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/total_transmission.tif', **kwargs)
 
         return toar_diff / (toar_diff * s_atm(r) + total_transmission)

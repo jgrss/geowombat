@@ -1723,8 +1723,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                   nodata=0,
                   mask=None,
                   scale_factor=1.0,
-                  scale_angles=True,
-                  num_threads=1):
+                  scale_angles=True):
 
         """
         Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
@@ -1743,7 +1742,6 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             mask (Optional[bool]): Whether to mask the results.
             scale_factor (Optional[float]): A scale factor to apply to the data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
-            num_threads (Optional[int]): The number of threads to pass to ``numexpr``.
 
         References:
 
@@ -1764,7 +1762,13 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             ``xarray.DataArray``
         """
 
-        if not sensor:
+        if sensor:
+            wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
+        else:
+
+            if not data.gw.sensor:
+                logger.exception('  The sensor must be supplied.')
+
             wavelengths = list(data.gw.wavelengths[data.gw.sensor]._fields)
 
         if not wavelengths:
@@ -1776,7 +1780,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
 
-        ne.set_num_threads(num_threads)
+        # ne.set_num_threads(num_threads)
 
         attrs = data.attrs
 
