@@ -4,6 +4,8 @@ import zarr
 import numcodecs
 
 
+numcodecs.blosc.use_threads = False
+
 compressor = numcodecs.Blosc(cname='zstd',
                              clevel=2,
                              shuffle=numcodecs.Blosc.BITSHUFFLE)
@@ -44,11 +46,14 @@ def to_zarr(filename, data, window, chunks, root=None):
 
     group = root.create_group(group_name)
 
+    synchronizer = zarr.ProcessSynchronizer('data.sync')
+
     z = group.array('data',
                     data,
                     compressor=compressor,
                     dtype=data.dtype.name,
-                    chunks=chunks)
+                    chunks=chunks,
+                    synchronizer=synchronizer)
 
     group.attrs['row_off'] = window.row_off
     group.attrs['col_off'] = window.col_off

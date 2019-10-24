@@ -16,28 +16,15 @@ def dtor(x):
     return x * np.pi / 180.0
 
 
-def __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args):
+def __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3):
 
     """
     Calculates the Phase angle component of kernel
     """
 
-    # __cosphaang = (da.from_delayed(__cos1, shape=(global_args.size,), dtype=global_args.dtype) *
-    #                da.from_delayed(__cos2, shape=(global_args.size,), dtype=global_args.dtype) +
-    #                da.from_delayed(__sin1, shape=(global_args.size,), dtype=global_args.dtype) *
-    #                da.from_delayed(__sin2, shape=(global_args.size,), dtype=global_args.dtype) *
-    #                da.from_delayed(__cos3, shape=(global_args.size,), dtype=global_args.dtype))
-
     __cosphaang = __cos1 * __cos2 + __sin1 * __sin2 * __cos3
 
-    # better check the bounds before arccos ... just to be safe
-
     __cosphaang = da.clip(__cosphaang, -1, 1)
-
-    # w = np.where(__cosphaang < -1)[0]
-    # __cosphaang[w] = -1.0
-    # w = np.where(__cosphaang > 1)[0]
-    # __cosphaang[w] = 1.0
 
     __phaang = da.arccos(__cosphaang)
     __sinphaang = da.sin(__phaang)
@@ -60,7 +47,38 @@ def __ross_kernel_part_delayed(angle_info, global_args):
     __sin2 = da.sin(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
     __cos3 = da.cos(da.from_delayed(angle_info.raa, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
 
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args)
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+
+    rosselement = (global_args.m_pi2 - __phaang) * __cosphaang + __sinphaang
+
+    return RossKernelOutputs(cos1=__cos1,
+                             cos2=__cos2,
+                             sin1=__sin1,
+                             sin2=__sin2,
+                             cos3=__cos3,
+                             rosselement=rosselement,
+                             cosphaang=__cosphaang,
+                             phaang=__phaang,
+                             sinphaang=__sinphaang,
+                             ross=None)
+
+
+def __ross_kernel_part_delayed_2d(angle_info, global_args):
+
+    """
+    Calculates the main part of Ross kernel
+    """
+
+    RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+
+    __cos1 = da.cos(angle_info.vza_rad)
+    __cos2 = da.cos(angle_info.sza_rad)
+
+    __sin1 = da.sin(angle_info.vza_rad)
+    __sin2 = da.sin(angle_info.sza_rad)
+    __cos3 = da.cos(angle_info.raa_rad)
+
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
 
     rosselement = (global_args.m_pi2 - __phaang) * __cosphaang + __sinphaang
 
@@ -85,7 +103,7 @@ def ross_thin_delayed(angle_info, global_args):
     RossThinOutputs = namedtuple('RossThinOutputs', 'ross phaang')
 
     # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
-    ross_kernel_outputs = __ross_kernel_part_delayed(angle_info, global_args)
+    ross_kernel_outputs = __ross_kernel_part_delayed_2d(angle_info, global_args)
 
     rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 * ross_kernel_outputs.cos2)
 
@@ -101,7 +119,7 @@ def ross_thick_delayed(angle_info, global_args):
     RossThickOutputs = namedtuple('RossThickOutputs', 'ross phaang')
 
     # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
-    ross_kernel_outputs = __ross_kernel_part_delayed(angle_info, global_args)
+    ross_kernel_outputs = __ross_kernel_part_delayed_2d(angle_info, global_args)
 
     rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 + ross_kernel_outputs.cos2)
 
@@ -110,7 +128,9 @@ def ross_thick_delayed(angle_info, global_args):
 
 def ross_kernel_delayed(angle_info, global_args):
 
-    """Public method - call to calculate Ross Kernel"""
+    """
+    Public method - call to calculate Ross Kernel
+    """
 
     # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
     if global_args.ross_type.lower() == 'thin':
@@ -223,7 +243,7 @@ def li_kernel_delayed(angle_info, global_args):
     __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
 
     # sets cos & sin phase angle terms
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3, global_args)
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
 
     __distance = get_distance_delayed(__tan1, __tan2, __cos3)
 
@@ -266,6 +286,41 @@ def li_kernel_delayed(angle_info, global_args):
     #                        tan1=__tan1, tan2=__tan2, tanti=__tanti,
     #                        tantv=__tantv, cosphaang=__cosphaang, phaang=__phaang, sinphaang=__sinphaang,
     #                        distance=__distance)
+
+    return li
+
+
+def li_kernel_delayed_2d(angle_info, global_args):
+
+    """
+    Private method - call to calculate Li Kernel
+    """
+
+    # first make sure its in range 0 to 2 pi
+    __phi = da.fabs(angle_info.raa_rad)
+    __cos3 = da.cos(__phi)
+    __sin3 = da.sin(__phi)
+
+    __tanti = da.tan(angle_info.sza)
+    __tantv = da.tan(angle_info.vza)
+
+    __cos1, __sin1, __tan1 = get_pangles_delayed(__tantv, global_args)
+    __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
+
+    # sets cos & sin phase angle terms
+    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+
+    __distance = get_distance_delayed(__tan1, __tan2, __cos3)
+
+    # OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
+    overlap_info = get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
+
+    if global_args.li_type.lower() == 'sparse':
+
+        if global_args.recip_flag == True:
+            li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1 / __cos2
+        else:
+            li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1
 
     return li
 
@@ -320,6 +375,40 @@ def set_angle_info_delayed(vza, sza, raa, global_args):
                      vza=vza,
                      sza=sza,
                      raa=raa)
+
+
+def set_angle_info_delayed_2d(vza, sza, raa, global_args):
+
+    """
+    Store and organizes the input angle data
+    """
+
+    AngleInfo = namedtuple('AngleInfo', 'n vza sza raa vza_rad sza_rad raa_rad')
+
+    # if global_args.normalize >= 1:
+    #
+    #     # calculate nadir term by extending array
+    #     vza = np.array(vza.tolist() + [0.0]).flatten()
+    #     sza = np.array(sza.tolist() + [global_args.nbar]).flatten()
+    #     raa = np.array(raa.tolist() + [0.0]).flatten()
+    #
+    #     n = len(vza_degrees)
+
+    vza_rad = da.deg2rad(vza.data)
+    sza_rad = da.deg2rad(sza.data)
+    raa_rad = da.deg2rad(raa.data)
+
+    vza_abs = da.fabs(vza_rad)
+    sza_abs = da.fabs(sza_rad)
+
+    raa_abs = da.where((vza_rad < 0) | (sza_rad < 0), global_args.m_pi, raa_rad)
+
+    return AngleInfo(vza=vza,
+                     sza=sza,
+                     raa=raa,
+                     vza_rad=vza_abs,
+                     sza_rad=sza_abs,
+                     raa_rad=raa_abs)
 
 
 def post_process_ross_delayed(ross, angle_info, global_args):
@@ -547,25 +636,31 @@ class Kernels(object):
                                      recip_flag=self.RecipFlag,
                                      m_pi=self.__M_PI, m_pi2=self.__M_PI_2, m_pi4=self.__M_PI_4, m_1_pi=self.__M_1_PI)
 
-            # AngleInfo = namedtuple('AngleInfo', 'n vza_degrees sza_degrees raa_degrees vza sza raa')
-            angle_info = set_angle_info_delayed(vza, sza, raa, global_args)
+            # AngleInfo = namedtuple('AngleInfo', 'n vza sza raa vza_rad sza_rad raa_rad')
+            # angle_info = set_angle_info_delayed(vza, sza, raa, global_args)
+            angle_info = set_angle_info_delayed_2d(vza, sza, raa, global_args)
 
             # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
             ross = ross_kernel_delayed(angle_info, global_args)
 
             # LiKernelOutputs = namedtuple('LiKernelOutputs','li phi cos1 cos2 cos3 sin1 sin2 sin3 tan1 tan2 tanti tantv cosphaang phaang sinphaang distance')
-            li = li_kernel_delayed(angle_info, global_args)
+            li = li_kernel_delayed_2d(angle_info, global_args)
 
-            ross = post_process_ross_delayed(ross, angle_info, global_args)
-            li = post_process_li_delayed(li, angle_info, global_args)
+            # TODO: add normalization for 2d dask arrays
+            # ross = post_process_ross_delayed(ross, angle_info, global_args)
+            # li = post_process_li_delayed(li, angle_info, global_args)
 
             # angle_info, ross_kernel_outputs, li_kernel_outputs = post_process_delayed(ross_kernel_outputs,
             #                                                                           li_kernel_outputs,
             #                                                                           angle_info,
             #                                                                           global_args)
 
-            self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
-            self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
+            # for 1d dask arrays
+            # self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
+            # self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
+
+            self.Ross = ross
+            self.Li = li
 
         else:
 

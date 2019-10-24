@@ -169,8 +169,41 @@ def _compressor(*args):
                    indexes=o_)
 
 
-def _block_write_func(fn_, g_, t_):
-# def _block_write_func(*args):
+def _block_write_func(*args):
+
+    ofn_, fn_, g_, t_ = list(itertools.chain(*args))
+
+    if t_ == 'zarr':
+
+        group_node = zarr.open(fn_, mode='r')[g_]
+
+        w_ = Window(row_off=group_node.attrs['row_off'],
+                    col_off=group_node.attrs['col_off'],
+                    height=group_node.attrs['height'],
+                    width=group_node.attrs['width'])
+
+        out_data_ = np.squeeze(group_node['data'][:])
+
+    else:
+
+        w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
+                    col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
+                    height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
+                    width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
+
+        with rio.open(fn_) as src_:
+            out_data_ = np.squeeze(src_.read(window=w_))
+
+    out_indexes_ = 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1))
+
+    with rio.open(ofn_, mode='r+', sharing=False) as dst_:
+
+        dst_.write(out_data_,
+                   window=w_,
+                   indexes=out_indexes_)
+
+
+def _block_read_func(fn_, g_, t_):
 
     """
     Function for block writing with ``concurrent.futures``
@@ -180,12 +213,14 @@ def _block_write_func(fn_, g_, t_):
 
     if t_ == 'zarr':
 
-        w_ = Window(row_off=fn_[g_].attrs['row_off'],
-                    col_off=fn_[g_].attrs['col_off'],
-                    height=fn_[g_].attrs['height'],
-                    width=fn_[g_].attrs['width'])
+        group_node = zarr.open(fn_, mode='r')[g_]
 
-        out_data_ = np.squeeze(fn_[g_]['data'][:])
+        w_ = Window(row_off=group_node.attrs['row_off'],
+                    col_off=group_node.attrs['col_off'],
+                    height=group_node.attrs['height'],
+                    width=group_node.attrs['width'])
+
+        out_data_ = np.squeeze(group_node['data'][:])
 
     else:
 
@@ -200,17 +235,10 @@ def _block_write_func(fn_, g_, t_):
 
     return w_, out_indexes_, out_data_
 
-    # with rio.open(ofn_, mode='r+', sharing=False) as dst_:
-    #
-    #     dst_.write(out_data_,
-    #                window=w_,
-    #                indexes=out_indexes_)
-
 
 def _return_window(window_, block, num_workers):
 
-    with threading.Lock():
-        out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+    out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
     dshape = out_data_.shape
 
@@ -244,15 +272,13 @@ def _write_xarray(*args):
         zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
     else:
 
-        with threading.Lock():
+        with rio.open(filename,
+                      mode='r+',
+                      sharing=False) as dst_:
 
-            with rio.open(filename,
-                          mode='r+',
-                          sharing=False) as dst_:
-
-                dst_.write(output,
-                           window=out_window,
-                           indexes=out_indexes)
+            dst_.write(output,
+                       window=out_window,
+                       indexes=out_indexes)
 
     return zarr_file
 
@@ -469,26 +495,26 @@ def to_raster(data,
 
             n_windows = len(windows)
 
-            with pool_executor(n_workers) as executor:
+            # Iterate over the windows in chunks
+            for wchunk in range(0, n_windows, n_chunks):
 
-                # Iterate over the windows in chunks
-                for wchunk in range(0, n_windows, n_chunks):
+                window_slice = windows[wchunk:wchunk+n_chunks]
+                n_windows_slice = len(window_slice)
 
-                    window_slice = windows[wchunk:wchunk+n_chunks]
-                    n_windows_slice = len(window_slice)
+                if verbose > 0:
 
-                    if verbose > 0:
+                    logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
+                                                                             wchunk+n_windows_slice,
+                                                                             n_windows))
 
-                        logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
-                                                                                 wchunk+n_windows_slice,
-                                                                                 n_windows))
+                if len(data.shape) == 2:
+                    data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+                elif len(data.shape) == 3:
+                    data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+                else:
+                    data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
 
-                    if len(data.shape) == 2:
-                        data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
-                    elif len(data.shape) == 3:
-                        data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
-                    else:
-                        data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+                with pool_executor(n_workers) as executor:
 
                     if scheduler == 'mpool':
 
@@ -500,23 +526,23 @@ def to_raster(data,
                         for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
                             pass
 
-            if overviews:
-
-                if not isinstance(overviews, list):
-                    overviews = [2, 4, 8, 16]
-
-                if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
-                                      'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
-
-                    logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
-
-                    resampling = 'nearest'
-
-                if verbose > 0:
-                    logger.info('  Building pyramid overviews ...')
-
-                rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
-                rio_dst.update_tags(ns='overviews', resampling=resampling)
+            # if overviews:
+            #
+            #     if not isinstance(overviews, list):
+            #         overviews = [2, 4, 8, 16]
+            #
+            #     if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
+            #                           'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
+            #
+            #         logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+            #
+            #         resampling = 'nearest'
+            #
+            #     if verbose > 0:
+            #         logger.info('  Building pyramid overviews ...')
+            #
+            #     rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
+            #     rio_dst.update_tags(ns='overviews', resampling=resampling)
 
         else:
 
@@ -577,57 +603,63 @@ def to_raster(data,
                 n_groups = len(group_keys   )
 
                 if out_block_type.lower() == 'zarr':
-
-                    root = zarr.open(zarr_file, mode='r')
-                    # data_gen = ((root, group, 'zarr') for group in root.group_keys())
-
+                    # root = zarr.open(zarr_file, mode='r')
+                    open_file = zarr_file
                 else:
 
                     outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
                     outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
 
-                    data_gen = ((fn, None, 'gtiff') for fn in outfiles)
+                    # data_gen = ((fn, None, 'gtiff') for fn in outfiles)
 
                 kwargs['compress'] = compress_type
+
+                n_windows = len(group_keys)
 
                 # Compress into one file
                 with rio.open(filename, mode='w', **kwargs) as dst_:
 
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
+                    # Iterate over the windows in chunks
+                    for wchunk in range(0, n_groups, n_chunks):
 
-                        # Iterate over the windows in chunks
-                        for wchunk in range(0, n_groups, n_chunks):
+                        group_keys_slice = group_keys[wchunk:wchunk + n_chunks]
+                        n_windows_slice = len(group_keys_slice)
 
-                            group_keys_slice = group_keys[wchunk:wchunk + n_chunks]
-                            n_windows_slice = len(group_keys_slice)
+                        if verbose > 0:
 
-                            ################################################
-                            # data_gen = ((Window(row_off=root[group].attrs['row_off'],
-                            #                     col_off=root[group].attrs['col_off'],
-                            #                     height=root[group].attrs['height'],
-                            #                     width=root[group].attrs['width']),
-                            #              root[group]['data'][:],
-                            #              filename,
-                            #              out_indexes_) for group in group_keys_slice)
-                            #
-                            # for f in tqdm(executor.map(_compressor, data_gen), total=n_windows_slice):
-                            #     pass
-                            #
-                            # futures = [executor.submit(_compress_dummy, iter_[0], iter_[1], None) for iter_ in data_gen]
-                            #
-                            # for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
-                            #
-                            #     out_window, out_block = f.result()
-                            #
-                            #     dst_.write(np.squeeze(out_block),
-                            #                window=out_window,
-                            #                indexes=out_indexes_)
-                            ################################################
+                            logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk + 1,
+                                                                                     wchunk + n_windows_slice,
+                                                                                     n_windows))
 
-                            data_gen = ((root, group, 'zarr') for group in group_keys_slice)
+                        ################################################
+                        data_gen = ((open_file, group, 'zarr') for group in group_keys_slice)
+
+                        # for f in tqdm(executor.map(_compressor, data_gen), total=n_windows_slice):
+                        #     pass
+                        #
+                        # futures = [executor.submit(_compress_dummy, iter_[0], iter_[1], None) for iter_ in data_gen]
+                        #
+                        # for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                        #
+                        #     out_window, out_block = f.result()
+                        #
+                        #     dst_.write(np.squeeze(out_block),
+                        #                window=out_window,
+                        #                indexes=out_indexes_)
+                        ################################################
+
+                        # data_gen = ((root, group, 'zarr') for group in group_keys_slice)
+
+                        # for f, g, t in tqdm(data_gen, total=n_windows_slice):
+                        #
+                        #     out_window, out_indexes, out_block = _block_read_func(f, g, t)
+
+                        # executor.map(_block_write_func, data_gen)
+
+                        with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
 
                             # Submit all of the tasks as futures
-                            futures = [executor.submit(_block_write_func, r, g, t) for r, g, t in data_gen]
+                            futures = [executor.submit(_block_read_func, f, g, t) for f, g, t in data_gen]
 
                             for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
 
@@ -637,7 +669,7 @@ def to_raster(data,
                                            window=out_window,
                                            indexes=out_indexes)
 
-                            futures = None
+                        futures = None
 
                 if not keep_blocks:
                     shutil.rmtree(sub_dir)

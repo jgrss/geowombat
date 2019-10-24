@@ -42,7 +42,8 @@ required_packages = ['cython',
                      'numcodecs',
                      'zarr',
                      'dateparser',
-                     'wget']
+                     'gsutil',
+                     'pysolar']
 
 
 def get_packages():
