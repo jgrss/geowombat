@@ -37,7 +37,7 @@ Documentation
 * :doc:`machine-learning`
 * :doc:`config`
 * :doc:`apply`
-* :doc:`radiometrics`
+* :doc:`radiometry`
 
 .. toctree::
    :maxdepth: 1
@@ -51,7 +51,7 @@ Documentation
    machine-learning
    config
    apply
-   radiometrics
+   radiometry
 
 **Change Log**
 

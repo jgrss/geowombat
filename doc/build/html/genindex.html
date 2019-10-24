@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometrics.html">BRDF normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul>
@@ -179,15 +179,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/geowombat.core.conversion.dask_to_datarray.html#geowombat.core.conversion.dask_to_datarray">dask_to_datarray() (in module geowombat.core.conversion)</a>
 </li>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.dn_to_radiance">dn_to_radiance() (geowombat.radiometry.SurfaceReflectance static method)</a>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.dn_to_radiance">dn_to_radiance() (geowombat.radiometry.RadTransforms static method)</a>
 </li>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.dn_to_sr">dn_to_sr() (geowombat.radiometry.SurfaceReflectance method)</a>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.dn_to_sr">dn_to_sr() (geowombat.radiometry.RadTransforms method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.dn_to_toar">dn_to_toar() (geowombat.radiometry.SurfaceReflectance static method)</a>
-</li>
-      <li><a href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads.download">download() (geowombat.util.GeoDownloads method)</a>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.dn_to_toar">dn_to_toar() (geowombat.radiometry.RadTransforms static method)</a>
 </li>
       <li><a href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads.download_gcp">download_gcp() (geowombat.util.GeoDownloads static method)</a>
 </li>
@@ -229,8 +227,6 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/geowombat.radiometry.gen_pixel_angles.html#geowombat.radiometry.gen_pixel_angles">gen_pixel_angles() (in module geowombat.radiometry)</a>
-</li>
       <li><a href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads">GeoDownloads (class in geowombat.util)</a>
 </li>
       <li><a href="api.html#module-geowombat">geowombat (module)</a>
@@ -248,8 +244,6 @@
       <li><a href="api/geowombat.models.GeoWombatClassifier.html#geowombat.models.GeoWombatClassifier">GeoWombatClassifier (class in geowombat.models)</a>
 </li>
       <li><a href="api/geowombat.core.util.Chunks.html#geowombat.core.util.Chunks.get_chunk_dim">get_chunk_dim() (geowombat.core.util.Chunks static method)</a>
-</li>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.get_coefficients">get_coefficients() (geowombat.radiometry.SurfaceReflectance static method)</a>
 </li>
       <li><a href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF.get_coeffs">get_coeffs() (geowombat.radiometry.BRDF method)</a>
 </li>
@@ -272,6 +266,10 @@
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/geowombat.radiometry.landsat_pixel_angles.html#geowombat.radiometry.landsat_pixel_angles">landsat_pixel_angles() (in module geowombat.radiometry)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads.list_gcp">list_gcp() (geowombat.util.GeoDownloads static method)</a>
 </li>
@@ -347,7 +345,9 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.radiance_to_toar">radiance_to_toar() (geowombat.radiometry.SurfaceReflectance static method)</a>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.radiance_to_toar">radiance_to_toar() (geowombat.radiometry.RadTransforms static method)</a>
+</li>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms">RadTransforms (class in geowombat.radiometry)</a>
 </li>
       <li><a href="api/geowombat.core.util.rasterize_geometry.html#geowombat.core.util.rasterize_geometry">rasterize_geometry() (in module geowombat.core.util)</a>
 </li>
@@ -372,10 +372,6 @@
 </li>
       </ul></li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance">SurfaceReflectance (class in geowombat.radiometry)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
@@ -393,7 +389,7 @@
         <li><a href="api/geowombat.to_raster.html#geowombat.to_raster">(in module geowombat)</a>
 </li>
       </ul></li>
-      <li><a href="api/geowombat.radiometry.SurfaceReflectance.html#geowombat.radiometry.SurfaceReflectance.toar_to_sr">toar_to_sr() (geowombat.radiometry.SurfaceReflectance static method)</a>
+      <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.toar_to_sr">toar_to_sr() (geowombat.radiometry.RadTransforms static method)</a>
 </li>
   </ul></td>
 </tr></table>

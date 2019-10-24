@@ -31,49 +31,48 @@ def sentinel_pixel_angles():
     pass
 
 
-@numba.jit
-def _calc_sensor_angles(data_band,
-                        zenith_angles,
-                        azimuth_angles,
-                        yvalues,
-                        xvalues,
-                        celly,
-                        cellx,
-                        satellite_height,
-                        nodata,
-                        acquisition_date):
+# @nb.jit
+# def _calc_sensor_angles(data_band,
+#                         zenith_angles,
+#                         azimuth_angles,
+#                         yvalues,
+#                         xvalues,
+#                         celly,
+#                         cellx,
+#                         satellite_height,
+#                         nodata,
+#                         acquisition_date):
+#
+#     """
+#     Calculates sensor zenith and azimuth angles
+#     """
+#
+#     for i in range(0, yvalues.shape[0]):
+#
+#         for j in range(0, xvalues.shape[0]):
+#
+#             if data_band[i, j] != nodata:
+#
+#                 # TODO: calculate satellite drift angle
+#                 dist_from_nadir = None
+#
+#                 # Calculate the distance from the current location to the satellite
+#                 dist_to_satellite = np.hypot(satellite_height, dist_from_nadir)
+#
+#                 # Calculate the view angle
+#
+#                 zenith_angles[i, j]
+#
+#                 # Solar zenith angle = 90 - elevation angle scaled to integer range
+#                 zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
+#
+#                 # Solar azimuth angle
+#                 azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
+#
+#     return zenith_angles, azimuth_angles
 
-    """
-    Calculates sensor zenith and azimuth angles
-    """
 
-    for i in range(0, yvalues.shape[0]):
-
-        for j in range(0, xvalues.shape[0]):
-
-            if data_band[i, j] != nodata:
-
-                # TODO: calculate satellite drift angle
-                dist_from_nadir = None
-
-                # Calculate the distance from the current location to the satellite
-                dist_to_satellite = np.hypot(satellite_height, dist_from_nadir)
-
-                # Calculate the view angle
-
-
-                zenith_angles[i, j]
-
-                # Solar zenith angle = 90 - elevation angle scaled to integer range
-                zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-
-                # Solar azimuth angle
-                azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-
-    return zenith_angles, azimuth_angles
-
-
-@numba.jit
+@nb.jit
 def _calc_solar_angles(data_band, zenith_angles, azimuth_angles, yvalues, xvalues, nodata, acquisition_date):
 
     """
@@ -116,7 +115,7 @@ def pixel_angles(data, band, nodata, meta):
     sze = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
     saa = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
 
-    sze, saa = _calc_angles(data_band, sze, saa, yvalues, xvalues, nodata, acquisition_date)
+    sze, saa = _calc_solar_angles(data_band, sze, saa, yvalues, xvalues, nodata, acquisition_date)
 
     sze_attrs = data.attrs.copy()
     saa_attrs = data.attrs.copy()
@@ -129,11 +128,11 @@ def pixel_angles(data, band, nodata, meta):
 
     szex = xr.DataArray(data=da.from_array(sze[np.newaxis, :, :],
                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
-                       coords={'band': 'sze',
-                               'y': data.y,
-                               'x': data.x},
-                       dims=('band', 'y', 'x'),
-                       attrs=sze_attrs)
+                        coords={'band': 'sze',
+                                'y': data.y,
+                                'x': data.x},
+                        dims=('band', 'y', 'x'),
+                        attrs=sze_attrs)
 
     saax = xr.DataArray(data=da.from_array(saa[np.newaxis, :, :],
                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),

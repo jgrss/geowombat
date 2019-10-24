@@ -16,7 +16,6 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="BRDF" href="geowombat.radiometry.BRDF.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -64,24 +63,21 @@
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../radiometrics.html">BRDF normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.BRDF.html" title="previous chapter">BRDF</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -113,201 +109,6 @@
             
   <div class="section" id="surfacereflectance">
 <h1>SurfaceReflectance<a class="headerlink" href="#surfacereflectance" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="geowombat.radiometry.SurfaceReflectance">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">SurfaceReflectance</code><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A general class for surface reflectance calibration methods</p>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_radiance" title="geowombat.radiometry.SurfaceReflectance.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
-<td><p>Converts digital numbers to radiance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_sr" title="geowombat.radiometry.SurfaceReflectance.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, sensor_za, …)</p></td>
-<td><p>Converts digital numbers to surface reflectance</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_toar" title="geowombat.radiometry.SurfaceReflectance.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
-<td><p>Converts digital numbers to radiance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.get_coefficients" title="geowombat.radiometry.SurfaceReflectance.get_coefficients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coefficients</span></code></a>(meta_file)</p></td>
-<td><p>Gets coefficients from a metadata file</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.radiance_to_toar" title="geowombat.radiometry.SurfaceReflectance.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
-<td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.toar_to_sr" title="geowombat.radiometry.SurfaceReflectance.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, sensor_za, …)</p></td>
-<td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Summary</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_radiance" title="geowombat.radiometry.SurfaceReflectance.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
-<td><p>Converts digital numbers to radiance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_sr" title="geowombat.radiometry.SurfaceReflectance.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, sensor_za, …)</p></td>
-<td><p>Converts digital numbers to surface reflectance</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.dn_to_toar" title="geowombat.radiometry.SurfaceReflectance.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
-<td><p>Converts digital numbers to radiance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.get_coefficients" title="geowombat.radiometry.SurfaceReflectance.get_coefficients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coefficients</span></code></a>(meta_file)</p></td>
-<td><p>Gets coefficients from a metadata file</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.radiance_to_toar" title="geowombat.radiometry.SurfaceReflectance.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
-<td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.SurfaceReflectance.toar_to_sr" title="geowombat.radiometry.SurfaceReflectance.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, sensor_za, …)</p></td>
-<td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.dn_to_radiance">
-<em class="property">static </em><code class="sig-name descname">dn_to_radiance</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.dn_to_radiance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts digital numbers to radiance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dn</strong> (<em>DataArray</em>) – The digital number data to calibrate.</p></li>
-<li><p><strong>gain</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A gain value.</p></li>
-<li><p><strong>bias</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A bias value.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.dn_to_sr">
-<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dn</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">method='srem'</em>, <em class="sig-param">meta=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.dn_to_sr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts digital numbers to surface reflectance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dn</strong> (<em>DataArray</em>) – The digital number data to calibrate.</p></li>
-<li><p><strong>solar_za</strong> (<em>DataArray</em>) – The solar zenith angle.</p></li>
-<li><p><strong>sensor_za</strong> (<em>DataArray</em>) – The sensor zenith angle.</p></li>
-<li><p><strong>solar_az</strong> (<em>DataArray</em>) – The solar azimuth angle.</p></li>
-<li><p><strong>sensor_az</strong> (<em>DataArray</em>) – The sensor azimuth angle.</p></li>
-<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
-<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to use. Only ‘srem’ is supported.</p></li>
-<li><p><strong>meta</strong> (<em>Optional</em><em>[</em><em>namedtuple</em><em>]</em>) – A metadata object with gain and bias coefficients.</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">References</p>
-<p>See <span class="bibtex" id="id1">[bilal_etal_2019]</span></p>
-<p>TODO: add to .bib
-Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Method (SREM) for Use over Diverse</p>
-<blockquote>
-<div><p>Land Surfaces Using Multi-Sensor Data, Remote Sensing, 11(1344) doi:10.3390/rs11111344.</p>
-</div></blockquote>
-<p><a class="reference external" href="https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product">https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product</a></p>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">SurfaceReflectance</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sr</span> <span class="o">=</span> <span class="n">SurfaceReflectance</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">meta</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">(</span><span class="s1">&#39;file.MTL&#39;</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Convert DNs to surface reflectance using Landsat metadata</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;dn.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">sr_data</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">dn_to_sr</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.dn_to_toar">
-<em class="property">static </em><code class="sig-name descname">dn_to_toar</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.dn_to_toar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts digital numbers to radiance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dn</strong> (<em>DataArray</em>) – The digital number data to calibrate.</p></li>
-<li><p><strong>gain</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A gain value.</p></li>
-<li><p><strong>bias</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A bias value.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.get_coefficients">
-<em class="property">static </em><code class="sig-name descname">get_coefficients</code><span class="sig-paren">(</span><em class="sig-param">meta_file</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.get_coefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets coefficients from a metadata file</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>meta_file</strong> (<em>str</em>) – A metadata file.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">namedtuple</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.radiance_to_toar">
-<em class="property">static </em><code class="sig-name descname">radiance_to_toar</code><span class="sig-paren">(</span><em class="sig-param">radiance</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">global_args</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.radiance_to_toar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts digital numbers to top-of-atmosphere reflectance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>radiance</strong> (<em>DataArray</em>) – The radiance data to calibrate.</p></li>
-<li><p><strong>solar_za</strong> (<em>DataArray</em>) – The solar zenith angle.</p></li>
-<li><p><strong>global_args</strong> (<em>namedtuple</em>) – Global arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.SurfaceReflectance.toar_to_sr">
-<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param">toar</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">um</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.SurfaceReflectance.toar_to_sr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts top-of-atmosphere reflectance to surface reflectance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>toar</strong> (<em>DataArray</em>) – The top-of-atmosphere reflectance.</p></li>
-<li><p><strong>solar_za</strong> (<em>DataArray</em>) – The solar zenith angle.</p></li>
-<li><p><strong>sensor_za</strong> (<em>DataArray</em>) – The sensor zenith angle.</p></li>
-<li><p><strong>solar_az</strong> (<em>DataArray</em>) – The solar azimuth angle.</p></li>
-<li><p><strong>sensor_az</strong> (<em>DataArray</em>) – The sensor azimuth angle.</p></li>
-<li><p><strong>um</strong> (<em>namedtuple</em>) – The sensor wavelength micrometers.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 

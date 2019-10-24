@@ -24,23 +24,24 @@ from tqdm import tqdm
 shapely.speedups.enable()
 
 
-def project_coords(x, y, src_crs, dst_crs, **kwargs):
+def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
 
     """
     Projects coordinates to a new CRS
 
     Args:
-        x (1d array-like)
-        y (1d array-like)
-        src_crs (str, dict, object)
-        dst_crs (str, dict, object)
+        x (1d array-like): The x coordinates.
+        y (1d array-like): The y coordinates.
+        src_crs (str, dict, object): The source CRS.
+        dst_crs (str, dict, object): The destination CRS.
+        return_as (Optional[str]): How to return the coordinates. Choices are ['1d', '2d'].
         kwargs (Optional[dict]): Keyword arguments passed to ``rasterio.warp.reproject``.
 
     Returns:
         ``numpy.array``, ``numpy.array`` or ``xr.DataArray``
     """
 
-    if isinstance(x, float) or (isinstance(x, np.ndarray) and (len(x.shape) == 1)):
+    if return_as == '1d':
 
         df_tmp = gpd.GeoDataFrame(np.arange(0, x.shape[0]),
                                   geometry=gpd.points_from_xy(x, y),
@@ -50,7 +51,13 @@ def project_coords(x, y, src_crs, dst_crs, **kwargs):
 
         return df_tmp.geometry.x.values, df_tmp.geometry.y.values
 
-    elif isinstance(x, np.ndarray):
+    else:
+
+        if not isinstance(x, np.ndarray):
+            x = np.array(x, dtype='float64')
+
+        if not isinstance(y, np.ndarray):
+            y = np.array(y, dtype='float64')
 
         yy = np.meshgrid(x, y)[1]
 

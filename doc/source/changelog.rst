@@ -3,6 +3,19 @@
 Change Log
 ==========
 
+1.0.0b (24 October 2019)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Implemented improvements from testing processes vs. threads for concurrent I/O in :func:`geowombat.to_raster`.
+
+Bug fixes
+~~~~~~~~~
+
+- Changed BRDF normalization (:class:`geowombat.radiometry.BRDF`) from 1d to 2d in order to work with Dask arrays.
+
 1.0.0b (23 October 2019)
 ------------------------
 
@@ -14,7 +27,12 @@ Changes
 New
 ~~~
 
-- Added support for band stacking (in addition to time stacking) in :func:`geowombat.open`.
+- Added support for band stacking (in addition to time stacking) in :func:`geowombat.open`. The new keyword argument is `stack_dim` and can be used like:
+
+.. code:: python
+
+    with gw.open(..., stack_dim='band') as ds:
+        ...
 
 1.0.0b (20 October 2019)
 ------------------------

@@ -238,7 +238,8 @@ def _block_read_func(fn_, g_, t_):
 
 def _return_window(window_, block, num_workers):
 
-    out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+    with threading.Lock():
+        out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
     dshape = out_data_.shape
 

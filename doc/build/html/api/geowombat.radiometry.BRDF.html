@@ -16,8 +16,8 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="SurfaceReflectance" href="geowombat.radiometry.SurfaceReflectance.html" />
-    <link rel="prev" title="gen_pixel_angles" href="geowombat.radiometry.gen_pixel_angles.html" />
+    <link rel="next" title="RadTransforms" href="geowombat.radiometry.RadTransforms.html" />
+    <link rel="prev" title="landsat_pixel_angles" href="geowombat.radiometry.landsat_pixel_angles.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -65,7 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../radiometrics.html">BRDF normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul>
@@ -81,8 +81,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.gen_pixel_angles.html" title="previous chapter">gen_pixel_angles</a></li>
-      <li>Next: <a href="geowombat.radiometry.SurfaceReflectance.html" title="next chapter">SurfaceReflectance</a></li>
+      <li>Previous: <a href="geowombat.radiometry.landsat_pixel_angles.html" title="previous chapter">landsat_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.RadTransforms.html" title="next chapter">RadTransforms</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -138,18 +138,6 @@ IEEE Transactions.</p>
 <dt>Roy et al. (2016) Characterization of Landsat-7 to Landsat-8 reflective wavelength and</dt><dd><p>normalized difference vegetation index continuity, Remote Sensing of Environment, 185.</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gbn</span> <span class="o">=</span> <span class="n">GlobalBRDFNorm</span><span class="p">()</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gbn</span><span class="o">.</span><span class="n">normalize</span><span class="p">([</span><span class="s1">&#39;blue&#39;</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_array</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">solar_za</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">solar_az</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_za</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">sensor_az</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">mask</span><span class="p">)</span>
-</pre></div>
-</div>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -202,7 +190,7 @@ IEEE Transactions.</p>
 
 <dl class="method">
 <dt id="geowombat.radiometry.BRDF.norm_brdf">
-<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">scale_angles=True</em>, <em class="sig-param">num_threads=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude=None</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">scale_angles=True</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
 introduced by Roy et al. (2016)</p>
 <dl class="field-list simple">
@@ -213,14 +201,13 @@ introduced by Roy et al. (2016)</p>
 <li><p><strong>solar_az</strong> (<em>2d array</em>) – The solar azimuth angles (degrees).</p></li>
 <li><p><strong>sensor_za</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
 <li><p><strong>sensor_az</strong> (<em>2d array</em>) – The sensor azimuth angles (degrees).</p></li>
-<li><p><strong>central_latitude</strong> (<em>float</em>) – The central latitude.</p></li>
+<li><p><strong>central_latitude</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>2d array</em><em>]</em>) – The central latitude.</p></li>
 <li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The satellite sensor.</p></li>
 <li><p><strong>wavelengths</strong> (<em>str list</em>) – Choices are [‘blue’, ‘green’, ‘red’, ‘nir’, ‘swir1’, ‘swir2’].</p></li>
 <li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
 <li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
 <li><p><strong>scale_angles</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to scale the pixel angle arrays.</p></li>
-<li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads to pass to <code class="docutils literal notranslate"><span class="pre">numexpr</span></code>.</p></li>
 </ul>
 </dd>
 </dl>

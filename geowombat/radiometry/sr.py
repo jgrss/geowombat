@@ -1,5 +1,7 @@
 import math
 from collections import namedtuple
+from datetime import datetime as dtime
+import datetime
 
 import pandas as pd
 import xarray as xr
@@ -100,17 +102,13 @@ def _format_coeff(dataframe, key):
     return dict(dataframe_)
 
 
-class RadTransforms(object):
-
-    """
-    A general class for radiometric transformations
-    """
+class MetaData(object):
 
     @staticmethod
-    def get_coefficients(meta_file):
+    def get_landsat_coefficients(meta_file):
 
         """
-        Gets coefficients from a metadata file
+        Gets coefficients from a Landsat metadata file
 
         Args:
             meta_file (str): A metadata file.
@@ -121,7 +119,7 @@ class RadTransforms(object):
 
         associations = {'LANDSAT_8': 'l8'}
 
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p')
+        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired')
 
         df = pd.read_csv(meta_file, sep='=')
 
@@ -133,11 +131,37 @@ class RadTransforms(object):
         m_p = _format_coeff(df, 'REFLECTANCE_MULT_BAND_')
         a_p = _format_coeff(df, 'REFLECTANCE_ADD_BAND_')
 
+        date_acquired_ = dict(df[df.iloc[:, 0].str.startswith('DATE_ACQUIRED')].values)
+        date_acquired_ = date_acquired_['DATE_ACQUIRED'].replace('"', '')
+        year, month, day = date_acquired_.split('-')
+
+        year = int(year)
+        month = int(month)
+        day = int(day)
+
+        scene_center_time = dict(df[df.iloc[:, 0].str.startswith('SCENE_CENTER_TIME')].values)
+        scene_center_time = scene_center_time['SCENE_CENTER_TIME'].replace('"', '')
+        hour = int(scene_center_time.split(':')[0])
+
+        date_acquired = dtime(year, month, day, hour, tzinfo=datetime.timezone.utc)
+
         spacecraft_id = dict(df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values)
         spacecraft_id['SPACECRAFT_ID'] = spacecraft_id['SPACECRAFT_ID'].replace('"', '')
         sensor = associations[spacecraft_id['SPACECRAFT_ID']]
 
-        return MetaCoeffs(sensor=sensor, m_l=m_l, a_l=a_l, m_p=m_p, a_p=a_p)
+        return MetaCoeffs(sensor=sensor,
+                          m_l=m_l,
+                          a_l=a_l,
+                          m_p=m_p,
+                          a_p=a_p,
+                          date_acquired=date_acquired)
+
+
+class RadTransforms(MetaData):
+
+    """
+    A general class for radiometric transformations
+    """
 
     def dn_to_sr(self,
                  dn,

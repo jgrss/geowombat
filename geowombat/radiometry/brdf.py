@@ -199,25 +199,17 @@ def get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, glob
 
     OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
 
-    __temp = 1.0 / __cos1 + 1.0 / __cos2
+    __temp = (1.0 / __cos1) + (1.0 / __cos2)
 
     __cost = global_args.hb * da.sqrt(__distance * __distance + __tan1 * __tan1 * __tan2 * __tan2 * __sin3 * __sin3) / __temp
 
     __cost = da.clip(__cost, -1, 1)
-
-    # w = np.where(__cost < -1)[0]
-    # __cost[w] = -1.0
-    # w = np.where(__cost > 1.0)[0]
-    # __cost[w] = 1.0
 
     __tvar = da.arccos(__cost)
     __sint = da.sin(__tvar)
     __overlap = global_args.m_1_pi * (__tvar - __sint * __cost) * __temp
 
     __overlap = da.where(__overlap < 0, 0, __overlap)
-
-    # w = np.where(__overlap < 0)[0]
-    # __overlap[w] = 0.0
 
     return OverlapInfo(tvar=__tvar, sint=__sint, overlap=__overlap, temp=__temp)
 
@@ -290,6 +282,56 @@ def li_kernel_delayed(angle_info, global_args):
     return li
 
 
+# def LiKernel(self):
+#
+#     """Private method - call to calculate Li Kernel"""
+#
+#     # at some point add in LiGround kernel & LiTransit
+#     if self.LiType == 'Roujean':
+#         return self.RoujeanKernel()
+#     # first make sure its in range 0 to 2 pi
+#     self.__phi = np.abs((self.raa % (2. * self.__M_PI)))
+#     self.__cos3 = np.cos(self.__phi)
+#     self.__sin3 = np.sin(self.__phi)
+#     self.__tanti = np.tan(self.sza)
+#     self.__tantv = np.tan(self.vza)
+
+#     self.__cos1, self.__sin1, self.__tan1 = self.GetpAngles(self.__tantv);
+#     self.__cos2, self.__sin2, self.__tan2 = self.GetpAngles(self.__tanti);
+#     self.__GetPhaang();  # sets cos & sin phase angle terms
+#     self.__distance = self.GetDistance();  # sets self.temp
+#     self.GetOverlap();  # also sets self.temp
+#     if self.LiType == 'Sparse':
+#         if self.RecipFlag == True:
+#             self.Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1 / self.__cos2;
+#         else:
+#             self.Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1;
+#     else:
+#         if self.LiType == 'Dense':
+#             if self.RecipFlag:
+#                 self.Li = (1.0 + self.__cosphaang) / (
+#                 self.__cos1 * self.__cos2 * (self.__temp - self.__overlap)) - 2.0;
+#             else:
+#                 self.Li = (1.0 + self.__cosphaang) / (self.__cos1 * (self.__temp - self.__overlap)) - 2.0;
+#         else:
+#             B = self.__temp - self.__overlap
+#             w = np.where(B <= 2.0)
+#             self.Li = B * 0.0
+#             if self.RecipFlag == True:
+#                 Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1 / self.__cos2;
+#             else:
+#                 Li = self.__overlap - self.__temp + 0.5 * (1. + self.__cosphaang) / self.__cos1;
+#             self.Li[w] = Li[w]
+#
+#             w = np.where(B > 2.0)
+#             if self.RecipFlag:
+#                 Li = (1.0 + self.__cosphaang) / (self.__cos1 * self.__cos2 * (self.__temp - self.__overlap)) - 2.0;
+#             else:
+#                 Li = (1.0 + self.__cosphaang) / (self.__cos1 * (self.__temp - self.__overlap)) - 2.0;
+#             self.Li[w] = Li[w]
+#     return
+
+
 def li_kernel_delayed_2d(angle_info, global_args):
 
     """
@@ -297,12 +339,12 @@ def li_kernel_delayed_2d(angle_info, global_args):
     """
 
     # first make sure its in range 0 to 2 pi
-    __phi = da.fabs(angle_info.raa_rad)
+    __phi = da.fabs((angle_info.raa_rad % (2.0 * global_args.m_pi)))
     __cos3 = da.cos(__phi)
     __sin3 = da.sin(__phi)
 
-    __tanti = da.tan(angle_info.sza)
-    __tantv = da.tan(angle_info.vza)
+    __tanti = da.tan(angle_info.sza_rad)
+    __tantv = da.tan(angle_info.vza_rad)
 
     __cos1, __sin1, __tan1 = get_pangles_delayed(__tantv, global_args)
     __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
@@ -317,10 +359,38 @@ def li_kernel_delayed_2d(angle_info, global_args):
 
     if global_args.li_type.lower() == 'sparse':
 
-        if global_args.recip_flag == True:
+        if global_args.recip_flag:
             li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1 / __cos2
         else:
             li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1
+
+    else:
+
+        if global_args.li_type.lower() == 'dense':
+
+            if global_args.recip_flag:
+                li = (1.0 + __cosphaang) / (__cos1 * __cos2 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+            else:
+                li = (1.0 + __cosphaang) / (__cos1 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+
+        else:
+
+            b = overlap_info.temp - overlap_info.overlap
+            li = b * 0.0
+
+            if global_args.recip_flag:
+                li_ = global_args.overlap - global_args.temp + 0.5 * (1.0 + __cosphaang) / __cos1 / __cos2
+            else:
+                li_ = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1
+
+            li = da.where(b <= 2, li_, li)
+
+            if global_args.recip_flag:
+                li_ = (1.0 + __cosphaang) / (__cos1 * __cos2 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+            else:
+                li_ = (1.0 + __cosphaang) / (__cos1 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+
+            li = da.where(b <= 2, li_, li)
 
     return li
 
@@ -383,7 +453,7 @@ def set_angle_info_delayed_2d(vza, sza, raa, global_args):
     Store and organizes the input angle data
     """
 
-    AngleInfo = namedtuple('AngleInfo', 'n vza sza raa vza_rad sza_rad raa_rad')
+    AngleInfo = namedtuple('AngleInfo', 'vza sza raa vza_rad sza_rad raa_rad')
 
     # if global_args.normalize >= 1:
     #
@@ -394,9 +464,9 @@ def set_angle_info_delayed_2d(vza, sza, raa, global_args):
     #
     #     n = len(vza_degrees)
 
-    vza_rad = da.deg2rad(vza.data)
-    sza_rad = da.deg2rad(sza.data)
-    raa_rad = da.deg2rad(raa.data)
+    vza_rad = da.deg2rad(vza)
+    sza_rad = da.deg2rad(sza)
+    raa_rad = da.deg2rad(raa)
 
     vza_abs = da.fabs(vza_rad)
     sza_abs = da.fabs(sza_rad)
@@ -654,10 +724,6 @@ class Kernels(object):
             #                                                                           li_kernel_outputs,
             #                                                                           angle_info,
             #                                                                           global_args)
-
-            # for 1d dask arrays
-            # self.Ross = ross.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
-            # self.Li = li.reshape(global_args.nrows, global_args.ncols).rechunk((vza.chunksize[-2], vza.chunksize[-1]))
 
             self.Ross = ross
             self.Li = li
@@ -1734,7 +1800,7 @@ class RossLiKernels(object):
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
         kl = Kernels(sensor_za,
                      solar_za,
-                     solar_az - sensor_az,
+                     da.fabs(solar_az - sensor_az - 180.0),
                      delayed=True,
                      doIntegrals=False)
 
@@ -1765,17 +1831,6 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         Roy et al. (2016) Characterization of Landsat-7 to Landsat-8 reflective wavelength and
             normalized difference vegetation index continuity, Remote Sensing of Environment, 185.
-
-    Examples:
-        >>> gbn = GlobalBRDFNorm()
-        >>>
-        >>> gbn.normalize(['blue'],
-        >>>               sensor_array,
-        >>>               solar_za,
-        >>>               solar_az,
-        >>>               sensor_za,
-        >>>               sensor_az,
-        >>>               mask)
     """
 
     def __init__(self):
@@ -1962,7 +2017,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                 coeffs = self.get_coeffs(wavelength)
 
                 # Apply the adjustment to the current layer.
-                results.append(data.sel(band=wavelength) * ((coeffs['fiso'] +
+                results.append(data.sel(band=wavelength).data * ((coeffs['fiso'] +
                                                              coeffs['fvol']*self.vol_norm +
                                                              coeffs['fgeo']*self.geo_norm) / (coeffs['fiso'] +
                                                                                               coeffs['fvol']*self.vol_sensor +
@@ -1980,17 +2035,16 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                 #                                shape=(1,) + data.data.shape[1:],
                 #                                dtype=data.dtype.name))
 
-            data = xr.concat(results, dim='band')
-
-        data = data.transpose('band', 'y', 'x')
+            data = xr.DataArray(data=da.concatenate(results),
+                                dims=('band', 'y', 'x'),
+                                coords={'band': data.band.values, 'y': data.y, 'x': data.x},
+                                attrs=data.attrs)
 
         # Mask data
-        # if isinstance(mask, xr.DataArray) or isinstance(mask, np.ndarray):
-        #     data = data.where((mask == 0) & (solar_za != -32768))
-        # else:
-        #     data = data.where(solar_za != -32768)
-
-        # data = data.transpose('band', 'y', 'x')
+        if isinstance(mask, xr.DataArray):
+            data = data.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768))
+        else:
+            data = data.where(solar_za.sel(band=1) != -32768)
 
         # Return the adjusted array, scaled
         #   back to the original range.

@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API reference" href="api.html" />
-    <link rel="prev" title="BRDF normalization" href="radiometrics.html" />
+    <link rel="prev" title="Radiometry" href="radiometry.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -65,7 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometrics.html">BRDF normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul class="current">
@@ -80,7 +80,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="radiometrics.html" title="previous chapter">BRDF normalization</a></li>
+      <li>Previous: <a href="radiometry.html" title="previous chapter">Radiometry</a></li>
       <li>Next: <a href="api.html" title="next chapter">API reference</a></li>
   </ul></li>
 </ul>
@@ -113,6 +113,21 @@
             
   <div class="section" id="change-log">
 <span id="changelog"></span><h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="b-24-october-2019">
+<h2>1.0.0b (24 October 2019)<a class="headerlink" href="#b-24-october-2019" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="enhancements">
+<h3>Enhancements<a class="headerlink" href="#enhancements" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Implemented improvements from testing processes vs. threads for concurrent I/O in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Changed BRDF normalization (<a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.BRDF</span></code></a>) from 1d to 2d in order to work with Dask arrays.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="b-23-october-2019">
 <h2>1.0.0b (23 October 2019)<a class="headerlink" href="#b-23-october-2019" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="changes">
@@ -124,8 +139,12 @@
 <div class="section" id="new">
 <h3>New<a class="headerlink" href="#new" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Added support for band stacking (in addition to time stacking) in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>.</p></li>
+<li><p>Added support for band stacking (in addition to time stacking) in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>. The new keyword argument is <cite>stack_dim</cite> and can be used like:</p></li>
 </ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="b-20-october-2019">
