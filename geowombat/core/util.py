@@ -260,7 +260,7 @@ class MapProcesses(object):
                             attrs=attrs)
 
 
-def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):
+def rasterize_geometry(fid, geom, crs, res, all_touched, meta, frac):
 
     # Get the feature's bounding extent
     geom_info = get_geometry_info(geom, res)
@@ -302,9 +302,18 @@ def rasterize_geometry(i, geom, crs, res, all_touched, meta, frac):
 
     n_samples = y_coords.shape[0]
 
+    try:
+
+        fid_ = int(fid)
+        fid_ = np.zeros(n_samples, dtype='int64') + fid_
+
+    except:
+
+        fid_ = str(fid)
+        fid_ = np.zeros([fid_]*n_samples, dtype=object)
+
     # Combine the coordinates into `Shapely` point geometry
-    return gpd.GeoDataFrame(data=np.c_[np.zeros(n_samples, dtype='int64') + i,
-                                       np.arange(0, n_samples)],
+    return gpd.GeoDataFrame(data=np.c_[fid_, np.arange(0, n_samples)],
                             geometry=gpd.points_from_xy(x_coords, y_coords),
                             crs=crs,
                             columns=['poly', 'point'])
@@ -360,6 +369,7 @@ class Converters(object):
                        aoi,
                        frac=1.0,
                        all_touched=False,
+                       id_column='id',
                        mask=None,
                        n_jobs=8,
                        verbose=0):
@@ -439,6 +449,7 @@ class Converters(object):
                                          df,
                                          frac=frac,
                                          all_touched=all_touched,
+                                         id_column=id_column,
                                          n_jobs=n_jobs)
 
         # Ensure a unique index
@@ -451,6 +462,7 @@ class Converters(object):
                            df,
                            frac=1.0,
                            all_touched=False,
+                           id_column='id',
                            n_jobs=1):
 
         """
@@ -461,6 +473,7 @@ class Converters(object):
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` containing the geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
+            id_column (Optional[str]): The 'id' column.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
 
         Returns:
@@ -476,9 +489,15 @@ class Converters(object):
             for i in tqdm(pool.imap(_iter_func, range(0, df.shape[0])), total=df.shape[0]):
 
                 # Get the current feature's geometry
-                geom = df.iloc[i].geometry
+                dfrow = df.iloc[i]
 
-                point_df = rasterize_geometry(i, geom, data.crs, data.res[0], all_touched, meta, frac)
+                point_df = rasterize_geometry(dfrow[id_column],
+                                              dfrow.geometry,
+                                              data.crs,
+                                              data.res[0],
+                                              all_touched,
+                                              meta,
+                                              frac)
 
                 if not point_df.empty:
                     dataframes.append(point_df)

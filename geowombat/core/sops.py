@@ -87,6 +87,7 @@ class SpatialOperations(_PropertyMixin):
                 band_names=None,
                 frac=1.0,
                 all_touched=False,
+                id_column='id',
                 mask=None,
                 n_jobs=8,
                 verbose=0,
@@ -105,6 +106,7 @@ class SpatialOperations(_PropertyMixin):
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
+            id_column (Optional[str]): The id column name.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
@@ -143,6 +145,7 @@ class SpatialOperations(_PropertyMixin):
                                        aoi,
                                        frac=frac,
                                        all_touched=all_touched,
+                                       id_column=id_column,
                                        mask=mask,
                                        n_jobs=n_jobs,
                                        verbose=verbose)
