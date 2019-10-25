@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from ..errors import logger
 
+import numpy as np
 import pandas as pd
 # import wget
 
@@ -61,8 +62,7 @@ class GeoDownloads(object):
         self.landsat_parts = ['le07', 'lt05', 'lc08']
         self.sentinel_parts = ['s2a']
 
-    @staticmethod
-    def list_gcp(query):
+    def list_gcp(self, query):
 
         """
         Lists files from Google Cloud Platform
@@ -80,7 +80,7 @@ class GeoDownloads(object):
             >>> dl.list_gcp('LC08/01/042/034/*_2016*_*_01_T1*/')
 
         Returns:
-            ``list``
+            ``dict``
         """
 
         proc = subprocess.Popen('gsutil ls -r gs://gcp-public-data-landsat/{}'.format(query),
@@ -89,7 +89,42 @@ class GeoDownloads(object):
 
         output = proc.stdout.read()
 
-        return [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+        search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+
+        return self._prepare_gcp_dict(search_list)
+
+    @staticmethod
+    def _prepare_gcp_dict(search_list):
+
+        """
+        Prepares a list of GCP keys into a dictionary
+
+        Args:
+            search_list (list)
+
+        Returns:
+            ``dict``
+        """
+
+        df = pd.DataFrame(data=search_list, columns=['url'])
+
+        df['mask'] = df.url.str.strip().str.endswith('/:')
+
+        mask_idx = np.where(df['mask'].values)[0]
+
+        url_dict = dict()
+
+        for mi in range(0, mask_idx.shape[0] - 1):
+
+            m1 = mask_idx[mi]
+            m2 = mask_idx[mi + 1] - 1
+
+            key = search_list[m1].replace('gs://gcp-public-data-landsat/', '').replace('/:', '')
+            values = search_list[m1:m2]
+
+            url_dict[key] = values
+
+        return url_dict
 
     @staticmethod
     def download_gcp(filename, outdir='.', verbose=0):
