@@ -1,3 +1,5 @@
+from ..errors import logger
+
 import xarray as xr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -38,8 +40,9 @@ class Plotting(object):
 
         if isinstance(band_names, list):
 
-            if (len(band_names) != 1) and (len(band_names) != 3):
-                logger.exception('  Only 1-band or 3-band arrays can be plotted.')
+            if len(band_names) != 1:
+                if len(band_names) != 3:
+                    logger.exception('  Only 1-band or 3-band arrays can be plotted.')
 
         plt.rcParams['axes.titlesize'] = 5
         plt.rcParams['axes.titlepad'] = 5
