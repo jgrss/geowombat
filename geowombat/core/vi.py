@@ -1,20 +1,9 @@
 from ..errors import logger
+from .base import PropertyMixin as _PropertyMixin
 
 import numpy as np
 import xarray as xr
 import dask.array as da
-
-
-def _check_sensor(data, sensor):
-
-    if not sensor:
-
-        if data.gw.sensor:
-            sensor = data.gw.sensor
-        else:
-            logger.exception('  A sensor must be provided.')
-
-    return sensor
 
 
 def _create_nodata_array(data, nodata, band_name, var_name):
@@ -406,7 +395,7 @@ class TasseledCapLookup(object):
                             dims=('band', 'coeff'))
 
 
-class TasseledCap(TasseledCapLookup):
+class TasseledCap(_PropertyMixin, TasseledCapLookup):
 
     def tasseled_cap(self, data, nodata=None, sensor=None, scale_factor=1.0):
 
@@ -456,7 +445,7 @@ class TasseledCap(TasseledCapLookup):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -473,7 +462,7 @@ class TasseledCap(TasseledCapLookup):
         return tcap
 
 
-class VegetationIndices(BandMath):
+class VegetationIndices(_PropertyMixin, BandMath):
 
     def norm_diff(self, data, b1, b2, sensor=None, nodata=None, mask=False, scale_factor=1.0):
 
@@ -498,7 +487,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -530,7 +519,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -562,7 +551,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -593,7 +582,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -624,7 +613,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -655,7 +644,7 @@ class VegetationIndices(BandMath):
             ``xarray.DataArray``
         """
 
-        sensor = _check_sensor(data, sensor)
+        sensor = self.check_sensor(data, sensor)
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata

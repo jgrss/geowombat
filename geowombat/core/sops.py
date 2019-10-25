@@ -1,9 +1,11 @@
 import os
 import math
+import itertools
 
 from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .util import Converters
+from .base import PropertyMixin as _PropertyMixin
 
 import numpy as np
 import pandas as pd
@@ -21,7 +23,7 @@ except:
     PYMORPH_INSTALLED = False
 
 
-class SpatialOperations(object):
+class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     def sample(data, frac=0.1, nodata=0):
@@ -77,8 +79,8 @@ class SpatialOperations(object):
 
             return pd.concat(results, axis=0)
 
-    @staticmethod
-    def extract(data,
+    def extract(self,
+                data,
                 aoi,
                 bands=None,
                 time_names=None,
@@ -91,8 +93,8 @@ class SpatialOperations(object):
                 **kwargs):
 
         """
-        Extracts data within an area or points of interest. Projections do not
-        need to match, as they are handled 'on-the-fly'.
+        Extracts data within an area or points of interest. Projections do not need to match,
+        as they are handled 'on-the-fly'.
 
         Args:
             data (DataArray): An ``xarray.DataArray`` to extract data from.
@@ -118,6 +120,12 @@ class SpatialOperations(object):
             >>>     df = gw.extract(ds, 'poly.gpkg')
         """
 
+        sensor = self.check_sensor(data, return_error=False)
+
+        band_names = self.check_sensor_band_names(data, sensor, band_names)
+
+        converters = Converters()
+
         shape_len = data.gw.ndims
 
         if isinstance(bands, list):
@@ -131,21 +139,21 @@ class SpatialOperations(object):
             if shape_len > 2:
                 bands_idx = slice(0, None)
 
-        df = Converters().prepare_points(data,
-                                         aoi,
-                                         frac=frac,
-                                         all_touched=all_touched,
-                                         mask=mask,
-                                         n_jobs=n_jobs,
-                                         verbose=verbose)
+        df = converters.prepare_points(data,
+                                       aoi,
+                                       frac=frac,
+                                       all_touched=all_touched,
+                                       mask=mask,
+                                       n_jobs=n_jobs,
+                                       verbose=verbose)
 
         if verbose > 0:
             logger.info('  Extracting data ...')
 
         # Convert the map coordinates to indices
-        x, y = Converters().xy_to_ij(df.geometry.x.values,
-                                     df.geometry.y.values,
-                                     data.transform)
+        x, y = converters.xy_to_ij(df.geometry.x.values,
+                                   df.geometry.y.values,
+                                   data.transform)
 
         if shape_len == 2:
             vidx = (y, x)
@@ -161,55 +169,27 @@ class SpatialOperations(object):
 
         # TODO: reshape output ``res`` instead of iterating over dimensions
         if len(res.shape) == 1:
+            df[band_names[0]] = res.flatten()
+        elif len(res.shape) == 2:
 
-            if band_names:
-                df[band_names[0]] = res.flatten()
-            else:
-                df['bd1'] = res.flatten()
+            # `res` is shaped [samples x dimensions]
+            df = pd.concat((df, pd.DataFrame(data=res, columns=band_names)), axis=1)
 
         else:
 
-            if isinstance(bands_idx, list):
-                enum = bands_idx.tolist()
-            elif isinstance(bands_idx, slice):
-
-                if bands_idx.start and bands_idx.stop:
-                    enum = list(range(bands_idx.start, bands_idx.stop))
-                else:
-                    enum = list(range(0, data.gw.bands))
-
+            # `res` is shaped [samples x time x dimensions]
+            if time_names:
+                time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
             else:
-                enum = list(range(0, data.gw.bands))
+                time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
 
-            if len(res.shape) > 2:
+            band_names_concat = ['{}_{}'.format(a, b) for a, b in list(zip(time_names, band_names*res.shape[1]))]
 
-                for t in range(0, res.shape[1]):
-
-                    if time_names:
-                        time_name = time_names[t]
-                    else:
-                        time_name = t + 1
-
-                    for i, band in enumerate(enum):
-
-                        if band_names:
-                            band_name = band_names[i]
-                        else:
-                            band_name = i + 1
-
-                        if band_names:
-                            df['{}_{}'.format(time_name, band_name)] = res[:, t, i].flatten()
-                        else:
-                            df['t{:d}_bd{:d}'.format(time_name, band_name)] = res[:, t, i].flatten()
-
-            else:
-
-                for i, band in enumerate(enum):
-
-                    if band_names:
-                        df[band_names[i]] = res[:, i]
-                    else:
-                        df['bd{:d}'.format(i + 1)] = res[:, i]
+            df = pd.concat((df,
+                            pd.DataFrame(data=res.reshape(res.shape[0],
+                                                          res.shape[1]*res.shape[2]),
+                                         columns=band_names_concat)),
+                           axis=1)
 
         return df
 

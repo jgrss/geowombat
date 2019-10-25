@@ -348,7 +348,12 @@ class Converters(object):
             j, i
         """
 
-        return ~transform * (x, y)
+        if not isinstance(transform, Affine):
+            transform = Affine(*transform)
+
+        x, y = ~transform * (x, y)
+
+        return np.int64(x), np.int64(y)
 
     def prepare_points(self,
                        data,
@@ -435,6 +440,9 @@ class Converters(object):
                                          frac=frac,
                                          all_touched=all_touched,
                                          n_jobs=n_jobs)
+
+        # Ensure a unique index
+        df.index = list(range(0, df.shape[0]))
 
         return df
 
