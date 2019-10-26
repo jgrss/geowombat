@@ -29,7 +29,7 @@ warnings.filterwarnings('ignore')
 
 ch = Chunks()
 
-IO_DICT = dict(rasterio=['.tif', '.tiff', '.TIF', '.TIFF', '.img', '.IMG', '.vrt', '.VRT'],
+IO_DICT = dict(rasterio=['.tif', '.tiff', '.TIF', '.TIFF', '.img', '.IMG', '.vrt', '.VRT', '.jp2', '.JP2'],
                xarray=['.nc'])
 
 

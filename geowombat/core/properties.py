@@ -10,15 +10,16 @@ WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
 WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'red green blue nir')
 WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
 WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
+WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2')
 
 
 class DataProperties(object):
 
     @property
-    def micrometers(self):
+    def central_um(self):
 
         """
-        Get a dictionary of wavelength micrometers
+        Get a dictionary of central wavelengths (in micrometers)
         """
 
         return dict(l7=WavelengthsL57(blue=0.48,
@@ -34,7 +35,17 @@ class DataProperties(object):
                                      nir=0.865,
                                      swir1=1.61,
                                      swir2=2.2,
-                                     cirrus=1.37))
+                                     cirrus=1.37),
+                    s2=WavelengthsS2(blue=0.49,
+                                     green=0.56,
+                                     red=0.665,
+                                     nir1=0.705,
+                                     nir2=0.74,
+                                     nir3=0.783,
+                                     nir=0.842,
+                                     rededge=0.865,
+                                     swir1=1.61,
+                                     swir2=2.19))
 
     @property
     def wavelengths(self):
@@ -77,6 +88,16 @@ class DataProperties(object):
                                      swir1=6,
                                      swir2=7,
                                      cirrus=8),
+                    s2=WavelengthsS2(blue=1,
+                                     green=2,
+                                     red=3,
+                                     nir1=4,
+                                     nir2=5,
+                                     nir3=6,
+                                     nir=7,
+                                     rededge=8,
+                                     swir1=9,
+                                     swir2=10),
                     s210=WavelengthsBGRN(blue=1,
                                          green=2,
                                          red=3,

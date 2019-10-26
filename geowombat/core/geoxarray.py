@@ -271,7 +271,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def to_raster(self,
                   filename,
+                  readxsize=None,
+                  readysize=None,
                   separate=False,
+                  use_dask_store=False,
                   out_block_type='zarr',
                   keep_blocks=False,
                   verbose=0,
@@ -299,7 +302,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str): The output file name to write to.
+            readxsize (Optional[int]): The size of column chunks to read. If not given, ``readxsize`` defaults to Dask chunk size.
+            readysize (Optional[int]): The size of row chunks to read. If not given, ``readysize`` defaults to Dask chunk size.
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
+            use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
             out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
                 Only used if ``separate`` = ``True``.
             keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
@@ -353,6 +359,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         to_raster(self._obj,
                   filename,
+                  readxsize=readxsize,
+                  readysize=readysize,
+                  use_dask_store=use_dask_store,
                   separate=separate,
                   out_block_type=out_block_type,
                   keep_blocks=keep_blocks,

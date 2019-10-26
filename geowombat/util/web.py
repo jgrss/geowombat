@@ -65,28 +65,55 @@ class GeoDownloads(object):
 
         self.search_dict = dict()
 
-    def list_gcp(self, query):
+    def list_gcp(self, sensor, query):
 
         """
         Lists files from Google Cloud Platform
 
         Args:
-            query (str)
+            sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2'].
+            query (str): The query string.
 
         Examples:
             >>> dl = GeoDownloads()
             >>>
             >>> # Query from a known directory
-            >>> dl.list_gcp('LC08/01/042/034/LC08_L1TP_042034_20161104_20170219_01_T1/')
+            >>> dl.list_gcp('landsat', 'LC08/01/042/034/LC08_L1TP_042034_20161104_20170219_01_T1/')
             >>>
-            >>> # Query a date
-            >>> dl.list_gcp('LC08/01/042/034/*_2016*_*_01_T1*/')
+            >>> # Query a date for Landsat 5
+            >>> dl.list_gcp('l5', '042/034/*2016*')
+            >>>
+            >>> # Query a date for Landsat 7
+            >>> dl.list_gcp('l7', '042/034/*2016*')
+            >>>
+            >>> # Query a date for Landsat 8
+            >>> dl.list_gcp('l8', '042/034/*2016*')
+            >>>
+            >>> # Query Sentinel-2
+            >>> dl.list_gcp('s2', '21/H/UD/*2019*.SAFE/GRANULE/*')
 
         Returns:
             ``dict``
         """
 
-        proc = subprocess.Popen('gsutil ls -r gs://gcp-public-data-landsat/{}'.format(query),
+        gcp_dict = dict(l5='LT05/01',
+                        l7='LE07/01',
+                        l8='LC08/01',
+                        s2='tiles')
+
+        if sensor not in ['l5', 'l7', 'l8', 's2']:
+            logger.exception("  The sensor must be 'l5', 'l7', 'l8', or 's2'.")
+
+        if sensor == 's2':
+            gcp_str = 'gsutil ls -r gs://gcp-public-data-sentinel-2'
+        else:
+            gcp_str = 'gsutil ls -r gs://gcp-public-data-landsat'
+
+        gsutil_str = '{GSUTIL}/{COLLECTION}/{QUERY}'.format(GSUTIL=gcp_str,
+                                                            COLLECTION=gcp_dict[sensor],
+                                                            QUERY=query)
+
+        proc = subprocess.Popen(gsutil_str,
                                 stdout=subprocess.PIPE,
                                 shell=True)
 
@@ -94,10 +121,13 @@ class GeoDownloads(object):
 
         search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
 
-        self.search_dict = self._prepare_gcp_dict(search_list)
+        if sensor == 's2':
+            self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
+        else:
+            self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
 
     @staticmethod
-    def _prepare_gcp_dict(search_list):
+    def _prepare_gcp_dict(search_list, gcp_str):
 
         """
         Prepares a list of GCP keys into a dictionary
@@ -122,7 +152,7 @@ class GeoDownloads(object):
             m1 = mask_idx[mi]
             m2 = mask_idx[mi + 1] - 1
 
-            key = search_list[m1].replace('gs://gcp-public-data-landsat/', '').replace('/:', '')
+            key = search_list[m1].replace(gcp_str, '').replace('/:', '')
             values = search_list[m1:m2]
 
             values = [value for value in values if value]
@@ -131,12 +161,13 @@ class GeoDownloads(object):
 
         return url_dict
 
-    def download_gcp(self, downloads=None, outdir='.', search_wildcards=None, search_dict=None, verbose=0):
+    def download_gcp(self, sensor, downloads=None, outdir='.', search_wildcards=None, search_dict=None, verbose=0):
 
         """
         Downloads a file from Google Cloud platform
 
         Args:
+            sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2'].
             downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
                 from ``search_dict`` or ``self.search_dict``.
             outdir (Optional[str]): The output directory.
@@ -165,6 +196,11 @@ class GeoDownloads(object):
         if not isinstance(downloads, list):
             downloads = [downloads]
 
+        if sensor == 's2':
+            gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
+        else:
+            gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
+
         FileInfo = namedtuple('FileInfo', 'name key')
 
         downloaded = dict()
@@ -192,6 +228,8 @@ class GeoDownloads(object):
                     key = 'angle'
                 elif down_file.endswith('_MTL.txt'):
                     key = 'meta'
+                elif down_file.endswith('MTD_TL.xml'):
+                    key = 'meta'
                 else:
                     key = down_file.split('_')[-1].split('.')[0]
 
@@ -203,7 +241,7 @@ class GeoDownloads(object):
                     if fn.lower().startswith('gs://gcp-public-data'):
                         com = 'gsutil cp -r {} {}'.format(fn, outdir)
                     else:
-                        com = 'gsutil cp -r gs://gcp-public-data-landsat/{} {}'.format(fn, outdir)
+                        com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
 
                     subprocess.call(com, shell=True)
 

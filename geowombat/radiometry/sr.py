@@ -251,11 +251,7 @@ class RadTransforms(MetaData):
 
             toar = self.radiance_to_toar(radiance, solar_za, global_args)
 
-        micrometers = dn.gw.micrometers[meta.sensor]
-        band_um = [getattr(micrometers, p) for p in band_names]
-        um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
-
-        sr_data = self.toar_to_sr(toar, solar_za, sensor_za, solar_az, sensor_az, um).fillna(nodata).clip(0, 1).astype('float64')
+        sr_data = self.toar_to_sr(toar, solar_za, solar_az, sensor_za, sensor_az, meta.sensor, nodata=nodata)
         sr_data = sr_data.where(sr_data != nodata)
 
         attrs['sensor'] = sensor
@@ -323,7 +319,13 @@ class RadTransforms(MetaData):
         return (global_args.pi * radiance * global_args.d**2) / (global_args.esun * da.cos(solar_zenith_angle))
 
     @staticmethod
-    def toar_to_sr(toar, solar_za, sensor_za, solar_az, sensor_az, um):
+    def toar_to_sr(toar,
+                   solar_za,
+                   solar_az,
+                   sensor_za,
+                   sensor_az,
+                   sensor,
+                   nodata=-32768):
 
         """
         Converts top-of-atmosphere reflectance to surface reflectance
@@ -331,16 +333,22 @@ class RadTransforms(MetaData):
         Args:
             toar (DataArray): The top-of-atmosphere reflectance.
             solar_za (DataArray): The solar zenith angle.
-            sensor_za (DataArray): The sensor zenith angle.
             solar_az (DataArray): The solar azimuth angle.
+            sensor_za (DataArray): The sensor zenith angle.
             sensor_az (DataArray): The sensor azimuth angle.
-            um (namedtuple): The sensor wavelength micrometers.
+            sensor (str): The satellite sensor.
+            nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
 
         Returns:
             ``xarray.DataArray``
         """
 
         # kwargs = dict(readxsize=1024, readysize=1024, n_workers=4, n_threads=4)
+
+        central_um = toar.gw.central_um[sensor]
+        band_names = list(toar.gw.wavelengths[sensor]._fields)
+        band_um = [getattr(central_um, p) for p in band_names]
+        um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
 
         # Scale the angles to degrees
         sza = solar_za * 0.01
@@ -418,4 +426,4 @@ class RadTransforms(MetaData):
         # total_transmission.attrs = solar_za.attrs
         # total_transmission.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/total_transmission.tif', **kwargs)
 
-        return toar_diff / (toar_diff * s_atm(r) + total_transmission)
+        return (toar_diff / (toar_diff * s_atm(r) + total_transmission)).fillna(nodata).clip(0, 1).astype('float64')

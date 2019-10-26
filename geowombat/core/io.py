@@ -273,13 +273,15 @@ def _write_xarray(*args):
         zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
     else:
 
-        with rio.open(filename,
-                      mode='r+',
-                      sharing=False) as dst_:
+        with threading.Lock():
 
-            dst_.write(output,
-                       window=out_window,
-                       indexes=out_indexes)
+            with rio.open(filename,
+                          mode='r+',
+                          sharing=False) as dst_:
+
+                dst_.write(output,
+                           window=out_window,
+                           indexes=out_indexes)
 
     return zarr_file
 
@@ -366,6 +368,8 @@ def to_raster(data,
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
+    pfile = Path(filename)
+
     if scheduler.lower() == 'mpool':
         pool_executor = multi.Pool
     else:
@@ -373,8 +377,12 @@ def to_raster(data,
 
     if overwrite:
 
-        if os.path.isfile(filename):
-            os.remove(filename)
+        if pfile.is_file():
+            pfile.unlink()
+
+    if pfile.is_file():
+        logger.warning('  The output file already exists.')
+        return
 
     if not is_dask_collection(data.data):
         logger.exception('  The data should be a dask array.')
@@ -463,7 +471,7 @@ def to_raster(data,
 
     if separate:
 
-        d_name = Path(filename).parent
+        d_name = pfile.parent
         sub_dir = d_name.joinpath('sub_tmp_')
         zarr_file = sub_dir.joinpath('data.zarr').as_posix()
 

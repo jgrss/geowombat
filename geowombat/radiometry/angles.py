@@ -9,16 +9,144 @@ from datetime import datetime as dtime
 from ..errors import logger
 
 import numpy as np
+from scipy.ndimage import zoom
+import cv2
 import xarray as xr
 import dask.array as da
 import rasterio as rio
-from rasterio.warp import reproject
+from rasterio.warp import reproject, calculate_default_transform, Resampling
 import numba as nb
 from affine import Affine
 from pysolar.solar import get_altitude_fast, get_azimuth_fast
+import xml.etree.ElementTree as ET
 
 
-def sentinel_pixel_angles():
+def get_s2_solar_angles(metadata, nodata):
+
+    solar_zenith_values = np.zeros((23, 23), dtype='float64') + nodata
+    solar_azimuth_values = np.zeros((23, 23), dtype='float64') + nodata
+
+    # Parse the XML file
+    tree = ET.parse(metadata)
+    root = tree.getroot()
+
+    # Find the angles
+    for child in root:
+
+        if child.tag[-14:] == 'Geometric_Info':
+            geoinfo = child
+
+    for segment in geoinfo:
+
+        if segment.tag == 'Tile_Angles':
+            angles = segment
+
+    for angle in angles:
+
+        if angle.tag == 'Sun_Angles_Grid':
+
+            for bset in angle:
+
+                if bset.tag == 'Zenith':
+                    zenith = bset
+                if bset.tag == 'Azimuth':
+                    azimuth = bset
+
+            for field in zenith:
+
+                if field.tag == 'Values_List':
+                    zvallist = field
+
+            for field in azimuth:
+
+                if field.tag == 'Values_List':
+                    avallist = field
+
+            for rindex in range(len(zvallist)):
+
+                zvalrow = zvallist[rindex]
+                avalrow = avallist[rindex]
+                zvalues = zvalrow.text.split(' ')
+                avalues = avalrow.text.split(' ')
+                values = list(zip(zvalues, avalues))  # row of values
+
+                for cindex in range(len(values)):
+
+                    if (values[cindex][0].lower() != 'nan') and (values[cindex][1].lower() != 'nan'):
+
+                        zen = float(values[cindex][0])
+                        az = float(values[cindex][1])
+                        solar_zenith_values[rindex, cindex] = zen
+                        solar_azimuth_values[rindex, cindex] = az
+
+    return solar_zenith_values, solar_azimuth_values
+
+
+def get_s2_view_angles(metadata, nodata):
+
+    numband = 13
+    sensor_zenith_values = np.zeros((numband, 23, 23), dtype='float64') + nodata
+    sensor_azimuth_values = np.zeros((numband, 23, 23), dtype='float64') + nodata
+
+    # Parse the XML file
+    tree = ET.parse(metadata)
+    root = tree.getroot()
+
+    # Find the angles
+    for child in root:
+
+        if child.tag[-14:] == 'Geometric_Info':
+            geoinfo = child
+
+    for segment in geoinfo:
+
+        if segment.tag == 'Tile_Angles':
+            angles = segment
+
+    for angle in angles:
+
+        if angle.tag == 'Viewing_Incidence_Angles_Grids':
+
+            band_id = int(angle.attrib['bandId'])
+
+            for bset in angle:
+
+                if bset.tag == 'Zenith':
+                    zenith = bset
+                if bset.tag == 'Azimuth':
+                    azimuth = bset
+
+            for field in zenith:
+
+                if field.tag == 'Values_List':
+                    zvallist = field
+
+            for field in azimuth:
+
+                if field.tag == 'Values_List':
+                    avallist = field
+
+            for rindex in range(len(zvallist)):
+
+                zvalrow = zvallist[rindex]
+                avalrow = avallist[rindex]
+                zvalues = zvalrow.text.split(' ')
+                avalues = avalrow.text.split(' ')
+                values = list(zip(zvalues, avalues))  # row of values
+
+                for cindex in range(len(values)):
+
+                    if (values[cindex][0].lower() != 'nan') and (values[cindex][1].lower() != 'nan'):
+
+                        zen = float(values[cindex][0])
+                        az = float(values[cindex][1])
+                        sensor_zenith_values[band_id, rindex, cindex] = zen
+                        sensor_azimuth_values[band_id, rindex, cindex] = az
+
+    return sensor_zenith_values, sensor_azimuth_values
+
+
+def sentinel_pixel_angles(metadata, ref_file, outdir='.', nodata=-32768, overwrite=False, verbose=0):
 
     """
     Generates Sentinel pixel angle files
@@ -28,7 +156,74 @@ def sentinel_pixel_angles():
         https://github.com/marujore/sentinel_angle_bands/blob/master/sentinel2_angle_bands.py
     """
 
-    pass
+    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
+
+    sza, saa = get_s2_solar_angles(metadata, nodata)
+    vza, vaa = get_s2_view_angles(metadata, nodata)
+
+    with rio.open(ref_file) as src:
+
+        profile = src.profile.copy()
+
+        ref_height = src.height
+        ref_width = src.width
+        ref_extent = src.bounds
+
+        profile.update(transform=Affine(src.res[0], 0.0, ref_extent.left, 0.0, -src.res[1], ref_extent.top),
+                       height=ref_height,
+                       width=ref_width,
+                       nodata=-32768,
+                       dtype='int16',
+                       count=1,
+                       driver='GTiff',
+                       tiled=True,
+                       compress='lzw')
+
+    ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
+
+    opath = Path(outdir)
+
+    opath.mkdir(parents=True, exist_ok=True)
+
+    # Set output angle file names.
+    sensor_azimuth_file = opath.joinpath(ref_base + '_sensor_azimuth.tif').as_posix()
+    sensor_zenith_file = opath.joinpath(ref_base + '_sensor_zenith.tif').as_posix()
+    solar_azimuth_file = opath.joinpath(ref_base + '_solar_azimuth.tif').as_posix()
+    solar_zenith_file = opath.joinpath(ref_base + '_solar_zenith.tif').as_posix()
+
+    for angle_array, angle_file in zip([vaa,
+                                        vza,
+                                        saa,
+                                        sza],
+                                       [sensor_azimuth_file,
+                                        sensor_zenith_file,
+                                        solar_azimuth_file,
+                                        solar_zenith_file]):
+
+        if not Path(angle_file).is_file():
+
+            # TODO: write data for each band?
+            if len(angle_array.shape) > 2:
+                angle_array = angle_array.mean(axis=0)
+
+            with rio.open(angle_file, mode='w', **profile) as dst:
+
+                if verbose > 0:
+                    logger.info('  Writing {} to file ...'.format(angle_file))
+
+                # Resample and scale
+                angle_array_resamp = np.int16(cv2.resize(angle_array,
+                                                         (0, 0),
+                                                         fy=ref_height / angle_array.shape[0],
+                                                         fx=ref_width / angle_array.shape[1],
+                                                         interpolation=cv2.INTER_LINEAR) / 0.01)
+
+                dst.write(angle_array_resamp, indexes=1)
+
+    return AngleInfo(vaa=sensor_azimuth_file,
+                     vza=sensor_zenith_file,
+                     saa=solar_azimuth_file,
+                     sza=solar_zenith_file)
 
 
 # @nb.jit
