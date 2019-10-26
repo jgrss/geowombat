@@ -1,4 +1,5 @@
 import os
+import fnmatch
 import subprocess
 from pathlib import Path
 from datetime import datetime
@@ -62,6 +63,8 @@ class GeoDownloads(object):
         self.landsat_parts = ['le07', 'lt05', 'lc08']
         self.sentinel_parts = ['s2a']
 
+        self.search_dict = dict()
+
     def list_gcp(self, query):
 
         """
@@ -91,7 +94,7 @@ class GeoDownloads(object):
 
         search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
 
-        return self._prepare_gcp_dict(search_list)
+        self.search_dict = self._prepare_gcp_dict(search_list)
 
     @staticmethod
     def _prepare_gcp_dict(search_list):
@@ -122,61 +125,93 @@ class GeoDownloads(object):
             key = search_list[m1].replace('gs://gcp-public-data-landsat/', '').replace('/:', '')
             values = search_list[m1:m2]
 
-            url_dict[key] = values
+            values = [value for value in values if value]
+
+            url_dict[key] = [value for value in values if not value.endswith('/:')]
 
         return url_dict
 
-    @staticmethod
-    def download_gcp(filename, outdir='.', verbose=0):
+    def download_gcp(self, downloads=None, outdir='.', search_wildcards=None, search_dict=None, verbose=0):
 
         """
         Downloads a file from Google Cloud platform
 
         Args:
-            filename (str or list): The file or list of files to download.
+            downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
+                from ``search_dict`` or ``self.search_dict``.
             outdir (Optional[str]): The output directory.
+            search_wildcards (Optional[list]): A list of search wildcards.
+            search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
             verbose (Optional[int]): The verbosity level.
 
         Returns:
             ``namedtuple`` or ``list``
         """
 
-        if not isinstance(filename, list):
-            filename = [filename]
+        if not search_dict:
+            if not self.search_dict:
+                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+            else:
+                search_dict = self.search_dict
+
+        poutdir = Path(outdir)
+
+        if outdir != '.':
+            poutdir.mkdir(parents=True, exist_ok=True)
+
+        if not downloads:
+            downloads = list(search_dict.keys())
+
+        if not isinstance(downloads, list):
+            downloads = [downloads]
 
         FileInfo = namedtuple('FileInfo', 'name key')
 
-        downloads_ = list()
+        downloaded = dict()
 
-        for fn in filename:
+        for search_key in downloads:
 
-            down_file = Path(outdir).joinpath(Path(fn).name).as_posix()
+            downloaded_sub = dict()
 
-            if down_file.endswith('_ANG.txt'):
-                key = 'angle'
-            elif down_file.endswith('_MTL.txt'):
-                key = 'meta'
-            else:
-                key = 'band'
+            download_list = self.search_dict[search_key]
 
-            if not Path(down_file).exists():
+            if search_wildcards:
 
-                if verbose > 0:
-                    logger.info('  Downloading {} ...'.format(Path(fn).name))
+                download_list_ = list()
 
-                if fn.lower().startswith('gs://gcp-public-data'):
-                    com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                for swild in search_wildcards:
+                    download_list_ += fnmatch.filter(download_list, '*{}'.format(swild))
+
+                download_list = download_list_
+
+            for fn in download_list:
+
+                down_file = poutdir.joinpath(Path(fn).name).as_posix()
+
+                if down_file.endswith('_ANG.txt'):
+                    key = 'angle'
+                elif down_file.endswith('_MTL.txt'):
+                    key = 'meta'
                 else:
-                    com = 'gsutil cp -r gs://gcp-public-data-landsat/{} {}'.format(fn, outdir)
+                    key = down_file.split('_')[-1].split('.')[0]
 
-                subprocess.call(com, shell=True)
+                if not Path(down_file).exists():
 
-            downloads_.append(FileInfo(name=down_file, key=key))
+                    if verbose > 0:
+                        logger.info('  Downloading {} ...'.format(Path(fn).name))
 
-        if len(downloads_) == 1:
-            return downloads_[0]
-        else:
-            return downloads_
+                    if fn.lower().startswith('gs://gcp-public-data'):
+                        com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                    else:
+                        com = 'gsutil cp -r gs://gcp-public-data-landsat/{} {}'.format(fn, outdir)
+
+                    subprocess.call(com, shell=True)
+
+                downloaded_sub[key] = FileInfo(name=down_file, key=key)
+
+            downloaded[search_key] = downloaded_sub
+
+        return downloaded
 
     def download_landsat_range(self, sensors, bands, path_range, row_range, date_range, **kwargs):
 

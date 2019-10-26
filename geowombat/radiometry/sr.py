@@ -202,7 +202,7 @@ class RadTransforms(MetaData):
             >>> from geowombat.radiometry import RadTransforms
             >>>
             >>> sr = RadTransforms()
-            >>> meta = sr.get_coefficients('file.MTL')
+            >>> meta = sr.get_landsat_coefficients('file.MTL')
             >>>
             >>> # Convert DNs to surface reflectance using Landsat metadata
             >>> with gw.open('dn.tif') as ds:

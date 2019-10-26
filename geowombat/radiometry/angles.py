@@ -186,78 +186,80 @@ def landsat_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path=
     solar_azimuth_file = opath.joinpath(ref_base + '_solar_azimuth.tif').as_posix()
     solar_zenith_file = opath.joinpath(ref_base + '_solar_zenith.tif').as_posix()
 
-    # Setup the command.
-    if sensor.lower() in ['l5', 'l7']:
+    if not Path(sensor_azimuth_file).is_file():
 
-        angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles'),
-                                                         META=angles_file)
+        # Setup the command.
+        if sensor.lower() in ['l5', 'l7']:
 
-        # 1=zenith, 2=azimuth
-        out_order = dict(azimuth=2, zenith=1)
-        # out_order = [2, 1, 2, 1]
+            angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles'),
+                                                             META=angles_file)
 
-    else:
+            # 1=zenith, 2=azimuth
+            out_order = dict(azimuth=2, zenith=1)
+            # out_order = [2, 1, 2, 1]
 
-        angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles'),
-                                                                     META=angles_file)
+        else:
 
-        # 1=azimuth, 2=zenith
-        out_order = dict(azimuth=1, zenith=2)
-        # out_order = [1, 2, 1, 2]
+            angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles'),
+                                                                         META=angles_file)
 
-    os.chdir(outdir)
+            # 1=azimuth, 2=zenith
+            out_order = dict(azimuth=1, zenith=2)
+            # out_order = [1, 2, 1, 2]
 
-    if verbose > 0:
-        logger.info('  Generating pixel angles ...')
+        os.chdir(outdir)
 
-    # Create the angle files.
-    subprocess.call(angle_command, shell=True)
+        if verbose > 0:
+            logger.info('  Generating pixel angles ...')
 
-    # Get angle data from 1 band.
-    sensor_angles = fnmatch.filter(os.listdir(outdir), '*sensor_B04.img')[0]
-    solar_angles = fnmatch.filter(os.listdir(outdir), '*solar_B04.img')[0]
+        # Create the angle files.
+        subprocess.call(angle_command, shell=True)
 
-    sensor_angles_fn_in = opath.joinpath(sensor_angles).as_posix()
-    solar_angles_fn_in = opath.joinpath(solar_angles).as_posix()
+        # Get angle data from 1 band.
+        sensor_angles = fnmatch.filter(os.listdir(outdir), '*sensor_B04.img')[0]
+        solar_angles = fnmatch.filter(os.listdir(outdir), '*solar_B04.img')[0]
 
-    # Convert the data
-    for in_angle, out_angle, band_pos in zip([sensor_angles_fn_in,
-                                              sensor_angles_fn_in,
-                                              solar_angles_fn_in,
-                                              solar_angles_fn_in],
-                                             [sensor_azimuth_file,
-                                              sensor_zenith_file,
-                                              solar_azimuth_file,
-                                              solar_zenith_file],
-                                             ['azimuth',
-                                              'zenith',
-                                              'azimuth',
-                                              'zenith']):
+        sensor_angles_fn_in = opath.joinpath(sensor_angles).as_posix()
+        solar_angles_fn_in = opath.joinpath(solar_angles).as_posix()
 
-        with rio.open(in_angle) as src:
+        # Convert the data
+        for in_angle, out_angle, band_pos in zip([sensor_angles_fn_in,
+                                                  sensor_angles_fn_in,
+                                                  solar_angles_fn_in,
+                                                  solar_angles_fn_in],
+                                                 [sensor_azimuth_file,
+                                                  sensor_zenith_file,
+                                                  solar_azimuth_file,
+                                                  solar_zenith_file],
+                                                 ['azimuth',
+                                                  'zenith',
+                                                  'azimuth',
+                                                  'zenith']):
 
-            profile = src.profile.copy()
+            with rio.open(in_angle) as src:
 
-            profile.update(transform=Affine(src.res[0], 0.0, ref_extent.left, 0.0, -src.res[1], ref_extent.top),
-                           height=ref_height,
-                           width=ref_width,
-                           nodata=-32768,
-                           dtype='int16',
-                           count=1,
-                           driver='GTiff',
-                           tiled=True,
-                           compress='lzw')
+                profile = src.profile.copy()
 
-            src_band = rio.Band(src, out_order[band_pos], 'int16', (src.height, src.width))
+                profile.update(transform=Affine(src.res[0], 0.0, ref_extent.left, 0.0, -src.res[1], ref_extent.top),
+                               height=ref_height,
+                               width=ref_width,
+                               nodata=-32768,
+                               dtype='int16',
+                               count=1,
+                               driver='GTiff',
+                               tiled=True,
+                               compress='lzw')
 
-            with rio.open(out_angle, mode='w', **profile) as dst:
+                src_band = rio.Band(src, out_order[band_pos], 'int16', (src.height, src.width))
 
-                dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
+                with rio.open(out_angle, mode='w', **profile) as dst:
 
-                # TODO: num_threads
-                reproject(src_band,
-                          destination=dst_band,
-                          num_threads=8)
+                    dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
+
+                    # TODO: num_threads
+                    reproject(src_band,
+                              destination=dst_band,
+                              num_threads=8)
 
     return AngleInfo(vaa=sensor_azimuth_file,
                      vza=sensor_zenith_file,
