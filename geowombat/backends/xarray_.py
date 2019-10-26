@@ -93,7 +93,12 @@ def warp_open(filename,
         else:
 
             if src.gw.sensor:
-                src.coords['band'] = list(src.gw.wavelengths[src.gw.sensor]._fields)
+
+                new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
+
+                # Avoid nested opens within a `config` context
+                if len(new_band_names) == len(src.band.values.tolist()):
+                    src.coords['band'] = new_band_names
 
         if return_windows:
 
