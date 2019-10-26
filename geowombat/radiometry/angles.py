@@ -3,28 +3,71 @@ from pathlib import Path
 import fnmatch
 import subprocess
 from collections import namedtuple
-import datetime
-from datetime import datetime as dtime
+# import datetime
+# from datetime import datetime as dtime
 
 from ..errors import logger
 
 import numpy as np
-from scipy.ndimage import zoom
 import cv2
 import xarray as xr
-import dask.array as da
+# import dask.array as da
 import rasterio as rio
-from rasterio.warp import reproject, calculate_default_transform, Resampling
-import numba as nb
+from rasterio.warp import reproject
 from affine import Affine
-from pysolar.solar import get_altitude_fast, get_azimuth_fast
 import xml.etree.ElementTree as ET
+# import numba as nb
+# from pysolar.solar import get_altitude_fast, get_azimuth_fast
 
 
-def get_s2_solar_angles(metadata, nodata):
+def relative_azimuth(saa, vaa):
 
-    solar_zenith_values = np.zeros((23, 23), dtype='float64') + nodata
-    solar_azimuth_values = np.zeros((23, 23), dtype='float64') + nodata
+    """
+    Calculates the relative azimuth angle
+
+    Args:
+        saa (DataArray): The solar azimuth angle (in degrees).
+        vaa (DataArray): The view azimuth angle (in degrees).
+
+    Reference:
+        http://stcorp.github.io/harp/doc/html/algorithms/derivations/relative_azimuth_angle.html
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    raa = saa - vaa
+    raa = xr.where(raa >= 360, raa - 360.0, raa)
+    raa = xr.where(raa < 0, raa + 360, raa)
+
+    return xr.ufuncs.fabs(raa - 180.0)
+
+
+def _parse_sentinel_angles(metadata, proc_angles, nodata):
+
+    """
+    Gets the Sentinel-2 solar angles from metadata
+
+    Args:
+        metadata (str): The metadata file.
+        proc_angles (str): The angles to parse. Choices are ['solar', 'view'].
+        nodata (int or float): The 'no data' value.
+
+    Returns:
+        zenith and azimuth angles as a ``tuple`` of 2d ``numpy`` arrays
+    """
+
+    if proc_angles == 'view':
+
+        zenith_values = np.zeros((13, 23, 23), dtype='float64') + nodata
+        azimuth_values = np.zeros((13, 23, 23), dtype='float64') + nodata
+
+    else:
+
+        zenith_values = np.zeros((23, 23), dtype='float64') + nodata
+        azimuth_values = np.zeros((23, 23), dtype='float64') + nodata
+
+    view_tag = 'Sun_Angles_Grid' if proc_angles == 'solar' else 'Viewing_Incidence_Angles_Grids'
 
     # Parse the XML file
     tree = ET.parse(metadata)
@@ -43,7 +86,10 @@ def get_s2_solar_angles(metadata, nodata):
 
     for angle in angles:
 
-        if angle.tag == 'Sun_Angles_Grid':
+        if angle.tag == view_tag:
+
+            if proc_angles == 'view':
+                band_id = int(angle.attrib['bandId'])
 
             for bset in angle:
 
@@ -68,98 +114,58 @@ def get_s2_solar_angles(metadata, nodata):
                 avalrow = avallist[rindex]
                 zvalues = zvalrow.text.split(' ')
                 avalues = avalrow.text.split(' ')
-                values = list(zip(zvalues, avalues))  # row of values
+                values = list(zip(zvalues, avalues))
 
                 for cindex in range(len(values)):
 
                     if (values[cindex][0].lower() != 'nan') and (values[cindex][1].lower() != 'nan'):
 
-                        zen = float(values[cindex][0])
+                        ze = float(values[cindex][0])
                         az = float(values[cindex][1])
-                        solar_zenith_values[rindex, cindex] = zen
-                        solar_azimuth_values[rindex, cindex] = az
 
-    return solar_zenith_values, solar_azimuth_values
+                        if proc_angles == 'view':
 
+                            zenith_values[band_id, rindex, cindex] = ze
+                            azimuth_values[band_id, rindex, cindex] = az
 
-def get_s2_view_angles(metadata, nodata):
+                        else:
 
-    numband = 13
-    sensor_zenith_values = np.zeros((numband, 23, 23), dtype='float64') + nodata
-    sensor_azimuth_values = np.zeros((numband, 23, 23), dtype='float64') + nodata
+                            zenith_values[rindex, cindex] = ze
+                            azimuth_values[rindex, cindex] = az
 
-    # Parse the XML file
-    tree = ET.parse(metadata)
-    root = tree.getroot()
-
-    # Find the angles
-    for child in root:
-
-        if child.tag[-14:] == 'Geometric_Info':
-            geoinfo = child
-
-    for segment in geoinfo:
-
-        if segment.tag == 'Tile_Angles':
-            angles = segment
-
-    for angle in angles:
-
-        if angle.tag == 'Viewing_Incidence_Angles_Grids':
-
-            band_id = int(angle.attrib['bandId'])
-
-            for bset in angle:
-
-                if bset.tag == 'Zenith':
-                    zenith = bset
-                if bset.tag == 'Azimuth':
-                    azimuth = bset
-
-            for field in zenith:
-
-                if field.tag == 'Values_List':
-                    zvallist = field
-
-            for field in azimuth:
-
-                if field.tag == 'Values_List':
-                    avallist = field
-
-            for rindex in range(len(zvallist)):
-
-                zvalrow = zvallist[rindex]
-                avalrow = avallist[rindex]
-                zvalues = zvalrow.text.split(' ')
-                avalues = avalrow.text.split(' ')
-                values = list(zip(zvalues, avalues))  # row of values
-
-                for cindex in range(len(values)):
-
-                    if (values[cindex][0].lower() != 'nan') and (values[cindex][1].lower() != 'nan'):
-
-                        zen = float(values[cindex][0])
-                        az = float(values[cindex][1])
-                        sensor_zenith_values[band_id, rindex, cindex] = zen
-                        sensor_azimuth_values[band_id, rindex, cindex] = az
-
-    return sensor_zenith_values, sensor_azimuth_values
+    return zenith_values, azimuth_values
 
 
-def sentinel_pixel_angles(metadata, ref_file, outdir='.', nodata=-32768, overwrite=False, verbose=0):
+def sentinel_pixel_angles(metadata,
+                          ref_file,
+                          outdir='.',
+                          nodata=-32768,
+                          overwrite=False,
+                          verbose=0):
 
     """
     Generates Sentinel pixel angle files
-    
+
+    Args:
+        metadata (str): The metadata file.
+        ref_file (str): A reference image to use for geo-information.
+        outdir (Optional[str])): The output directory to save the angle files to.
+        nodata (Optional[int or float]): The 'no data' value.
+        overwrite (Optional[bool]): Whether to overwrite existing angle files.
+        verbose (Optional[int]): The verbosity level.
+
     References:
         https://www.sentinel-hub.com/faq/how-can-i-access-meta-data-information-sentinel-2-l2a
         https://github.com/marujore/sentinel_angle_bands/blob/master/sentinel2_angle_bands.py
+
+    Returns:
+        zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
 
-    sza, saa = get_s2_solar_angles(metadata, nodata)
-    vza, vaa = get_s2_view_angles(metadata, nodata)
+    sza, saa = _parse_sentinel_angles(metadata, 'solar', nodata)
+    vza, vaa = _parse_sentinel_angles(metadata, 'view', nodata)
 
     with rio.open(ref_file) as src:
 
@@ -200,7 +206,14 @@ def sentinel_pixel_angles(metadata, ref_file, outdir='.', nodata=-32768, overwri
                                         solar_azimuth_file,
                                         solar_zenith_file]):
 
-        if not Path(angle_file).is_file():
+        pfile = Path(angle_file)
+
+        if overwrite:
+
+            if pfile.is_file():
+                pfile.unlink()
+
+        if not pfile.is_file():
 
             # TODO: write data for each band?
             if len(angle_array.shape) > 2:
@@ -267,80 +280,86 @@ def sentinel_pixel_angles(metadata, ref_file, outdir='.', nodata=-32768, overwri
 #     return zenith_angles, azimuth_angles
 
 
-@nb.jit
-def _calc_solar_angles(data_band, zenith_angles, azimuth_angles, yvalues, xvalues, nodata, acquisition_date):
-
-    """
-    Calculates solar zenith and azimuth angles
-    """
-
-    for i in range(0, yvalues):
-
-        for j in range(0, xvalues):
-
-            if data_band[i, j] != nodata:
-
-                # Solar zenith angle = 90 - elevation angle scaled to integer range
-                zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-
-                # Solar azimuth angle
-                azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-
-    return zenith_angles, azimuth_angles
-
-
-def pixel_angles(data, band, nodata, meta):
-
-    """
-    Generates pixel zenith and azimuth angles
-
-    Args:
-        data (Xarray): The data with coordinate and transform attributes.
-        band (int or str): The ``data`` band to use for masking.
-        nodata (int or float): The 'no data' value in ``data``.
-        meta (namedtuple): The metadata file. Should have image acquisition year, month, day and hour attributes.
-    """
-
-    acquisition_date = dtime(meta.year, meta.month, meta.day, meta.hour, 0, 0, 0, tzinfo=datetime.timezone.utc)
-
-    yvalues = data.y.values
-    xvalues = data.x.values
-
-    data_band = data.sel(band=band).data.compute()
-    sze = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
-    saa = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
-
-    sze, saa = _calc_solar_angles(data_band, sze, saa, yvalues, xvalues, nodata, acquisition_date)
-
-    sze_attrs = data.attrs.copy()
-    saa_attrs = data.attrs.copy()
-
-    sze_attrs['values'] = 'Solar zenith angle'
-    sze_attrs['scale_factor'] = 0.01
-
-    saa_attrs['values'] = 'Solar azimuth angle'
-    sze_attrs['scale_factor'] = 0.01
-
-    szex = xr.DataArray(data=da.from_array(sze[np.newaxis, :, :],
-                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
-                        coords={'band': 'sze',
-                                'y': data.y,
-                                'x': data.x},
-                        dims=('band', 'y', 'x'),
-                        attrs=sze_attrs)
-
-    saax = xr.DataArray(data=da.from_array(saa[np.newaxis, :, :],
-                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
-                        coords={'band': 'saa',
-                                'y': data.y,
-                                'x': data.x},
-                        dims=('band', 'y', 'x'),
-                        attrs=saa_attrs)
-
-    return szex, saax
+# @nb.jit
+# def _calc_solar_angles(data_band, zenith_angles, azimuth_angles, yvalues, xvalues, nodata, acquisition_date):
+#
+#     """
+#     Calculates solar zenith and azimuth angles
+#     """
+#
+#     for i in range(0, yvalues):
+#
+#         for j in range(0, xvalues):
+#
+#             if data_band[i, j] != nodata:
+#
+#                 # Solar zenith angle = 90 - elevation angle scaled to integer range
+#                 zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
+#
+#                 # Solar azimuth angle
+#                 azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
+#
+#     return zenith_angles, azimuth_angles
 
 
-def landsat_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path='.', l8_angles_path='.', verbose=0):
+# def pixel_angles(data, band, nodata, meta):
+#
+#     """
+#     Generates pixel zenith and azimuth angles
+#
+#     Args:
+#         data (Xarray): The data with coordinate and transform attributes.
+#         band (int or str): The ``data`` band to use for masking.
+#         nodata (int or float): The 'no data' value in ``data``.
+#         meta (namedtuple): The metadata file. Should have image acquisition year, month, day and hour attributes.
+#     """
+#
+#     acquisition_date = dtime(meta.year, meta.month, meta.day, meta.hour, 0, 0, 0, tzinfo=datetime.timezone.utc)
+#
+#     yvalues = data.y.values
+#     xvalues = data.x.values
+#
+#     data_band = data.sel(band=band).data.compute()
+#     sze = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
+#     saa = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
+#
+#     sze, saa = _calc_solar_angles(data_band, sze, saa, yvalues, xvalues, nodata, acquisition_date)
+#
+#     sze_attrs = data.attrs.copy()
+#     saa_attrs = data.attrs.copy()
+#
+#     sze_attrs['values'] = 'Solar zenith angle'
+#     sze_attrs['scale_factor'] = 0.01
+#
+#     saa_attrs['values'] = 'Solar azimuth angle'
+#     sze_attrs['scale_factor'] = 0.01
+#
+#     szex = xr.DataArray(data=da.from_array(sze[np.newaxis, :, :],
+#                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
+#                         coords={'band': 'sze',
+#                                 'y': data.y,
+#                                 'x': data.x},
+#                         dims=('band', 'y', 'x'),
+#                         attrs=sze_attrs)
+#
+#     saax = xr.DataArray(data=da.from_array(saa[np.newaxis, :, :],
+#                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
+#                         coords={'band': 'saa',
+#                                 'y': data.y,
+#                                 'x': data.x},
+#                         dims=('band', 'y', 'x'),
+#                         attrs=saa_attrs)
+#
+#     return szex, saax
+
+
+def landsat_pixel_angles(angles_file,
+                         ref_file,
+                         outdir,
+                         sensor,
+                         l57_angles_path='.',
+                         l8_angles_path='.',
+                         verbose=0):
 
     """
     Generates Landsat pixel angle files
@@ -350,12 +369,12 @@ def landsat_pixel_angles(angles_file, ref_file, outdir, sensor, l57_angles_path=
         ref_file (str): A reference file.
         outdir (str): The output directory.
         sensor (str): The sensor.
-        l57_angles_path (str)
-        l8_angles_path (str)
+        l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
+        l8_angles_path (str): The path to the Landsat 8 angles bin.
         verbose (Optional[int]): The verbosity level.
 
     Returns:
-        ``namedtuple``
+        zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')

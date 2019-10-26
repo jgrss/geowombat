@@ -43,7 +43,7 @@ required_packages = ['cython',
                      'zarr',
                      'dateparser',
                      'gsutil',
-                     'pysolar']
+                     'opencv-python']
 
 
 def get_packages():

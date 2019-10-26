@@ -3,6 +3,9 @@ from collections import namedtuple
 from datetime import datetime as dtime
 import datetime
 
+from .angles import relative_azimuth
+
+import numpy as np
 import pandas as pd
 import xarray as xr
 import dask.array as da
@@ -157,6 +160,98 @@ class MetaData(object):
                           date_acquired=date_acquired)
 
 
+class LinearAdjustments(object):
+
+    def __init__(self):
+
+        self.coefficients = dict(s2=dict(l5=None,
+                                         l7=None,
+                                         l8=dict(alphas=dict(blue=4.47e-03,
+                                                             green=1.09e-03,
+                                                             red=-1.04e-03,
+                                                             nir=2.50e-04,
+                                                             swir1=1.24e-04,
+                                                             swir2=1.19e-03),
+                                                 betas=dict(blue=1.020,
+                                                            green=0.994,
+                                                            red=1.017,
+                                                            nir=0.999,
+                                                            swir1=0.999,
+                                                            swir2=1.003))),
+                                 l7=dict(l5=None,
+                                         l8=dict(alphas=dict(blue=-0.0095,
+                                                             green=-0.0016,
+                                                             red=-0.0022,
+                                                             nir=-0.0021,
+                                                             swir1=-0.003,
+                                                             swir2=0.0029),
+                                                 betas=dict(blue=0.9785,
+                                                            green=0.9542,
+                                                            red=0.9825,
+                                                            nir=1.0073,
+                                                            swir1=1.0171,
+                                                            swir2=0.9949)),
+                                         s2=None))
+
+    def adjust(self, data, sensor=None, to='l8', band_names=None):
+
+        """
+        Linearly adjusts surface reflectance values
+
+        Args:
+            data (DataArray): The data to adjust.
+            sensor (Optional[str]): The sensor to adjust.
+            to (Optional[str]): The sensor to adjust to.
+            band_names (Optional[list]): The bands to adjust. If not given, all bands are adjusted.
+
+        Examples:
+            >>> import geowombat as gw
+            >>> from geowombat.radiometry import LinearAdjustments
+            >>>
+            >>> la = LinearAdjustments()
+            >>>
+            >>> # Adjust all Sentinel-2 bands to Landsat 8
+            >>> with gw.config.update(sensor='s2'):
+            >>>     with gw.open('sentinel-2.tif') as ds:
+            >>>         ds_adjusted = la.adjust(ds, to='l8')
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        attrs = data.attrs.copy()
+
+        if not band_names:
+
+            band_names = data.band.values.tolist()
+
+            if band_names[0] == 1:
+                band_names = list(data.gw.wavelengths[sensor]._fields)
+
+        coeff_dict = self.coefficients[sensor][to]
+
+        alphas = np.array([coeff_dict['alphas'][bd] for bd in band_names], dtype='float64')
+        betas = np.array([coeff_dict['betas'][bd] for bd in band_names], dtype='float64')
+
+        alphas = xr.DataArray(data=alphas,
+                              coords={'band': band_names},
+                              dims='band')
+
+        betas = xr.DataArray(data=betas,
+                             coords={'band': band_names},
+                             dims='band')
+
+        data = alphas + betas*data
+
+        data.attrs['adjustment'] = '{} to {}'.format(sensor, to)
+        data.attrs['alphas'] = alphas.data.compute().tolist()
+        data.attrs['betas'] = betas.data.compute().tolist()
+
+        data.attrs = attrs
+
+        return data
+
+
 class RadTransforms(MetaData):
 
     """
@@ -212,7 +307,7 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
-        attrs = dn.attrs
+        attrs = dn.attrs.copy()
 
         # Get the data band names and positional indices
         band_names = dn.band.values.tolist()
@@ -256,6 +351,7 @@ class RadTransforms(MetaData):
 
         attrs['sensor'] = sensor
         attrs['nodata'] = nodata
+        attrs['calibration'] = 'surface reflectance'
         attrs['method'] = method
         attrs['drange'] = (0, 1)
 
@@ -278,8 +374,16 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
+        attrs = dn.attrs.copy()
+
         # TODO: get gain and bias from metadata
-        return gain * dn + bias
+        rad_data = gain * dn + bias
+
+        attrs['calibration'] = 'radiance'
+
+        rad_data.attrs = attrs
+
+        return rad_data
 
     @staticmethod
     def dn_to_toar(dn, gain, bias):
@@ -296,8 +400,16 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
+        attrs = dn.attrs.copy()
+
         # TODO: get gain and bias from metadata
-        return gain * dn + bias
+        toar_data = gain * dn + bias
+
+        attrs['calibration'] = 'top-of-atmosphere reflectance'
+
+        toar_data.attrs = attrs
+
+        return toar_data
 
     @staticmethod
     def radiance_to_toar(radiance, solar_za, global_args):
@@ -314,9 +426,17 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
+        attrs = radiance.attrs.copy()
+
         solar_zenith_angle = solar_za * 0.01
 
-        return (global_args.pi * radiance * global_args.d**2) / (global_args.esun * da.cos(solar_zenith_angle))
+        toar_data = (global_args.pi * radiance * global_args.d**2) / (global_args.esun * da.cos(solar_zenith_angle))
+
+        attrs['calibration'] = 'top-of-atmosphere reflectance'
+
+        toar_data.attrs = attrs
+
+        return toar_data
 
     @staticmethod
     def toar_to_sr(toar,
@@ -343,7 +463,7 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
-        # kwargs = dict(readxsize=1024, readysize=1024, n_workers=4, n_threads=4)
+        attrs = toar.attrs.copy()
 
         central_um = toar.gw.central_um[sensor]
         band_names = list(toar.gw.wavelengths[sensor]._fields)
@@ -360,23 +480,9 @@ class RadTransforms(MetaData):
         rad_sza = xr.ufuncs.deg2rad(sza)
         rad_vza = xr.ufuncs.deg2rad(vza)
 
-        # sza.attrs = solar_za.attrs
-        # saa.attrs = solar_az.attrs
-        # vza.attrs = sensor_za.attrs
-        # vaa.attrs = sensor_az.attrs
-        # sza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/sza.tif', **kwargs)
-        # saa.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/saa.tif', **kwargs)
-        # vza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/vza.tif', **kwargs)
-        # vaa.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/vaa.tif', **kwargs)
-
         # Cosine(deg2rad(angles)) = angles x (pi / 180)
         cos_sza = xr.ufuncs.cos(rad_sza)
         cos_vza = xr.ufuncs.cos(rad_vza)
-
-        # cos_sza.attrs = solar_za.attrs
-        # cos_vza.attrs = solar_za.attrs
-        # cos_sza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/cos_sza.tif', **kwargs)
-        # cos_vza.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/cos_vza.tif', **kwargs)
 
         # air mass
         m = (1.0 / cos_sza) + (1.0 / cos_vza)
@@ -384,38 +490,24 @@ class RadTransforms(MetaData):
         m = xr.concat([m]*len(toar.band), dim='band')
         m.coords['band'] = toar.band.values
 
-        # m.attrs = solar_za.attrs
-        # m.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/m.tif', **kwargs)
-
         # Rayleigh optical depth
         # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
         r = 0.008569*um**-4 * (1.0 + 0.0113*um**-2 + 0.0013*um**-4)
 
-        # Rayleigh phase function
+        # Relative azimuth angle
+        raa = relative_azimuth(saa, vaa)
+
         # scattering angle = the angle between the direction of incident and scattered radiation
         # Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
-
-        # Relative azimuth angle
-        # http://stcorp.github.io/harp/doc/html/algorithms/derivations/relative_azimuth_angle.html
-        rel_azimuth_angle = xr.ufuncs.fabs(saa - vaa - 180.0)
-
-        # rel_azimuth_angle.attrs = solar_za.attrs
-        # rel_azimuth_angle.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/rel_azimuth_angle.tif', **kwargs)
-
         # http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
         scattering_angle = xr.ufuncs.arccos(-xr.ufuncs.cos(rad_sza)*xr.ufuncs.cos(rad_vza) -
                                             xr.ufuncs.sin(rad_sza)*xr.ufuncs.sin(rad_vza) *
-                                            xr.ufuncs.cos(xr.ufuncs.deg2rad(rel_azimuth_angle)))
+                                            xr.ufuncs.cos(xr.ufuncs.deg2rad(raa)))
 
+        # Rayleigh phase function
         rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + xr.ufuncs.cos(scattering_angle)**2)
 
-        # rphase.attrs = solar_za.attrs
-        # rphase.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/rphase.tif', **kwargs)
-
         pr_data = p_r(m, r, rphase, cos_sza, cos_vza)
-
-        # pr_data.attrs = solar_za.attrs
-        # pr_data.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/pr_data.tif', **kwargs)
 
         # da.nan_to_num(pr_data).max().compute()
 
@@ -423,7 +515,13 @@ class RadTransforms(MetaData):
 
         total_transmission = t_s(r, cos_sza) * t_v(r, cos_vza)
 
-        # total_transmission.attrs = solar_za.attrs
-        # total_transmission.gw.to_raster('/media/jcgr/data/imagery/temp/outputs/total_transmission.tif', **kwargs)
+        sr_data = (toar_diff / (toar_diff * s_atm(r) + total_transmission)).fillna(nodata).clip(0, 1).astype('float64')
 
-        return (toar_diff / (toar_diff * s_atm(r) + total_transmission)).fillna(nodata).clip(0, 1).astype('float64')
+        attrs['sensor'] = sensor
+        attrs['calibration'] = 'surface reflectance'
+        attrs['nodata'] = nodata
+        attrs['drange'] = (0, 1)
+
+        sr_data.attrs = attrs
+
+        return sr_data

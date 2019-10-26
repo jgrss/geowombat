@@ -1,6 +1,7 @@
 from copy import copy
 from collections import namedtuple
 
+from .angles import relative_azimuth
 from ..core.util import project_coords
 from ..errors import logger
 
@@ -1798,9 +1799,9 @@ class RossLiKernels(object):
         # Get the volume scattering kernel.
         #
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
-        kl = Kernels(sensor_za,
-                     solar_za,
-                     da.fabs(solar_az - sensor_az - 180.0),
+        kl = Kernels(sensor_za.data,
+                     solar_za.data,
+                     relative_azimuth(solar_az, sensor_az),
                      delayed=True,
                      doIntegrals=False)
 
@@ -1985,10 +1986,10 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         # Get the Ross and Li coefficients
         self.get_kernels(central_latitude,
-                         solar_za.data,
-                         solar_az.data,
-                         sensor_za.data,
-                         sensor_az.data)
+                         solar_za,
+                         solar_az,
+                         sensor_za,
+                         sensor_az)
 
         if len(wavelengths) == 1:
 
@@ -2037,7 +2038,9 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
             data = xr.DataArray(data=da.concatenate(results),
                                 dims=('band', 'y', 'x'),
-                                coords={'band': data.band.values, 'y': data.y, 'x': data.x},
+                                coords={'band': data.band.values,
+                                        'y': data.y,
+                                        'x': data.x},
                                 attrs=data.attrs)
 
         # Mask data
@@ -2050,6 +2053,11 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         #   back to the original range.
         if scale_factor != 1:
             data = data / scale_factor
+
+        attrs['sensor'] = sensor
+        attrs['calibration'] = 'NBAR surface reflectance'
+        attrs['nodata'] = nodata
+        attrs['drange'] = (0, 1)
 
         data.attrs = attrs
 
