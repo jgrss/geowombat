@@ -180,6 +180,7 @@ class GeoDownloads(object):
         """
 
         if not search_dict:
+
             if not self.search_dict:
                 logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
