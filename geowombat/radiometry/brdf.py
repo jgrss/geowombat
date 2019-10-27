@@ -1801,7 +1801,7 @@ class RossLiKernels(object):
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
         kl = Kernels(sensor_za.data,
                      solar_za.data,
-                     relative_azimuth(solar_az, sensor_az),
+                     relative_azimuth(solar_az, sensor_az).data,
                      delayed=True,
                      doIntegrals=False)
 

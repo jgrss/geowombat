@@ -39,46 +39,26 @@ def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
     return rphase_stack * ((1.0 - xr.ufuncs.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
 
 
-def t_s(r, cos_solar_za):
+def t_sv(r, cos_zenith):
 
     """
-    Calculates atmospheric transmittance of sun-surface path (downward)
+    Calculates atmospheric transmittance of sun-surface path
 
     Args:
         r (float): The Rayleigh optical depth.
-        cos_solar_za (DataArray): The cosine of the solar zenith angle.
+        cos_zenith (DataArray): The cosine of the zenith angle.
 
     Returns:
         ``xarray.DataArray``
     """
 
-    cos_solar_za_stack = xr.concat([cos_solar_za] * len(r.band), dim='band')
-    cos_solar_za_stack.coords['band'] = r.band.values
+    cos_zenith_stack = xr.concat([cos_zenith] * len(r.band), dim='band')
+    cos_zenith_stack.coords['band'] = r.band.values
 
-    cose = xr.ufuncs.exp(-r / cos_solar_za_stack)
+    cose1 = xr.ufuncs.exp(-r / cos_zenith_stack)
+    cose2 = xr.ufuncs.exp(0.52*r / cos_zenith_stack)
 
-    return cose + cose * (xr.ufuncs.exp(0.52*r / cos_solar_za_stack) - 1.0)
-
-
-def t_v(r, cos_sensor_za):
-
-    """
-    Calculates atmospheric transmittance of surface-sensor path (upward)
-
-    Args:
-        r (float): The Rayleigh optical depth.
-        cos_sensor_za (DataArray): The cosine of the sensor zenith angle.
-
-    Returns:
-        ``xarray.DataArray``
-    """
-
-    cos_sensor_za_stack = xr.concat([cos_sensor_za] * len(r.band), dim='band')
-    cos_sensor_za_stack.coords['band'] = r.band.values
-
-    cose = xr.ufuncs.exp(-r / cos_sensor_za_stack)
-
-    return cose + cose * (xr.ufuncs.exp(0.52 * r / cos_sensor_za_stack) - 1.0)
+    return cose1 + cose1 * (cose2 - 1.0)
 
 
 def s_atm(r):
@@ -284,13 +264,6 @@ class RadTransforms(MetaData):
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
 
         References:
-
-            See :cite:`bilal_etal_2019`
-
-            TODO: add to .bib
-            Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Method (SREM) for Use over Diverse
-                Land Surfaces Using Multi-Sensor Data, Remote Sensing, 11(1344) doi:10.3390/rs11111344.
-
             https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product
 
         Examples:
@@ -328,7 +301,10 @@ class RadTransforms(MetaData):
             toar = self.dn_to_toar(dn, m_p, a_p)
 
             # TOAR with sun angle correction
-            # toar / da.cos(solar_za)
+            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*0.01))] * len(toar.band), dim='band')
+            cos_sza.coords['band'] = toar.band.values
+            toar = toar / cos_sza
+            toar.attrs = attrs
 
         else:
 
@@ -346,7 +322,14 @@ class RadTransforms(MetaData):
 
             toar = self.radiance_to_toar(radiance, solar_za, global_args)
 
-        sr_data = self.toar_to_sr(toar, solar_za, solar_az, sensor_za, sensor_az, meta.sensor, nodata=nodata)
+        sr_data = self.toar_to_sr(toar,
+                                  solar_za,
+                                  solar_az,
+                                  sensor_za,
+                                  sensor_az,
+                                  meta.sensor,
+                                  nodata=nodata)
+
         sr_data = sr_data.where(sr_data != nodata)
 
         attrs['sensor'] = sensor
@@ -459,6 +442,14 @@ class RadTransforms(MetaData):
             sensor (str): The satellite sensor.
             nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
 
+        References:
+
+            See :cite:`bilal_etal_2019`
+
+            TODO: add to .bib
+            Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Method (SREM) for Use over Diverse
+                Land Surfaces Using Multi-Sensor Data, Remote Sensing, 11(1344) doi:10.3390/rs11111344.
+
         Returns:
             ``xarray.DataArray``
         """
@@ -484,6 +475,9 @@ class RadTransforms(MetaData):
         cos_sza = xr.ufuncs.cos(rad_sza)
         cos_vza = xr.ufuncs.cos(rad_vza)
 
+        sin_sza = xr.ufuncs.sin(rad_sza)
+        sin_vza = xr.ufuncs.sin(rad_vza)
+
         # air mass
         m = (1.0 / cos_sza) + (1.0 / cos_vza)
 
@@ -496,16 +490,17 @@ class RadTransforms(MetaData):
 
         # Relative azimuth angle
         raa = relative_azimuth(saa, vaa)
+        rad_raa = xr.ufuncs.deg2rad(raa)
+        cos_raa = xr.ufuncs.cos(rad_raa)
 
         # scattering angle = the angle between the direction of incident and scattered radiation
         # Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
         # http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
-        scattering_angle = xr.ufuncs.arccos(-xr.ufuncs.cos(rad_sza)*xr.ufuncs.cos(rad_vza) -
-                                            xr.ufuncs.sin(rad_sza)*xr.ufuncs.sin(rad_vza) *
-                                            xr.ufuncs.cos(xr.ufuncs.deg2rad(raa)))
+        scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+        cos2_scattering_angle = xr.ufuncs.cos(scattering_angle)**2
 
         # Rayleigh phase function
-        rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + xr.ufuncs.cos(scattering_angle)**2)
+        rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + cos2_scattering_angle)
 
         pr_data = p_r(m, r, rphase, cos_sza, cos_vza)
 
@@ -513,9 +508,13 @@ class RadTransforms(MetaData):
 
         toar_diff = toar - pr_data
 
-        total_transmission = t_s(r, cos_sza) * t_v(r, cos_vza)
+        # Total transmission = downward x upward
+        transmission = t_sv(r, cos_sza) * t_sv(r, cos_vza)
 
-        sr_data = (toar_diff / (toar_diff * s_atm(r) + total_transmission)).fillna(nodata).clip(0, 1).astype('float64')
+        # Atmospheric backscattering ratio
+        ab_ratio = s_atm(r)
+
+        sr_data = (toar_diff / (toar_diff * ab_ratio + transmission)).fillna(nodata).clip(0, 1).astype('float64')
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'surface reflectance'

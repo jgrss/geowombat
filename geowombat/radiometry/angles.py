@@ -20,6 +20,46 @@ import xml.etree.ElementTree as ET
 # from pysolar.solar import get_altitude_fast, get_azimuth_fast
 
 
+def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
+
+    """
+    Calculates the scattering angle
+
+    Args:
+        cos_sza (DataArray): The cosine of the solar zenith angle.
+        cos_vza (DataArray): The cosine of the view zenith angle.
+        sin_sza (DataArray): The sine of the solar zenith angle.
+        sin_vza (DataArray): The sine of the view zenith angle.
+        cos_raa (DataArray): The cosine of the relative azimuth angle.
+
+    Equation:
+
+        .. math::
+
+            \Theta = scattering angle
+
+            \theta_0 = solar zenith angle
+
+            \theta_S = sensor zenith angle
+
+            \zeta = relative azimuth angle
+
+            \Theta_s = \arccos{- \cos{\theta_0} \cos{\theta_S} - \sin{\theta_0} \sin{\theta_S} \cos{\zeta}}
+
+    References:
+        scattering angle = the angle between the direction of incident and scattered radiation
+        Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
+        http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
+
+    Returns:
+        Scattering angle (in radians) as an ``xarray.DataArray``
+    """
+
+    scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+
+    return xr.ufuncs.cos(scattering_angle) ** 2
+
+
 def relative_azimuth(saa, vaa):
 
     """
@@ -33,14 +73,20 @@ def relative_azimuth(saa, vaa):
         http://stcorp.github.io/harp/doc/html/algorithms/derivations/relative_azimuth_angle.html
 
     Returns:
-        ``xarray.DataArray``
+        Relative azimuth (in degrees) as an ``xarray.DataArray``
     """
 
-    raa = saa - vaa
-    raa = xr.where(raa >= 360, raa - 360.0, raa)
-    raa = xr.where(raa < 0, raa + 360, raa)
+    # Relative azimuth (in radians)
+    raa = xr.ufuncs.deg2rad(saa - vaa)
 
-    return xr.ufuncs.fabs(raa - 180.0)
+    # Create masks
+    raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
+    raa_minus = xr.where(raa < 0, 1, 0)
+
+    raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
+    raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
+
+    return xr.ufuncs.rad2deg(raa)
 
 
 def _parse_sentinel_angles(metadata, proc_angles, nodata):
