@@ -1,6 +1,8 @@
-from .io import apply, parse_wildcard, to_raster
+from .io import apply
+from .io import to_raster
 from .sops import SpatialOperations
-from .util import Converters, MapProcesses
+from .util import Converters
+from .util import MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
 
@@ -18,7 +20,6 @@ wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
 
 __all__ = ['apply',
-           'parse_wildcard',
            'to_raster',
            'extract',
            'subset',
@@ -31,6 +32,4 @@ __all__ = ['apply',
            'nbr',
            'ndvi',
            'wi',
-           'tasseled_cap',
-           'SurfaceReflectance',
-           'gen_pixel_angles']
+           'tasseled_cap']

@@ -1,6 +1,7 @@
 import os
 
 from ..core.windows import get_window_offsets
+from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, union, warp, get_file_bounds
@@ -94,11 +95,19 @@ def warp_open(filename,
 
             if src.gw.sensor:
 
-                new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
+                if src.gw.sensor not in src.gw.avail_sensors:
+                    logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(src.gw.avail_sensors)))
+                else:
 
-                # Avoid nested opens within a `config` context
-                if len(new_band_names) == len(src.band.values.tolist()):
-                    src.coords['band'] = new_band_names
+                    new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
+
+                    # Avoid nested opens within a `config` context
+                    if len(new_band_names) != len(src.band.values.tolist()):
+                        logger.warning('  The band list length does not match the sensor bands.')
+                    else:
+
+                        src.coords['band'] = new_band_names
+                        src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
 
         if return_windows:
 
@@ -119,6 +128,7 @@ def warp_open(filename,
 def mosaic(filenames,
            overlap='max',
            resampling='nearest',
+           band_names=None,
            **kwargs):
 
     """
@@ -129,6 +139,7 @@ def mosaic(filenames,
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
             Choices are ['min', 'max', 'mean'].
         resampling (Optional[str]): The resampling method.
+        band_names (Optional[1d array-like]): A list of names to give the band dimension.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
@@ -164,24 +175,45 @@ def mosaic(filenames,
                         resampling=resampling,
                         **ref_kwargs)
 
-    ds = xr.open_rasterio(union_grids[0], **kwargs)
+    with xr.open_rasterio(union_grids[0], **kwargs) as ds:
 
-    attrs = ds.attrs
+        attrs = ds.attrs
 
-    for fn in union_grids[1:]:
+        for fn in union_grids[1:]:
 
-        with xr.open_rasterio(fn, **kwargs) as dsb:
+            with xr.open_rasterio(fn, **kwargs) as dsb:
 
-            if overlap == 'min':
-                ds = xr_mininum(ds, dsb)
-            elif overlap == 'max':
-                ds = xr_maximum(ds, dsb)
-            elif overlap == 'mean':
-                ds = (ds + dsb) / 2.0
+                if overlap == 'min':
+                    ds = xr_mininum(ds, dsb)
+                elif overlap == 'max':
+                    ds = xr_maximum(ds, dsb)
+                elif overlap == 'mean':
+                    ds = (ds + dsb) / 2.0
 
-            # ds = ds.combine_first(dsb)
+                # ds = ds.combine_first(dsb)
 
-    return ds.assign_attrs(**attrs)
+        ds = ds.assign_attrs(**attrs)
+
+        if band_names:
+            ds.coords['band'] = band_names
+        else:
+
+            if ds.gw.sensor:
+
+                if ds.gw.sensor not in ds.gw.avail_sensors:
+                    logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(ds.gw.avail_sensors)))
+                else:
+
+                    new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
+
+                    if len(new_band_names) != len(ds.band.values.tolist()):
+                        logger.warning('  The band list length does not match the sensor bands.')
+                    else:
+
+                        ds.coords['band'] = new_band_names
+                        ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
+
+        return ds
 
 
 def concat(filenames,
@@ -189,6 +221,7 @@ def concat(filenames,
            how='reference',
            resampling='nearest',
            time_names=None,
+           band_names=None,
            overlap='max',
            **kwargs):
 
@@ -205,7 +238,8 @@ def concat(filenames,
             * union: Use the union (i.e., maximum extent) of all the image bounds
 
         resampling (Optional[str]): The resampling method.
-        time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
+        time_names (Optional[1d array-like]): A list of names to give the time dimension.
+        band_names (Optional[1d array-like]): A list of names to give the band dimension.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
             Choices are ['min', 'max', 'mean'].
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
@@ -302,12 +336,36 @@ def concat(filenames,
         output = xr.concat(concat_list, dim=stack_dim.lower())
 
         # Assign the new time band names
-        return output.assign_coords(time=new_time_names)
+        ds = output.assign_coords(time=new_time_names)
 
     else:
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
-        return xr.concat([xr.open_rasterio(warp(fn,
-                                                resampling=resampling,
-                                                **ref_kwargs), **kwargs)
-                          for fn in filenames], dim=stack_dim.lower())
+        ds = xr.concat([xr.open_rasterio(warp(fn,
+                                              resampling=resampling,
+                                              **ref_kwargs), **kwargs)
+                        for fn in filenames], dim=stack_dim.lower())
+
+    if not time_names and (stack_dim == 'time'):
+        ds.coords['time'] = parse_filename_dates(filenames)
+
+    if band_names:
+        ds.coords['band'] = band_names
+    else:
+
+        if ds.gw.sensor:
+
+            if ds.gw.sensor not in ds.gw.avail_sensors:
+                logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(ds.gw.avail_sensors)))
+            else:
+
+                new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
+
+                if len(new_band_names) != len(ds.band.values.tolist()):
+                    logger.warning('  The band list length does not match the sensor bands.')
+                else:
+
+                    ds.coords['band'] = new_band_names
+                    ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
+
+    return ds

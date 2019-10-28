@@ -285,8 +285,15 @@ def sentinel_pixel_angles(metadata,
                      sza=solar_zenith_file)
 
 
+# Potentially useful for angle creation
+# https://github.com/gee-community/gee_tools/blob/master/geetools/algorithms.py
+
+# def slope_between(a, b):
+#     return (a[1] - b[1]) / (a[0] - b[0])
+#
+#
 # @nb.jit
-# def _calc_sensor_angles(data_band,
+# def _calc_sensor_angles(data,
 #                         zenith_angles,
 #                         azimuth_angles,
 #                         yvalues,
@@ -300,6 +307,13 @@ def sentinel_pixel_angles(metadata,
 #     """
 #     Calculates sensor zenith and azimuth angles
 #     """
+#
+#     slope = slope_between(np.array([data.gw.meta.right + ((data.gw.ncols/2.0)*data.gw.cellx), data.gw.meta.top]),
+#                           np.array([data.gw.meta.left, data.gw.meta.top - ((data.gw.nrows / 2.0) * data.gw.celly)]))
+#
+#     slope_perc = -1.0 / slope
+#
+#     view_az = (math.pi / 2.0) - math.arctan(slope_perc)
 #
 #     for i in range(0, yvalues.shape[0]):
 #

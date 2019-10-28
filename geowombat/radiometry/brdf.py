@@ -17,20 +17,20 @@ def dtor(x):
     return x * np.pi / 180.0
 
 
-def __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3):
+def get_phase_angle_dask(cos_vza, cos_sza, sin_vza, sin_sza, cos_raa):
 
     """
-    Calculates the Phase angle component of kernel
+    Calculates the Phase angle component
     """
 
-    __cosphaang = __cos1 * __cos2 + __sin1 * __sin2 * __cos3
+    cos_phase_angle = cos_vza * cos_sza + sin_vza * sin_sza * cos_raa
 
-    __cosphaang = da.clip(__cosphaang, -1, 1)
+    cos_phase_angle = da.clip(cos_phase_angle, -1, 1)
 
-    __phaang = da.arccos(__cosphaang)
-    __sinphaang = da.sin(__phaang)
+    phase_angle = da.arccos(cos_phase_angle)
+    sin_phase_angle = da.sin(phase_angle)
 
-    return __cosphaang, __phaang, __sinphaang
+    return cos_phase_angle, phase_angle, sin_phase_angle
 
 
 def __ross_kernel_part_delayed(angle_info, global_args):
@@ -48,7 +48,7 @@ def __ross_kernel_part_delayed(angle_info, global_args):
     __sin2 = da.sin(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
     __cos3 = da.cos(da.from_delayed(angle_info.raa, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
 
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+    __cosphaang, __phaang, __sinphaang = get_phase_angle_dask(__cos1, __cos2, __sin1, __sin2, __cos3)
 
     rosselement = (global_args.m_pi2 - __phaang) * __cosphaang + __sinphaang
 
@@ -70,45 +70,44 @@ def __ross_kernel_part_delayed_2d(angle_info, global_args):
     Calculates the main part of Ross kernel
     """
 
-    RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
+    RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos_vza cos_sza sin_vza sin_sza cos_raa ross_element cos_phase_angle phase_angle sin_phase_angle ross')
 
-    __cos1 = da.cos(angle_info.vza_rad)
-    __cos2 = da.cos(angle_info.sza_rad)
+    cos_vza = da.cos(angle_info.vza_rad)
+    cos_sza = da.cos(angle_info.sza_rad)
 
-    __sin1 = da.sin(angle_info.vza_rad)
-    __sin2 = da.sin(angle_info.sza_rad)
-    __cos3 = da.cos(angle_info.raa_rad)
+    sin_vza = da.sin(angle_info.vza_rad)
+    sin_sza = da.sin(angle_info.sza_rad)
+    cos_raa = da.cos(angle_info.raa_rad)
 
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+    cos_phase_angle, phase_angle, sin_phase_angle = get_phase_angle_dask(cos_vza, cos_sza, sin_vza, sin_sza, cos_raa)
 
-    rosselement = (global_args.m_pi2 - __phaang) * __cosphaang + __sinphaang
+    ross_element = (global_args.m_pi2 - phase_angle) * cos_phase_angle + sin_phase_angle
 
-    return RossKernelOutputs(cos1=__cos1,
-                             cos2=__cos2,
-                             sin1=__sin1,
-                             sin2=__sin2,
-                             cos3=__cos3,
-                             rosselement=rosselement,
-                             cosphaang=__cosphaang,
-                             phaang=__phaang,
-                             sinphaang=__sinphaang,
+    return RossKernelOutputs(cos_vza=cos_vza,
+                             cos_sza=cos_sza,
+                             sin_vza=sin_vza,
+                             sin_sza=sin_sza,
+                             cos_raa=cos_raa,
+                             ross_element=ross_element,
+                             cos_phase_angle=cos_phase_angle,
+                             phase_angle=phase_angle,
+                             sin_phase_angle=sin_phase_angle,
                              ross=None)
 
 
 def ross_thin_delayed(angle_info, global_args):
 
     """
-    Public method - call to calculate RossThin kernel
+    Public method - call to calculate Ross Thin kernel
     """
 
-    RossThinOutputs = namedtuple('RossThinOutputs', 'ross phaang')
+    RossThinOutputs = namedtuple('RossThinOutputs', 'ross phase_angle')
 
-    # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
     ross_kernel_outputs = __ross_kernel_part_delayed_2d(angle_info, global_args)
 
-    rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 * ross_kernel_outputs.cos2)
+    ross_ = ross_kernel_outputs.ross_element / (ross_kernel_outputs.cos_vza * ross_kernel_outputs.cos_sza)
 
-    return RossThinOutputs(ross=rosselement_, phaang=ross_kernel_outputs.phaang)
+    return RossThinOutputs(ross=ross_, phase_angle=ross_kernel_outputs.phase_angle)
 
 
 def ross_thick_delayed(angle_info, global_args):
@@ -117,17 +116,17 @@ def ross_thick_delayed(angle_info, global_args):
     Public method - call to calculate RossThick kernel
     """
 
-    RossThickOutputs = namedtuple('RossThickOutputs', 'ross phaang')
+    RossThickOutputs = namedtuple('RossThickOutputs', 'ross phase_angle')
 
     # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
     ross_kernel_outputs = __ross_kernel_part_delayed_2d(angle_info, global_args)
 
-    rosselement_ = ross_kernel_outputs.rosselement / (ross_kernel_outputs.cos1 + ross_kernel_outputs.cos2)
+    ross_ = ross_kernel_outputs.ross_element / (ross_kernel_outputs.cos_vza + ross_kernel_outputs.cos_sza)
 
-    return RossThickOutputs(ross=rosselement_, phaang=ross_kernel_outputs.phaang)
+    return RossThickOutputs(ross=ross_, phase_angle=ross_kernel_outputs.phaang)
 
 
-def ross_kernel_delayed(angle_info, global_args):
+def ross_kernel_dask(angle_info, global_args):
 
     """
     Public method - call to calculate Ross Kernel
@@ -147,7 +146,7 @@ def ross_kernel_delayed(angle_info, global_args):
     return ross
 
 
-def get_pangles_delayed(tan1, global_args):
+def get_pangles_dask(tan1, global_args):
 
     """
     Applies B/R transformation for ellipse shape
@@ -173,7 +172,7 @@ def get_pangles_delayed(tan1, global_args):
     return c, s, t
 
 
-def get_distance_delayed(__tan1, __tan2, __cos3):
+def get_distance_dask(__tan1, __tan2, __cos3):
 
     """
     Gets distance component of Li kernels
@@ -192,7 +191,7 @@ def get_distance_delayed(__tan1, __tan2, __cos3):
     return da.sqrt(temp)
 
 
-def get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args):
+def get_overlap_dask(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args):
 
     """
     Applies HB ratio transformation
@@ -232,16 +231,16 @@ def li_kernel_delayed(angle_info, global_args):
     __sin3 = da.sin(__phi)
     __tanti = da.tan(da.from_delayed(angle_info.sza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
     __tantv = da.tan(da.from_delayed(angle_info.vza, shape=(global_args.size,), dtype=global_args.dtype).rechunk(global_args.flat_chunks))
-    __cos1, __sin1, __tan1 = get_pangles_delayed(__tantv, global_args)
-    __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
+    __cos1, __sin1, __tan1 = get_pangles_dask(__tantv, global_args)
+    __cos2, __sin2, __tan2 = get_pangles_dask(__tanti, global_args)
 
     # sets cos & sin phase angle terms
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+    __cosphaang, __phaang, __sinphaang = get_phase_angle_dask(__cos1, __cos2, __sin1, __sin2, __cos3)
 
-    __distance = get_distance_delayed(__tan1, __tan2, __cos3)
+    __distance = get_distance_dask(__tan1, __tan2, __cos3)
 
     # OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
-    overlap_info = get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
+    overlap_info = get_overlap_dask(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
 
     if global_args.li_type.lower() == 'sparse':
 
@@ -333,7 +332,7 @@ def li_kernel_delayed(angle_info, global_args):
 #     return
 
 
-def li_kernel_delayed_2d(angle_info, global_args):
+def li_kernel_dask(angle_info, global_args):
 
     """
     Private method - call to calculate Li Kernel
@@ -347,16 +346,16 @@ def li_kernel_delayed_2d(angle_info, global_args):
     __tanti = da.tan(angle_info.sza_rad)
     __tantv = da.tan(angle_info.vza_rad)
 
-    __cos1, __sin1, __tan1 = get_pangles_delayed(__tantv, global_args)
-    __cos2, __sin2, __tan2 = get_pangles_delayed(__tanti, global_args)
+    __cos1, __sin1, __tan1 = get_pangles_dask(__tantv, global_args)
+    __cos2, __sin2, __tan2 = get_pangles_dask(__tanti, global_args)
 
     # sets cos & sin phase angle terms
-    __cosphaang, __phaang, __sinphaang = __get_phaang_delayed(__cos1, __cos2, __sin1, __sin2, __cos3)
+    __cosphaang, __phaang, __sinphaang = get_phase_angle_dask(__cos1, __cos2, __sin1, __sin2, __cos3)
 
-    __distance = get_distance_delayed(__tan1, __tan2, __cos3)
+    __distance = get_distance_dask(__tan1, __tan2, __cos3)
 
     # OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
-    overlap_info = get_overlap_delayed(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
+    overlap_info = get_overlap_dask(__cos1, __cos2, __tan1, __tan2, __sin3, __distance, global_args)
 
     if global_args.li_type.lower() == 'sparse':
 
@@ -712,10 +711,10 @@ class Kernels(object):
             angle_info = set_angle_info_delayed_2d(vza, sza, raa, global_args)
 
             # RossKernelOutputs = namedtuple('RossKernelOutputs', 'cos1 cos2 sin1 sin2 cos3 rosselement cosphaang phaang sinphaang ross')
-            ross = ross_kernel_delayed(angle_info, global_args)
+            ross = ross_kernel_dask(angle_info, global_args)
 
             # LiKernelOutputs = namedtuple('LiKernelOutputs','li phi cos1 cos2 cos3 sin1 sin2 sin3 tan1 tan2 tanti tantv cosphaang phaang sinphaang distance')
-            li = li_kernel_delayed_2d(angle_info, global_args)
+            li = li_kernel_dask(angle_info, global_args)
 
             # TODO: add normalization for 2d dask arrays
             # ross = post_process_ross_delayed(ross, angle_info, global_args)
@@ -1847,10 +1846,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         self.c_equation = 'SA * ((fiso + fvol*vol_norm + fgeo*geo_norm) / (fiso + fvol*vol_sensor + fgeo*geo_sensor))'
 
         # A dictionary of BRDF kernel coefficients
-        self.coeff_dict = dict(cblue=dict(fiso=0.0774,
-                                          fgeo=0.0079,
-                                          fvol=0.0372),
-                               blue=dict(fiso=0.0774,
+        self.coeff_dict = dict(blue=dict(fiso=0.0774,
                                          fgeo=0.0079,
                                          fvol=0.0372),
                                green=dict(fiso=0.1306,
@@ -1955,6 +1951,8 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                                    data.crs,
                                    {'init': 'epsg:4326'})[1][0]
 
+                    # TODO: rasterio.warp.reproject does not seem to be working
+                    #
                     # Create the 2d latitudes
                     # central_latitude = project_coords(data.x.values,
                     #                                   data.y.values,
@@ -2017,24 +2015,18 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                 #   and vol coefficients.
                 coeffs = self.get_coeffs(wavelength)
 
-                # Apply the adjustment to the current layer.
-                results.append(data.sel(band=wavelength).data * ((coeffs['fiso'] +
-                                                             coeffs['fvol']*self.vol_norm +
-                                                             coeffs['fgeo']*self.geo_norm) / (coeffs['fiso'] +
-                                                                                              coeffs['fvol']*self.vol_sensor +
-                                                                                              coeffs['fgeo']*self.geo_sensor)))
+                # c-factor
+                c_factor = ((coeffs['fiso'] +
+                             coeffs['fvol']*self.vol_norm +
+                             coeffs['fgeo']*self.geo_norm) /
+                            (coeffs['fiso'] +
+                             coeffs['fvol']*self.vol_sensor +
+                             coeffs['fgeo']*self.geo_sensor))
 
-                # results.append(da.from_delayed(dask.delayed(ne.evaluate)(self.c_equation,
-                #                                                          local_dict=dict(fiso=coeffs['fiso'],
-                #                                                                          fgeo=coeffs['fgeo'],
-                #                                                                          fvol=coeffs['fvol'],
-                #                                                                          SA=data.sel(band=wavelength),
-                #                                                                          geo_norm=self.geo_norm,
-                #                                                                          geo_sensor=self.geo_sensor,
-                #                                                                          vol_norm=self.vol_norm,
-                #                                                                          vol_sensor=self.vol_sensor)),
-                #                                shape=(1,) + data.data.shape[1:],
-                #                                dtype=data.dtype.name))
+                p_norm = data.sel(band=wavelength).data * c_factor
+
+                # Apply the adjustment to the current layer.
+                results.append(p_norm)
 
             data = xr.DataArray(data=da.concatenate(results),
                                 dims=('band', 'y', 'x'),
@@ -2055,7 +2047,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             data = data / scale_factor
 
         attrs['sensor'] = sensor
-        attrs['calibration'] = 'NBAR surface reflectance'
+        attrs['calibration'] = 'Nadir BRDF-adjusted (NBAR) surface reflectance'
         attrs['nodata'] = nodata
         attrs['drange'] = (0, 1)
 

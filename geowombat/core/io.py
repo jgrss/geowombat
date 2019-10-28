@@ -31,79 +31,11 @@ from rasterio.enums import Resampling
 
 import zarr
 from tqdm import tqdm
-from dateparser.search import search_dates
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
-
-
-def parse_filename_dates(filenames):
-
-    """
-    Parses dates from file names
-
-    Args:
-        filenames (list): A list of files to parse.
-
-    Returns:
-        ``list``
-    """
-
-    date_filenames = list()
-
-    for fn in filenames:
-
-        d_name, f_name = os.path.split(fn)
-        f_base, f_ext = os.path.splitext(f_name)
-
-        try:
-
-            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
-                                           settings={'DATE_ORDER': 'YMD',
-                                                     'STRICT_PARSING': False,
-                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
-
-        except:
-            return list(range(1, len(filenames) + 1))
-
-        if not dt:
-            return list(range(1, len(filenames) + 1))
-
-        date_filenames.append(dt[0])
-
-    return date_filenames
-
-
-def parse_wildcard(string):
-
-    """
-    Parses a search wildcard from a string
-
-    Args:
-        string (str): The string to parse.
-
-    Returns:
-        ``list``
-    """
-
-    if os.path.dirname(string):
-        d_name, wildcard = os.path.split(string)
-    else:
-
-        d_name = '.'
-        wildcard = string
-
-    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
-
-    if matches:
-        matches = [os.path.join(d_name, fn) for fn in matches]
-
-    if not matches:
-        logger.exception('  There were no images found with the string search.')
-
-    return matches
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
@@ -149,12 +81,12 @@ def _window_worker_time(w, n_bands, tidx, n_time):
 
 
 @contextmanager
-def cluster_dummy(**kwargs):
+def _cluster_dummy(**kwargs):
     yield None
 
 
 @contextmanager
-def client_dummy(**kwargs):
+def _client_dummy(**kwargs):
     yield None
 
 
@@ -390,7 +322,7 @@ def to_raster(data,
     if use_client:
 
         if address:
-            cluster_object = cluster_dummy
+            cluster_object = _cluster_dummy
         else:
             cluster_object = LocalCluster
 
@@ -398,8 +330,8 @@ def to_raster(data,
 
     else:
 
-        cluster_object = cluster_dummy
-        client_object = client_dummy
+        cluster_object = _cluster_dummy
+        client_object = _client_dummy
 
     if isinstance(n_workers, int) and isinstance(n_threads, int):
         n_jobs = n_workers * n_threads

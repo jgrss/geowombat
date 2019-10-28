@@ -12,8 +12,7 @@ from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
 from .conversion import xarray_to_xdataset
-from .io import parse_wildcard, parse_filename_dates
-from .util import Chunks, get_file_extension
+from .util import Chunks, get_file_extension, parse_wildcard
 from .windows import from_bounds
 
 import numpy as np
@@ -359,37 +358,23 @@ def open(filename,
             if mosaic:
 
                 # Mosaic images over space
-                darray = gw_mosaic(filename,
-                                   overlap=overlap,
-                                   resampling=resampling,
-                                   **kwargs)
+                yield gw_mosaic(filename,
+                                overlap=overlap,
+                                resampling=resampling,
+                                band_names=band_names,
+                                **kwargs)
 
             else:
 
                 # Stack images along the 'time' axis
-                darray = gw_concat(filename,
-                                   stack_dim=stack_dim,
-                                   how=how,
-                                   resampling=resampling,
-                                   time_names=time_names,
-                                   overlap=overlap,
-                                   **kwargs)
-
-                if not time_names and (stack_dim == 'time'):
-                    darray.coords['time'] = parse_filename_dates(filename)
-
-            if band_names:
-                darray.coords['band'] = band_names
-            else:
-
-                if darray.gw.sensor:
-
-                    if darray.gw.sensor not in list(darray.gw.wavelengths.keys()):
-                        logger.warning('  The sensor is not currently supported.')
-                    else:
-                        darray.coords['band'] = list(darray.gw.wavelengths[darray.gw.sensor]._fields)
-
-            yield darray
+                yield gw_concat(filename,
+                                stack_dim=stack_dim,
+                                how=how,
+                                resampling=resampling,
+                                time_names=time_names,
+                                band_names=band_names,
+                                overlap=overlap,
+                                **kwargs)
 
         else:
 

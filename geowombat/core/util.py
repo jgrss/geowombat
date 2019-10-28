@@ -1,4 +1,5 @@
 import os
+import fnmatch
 from collections import namedtuple
 import multiprocessing as multi
 
@@ -9,6 +10,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
+import dask.array as da
 
 from rasterio import features
 from rasterio.crs import CRS
@@ -19,9 +21,77 @@ import shapely
 from shapely.geometry import Polygon
 from affine import Affine
 from tqdm import tqdm
+from dateparser.search import search_dates
 
 
 shapely.speedups.enable()
+
+
+def parse_filename_dates(filenames):
+
+    """
+    Parses dates from file names
+
+    Args:
+        filenames (list): A list of files to parse.
+
+    Returns:
+        ``list``
+    """
+
+    date_filenames = list()
+
+    for fn in filenames:
+
+        d_name, f_name = os.path.split(fn)
+        f_base, f_ext = os.path.splitext(f_name)
+
+        try:
+
+            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
+                                           settings={'DATE_ORDER': 'YMD',
+                                                     'STRICT_PARSING': False,
+                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
+
+        except:
+            return list(range(1, len(filenames) + 1))
+
+        if not dt:
+            return list(range(1, len(filenames) + 1))
+
+        date_filenames.append(dt[0])
+
+    return date_filenames
+
+
+def parse_wildcard(string):
+
+    """
+    Parses a search wildcard from a string
+
+    Args:
+        string (str): The string to parse.
+
+    Returns:
+        ``list``
+    """
+
+    if os.path.dirname(string):
+        d_name, wildcard = os.path.split(string)
+    else:
+
+        d_name = '.'
+        wildcard = string
+
+    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
+
+    if matches:
+        matches = [os.path.join(d_name, fn) for fn in matches]
+
+    if not matches:
+        logger.exception('  There were no images found with the string search.')
+
+    return matches
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
@@ -76,7 +146,8 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
                               dst_crs=CRS(dst_crs),
                               **kwargs)[0]
 
-        return xr.DataArray(data=latitudes[np.newaxis, :, :],
+        return xr.DataArray(data=da.from_array(latitudes[np.newaxis, :, :],
+                                               chunks=(1, 512, 512)),
                             dims=('band', 'y', 'x'),
                             coords={'band': ['lat'],
                                     'y': ('y', latitudes[:, 0]),

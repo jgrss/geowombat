@@ -2,6 +2,7 @@ import os
 from copy import copy
 import ctypes
 import inspect
+from contextlib import contextmanager
 
 from ..errors import logger
 from ..backends import Cluster
@@ -19,6 +20,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.utils.multiclass import unique_labels
 
 import xarray as xr
+import dask.array as da
 from dask_ml.wrappers import ParallelPostFit
 
 try:
@@ -37,6 +39,11 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+
+@contextmanager
+def _backend_dummy(**kwargs):
+    yield None
 
 
 class VotingClassifier(BaseEstimator, ClassifierMixin):
@@ -158,7 +165,7 @@ class GeoWombatClassifier(object):
                  bal_random_forest_kwargs=None,
                  bal_bagging_kwargs=None,
                  verbose=0,
-                 backend='dask',
+                 backend='none',
                  n_jobs=-1):
 
         if MKL_LIB:
@@ -372,15 +379,23 @@ class GeoWombatClassifier(object):
             sample_weight_calibrate (Optional[str])
         """
 
-        if not x:
-            logger.exception('  The x column(s) must be given.')
+        if not isinstance(x, list):
 
-        if not y:
-            logger.exception('  The y column must be given.')
+            if isinstance(x, str):
+                x = [x]
+            else:
+                logger.exception('  The x column(s) must be given.')
+
+        if not isinstance(y, list):
+
+            if isinstance(y, str):
+                y = [y]
+            else:
+                logger.exception('  The y column must be given.')
 
         estimators = None
 
-        self.x = x
+        self.x = [xname for xname in x if xname not in ['x', 'y']]
         self.y = y
 
         # Stratification object for calibrated cross-validation
@@ -388,7 +403,12 @@ class GeoWombatClassifier(object):
                                         test_size=cv_test_size,
                                         train_size=cv_train_size)
 
-        if self.backend == 'dask':
+        if self.backend.lower() == 'none':
+            backend_context = _backend_dummy
+        else:
+            backend_context = joblib.parallel_backend
+
+        if self.backend.lower() == 'dask':
 
             cluster = Cluster(n_workers=self.n_jobs,
                               threads_per_worker=1,
@@ -397,7 +417,7 @@ class GeoWombatClassifier(object):
 
             cluster.start()
 
-        with joblib.parallel_backend(self.backend, n_jobs=self.n_jobs):
+        with backend_context(self.backend, n_jobs=self.n_jobs):
 
             if calibrate and (len(self.name_list) > 1):
 
@@ -466,21 +486,21 @@ class GeoWombatClassifier(object):
 class Predict(object):
 
     @staticmethod
-    def _append_xy(data, chunk_size):
+    def _append_xy(data, dim):
 
         ycoords, xcoords = np.meshgrid(data.y, data.x)
 
         ycoords = xr.DataArray(da.from_array(ycoords[np.newaxis, :, :],
-                                             chunks=(1, chunk_size, chunk_size)),
-                               dims=('band', 'y', 'x'),
-                               coords={'band': ['lat'], 'y': data.y, 'x': data.x})
+                                             chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
+                               dims=(dim, 'y', 'x'),
+                               coords={dim: ['lat'], 'y': data.y, 'x': data.x})
 
         xcoords = xr.DataArray(da.from_array(xcoords[np.newaxis, :, :],
-                                             chunks=(1, chunk_size, chunk_size)),
-                               dims=('band', 'y', 'x'),
-                               coords={'band': ['lon'], 'y': data.y, 'x': data.x})
+                                             chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
+                               dims=(dim, 'y', 'x'),
+                               coords={dim: ['lon'], 'y': data.y, 'x': data.x})
 
-        data_concat = xr.concat((data, xcoords, ycoords), dim='band')
+        data_concat = xr.concat((data, xcoords, ycoords), dim=dim)
         data_concat.attrs = data.attrs
 
         return data_concat
@@ -490,16 +510,14 @@ class Predict(object):
                 clf,
                 outname=None,
                 chunksize='same',
-                x_chunks=(5000, 1),
+                x_chunks=None,
                 use_xy=False,
-                overwrite=False,
                 return_as='array',
                 n_jobs=1,
-                backend='dask',
+                backend='none',
                 verbose=0,
                 nodata=None,
                 dtype='uint8',
-                gdal_cache=512,
                 **kwargs):
 
         """
@@ -515,38 +533,53 @@ class Predict(object):
             return_as (Optional[str]): Whether to return the predictions as a ``xarray.DataArray`` or ``xarray.Dataset``.
                 *Only relevant if ``outname`` is not given.
             nodata (Optional[int or float]): The 'no data' value in the predictors.
-            n_jobs (Optional[int]): The number of parallel jobs (chunks) for writing.
+            n_jobs (Optional[int]): The number of parallel jobs for the backend (if given). The ``n_workers`` and
+                ``n_threads`` should be passed as ``kwargs`` to ``geowombat.to_raster``.
             backend (Optional[str]): The ``joblib`` backend scheduler.
             verbose (Optional[int]): The verbosity level.
-            dtype (Optional[str]): The output data type passed to ``rasterio.write``.
-            gdal_cache (Optional[int]): The GDAL cache (in MB) passed to ``rasterio.write``.
-            kwargs (Optional[dict]): Additional keyword arguments passed to ``rasterio.write``.
-                *The ``blockxsize`` and ``blockysize`` should be excluded because they are taken from ``chunksize``.
+            dtype (Optional[str]): The output data type passed to ``geowombat.to_raster``.
+            kwargs (Optional[dict]): Additional keyword arguments passed to ``geowombat.to_raster``.
 
         Returns:
             ``xarray.DataArray``
 
         Examples:
-            >>> import geowombat as gw
+            >>> from geowombat.models import predict
             >>> from sklearn import ensemble
             >>>
             >>> clf = ensemble.RandomForestClassifier()
             >>> clf.fit(X, y)
             >>>
             >>> with gw.open('image.tif') as ds:
-            >>>     pred = gw.predict(ds, clf)
+            >>>     pred = predict(ds, clf)
+            >>>
+            >>> # Write results to file
+            >>> with gw.open('image.tif') as ds:
+            >>>     predict(ds, clf, outname='predictions.tif', n_workers=4, n_threads=2)
         """
 
-        if not isinstance(clf, ParallelPostFit):
-            clf = ParallelPostFit(estimator=clf)
+        dim = 'band' if 'band' in data.coords else 'wavelength'
 
         if isinstance(clf, GeoWombatClassifier):
 
             # Select the bands that were used to train the model
-            data = data.sel(band=clf.x)
+            if dim == 'band':
+                data = data.sel(band=clf.x)
+            else:
+                data = data.sel(wavelength=clf.x)
 
-        # if use_xy:
-        #     data = self._append_xy(data, read_chunks)
+            clf = clf.model
+
+        else:
+
+            if not isinstance(clf, ParallelPostFit):
+                clf = ParallelPostFit(estimator=clf)
+
+        if not x_chunks:
+            x_chunks = (data.gw.row_chunks*data.gw.col_chunks, 1)
+
+        if use_xy:
+            data = self._append_xy(data, dim)
 
         if verbose > 0:
             logger.info('  Predicting and saving to {} ...'.format(outname))
@@ -562,7 +595,12 @@ class Predict(object):
             if len(chunksize) != 2:
                 logger.warning('  The chunksize should be two-dimensional.')
 
-        if backend == 'dask':
+        if backend.lower() == 'none':
+            backend_context = _backend_dummy
+        else:
+            backend_context = joblib.parallel_backend
+
+        if backend.lower() == 'dask':
 
             cluster = Cluster(n_workers=1,
                               threads_per_worker=n_jobs,
@@ -571,7 +609,7 @@ class Predict(object):
 
             cluster.start()
 
-        with joblib.parallel_backend(backend, n_jobs=n_jobs):
+        with backend_context(backend, n_jobs=n_jobs):
 
             n_dims, n_rows, n_cols = data.shape
 
@@ -588,8 +626,8 @@ class Predict(object):
             if return_as == 'dataset':
 
                 # Store the predictions as an xarray.Dataset
-                predictions = xr.Dataset({'pred': (['band', 'y', 'x'], predictions)},
-                                         coords={'band': [1],
+                predictions = xr.Dataset({'pred': ([dim, 'y', 'x'], predictions)},
+                                         coords={dim: [1],
                                                  'y': ('y', data.y),
                                                  'x': ('x', data.x)},
                                          attrs=data.attrs)
@@ -598,25 +636,16 @@ class Predict(object):
 
                 # Store the predictions as an xarray.DataArray
                 predictions = xr.DataArray(data=predictions,
-                                           dims=('band', 'y', 'x'),
-                                           coords={'band': [1],
+                                           dims=(dim, 'y', 'x'),
+                                           coords={dim: [1],
                                                    'y': ('y', data.y),
                                                    'x': ('x', data.x)},
                                            attrs=data.attrs)
 
             if isinstance(outname, str):
+                predictions.gw.to_raster(outname, **kwargs)
 
-                predictions.gw.to_raster(outname,
-                                         variable='pred',
-                                         n_jobs=n_jobs,
-                                         dtype=dtype,
-                                         gdal_cache=gdal_cache,
-                                         overwrite=overwrite,
-                                         blockxsize=chunksize[0],
-                                         blockysize=chunksize[1],
-                                         **kwargs)
-
-        if backend == 'dask':
+        if backend.lower() == 'dask':
             cluster.stop()
 
         return predictions

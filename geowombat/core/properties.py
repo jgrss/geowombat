@@ -13,14 +13,32 @@ WavelengthsL57Thermal = namedtuple('WavelengthsL57Thermal', 'blue green red nir 
 WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
 WavelengthsL8Thermal = namedtuple('WavelengthsL8Thermal', 'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2')
 WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2')
+WavelengthsS2Full = namedtuple('WavelengthsS2', 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2')
 
 
 class DataProperties(object):
 
     @property
-    def sensors(self):
+    def avail_sensors(self):
         """Get supported sensors"""
         return sorted(list(self.wavelengths.keys()))
+
+    @property
+    def altitude(self):
+
+        """
+        Get satellite altitudes (in km)
+        """
+
+        return dict(aster=705,
+                    l5=705,
+                    l7=705,
+                    l8=705,
+                    s2=786,
+                    ps=475,
+                    qb=482,
+                    ik=681,
+                    wv3=617)
 
     @property
     def central_um(self):
@@ -72,6 +90,19 @@ class DataProperties(object):
                                      rededge=0.865,
                                      swir1=1.61,
                                      swir2=2.19),
+                    s2f=WavelengthsS2Full(coastal=0.443,
+                                          blue=0.49,
+                                          green=0.56,
+                                          red=0.665,
+                                          nir1=0.705,
+                                          nir2=0.74,
+                                          nir3=0.783,
+                                          nir=0.842,
+                                          rededge=0.865,
+                                          water=0.945,
+                                          cirrus=1.375,
+                                          swir1=1.61,
+                                          swir2=2.19),
                     s2l7=WavelengthsL57(blue=0.49,
                                         green=0.56,
                                         red=0.665,
@@ -82,10 +113,35 @@ class DataProperties(object):
                                          green=0.56,
                                          red=0.665,
                                          nir=0.842),
-                    planetscope=WavelengthsBGRN(blue=0.485,
-                                                green=0.545,
-                                                red=0.63,
-                                                nir=0.82))
+                    ps=WavelengthsBGRN(blue=0.485,
+                                       green=0.545,
+                                       red=0.63,
+                                       nir=0.82))
+
+    @property
+    def sensor_names(self):
+
+        """
+        Get sensor full names
+        """
+
+        return dict(rgb='red, green, and blue',
+                    rgbn='red, green, blue, and NIR',
+                    bgr='blue, green, and red',
+                    bgrn='blue, green, red, and NIR',
+                    l5='Landsat 5 Thematic Mapper (TM)',
+                    l7='Landsat 7 Enhanced Thematic Mapper Plus (ETM+) without panchromatic and thermal bands',
+                    l7th='Landsat 7 Enhanced Thematic Mapper Plus (ETM+) with thermal band',
+                    l8='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) without panchromatic and thermal bands',
+                    l8l7='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) with 6 Landsat 7-like bands',
+                    l8th='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) with thermal band',
+                    s2='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
+                    s2f='Sentinel 2 Multi-Spectral Instrument (MSI) with 3 60m bands (coastal, water vapor, cirrus)',
+                    s2l7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
+                    s210='Sentinel 2 Multi-Spectral Instrument (MSI) with 4 (visible + NIR) bands',
+                    ps='PlanetScope with 4 (visible + NIR) bands',
+                    qb='Quickbird with 4 (visible + NIR) bands',
+                    ik='IKONOS with 4 (visible + NIR) bands')
 
     @property
     def wavelengths(self):
@@ -161,6 +217,19 @@ class DataProperties(object):
                                      rededge=8,
                                      swir1=9,
                                      swir2=10),
+                    s2f=WavelengthsS2Full(coastal=1,
+                                          blue=2,
+                                          green=3,
+                                          red=4,
+                                          nir1=5,
+                                          nir2=6,
+                                          nir3=7,
+                                          nir=8,
+                                          rededge=9,
+                                          water=10,
+                                          cirrus=11,
+                                          swir1=12,
+                                          swir2=13),
                     s2l7=WavelengthsL57(blue=1,
                                         green=2,
                                         red=3,
@@ -171,18 +240,18 @@ class DataProperties(object):
                                          green=2,
                                          red=3,
                                          nir=4),
-                    planetscope=WavelengthsBGRN(blue=1,
-                                                green=2,
-                                                red=3,
-                                                nir=4),
-                    quickbird=WavelengthsBGRN(blue=1,
-                                              green=2,
-                                              red=3,
-                                              nir=4),
-                    ikonos=WavelengthsBGRN(blue=1,
-                                           green=2,
-                                           red=3,
-                                           nir=4))
+                    ps=WavelengthsBGRN(blue=1,
+                                       green=2,
+                                       red=3,
+                                       nir=4),
+                    qb=WavelengthsBGRN(blue=1,
+                                       green=2,
+                                       red=3,
+                                       nir=4),
+                    ik=WavelengthsBGRN(blue=1,
+                                       green=2,
+                                       red=3,
+                                       nir=4))
 
     @property
     def ndims(self):
