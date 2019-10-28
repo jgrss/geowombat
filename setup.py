@@ -43,7 +43,8 @@ required_packages = ['cython',
                      'zarr',
                      'dateparser',
                      'gsutil',
-                     'opencv-python']
+                     'opencv-python',
+                     'fsspec']
 
 
 def get_packages():
