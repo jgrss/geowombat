@@ -42,7 +42,7 @@ except:
 
 
 @contextmanager
-def _backend_dummy(**kwargs):
+def _backend_dummy(*args, **kwargs):
     yield None
 
 
@@ -423,13 +423,10 @@ class GeoWombatClassifier(object):
 
                 estimators = self._concat_classifiers(data.loc[:, x].values,
                                                       data.loc[:, y].values.flatten(),
-                                                      data.loc[:,
-                                                      sample_weight].values.flatten() if sample_weight else None,
+                                                      data.loc[:, sample_weight].values.flatten() if sample_weight else None,
                                                       data.loc[:, x_calibrate].values if x_calibrate else None,
-                                                      data.loc[:,
-                                                      y_calibrate].values.flatten() if y_calibrate else None,
-                                                      data.loc[:,
-                                                      sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
+                                                      data.loc[:, y_calibrate].values.flatten() if y_calibrate else None,
+                                                      data.loc[:, sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
                                                       skf_cv,
                                                       cv_calibrate)
 
