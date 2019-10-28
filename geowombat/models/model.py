@@ -505,6 +505,7 @@ class Predict(object):
     def predict(self,
                 data,
                 clf,
+                band_names=None,
                 outname=None,
                 chunksize='same',
                 x_chunks=None,
@@ -523,6 +524,7 @@ class Predict(object):
         Args:
             data (DataArray): An ``xarray.DataArray`` to extract data from.
             clf (object): A fitted classifier ``geowombat.model.Model`` instance with a ``predict`` method.
+            band_names (Optional[list]): A list of band names to open.
             outname (Optional[str]): An file name for the predictions.
             chunksize (Optional[str or tuple]): The chunk size for I/O. Default is 'same', or use the input chunk size.
             x_chunks (Optional[tuple]): The chunk size for the X predictors (or ``data``).
@@ -559,18 +561,30 @@ class Predict(object):
 
         if isinstance(clf, GeoWombatClassifier):
 
-            # Select the bands that were used to train the model
-            if dim == 'band':
-                data = data.sel(band=clf.x)
+            if band_names:
+                band_names_ = band_names
             else:
-                data = data.sel(wavelength=clf.x)
+                band_names_ = clf.x
 
             clf = clf.model
 
         else:
 
+            if band_names:
+                band_names_ = band_names
+            else:
+                band_names_ = None
+
             if not isinstance(clf, ParallelPostFit):
                 clf = ParallelPostFit(estimator=clf)
+
+        if band_names_:
+
+            # Select the bands that were used to train the model
+            if dim == 'band':
+                data = data.sel(band=band_names_)
+            else:
+                data = data.sel(wavelength=band_names_)
 
         if not x_chunks:
             x_chunks = (data.gw.row_chunks*data.gw.col_chunks, 1)
