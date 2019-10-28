@@ -654,7 +654,7 @@ class Predict(object):
                                            attrs=data.attrs)
 
             if isinstance(outname, str):
-                predictions.gw.to_raster(outname, scheduler='mpool', **kwargs)
+                predictions.gw.to_raster(outname, **kwargs)
 
         if backend.lower() == 'dask':
             cluster.stop()

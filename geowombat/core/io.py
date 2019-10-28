@@ -268,7 +268,7 @@ def to_raster(data,
         n_jobs (Optional[int]): The total number of parallel jobs.
         n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
         n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
-        n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 10.
+        n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
         overviews (Optional[bool or list]): Whether to build overview layers.
         resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
@@ -455,7 +455,6 @@ def to_raster(data,
                 else:
                     data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
 
-                import ipdb;ipdb.set_trace()
                 with pool_executor(n_workers) as executor:
 
                     if scheduler == 'mpool':
