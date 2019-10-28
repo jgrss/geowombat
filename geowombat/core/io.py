@@ -455,6 +455,7 @@ def to_raster(data,
                 else:
                     data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
 
+                import ipdb;ipdb.set_trace()
                 with pool_executor(n_workers) as executor:
 
                     if scheduler == 'mpool':
