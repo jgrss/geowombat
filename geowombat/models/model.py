@@ -423,10 +423,10 @@ class GeoWombatClassifier(object):
 
                 estimators = self._concat_classifiers(data.loc[:, x].values,
                                                       data.loc[:, y].values.flatten(),
-                                                      data.loc[:, sample_weight].values.flatten() if sample_weight else None,
-                                                      data.loc[:, x_calibrate].values if x_calibrate else None,
-                                                      data.loc[:, y_calibrate].values.flatten() if y_calibrate else None,
-                                                      data.loc[:, sample_weight_calibrate].values.flatten() if sample_weight_calibrate else None,
+                                                      data.loc[:, sample_weight].values.flatten() if isinstance(sample_weight, np.ndarray) else None,
+                                                      data.loc[:, x_calibrate].values if isinstance(x_calibrate, np.ndarray) else None,
+                                                      data.loc[:, y_calibrate].values.flatten() if isinstance(y_calibrate, np.ndarray) else None,
+                                                      data.loc[:, sample_weight_calibrate].values.flatten() if isinstance(sample_weight_calibrate, np.ndarray) else None,
                                                       skf_cv,
                                                       cv_calibrate)
 
