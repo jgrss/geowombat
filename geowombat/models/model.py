@@ -395,7 +395,7 @@ class GeoWombatClassifier(object):
 
         estimators = None
 
-        self.x = [xname for xname in x if xname not in ['x', 'y']]
+        self.x = [xname for xname in x if xname.lower() not in ['x', 'y']]
         self.y = y
 
         # Stratification object for calibrated cross-validation
