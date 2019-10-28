@@ -436,7 +436,7 @@ class GeoWombatClassifier(object):
 
                 model_.fit(data.loc[:, x].values,
                            data.loc[:, y].values.flatten(),
-                           sample_weight=data.loc[:, sample_weight].values.flatten() if sample_weight else None)
+                           sample_weight=sample_weight if isinstance(sample_weight, np.ndarray) else None)
 
         if estimators:
             model_ = VotingClassifier(estimators=estimators, y=y)
