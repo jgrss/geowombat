@@ -9,11 +9,18 @@ WavelengthsRGB = namedtuple('WavelengthsRGB', 'red green blue')
 WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
 WavelengthsRGBN = namedtuple('WavelengthsRGBN', 'red green blue nir')
 WavelengthsL57 = namedtuple('WavelengthsL57', 'blue green red nir swir1 swir2')
+WavelengthsL57Thermal = namedtuple('WavelengthsL57Thermal', 'blue green red nir swir1 thermal swir2')
 WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus')
+WavelengthsL8Thermal = namedtuple('WavelengthsL8Thermal', 'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2')
 WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2')
 
 
 class DataProperties(object):
+
+    @property
+    def sensors(self):
+        """Get supported sensors"""
+        return sorted(list(self.wavelengths.keys()))
 
     @property
     def central_um(self):
@@ -22,12 +29,25 @@ class DataProperties(object):
         Get a dictionary of central wavelengths (in micrometers)
         """
 
-        return dict(l7=WavelengthsL57(blue=0.48,
+        return dict(l5=WavelengthsL57(blue=0.485,
                                       green=0.56,
                                       red=0.66,
-                                      nir=0.84,
+                                      nir=0.835,
                                       swir1=1.65,
                                       swir2=2.22),
+                    l7=WavelengthsL57(blue=0.485,
+                                      green=0.56,
+                                      red=0.66,
+                                      nir=0.835,
+                                      swir1=1.65,
+                                      swir2=2.22),
+                    l7th=WavelengthsL57Thermal(blue=0.485,
+                                               green=0.56,
+                                               red=0.66,
+                                               nir=0.835,
+                                               swir1=1.65,
+                                               thermal=11.45,
+                                               swir2=2.22),
                     l8=WavelengthsL8(coastal=0.44,
                                      blue=0.48,
                                      green=0.56,
@@ -36,6 +56,12 @@ class DataProperties(object):
                                      swir1=1.61,
                                      swir2=2.2,
                                      cirrus=1.37),
+                    l8l7=WavelengthsL57(blue=0.48,
+                                        green=0.56,
+                                        red=0.655,
+                                        nir=0.865,
+                                        swir1=1.61,
+                                        swir2=2.2),
                     s2=WavelengthsS2(blue=0.49,
                                      green=0.56,
                                      red=0.665,
@@ -45,7 +71,21 @@ class DataProperties(object):
                                      nir=0.842,
                                      rededge=0.865,
                                      swir1=1.61,
-                                     swir2=2.19))
+                                     swir2=2.19),
+                    s2l7=WavelengthsL57(blue=0.49,
+                                        green=0.56,
+                                        red=0.665,
+                                        nir=0.842,
+                                        swir1=1.61,
+                                        swir2=2.19),
+                    s210=WavelengthsBGRN(blue=0.49,
+                                         green=0.56,
+                                         red=0.665,
+                                         nir=0.842),
+                    planetscope=WavelengthsBGRN(blue=0.485,
+                                                green=0.545,
+                                                red=0.63,
+                                                nir=0.82))
 
     @property
     def wavelengths(self):
@@ -80,6 +120,13 @@ class DataProperties(object):
                                       nir=4,
                                       swir1=5,
                                       swir2=6),
+                    l7th=WavelengthsL57Thermal(blue=1,
+                                               green=2,
+                                               red=3,
+                                               nir=4,
+                                               swir1=5,
+                                               thermal=6,
+                                               swir2=7),
                     l8=WavelengthsL8(coastal=1,
                                      blue=2,
                                      green=3,
@@ -88,6 +135,22 @@ class DataProperties(object):
                                      swir1=6,
                                      swir2=7,
                                      cirrus=8),
+                    l8th=WavelengthsL8Thermal(coastal=1,
+                                              blue=2,
+                                              green=3,
+                                              red=4,
+                                              nir=5,
+                                              swir1=6,
+                                              swir2=7,
+                                              cirrus=8,
+                                              tirs1=9,
+                                              tirs2=10),
+                    l8l7=WavelengthsL57(blue=2,
+                                        green=3,
+                                        red=4,
+                                        nir=5,
+                                        swir1=6,
+                                        swir2=7),
                     s2=WavelengthsS2(blue=1,
                                      green=2,
                                      red=3,
@@ -98,6 +161,12 @@ class DataProperties(object):
                                      rededge=8,
                                      swir1=9,
                                      swir2=10),
+                    s2l7=WavelengthsL57(blue=1,
+                                        green=2,
+                                        red=3,
+                                        nir=4,
+                                        swir1=5,
+                                        swir2=6),
                     s210=WavelengthsBGRN(blue=1,
                                          green=2,
                                          red=3,

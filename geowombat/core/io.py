@@ -527,7 +527,9 @@ def to_raster(data,
 
                     if scheduler == 'mpool':
 
-                        for zarr_file in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                        for zarr_file in tqdm(executor.imap_unordered(_write_xarray,
+                                                                      data_gen),
+                                              total=n_windows_slice):
                             pass
 
                     else:

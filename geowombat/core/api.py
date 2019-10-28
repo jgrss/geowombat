@@ -378,18 +378,6 @@ def open(filename,
                 if not time_names and (stack_dim == 'time'):
                     darray.coords['time'] = parse_filename_dates(filename)
 
-                # if return_as == 'array':
-                # else:
-                #
-                #     # The Dataset variable 'bands' has 4 named dimensions
-                #     #   --time, component, y, x
-                #     yield xarray_to_xdataset(darray,
-                #                              band_names,
-                #                              time_names,
-                #                              ycoords=darray.y,
-                #                              xcoords=darray.x,
-                #                              attrs=darray.attrs)
-
             if band_names:
                 darray.coords['band'] = band_names
             else:
