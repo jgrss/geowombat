@@ -52,7 +52,7 @@ Tasseled cap transformations
 
 .. ipython:: python
 
-    with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+    with gw.config.update(sensor='qb', scale_factor=0.0001):
         with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
             tcap = ds.gw.tasseled_cap()
             print(tcap)

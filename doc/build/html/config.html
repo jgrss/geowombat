@@ -120,12 +120,12 @@
 </pre></div>
 </div>
 <p>Wrap functions in a context manager to control global arguments</p>
-<pre class="literal-block">In [2]: with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+<pre class="literal-block">In [2]: with gw.config.update(sensor='qb', scale_factor=0.0001):
    ...:     with gw.open(rgbn) as ds:
    ...:         for k, v in ds.gw.config.items():
    ...:             print(k, v)
    ...: 
-sensor quickbird
+sensor qb
 scale_factor 0.0001
 nodata None
 ref_image None
@@ -141,12 +141,12 @@ bigtiff NO
 l57_angles_path None
 l8_angles_path None
 
-In [3]: with gw.config.update(sensor='planetscope', tiled=False):
+In [3]: with gw.config.update(sensor='ps', tiled=False):
    ...:     with gw.open(rgbn) as ds:
    ...:         for k, v in ds.gw.config.items():
    ...:             print(k, v)
    ...: 
-sensor planetscope
+sensor ps
 scale_factor 1.0
 nodata None
 ref_image None

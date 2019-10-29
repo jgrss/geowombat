@@ -42,7 +42,7 @@ Use the sensor name to set band names
 
 .. ipython:: python
 
-    with gw.config.update(sensor='quickbird'):
+    with gw.config.update(sensor='qb'):
         with gw.open(rgbn) as ds:
             print(ds)
 

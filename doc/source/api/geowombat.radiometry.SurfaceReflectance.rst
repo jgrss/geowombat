@@ -25,3 +25,6 @@ SurfaceReflectance
    .. automethod:: get_coefficients
    .. automethod:: radiance_to_toar
    .. automethod:: toar_to_sr
+
+   .. bibliography:: references_bandpass.bib
+      :cited:

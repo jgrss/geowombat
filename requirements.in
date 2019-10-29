@@ -22,3 +22,4 @@ numcodecs
 zarr
 dateparser
 wget
+fsspec

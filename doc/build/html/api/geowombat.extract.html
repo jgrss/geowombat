@@ -117,9 +117,9 @@
 <h1>extract<a class="headerlink" href="#extract" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.extract">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">extract</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">aoi</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">frac=1.0</em>, <em class="sig-param">all_touched=False</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">n_jobs=8</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.extract" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts data within an area or points of interest. Projections do not
-need to match, as they are handled ‘on-the-fly’.</p>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">extract</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">aoi</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">frac=1.0</em>, <em class="sig-param">all_touched=False</em>, <em class="sig-param">id_column='id'</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">n_jobs=8</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts data within an area or points of interest. Projections do not need to match,
+as they are handled ‘on-the-fly’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -131,6 +131,7 @@ If not given, all bands are used. <a href="#id1"><span class="problematic" id="i
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of time names.</p></li>
 <li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each polygon feature.</p></li>
 <li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> argument is passed to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>id_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The id column name.</p></li>
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>GeoDataFrame</em><em> or </em><em>Shapely Polygon</em><em>]</em>) – A <code class="docutils literal notranslate"><span class="pre">shapely.geometry.Polygon</span></code> mask to subset to.</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of features to rasterize in parallel.</p></li>
 <li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>

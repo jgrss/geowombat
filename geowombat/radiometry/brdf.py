@@ -1811,26 +1811,7 @@ class RossLiKernels(object):
 class BRDF(RelativeBRDFNorm, RossLiKernels):
 
     """
-    Global BRDF normalization
-
-    Args:
-        scale_factor (Optional[float]): The `sensor_array` scale factor. *Not the angle array scale factors, which
-            are scaled automatically.
-
-    References:
-
-        Li & Strahler (1992) Geometric-Optical Bidirectional Reflectance Modeling of the
-            Discrete Crown Vegetation Canopy: Effect of Crown Shape and Mutual Shadowing,
-            IEEE Transactions.
-
-        Roujean et al. (1992) A Bidirectional Reflectance Model of the Earth's Surface
-            for the Correction of Remote Sensing Data, Journal of Geophysical Research.
-
-        Schaaf et al. (2002) First operational BRDF, albedo nadir reflectance products
-            from MODIS, Remote Sensing of Environment, 83.
-
-        Roy et al. (2016) Characterization of Landsat-7 to Landsat-8 reflective wavelength and
-            normalized difference vegetation index continuity, Remote Sensing of Environment, 185.
+    A class for Nadir BRDF (NBAR) normalization
     """
 
     def __init__(self):
@@ -1883,8 +1864,8 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                   scale_angles=True):
 
         """
-        Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
-        introduced by Roy et al. (2016)
+        Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
+        using the global c-factor method (see Roy et al. (2016))
 
         Args:
             data (2d or 3d array): The data to normalize.
@@ -1902,7 +1883,15 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         References:
 
-            See :cite:`roy_etal_2016`
+            See :cite:`roy_etal_2016` for the c-factor method.
+
+            For further background on BRDF:
+
+                :cite:`li_strahler_1992`
+
+                :cite:`roujean_etal_1992`
+
+                :cite:`schaaf_etal_2002`
 
         Examples:
             >>> import geowombat as gw

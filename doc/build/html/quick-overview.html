@@ -132,14 +132,14 @@
 
 In [5]: print(data)
 &lt;xarray.DataArray (x: 2, y: 3)&gt;
-array([[ 0.39780135,  0.78233999, -2.64352132],
-       [-0.9705279 ,  0.32186775,  1.20292061]])
+array([[-0.54081858, -2.02179512, -1.20155052],
+       [ 0.49160551,  0.32466856, -2.20026195]])
 Coordinates:
   * x        (x) int64 10 20
 Dimensions without coordinates: y
 
 In [6]: print(data.gw)
-&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fa9400d1358&gt;</pre>
+&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f8fe82a2d30&gt;</pre>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
@@ -151,7 +151,7 @@ In [6]: print(data.gw)
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-da97441e691ece1dcbb9355a36c4b191&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-9a758f186e7efc86a02a79c41894d3ca&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -166,7 +166,7 @@ In [6]: print(data.gw)
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fa940197e48&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f8fe83cfcc0&gt;</span>
 </pre></div>
 </div>
 </div>

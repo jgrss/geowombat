@@ -123,6 +123,10 @@
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">altitude</span></code></dt><dd><p>Get satellite altitudes (in km)</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">avail_sensors</span></code></dt><dd><p>Get supported sensors</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">band_chunks</span></code></dt><dd><p>Get the band chunk size</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">bottom</span></code></dt><dd><p>Get the array bounding box bottom coordinate</p>
@@ -137,6 +141,8 @@
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">cellyh</span></code></dt><dd><p>Get the half width of the cell size in the y direction</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">central_um</span></code></dt><dd><p>Get a dictionary of central wavelengths (in micrometers)</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">col_chunks</span></code></dt><dd><p>Get the column chunk size</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry</span></code></dt><dd><p>Get the polygon geometry of the array bounding box</p>
@@ -144,8 +150,6 @@
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">left</span></code></dt><dd><p>Get the array bounding box left coordinate</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></dt><dd><p>Get the array metdata</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">micrometers</span></code></dt><dd><p>Get a dictionary of wavelength micrometers</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbands</span></code></dt><dd><p>Get the number of array bands</p>
 </dd>
@@ -160,6 +164,8 @@
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">right</span></code></dt><dd><p>Get the array bounding box right coordinate</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">row_chunks</span></code></dt><dd><p>Get the row chunk size</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">sensor_names</span></code></dt><dd><p>Get sensor full names</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_chunks</span></code></dt><dd><p>Get the time chunk size</p>
 </dd>
@@ -219,7 +225,7 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code>(self[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, separate, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
@@ -249,7 +255,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, separate, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
 </tbody>
@@ -416,13 +422,16 @@ The <code class="docutils literal notranslate"><span class="pre">blockxsize</spa
 
 <dl class="method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.to_raster">
-<code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='processes'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">nodata=None</em>, <em class="sig-param">blockxsize=512</em>, <em class="sig-param">blockysize=512</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">readxsize=None</em>, <em class="sig-param">readysize=None</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">use_dask_store=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='processes'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">driver='GTiff'</em>, <em class="sig-param">nodata=None</em>, <em class="sig-param">blockxsize=512</em>, <em class="sig-param">blockysize=512</em>, <em class="sig-param">tags=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes an Xarray DataArray to a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
+<li><p><strong>readxsize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The size of column chunks to read. If not given, <code class="docutils literal notranslate"><span class="pre">readxsize</span></code> defaults to Dask chunk size.</p></li>
+<li><p><strong>readysize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The size of row chunks to read. If not given, <code class="docutils literal notranslate"><span class="pre">readysize</span></code> defaults to Dask chunk size.</p></li>
 <li><p><strong>separate</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to write blocks as separate files. Otherwise, write to a single file.</p></li>
+<li><p><strong>use_dask_store</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use <code class="docutils literal notranslate"><span class="pre">dask.array.store</span></code> to save with Dask task graphs.</p></li>
 <li><p><strong>out_block_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output block type. Choices are [‘gtiff’, ‘zarr’].
 Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>keep_blocks</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to keep the blocks stored on disk. Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>

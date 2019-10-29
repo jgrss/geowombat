@@ -16,8 +16,8 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="RadTransforms" href="geowombat.radiometry.RadTransforms.html" />
-    <link rel="prev" title="landsat_pixel_angles" href="geowombat.radiometry.landsat_pixel_angles.html" />
+    <link rel="next" title="LinearAdjustments" href="geowombat.radiometry.LinearAdjustments.html" />
+    <link rel="prev" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -81,8 +81,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.landsat_pixel_angles.html" title="previous chapter">landsat_pixel_angles</a></li>
-      <li>Next: <a href="geowombat.radiometry.RadTransforms.html" title="next chapter">RadTransforms</a></li>
+      <li>Previous: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="previous chapter">sentinel_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.LinearAdjustments.html" title="next chapter">LinearAdjustments</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -119,25 +119,7 @@
 <dt id="geowombat.radiometry.BRDF">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">BRDF</code><a class="headerlink" href="#geowombat.radiometry.BRDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.RelativeBRDFNorm</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.RossLiKernels</span></code></p>
-<p>Global BRDF normalization</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The <cite>sensor_array</cite> scale factor. <a href="#id1"><span class="problematic" id="id2">*</span></a>Not the angle array scale factors, which
-are scaled automatically.</p>
-</dd>
-</dl>
-<p class="rubric">References</p>
-<dl class="simple">
-<dt>Li &amp; Strahler (1992) Geometric-Optical Bidirectional Reflectance Modeling of the</dt><dd><p>Discrete Crown Vegetation Canopy: Effect of Crown Shape and Mutual Shadowing,
-IEEE Transactions.</p>
-</dd>
-<dt>Roujean et al. (1992) A Bidirectional Reflectance Model of the Earth’s Surface</dt><dd><p>for the Correction of Remote Sensing Data, Journal of Geophysical Research.</p>
-</dd>
-<dt>Schaaf et al. (2002) First operational BRDF, albedo nadir reflectance products</dt><dd><p>from MODIS, Remote Sensing of Environment, 83.</p>
-</dd>
-<dt>Roy et al. (2016) Characterization of Landsat-7 to Landsat-8 reflective wavelength and</dt><dd><p>normalized difference vegetation index continuity, Remote Sensing of Environment, 185.</p>
-</dd>
-</dl>
+<p>A class for Nadir BRDF (NBAR) normalization</p>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -146,7 +128,7 @@ IEEE Transactions.</p>
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
-<td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method introduced by Roy et al.</p></td>
+<td><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method (see Roy et al.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sza</span></code>(central_latitude)</p></td>
 <td><p>Returns the mean sun zenith angle (SZA) as a function of the central latitude</p></td>
@@ -178,7 +160,7 @@ IEEE Transactions.</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
-<td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method introduced by Roy et al.</p></td>
+<td><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method (see Roy et al.</p></td>
 </tr>
 </tbody>
 </table>
@@ -191,8 +173,8 @@ IEEE Transactions.</p>
 <dl class="method">
 <dt id="geowombat.radiometry.BRDF.norm_brdf">
 <code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude=None</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">scale_angles=True</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method
-introduced by Roy et al. (2016)</p>
+<dd><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
+using the global c-factor method (see Roy et al. (2016))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -212,7 +194,13 @@ introduced by Roy et al. (2016)</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>See <a class="bibtex reference internal" href="geowombat.norm_brdf.html#roy-etal-2016" id="id3">[RZJ+16]</a></p>
+<p>See <a class="bibtex reference internal" href="geowombat.radiometry.LinearAdjustments.html#roy-etal-2016" id="id1">[RZJ+16]</a> for the c-factor method.</p>
+<p>For further background on BRDF:</p>
+<blockquote>
+<div><p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#li-strahler-1992" id="id2">[LS92]</a></p>
+<p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#roujean-etal-1992" id="id3">[RLD92]</a></p>
+<p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#schaaf-etal-2002" id="id4">[SGS+02]</a></p>
+</div></blockquote>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>

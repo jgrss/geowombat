@@ -346,10 +346,10 @@ class TasseledCapLookup(object):
                                             [0.431, -0.318, -0.07],
                                             [0.33, -0.324, -0.811],
                                             [0.668, 0.741, 0.003]], dtype='float64'),
-                           ikonos=np.array([[0.326, -0.311, -0.612],
-                                            [0.509, -0.256, -0.312],
-                                            [0.56, -0.325, 0.722],
-                                            [0.567, 0.819, -0.081]], dtype='float64'),
+                           ik=np.array([[0.326, -0.311, -0.612],
+                                        [0.509, -0.256, -0.312],
+                                        [0.56, -0.325, 0.722],
+                                        [0.567, 0.819, -0.081]], dtype='float64'),
                            l4=np.array([[0.433, -0.29, -0.829],
                                         [0.632, -0.562, 0.522],
                                         [0.586, 0.6, -0.039],
@@ -379,10 +379,10 @@ class TasseledCapLookup(object):
                                            [0.3506, 0.4882, -0.3122],
                                            [0.2136, -0.0036, -0.6416],
                                            [0.2678, -0.4169, -0.5087]], dtype='float64'),
-                           quickbird=np.array([[0.319, -0.121, 0.652],
-                                               [0.542, -0.331, 0.375],
-                                               [0.49, -0.517, -0.639],
-                                               [0.604, 0.78, -0.163]], dtype='float64'),
+                           qb=np.array([[0.319, -0.121, 0.652],
+                                        [0.542, -0.331, 0.375],
+                                        [0.49, -0.517, -0.639],
+                                        [0.604, 0.78, -0.163]], dtype='float64'),
                            rapideye=np.array([[-0.293, -0.406, 0.572],
                                               [-0.354, -0.367, 0.402],
                                               [-0.372, -0.446, -0.494],
@@ -411,7 +411,7 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+            >>> with gw.config.update(sensor='qb', scale_factor=0.0001):
             >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
             >>>         tcap = gw.tasseled_cap(ds)
 

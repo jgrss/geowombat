@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="BRDF" href="geowombat.radiometry.BRDF.html" />
+    <link rel="prev" title="LinearAdjustments" href="geowombat.radiometry.LinearAdjustments.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -80,7 +80,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.BRDF.html" title="previous chapter">BRDF</a></li>
+      <li>Previous: <a href="geowombat.radiometry.LinearAdjustments.html" title="previous chapter">LinearAdjustments</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -117,7 +117,7 @@
 <dt id="geowombat.radiometry.RadTransforms">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">RadTransforms</code><a class="headerlink" href="#geowombat.radiometry.RadTransforms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code></p>
-<p>A general class for radiometric transformations</p>
+<p>A class for radiometric transformations</p>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -140,7 +140,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
 <td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, sensor_za, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
 <td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
 </tr>
 </tbody>
@@ -164,7 +164,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
 <td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, sensor_za, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
 <td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
 </tr>
 </tbody>
@@ -208,18 +208,12 @@
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>See <span class="bibtex" id="id1">[bilal_etal_2019]</span></p>
-<p>TODO: add to .bib
-Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Method (SREM) for Use over Diverse</p>
-<blockquote>
-<div><p>Land Surfaces Using Multi-Sensor Data, Remote Sensing, 11(1344) doi:10.3390/rs11111344.</p>
-</div></blockquote>
 <p><a class="reference external" href="https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product">https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product</a></p>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">RadTransforms</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sr</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">meta</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">(</span><span class="s1">&#39;file.MTL&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">meta</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">get_landsat_coefficients</span><span class="p">(</span><span class="s1">&#39;file.MTL&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Convert DNs to surface reflectance using Landsat metadata</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;dn.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -271,25 +265,36 @@ Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Metho
 
 <dl class="method">
 <dt id="geowombat.radiometry.RadTransforms.toar_to_sr">
-<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param">toar</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">um</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param">toar</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">sensor</em>, <em class="sig-param">nodata=-32768</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts top-of-atmosphere reflectance to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>toar</strong> (<em>DataArray</em>) – The top-of-atmosphere reflectance.</p></li>
 <li><p><strong>solar_za</strong> (<em>DataArray</em>) – The solar zenith angle.</p></li>
-<li><p><strong>sensor_za</strong> (<em>DataArray</em>) – The sensor zenith angle.</p></li>
 <li><p><strong>solar_az</strong> (<em>DataArray</em>) – The solar azimuth angle.</p></li>
+<li><p><strong>sensor_za</strong> (<em>DataArray</em>) – The sensor zenith angle.</p></li>
 <li><p><strong>sensor_az</strong> (<em>DataArray</em>) – The sensor azimuth angle.</p></li>
-<li><p><strong>um</strong> (<em>namedtuple</em>) – The sensor wavelength micrometers.</p></li>
+<li><p><strong>sensor</strong> (<em>str</em>) – The satellite sensor.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value from the pixel angle data.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dl>
+<p class="rubric">References</p>
+<p>See <a class="bibtex reference internal" href="#bilal-etal-2019" id="id1">[BNN+19]</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
 
+<p id="bibtex-bibliography-api/geowombat.radiometry.RadTransforms-0"><dl class="citation">
+<dt class="bibtex label" id="bilal-etal-2019"><span class="brackets"><a class="fn-backref" href="#id1">BNN+19</a></span></dt>
+<dd><p>Muhammad Bilal, Majid Nazeer, Janet E Nichol, Max P Bleiweiss, Zhongfeng Qiu, Evelyn Jäkel, James R Campbell, Luqman Atique, Xiaolan Huang, and Simone Lolli. A simplified and robust surface reflectance estimation method (SREM) for use over diverse land surfaces using multi-sensor data. <em>Remote Sensing</em>, 11(11):1344, 2019.</p>
+</dd>
+</dl>
+</p>
 </dd></dl>
 
 </div>

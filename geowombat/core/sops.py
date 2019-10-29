@@ -158,19 +158,23 @@ class SpatialOperations(_PropertyMixin):
                                    df.geometry.y.values,
                                    data.transform)
 
-        if shape_len == 2:
-            vidx = (y, x)
-        else:
+        vidx = (y.tolist(), x.tolist())
 
-            vidx = (bands_idx, y.tolist(), x.tolist())
+        if shape_len > 2:
 
-            for b in range(0, shape_len - 3):
-                vidx = (slice(0, None),) + vidx
+            vidx = (bands_idx,) + vidx
+
+            if shape_len > 3:
+
+                # The first 3 dimensions are (bands, rows, columns)
+                # TODO: allow user-defined time slice?
+                for b in range(0, shape_len - 3):
+                    vidx = (slice(0, None),) + vidx
 
         # Get the raster values for each point
+        # TODO: allow neighbor indexing
         res = data.data.vindex[vidx].compute(**kwargs)
 
-        # TODO: reshape output ``res`` instead of iterating over dimensions
         if len(res.shape) == 1:
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:

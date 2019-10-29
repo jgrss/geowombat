@@ -87,6 +87,10 @@ def _format_coeff(dataframe, key):
 
 class MetaData(object):
 
+    """
+    A class for sensor metadata
+    """
+
     @staticmethod
     def get_landsat_coefficients(meta_file):
 
@@ -141,6 +145,10 @@ class MetaData(object):
 
 
 class LinearAdjustments(object):
+
+    """
+    A class for linear bandpass adjustments
+    """
 
     def __init__(self):
 
@@ -266,7 +274,7 @@ class LinearAdjustments(object):
 class RadTransforms(MetaData):
 
     """
-    A general class for radiometric transformations
+    A class for radiometric transformations
     """
 
     def dn_to_sr(self,
@@ -476,10 +484,6 @@ class RadTransforms(MetaData):
         References:
 
             See :cite:`bilal_etal_2019`
-
-            TODO: add to .bib
-            Bilal et al. (2019) A Simplified and Robust Surface Reflectance Estimation Method (SREM) for Use over Diverse
-                Land Surfaces Using Multi-Sensor Data, Remote Sensing, 11(1344) doi:10.3390/rs11111344.
 
         Returns:
             ``xarray.DataArray``

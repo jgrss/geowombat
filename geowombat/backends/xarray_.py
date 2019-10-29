@@ -96,7 +96,10 @@ def warp_open(filename,
             if src.gw.sensor:
 
                 if src.gw.sensor not in src.gw.avail_sensors:
-                    logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(src.gw.avail_sensors)))
+
+                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
+                                                                                                           ', '.join(src.gw.avail_sensors)))
+
                 else:
 
                     new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
@@ -201,7 +204,10 @@ def mosaic(filenames,
             if ds.gw.sensor:
 
                 if ds.gw.sensor not in ds.gw.avail_sensors:
-                    logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(ds.gw.avail_sensors)))
+
+                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(ds.gw.sensor,
+                                                                                                           ', '.join(ds.gw.avail_sensors)))
+
                 else:
 
                     new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
@@ -356,7 +362,10 @@ def concat(filenames,
         if ds.gw.sensor:
 
             if ds.gw.sensor not in ds.gw.avail_sensors:
-                logger.warning('  The sensor is not currently supported.\nChoose from [{}].'.format(', '.join(ds.gw.avail_sensors)))
+
+                logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(ds.gw.sensor,
+                                                                                                       ', '.join(ds.gw.avail_sensors)))
+
             else:
 
                 new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)

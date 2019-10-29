@@ -1,16 +1,16 @@
 GeoWombat: geo-utilities for overhead air- and space-borne imagery
 ==================================================================
 
-Like a wombat, **GeoWombat** has a simple interface with a strong backend. GeoWombat is inspired by, and built on, several key
-libraries for large-scale data processing:
+Like a wombat, **GeoWombat** has a simple interface with a strong backend.
+
+GeoWombat is designed to provide specialized "geo-functionality" to Xarray and Dask data, using Rasterio for raster I/O.
+The package is inspired by, and built on, several key libraries for large-scale data processing, such as:
 
 .. _xarray: http://xarray.pydata.org
 .. _dask: http://dask.org
 .. _rasterio: https://rasterio.readthedocs.io
 .. _pandas: http://pandas.pydata.org
 .. _geopandas: http://geopandas.org
-
-GeoWombat is designed to provide specialized "geo-functionality" to Xarray and Dask data, using Rasterio for raster I/O.
 
 Documentation
 -------------

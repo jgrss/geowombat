@@ -23,3 +23,6 @@ RadTransforms
    .. automethod:: dn_to_toar
    .. automethod:: radiance_to_toar
    .. automethod:: toar_to_sr
+
+   .. bibliography:: references_radtransforms.bib
+      :cited:

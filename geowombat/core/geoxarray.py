@@ -792,7 +792,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.config.update(sensor='quickbird', scale_factor=0.0001):
+            >>> with gw.config.update(sensor='qb', scale_factor=0.0001):
             >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
             >>>         tcap = ds.gw.tasseled_cap()
         """
