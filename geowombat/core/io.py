@@ -173,6 +173,17 @@ def _return_window(window_, block, num_workers):
     with threading.Lock():
         out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
+    if 'apply' in block.attrs:
+
+        if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+            out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
+        elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
+            out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
+        elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+            out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+        else:
+            out_data_ = block.attrs['apply'](out_data_)
+
     dshape = out_data_.shape
 
     if len(dshape) > 2:

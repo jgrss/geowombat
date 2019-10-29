@@ -6,11 +6,11 @@ Like a wombat, **GeoWombat** has a simple interface with a strong backend.
 GeoWombat is designed to provide specialized "geo-functionality" to Xarray and Dask data, using Rasterio for raster I/O.
 The package is inspired by, and built on, several key libraries for large-scale data processing, such as:
 
-.. _xarray: http://xarray.pydata.org
-.. _dask: http://dask.org
-.. _rasterio: https://rasterio.readthedocs.io
-.. _pandas: http://pandas.pydata.org
-.. _geopandas: http://geopandas.org
+- `Xarray <http://xarray.pydata.org>`_
+- `Dask <http://dask.org>`_
+- `Rasterio <https://rasterio.readthedocs.io>`_
+- `Pandas <http://pandas.pydata.org>`_
+- `Geopandas <http://geopandas.org>`_
 
 Documentation
 -------------

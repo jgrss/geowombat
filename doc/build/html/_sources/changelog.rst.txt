@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.0.0b (30 October 2019)
+------------------------
+
+New
+~~~
+
+- Added user functions as Xarray attributes. See :ref:`apply` for an example.
+
 1.0.0b (24 October 2019)
 ------------------------
 
