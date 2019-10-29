@@ -144,20 +144,38 @@ class LinearAdjustments(object):
 
     def __init__(self):
 
-        self.coefficients = dict(s2=dict(l5=None,
-                                         l7=None,
-                                         l8=dict(alphas=dict(blue=4.47e-03,
-                                                             green=1.09e-03,
-                                                             red=-1.04e-03,
-                                                             nir=2.50e-04,
-                                                             swir1=1.24e-04,
-                                                             swir2=1.19e-03),
-                                                 betas=dict(blue=1.020,
-                                                            green=0.994,
-                                                            red=1.017,
-                                                            nir=0.999,
-                                                            swir1=0.999,
-                                                            swir2=1.003))),
+        self.coefficients = dict(s2a=dict(l5=None,
+                                          l7=None,
+                                          l8=dict(alphas=dict(coastal=-0.0002,
+                                                              blue=-0.004,
+                                                              green=-0.0009,
+                                                              red=0.0009,
+                                                              nir=-0.0001,
+                                                              swir1=-0.0011,
+                                                              swir2=-0.0012),
+                                                  betas=dict(coastal=0.9959,
+                                                             blue=0.9778,
+                                                             green=1.0053,
+                                                             red=0.9765,
+                                                             nir=0.9983,
+                                                             swir1=0.9987,
+                                                             swir2=1.003))),
+                                 s2b=dict(l5=None,
+                                          l7=None,
+                                          l8=dict(alphas=dict(coastal=-0.0002,
+                                                              blue=-0.004,
+                                                              green=-0.0008,
+                                                              red=0.001,
+                                                              nir=0.0,
+                                                              swir1=-0.0003,
+                                                              swir2=0.0004),
+                                                  betas=dict(coastal=0.9959,
+                                                             blue=0.9778,
+                                                             green=1.0075,
+                                                             red=0.9761,
+                                                             nir=0.9966,
+                                                             swir1=1.0,
+                                                             swir2=0.9867))),
                                  l7=dict(l5=None,
                                          l8=dict(alphas=dict(blue=-0.0095,
                                                              green=-0.0016,
@@ -173,16 +191,28 @@ class LinearAdjustments(object):
                                                             swir2=0.9949)),
                                          s2=None))
 
-    def adjust(self, data, sensor=None, to='l8', band_names=None):
+    def bandpass(self, data, sensor=None, to='l8', band_names=None):
 
         """
-        Linearly adjusts surface reflectance values
+        Applies a bandpass adjustment by applying a linear function to surface reflectance values
 
         Args:
             data (DataArray): The data to adjust.
             sensor (Optional[str]): The sensor to adjust.
             to (Optional[str]): The sensor to adjust to.
             band_names (Optional[list]): The bands to adjust. If not given, all bands are adjusted.
+
+        Reference:
+
+            Sentinel-2 and Landsat 8:
+
+                https://hls.gsfc.nasa.gov/algorithms/bandpass-adjustment/
+
+                See :cite:`chastain_etal_2019` for further details
+
+            Landsat 7 and Landsat 8:
+
+                See :cite:`roy_etal_2016` (Table 2)
 
         Examples:
             >>> import geowombat as gw
@@ -193,7 +223,7 @@ class LinearAdjustments(object):
             >>> # Adjust all Sentinel-2 bands to Landsat 8
             >>> with gw.config.update(sensor='s2'):
             >>>     with gw.open('sentinel-2.tif') as ds:
-            >>>         ds_adjusted = la.adjust(ds, to='l8')
+            >>>         ds_adjusted = la.bandpass(ds, to='l8')
 
         Returns:
             ``xarray.DataArray``
@@ -221,6 +251,7 @@ class LinearAdjustments(object):
                              coords={'band': band_names},
                              dims='band')
 
+        # Apply the linear bandpass adjustment
         data = alphas + betas*data
 
         data.attrs['adjustment'] = '{} to {}'.format(sensor, to)

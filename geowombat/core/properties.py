@@ -14,6 +14,7 @@ WavelengthsL8 = namedtuple('WavelengthsL8', 'coastal blue green red nir swir1 sw
 WavelengthsL8Thermal = namedtuple('WavelengthsL8Thermal', 'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2')
 WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2')
 WavelengthsS2Full = namedtuple('WavelengthsS2', 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2')
+WavelengthsS220 = namedtuple('WavelengthsS220', 'nir1 nir2 nir3 rededge swir1 swir2')
 
 
 class DataProperties(object):
@@ -113,6 +114,12 @@ class DataProperties(object):
                                          green=0.56,
                                          red=0.665,
                                          nir=0.842),
+                    s220=WavelengthsS220(nir1=0.705,
+                                         nir2=0.74,
+                                         nir3=0.783,
+                                         rededge=0.865,
+                                         swir1=1.61,
+                                         swir2=2.19),
                     ps=WavelengthsBGRN(blue=0.485,
                                        green=0.545,
                                        red=0.63,
@@ -138,7 +145,8 @@ class DataProperties(object):
                     s2='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
                     s2f='Sentinel 2 Multi-Spectral Instrument (MSI) with 3 60m bands (coastal, water vapor, cirrus)',
                     s2l7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
-                    s210='Sentinel 2 Multi-Spectral Instrument (MSI) with 4 (visible + NIR) bands',
+                    s210='Sentinel 2 Multi-Spectral Instrument (MSI) with 4 10m (visible + NIR) bands',
+                    s220='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 20m bands',
                     ps='PlanetScope with 4 (visible + NIR) bands',
                     qb='Quickbird with 4 (visible + NIR) bands',
                     ik='IKONOS with 4 (visible + NIR) bands')
@@ -240,6 +248,12 @@ class DataProperties(object):
                                          green=2,
                                          red=3,
                                          nir=4),
+                    s220=WavelengthsS220(nir1=1,
+                                         nir2=2,
+                                         nir3=3,
+                                         rededge=4,
+                                         swir1=5,
+                                         swir2=6),
                     ps=WavelengthsBGRN(blue=1,
                                        green=2,
                                        red=3,
