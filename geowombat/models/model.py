@@ -528,14 +528,15 @@ class Predict(object):
             outname (Optional[str]): An file name for the predictions.
             chunksize (Optional[str or tuple]): The chunk size for I/O. Default is 'same', or use the input chunk size.
             x_chunks (Optional[tuple]): The chunk size for the X predictors (or ``data``).
-            overwrite (Optional[bool]): Whether to overwrite an existing file.
+            use_xy (Optional[bool]): Whether to use x and y coordinates as predictive features.
             return_as (Optional[str]): Whether to return the predictions as a ``xarray.DataArray`` or ``xarray.Dataset``.
                 *Only relevant if ``outname`` is not given.
-            nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs for the backend (if given). The ``n_workers`` and
                 ``n_threads`` should be passed as ``kwargs`` to ``geowombat.to_raster``.
-            backend (Optional[str]): The ``joblib`` backend scheduler.
+            backend (Optional[str]): The ``joblib`` backend scheduler. This is experimental, and should probably
+                only be used if not writing the results to file with ``geowombat.to_raster``.
             verbose (Optional[int]): The verbosity level.
+            nodata (Optional[int or float]): The 'no data' value in the predictors.
             dtype (Optional[str]): The output data type passed to ``geowombat.to_raster``.
             kwargs (Optional[dict]): Additional keyword arguments passed to ``geowombat.to_raster``.
 
@@ -602,7 +603,6 @@ class Predict(object):
             if not isinstance(chunksize, tuple):
                 logger.warning('  The chunksize parameter should be a tuple.')
 
-            # TODO: make compatible with multi-layer predictions (e.g., probabilities)
             if len(chunksize) != 2:
                 logger.warning('  The chunksize should be two-dimensional.')
 
