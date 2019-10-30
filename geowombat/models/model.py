@@ -534,7 +534,8 @@ class Predict(object):
             nodata (Optional[int or float]): The 'no data' value in the predictors.
             n_jobs (Optional[int]): The number of parallel jobs for the backend (if given). The ``n_workers`` and
                 ``n_threads`` should be passed as ``kwargs`` to ``geowombat.to_raster``.
-            backend (Optional[str]): The ``joblib`` backend scheduler.
+            backend (Optional[str]): The ``joblib`` backend scheduler. This is experimental, and should probably
+                only be used if not writing the results to file with ``geowombat.to_raster``.
             verbose (Optional[int]): The verbosity level.
             dtype (Optional[str]): The output data type passed to ``geowombat.to_raster``.
             kwargs (Optional[dict]): Additional keyword arguments passed to ``geowombat.to_raster``.
@@ -602,7 +603,6 @@ class Predict(object):
             if not isinstance(chunksize, tuple):
                 logger.warning('  The chunksize parameter should be a tuple.')
 
-            # TODO: make compatible with multi-layer predictions (e.g., probabilities)
             if len(chunksize) != 2:
                 logger.warning('  The chunksize should be two-dimensional.')
 

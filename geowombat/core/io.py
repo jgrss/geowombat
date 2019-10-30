@@ -311,6 +311,9 @@ def to_raster(data,
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
+    if MKL_LIB:
+        __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)
+
     pfile = Path(filename)
 
     if scheduler.lower() == 'mpool':
