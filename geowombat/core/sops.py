@@ -204,7 +204,8 @@ class SpatialOperations(_PropertyMixin):
              data,
              df,
              query=None,
-             mask_data=False):
+             mask_data=False,
+             expand_by=0):
 
         """
         Clips a DataArray by vector polygon geometry
@@ -214,6 +215,7 @@ class SpatialOperations(_PropertyMixin):
             df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to clip to.
             query (Optional[str]): A query to apply to ``df``.
             mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
+            expand_by (Optional[int]): Expand the clip array bounds by ``expand_by`` pixels on each side.
 
         Returns:
              ``xarray.DataArray``
@@ -257,6 +259,13 @@ class SpatialOperations(_PropertyMixin):
         new_left, new_bottom, new_right, new_top = array_bounds(align_height,
                                                                 align_width,
                                                                 align_transform)
+
+        if expand_by > 0:
+
+            new_left -= data.gw.cellx*expand_by
+            new_bottom -= data.gw.celly*expand_by
+            new_right += data.gw.cellx*expand_by
+            new_top += data.gw.celly*expand_by
 
         # Subset the array
         data = self.subset(data,
