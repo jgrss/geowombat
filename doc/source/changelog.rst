@@ -9,7 +9,7 @@ Change Log
 Enhancements
 ~~~~~~~~~~~~
 
-- Added `expand_by` user option in :func:`geowombat.clip`.
+- Added `expand_by` user argument in :func:`geowombat.clip`.
 
 1.0.0b (30 October 2019)
 ------------------------
