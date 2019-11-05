@@ -333,12 +333,13 @@ def open(filename,
 
     if 'chunks' in kwargs:
         ch.check_chunktype(kwargs['chunks'], output='3d')
-    else:
-
-        # GDAL's default chunk size is typically 256
-        kwargs['chunks'] = (1, 256, 256)
 
     if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
+
+        if 'chunks' not in kwargs:
+
+            # GDAL's default chunk size is typically 256
+            kwargs['chunks'] = (1, 256, 256)
 
         yield read(filename,
                    band_names=band_names,
@@ -354,6 +355,13 @@ def open(filename,
             # Build the filename list
             if isinstance(filename, str):
                 filename = parse_wildcard(filename)
+
+            if 'chunks' not in kwargs:
+
+                with rio.open(filename[0]) as src:
+
+                    w = src.block_window(1, 0, 0)
+                    kwargs['chunks'] = (1, w.height, w.width)
 
             if mosaic:
 
@@ -384,6 +392,13 @@ def open(filename,
                 logger.exception('  The file format is not recognized.')
 
             if file_names.f_ext.lower() in IO_DICT['rasterio']:
+
+                if 'chunks' not in kwargs:
+
+                    with rio.open(filename) as src:
+
+                        w = src.block_window(1, 0, 0)
+                        kwargs['chunks'] = (1, w.height, w.width)
 
                 yield warp_open(filename,
                                 band_names=band_names,
