@@ -4,11 +4,13 @@ import zarr
 import numcodecs
 
 
-numcodecs.blosc.use_threads = False
+if hasattr(numcodecs, 'blosc'):
 
-compressor = numcodecs.Blosc(cname='zstd',
-                             clevel=2,
-                             shuffle=numcodecs.Blosc.BITSHUFFLE)
+    numcodecs.blosc.use_threads = False
+
+    compressor = numcodecs.Blosc(cname='zstd',
+                                 clevel=2,
+                                 shuffle=numcodecs.Blosc.BITSHUFFLE)
 
 
 def to_zarr(filename, data, window, chunks, root=None):
@@ -21,6 +23,7 @@ def to_zarr(filename, data, window, chunks, root=None):
         data (ndarray): The data to write.
         window (namedtuple): A ``rasterio.window.Window`` object.
         chunks (int or tuple): The ``zarr`` chunks.
+        root (Optional[object]): The ``zarr`` root.
 
     Returns:
         ``str``
