@@ -132,14 +132,14 @@
 
 In [5]: print(data)
 &lt;xarray.DataArray (x: 2, y: 3)&gt;
-array([[ 0.14037824,  1.53877201, -1.01882075],
-       [ 1.11374286, -0.77096504,  1.73538462]])
+array([[ 1.54025685, -0.02278889, -0.73560468],
+       [-1.18582927, -0.86411376,  0.71620093]])
 Coordinates:
   * x        (x) int64 10 20
 Dimensions without coordinates: y
 
 In [6]: print(data.gw)
-&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aacc1433d68&gt;</pre>
+&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x1363afc50&gt;</pre>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
@@ -151,7 +151,7 @@ In [6]: print(data.gw)
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-e46078304c3776f32e32356994e2ca07&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-adcd006d217629324a15fc49d9cd8eb5&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -166,7 +166,7 @@ In [6]: print(data.gw)
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aacc12c2f28&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x135922e10&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -183,7 +183,7 @@ In [6]: print(data.gw)
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

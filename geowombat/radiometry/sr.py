@@ -76,13 +76,34 @@ def s_atm(r):
     return (0.92*r) * xr.ufuncs.exp(-r)
 
 
-def _format_coeff(dataframe, key):
+def _format_coeff(dataframe, sensor, key):
+
+    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'swir2'},
+                      l7={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
+                          '6VCID2': 'th2', '7': 'swir2', '8': 'pan'},
+                      l8={'1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
+                          '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'})
+
+    sensor_dict = bands_dict[sensor]
 
     dataframe_ = dataframe[dataframe.iloc[:, 0].str.startswith(key)].values
-    dataframe_[:, 1] = dataframe_[:, 1].astype(float)
-    dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
 
-    return dict(dataframe_)
+    pairs = dict()
+
+    for di in range(dataframe_.shape[0]):
+
+        bd = dataframe_[di, 0]
+        cf = dataframe_[di, 1]
+
+        try:
+            pairs[sensor_dict[''.join(bd.split('_')[3:])]] = float(cf)
+        except:
+            pass
+
+    # dataframe_[:, 1] = dataframe_[:, 1].astype(float)
+    # dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
+
+    return pairs
 
 
 class MetaData(object):
@@ -104,7 +125,9 @@ class MetaData(object):
             ``namedtuple``
         """
 
-        associations = {'LANDSAT_8': 'l8'}
+        associations = {'LANDSAT_5': 'l5',
+                        'LANDSAT_7': 'l7',
+                        'LANDSAT_8': 'l8'}
 
         MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired')
 
@@ -113,10 +136,14 @@ class MetaData(object):
         df.iloc[:, 0] = df.iloc[:, 0].str.strip()
         df.iloc[:, 1] = df.iloc[:, 1].str.strip()
 
-        m_l = _format_coeff(df, 'RADIANCE_MULT_BAND_')
-        a_l = _format_coeff(df, 'RADIANCE_ADD_BAND_')
-        m_p = _format_coeff(df, 'REFLECTANCE_MULT_BAND_')
-        a_p = _format_coeff(df, 'REFLECTANCE_ADD_BAND_')
+        spacecraft_id = dict(df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values)
+        spacecraft_id['SPACECRAFT_ID'] = spacecraft_id['SPACECRAFT_ID'].replace('"', '')
+        sensor = associations[spacecraft_id['SPACECRAFT_ID']]
+
+        m_l = _format_coeff(df, sensor, 'RADIANCE_MULT_BAND_')
+        a_l = _format_coeff(df, sensor, 'RADIANCE_ADD_BAND_')
+        m_p = _format_coeff(df, sensor, 'REFLECTANCE_MULT_BAND_')
+        a_p = _format_coeff(df, sensor, 'REFLECTANCE_ADD_BAND_')
 
         date_acquired_ = dict(df[df.iloc[:, 0].str.startswith('DATE_ACQUIRED')].values)
         date_acquired_ = date_acquired_['DATE_ACQUIRED'].replace('"', '')
@@ -131,10 +158,6 @@ class MetaData(object):
         hour = int(scene_center_time.split(':')[0])
 
         date_acquired = dtime(year, month, day, hour, tzinfo=datetime.timezone.utc)
-
-        spacecraft_id = dict(df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values)
-        spacecraft_id['SPACECRAFT_ID'] = spacecraft_id['SPACECRAFT_ID'].replace('"', '')
-        sensor = associations[spacecraft_id['SPACECRAFT_ID']]
 
         return MetaCoeffs(sensor=sensor,
                           m_l=m_l,
@@ -286,6 +309,7 @@ class RadTransforms(MetaData):
                  nodata=-32768,
                  sensor=None,
                  method='srem',
+                 angle_factor=0.01,
                  meta=None):
 
         """
@@ -300,6 +324,7 @@ class RadTransforms(MetaData):
             nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
             sensor (Optional[str]): The data's sensor.
             method (Optional[str]): The method to use. Only 'srem' is supported.
+            angle_factor (Optional[float]): The scale factor for angles.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
 
         References:
@@ -327,20 +352,20 @@ class RadTransforms(MetaData):
         if meta:
 
             # Get the sensor wavelengths
-            wavelengths = dn.gw.wavelengths[meta.sensor]
+            # wavelengths = dn.gw.wavelengths[meta.sensor]
 
-            band_indices = [getattr(wavelengths, p) for p in band_names]
+            # band_indices = [getattr(wavelengths, p) for p in band_names]
 
             # Get the gain and offsets and
             #   convert the gain and offsets
             #   to named coordinates.
-            m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_indices], coords={'band': band_names}, dims='band')
-            a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_indices], coords={'band': band_names}, dims='band')
+            m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+            a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
 
             toar = self.dn_to_toar(dn, m_p, a_p)
 
             # TOAR with sun angle correction
-            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*0.01))] * len(toar.band), dim='band')
+            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*angle_factor))] * len(toar.band), dim='band')
             cos_sza.coords['band'] = toar.band.values
             toar = toar / cos_sza
             toar.attrs = attrs

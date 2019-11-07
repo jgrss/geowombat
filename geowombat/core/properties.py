@@ -4,6 +4,7 @@ from affine import Affine
 from shapely.geometry import Polygon
 
 
+WavelengthsPan = namedtuple('WavelengthsPan', 'pan')
 WavelengthsBGR = namedtuple('WavelengthsBGR', 'blue green red')
 WavelengthsRGB = namedtuple('WavelengthsRGB', 'red green blue')
 WavelengthsBGRN = namedtuple('WavelengthsBGRN', 'blue green red nir')
@@ -67,6 +68,7 @@ class DataProperties(object):
                                                swir1=1.65,
                                                thermal=11.45,
                                                swir2=2.22),
+                    l7pan=WavelengthsPan(pan=0.71),
                     l8=WavelengthsL8(coastal=0.44,
                                      blue=0.48,
                                      green=0.56,
@@ -81,6 +83,7 @@ class DataProperties(object):
                                         nir=0.865,
                                         swir1=1.61,
                                         swir2=2.2),
+                    l8pan=WavelengthsPan(pan=0.59),
                     s2=WavelengthsS2(blue=0.49,
                                      green=0.56,
                                      red=0.665,
@@ -139,9 +142,11 @@ class DataProperties(object):
                     l5='Landsat 5 Thematic Mapper (TM)',
                     l7='Landsat 7 Enhanced Thematic Mapper Plus (ETM+) without panchromatic and thermal bands',
                     l7th='Landsat 7 Enhanced Thematic Mapper Plus (ETM+) with thermal band',
+                    l7pan='Landsat 7 panchromatic band',
                     l8='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) without panchromatic and thermal bands',
                     l8l7='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) with 6 Landsat 7-like bands',
                     l8th='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) with thermal band',
+                    l8pan='Landsat 8 panchromatic band',
                     s2='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
                     s2f='Sentinel 2 Multi-Spectral Instrument (MSI) with 3 60m bands (coastal, water vapor, cirrus)',
                     s2l7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
@@ -191,6 +196,7 @@ class DataProperties(object):
                                                swir1=5,
                                                thermal=6,
                                                swir2=7),
+                    l7pan=WavelengthsPan(pan=1),
                     l8=WavelengthsL8(coastal=1,
                                      blue=2,
                                      green=3,
@@ -209,12 +215,13 @@ class DataProperties(object):
                                               cirrus=8,
                                               tirs1=9,
                                               tirs2=10),
-                    l8l7=WavelengthsL57(blue=2,
-                                        green=3,
-                                        red=4,
-                                        nir=5,
-                                        swir1=6,
-                                        swir2=7),
+                    l8l7=WavelengthsL57(blue=1,
+                                        green=2,
+                                        red=3,
+                                        nir=4,
+                                        swir1=5,
+                                        swir2=6),
+                    l8pan=WavelengthsPan(pan=1),
                     s2=WavelengthsS2(blue=1,
                                      green=2,
                                      red=3,

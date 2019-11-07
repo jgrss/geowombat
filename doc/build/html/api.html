@@ -151,7 +151,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.subset.html#geowombat.subset" title="geowombat.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(data[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.clip.html#geowombat.clip" title="geowombat.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(data, df[, query, mask_data])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.clip.html#geowombat.clip" title="geowombat.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(data, df[, query, mask_data, expand_by])</p></td>
 <td><p>Clips a DataArray by vector polygon geometry</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.polygons_to_points.html#geowombat.polygons_to_points" title="geowombat.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
@@ -203,6 +203,9 @@
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.models.predict.html#geowombat.models.predict" title="geowombat.models.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(data, clf[, band_names, outname, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.models.time_to_crffeas.html#geowombat.models.time_to_crffeas" title="geowombat.models.time_to_crffeas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_to_crffeas</span></code></a>()</p></td>
+<td><p>Converts a time-shaped array to CRF features</p></td>
 </tr>
 </tbody>
 </table>
@@ -276,7 +279,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

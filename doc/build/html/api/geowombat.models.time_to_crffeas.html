@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>xarray_to_xdataset &#8212; GeoWombat 1.0.0b documentation</title>
+    <title>time_to_crffeas &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,6 +16,8 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GeoWombatClassifier" href="geowombat.models.GeoWombatClassifier.html" />
+    <link rel="prev" title="predict" href="geowombat.models.predict.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -70,14 +72,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.models.predict.html" title="previous chapter">predict</a></li>
+      <li>Next: <a href="geowombat.models.GeoWombatClassifier.html" title="next chapter">GeoWombatClassifier</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -107,25 +113,22 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="xarray-to-xdataset">
-<h1>xarray_to_xdataset<a class="headerlink" href="#xarray-to-xdataset" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="time-to-crffeas">
+<h1>time_to_crffeas<a class="headerlink" href="#time-to-crffeas" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="geowombat.core.conversion.xarray_to_xdataset">
-<code class="sig-prename descclassname">geowombat.core.conversion.</code><code class="sig-name descname">xarray_to_xdataset</code><span class="sig-paren">(</span><em class="sig-param">data_array</em>, <em class="sig-param">band_names</em>, <em class="sig-param">time_names</em>, <em class="sig-param">ycoords=None</em>, <em class="sig-param">xcoords=None</em>, <em class="sig-param">attrs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.conversion.xarray_to_xdataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts an Xarray DataArray to a Xarray Dataset</p>
+<dt id="geowombat.models.time_to_crffeas">
+<code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">time_to_crffeas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.time_to_crffeas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a time-shaped array to CRF features</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_array</strong> (<em>DataArray</em>) – </p></li>
-<li><p><strong>band_names</strong> (<em>list</em>) – </p></li>
-<li><p><strong>time_names</strong> (<em>list</em>) – </p></li>
-<li><p><strong>ycoords</strong> (<em>1d array-like</em>) – </p></li>
-<li><p><strong>xcoords</strong> (<em>1d array-like</em>) – </p></li>
-<li><p><strong>attrs</strong> (<em>dict</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>data</strong> (<em>4d array</em>) – time x bands x rows x columns.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Dataset</p>
+</dl>
+<p class="rubric">Example</p>
+<p>time_to_features(array, [‘swir1’, ‘swir2’, ‘date-diff’, ‘b-b’])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">list</span></code> of feature dictionaries</p>
 </dd>
 </dl>
 </dd></dl>
@@ -147,7 +150,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.core.conversion.xarray_to_xdataset.rst.txt"
+      <a href="../_sources/api/geowombat.models.time_to_crffeas.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

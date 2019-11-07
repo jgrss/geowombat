@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.0.0b (1 November 2019)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `expand_by` user argument in :func:`geowombat.clip`.
+
 1.0.0b (30 October 2019)
 ------------------------
 

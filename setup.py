@@ -21,8 +21,8 @@ with open('LICENSE.txt') as f:
 
 required_packages = ['cython',
                      'matplotlib',
-                     'GDAL',
                      'pandas',
+		     'gdal',
                      'geopandas',
                      'numpy',
                      'rasterio',
