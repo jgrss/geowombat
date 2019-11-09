@@ -5,7 +5,10 @@ from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
 
+from .. import open as gw_open
+from .. import config as gw_config
 from ..errors import logger
+from ..radiometry import BRDF, RadTransforms, landsat_pixel_angles
 
 import numpy as np
 import pandas as pd
@@ -64,6 +67,157 @@ class GeoDownloads(object):
         self.sentinel_parts = ['s2a']
 
         self.search_dict = dict()
+
+    def download_cube(self, sensors, date_range, geometry, crs, bands, outdir='.'):
+
+        """
+        Downloads a cube
+
+        Args:
+            sensors (str or list): The sensors, or sensor, to download.
+            date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
+            geometry (GeoDataFrame or tuple): The geometry that defines the cube extent.
+            crs (str or object): The output CRS.
+            bands (str or list): The bands to download.
+            outdir (Optional[str]): The output directory.
+        """
+
+        rt = RadTransforms()
+        br = BRDF()
+
+        main_path = Path(outdir)
+        outdir_angles = main_path.joinpath('angles')
+        outdir_brdf = main_path.joinpath('brdf')
+
+        if not main_path.is_dir():
+            main_path.mkdir()
+
+        if not outdir_angles.is_dir():
+            outdir_angles.mkdir()
+
+        if not outdir_brdf.is_dir():
+            outdir_brdf.mkdir()
+
+        gw_bin = os.path.realpath(os.path.dirname(__file__))
+        gw_bin = Path(gw_bin + '../../bin')
+
+        if isinstance(sensors, str):
+            sensors = [sensors]
+
+        # TODO: get path/row and MGRS from geometry
+        location = '21/H/UD' # or '225/083'
+
+        # TODO: get bounds from geometry
+        bounds = (793000.0, 2049000.0, 794000.0, 2050000.0)
+
+        dt1 = datetime.strptime(date_range[0], '%Y-%m-%d')
+        dt2 = datetime.strptime(date_range[1], '%Y-%m-%d')
+
+        year = dt1.year
+        month = dt1.month
+
+        months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+        if month < dt2.month:
+            month_range = months[months.index(month):months.index(dt2.month)]
+        else:
+            month_range = months[months.index(month):] + months[:months.index(dt2.month)]
+
+        while True:
+
+            if year > dt2.year:
+                break
+
+            for m in month_range:
+
+                yearmonth_query = '{:d}{:02d}'.format(year, m)
+
+                for sensor in sensors:
+
+                    if sensor.lower() == 's2':
+                        query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location, YM=yearmonth_query)
+                    else:
+
+                        query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
+                                                                        PATHROW=location.replace('/', ''),
+                                                                        YM=yearmonth_query)
+
+                    self.list_gcp(sensor, query)
+
+                    if sensor.lower() != 's2':
+
+                        del_keys = [k for k, v in self.search_dict.items() if 'gap_mask' in k]
+
+                        for dk in del_keys:
+                            del self.search_dict[dk]
+
+                    # TODO: Landsat pan band example
+                    search_wildcards = ['ANG.txt', 'MTL.txt', 'B8.TIF']
+
+                    file_info = self.download_gcp(sensor,
+                                                  outdir=outdir,
+                                                  search_wildcards=search_wildcards,
+                                                  verbose=1)
+
+                    angle_infos = dict()
+
+                    kwargs = dict(readxsize=1024,
+                                  readysize=1024,
+                                  verbose=1,
+                                  separate=False,
+                                  n_workers=1,
+                                  n_threads=8,
+                                  n_chunks=100,
+                                  overwrite=False)
+
+                    # TODO: subset to geometry and DN -> BRDF
+                    for finfo_key, finfo_dict in file_info.items():
+
+                        meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
+
+                        angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
+                                                          finfo_dict['B8'].name,
+                                                          outdir_angles.as_posix(),
+                                                          meta.sensor,
+                                                          l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
+                                                          l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
+                                                          verbose=1)
+
+                        out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
+
+                        with gw_config.update(sensor=sensor, ref_crs=crs):
+
+                            with gw_open(angle_info.sza, bounds=bounds) as sza, \
+                                    gw_open(angle_info.vza, bounds=bounds) as vza, \
+                                    gw_open(angle_info.saa, bounds=bounds) as saa, \
+                                    gw_open(angle_info.vaa, bounds=bounds) as vaa:
+
+                                # TODO: get bands from user
+                                with gw_open([finfo_dict['B2'].name,
+                                              finfo_dict['B3'].name,
+                                              finfo_dict['B4'].name,
+                                              finfo_dict['B5'].name],
+                                             bounds=bounds,
+                                             stack_dim='band') as dn:
+
+                                    # Convert DN to surface reflectance
+                                    dn_sr = rt.dn_to_sr(dn,
+                                                        sza, saa, vza, vaa,
+                                                        sensor=meta.sensor,
+                                                        meta=meta)
+
+                                    # BRDF normalization
+                                    dn_sr_brdf = br.norm_brdf(dn_sr,
+                                                              sza, saa, vza, vaa,
+                                                              sensor=meta.sensor,
+                                                              wavelengths=dn.band.values.tolist(),
+                                                              nodata=0)
+
+                                    dn_sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                        angle_infos[finfo_key] = angle_info
+
+            year += 1
 
     def list_gcp(self, sensor, query):
 
