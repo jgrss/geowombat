@@ -5,14 +5,20 @@ from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
 
-from .. import open as gw_open
-from .. import config as gw_config
 from ..errors import logger
 from ..radiometry import BRDF, RadTransforms, landsat_pixel_angles
 
+import geowombat as gw
+
 import numpy as np
 import pandas as pd
+import geopandas as gpd
+import shapely
+from shapely.geometry import Polygon
 # import wget
+
+
+shapely.speedups.enable()
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
@@ -68,7 +74,7 @@ class GeoDownloads(object):
 
         self.search_dict = dict()
 
-    def download_cube(self, sensors, date_range, geometry, crs, bands, outdir='.'):
+    def download_cube(self, sensors, date_range, bounds, bands, crs=None, outdir='.'):
 
         """
         Downloads a cube
@@ -76,10 +82,22 @@ class GeoDownloads(object):
         Args:
             sensors (str or list): The sensors, or sensor, to download.
             date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
-            geometry (GeoDataFrame or tuple): The geometry that defines the cube extent.
-            crs (str or object): The output CRS.
+            bounds (GeoDataFrame or tuple): The geometry bounds that define the cube extent. If given as a ``tuple``,
+                the order should be (left, bottom, right, top).
             bands (str or list): The bands to download.
+            crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
+                from the object.
             outdir (Optional[str]): The output directory.
+
+        Examples:
+            >>> from geowombat.util import GeoDownloads
+            >>> gdl = GeoDownloads()
+            >>>
+            >>> gdl.download_cube(['l7'],
+            >>>                   ['2010-01-01', '2010-02-01'],
+            >>>                   (-91.57, 40.37, -91.46, 40.42),
+            >>>                   ['B8'],
+            >>>                   crs="+proj=aea +lat_1=-5 +lat_2=-42 +lat_0=-32 +lon_0=-60 +x_0=0 +y_0=0 +ellps=aust_SA +units=m +no_defs")
         """
 
         rt = RadTransforms()
@@ -99,16 +117,33 @@ class GeoDownloads(object):
             outdir_brdf.mkdir()
 
         gw_bin = os.path.realpath(os.path.dirname(__file__))
-        gw_bin = Path(gw_bin + '../../bin')
+        gw_bin = Path(gw_bin + '/../../bin')
 
         if isinstance(sensors, str):
             sensors = [sensors]
 
-        # TODO: get path/row and MGRS from geometry
-        location = '21/H/UD' # or '225/083'
+        # Get bounds from geometry
+        if isinstance(bounds, tuple):
 
-        # TODO: get bounds from geometry
-        bounds = (793000.0, 2049000.0, 794000.0, 2050000.0)
+            bounds = Polygon([(bounds[0], bounds[3]),
+                              (bounds[2], bounds[3]),
+                              (bounds[2], bounds[1]),
+                              (bounds[0], bounds[1])])
+
+            bounds = gpd.GeoDataFrame([0],
+                                      geometry=[bounds],
+                                      crs={'init': 4326})
+
+        # Get WRS and MGRS file
+        data_bin = os.path.realpath(os.path.dirname(__file__))
+        wrs = Path(data_bin).joinpath('../data/wrs2_descending.shp').as_posix()
+
+        df_wrs = gpd.read_file(wrs)
+        df_wrs = df_wrs[df_wrs.geometry.intersects(bounds.geometry.values[0])]
+
+        if df_wrs.empty:
+            logger.warning('  The geometry bounds is empty.')
+            return
 
         dt1 = datetime.strptime(date_range[0], '%Y-%m-%d')
         dt2 = datetime.strptime(date_range[1], '%Y-%m-%d')
@@ -119,9 +154,9 @@ class GeoDownloads(object):
         months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
         if month < dt2.month:
-            month_range = months[months.index(month):months.index(dt2.month)]
+            month_range = months[months.index(month):months.index(dt2.month)+1]
         else:
-            month_range = months[months.index(month):] + months[:months.index(dt2.month)]
+            month_range = months[months.index(month):] + months[:months.index(dt2.month)+1]
 
         while True:
 
@@ -134,88 +169,99 @@ class GeoDownloads(object):
 
                 for sensor in sensors:
 
+                    # TODO: get path/row and MGRS from geometry
+                    # location = '21/H/UD' # or '225/083'
+
                     if sensor.lower() == 's2':
-                        query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location, YM=yearmonth_query)
+                        locations = list()
                     else:
+                        locations = ['{:03d}/{:03d}'.format(int(dfrow.PATH), int(dfrow.ROW)) for dfi, dfrow in df_wrs.iterrows()]
 
-                        query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
-                                                                        PATHROW=location.replace('/', ''),
-                                                                        YM=yearmonth_query)
+                    for location in locations:
 
-                    self.list_gcp(sensor, query)
+                        if sensor.lower() == 's2':
+                            query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location, YM=yearmonth_query)
+                        else:
 
-                    if sensor.lower() != 's2':
+                            query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
+                                                                            PATHROW=location.replace('/', ''),
+                                                                            YM=yearmonth_query)
 
-                        del_keys = [k for k, v in self.search_dict.items() if 'gap_mask' in k]
+                        self.list_gcp(sensor, query)
 
-                        for dk in del_keys:
-                            del self.search_dict[dk]
+                        if sensor.lower() != 's2':
 
-                    # TODO: Landsat pan band example
-                    search_wildcards = ['ANG.txt', 'MTL.txt', 'B8.TIF']
+                            del_keys = [k for k, v in self.search_dict.items() if 'gap_mask' in k]
 
-                    file_info = self.download_gcp(sensor,
-                                                  outdir=outdir,
-                                                  search_wildcards=search_wildcards,
-                                                  verbose=1)
+                            for dk in del_keys:
+                                del self.search_dict[dk]
 
-                    angle_infos = dict()
+                        if sensor.lower() == 's2':
+                            pass
+                        else:
+                            search_wildcards = ['ANG.txt', 'MTL.txt'] + [bd + '.TIF' for bd in bands]
 
-                    kwargs = dict(readxsize=1024,
-                                  readysize=1024,
-                                  verbose=1,
-                                  separate=False,
-                                  n_workers=1,
-                                  n_threads=8,
-                                  n_chunks=100,
-                                  overwrite=False)
+                        file_info = self.download_gcp(sensor,
+                                                      outdir=outdir,
+                                                      search_wildcards=search_wildcards,
+                                                      verbose=1)
 
-                    # TODO: subset to geometry and DN -> BRDF
-                    for finfo_key, finfo_dict in file_info.items():
+                        angle_infos = dict()
 
-                        meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
+                        kwargs = dict(readxsize=1024,
+                                      readysize=1024,
+                                      verbose=1,
+                                      separate=False,
+                                      n_workers=1,
+                                      n_threads=8,
+                                      n_chunks=100,
+                                      overwrite=False)
 
-                        angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
-                                                          finfo_dict['B8'].name,
-                                                          outdir_angles.as_posix(),
-                                                          meta.sensor,
-                                                          l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
-                                                          l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
-                                                          verbose=1)
+                        for finfo_key, finfo_dict in file_info.items():
 
-                        out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
+                            meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
 
-                        with gw_config.update(sensor=sensor, ref_crs=crs):
+                            angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
+                                                              finfo_dict['B8'].name,
+                                                              outdir_angles.as_posix(),
+                                                              meta.sensor,
+                                                              l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
+                                                              l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
+                                                              verbose=1)
 
-                            with gw_open(angle_info.sza, bounds=bounds) as sza, \
-                                    gw_open(angle_info.vza, bounds=bounds) as vza, \
-                                    gw_open(angle_info.saa, bounds=bounds) as saa, \
-                                    gw_open(angle_info.vaa, bounds=bounds) as vaa:
+                            out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
 
-                                # TODO: get bands from user
-                                with gw_open([finfo_dict['B2'].name,
-                                              finfo_dict['B3'].name,
-                                              finfo_dict['B4'].name,
-                                              finfo_dict['B5'].name],
-                                             bounds=bounds,
-                                             stack_dim='band') as dn:
+                            with gw.config.update(sensor=sensor,
+                                                  ref_bounds=bounds.geometry.values[0],
+                                                  ref_crs=crs):
 
-                                    # Convert DN to surface reflectance
-                                    dn_sr = rt.dn_to_sr(dn,
-                                                        sza, saa, vza, vaa,
-                                                        sensor=meta.sensor,
-                                                        meta=meta)
+                                with gw.open(angle_info.sza) as sza, \
+                                        gw.open(angle_info.vza) as vza, \
+                                        gw.open(angle_info.saa) as saa, \
+                                        gw.open(angle_info.vaa) as vaa:
 
-                                    # BRDF normalization
-                                    dn_sr_brdf = br.norm_brdf(dn_sr,
-                                                              sza, saa, vza, vaa,
-                                                              sensor=meta.sensor,
-                                                              wavelengths=dn.band.values.tolist(),
-                                                              nodata=0)
+                                    # Get bands from user
+                                    load_bands = [finfo_dict[bd].name for bd in bands]
 
-                                    dn_sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                    with gw.open(load_bands,
+                                                 stack_dim='band') as dn:
 
-                        angle_infos[finfo_key] = angle_info
+                                        # Convert DN to surface reflectance
+                                        dn_sr = rt.dn_to_sr(dn,
+                                                            sza, saa, vza, vaa,
+                                                            sensor=meta.sensor,
+                                                            meta=meta)
+
+                                        # BRDF normalization
+                                        dn_sr_brdf = br.norm_brdf(dn_sr,
+                                                                  sza, saa, vza, vaa,
+                                                                  sensor=meta.sensor,
+                                                                  wavelengths=dn.band.values.tolist(),
+                                                                  nodata=0)
+
+                                        dn_sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                            angle_infos[finfo_key] = angle_info
 
             year += 1
 
