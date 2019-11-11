@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.0.0b (10 November 2019)
+-------------------------
+
+New
+~~~
+
+- Added :func:`download_cube` function.
+
 1.0.0b (1 November 2019)
 ------------------------
 

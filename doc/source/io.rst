@@ -201,6 +201,6 @@ as backends, we use the Xarray accessor :func:`to_raster` to write array chunks 
         # Write the data
         dss.gw.to_raster('output.tif',
                          verbose=1,
-                         n_worker=4,    # number of process workers sent to ``concurrent.futures``
-                         n_threads=2,   # number of thread workers sent to ``dask.compute``
-                         n_chunks=200)  # number of window chunks to send as concurrent futures
+                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
+                         n_threads=2,    # number of thread workers sent to ``dask.compute``
+                         n_chunks=200)   # number of window chunks to send as concurrent futures

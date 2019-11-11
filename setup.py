@@ -22,7 +22,7 @@ with open('LICENSE.txt') as f:
 required_packages = ['cython',
                      'matplotlib',
                      'pandas',
-		     'gdal',
+                     'gdal',
                      'geopandas',
                      'numpy',
                      'rasterio',
@@ -57,6 +57,7 @@ def get_package_data():
             'data': ['*.png'],
             'geowombat': ['config.ini',
                           'data/*.tif',
+                          'data/wrs2_descending.*',
                           'moving/*.so']}
 
 

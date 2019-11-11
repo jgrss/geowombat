@@ -38,6 +38,7 @@ Documentation
 * :doc:`config`
 * :doc:`apply`
 * :doc:`radiometry`
+* :doc:`web`
 
 .. toctree::
    :maxdepth: 1
@@ -52,6 +53,7 @@ Documentation
    config
    apply
    radiometry
+   web
 
 **Change Log**
 

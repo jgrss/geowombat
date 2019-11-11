@@ -161,7 +161,7 @@ def get_geometry_info(geometry, res):
 
     Args:
         geometry (object): A `shapely.geometry` object.
-        res (float): The cell resolution for the affine transform.
+        res (tuple): The cell resolution for the affine transform.
 
     Returns:
         Geometry information (namedtuple)
@@ -170,14 +170,14 @@ def get_geometry_info(geometry, res):
     GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
     minx, miny, maxx, maxy = geometry.bounds
-    out_shape = (int((maxy - miny) / res), int((maxx - minx) / res))
+    out_shape = (int((maxy - miny) / res[1]), int((maxx - minx) / res[0]))
 
     return GeomInfo(left=minx,
                     bottom=miny,
                     right=maxx,
                     top=maxy,
                     shape=out_shape,
-                    affine=Affine(res, 0.0, minx, 0.0, -res, maxy))
+                    affine=Affine(res[0], 0.0, minx, 0.0, -res[1], maxy))
 
 
 def get_file_extension(filename):
@@ -331,7 +331,7 @@ class MapProcesses(object):
                             attrs=attrs)
 
 
-def rasterize_geometry(fid, geom, crs, res, all_touched, meta, frac):
+def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=None):
 
     # Get the feature's bounding extent
     geom_info = get_geometry_info(geom, res)
@@ -339,22 +339,24 @@ def rasterize_geometry(fid, geom, crs, res, all_touched, meta, frac):
     if min(geom_info.shape) == 0:
         return gpd.GeoDataFrame([])
 
-    # "Rasterize" the geometry into a NumPy array
-    feature_array = features.rasterize([geom],
-                                       out_shape=geom_info.shape,
-                                       fill=0,
-                                       out=None,
-                                       transform=geom_info.affine,
-                                       all_touched=all_touched,
-                                       default_value=1,
-                                       dtype='int32')
+    if not isinstance(feature_array, np.ndarray):
+    
+        # "Rasterize" the geometry into a NumPy array
+        feature_array = features.rasterize([geom],
+                                           out_shape=geom_info.shape,
+                                           fill=0,
+                                           out=None,
+                                           transform=geom_info.affine,
+                                           all_touched=all_touched,
+                                           default_value=1,
+                                           dtype='int32')
 
     # Get the indices of the feature's envelope
     valid_samples = np.where(feature_array == 1)
 
     # Convert the indices to map indices
-    y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.top)) / res)
-    x_samples = valid_samples[1] + int(round(abs(geom_info.left - meta.left)) / res)
+    y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.top)) / res[1])
+    x_samples = valid_samples[1] + int(round(abs(geom_info.left - meta.left)) / res[0])
 
     # Convert the map indices to map coordinates
     x_coords, y_coords = meta.affine * (x_samples, y_samples)
@@ -562,13 +564,13 @@ class Converters(object):
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]
 
-                point_df = rasterize_geometry(dfrow[id_column],
-                                              dfrow.geometry,
-                                              data.crs,
-                                              data.res[0],
-                                              all_touched,
-                                              meta,
-                                              frac)
+                point_df = sample_feature(dfrow[id_column],
+                                          dfrow.geometry,
+                                          data.crs,
+                                          data.res,
+                                          all_touched,
+                                          meta,
+                                          frac)
 
                 if not point_df.empty:
                     dataframes.append(point_df)

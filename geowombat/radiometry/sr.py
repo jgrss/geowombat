@@ -213,16 +213,22 @@ class LinearAdjustments(object):
                                                              red=-0.0022,
                                                              nir=-0.0021,
                                                              swir1=-0.003,
-                                                             swir2=0.0029),
+                                                             swir2=0.0029,
+                                                             pan=-0.00443),
                                                  betas=dict(blue=0.9785,
                                                             green=0.9542,
                                                             red=0.9825,
                                                             nir=1.0073,
                                                             swir1=1.0171,
-                                                            swir2=0.9949)),
+                                                            swir2=0.9949,
+                                                            pan=0.9717)),
                                          s2=None))
 
-    def bandpass(self, data, sensor=None, to='l8', band_names=None):
+    def bandpass(self,
+                 data,
+                 sensor=None,
+                 to='l8',
+                 band_names=None):
 
         """
         Applies a bandpass adjustment by applying a linear function to surface reflectance values
@@ -283,7 +289,7 @@ class LinearAdjustments(object):
                              dims='band')
 
         # Apply the linear bandpass adjustment
-        data = alphas + betas*data
+        data = alphas + betas * data
 
         data.attrs['adjustment'] = '{} to {}'.format(sensor, to)
         data.attrs['alphas'] = alphas.data.compute().tolist()

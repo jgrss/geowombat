@@ -6,7 +6,7 @@ from datetime import datetime
 from collections import namedtuple
 
 from ..errors import logger
-from ..radiometry import BRDF, RadTransforms, landsat_pixel_angles
+from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles
 
 import geowombat as gw
 
@@ -69,39 +69,103 @@ class GeoDownloads(object):
 
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
 
-        self.landsat_parts = ['le07', 'lt05', 'lc08']
+        self.landsat_parts = ['lt05', 'le07', 'lc08']
         self.sentinel_parts = ['s2a']
+
+        self.associations = dict(l7=dict(blue=1,
+                                         green=2,
+                                         red=3,
+                                         nir=4,
+                                         swir1=5,
+                                         thermal=6,
+                                         swir2=7,
+                                         pan=8),
+                                 l8=dict(coastal=1,
+                                         blue=2,
+                                         green=3,
+                                         red=4,
+                                         nir=5,
+                                         swir1=6,
+                                         swir2=7,
+                                         cirrus=8,
+                                         tirs1=9,
+                                         tirs2=10,
+                                         pan=11),
+                                 s2=dict(blue=1,
+                                         green=2,
+                                         red=3,
+                                         nir1=4,
+                                         nir2=5,
+                                         nir3=6,
+                                         nir=7,
+                                         rededge=8,
+                                         swir1=9,
+                                         swir2=10))
 
         self.search_dict = dict()
 
-    def download_cube(self, sensors, date_range, bounds, bands, crs=None, outdir='.'):
+    def download_cube(self,
+                      sensors,
+                      date_range,
+                      bounds,
+                      bands,
+                      crs=None,
+                      outdir='.',
+                      **kwargs):
 
         """
-        Downloads a cube
+        Downloads a cube of Landsat and/or Sentinel 2 imagery
 
         Args:
             sensors (str or list): The sensors, or sensor, to download.
             date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
-            bounds (GeoDataFrame or tuple): The geometry bounds that define the cube extent. If given as a ``tuple``,
+            bounds (GeoDataFrame or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent.
+                If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used. If given as a ``tuple``,
                 the order should be (left, bottom, right, top).
-            bands (str or list): The bands to download.
+            bands (str or list): The bands to download, in format 'B#'.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             outdir (Optional[str]): The output directory.
+            kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
             >>> from geowombat.util import GeoDownloads
             >>> gdl = GeoDownloads()
             >>>
+            >>> # Download a Landsat 7 panchromatic cube
             >>> gdl.download_cube(['l7'],
             >>>                   ['2010-01-01', '2010-02-01'],
             >>>                   (-91.57, 40.37, -91.46, 40.42),
-            >>>                   ['B8'],
+            >>>                   ['pan'],
             >>>                   crs="+proj=aea +lat_1=-5 +lat_2=-42 +lat_0=-32 +lon_0=-60 +x_0=0 +y_0=0 +ellps=aust_SA +units=m +no_defs")
+            >>>
+            >>> # Download a Landsat 7, 8 and Sentinel 2 cube of the visible spectrum
+            >>> gdl.download_cube(['l7', 'l8', 's2'],
+            >>>                   ['2017-01-01', '2018-01-01'],
+            >>>                   (-91.57, 40.37, -91.46, 40.42),
+            >>>                   ['blue', 'green', 'red'],
+            >>>                   crs={'init': 'epsg:102033'},
+            >>>                   readxsize=1024,
+            >>>                   readysize=1024,
+            >>>                   n_workers=1,
+            >>>                   n_threads=8)
         """
+
+        # TODO: parameterize
+        # kwargs = dict(readxsize=1024,
+        #               readysize=1024,
+        #               verbose=1,
+        #               separate=False,
+        #               n_workers=1,
+        #               n_threads=8,
+        #               n_chunks=100,
+        #               overwrite=False)
+
+        angle_infos = dict()
 
         rt = RadTransforms()
         br = BRDF()
+        la = LinearAdjustments()
 
         main_path = Path(outdir)
         outdir_angles = main_path.joinpath('angles')
@@ -132,14 +196,18 @@ class GeoDownloads(object):
 
             bounds = gpd.GeoDataFrame([0],
                                       geometry=[bounds],
-                                      crs={'init': 4326})
+                                      crs={'init': 'epsg:4326'})
 
-        # Get WRS and MGRS file
+        bounds_object = bounds.geometry.values[0]
+
+        # TODO: get MGRS file
+
+        # Get WRS file
         data_bin = os.path.realpath(os.path.dirname(__file__))
         wrs = Path(data_bin).joinpath('../data/wrs2_descending.shp').as_posix()
 
         df_wrs = gpd.read_file(wrs)
-        df_wrs = df_wrs[df_wrs.geometry.intersects(bounds.geometry.values[0])]
+        df_wrs = df_wrs[df_wrs.geometry.intersects(bounds_object)]
 
         if df_wrs.empty:
             logger.warning('  The geometry bounds is empty.')
@@ -169,70 +237,117 @@ class GeoDownloads(object):
 
                 for sensor in sensors:
 
+                    band_associations = self.associations[sensor]
+
                     # TODO: get path/row and MGRS from geometry
                     # location = '21/H/UD' # or '225/083'
 
                     if sensor.lower() == 's2':
+                        # TODO: get MGRS grid name from file
                         locations = list()
                     else:
-                        locations = ['{:03d}/{:03d}'.format(int(dfrow.PATH), int(dfrow.ROW)) for dfi, dfrow in df_wrs.iterrows()]
+
+                        locations = ['{:03d}/{:03d}'.format(int(dfrow.PATH), int(dfrow.ROW))
+                                     for dfi, dfrow in df_wrs.iterrows()]
 
                     for location in locations:
 
                         if sensor.lower() == 's2':
-                            query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location, YM=yearmonth_query)
+
+                            query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location,
+                                                                              YM=yearmonth_query)
+
                         else:
 
                             query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
                                                                             PATHROW=location.replace('/', ''),
                                                                             YM=yearmonth_query)
 
+                        # Query and list available files on the GCP
                         self.list_gcp(sensor, query)
 
-                        if sensor.lower() != 's2':
+                        # Download data
+                        if sensor.lower() == 's2':
+
+                            load_bands = sorted(['B{:02d}'.format(band_associations[bd]) for bd in bands])
+
+                            for k, v in self.search_dict.items():
+
+                                if k.endswith('AUX_DATA') or k.endswith('QI_DATA'):
+                                    pass
+                                elif k.endswith('IMG_DATA'):
+
+                                    search_wildcards = [bd + '.jp2' for bd in load_bands]
+
+                                    file_info = self.download_gcp(sensor,
+                                                                  outdir=outdir,
+                                                                  search_wildcards=search_wildcards,
+                                                                  verbose=1)
+
+                                    ref_file = file_info[search_wildcards[0]].name
+
+                                else:
+
+                                    search_wildcards = ['MTD_TL.xml']
+
+                                    file_info = self.download_gcp(sensor,
+                                                                  outdir=outdir,
+                                                                  search_wildcards=search_wildcards,
+                                                                  verbose=1)
+
+                                    meta_file = file_info['meta'].name
+
+                        else:
 
                             del_keys = [k for k, v in self.search_dict.items() if 'gap_mask' in k]
 
                             for dk in del_keys:
                                 del self.search_dict[dk]
 
-                        if sensor.lower() == 's2':
-                            pass
-                        else:
-                            search_wildcards = ['ANG.txt', 'MTL.txt'] + [bd + '.TIF' for bd in bands]
+                            load_bands = sorted(['B{:d}'.format(band_associations[bd]) for bd in bands])
 
-                        file_info = self.download_gcp(sensor,
-                                                      outdir=outdir,
-                                                      search_wildcards=search_wildcards,
-                                                      verbose=1)
+                            # TODO: add QA band?
+                            search_wildcards = ['ANG.txt', 'MTL.txt'] + [bd + '.TIF' for bd in load_bands]
 
-                        angle_infos = dict()
+                            file_info = self.download_gcp(sensor,
+                                                          outdir=outdir,
+                                                          search_wildcards=search_wildcards,
+                                                          verbose=1)
 
-                        kwargs = dict(readxsize=1024,
-                                      readysize=1024,
-                                      verbose=1,
-                                      separate=False,
-                                      n_workers=1,
-                                      n_threads=8,
-                                      n_chunks=100,
-                                      overwrite=False)
+                            ref_file = file_info[search_wildcards[-1]].name
 
+                        # Create pixel angle files
                         for finfo_key, finfo_dict in file_info.items():
 
-                            meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
+                            if sensor.lower() == 's2':
 
-                            angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
-                                                              finfo_dict['B8'].name,
-                                                              outdir_angles.as_posix(),
-                                                              meta.sensor,
-                                                              l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
-                                                              l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
-                                                              verbose=1)
+                                angle_info = sentinel_pixel_angles(meta_file,
+                                                                   ref_file,
+                                                                   outdir_angles.as_posix(),
+                                                                   nodata=-32768,
+                                                                   overwrite=False,
+                                                                   verbose=1)
+
+                                rad_sensor = 's2'
+                                
+                            else:
+
+                                meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
+
+                                angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
+                                                                  ref_file,
+                                                                  outdir_angles.as_posix(),
+                                                                  meta.sensor,
+                                                                  l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
+                                                                  l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
+                                                                  verbose=1)
+
+                                rad_sensor = meta.sensor
 
                             out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
 
                             with gw.config.update(sensor=sensor,
-                                                  ref_bounds=bounds.geometry.values[0],
+                                                  ref_bounds=bounds_object,
                                                   ref_crs=crs):
 
                                 with gw.open(angle_info.sza) as sza, \
@@ -240,26 +355,48 @@ class GeoDownloads(object):
                                         gw.open(angle_info.saa) as saa, \
                                         gw.open(angle_info.vaa) as vaa:
 
-                                    # Get bands from user
-                                    load_bands = [finfo_dict[bd].name for bd in bands]
+                                    # Get band names from user
+                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
-                                    with gw.open(load_bands,
-                                                 stack_dim='band') as dn:
+                                    with gw.open(load_bands_names,
+                                                 band_names=bands,
+                                                 stack_dim='band') as data:
 
-                                        # Convert DN to surface reflectance
-                                        dn_sr = rt.dn_to_sr(dn,
-                                                            sza, saa, vza, vaa,
-                                                            sensor=meta.sensor,
-                                                            meta=meta)
+                                        if sensor.lower() == 's2':
+
+                                            # The S-2 data are in TOAR (0-10000)
+                                            toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
+                                            toar_scaled.attrs = data.attrs.copy()
+
+                                            # Convert TOAR to surface reflectance
+                                            sr = rt.toar_to_sr(toar_scaled,
+                                                               sza, saa, vza, vaa,
+                                                               sensor)
+
+                                        else:
+
+                                            # Convert DN to surface reflectance
+                                            sr = rt.dn_to_sr(data,
+                                                             sza, saa, vza, vaa,
+                                                             sensor=rad_sensor,
+                                                             meta=meta)
 
                                         # BRDF normalization
-                                        dn_sr_brdf = br.norm_brdf(dn_sr,
-                                                                  sza, saa, vza, vaa,
-                                                                  sensor=meta.sensor,
-                                                                  wavelengths=dn.band.values.tolist(),
-                                                                  nodata=0)
+                                        sr_brdf = br.norm_brdf(sr,
+                                                               sza, saa, vza, vaa,
+                                                               sensor=rad_sensor,
+                                                               wavelengths=data.band.values.tolist(),
+                                                               nodata=0)
 
-                                        dn_sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                        # TODO: get Sentinel 2 a or b
+                                        if sensor.lower() in ['l5', 'l7', 's2']:
+
+                                            # Linear adjust to Landsat 8
+                                            sr_brdf = la.bandpass(sr_brdf, sensor, to='l8')
+
+                                        # TODO: mask?
+
+                                        sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
