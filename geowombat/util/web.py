@@ -6,13 +6,14 @@ from datetime import datetime
 from collections import namedtuple
 
 from ..errors import logger
-from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles
+from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 
 import geowombat as gw
 
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+import xarray as xr
 import shapely
 from shapely.geometry import Polygon
 # import wget
@@ -306,15 +307,14 @@ class GeoDownloads(object):
 
                             load_bands = sorted(['B{:d}'.format(band_associations[bd]) for bd in bands])
 
-                            # TODO: add QA band?
-                            search_wildcards = ['ANG.txt', 'MTL.txt'] + [bd + '.TIF' for bd in load_bands]
+                            search_wildcards = ['ANG.txt', 'MTL.txt', 'BQA.TIF'] + [bd + '.TIF' for bd in load_bands]
 
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
                                                           search_wildcards=search_wildcards,
                                                           verbose=1)
 
-                            ref_file = file_info[search_wildcards[-1]].name
+                            ref_file = file_info[list(file_info.keys())[0]][load_bands[0]].name
 
                         # Create pixel angle files
                         for finfo_key, finfo_dict in file_info.items():
@@ -360,7 +360,18 @@ class GeoDownloads(object):
 
                                     with gw.open(load_bands_names,
                                                  band_names=bands,
-                                                 stack_dim='band') as data:
+                                                 stack_dim='band') as data, \
+                                            gw.open(finfo_dict['qa'].name) as qa:
+
+                                        # Setup the mask
+                                        if sensor.lower() != 's2':
+
+                                            if sensor.lower() == 'l8':
+                                                qa_sensor = 'l8-c1'
+                                            else:
+                                                qa_sensor = 'l-c1'
+
+                                        mask = QAMasker(qa, qa_sensor, mask_items=['cloud', 'shadow']).to_mask()
 
                                         if sensor.lower() == 's2':
 
@@ -394,7 +405,8 @@ class GeoDownloads(object):
                                             # Linear adjust to Landsat 8
                                             sr_brdf = la.bandpass(sr_brdf, sensor, to='l8')
 
-                                        # TODO: mask?
+                                        # mask non-clear pixels
+                                        sr_brdf = xr.where(mask < 2, sr_brdf, 0)
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
@@ -568,6 +580,8 @@ class GeoDownloads(object):
                     key = 'meta'
                 elif down_file.endswith('MTD_TL.xml'):
                     key = 'meta'
+                elif down_file.endswith('BQA.TIF'):
+                    key = 'qa'
                 else:
                     key = down_file.split('_')[-1].split('.')[0]
 
