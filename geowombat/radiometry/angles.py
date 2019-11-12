@@ -3,6 +3,7 @@ from pathlib import Path
 import fnmatch
 import subprocess
 from collections import namedtuple
+import tarfile
 # import datetime
 # from datetime import datetime as dtime
 
@@ -417,8 +418,8 @@ def landsat_pixel_angles(angles_file,
                          ref_file,
                          outdir,
                          sensor,
-                         l57_angles_path='.',
-                         l8_angles_path='.',
+                         l57_angles_path=None,
+                         l8_angles_path=None,
                          verbose=0):
 
     """
@@ -436,6 +437,21 @@ def landsat_pixel_angles(angles_file,
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
+
+    if not l57_angles_path:
+
+        gw_bin = os.path.realpath(os.path.dirname(__file__))
+
+        gw_out = os.path.realpath(Path(gw_bin).joinpath('../bin').as_posix())
+        gw_tar = os.path.realpath(Path(gw_bin).joinpath('../bin/ESPA.tar.gz').as_posix())
+
+        if not Path(gw_bin).joinpath('../bin/ESPA').is_dir():
+
+            with tarfile.open(gw_tar, mode='r:gz') as tf:
+                tf.extractall(gw_out)
+
+        l57_angles_path = Path(gw_out).joinpath('ESPA/landsat_angles').as_posix()
+        l8_angles_path = Path(gw_out).joinpath('ESPA/l8_angles').as_posix()
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
 
@@ -465,7 +481,7 @@ def landsat_pixel_angles(angles_file,
         # Setup the command.
         if sensor.lower() in ['l5', 'l7']:
 
-            angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles'),
+            angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles').as_posix(),
                                                              META=angles_file)
 
             # 1=zenith, 2=azimuth
@@ -474,7 +490,7 @@ def landsat_pixel_angles(angles_file,
 
         else:
 
-            angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles'),
+            angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles').as_posix(),
                                                                          META=angles_file)
 
             # 1=azimuth, 2=zenith

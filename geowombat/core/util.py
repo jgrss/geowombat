@@ -170,6 +170,10 @@ def get_geometry_info(geometry, res):
     GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
     minx, miny, maxx, maxy = geometry.bounds
+
+    if isinstance(minx, str):
+        minx, miny, maxx, maxy = geometry.bounds.values[0]
+
     out_shape = (int((maxy - miny) / res[1]), int((maxx - minx) / res[0]))
 
     return GeomInfo(left=minx,

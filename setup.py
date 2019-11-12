@@ -58,7 +58,8 @@ def get_package_data():
             'geowombat': ['config.ini',
                           'data/*.tif',
                           'data/wrs2_descending.*',
-                          'moving/*.so']}
+                          'moving/*.so',
+                          'bin/*.tar.gz']}
 
 
 def get_extensions():

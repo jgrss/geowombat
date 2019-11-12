@@ -1,4 +1,5 @@
 import os
+import shutil
 import fnmatch
 import subprocess
 from pathlib import Path
@@ -88,10 +89,10 @@ class GeoDownloads(object):
                                          nir=5,
                                          swir1=6,
                                          swir2=7,
-                                         cirrus=8,
-                                         tirs1=9,
-                                         tirs2=10,
-                                         pan=11),
+                                         pan=8,
+                                         cirrus=9,
+                                         tirs1=10,
+                                         tirs2=11),
                                  s2=dict(blue=1,
                                          green=2,
                                          red=3,
@@ -181,9 +182,6 @@ class GeoDownloads(object):
         if not outdir_brdf.is_dir():
             outdir_brdf.mkdir()
 
-        gw_bin = os.path.realpath(os.path.dirname(__file__))
-        gw_bin = Path(gw_bin + '/../../bin')
-
         if isinstance(sensors, str):
             sensors = [sensors]
 
@@ -200,6 +198,11 @@ class GeoDownloads(object):
                                       crs={'init': 'epsg:4326'})
 
         bounds_object = bounds.geometry.values[0]
+        bounds_proj = bounds.to_crs(crs)
+        bounds_info = bounds_proj.geometry.bounds.values[0].tolist()
+
+        # BoundsInfo = namedtuple('BoundsInfo', 'left bottom right top')
+        # bounds_info = BoundsInfo(left=left, bottom=bottom, right=right, top=top)
 
         # TODO: get MGRS file
 
@@ -266,6 +269,10 @@ class GeoDownloads(object):
 
                         # Query and list available files on the GCP
                         self.list_gcp(sensor, query)
+
+                        if not self.search_dict:
+                            logger.warning('  No results found for {} at location {}.'.format(sensor, location))
+                            continue
 
                         # Download data
                         if sensor.lower() == 's2':
@@ -338,30 +345,30 @@ class GeoDownloads(object):
                                                                   ref_file,
                                                                   outdir_angles.as_posix(),
                                                                   meta.sensor,
-                                                                  l57_angles_path=gw_bin.joinpath('/ESPA/landsat_angles').as_posix(),
-                                                                  l8_angles_path=gw_bin.joinpath('/ESPA/l8_angles').as_posix(),
                                                                   verbose=1)
 
                                 rad_sensor = meta.sensor
 
                             out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
 
+                            # Get band names from user
+                            load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+
                             with gw.config.update(sensor=sensor,
-                                                  ref_bounds=bounds_object,
-                                                  ref_crs=crs):
+                                                  ref_bounds=bounds_info,
+                                                  ref_crs=crs,
+                                                  ref_res=(15, 15)):    # load_bands_names[0]
 
-                                with gw.open(angle_info.sza) as sza, \
-                                        gw.open(angle_info.vza) as vza, \
-                                        gw.open(angle_info.saa) as saa, \
-                                        gw.open(angle_info.vaa) as vaa:
-
-                                    # Get band names from user
-                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                with gw.open(angle_info.sza, band_names=['sza']) as sza, \
+                                        gw.open(angle_info.vza, band_names=['vza']) as vza, \
+                                        gw.open(angle_info.saa, band_names=['saa']) as saa, \
+                                        gw.open(angle_info.vaa, band_names=['vaa']) as vaa:
 
                                     with gw.open(load_bands_names,
                                                  band_names=bands,
                                                  stack_dim='band') as data, \
-                                            gw.open(finfo_dict['qa'].name) as qa:
+                                            gw.open(finfo_dict['qa'].name,
+                                                    band_names=['qa']) as qa:
 
                                         # Setup the mask
                                         if sensor.lower() != 's2':
@@ -411,6 +418,15 @@ class GeoDownloads(object):
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                             angle_infos[finfo_key] = angle_info
+
+                            import ipdb
+                            ipdb.set_trace()
+
+                            shutil.rmtree(outdir_angles)
+
+                            # TODO: make the angles directory unique
+                            if not outdir_angles.is_dir():
+                                outdir_angles.mkdir()
 
             year += 1
 
