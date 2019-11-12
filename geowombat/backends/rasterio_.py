@@ -427,23 +427,23 @@ def warp(filename,
 
         left, bottom, right, top = bounds
 
-        dst_height = (top - bottom) / abs(res[1])
-        dst_width = (right - left) / abs(res[0])
+        dst_height = int((top - bottom) / abs(res[1]))
+        dst_width = int((right - left) / abs(res[0]))
 
         # Output image transform
         dst_transform = Affine(res[0], 0.0, left, 0.0, -res[1], top)
 
-        if src.crs != crs:
-
-            dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
-                                                                               crs,
-                                                                               src.width,
-                                                                               src.height,
-                                                                               *src.bounds,
-                                                                               dst_width=src.width,
-                                                                               dst_height=src.height)
-
-            res = (dst_transform[0], -dst_transform[4])
+        # if src.crs != crs:
+        #
+        #     dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
+        #                                                                        crs,
+        #                                                                        src.width,
+        #                                                                        src.height,
+        #                                                                        *src.bounds,
+        #                                                                        dst_width=src.width,
+        #                                                                        dst_height=src.height)
+        #
+        #     res = (dst_transform[0], -dst_transform[4])
 
         # Do not warp if all the key metadata match the reference information
         if (src.bounds == bounds) and (src.res == res) and (src.crs == crs) and (src.width == dst_width) and (src.height == dst_height):

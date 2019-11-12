@@ -200,7 +200,7 @@ class GeoDownloads(object):
 
         bounds_object = bounds.geometry.values[0]
         bounds_proj = bounds.to_crs(crs)
-        bounds_info = bounds_proj.geometry.bounds.values[0].tolist()
+        bounds_info = bounds_proj.bounds.values[0].tolist()
 
         # BoundsInfo = namedtuple('BoundsInfo', 'left bottom right top')
         # bounds_info = BoundsInfo(left=left, bottom=bottom, right=right, top=top)
