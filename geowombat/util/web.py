@@ -1,6 +1,7 @@
 import os
 import shutil
 import fnmatch
+import tarfile
 import subprocess
 from pathlib import Path
 from datetime import datetime
@@ -208,7 +209,17 @@ class GeoDownloads(object):
 
         # Get WRS file
         data_bin = os.path.realpath(os.path.dirname(__file__))
-        wrs = Path(data_bin).joinpath('../data/wrs2_descending.shp').as_posix()
+
+        wrs_dir = Path(data_bin).joinpath('../data')
+        wrs_tar = Path(wrs_dir).joinpath('wrs2.tar.gz')
+        wrs_path = Path(wrs_dir).joinpath('wrs2_descending.shp')
+
+        wrs = os.path.realpath(wrs_path.as_posix())
+
+        if not wrs_path.is_file():
+
+            with tarfile.open(os.path.realpath(wrs_tar.as_posix()), mode='r:gz') as tf:
+                tf.extractall(wrs_dir)
 
         df_wrs = gpd.read_file(wrs)
         df_wrs = df_wrs[df_wrs.geometry.intersects(bounds_object)]

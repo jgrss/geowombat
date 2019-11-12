@@ -57,7 +57,7 @@ def get_package_data():
             'data': ['*.png'],
             'geowombat': ['config.ini',
                           'data/*.tif',
-                          'data/wrs2_descending.*',
+                          'data/*.tar.gz',
                           'moving/*.so',
                           'bin/*.tar.gz']}
 
