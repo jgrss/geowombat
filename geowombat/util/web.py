@@ -533,10 +533,12 @@ class GeoDownloads(object):
         else:
             gcp_str = 'gsutil ls -r gs://gcp-public-data-landsat'
 
+        # 'gsutil ls -r gs://gcp-public-data-landsat/LC08/01/024/032/*024032_201803*_T*'
+
         gsutil_str = '{GSUTIL}/{COLLECTION}/{QUERY}'.format(GSUTIL=gcp_str,
                                                             COLLECTION=gcp_dict[sensor],
                                                             QUERY=query)
-        
+
         proc = subprocess.Popen(gsutil_str,
                                 stdout=subprocess.PIPE,
                                 shell=True)
