@@ -5,6 +5,7 @@ from collections import namedtuple
 from ..errors import logger
 
 import rasterio as rio
+from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
@@ -315,7 +316,13 @@ def get_file_bounds(filenames,
         return bounds_transform, bounds_width, bounds_height
 
 
-def union(filenames, crs=None, res=None, resampling='nearest'):
+def union(filenames,
+          crs=None,
+          res=None,
+          nodata=0,
+          resampling='nearest',
+          warp_mem_limit=512,
+          num_threads=1):
 
     """
     Transforms a list of images to the union of all the files
@@ -324,8 +331,11 @@ def union(filenames, crs=None, res=None, resampling='nearest'):
         filenames (list): The file names to mosaic.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
+        nodata (Optional[int or float]): The 'no data' value.
         resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
+        num_threads (Optional[int]): The number of warp worker threads.
 
     Returns:
         ``list`` of ``rasterio.vrt.WarpedVRT`` objects
@@ -349,9 +359,10 @@ def union(filenames, crs=None, res=None, resampling='nearest'):
                    'transform': dst_transform,
                    'height': dst_height,
                    'width': dst_width,
-                   'nodata': 0,
-                   'warp_mem_limit': 512,
-                   'warp_extras': {'multi': True}}
+                   'nodata': nodata,
+                   'warp_mem_limit': warp_mem_limit,
+                   'warp_extras': {'multi': True,
+                                   'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
 
     vrt_list = list()
 
@@ -395,7 +406,8 @@ def warp(filename,
          crs=None,
          res=None,
          nodata=0,
-         warp_mem_limit=512):
+         warp_mem_limit=512,
+         num_threads=1):
 
     """
     Warps an image to a VRT object
@@ -409,6 +421,7 @@ def warp(filename,
         res (Optional[tuple]): The cell resolution to warp to.
         nodata (Optional[int or float]): The 'no data' value.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
+        num_threads (Optional[int]): The number of warp worker threads.
 
     Returns:
         ``rasterio.vrt.WarpedVRT``
@@ -416,37 +429,58 @@ def warp(filename,
 
     with rio.open(filename) as src:
 
-        if not bounds:
-            bounds = src.bounds
+        if res:
+            dst_res = res
+        else:
+            dst_res = src.res
 
-        if not crs:
-            crs = src.crs
+        if crs:
 
-        if not res:
-            res = src.res
+            if isinstance(crs, int):
+                dst_crs = CRS.from_epsg(crs)
+            elif isinstance(crs, dict):
+                dst_crs = CRS.from_dict(crs)
+            elif isinstance(crs, str):
 
-        left, bottom, right, top = bounds
+                if crs.startswith('+proj'):
+                    dst_crs = CRS.from_proj4(crs)
+                else:
+                    dst_crs = CRS.from_string(crs)
 
-        dst_height = int((top - bottom) / abs(res[1]))
-        dst_width = int((right - left) / abs(res[0]))
+            else:
+                logger.exception('  The CRS was not understood.')
 
-        # Output image transform
-        dst_transform = Affine(res[0], 0.0, left, 0.0, -res[1], top)
+        else:
+            dst_crs = src.crs
 
-        # if src.crs != crs:
-        #
-        #     dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
-        #                                                                        crs,
-        #                                                                        src.width,
-        #                                                                        src.height,
-        #                                                                        *src.bounds,
-        #                                                                        dst_width=src.width,
-        #                                                                        dst_height=src.height)
-        #
-        #     res = (dst_transform[0], -dst_transform[4])
+        dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
+                                                                           dst_crs,
+                                                                           src.width,
+                                                                           src.height,
+                                                                           left=src.bounds.left,
+                                                                           bottom=src.bounds.bottom,
+                                                                           right=src.bounds.right,
+                                                                           top=src.bounds.top,
+                                                                           resolution=dst_res)
+
+        # Check if the data need to be subset
+        if bounds:
+
+            left, bottom, right, top = bounds
+
+            # Keep the CRS but subset the data
+            dst_transform, dst_width, dst_height = calculate_default_transform(dst_crs,
+                                                                               dst_crs,
+                                                                               dst_width,
+                                                                               dst_height,
+                                                                               left=left,
+                                                                               bottom=bottom,
+                                                                               right=right,
+                                                                               top=top,
+                                                                               resolution=dst_res)
 
         # Do not warp if all the key metadata match the reference information
-        if (src.bounds == bounds) and (src.res == res) and (src.crs == crs) and (src.width == dst_width) and (src.height == dst_height):
+        if (src.bounds == bounds) and (src.res == dst_res) and (src.crs == dst_crs) and (src.width == dst_width) and (src.height == dst_height):
             output = filename
         else:
 
@@ -454,18 +488,17 @@ def warp(filename,
             dst_transform, dst_width, dst_height = aligned_target(dst_transform,
                                                                   dst_width,
                                                                   dst_height,
-                                                                  res)
+                                                                  dst_res)
 
             vrt_options = {'resampling': getattr(Resampling, resampling),
-                           'crs': crs,
+                           'crs': dst_crs,
                            'transform': dst_transform,
                            'height': dst_height,
                            'width': dst_width,
                            'nodata': nodata,
                            'warp_mem_limit': warp_mem_limit,
-                           'warp_extras': {'multi': True}}
-
-            # 'warp_extras': {'warp_option': 'NUM_THREADS=ALL_CPUS'}
+                           'warp_extras': {'multi': True,
+                                           'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
 
             with WarpedVRT(src, **vrt_options) as vrt:
                 output = vrt
