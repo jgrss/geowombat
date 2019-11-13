@@ -195,6 +195,13 @@ class GeoDownloads(object):
         if isinstance(sensors, str):
             sensors = [sensors]
 
+        status = Path(outdir).joinpath('status.txt')
+
+        if not status.is_file():
+
+            with open(status.as_posix(), mode='w') as tx:
+                pass
+
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
 
@@ -353,7 +360,13 @@ class GeoDownloads(object):
                             if os.path.isfile(out_brdf):
                                 continue
 
-                            outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
+                            with open(status.as_posix(), mode='r') as tx:
+                                lines = tx.readlines()
+
+                            if finfo_dict['meta'].name + '\n' in lines:
+                                continue
+
+                            outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             if not outdir_angles.is_dir():
                                 outdir_angles.mkdir()
@@ -468,6 +481,11 @@ class GeoDownloads(object):
 
                             for k, v in finfo_dict.items():
                                 os.remove(v.name)
+
+                            lines.append(finfo_dict['meta'].name + '\n')
+
+                            with open(status.as_posix(), mode='r+') as tx:
+                                tx.writelines(lines)
 
             year += 1
 

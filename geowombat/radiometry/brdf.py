@@ -2057,6 +2057,8 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
         else:
             data = xr.where(solar_za.sel(band=1) != -32768, data, nodata)
 
+        data = data.transpose('band', 'y', 'x').astype(dtype)
+
         attrs['sensor'] = sensor
         attrs['calibration'] = 'Nadir BRDF-adjusted (NBAR) surface reflectance'
         attrs['nodata'] = nodata
@@ -2064,4 +2066,4 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         data.attrs = attrs
 
-        return data.astype(dtype)
+        return data
