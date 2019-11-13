@@ -1864,6 +1864,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                   nodata=0,
                   mask=None,
                   scale_factor=1.0,
+                  out_range=None,
                   scale_angles=True):
 
         """
@@ -1881,7 +1882,8 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
             mask (Optional[DataArray]): A data mask, where clear values are 0.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            scale_factor (Optional[float]): A scale factor to apply to the input data.
+            out_range (Optional[float]): The out data range. If not given, the output data are return in a 0-1 range.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
 
         References:
@@ -1924,9 +1926,6 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         if not wavelengths:
             logger.exception('  The sensor or wavelength must be supplied.')
-
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -2034,22 +2033,35 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                                     'x': data.x},
                             attrs=data.attrs)
 
+        if isinstance(out_range, float) or isinstance(out_range, int):
+
+            if out_range <= 1:
+                dtype = 'float64'
+            elif 1 < out_range <= 255:
+                dtype = 'uint8'
+            else:
+                dtype = 'uint16'
+
+            drange = (0, out_range)
+
+            data = (data * out_range).clip(0, out_range)
+
+        else:
+
+            drange = (0, 1)
+            dtype = 'float64'
+
         # Mask data
         if isinstance(mask, xr.DataArray):
-            data = data.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768))
+            data = xr.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768), data, nodata)
         else:
-            data = data.where(solar_za.sel(band=1) != -32768)
-
-        # Return the adjusted array, scaled
-        #   back to the original range.
-        if scale_factor != 1:
-            data = data / scale_factor
+            data = xr.where(solar_za.sel(band=1) != -32768, data, nodata)
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'Nadir BRDF-adjusted (NBAR) surface reflectance'
         attrs['nodata'] = nodata
-        attrs['drange'] = (0, 1)
+        attrs['drange'] = drange
 
         data.attrs = attrs
 
-        return data
+        return data.astype(dtype)

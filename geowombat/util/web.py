@@ -445,7 +445,8 @@ class GeoDownloads(object):
                                                                sza, saa, vza, vaa,
                                                                sensor=rad_sensor,
                                                                wavelengths=data.band.values.tolist(),
-                                                               nodata=0)
+                                                               out_range=10000.0,
+                                                               nodata=65535)
 
                                         # TODO: get Sentinel 2 a or b
                                         if sensor.lower() in ['l5', 'l7', 's2']:
@@ -455,7 +456,7 @@ class GeoDownloads(object):
 
                                         # mask non-clear pixels
                                         attrs = sr_brdf.attrs
-                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 0)
+                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 65535)
                                         sr_brdf = sr_brdf.transpose('band', 'y', 'x')
                                         sr_brdf.attrs = attrs
 
@@ -469,6 +470,9 @@ class GeoDownloads(object):
 
                             if not outdir_angles.is_dir():
                                 outdir_angles.mkdir()
+
+                            for k, v in finfo_dict.items():
+                                os.remove(v.name)
 
             year += 1
 
