@@ -123,7 +123,7 @@ def ross_thick_delayed(angle_info, global_args):
 
     ross_ = ross_kernel_outputs.ross_element / (ross_kernel_outputs.cos_vza + ross_kernel_outputs.cos_sza)
 
-    return RossThickOutputs(ross=ross_, phase_angle=ross_kernel_outputs.phaang)
+    return RossThickOutputs(ross=ross_, phase_angle=ross_kernel_outputs.phase_angle)
 
 
 def ross_kernel_dask(angle_info, global_args):
@@ -139,7 +139,7 @@ def ross_kernel_dask(angle_info, global_args):
         ross_kernel_outputs = ross_thick_delayed(angle_info, global_args)
 
     if global_args.ross_hs:
-        ross = ross_kernel_outputs.ross * (1.0 + 1.0 / (1.0 + ross_kernel_outputs.phaang / 0.25))
+        ross = ross_kernel_outputs.ross * (1.0 + 1.0 / (1.0 + ross_kernel_outputs.phase_angle / 0.25))
     else:
         ross = ross_kernel_outputs.ross
 
@@ -1844,7 +1844,10 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                                           fvol=0.1154),
                                swir2=dict(fiso=0.2658,
                                           fgeo=0.0387,
-                                          fvol=0.0639))
+                                          fvol=0.0639),
+                               pan=dict(fiso=0.12567,
+                                        fgeo=0.01613,
+                                        fvol=0.0509))
 
     def get_coeffs(self, sensor_band):
         return self.coeff_dict[sensor_band]
@@ -1877,7 +1880,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             sensor (Optional[str]): The satellite sensor.
             wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
-            mask (Optional[bool]): Whether to mask the results.
+            mask (Optional[DataArray]): A data mask, where clear values are 0.
             scale_factor (Optional[float]): A scale factor to apply to the data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
 
@@ -1967,9 +1970,16 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             # Scale the angle data to degrees
 
             solar_za = solar_za * 0.01
+            solar_za.coords['band'] = [1]
+
             solar_az = solar_az * 0.01
+            solar_az.coords['band'] = [1]
+
             sensor_za = sensor_za * 0.01
+            sensor_za.coords['band'] = [1]
+
             sensor_az = sensor_az * 0.01
+            sensor_az.coords['band'] = [1]
 
         # Get the Ross and Li coefficients
         self.get_kernels(central_latitude,
@@ -1978,51 +1988,51 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                          sensor_za,
                          sensor_az)
 
-        if len(wavelengths) == 1:
+        # if len(wavelengths) == 1:
+        #
+        #     # Get the band iso, geo, and vol coefficients.
+        #     coeffs = self.get_coeffs(wavelengths[0])
+        #
+        #     # Apply the adjustment.
+        #     data = dask.delayed(ne.evaluate)(self.c_equation,
+        #                                      local_dict=dict(fiso=coeffs['fiso'],
+        #                                                      fgeo=coeffs['fgeo'],
+        #                                                      fvol=coeffs['fvol'],
+        #                                                      SA=data,
+        #                                                      geo_norm=self.geo_norm,
+        #                                                      geo_sensor=self.geo_sensor,
+        #                                                      vol_norm=self.vol_norm,
+        #                                                      vol_sensor=self.vol_sensor))
+        #
+        # else:
 
-            # Get the band iso, geo, and vol coefficients.
-            coeffs = self.get_coeffs(wavelengths[0])
+        results = list()
 
-            # Apply the adjustment.
-            data = dask.delayed(ne.evaluate)(self.c_equation,
-                                             local_dict=dict(fiso=coeffs['fiso'],
-                                                             fgeo=coeffs['fgeo'],
-                                                             fvol=coeffs['fvol'],
-                                                             SA=data,
-                                                             geo_norm=self.geo_norm,
-                                                             geo_sensor=self.geo_sensor,
-                                                             vol_norm=self.vol_norm,
-                                                             vol_sensor=self.vol_sensor))
+        for si, wavelength in enumerate(wavelengths):
 
-        else:
+            # Get the band iso, geo,
+            #   and vol coefficients.
+            coeffs = self.get_coeffs(wavelength)
 
-            results = list()
+            # c-factor
+            c_factor = ((coeffs['fiso'] +
+                         coeffs['fvol']*self.vol_norm +
+                         coeffs['fgeo']*self.geo_norm) /
+                        (coeffs['fiso'] +
+                         coeffs['fvol']*self.vol_sensor +
+                         coeffs['fgeo']*self.geo_sensor))
 
-            for si, wavelength in enumerate(wavelengths):
+            p_norm = data.sel(band=wavelength).data * c_factor
 
-                # Get the band iso, geo,
-                #   and vol coefficients.
-                coeffs = self.get_coeffs(wavelength)
+            # Apply the adjustment to the current layer.
+            results.append(p_norm)
 
-                # c-factor
-                c_factor = ((coeffs['fiso'] +
-                             coeffs['fvol']*self.vol_norm +
-                             coeffs['fgeo']*self.geo_norm) /
-                            (coeffs['fiso'] +
-                             coeffs['fvol']*self.vol_sensor +
-                             coeffs['fgeo']*self.geo_sensor))
-
-                p_norm = data.sel(band=wavelength).data * c_factor
-
-                # Apply the adjustment to the current layer.
-                results.append(p_norm)
-
-            data = xr.DataArray(data=da.concatenate(results),
-                                dims=('band', 'y', 'x'),
-                                coords={'band': data.band.values,
-                                        'y': data.y,
-                                        'x': data.x},
-                                attrs=data.attrs)
+        data = xr.DataArray(data=da.concatenate(results),
+                            dims=('band', 'y', 'x'),
+                            coords={'band': data.band.values,
+                                    'y': data.y,
+                                    'x': data.x},
+                            attrs=data.attrs)
 
         # Mask data
         if isinstance(mask, xr.DataArray):

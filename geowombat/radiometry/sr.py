@@ -357,10 +357,8 @@ class RadTransforms(MetaData):
 
         if meta:
 
-            # Get the sensor wavelengths
-            # wavelengths = dn.gw.wavelengths[meta.sensor]
-
-            # band_indices = [getattr(wavelengths, p) for p in band_names]
+            if not sensor:
+                sensor = meta.sensor
 
             # Get the gain and offsets and
             #   convert the gain and offsets
@@ -397,7 +395,7 @@ class RadTransforms(MetaData):
                                   solar_az,
                                   sensor_za,
                                   sensor_az,
-                                  meta.sensor,
+                                  sensor,
                                   nodata=nodata)
 
         sr_data = sr_data.where(sr_data != nodata)
@@ -529,9 +527,16 @@ class RadTransforms(MetaData):
 
         # Scale the angles to degrees
         sza = solar_za * 0.01
+        sza.coords['band'] = [1]
+
         saa = solar_az * 0.01
+        saa.coords['band'] = [1]
+
         vza = sensor_za * 0.01
+        vza.coords['band'] = [1]
+
         vaa = sensor_az * 0.01
+        vaa.coords['band'] = [1]
 
         # Convert to radians
         rad_sza = xr.ufuncs.deg2rad(sza)
@@ -539,13 +544,19 @@ class RadTransforms(MetaData):
 
         # Cosine(deg2rad(angles)) = angles x (pi / 180)
         cos_sza = xr.ufuncs.cos(rad_sza)
+        cos_sza.coords['band'] = [1]
         cos_vza = xr.ufuncs.cos(rad_vza)
+        cos_vza.coords['band'] = [1]
 
         sin_sza = xr.ufuncs.sin(rad_sza)
+        sin_sza.coords['band'] = [1]
         sin_vza = xr.ufuncs.sin(rad_vza)
+        sin_vza.coords['band'] = [1]
 
         # air mass
-        m = (1.0 / cos_sza) + (1.0 / cos_vza)
+        m = (1.0 / cos_sza.sel(band=1)) + (1.0 / cos_vza.sel(band=1))
+        m = m.expand_dims(dim='band')
+        m = m.assign_coords(band=[1])
 
         m = xr.concat([m]*len(toar.band), dim='band')
         m.coords['band'] = toar.band.values
@@ -555,6 +566,7 @@ class RadTransforms(MetaData):
         r = 0.008569*um**-4 * (1.0 + 0.0113*um**-2 + 0.0013*um**-4)
 
         # Relative azimuth angle
+        # TODO: doesn't work if the band coordinate is named
         raa = relative_azimuth(saa, vaa)
         rad_raa = xr.ufuncs.deg2rad(raa)
         cos_raa = xr.ufuncs.cos(rad_raa)

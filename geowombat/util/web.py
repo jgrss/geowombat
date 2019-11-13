@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
+import random
+import string
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
@@ -22,6 +24,17 @@ from shapely.geometry import Polygon
 
 
 shapely.speedups.enable()
+
+
+def _random_id(string_length):
+
+    """
+    Generates a random string of letters and digits
+    """
+
+    letters_digits = string.ascii_letters + string.digits
+
+    return ''.join(random.choice(letters_digits) for i in range(string_length))
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
@@ -125,7 +138,7 @@ class GeoDownloads(object):
             bounds (GeoDataFrame or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent.
                 If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used. If given as a ``tuple``,
                 the order should be (left, bottom, right, top).
-            bands (str or list): The bands to download, in format 'B#'.
+            bands (str or list): The bands to download.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             outdir (Optional[str]): The output directory.
@@ -171,7 +184,7 @@ class GeoDownloads(object):
         la = LinearAdjustments()
 
         main_path = Path(outdir)
-        outdir_angles = main_path.joinpath('angles')
+        outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
         outdir_brdf = main_path.joinpath('brdf')
 
         if not main_path.is_dir():
@@ -282,7 +295,13 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
-                            logger.warning('  No results found for {} at location {}.'.format(sensor, location))
+
+                            print(query)
+
+                            logger.warning('  No results found for {} at location {}, year {:d}.'.format(sensor,
+                                                                                                         location,
+                                                                                                         year))
+
                             continue
 
                         # Download data
@@ -302,8 +321,6 @@ class GeoDownloads(object):
                                                                   outdir=outdir,
                                                                   search_wildcards=search_wildcards,
                                                                   verbose=1)
-
-                                    ref_file = file_info[search_wildcards[0]].name
 
                                 else:
 
@@ -332,10 +349,16 @@ class GeoDownloads(object):
                                                           search_wildcards=search_wildcards,
                                                           verbose=1)
 
-                            ref_file = file_info[list(file_info.keys())[0]][load_bands[0]].name
-
                         # Create pixel angle files
+                        # TODO: this can be run in parallel
                         for finfo_key, finfo_dict in file_info.items():
+
+                            out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
+
+                            if os.path.isfile(out_brdf):
+                                continue
+
+                            ref_file = file_info[finfo_key][load_bands[0]].name
 
                             if sensor.lower() == 's2':
 
@@ -358,22 +381,27 @@ class GeoDownloads(object):
                                                                   meta.sensor,
                                                                   verbose=1)
 
-                                rad_sensor = meta.sensor
-
-                            out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
+                                if (len(bands) == 1) and (bands[0] == 'pan'):
+                                    rad_sensor = sensor + bands[0]
+                                else:
+                                    rad_sensor = meta.sensor
 
                             # Get band names from user
                             load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
-                            with gw.config.update(sensor=sensor,
+                            with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=bounds_info,
                                                   ref_crs=crs,
-                                                  ref_res=(15, 15)):    # load_bands_names[0]
+                                                  ref_res=load_bands_names[0]):
 
-                                with gw.open(angle_info.sza, band_names=['sza']) as sza, \
-                                        gw.open(angle_info.vza, band_names=['vza']) as vza, \
-                                        gw.open(angle_info.saa, band_names=['saa']) as saa, \
-                                        gw.open(angle_info.vaa, band_names=['vaa']) as vaa:
+                                with gw.open(angle_info.sza,
+                                             resampling='cubic') as sza, \
+                                        gw.open(angle_info.vza,
+                                                resampling='cubic') as vza, \
+                                        gw.open(angle_info.saa,
+                                                resampling='cubic') as saa, \
+                                        gw.open(angle_info.vaa,
+                                                resampling='cubic') as vaa:
 
                                     with gw.open(load_bands_names,
                                                  band_names=bands,
@@ -389,7 +417,9 @@ class GeoDownloads(object):
                                             else:
                                                 qa_sensor = 'l-c1'
 
-                                        mask = QAMasker(qa, qa_sensor, mask_items=['cloud', 'shadow']).to_mask()
+                                        mask = QAMasker(qa,
+                                                        qa_sensor,
+                                                        mask_items=['cloud', 'shadow']).to_mask()
 
                                         if sensor.lower() == 's2':
 
@@ -424,18 +454,19 @@ class GeoDownloads(object):
                                             sr_brdf = la.bandpass(sr_brdf, sensor, to='l8')
 
                                         # mask non-clear pixels
-                                        sr_brdf = xr.where(mask < 2, sr_brdf, 0)
+                                        attrs = sr_brdf.attrs
+                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 0)
+                                        sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                        sr_brdf.attrs = attrs
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
-                            import ipdb
-                            ipdb.set_trace()
-
                             shutil.rmtree(outdir_angles)
 
-                            # TODO: make the angles directory unique
+                            outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
+
                             if not outdir_angles.is_dir():
                                 outdir_angles.mkdir()
 
