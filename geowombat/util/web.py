@@ -135,9 +135,9 @@ class GeoDownloads(object):
         Args:
             sensors (str or list): The sensors, or sensor, to download.
             date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
-            bounds (GeoDataFrame or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent.
-                If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used. If given as a ``tuple``,
-                the order should be (left, bottom, right, top).
+            bounds (GeoDataFrame, list, or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent.
+                If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
+                If given as a ``tuple`` or a ``list``, the order should be (left, bottom, right, top).
             bands (str or list): The bands to download.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
@@ -200,7 +200,7 @@ class GeoDownloads(object):
             sensors = [sensors]
 
         # Get bounds from geometry
-        if isinstance(bounds, tuple):
+        if isinstance(bounds, tuple) or isinstance(bounds, list):
 
             bounds = Polygon([(bounds[0], bounds[3]),
                               (bounds[2], bounds[3]),
@@ -295,8 +295,6 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
-
-                            print(query)
 
                             logger.warning('  No results found for {} at location {}, year {:d}.'.format(sensor,
                                                                                                          location,
