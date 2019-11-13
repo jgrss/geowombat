@@ -184,14 +184,10 @@ class GeoDownloads(object):
         la = LinearAdjustments()
 
         main_path = Path(outdir)
-        outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
         outdir_brdf = main_path.joinpath('brdf')
 
         if not main_path.is_dir():
             main_path.mkdir()
-
-        if not outdir_angles.is_dir():
-            outdir_angles.mkdir()
 
         if not outdir_brdf.is_dir():
             outdir_brdf.mkdir()
@@ -296,9 +292,10 @@ class GeoDownloads(object):
 
                         if not self.search_dict:
 
-                            logger.warning('  No results found for {} at location {}, year {:d}.'.format(sensor,
-                                                                                                         location,
-                                                                                                         year))
+                            logger.warning('  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(SENSOR=sensor,
+                                                                                                                                       LOC=location,
+                                                                                                                                       YEAR=year,
+                                                                                                                                       MONTH=m))
 
                             continue
 
@@ -355,6 +352,11 @@ class GeoDownloads(object):
 
                             if os.path.isfile(out_brdf):
                                 continue
+
+                            outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
+
+                            if not outdir_angles.is_dir():
+                                outdir_angles.mkdir()
 
                             ref_file = file_info[finfo_key][load_bands[0]].name
 
@@ -463,11 +465,6 @@ class GeoDownloads(object):
                             angle_infos[finfo_key] = angle_info
 
                             shutil.rmtree(outdir_angles)
-
-                            outdir_angles = main_path.joinpath('angles_{}'.format(_random_id(10)))
-
-                            if not outdir_angles.is_dir():
-                                outdir_angles.mkdir()
 
                             for k, v in finfo_dict.items():
                                 os.remove(v.name)
