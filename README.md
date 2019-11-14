@@ -16,13 +16,13 @@ for I/O and distributed computing with named coordinates.
 >>> import geowombat as gw
 >>>
 >>> # Open images as Xarray DataArrays
->>> with gw.open('image.tif', chunks=(1, 512, 512)) as ds:
+>>> with gw.open('image.tif', chunks=512) as ds:
 >>>
 >>>     # Do Xarray and Dask operations
 >>>     dss = ds * 10.0
 >>>
->>>     # Write the computation task to file
->>>     dss.gw.to_raster('output.tif', n_jobs=8)
+>>>     # Write the computation task to file using 16 parallel jobs
+>>>     dss.gw.to_raster('output.tif', n_workers=4, n_threads=4)
 ```
 
 ## Documentation (temporary location)
