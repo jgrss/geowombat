@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul>
@@ -127,21 +128,20 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-adcd006d217629324a15fc49d9cd8eb5&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-f470e7460627174232d709e805318608&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
+<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:         +init=epsg:32618</span>
+<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    is_tiled:    1</span>
+<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
+<span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    resampling:  nearest</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;transpose, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
@@ -149,18 +149,17 @@
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U3 &#39;evi&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-<span class="go">    pre-scaling:    0.0001</span>
-<span class="go">    sensor:         rgbn</span>
-<span class="go">    drange:         (0, 1)</span>
+<span class="go">    transform:    (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:          +init=epsg:32618</span>
+<span class="go">    res:          (2.0, 2.0)</span>
+<span class="go">    is_tiled:     1</span>
+<span class="go">    nodatavals:   (nan, nan, nan, nan)</span>
+<span class="go">    scales:       (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:      (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    resampling:   nearest</span>
+<span class="go">    pre-scaling:  0.0001</span>
+<span class="go">    sensor:       rgbn</span>
+<span class="go">    drange:       (0, 1)</span>
 </pre></div>
 </div>
 <p>Use the configuration context to set parameters</p>
@@ -176,18 +175,17 @@
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U3 &#39;evi&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-<span class="go">    sensor:         rgbn</span>
-<span class="go">    pre-scaling:    0.0001</span>
-<span class="go">    drange:         (0, 1)</span>
+<span class="go">    transform:    (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:          +init=epsg:32618</span>
+<span class="go">    res:          (2.0, 2.0)</span>
+<span class="go">    is_tiled:     1</span>
+<span class="go">    nodatavals:   (nan, nan, nan, nan)</span>
+<span class="go">    scales:       (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:      (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    sensor:       rgbn</span>
+<span class="go">    resampling:   nearest</span>
+<span class="go">    pre-scaling:  0.0001</span>
+<span class="go">    drange:       (0, 1)</span>
 </pre></div>
 </div>
 <p>Load the data to return a <cite>NumPy</cite> array</p>
@@ -224,18 +222,17 @@
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U9 &#39;norm-diff&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-<span class="go">    pre-scaling:    1.0</span>
-<span class="go">    sensor:         rgbn</span>
-<span class="go">    drange:         (-1, 1)</span>
+<span class="go">    transform:    (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:          +init=epsg:32618</span>
+<span class="go">    res:          (2.0, 2.0)</span>
+<span class="go">    is_tiled:     1</span>
+<span class="go">    nodatavals:   (nan, nan, nan, nan)</span>
+<span class="go">    scales:       (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:      (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    resampling:   nearest</span>
+<span class="go">    pre-scaling:  1.0</span>
+<span class="go">    sensor:       rgbn</span>
+<span class="go">    drange:       (-1, 1)</span>
 </pre></div>
 </div>
 </div>
@@ -253,15 +250,14 @@
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * band     (band) &lt;U10 &#39;brightness&#39; &#39;greenness&#39; &#39;wetness&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
+<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:         +init=epsg:32618</span>
+<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    is_tiled:    1</span>
+<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
+<span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    resampling:  nearest</span>
 </pre></div>
 </div>
 </div>
@@ -278,7 +274,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

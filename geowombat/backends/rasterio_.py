@@ -436,7 +436,9 @@ def warp(filename,
 
         if crs:
 
-            if isinstance(crs, int):
+            if isinstance(crs, CRS):
+                dst_crs = crs
+            elif isinstance(crs, int):
                 dst_crs = CRS.from_epsg(crs)
             elif isinstance(crs, dict):
                 dst_crs = CRS.from_dict(crs)

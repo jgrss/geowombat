@@ -81,7 +81,7 @@ def warp_open(filename,
 
             ref_kwargs['bounds'] = ref_meta.bounds
             ref_kwargs['crs'] = ref_meta.crs
-            ref_kwargs['crs'] = ref_meta.res
+            ref_kwargs['res'] = ref_meta.res
 
     if 'ref_bounds' in config:
         ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
@@ -301,7 +301,7 @@ def concat(filenames,
 
             ref_kwargs['bounds'] = ref_meta.bounds
             ref_kwargs['crs'] = ref_meta.crs
-            ref_kwargs['crs'] = ref_meta.res
+            ref_kwargs['res'] = ref_meta.res
 
     if 'ref_bounds' in config:
         ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')

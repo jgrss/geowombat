@@ -64,6 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Change Log</span></p>
 <ul>
@@ -120,13 +121,16 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.download_gcp" title="geowombat.util.GeoDownloads.download_gcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_gcp</span></code></a>(self, sensor[, downloads, …])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_cube</span></code>(self, sensors, date_range, …)</p></td>
+<td><p>Downloads a cube of Landsat and/or Sentinel 2 imagery</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.download_gcp" title="geowombat.util.GeoDownloads.download_gcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_gcp</span></code></a>(self, sensor[, downloads, …])</p></td>
 <td><p>Downloads a file from Google Cloud platform</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.download_landsat_range" title="geowombat.util.GeoDownloads.download_landsat_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_landsat_range</span></code></a>(self, sensors, bands, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.download_landsat_range" title="geowombat.util.GeoDownloads.download_landsat_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_landsat_range</span></code></a>(self, sensors, bands, …)</p></td>
 <td><p>Downloads Landsat data from iterables</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.list_gcp" title="geowombat.util.GeoDownloads.list_gcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_gcp</span></code></a>(self, sensor, query)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.util.GeoDownloads.list_gcp" title="geowombat.util.GeoDownloads.list_gcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_gcp</span></code></a>(self, sensor, query)</p></td>
 <td><p>Lists files from Google Cloud Platform</p></td>
 </tr>
 </tbody>
@@ -252,7 +256,7 @@ from <code class="docutils literal notranslate"><span class="pre">search_dict</s
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
