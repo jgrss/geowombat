@@ -349,6 +349,7 @@ class GeoDownloads(object):
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
                                                           search_wildcards=search_wildcards,
+                                                          check_file=status.as_posix(),
                                                           verbose=1)
 
                         # Create pixel angle files
@@ -358,12 +359,14 @@ class GeoDownloads(object):
                             out_brdf = outdir_brdf.joinpath(Path(finfo_key).name + '.tif').as_posix()
 
                             if os.path.isfile(out_brdf):
+                                logger.warning('  The output BRDF file already exists.')
                                 continue
 
                             with open(status.as_posix(), mode='r') as tx:
                                 lines = tx.readlines()
 
                             if finfo_dict['meta'].name + '\n' in lines:
+                                logger.warning('  The file has already been checked.')
                                 continue
 
                             outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
@@ -570,13 +573,18 @@ class GeoDownloads(object):
         df['mask'] = df.url.str.strip().str.endswith('/:')
 
         mask_idx = np.where(df['mask'].values)[0]
+        mask_range = mask_idx.shape[0] - 1 if mask_idx.shape[0] > 1 else 1
 
         url_dict = dict()
 
-        for mi in range(0, mask_idx.shape[0] - 1):
+        for mi in range(0, mask_range):
 
             m1 = mask_idx[mi]
-            m2 = mask_idx[mi + 1] - 1
+
+            if mask_range > 1:
+                m2 = mask_idx[mi + 1] - 1
+            else:
+                m2 = len(search_list)
 
             key = search_list[m1].replace(gcp_str, '').replace('/:', '')
             values = search_list[m1:m2]
@@ -587,7 +595,14 @@ class GeoDownloads(object):
 
         return url_dict
 
-    def download_gcp(self, sensor, downloads=None, outdir='.', search_wildcards=None, search_dict=None, verbose=0):
+    def download_gcp(self,
+                     sensor,
+                     downloads=None,
+                     outdir='.',
+                     search_wildcards=None,
+                     search_dict=None,
+                     check_file=None,
+                     verbose=0):
 
         """
         Downloads a file from Google Cloud platform
@@ -599,6 +614,7 @@ class GeoDownloads(object):
             outdir (Optional[str]): The output directory.
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
+            check_file (Optional[str]): A status file to check.
             verbose (Optional[int]): The verbosity level.
 
         Returns:
@@ -631,6 +647,7 @@ class GeoDownloads(object):
         FileInfo = namedtuple('FileInfo', 'name key')
 
         downloaded = dict()
+        null_items = list()
 
         for search_key in downloads:
 
@@ -649,34 +666,82 @@ class GeoDownloads(object):
 
             for fn in download_list:
 
-                down_file = poutdir.joinpath(Path(fn).name).as_posix()
+                fname = Path(fn).name
+
+                down_file = poutdir.joinpath(fname).as_posix()
 
                 if down_file.endswith('_ANG.txt'):
+                    fbase = fname.replace('_ANG.txt', '')
                     key = 'angle'
                 elif down_file.endswith('_MTL.txt'):
+                    fbase = fname.replace('_MTL.txt', '')
                     key = 'meta'
                 elif down_file.endswith('MTD_TL.xml'):
+                    fbase = fname.replace('MTD_TL.xml', '')
                     key = 'meta'
-                elif down_file.endswith('BQA.TIF'):
+                elif down_file.endswith('_BQA.TIF'):
+                    fbase = fname.replace('_BQA.TIF', '')
                     key = 'qa'
                 else:
+                    fbase = ''
                     key = down_file.split('_')[-1].split('.')[0]
 
-                if not Path(down_file).exists():
+                continue_download = True
 
-                    if verbose > 0:
-                        logger.info('  Downloading {} ...'.format(Path(fn).name))
+                if fbase in null_items:
+                    continue_download = False
+                elif check_file and (key == 'meta'):
 
-                    if fn.lower().startswith('gs://gcp-public-data'):
-                        com = 'gsutil cp -r {} {}'.format(fn, outdir)
-                    else:
-                        com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+                    with open(check_file, mode='r') as tx:
+                        lines = tx.readlines()
 
-                    subprocess.call(com, shell=True)
+                    if down_file + '\n' in lines:
+                        null_items.append(fbase)
+                        continue_download = False
 
-                downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                if not continue_download:
 
-            downloaded[search_key] = downloaded_sub
+                    if downloaded_sub:
+
+                        del_keys = list()
+
+                        for k, v in downloaded_sub.items():
+
+                            if fbase in v:
+
+                                if verbose > 0:
+                                    logger.warning('  Removing {} ...'.format(v.name))
+
+                                if Path(v.name).is_file():
+
+                                    os.remove(v.name)
+                                    del_keys.append(k)
+
+                        if del_keys:
+
+                            for del_key in del_keys:
+
+                                if del_key in downloaded_sub:
+                                    del downloaded_sub[del_key]
+
+                else:
+
+                    if not Path(down_file).is_file():
+
+                        if fn.lower().startswith('gs://gcp-public-data'):
+                            com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                        else:
+                            com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+
+                        if verbose > 0:
+                            logger.info('  Downloading {} ...'.format(fname))
+
+                        subprocess.call(com, shell=True)
+
+                    downloaded_sub[key] = FileInfo(name=down_file, key=key)
+
+            if downloaded_sub:
+                downloaded[search_key] = downloaded_sub
 
         return downloaded
 
