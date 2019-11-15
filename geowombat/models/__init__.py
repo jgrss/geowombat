@@ -1,6 +1,5 @@
-from .model import GeoWombatClassifier, Predict
-from ._crf import time_to_crffeas
+from .model import CloudClassifier, GeoWombatClassifier, Predict
 
 predict = Predict().predict
 
-__all__ = ['GeoWombatClassifier', 'predict', 'time_to_crffeas']
+__all__ = ['CloudClassifier', 'GeoWombatClassifier', 'predict']

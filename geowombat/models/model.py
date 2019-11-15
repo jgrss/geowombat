@@ -3,7 +3,9 @@ from copy import copy
 import ctypes
 import inspect
 from contextlib import contextmanager
+from pathlib import Path
 
+from ._crf import cloud_crf_to_probas, time_to_crffeas
 from ..errors import logger
 from ..backends import Cluster
 from ..core.util import Chunks
@@ -36,6 +38,12 @@ except:
     IMBLEARN_INSTALLED = False
 
 try:
+    import sklearn_crfsuite
+    CRFSUITE_INSTALLED = True
+except:
+    CRFSUITE_INSTALLED = False
+
+try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
@@ -44,6 +52,131 @@ except:
 @contextmanager
 def _backend_dummy(*args, **kwargs):
     yield None
+
+
+def _pred_to_cloud_labels(model_pred):
+
+    return np.array([[[ps['l'] if 'l' in ps else 0,
+                       ps['u'] if 'u' in ps else 0,
+                       ps['w'] if 'w' in ps else 0,
+                       ps['c'] if 'c' in ps else 0,
+                       ps['s'] if 's' in ps else 0] for ps in p] for p in model_pred], dtype='float64')
+
+
+def _dict_keys_to_bytes(data):
+
+    if isinstance(data, int) or isinstance(data, float): return data
+    if isinstance(data, str): return str.encode(data)
+    if isinstance(data, dict): return dict(map(_dict_keys_to_bytes, data.items()))
+    if isinstance(data, list): return list(map(_dict_keys_to_bytes, data))
+    if isinstance(data, tuple): return tuple(map(_dict_keys_to_bytes, data))
+
+
+class IOMixin(object):
+
+    def to_file(self, filename, overwrite=False):
+
+        if overwrite:
+
+            if Path(filename).is_file():
+                os.remove(filename)
+
+        try:
+
+            if hasattr(self, 'verbose'):
+                if self.verbose > 0:
+                    logger.info('  Saving model to file ...')
+
+            joblib.dump((self.x, self.y, self.model),
+                        filename,
+                        compress=('zlib', 5),
+                        protocol=-1)
+
+        except:
+            logger.warning('  Could not dump the model to file.')
+
+    def from_file(self, filename):
+
+        if not Path(filename).is_file():
+            logger.warning('  The model file does not exist.')
+        else:
+
+            if hasattr(self, 'verbose'):
+                if self.verbose > 0:
+                    logger.info('  Loading the model from file ...')
+
+        self.x, self.y, self.model = joblib.load(filename)
+
+
+class BaseCRF(IOMixin):
+
+    def fit(self, X, y):
+
+        """
+        Fits a Conditional Random Fields classifier
+
+        Args:
+            X (list): The variables (list of dictionaries).
+            y (list): The class labels (list of strings).
+        """
+
+        self.model.fit(X, y)
+
+        return self
+
+    def predict(self):
+        # TODO
+        pass
+
+    def predict_probas(self, X, sensor):
+
+        """
+        Predicts CRF probabilities
+
+        Args:
+            X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
+            sensor (str): The satellite sensor.
+
+        Returns:
+            ``4d array`` of predictions, shaped as [time x classes x rows x columns].
+        """
+
+        ntime, nbands, nrows, ncols = X.shape
+
+        features = np.ascontiguousarray([tlayer.transpose(1, 2, 0).reshape(nrows * ncols,
+                                                                           nbands)
+                                         for tlayer in X], dtype='float64')
+
+        features = time_to_crffeas(features,
+                                   sensor,
+                                   ntime,
+                                   nrows,
+                                   ncols)
+
+        if self.crf_classifier_ == 'clouds':
+
+            # pred = _pred_to_cloud_labels(self.model.predict_marginals(features))
+            # return pred.transpose(1, 2, 0).reshape(ntime, pred.shape[2], nrows, ncols)
+
+            pred = self.model.predict_marginals(features)
+
+            # TODO
+            return cloud_crf_to_probas(_dict_keys_to_bytes(pred),
+                                       ntime,
+                                       nrows,
+                                       ncols)
+
+
+class CloudClassifier(BaseCRF):
+
+    def __init__(self, **kwargs):
+
+        self.x = None
+        self.y = None
+        self.crf_classifier_ = 'clouds'
+        self.kwargs = kwargs
+
+        self.model = sklearn_crfsuite.CRF(**kwargs)
 
 
 class VotingClassifier(BaseEstimator, ClassifierMixin):
@@ -126,7 +259,7 @@ class VotingClassifier(BaseEstimator, ClassifierMixin):
         return X_probas / self.weights.sum()
 
 
-class GeoWombatClassifier(object):
+class GeoWombatClassifier(IOMixin):
 
     """
     A class for model fitting models with Dask
@@ -447,37 +580,6 @@ class GeoWombatClassifier(object):
 
         if self.backend == 'dask':
             cluster.stop()
-
-    def to_file(self, filename, overwrite=False):
-
-        if overwrite:
-
-            if os.path.isfile(filename):
-                os.remove(filename)
-
-        try:
-
-            if self.verbose > 0:
-                logger.info('  Saving model to file ...')
-
-            joblib.dump((self.x, self.y, self.model),
-                        filename,
-                        compress=('zlib', 5),
-                        protocol=-1)
-
-        except:
-            logger.warning('  Could not dump the model to file.')
-
-    def from_file(self, filename):
-
-        if not os.path.isfile(filename):
-            logger.warning('  The model file does not exist.')
-        else:
-
-            if self.verbose > 0:
-                logger.info('  Loading the model from file ...')
-
-        self.x, self.y, self.model = joblib.load(filename)
 
 
 class Predict(object):

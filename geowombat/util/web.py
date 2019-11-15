@@ -550,10 +550,15 @@ class GeoDownloads(object):
 
         search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
 
-        if sensor == 's2':
-            self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
-        else:
-            self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
+        if search_list:
+
+            # Check for lenth-1 lists with empty strings
+            if search_list[0]:
+
+                if sensor == 's2':
+                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
+                else:
+                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
 
     @staticmethod
     def _prepare_gcp_dict(search_list, gcp_str):
