@@ -39,6 +39,23 @@ cdef unicode _text(s):
         raise TypeError('Could not convert to unicode.')
 
 
+cdef cpp_map[string, double] _sample_to_dict_pan(double[::1] tsamp):
+
+    """
+    Converts names and a 1d array to a dictionary
+    """
+
+    cdef:
+        Py_ssize_t t
+        unsigned int tsamp_len = tsamp.shape[0]
+        cpp_map[string, double] features_map
+
+    for t in range(1, tsamp_len+1):
+        features_map[<bytes>str(t).encode('utf-8')] = tsamp[t-1] * 0.0001
+
+    return features_map
+
+
 cdef cpp_map[string, double] _sample_to_dict(double[::1] tsamp,
                                              double ndvi,
                                              bytes ndvi_string):
@@ -165,8 +182,10 @@ def time_to_crffeas(double[:, :, ::1] data,
                                   swir1=4,
                                   swir2=5))
 
-    red_idx = SENSOR_BANDS[sensor]['red']
-    nir_idx = SENSOR_BANDS[sensor]['nir']
+    if sensor != 'pan':
+
+        red_idx = SENSOR_BANDS[sensor]['red']
+        nir_idx = SENSOR_BANDS[sensor]['nir']
 
     for i in range(0, nrows*ncols):
 
@@ -175,11 +194,15 @@ def time_to_crffeas(double[:, :, ::1] data,
             tdata = data[j]
             tsample = tdata[i, :]
 
-            ndvi = _ndvi(tsample[red_idx]*0.0001, tsample[nir_idx]*0.0001)
+            if sensor == 'pan':
+                samples.push_back(_sample_to_dict_pan(tsample))
+            else:
 
-            samples.push_back(_sample_to_dict(tsample,
-                                              ndvi,
-                                              ndvi_string))
+                ndvi = _ndvi(tsample[red_idx]*0.0001, tsample[nir_idx]*0.0001)
+
+                samples.push_back(_sample_to_dict(tsample,
+                                                  ndvi,
+                                                  ndvi_string))
 
         samples_full.push_back(samples)
 

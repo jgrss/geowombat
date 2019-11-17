@@ -103,7 +103,7 @@ class QAMasker(object):
         else:
 
             mask = da.zeros((self.qa.gw.nrows, self.qa.gw.ncols),
-                             chunks=(self.qa.gw.row_chunks, self.qa.gw.col_chunks),
+                            chunks=(self.qa.gw.row_chunks, self.qa.gw.col_chunks),
                             dtype='uint8')
 
             for mask_item in self.mask_items:
@@ -176,8 +176,8 @@ class QAMasker(object):
                                     'snowiceconf': (11, 10),
                                     'cirrusconf': (13, 12),
                                     'cloudconf': (15, 14)},
-                         'l8-c1': {'cirrus': (12, 11),
-                                   'snowice': (10, 9),
+                         'l8-c1': {'cirrusconf': (12, 11),
+                                   'snowiceconf': (10, 9),
                                    'shadowconf': (8, 7),
                                    'cloudconf': (6, 5),
                                    'cloud': (4, 4),
@@ -211,15 +211,20 @@ class QAMasker(object):
                                  6: 20,
                                  7: 24}
 
-    def qa_bits(self, what2mask):
+    def qa_bits(self, mask_item):
 
-        # For confidence bits
-        # 0 = not determined
-        # 1 = no
-        # 2 = maybe
-        # 3 = yes
+        """
+        Args:
+            mask_item (str)
 
-        bit_location = self.qa_flags[self.sensor][what2mask]
+        For confidence bits:
+            0 = not determined
+            1 = no
+            2 = maybe
+            3 = yes
+        """
+
+        bit_location = self.qa_flags[self.sensor][mask_item]
 
         self.b1 = bit_location[0]
         self.b2 = bit_location[1]
@@ -260,14 +265,17 @@ class QAMasker(object):
                         self.fmask_dict['clear'],
                         self.fmask_dict['fill'])
 
-    def get_qa_mask(self, what2mask):
+    def get_qa_mask(self, mask_item):
 
         """
+        Args:
+            mask_item (str)
+
         Reference:
             https://github.com/mapbox/landsat8-qa/blob/master/landsat8_qa/qa.py
         """
 
-        self.qa_bits(what2mask)
+        self.qa_bits(mask_item)
 
         width_int = int((self.b1 - self.b2 + 1) * '1', 2)
 

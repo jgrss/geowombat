@@ -1,6 +1,6 @@
 from .util import n_rows_cols
 
-from rasterio.windows import from_bounds, Window
+from rasterio.windows import Window
 
 
 def get_window_offsets(n_rows, n_cols, row_chunks, col_chunks, return_as='list'):

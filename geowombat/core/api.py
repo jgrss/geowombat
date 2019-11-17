@@ -13,12 +13,11 @@ from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
 from .conversion import xarray_to_xdataset
 from .util import Chunks, get_file_extension, parse_wildcard
-from .windows import from_bounds
 
 import numpy as np
 import xarray as xr
 import rasterio as rio
-from rasterio.windows import Window
+from rasterio.windows import from_bounds, Window
 import dask
 import dask.array as da
 
