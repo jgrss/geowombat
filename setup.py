@@ -7,7 +7,7 @@ import numpy as np
 
 __version__ = '1.0.0b'
 
-mappy_name = 'GeoWombat'
+pkg_name = 'GeoWombat'
 maintainer = 'Jordan Graesser'
 maintainer_email = ''
 description = 'Geo-enabled n-dimensional arrays from satellite imagery'
@@ -77,7 +77,7 @@ def setup_package():
 
     include_dirs = [np.get_include()]
 
-    metadata = dict(name=mappy_name,
+    metadata = dict(name=pkg_name,
                     maintainer=maintainer,
                     maintainer_email=maintainer_email,
                     description=description,
