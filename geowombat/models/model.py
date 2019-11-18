@@ -5,7 +5,7 @@ import inspect
 from contextlib import contextmanager
 from pathlib import Path
 
-from ._crf import cloud_crf_to_probas, time_to_crffeas
+from ._crf import probas_to_labels, time_to_crffeas
 from ..errors import logger
 from ..backends import Cluster
 from ..core.util import Chunks
@@ -54,22 +54,22 @@ def _backend_dummy(*args, **kwargs):
     yield None
 
 
-def _pred_to_cloud_labels(model_pred):
+# def _pred_to_cloud_labels(model_pred):
+#
+#     return np.array([[[ps['l'] if 'l' in ps else 0,
+#                        ps['u'] if 'u' in ps else 0,
+#                        ps['w'] if 'w' in ps else 0,
+#                        ps['c'] if 'c' in ps else 0,
+#                        ps['s'] if 's' in ps else 0] for ps in p] for p in model_pred], dtype='float64')
 
-    return np.array([[[ps['l'] if 'l' in ps else 0,
-                       ps['u'] if 'u' in ps else 0,
-                       ps['w'] if 'w' in ps else 0,
-                       ps['c'] if 'c' in ps else 0,
-                       ps['s'] if 's' in ps else 0] for ps in p] for p in model_pred], dtype='float64')
 
-
-def _dict_keys_to_bytes(data):
+def dict_keys_to_bytes(data):
 
     if isinstance(data, int) or isinstance(data, float): return data
     if isinstance(data, str): return str.encode(data)
-    if isinstance(data, dict): return dict(map(_dict_keys_to_bytes, data.items()))
-    if isinstance(data, list): return list(map(_dict_keys_to_bytes, data))
-    if isinstance(data, tuple): return tuple(map(_dict_keys_to_bytes, data))
+    if isinstance(data, dict): return dict(map(dict_keys_to_bytes, data.items()))
+    if isinstance(data, list): return list(map(dict_keys_to_bytes, data))
+    if isinstance(data, tuple): return tuple(map(dict_keys_to_bytes, data))
 
 
 class IOMixin(object):
@@ -124,6 +124,35 @@ class BaseCRF(IOMixin):
 
         return self
 
+    @staticmethod
+    def sklearn_to_deepcrf(X, y, output):
+
+        """
+        Converts CRF features formatted for Scikit-learn CRFsuite to features formatted for deep-crf
+
+        Args:
+            X (list)
+            y (list)
+            output (str)
+
+        Reference:
+            https://github.com/aonotas/deep-crf
+        """
+
+        lines = list()
+
+        for xseries, yseries in zip(X, y):
+
+            for xsample, ysample in zip(xseries, yseries):
+
+                features = ' '.join(map(str, list(xsample.values()))) + ' ' + ysample + '\n'
+                lines.append(features)
+
+            lines.append('\n')
+
+        with open(output, mode='w') as tx:
+            tx.writelines(lines)
+
     def predict(self):
         # TODO
         pass
@@ -148,7 +177,7 @@ class BaseCRF(IOMixin):
                                          for tlayer in X], dtype='float64')
 
         features = time_to_crffeas(features,
-                                   sensor,
+                                   sensor.encode('utf-8'),
                                    ntime,
                                    nrows,
                                    ncols)
@@ -161,10 +190,12 @@ class BaseCRF(IOMixin):
             pred = self.model.predict_marginals(features)
 
             # TODO
-            return cloud_crf_to_probas(_dict_keys_to_bytes(pred),
-                                       ntime,
-                                       nrows,
-                                       ncols)
+            return probas_to_labels(dict_keys_to_bytes(pred),
+                                    [b'l', b'u', b'w', b'c', b's'],
+                                    5,
+                                    ntime,
+                                    nrows,
+                                    ncols)
 
 
 class CloudClassifier(BaseCRF):
