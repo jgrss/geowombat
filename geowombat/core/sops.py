@@ -238,10 +238,17 @@ class SpatialOperations(_PropertyMixin):
         if query:
             df = df.query(query)
 
-        if data.crs != CRS.from_dict(df.crs).to_proj4():
+        try:
 
-            # Re-project the DataFrame to match the image CRS
-            df = df.to_crs(data.crs)
+            if data.crs.strip() != CRS.from_dict(df.crs).to_proj4().strip():
+
+                # Re-project the DataFrame to match the image CRS
+                df = df.to_crs(data.crs)
+
+        except:
+
+            if data.crs.strip() != CRS.from_proj4(df.crs).to_proj4().strip():
+                df = df.to_crs(data.crs)
 
         row_chunks = data.gw.row_chunks
         col_chunks = data.gw.col_chunks
