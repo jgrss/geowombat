@@ -107,16 +107,18 @@ class GeoDownloads(object):
                                          cirrus=9,
                                          tirs1=10,
                                          tirs2=11),
-                                 s2=dict(blue=1,
-                                         green=2,
-                                         red=3,
-                                         nir1=4,
-                                         nir2=5,
-                                         nir3=6,
-                                         nir=7,
+                                 s2=dict(coastal=1,
+                                         blue=2,
+                                         green=3,
+                                         red=4,
+                                         nir1=5,
+                                         nir2=6,
+                                         nir3=7,
+                                         nir=8,
                                          rededge=8,
-                                         swir1=9,
-                                         swir2=10))
+                                         cirrus=9,
+                                         swir1=10,
+                                         swir2=11))
 
         self.search_dict = dict()
 
@@ -127,6 +129,7 @@ class GeoDownloads(object):
                       bands,
                       crs=None,
                       outdir='.',
+                      ref_res=None,
                       **kwargs):
 
         """
@@ -142,6 +145,7 @@ class GeoDownloads(object):
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             outdir (Optional[str]): The output directory.
+            ref_res (Optional[tuple]): A reference cell resolution.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -342,7 +346,7 @@ class GeoDownloads(object):
                                                           check_file=status.as_posix(),
                                                           verbose=1)
 
-                            # Reorganize the dictionary to combine bands and metdata
+                            # Reorganize the dictionary to combine bands and metadata
                             new_dict_ = dict()
                             for finfo_key, finfo_dict in file_info.items():
 
@@ -419,7 +423,16 @@ class GeoDownloads(object):
                                                                    overwrite=False,
                                                                    verbose=1)
 
-                                rad_sensor = 's2'
+                                if ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
+                                    rad_sensor = 's2'
+                                elif ' '.join(bands) == 'blue green red nir swir1 swir2':
+                                    rad_sensor = 's2l7'
+                                elif ' '.join(bands) == 'blue green red nir':
+                                    rad_sensor = 's210'
+                                else:
+                                    rad_sensor = 's2'
+
+                                bandpass_sensor = angle_info.sensor
                                 
                             else:
 
@@ -440,13 +453,15 @@ class GeoDownloads(object):
                                     else:
                                         rad_sensor = meta.sensor
 
+                                bandpass_sensor = sensor
+
                             # Get band names from user
                             load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=bounds_info,
                                                   ref_crs=crs,
-                                                  ref_res=load_bands_names[0]):
+                                                  ref_res=ref_res if ref_res else load_bands_names[0]):
 
                                 with gw.open(angle_info.sza,
                                              resampling='cubic') as sza, \
@@ -508,11 +523,13 @@ class GeoDownloads(object):
                                                                out_range=10000.0,
                                                                nodata=65535)
 
-                                        # TODO: get Sentinel 2 a or b
-                                        if sensor.lower() in ['l5', 'l7', 's2']:
+                                        if bandpass_sensor.lower() in ['l5', 'l7', 's2a', 's2b']:
 
                                             # Linear adjust to Landsat 8
-                                            sr_brdf = la.bandpass(sr_brdf, sensor, to='l8')
+                                            sr_brdf = la.bandpass(sr_brdf,
+                                                                  bandpass_sensor.lower(),
+                                                                  to='l8',
+                                                                  scale_factor=0.0001)
 
                                         # Mask non-clear pixels
                                         # attrs = sr_brdf.attrs
@@ -729,6 +746,8 @@ class GeoDownloads(object):
                 elif down_file.endswith('MTD_TL.xml'):
 
                     fbase = Path(fn).parent.name
+                    # fsplit = fbase.split('_')
+                    # fbase = fsplit[1] + '_' + fsplit[3][:8]
                     down_file = poutdir.joinpath(fbase + '_MTD_TL.xml').as_posix()
                     key = 'meta'
                     rename = True
@@ -741,8 +760,11 @@ class GeoDownloads(object):
                     if fname.endswith('.jp2'):
 
                         fbase = Path(fn).parent.parent.name
+                        # fsplit = fbase.split('_')
+                        # fbase = fsplit[0] + '_' + fsplit[1][:8]
                         key = Path(fn).name.split('.')[0].split('_')[-1]
                         down_file = poutdir.joinpath(fbase + '_' + key + '.jp2').as_posix()
+                        rename = True
 
                     else:
 
@@ -764,31 +786,6 @@ class GeoDownloads(object):
 
                         null_items.append(fbase)
                         continue_download = False
-
-                # if not continue_download:
-                #
-                #     if downloaded_sub:
-                #
-                #         del_keys = list()
-                #
-                #         for k, v in downloaded_sub.items():
-                #
-                #             if fbase in v:
-                #
-                #                 if verbose > 0:
-                #                     logger.warning('  Removing {} ...'.format(v.name))
-                #
-                #                 if Path(v.name).is_file():
-                #
-                #                     os.remove(v.name)
-                #                     del_keys.append(k)
-                #
-                #         if del_keys:
-                #
-                #             for del_key in del_keys:
-                #
-                #                 if del_key in downloaded_sub:
-                #                     del downloaded_sub[del_key]
 
                 if continue_download:
 
