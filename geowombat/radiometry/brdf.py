@@ -2053,14 +2053,14 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
         # Mask data
         if isinstance(mask, xr.DataArray):
-            data = xr.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768), data, nodata)
+            data = xr.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768*0.01), data, nodata)
         else:
-            data = xr.where(solar_za.sel(band=1) != -32768, data, nodata)
+            data = xr.where(solar_za.sel(band=1) != -32768*0.01, data, nodata)
 
         data = data.transpose('band', 'y', 'x').astype(dtype)
 
         attrs['sensor'] = sensor
-        attrs['calibration'] = 'Nadir BRDF-adjusted (NBAR) surface reflectance'
+        attrs['calibration'] = 'BRDF-adjusted surface reflectance'
         attrs['nodata'] = nodata
         attrs['drange'] = drange
 

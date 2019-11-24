@@ -90,6 +90,25 @@ def relative_azimuth(saa, vaa):
     return xr.ufuncs.rad2deg(raa)
 
 
+def get_sentinel_sensor(metadata):
+
+    # Parse the XML file
+    tree = ET.parse(metadata)
+    root = tree.getroot()
+
+    for child in root:
+
+        if 'general_info' in child.tag[-14:].lower():
+            general_info = child
+
+    for ginfo in general_info:
+
+        if ginfo.tag == 'TILE_ID':
+            file_name = ginfo.text
+
+    return file_name[:3].lower()
+
+
 def _parse_sentinel_angles(metadata, proc_angles, nodata):
 
     """
@@ -209,10 +228,12 @@ def sentinel_pixel_angles(metadata,
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
 
-    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
+    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
 
     sza, saa = _parse_sentinel_angles(metadata, 'solar', nodata)
     vza, vaa = _parse_sentinel_angles(metadata, 'view', nodata)
+
+    sensor_name = get_sentinel_sensor(metadata)
 
     with rio.open(ref_file) as src:
 
@@ -283,7 +304,8 @@ def sentinel_pixel_angles(metadata,
     return AngleInfo(vaa=sensor_azimuth_file,
                      vza=sensor_zenith_file,
                      saa=solar_azimuth_file,
-                     sza=solar_zenith_file)
+                     sza=solar_zenith_file,
+                     sensor=sensor_name)
 
 
 # Potentially useful for angle creation

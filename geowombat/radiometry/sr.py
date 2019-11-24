@@ -228,7 +228,8 @@ class LinearAdjustments(object):
                  data,
                  sensor=None,
                  to='l8',
-                 band_names=None):
+                 band_names=None,
+                 scale_factor=1):
 
         """
         Applies a bandpass adjustment by applying a linear function to surface reflectance values
@@ -238,6 +239,7 @@ class LinearAdjustments(object):
             sensor (Optional[str]): The sensor to adjust.
             to (Optional[str]): The sensor to adjust to.
             band_names (Optional[list]): The bands to adjust. If not given, all bands are adjusted.
+            scale_factor (Optional[float]): A scale factor to apply to the input data.
 
         Reference:
 
@@ -268,6 +270,13 @@ class LinearAdjustments(object):
 
         attrs = data.attrs.copy()
 
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        # Scale the reflectance data
+        if scale_factor != 1:
+            data = data * scale_factor
+
         if not band_names:
 
             band_names = data.band.values.tolist()
@@ -291,9 +300,12 @@ class LinearAdjustments(object):
         # Apply the linear bandpass adjustment
         data = alphas + betas * data
 
+        if scale_factor != 1:
+            data = data / scale_factor
+
         data.attrs['adjustment'] = '{} to {}'.format(sensor, to)
-        data.attrs['alphas'] = alphas.data.compute().tolist()
-        data.attrs['betas'] = betas.data.compute().tolist()
+        data.attrs['alphas'] = alphas.data.tolist()
+        data.attrs['betas'] = betas.data.tolist()
 
         data.attrs = attrs
 
