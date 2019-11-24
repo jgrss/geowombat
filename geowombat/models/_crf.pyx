@@ -165,6 +165,7 @@ def time_to_crffeas(double[:, :, ::1] data,
         cpp_map[cpp_string, cpp_map[cpp_string, int]] sensor_bands
         cpp_map[cpp_string, int] l7_like
         cpp_map[cpp_string, int] l8
+        cpp_map[cpp_string, int] s210
         cpp_map[cpp_string, int] s2
 
     for v in range(1, ncols+1):
@@ -185,6 +186,11 @@ def time_to_crffeas(double[:, :, ::1] data,
     l8[b'swir1'] = 5
     l8[b'swir2'] = 6
 
+    s210[b'blue'] = 0
+    s210[b'green'] = 1
+    s210[b'red'] = 2
+    s210[b'nir'] = 3
+
     s2[b'blue'] = 0
     s2[b'green'] = 1
     s2[b'red'] = 2
@@ -198,6 +204,7 @@ def time_to_crffeas(double[:, :, ::1] data,
 
     sensor_bands[b'l7'] = l7_like
     sensor_bands[b'l8'] = l8
+    sensor_bands[b's210'] = s210
     sensor_bands[b's2'] = s2
     sensor_bands[b's2l7'] = l7_like
 
