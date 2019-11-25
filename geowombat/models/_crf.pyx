@@ -17,8 +17,35 @@ from libcpp.string cimport string as cpp_string
 ctypedef char* char_ptr
 
 
-cdef inline double _ndvi(double red, double nir) nogil:
+# cdef extern from "<vector>" namespace "std":
+#
+#     cdef cppclass vector[T]:
+#         void push_back(T&) nogil
+#         void begin() nogil
+#         void end() nogil
+#         void clear() nogil
+#         size_t size()
+#         T& operator[](size_t)
+
+
+cdef inline double _ndvi(double red, double nir):
     return (nir - red) / (nir + red)
+
+
+cdef inline double _evi2(double red, double nir):
+    return 2.5 * ((nir - red) / (nir + 1.0 + (2.4 * red)))
+
+
+cdef inline double _brightness(double green, double red, double nir):
+    return (green**2 + red**2 + nir**2)**0.5
+
+
+cdef inline double _brightness_swir(double green, double red, double nir, double swir1):
+    return (green**2 + red**2 + nir**2 + swir1**2)**0.5
+
+
+cdef inline double _wi(double red, double swir1):
+    return 0.0 if red + swir1 > 0.5 else 1.0 - ((red + swir1) / 0.5)
 
 
 cdef unicode _text(s):
@@ -39,7 +66,8 @@ cdef unicode _text(s):
 
 
 cdef cpp_map[cpp_string, double] _sample_to_dict_pan(double[::1] tsamp,
-                                                     cpp_vector[cpp_string] string_ints) nogil:
+                                                     cpp_vector[cpp_string] string_ints,
+                                                     double scale_factor):
 
     """
     Converts names and a 1d array to a dictionary
@@ -51,7 +79,36 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_pan(double[::1] tsamp,
         cpp_map[cpp_string, double] features_map
 
     for t in range(0, tsamp_len):
-        features_map[string_ints[t]] = tsamp[t] * 0.0001
+        features_map[string_ints[t]] = tsamp[t] * scale_factor
+
+    return features_map
+
+
+cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
+                                                      cpp_vector[cpp_string] string_ints,
+                                                      double ndvi,
+                                                      double evi2,
+                                                      double brightness,
+                                                      cpp_string ndvi_string,
+                                                      cpp_string evi2_string,
+                                                      cpp_string brightness_string,
+                                                      double scale_factor):
+
+    """
+    Converts names and a 1d array to a dictionary
+    """
+
+    cdef:
+        Py_ssize_t t
+        unsigned int tsamp_len = tsamp.shape[0]
+        cpp_map[cpp_string, double] features_map
+
+    for t in range(0, tsamp_len):
+        features_map[string_ints[t]] = tsamp[t] * scale_factor
+
+    features_map[ndvi_string] = ndvi
+    features_map[evi2_string] = evi2
+    features_map[brightness_string] = brightness
 
     return features_map
 
@@ -59,7 +116,14 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_pan(double[::1] tsamp,
 cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
                                                  cpp_vector[cpp_string] string_ints,
                                                  double ndvi,
-                                                 cpp_string ndvi_string) nogil:
+                                                 double evi2,
+                                                 double brightness,
+                                                 double wi,
+                                                 cpp_string ndvi_string,
+                                                 cpp_string evi2_string,
+                                                 cpp_string brightness_string,
+                                                 cpp_string wi_string,
+                                                 double scale_factor):
 
     """
     Converts names and a 1d array to a dictionary
@@ -71,9 +135,12 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
         cpp_map[cpp_string, double] features_map
 
     for t in range(0, tsamp_len):
-        features_map[string_ints[t]] = tsamp[t] * 0.0001
+        features_map[string_ints[t]] = tsamp[t] * scale_factor
 
     features_map[ndvi_string] = ndvi
+    features_map[evi2_string] = evi2
+    features_map[brightness_string] = brightness
+    features_map[wi_string] = wi
 
     return features_map
 
@@ -81,17 +148,23 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
 cdef cpp_vector[double] _push_classes(cpp_vector[double] vct,
                                       cpp_map[cpp_string, double] ps,
                                       cpp_vector[cpp_string] labels_bytes,
-                                      unsigned int n_classes) nogil:
+                                      unsigned int n_classes):
 
     cdef:
         Py_ssize_t m
+        double ps_label_value
+        cpp_string m_label
 
     for m in range(0, n_classes):
 
-        if ps.count(labels_bytes[m]) > 0:
-            vct.push_back(ps[labels_bytes[m]])
+        m_label = labels_bytes[m]
+
+        if ps.count(m_label) > 0:
+            ps_label_value = ps[m_label]
         else:
-            vct.push_back(0.0)
+            ps_label_value = 0.0
+
+        vct.push_back(ps_label_value)
 
     return vct
 
@@ -104,10 +177,7 @@ def probas_to_labels(cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] pred,
                      unsigned int ncols):
 
     """
-    Converts CRF predictions to class labels
-
-    Returns:
-
+    Converts CRF probabilities in dictionary format to probabilities in array format
     """
 
     cdef:
@@ -118,19 +188,17 @@ def probas_to_labels(cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] pred,
         cpp_vector[cpp_vector[double]] v2
         cpp_vector[cpp_vector[cpp_vector[double]]] v3
 
-    with nogil:
+    for pr in pred:
 
-        for pr in pred:
+        for ps in pr:
 
-            for ps in pr:
+            v1 = _push_classes(v1, ps, labels, n_classes)
+            v2.push_back(v1)
+            v1.clear()
 
-                v1 = _push_classes(v1, ps, labels, n_classes)
-                v2.push_back(v1)
-                v1.clear()
+        v3.push_back(v2)
 
-            v3.push_back(v2)
-
-            v2.clear()
+        v2.clear()
 
     return np.array(v3, dtype='float64').transpose(1, 2, 0).reshape(ntime,
                                                                     n_classes,
@@ -157,16 +225,19 @@ def time_to_crffeas(double[:, :, ::1] data,
         double[::1] tsample
         cpp_vector[cpp_map[cpp_string, double]] samples
         cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] samples_full
-        unsigned int red_idx
-        unsigned int nir_idx
-        double ndvi
+        unsigned int blue_idx, green_idx, red_idx, nir_idx, swir1_idx
+        double ndvi, evi2, brightness, wi
         cpp_string ndvi_string = <cpp_string>'ndvi'.encode('utf-8')
+        cpp_string evi2_string = <cpp_string>'evi2'.encode('utf-8')
+        cpp_string brightness_string = <cpp_string>'brightness'.encode('utf-8')
+        cpp_string wi_string = <cpp_string>'wi'.encode('utf-8')
         cpp_vector[cpp_string] string_ints
         cpp_map[cpp_string, cpp_map[cpp_string, int]] sensor_bands
         cpp_map[cpp_string, int] l7_like
         cpp_map[cpp_string, int] l8
         cpp_map[cpp_string, int] s210
         cpp_map[cpp_string, int] s2
+        double scale_factor = 0.0001
 
     for v in range(1, ncols+1):
         string_ints.push_back(<cpp_string>str(v).encode('utf-8'))
@@ -210,34 +281,78 @@ def time_to_crffeas(double[:, :, ::1] data,
 
     if sensor != b'pan':
 
-        red_idx = sensor_bands[sensor]['red']
-        nir_idx = sensor_bands[sensor]['nir']
+        if sensor == b's210':
 
-    with nogil:
+            blue_idx = sensor_bands[sensor]['blue']
+            green_idx = sensor_bands[sensor]['green']
+            red_idx = sensor_bands[sensor]['red']
+            nir_idx = sensor_bands[sensor]['nir']
 
-        for i in range(0, nrows*ncols):
+        else:
 
-            for j in range(0, ntime):
+            blue_idx = sensor_bands[sensor]['blue']
+            green_idx = sensor_bands[sensor]['green']
+            red_idx = sensor_bands[sensor]['red']
+            nir_idx = sensor_bands[sensor]['nir']
+            swir1_idx = sensor_bands[sensor]['swir1']
 
-                tdata = data[j]
-                tsample = tdata[i, :]
+    for i in range(0, nrows*ncols):
 
-                if sensor == b'pan':
+        for j in range(0, ntime):
 
-                    samples.push_back(_sample_to_dict_pan(tsample,
-                                                          string_ints))
+            tdata = data[j]
+            tsample = tdata[i, :]
+
+            if sensor == b'pan':
+
+                samples.push_back(_sample_to_dict_pan(tsample,
+                                                      string_ints,
+                                                      scale_factor))
+
+            else:
+
+                if sensor == b's210':
+
+                    ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    brightness = _brightness(tsample[green_idx]*scale_factor,
+                                             tsample[red_idx]*scale_factor,
+                                             tsample[nir_idx]*scale_factor)
+
+                    samples.push_back(_sample_to_dict_bgrn(tsample,
+                                                           string_ints,
+                                                           ndvi,
+                                                           evi2,
+                                                           brightness,
+                                                           ndvi_string,
+                                                           evi2_string,
+                                                           brightness_string,
+                                                           scale_factor))
 
                 else:
 
-                    ndvi = _ndvi(tsample[red_idx]*0.0001, tsample[nir_idx]*0.0001)
+                    ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    brightness = _brightness_swir(tsample[green_idx] * scale_factor,
+                                                  tsample[red_idx] * scale_factor,
+                                                  tsample[nir_idx] * scale_factor,
+                                                  tsample[swir1_idx] * scale_factor)
+                    wi = _wi(tsample[red_idx]*scale_factor, tsample[swir1_idx]*scale_factor)
 
                     samples.push_back(_sample_to_dict(tsample,
                                                       string_ints,
                                                       ndvi,
-                                                      ndvi_string))
+                                                      evi2,
+                                                      wi,
+                                                      brightness,
+                                                      ndvi_string,
+                                                      evi2_string,
+                                                      brightness_string,
+                                                      wi_string,
+                                                      scale_factor))
 
-            samples_full.push_back(samples)
+        samples_full.push_back(samples)
 
-            samples.clear()
+        samples.clear()
 
     return samples_full
