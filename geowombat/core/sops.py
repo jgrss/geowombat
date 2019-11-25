@@ -303,8 +303,8 @@ class SpatialOperations(_PropertyMixin):
         else:
             return data
 
-    def subset(self,
-               data,
+    @staticmethod
+    def subset(data,
                left=None,
                top=None,
                right=None,

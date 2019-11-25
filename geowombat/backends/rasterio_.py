@@ -482,7 +482,9 @@ def warp(filename,
                                                                                resolution=dst_res)
 
         # Do not warp if all the key metadata match the reference information
-        if (src.bounds == bounds) and (src.res == dst_res) and (src.crs == dst_crs) and (src.width == dst_width) and (src.height == dst_height):
+        if bounds and (src.bounds == bounds) and (src.res == dst_res) and (src.crs == dst_crs) and (src.width == dst_width) and (src.height == dst_height):
+            output = filename
+        elif not bounds and (src.res == dst_res) and (src.crs == dst_crs) and (src.width == dst_width) and (src.height == dst_height):
             output = filename
         else:
 
