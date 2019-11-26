@@ -489,11 +489,13 @@ def warp(filename,
             output = filename
         else:
 
-            # Align the cells
-            dst_transform, dst_width, dst_height = aligned_target(dst_transform,
-                                                                  dst_width,
-                                                                  dst_height,
-                                                                  dst_res)
+            if src.bounds != bounds:
+    
+                # Align the cells
+                dst_transform, dst_width, dst_height = aligned_target(dst_transform,
+                                                                      dst_width,
+                                                                      dst_height,
+                                                                      dst_res)
 
             vrt_options = {'resampling': getattr(Resampling, resampling),
                            'crs': dst_crs,
