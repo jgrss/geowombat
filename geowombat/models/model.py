@@ -157,7 +157,7 @@ class BaseCRF(IOMixin):
         # TODO
         pass
 
-    def predict_probas(self, X, sensor):
+    def predict_probas(self, X, sensor, scale_factor=0.0001):
 
         """
         Predicts CRF probabilities
@@ -165,6 +165,7 @@ class BaseCRF(IOMixin):
         Args:
             X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
             sensor (str): The satellite sensor.
+            scale_factor (Optional[float]): The scale factor to apply to `X`.
 
         Returns:
             ``4d array`` of predictions, shaped as [time x classes x rows x columns].
@@ -180,7 +181,8 @@ class BaseCRF(IOMixin):
                                    sensor.encode('utf-8'),
                                    ntime,
                                    nrows,
-                                   ncols)
+                                   ncols,
+                                   scale_factor=scale_factor)
 
         if self.crf_classifier_ == 'clouds':
 
