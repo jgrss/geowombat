@@ -748,8 +748,6 @@ def apply(infile,
             if 'blockxsize' not in kwargs:
                 kwargs['blockysize'] = profile['blockysize']
 
-            # nbands = src.count
-
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
             # concurrently.

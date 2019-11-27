@@ -14,6 +14,7 @@ import xarray as xr
 import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
+from rasterio.warp import calculate_default_transform
 from affine import Affine
 
 try:
@@ -255,7 +256,7 @@ class SpatialOperations(_PropertyMixin):
 
         left, bottom, right, top = df.total_bounds
 
-        # Align the geometry grid to the array
+        # Align the geometry array grid
         align_transform, align_width, align_height = align_bounds(left,
                                                                   bottom,
                                                                   right,
@@ -302,6 +303,70 @@ class SpatialOperations(_PropertyMixin):
 
         else:
             return data
+
+    def mask(self,
+             data,
+             df,
+             query=None,
+             keep='in'):
+
+        """
+        Masks a DataArray by vector polygon geometry
+
+        Args:
+            data (DataArray): An ``xarray.DataArray`` to mask.
+            df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
+            query (Optional[str]): A query to apply to ``df``.
+            keep (Optional[str]): If ``keep`` = 'in', mask values outside of the geometry (keep inside).
+                Otherwise, if ``keep`` = 'out', mask values inside (keep outside).
+
+        Returns:
+             ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = ds.gw.mask(df)
+        """
+
+        if isinstance(df, str) and os.path.isfile(df):
+            df = gpd.read_file(df)
+
+        if query:
+            df = df.query(query)
+
+        try:
+
+            if data.crs.strip() != CRS.from_dict(df.crs).to_proj4().strip():
+
+                # Re-project the DataFrame to match the image CRS
+                df = df.to_crs(data.crs)
+
+        except:
+
+            if data.crs.strip() != CRS.from_proj4(df.crs).to_proj4().strip():
+                df = df.to_crs(data.crs)
+
+        # Rasterize the geometry and store as a DataArray
+        mask = xr.DataArray(data=da.from_array(features.rasterize(list(df.geometry.values),
+                                                                  out_shape=(data.gw.nrows, data.gw.ncols),
+                                                                  transform=data.transform,
+                                                                  fill=0,
+                                                                  out=None,
+                                                                  all_touched=True,
+                                                                  default_value=1,
+                                                                  dtype='int32'),
+                                               chunks=(data.gw.row_chunks, data.gw.col_chunks)),
+                            dims=['y', 'x'],
+                            coords={'y': data.y.values,
+                                    'x': data.x.values})
+
+        # Return the masked array
+        if keep == 'out':
+            return data.where(mask != 1)
+        else:
+            return data.where(mask == 1)
 
     @staticmethod
     def subset(data,

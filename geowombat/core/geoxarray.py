@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, moving, extract, subset, clip
+from . import to_raster, moving, extract, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
@@ -36,7 +36,7 @@ class _UpdateConfig(object):
             for k, v in self.config.items():
 
                 # rasterio.write keyword arguments
-                if k in kwargs:
+                if k not in kwargs:
                     kwargs[k] = v
 
         return kwargs
@@ -153,7 +153,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The Dataset does not have a `transform` attribute.')
 
-        kwargs = self._update_kwargs(**kwargs)
+        kwargs = self._update_kwargs(nodata=nodata,
+                                     driver=driver,
+                                     **kwargs)
 
         to_raster(self._obj[variable],
                   filename,
@@ -162,9 +164,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   overwrite=overwrite,
                   crs=self._obj.crs,
                   transform=self._obj.transform,
-                  driver=driver,
                   dtype=dtype,
-                  nodata=nodata,
                   tags=tags,
                   **kwargs)
 
@@ -355,7 +355,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The DataArray does not have a `transform` attribute.')
 
-        kwargs = self._update_kwargs(**kwargs)
+        kwargs = self._update_kwargs(nodata=nodata,
+                                     driver=driver,
+                                     blockxsize=blockxsize,
+                                     blockysize=blockysize,
+                                     **kwargs)
 
         to_raster(self._obj,
                   filename,
@@ -383,11 +387,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   width=self._obj.gw.ncols,
                   height=self._obj.gw.nrows,
                   count=self._obj.gw.nbands,
-                  driver=driver,
                   dtype=self._obj.data.dtype.name,
-                  nodata=nodata,
-                  blockxsize=blockxsize,
-                  blockysize=blockysize,
                   tags=tags,
                   **kwargs)
 
@@ -509,6 +509,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return clip(self._obj, df, query=query, mask_data=mask_data)
+
+    def mask(self, df, query=None, keep='in'):
+
+        """
+        Masks a DataArray
+
+        Args:
+            df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
+            query (Optional[str]): A query to apply to ``df``.
+            keep (Optional[str]): If ``keep`` = 'in', mask values outside of the geometry (keep inside).
+                Otherwise, if ``keep`` = 'out', mask values inside (keep outside).
+
+        Returns:
+             ``xarray.DataArray``
+        """
+
+        return mask(self._obj, df, query=query, keep=keep)
 
     def subset(self,
                left=None,

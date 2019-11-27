@@ -484,7 +484,7 @@ def warp(filename,
                                                                                resolution=dst_res)
 
             dst_width = int((right - left) / dst_res[0])
-            dst_height = int((top - bottom) / dst_res[0])
+            dst_height = int((top - bottom) / dst_res[1])
 
         else:
             bounds = src.bounds

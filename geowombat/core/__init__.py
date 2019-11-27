@@ -9,6 +9,7 @@ from .vi import TasseledCap
 extract = SpatialOperations().extract
 subset = SpatialOperations().subset
 clip = SpatialOperations().clip
+mask = SpatialOperations().mask
 polygons_to_points = Converters().polygons_to_points
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
@@ -24,6 +25,7 @@ __all__ = ['apply',
            'extract',
            'subset',
            'clip',
+           'mask',
            'polygons_to_points',
            'moving',
            'norm_diff',
