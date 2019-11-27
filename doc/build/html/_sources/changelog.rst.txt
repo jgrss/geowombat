@@ -3,6 +3,19 @@
 Change Log
 ==========
 
+1.0.0b (27 November 2019)
+-------------------------
+
+New
+~~~
+
+- Added :func:`mask` function.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed row/column offset error with :func:`warp` function.
+
 1.0.0b (10 November 2019)
 -------------------------
 

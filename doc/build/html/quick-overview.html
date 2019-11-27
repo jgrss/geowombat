@@ -133,14 +133,14 @@
 
 In [5]: print(data)
 &lt;xarray.DataArray (x: 2, y: 3)&gt;
-array([[ 1.00936549,  0.46028173, -0.05010738],
-       [-0.28777942,  0.02878028,  0.04381725]])
+array([[ 1.29691366, -0.54436916, -0.08838676],
+       [-0.74044195, -0.36066614, -0.27775958]])
 Coordinates:
   * x        (x) int64 10 20
 Dimensions without coordinates: y
 
 In [6]: print(data.gw)
-&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aacb9656160&gt;</pre>
+&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fb34031ed68&gt;</pre>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
@@ -152,21 +152,23 @@ In [6]: print(data.gw)
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-f470e7460627174232d709e805318608&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-632439ba7f2b19f2ea4f1e95f35f19d5&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
-<span class="go">    is_tiled:    1</span>
-<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
-<span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    resampling:  nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aacb9635cf8&gt;</span>
+<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    crs:            +init=epsg:32618</span>
+<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    DataType:       Generic</span>
+<span class="go">    resampling:     nearest</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fb3403e24a8&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -183,7 +185,7 @@ In [6]: print(data.gw)
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

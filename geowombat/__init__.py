@@ -3,6 +3,7 @@ from .core.api import open
 from .core import extract
 from .core import subset
 from .core import clip
+from .core import mask
 from .core import polygons_to_points
 from .core import apply
 from .core import to_raster
@@ -22,6 +23,7 @@ __all__ = ['config',
            'extract',
            'subset',
            'clip',
+           'mask',
            'polygons_to_points',
            'apply',
            'to_raster',

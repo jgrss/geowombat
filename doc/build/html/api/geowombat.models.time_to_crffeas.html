@@ -16,8 +16,6 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="GeoWombatClassifier" href="geowombat.models.GeoWombatClassifier.html" />
-    <link rel="prev" title="predict" href="geowombat.models.predict.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -73,18 +71,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.models.predict.html" title="previous chapter">predict</a></li>
-      <li>Next: <a href="geowombat.models.GeoWombatClassifier.html" title="next chapter">GeoWombatClassifier</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -116,24 +110,6 @@
             
   <div class="section" id="time-to-crffeas">
 <h1>time_to_crffeas<a class="headerlink" href="#time-to-crffeas" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="geowombat.models.time_to_crffeas">
-<code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">time_to_crffeas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.time_to_crffeas" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a time-shaped array to CRF features</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>4d array</em>) – time x bands x rows x columns.</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<p>time_to_features(array, [‘swir1’, ‘swir2’, ‘date-diff’, ‘b-b’])</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">list</span></code> of feature dictionaries</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 
@@ -147,7 +123,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

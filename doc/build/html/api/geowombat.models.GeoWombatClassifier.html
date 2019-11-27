@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="landsat_pixel_angles" href="geowombat.radiometry.landsat_pixel_angles.html" />
-    <link rel="prev" title="time_to_crffeas" href="geowombat.models.time_to_crffeas.html" />
+    <link rel="prev" title="CloudClassifier" href="geowombat.models.CloudClassifier.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -82,7 +82,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.models.time_to_crffeas.html" title="previous chapter">time_to_crffeas</a></li>
+      <li>Previous: <a href="geowombat.models.CloudClassifier.html" title="previous chapter">CloudClassifier</a></li>
       <li>Next: <a href="geowombat.radiometry.landsat_pixel_angles.html" title="next chapter">landsat_pixel_angles</a></li>
   </ul></li>
   </ul></li>
@@ -119,7 +119,7 @@
 <dl class="class">
 <dt id="geowombat.models.GeoWombatClassifier">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">GeoWombatClassifier</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">lightgbm_kwargs=None</em>, <em class="sig-param">extra_trees_kwargs=None</em>, <em class="sig-param">random_forest_kwargs=None</em>, <em class="sig-param">bal_random_forest_kwargs=None</em>, <em class="sig-param">bal_bagging_kwargs=None</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">backend='none'</em>, <em class="sig-param">n_jobs=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.GeoWombatClassifier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.models.model.IOMixin</span></code></p>
 <p>A class for model fitting models with Dask</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -287,7 +287,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

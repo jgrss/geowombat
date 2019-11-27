@@ -114,10 +114,25 @@
             
   <div class="section" id="change-log">
 <span id="changelog"></span><h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="b-10-november-2019">
-<h2>1.0.0b (10 November 2019)<a class="headerlink" href="#b-10-november-2019" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="b-27-november-2019">
+<h2>1.0.0b (27 November 2019)<a class="headerlink" href="#b-27-november-2019" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="new">
 <h3>New<a class="headerlink" href="#new" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">mask()</span></code> function.</p></li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed row/column offset error with <code class="xref py py-func docutils literal notranslate"><span class="pre">warp()</span></code> function.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="b-10-november-2019">
+<h2>1.0.0b (10 November 2019)<a class="headerlink" href="#b-10-november-2019" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>New<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code> function.</p></li>
 </ul>
@@ -134,8 +149,8 @@
 </div>
 <div class="section" id="b-30-october-2019">
 <h2>1.0.0b (30 October 2019)<a class="headerlink" href="#b-30-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>New<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>New<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added user functions as Xarray attributes. See <a class="reference internal" href="apply.html#apply"><span class="std std-ref">Applying custom user functions</span></a> for an example.</p></li>
 </ul>
@@ -143,14 +158,14 @@
 </div>
 <div class="section" id="b-24-october-2019">
 <h2>1.0.0b (24 October 2019)<a class="headerlink" href="#b-24-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Enhancements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Enhancements<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Implemented improvements from testing processes vs. threads for concurrent I/O in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="bug-fixes">
-<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Bug fixes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Changed BRDF normalization (<a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.BRDF</span></code></a>) from 1d to 2d in order to work with Dask arrays.</p></li>
 </ul>
@@ -164,8 +179,8 @@
 <li><p>Added fixes for surface reflectance</p></li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h3>New<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>New<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added support for band stacking (in addition to time stacking) in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>. The new keyword argument is <cite>stack_dim</cite> and can be used like:</p></li>
 </ul>
@@ -177,14 +192,14 @@
 </div>
 <div class="section" id="b-20-october-2019">
 <h2>1.0.0b (20 October 2019)<a class="headerlink" href="#b-20-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id4">
-<h3>Changes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Changes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Block writing can now be done with <cite>concurrent.futures</cite> or with <cite>dask.store</cite>.</p></li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h3>New<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>New<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added automatic date parsing when concatenating a list of files.</p></li>
 <li><p>Added BRDF normalization using the c-factor method.</p></li>
@@ -214,7 +229,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
