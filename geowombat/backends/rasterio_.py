@@ -407,7 +407,8 @@ def warp(filename,
          res=None,
          nodata=0,
          warp_mem_limit=512,
-         num_threads=1):
+         num_threads=1,
+         tap=False):
 
     """
     Warps an image to a VRT object
@@ -422,6 +423,7 @@ def warp(filename,
         nodata (Optional[int or float]): The 'no data' value.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
+        tap (Optional[bool]): Whether to target align pixels.
 
     Returns:
         ``rasterio.vrt.WarpedVRT``
@@ -466,7 +468,7 @@ def warp(filename,
                                                                            resolution=dst_res)
 
         # Check if the data need to be subset
-        if bounds:
+        if bounds and (bounds != src.bounds):
 
             left, bottom, right, top = bounds
 
@@ -481,6 +483,9 @@ def warp(filename,
                                                                                top=top,
                                                                                resolution=dst_res)
 
+            dst_width = int((right - left) / dst_res[0])
+            dst_height = int((top - bottom) / dst_res[0])
+
         else:
             bounds = src.bounds
 
@@ -489,8 +494,8 @@ def warp(filename,
             output = filename
         else:
 
-            if src.bounds != bounds:
-    
+            if tap:
+
                 # Align the cells
                 dst_transform, dst_width, dst_height = aligned_target(dst_transform,
                                                                       dst_width,

@@ -45,6 +45,7 @@ def warp_open(filename,
               return_windows=False,
               warp_mem_limit=512,
               num_threads=1,
+              tap=False,
               **kwargs):
 
     """
@@ -57,6 +58,7 @@ def warp_open(filename,
         return_windows (Optional[bool]): Whether to return block windows.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
+        tap (Optional[bool]): Whether to target align pixels.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
@@ -67,7 +69,8 @@ def warp_open(filename,
                   'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads}
+                  'num_threads': num_threads,
+                  'tap': tap}
 
     # Check if there is a reference image
     if 'ref_image' in config:
