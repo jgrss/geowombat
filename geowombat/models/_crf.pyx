@@ -28,6 +28,11 @@ ctypedef char* char_ptr
 #         T& operator[](size_t)
 
 
+cdef inline double _evi(double blue, double red, double nir):
+    """Enhanced Vegetation Index"""
+    return 2.5 * ((nir - red) / (nir + 6.0 * red - 7.5 * blue + 1.0))
+
+
 cdef inline double _evi2(double red, double nir):
     """Two-band Enhanced Vegetation Index"""
     return 2.5 * ((nir - red) / (nir + 1.0 + (2.4 * red)))
@@ -51,6 +56,11 @@ cdef inline double _brightness_swir(double green, double red, double nir, double
 cdef inline double _dbsi(double green, double red, double nir, double swir1):
     """Dry Bare Soil Index"""
     return ((swir1 - green) / (swir1 + green)) - _ndvi(red, nir)
+
+
+cdef inline double _gndvi(double green, double nir):
+    """Green Normalized Difference Vegetation Index"""
+    return (nir - green) / (nir + green)
 
 
 cdef inline double _nbr(double nir, double swir2):
@@ -112,9 +122,11 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_pan(double[::1] tsamp,
 cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
                                                       cpp_vector[cpp_string] string_ints,
                                                       double brightness,
+                                                      double evi,
                                                       double evi2,
                                                       double ndvi,
                                                       cpp_string brightness_string,
+                                                      cpp_string evi_string,
                                                       cpp_string evi2_string,
                                                       cpp_string ndvi_string,
                                                       double scale_factor):
@@ -132,6 +144,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
         features_map[string_ints[t]] = tsamp[t] * scale_factor
 
     features_map[brightness_string] = brightness
+    features_map[evi_string] = evi
     features_map[evi2_string] = evi2
     features_map[ndvi_string] = ndvi
 
@@ -177,6 +190,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
                                                  cpp_vector[cpp_string] string_ints,
                                                  double brightness,
                                                  double dbsi,
+                                                 double evi,
                                                  double evi2,
                                                  double nbr,
                                                  double ndmi,
@@ -184,6 +198,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
                                                  double wi,
                                                  cpp_string brightness_string,
                                                  cpp_string dbsi_string,
+                                                 cpp_string evi_string,
                                                  cpp_string evi2_string,
                                                  cpp_string nbr_string,
                                                  cpp_string ndmi_string,
@@ -205,6 +220,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
 
     features_map[brightness_string] = brightness
     features_map[dbsi_string] = dbsi
+    features_map[evi_string] = evi
     features_map[evi2_string] = evi2
     features_map[nbr_string] = nbr
     features_map[ndmi_string] = ndmi
@@ -295,12 +311,14 @@ def time_to_crffeas(double[:, :, ::1] data,
         double[::1] tsample
         cpp_vector[cpp_map[cpp_string, double]] samples
         cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] samples_full
-        unsigned int green_idx, red_idx, nir_idx, swir1_idx, swir2_idx, nir1_idx, nir2_idx, nir3_idx, rededge_idx
+        unsigned int blue_idx, green_idx, red_idx, nir_idx, swir1_idx, swir2_idx, nir1_idx, nir2_idx, nir3_idx, rededge_idx
 
-        double brightness, evi2, nbr, ndmi, ndvi, wi, dbsi
+        double brightness, evi, evi2, gndvi, nbr, ndmi, ndvi, wi, dbsi
 
         cpp_string brightness_string = <cpp_string>'brightness'.encode('utf-8')
+        cpp_string evi_string = <cpp_string>'evi2'.encode('utf-8')
         cpp_string evi2_string = <cpp_string>'evi2'.encode('utf-8')
+        cpp_string gndvi_string = <cpp_string>'gndvi'.encode('utf-8')
         cpp_string nbr_string = <cpp_string>'nbr'.encode('utf-8')
         cpp_string ndmi_string = <cpp_string>'ndmi'.encode('utf-8')
         cpp_string ndvi_string = <cpp_string>'ndvi'.encode('utf-8')
@@ -358,6 +376,12 @@ def time_to_crffeas(double[:, :, ::1] data,
 
     sensor_bands[b'l7'] = l7_like
     sensor_bands[b'l8'] = l8
+    sensor_bands[b'l5bgrn'] = s210
+    sensor_bands[b'l7bgrn'] = s210
+    sensor_bands[b'l8bgrn'] = s210
+    sensor_bands[b'bgrn'] = s210
+    sensor_bands[b'qb'] = s210
+    sensor_bands[b'ps'] = s210
     sensor_bands[b's210'] = s210
     sensor_bands[b's220'] = s220
     sensor_bands[b's2'] = s2
@@ -365,20 +389,21 @@ def time_to_crffeas(double[:, :, ::1] data,
 
     if sensor != b'pan':
 
-        if sensor == b's210':
+        if (sensor == b's210') or (sensor == b'l5bgrn') or (sensor == b'l7bgrn') or (sensor == b'l8bgrn') or (sensor == b'bgrn') or (sensor == b'qb') or (sensor == b'ps'):
 
+            blue_idx = sensor_bands[sensor]['blue']
             green_idx = sensor_bands[sensor]['green']
             red_idx = sensor_bands[sensor]['red']
             nir_idx = sensor_bands[sensor]['nir']
 
         elif sensor == 's220':
 
-            nir1_idx = SENSOR_BANDS[sensor]['nir1']
-            nir2_idx = SENSOR_BANDS[sensor]['nir2']
-            nir3_idx = SENSOR_BANDS[sensor]['nir3']
-            rededge_idx = SENSOR_BANDS[sensor]['rededge']
-            swir1_idx = SENSOR_BANDS[sensor]['swir1']
-            swir2_idx = SENSOR_BANDS[sensor]['swir2']
+            nir1_idx = sensor_bands[sensor]['nir1']
+            nir2_idx = sensor_bands[sensor]['nir2']
+            nir3_idx = sensor_bands[sensor]['nir3']
+            rededge_idx = sensor_bands[sensor]['rededge']
+            swir1_idx = sensor_bands[sensor]['swir1']
+            swir2_idx = sensor_bands[sensor]['swir2']
 
         else:
 
@@ -403,21 +428,28 @@ def time_to_crffeas(double[:, :, ::1] data,
 
             else:
 
-                if sensor == b's210':
+                if (sensor == b's210') or (sensor == b'l5bgrn') or (sensor == b'l7bgrn') or (sensor == b'l8bgrn') or (sensor == b'bgrn') or (sensor == b'qb') or (sensor == b'ps'):
 
                     brightness = _brightness(tsample[green_idx]*scale_factor,
                                              tsample[red_idx]*scale_factor,
                                              tsample[nir_idx]*scale_factor)
-                    ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+
+                    evi = _evi(tsample[blue_idx]*scale_factor, tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
                     evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    gndvi = _gndvi(tsample[green_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
 
                     samples.push_back(_sample_to_dict_bgrn(tsample,
                                                            string_ints,
                                                            brightness,
+                                                           evi,
                                                            evi2,
+                                                           gndvi,
                                                            ndvi,
                                                            brightness_string,
+                                                           evi_string,
                                                            evi2_string,
+                                                           gndvi_string,
                                                            ndvi_string,
                                                            scale_factor))
 
@@ -452,6 +484,7 @@ def time_to_crffeas(double[:, :, ::1] data,
                                  tsample[nir_idx]*scale_factor,
                                  tsample[swir1_idx]*scale_factor)
 
+                    evi = _evi(tsample[blue_idx]*scale_factor, tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
                     evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
 
                     brightness = _brightness_swir(tsample[green_idx]*scale_factor,
@@ -468,6 +501,7 @@ def time_to_crffeas(double[:, :, ::1] data,
                                                       string_ints,
                                                       brightness,
                                                       dbsi,
+                                                      evi,
                                                       evi2,
                                                       nbr,
                                                       ndmi,
@@ -475,6 +509,7 @@ def time_to_crffeas(double[:, :, ::1] data,
                                                       wi,
                                                       brightness_string,
                                                       dbsi_string,
+                                                      evi_string,
                                                       evi2_string,
                                                       nbr_string,
                                                       ndmi_string,
