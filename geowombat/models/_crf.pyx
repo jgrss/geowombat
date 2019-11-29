@@ -124,10 +124,12 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
                                                       double brightness,
                                                       double evi,
                                                       double evi2,
+                                                      double gndvi,
                                                       double ndvi,
                                                       cpp_string brightness_string,
                                                       cpp_string evi_string,
                                                       cpp_string evi2_string,
+                                                      cpp_string gndvi_string,
                                                       cpp_string ndvi_string,
                                                       double scale_factor):
 
@@ -146,6 +148,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
     features_map[brightness_string] = brightness
     features_map[evi_string] = evi
     features_map[evi2_string] = evi2
+    features_map[gndvi_string] = gndvi
     features_map[ndvi_string] = ndvi
 
     return features_map
