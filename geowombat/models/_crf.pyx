@@ -28,6 +28,14 @@ ctypedef char* char_ptr
 #         T& operator[](size_t)
 
 
+cdef extern from 'numpy/npy_math.h':
+    bint npy_isnan(double value)
+
+
+cdef inline double _nan_check(double value):
+    return 0.0 if npy_isnan(value) else value
+
+
 cdef inline double _evi(double blue, double red, double nir):
     """Enhanced Vegetation Index"""
     return 2.5 * ((nir - red) / (nir + 6.0 * red - 7.5 * blue + 1.0))
@@ -145,11 +153,11 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
     for t in range(0, tsamp_len):
         features_map[string_ints[t]] = tsamp[t] * scale_factor
 
-    features_map[brightness_string] = brightness
-    features_map[evi_string] = evi
-    features_map[evi2_string] = evi2
-    features_map[gndvi_string] = gndvi
-    features_map[ndvi_string] = ndvi
+    features_map[brightness_string] = _nan_check(brightness)
+    features_map[evi_string] = _nan_check(evi)
+    features_map[evi2_string] = _nan_check(evi2)
+    features_map[gndvi_string] = _nan_check(gndvi)
+    features_map[ndvi_string] = _nan_check(ndvi)
 
     return features_map
 
@@ -314,18 +322,19 @@ def time_to_crffeas(double[:, :, ::1] data,
         double[::1] tsample
         cpp_vector[cpp_map[cpp_string, double]] samples
         cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] samples_full
+
         unsigned int blue_idx, green_idx, red_idx, nir_idx, swir1_idx, swir2_idx, nir1_idx, nir2_idx, nir3_idx, rededge_idx
 
-        double brightness, evi, evi2, gndvi, nbr, ndmi, ndvi, wi, dbsi
+        double brightness, dbsi, evi, evi2, gndvi, nbr, ndmi, ndvi, wi
 
         cpp_string brightness_string = <cpp_string>'brightness'.encode('utf-8')
-        cpp_string evi_string = <cpp_string>'evi2'.encode('utf-8')
+        cpp_string dbsi_string = <cpp_string>'dbsi'.encode('utf-8')
+        cpp_string evi_string = <cpp_string>'evi'.encode('utf-8')
         cpp_string evi2_string = <cpp_string>'evi2'.encode('utf-8')
         cpp_string gndvi_string = <cpp_string>'gndvi'.encode('utf-8')
         cpp_string nbr_string = <cpp_string>'nbr'.encode('utf-8')
         cpp_string ndmi_string = <cpp_string>'ndmi'.encode('utf-8')
         cpp_string ndvi_string = <cpp_string>'ndvi'.encode('utf-8')
-        cpp_string dbsi_string = <cpp_string>'dbsi'.encode('utf-8')
         cpp_string wi_string = <cpp_string>'wi'.encode('utf-8')
 
         cpp_vector[cpp_string] string_ints
@@ -456,7 +465,7 @@ def time_to_crffeas(double[:, :, ::1] data,
                                                            ndvi_string,
                                                            scale_factor))
 
-                if sensor == b's220':
+                elif sensor == b's220':
 
                     brightness = _brightness(tsample[nir1_idx]*scale_factor,
                                              tsample[rededge_idx]*scale_factor,
@@ -482,23 +491,26 @@ def time_to_crffeas(double[:, :, ::1] data,
 
                 else:
 
-                    dbsi = _dbsi(tsample[green_idx]*scale_factor,
-                                 tsample[red_idx]*scale_factor,
-                                 tsample[nir_idx]*scale_factor,
-                                 tsample[swir1_idx]*scale_factor)
+                    brightness = _brightness_swir(tsample[green_idx] * scale_factor,
+                                                  tsample[red_idx] * scale_factor,
+                                                  tsample[nir_idx] * scale_factor,
+                                                  tsample[swir1_idx] * scale_factor)
 
-                    evi = _evi(tsample[blue_idx]*scale_factor, tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
-                    evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                    dbsi = _dbsi(tsample[green_idx] * scale_factor,
+                                 tsample[red_idx] * scale_factor,
+                                 tsample[nir_idx] * scale_factor,
+                                 tsample[swir1_idx] * scale_factor)
 
-                    brightness = _brightness_swir(tsample[green_idx]*scale_factor,
-                                                  tsample[red_idx]*scale_factor,
-                                                  tsample[nir_idx]*scale_factor,
-                                                  tsample[swir1_idx]*scale_factor)
+                    evi = _evi(tsample[blue_idx] * scale_factor, tsample[red_idx] * scale_factor,
+                               tsample[nir_idx] * scale_factor)
+                    evi2 = _evi2(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
 
-                    ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
-                    ndmi = _ndmi(tsample[nir_idx]*scale_factor, tsample[swir1_idx]*scale_factor)
-                    nbr = _nbr(tsample[nir_idx]*scale_factor, tsample[swir2_idx]*scale_factor)
-                    wi = _wi(tsample[red_idx]*scale_factor, tsample[swir1_idx]*scale_factor)
+                    gndvi = _gndvi(tsample[green_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+
+                    nbr = _nbr(tsample[nir_idx] * scale_factor, tsample[swir2_idx] * scale_factor)
+                    ndvi = _ndvi(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                    ndmi = _ndmi(tsample[nir_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
+                    wi = _wi(tsample[red_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
 
                     samples.push_back(_sample_to_dict(tsample,
                                                       string_ints,
