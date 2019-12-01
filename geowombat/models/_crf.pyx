@@ -36,6 +36,18 @@ cdef inline double _nan_check(double value):
     return 0.0 if npy_isnan(value) else value
 
 
+cdef inline double _clip_low(double value):
+    return 0.0 if value < 0 else value
+
+
+cdef inline double _clip_high(double value):
+    return 1.0 if value > 1 else value
+
+
+cdef inline double _clip(double value):
+    return _clip_low(value) if value < 1 else _clip_high(value)
+
+
 cdef inline double _evi(double blue, double red, double nir):
     """Enhanced Vegetation Index"""
     return 2.5 * ((nir - red) / (nir + 6.0 * red - 7.5 * blue + 1.0))
@@ -61,9 +73,9 @@ cdef inline double _brightness_swir(double green, double red, double nir, double
     return (green**2 + red**2 + nir**2 + swir1**2)**0.5
 
 
-cdef inline double _dbsi(double green, double red, double nir, double swir1):
-    """Dry Bare Soil Index"""
-    return ((swir1 - green) / (swir1 + green)) - _ndvi(red, nir)
+# cdef inline double _dbsi(double green, double red, double nir, double swir1):
+#     """Dry Bare Soil Index"""
+#     return ((swir1 - green) / (swir1 + green)) - _ndvi(red, nir)
 
 
 cdef inline double _gndvi(double green, double nir):
@@ -154,8 +166,8 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_bgrn(double[::1] tsamp,
         features_map[string_ints[t]] = tsamp[t] * scale_factor
 
     features_map[brightness_string] = _nan_check(brightness)
-    features_map[evi_string] = _nan_check(evi)
-    features_map[evi2_string] = _nan_check(evi2)
+    features_map[evi_string] = _clip(_nan_check(evi))
+    features_map[evi2_string] = _clip(_nan_check(evi2))
     features_map[gndvi_string] = _nan_check(gndvi)
     features_map[ndvi_string] = _nan_check(ndvi)
 
@@ -188,11 +200,11 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_s220(double[::1] tsamp,
     for t in range(0, tsamp_len):
         features_map[string_ints[t]] = tsamp[t] * scale_factor
 
-    features_map[brightness_string] = brightness
-    features_map[nbr_string] = nbr
-    features_map[ndmi_string] = ndmi
-    features_map[ndvi_string] = ndvi
-    features_map[wi_string] = wi
+    features_map[brightness_string] = _nan_check(brightness)
+    features_map[nbr_string] = _nan_check(nbr)
+    features_map[ndmi_string] = _nan_check(ndmi)
+    features_map[ndvi_string] = _nan_check(ndvi)
+    features_map[wi_string] = _clip(_nan_check(wi))
 
     return features_map
 
@@ -200,17 +212,17 @@ cdef cpp_map[cpp_string, double] _sample_to_dict_s220(double[::1] tsamp,
 cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
                                                  cpp_vector[cpp_string] string_ints,
                                                  double brightness,
-                                                 double dbsi,
                                                  double evi,
                                                  double evi2,
+                                                 double gndvi,
                                                  double nbr,
                                                  double ndmi,
                                                  double ndvi,
                                                  double wi,
                                                  cpp_string brightness_string,
-                                                 cpp_string dbsi_string,
                                                  cpp_string evi_string,
                                                  cpp_string evi2_string,
+                                                 cpp_string gndvi_string,
                                                  cpp_string nbr_string,
                                                  cpp_string ndmi_string,
                                                  cpp_string ndvi_string,
@@ -229,14 +241,14 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
     for t in range(0, tsamp_len):
         features_map[string_ints[t]] = tsamp[t] * scale_factor
 
-    features_map[brightness_string] = brightness
-    features_map[dbsi_string] = dbsi
-    features_map[evi_string] = evi
-    features_map[evi2_string] = evi2
-    features_map[nbr_string] = nbr
-    features_map[ndmi_string] = ndmi
-    features_map[ndvi_string] = ndvi
-    features_map[wi_string] = wi
+    features_map[brightness_string] = _nan_check(brightness)
+    features_map[evi_string] = _clip(_nan_check(evi))
+    features_map[evi2_string] = _clip(_nan_check(evi2))
+    features_map[evi2_string] = _nan_check(gndvi)
+    features_map[nbr_string] = _nan_check(nbr)
+    features_map[ndmi_string] = _nan_check(ndmi)
+    features_map[ndvi_string] = _nan_check(ndvi)
+    features_map[wi_string] = _clip(_nan_check(wi))
 
     return features_map
 
@@ -325,10 +337,9 @@ def time_to_crffeas(double[:, :, ::1] data,
 
         unsigned int blue_idx, green_idx, red_idx, nir_idx, swir1_idx, swir2_idx, nir1_idx, nir2_idx, nir3_idx, rededge_idx
 
-        double brightness, dbsi, evi, evi2, gndvi, nbr, ndmi, ndvi, wi
+        double brightness, evi, evi2, gndvi, nbr, ndmi, ndvi, wi
 
-        cpp_string brightness_string = <cpp_string>'brightness'.encode('utf-8')
-        cpp_string dbsi_string = <cpp_string>'dbsi'.encode('utf-8')
+        cpp_string brightness_string = <cpp_string>'bri'.encode('utf-8')
         cpp_string evi_string = <cpp_string>'evi'.encode('utf-8')
         cpp_string evi2_string = <cpp_string>'evi2'.encode('utf-8')
         cpp_string gndvi_string = <cpp_string>'gndvi'.encode('utf-8')
@@ -403,27 +414,28 @@ def time_to_crffeas(double[:, :, ::1] data,
 
         if (sensor == b's210') or (sensor == b'l5bgrn') or (sensor == b'l7bgrn') or (sensor == b'l8bgrn') or (sensor == b'bgrn') or (sensor == b'qb') or (sensor == b'ps'):
 
-            blue_idx = sensor_bands[sensor]['blue']
-            green_idx = sensor_bands[sensor]['green']
-            red_idx = sensor_bands[sensor]['red']
-            nir_idx = sensor_bands[sensor]['nir']
+            blue_idx = sensor_bands[sensor][b'blue']
+            green_idx = sensor_bands[sensor][b'green']
+            red_idx = sensor_bands[sensor][b'red']
+            nir_idx = sensor_bands[sensor][b'nir']
 
-        elif sensor == 's220':
+        elif sensor == b's220':
 
-            nir1_idx = sensor_bands[sensor]['nir1']
-            nir2_idx = sensor_bands[sensor]['nir2']
-            nir3_idx = sensor_bands[sensor]['nir3']
-            rededge_idx = sensor_bands[sensor]['rededge']
-            swir1_idx = sensor_bands[sensor]['swir1']
-            swir2_idx = sensor_bands[sensor]['swir2']
+            nir1_idx = sensor_bands[sensor][b'nir1']
+            nir2_idx = sensor_bands[sensor][b'nir2']
+            nir3_idx = sensor_bands[sensor][b'nir3']
+            rededge_idx = sensor_bands[sensor][b'rededge']
+            swir1_idx = sensor_bands[sensor][b'swir1']
+            swir2_idx = sensor_bands[sensor][b'swir2']
 
         else:
 
-            green_idx = sensor_bands[sensor]['green']
-            red_idx = sensor_bands[sensor]['red']
-            nir_idx = sensor_bands[sensor]['nir']
-            swir1_idx = sensor_bands[sensor]['swir1']
-            swir2_idx = sensor_bands[sensor]['swir2']
+            blue_idx = sensor_bands[sensor][b'blue']
+            green_idx = sensor_bands[sensor][b'green']
+            red_idx = sensor_bands[sensor][b'red']
+            nir_idx = sensor_bands[sensor][b'nir']
+            swir1_idx = sensor_bands[sensor][b'swir1']
+            swir2_idx = sensor_bands[sensor][b'swir2']
 
     for i in range(0, nrows*ncols):
 
@@ -496,36 +508,38 @@ def time_to_crffeas(double[:, :, ::1] data,
                                                   tsample[nir_idx] * scale_factor,
                                                   tsample[swir1_idx] * scale_factor)
 
-                    dbsi = _dbsi(tsample[green_idx] * scale_factor,
-                                 tsample[red_idx] * scale_factor,
-                                 tsample[nir_idx] * scale_factor,
-                                 tsample[swir1_idx] * scale_factor)
+                    # dbsi = _dbsi(tsample[green_idx] * scale_factor,
+                    #              tsample[red_idx] * scale_factor,
+                    #              tsample[nir_idx] * scale_factor,
+                    #              tsample[swir1_idx] * scale_factor)
 
-                    evi = _evi(tsample[blue_idx] * scale_factor, tsample[red_idx] * scale_factor,
+                    evi = _evi(tsample[blue_idx] * scale_factor,
+                               tsample[red_idx] * scale_factor,
                                tsample[nir_idx] * scale_factor)
+
                     evi2 = _evi2(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
 
                     gndvi = _gndvi(tsample[green_idx] * scale_factor, tsample[nir_idx] * scale_factor)
 
                     nbr = _nbr(tsample[nir_idx] * scale_factor, tsample[swir2_idx] * scale_factor)
-                    ndvi = _ndvi(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
                     ndmi = _ndmi(tsample[nir_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
+                    ndvi = _ndvi(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
                     wi = _wi(tsample[red_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
 
                     samples.push_back(_sample_to_dict(tsample,
                                                       string_ints,
                                                       brightness,
-                                                      dbsi,
                                                       evi,
                                                       evi2,
+                                                      gndvi,
                                                       nbr,
                                                       ndmi,
                                                       ndvi,
                                                       wi,
                                                       brightness_string,
-                                                      dbsi_string,
                                                       evi_string,
                                                       evi2_string,
+                                                      gndvi_string,
                                                       nbr_string,
                                                       ndmi_string,
                                                       ndvi_string,

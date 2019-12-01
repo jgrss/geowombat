@@ -193,7 +193,7 @@ class BaseCRF(IOMixin):
 
             # TODO
             return probas_to_labels(dict_keys_to_bytes(pred),
-                                    [b'l', b'u', b'w', b'c', b's'],
+                                    [b'c', b'l', b's', b'u', b'w'],
                                     5,
                                     ntime,
                                     nrows,

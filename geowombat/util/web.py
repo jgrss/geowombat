@@ -116,9 +116,10 @@ class GeoDownloads(object):
                                          nir3=7,
                                          nir=8,
                                          rededge=8,
-                                         cirrus=9,
-                                         swir1=10,
-                                         swir2=11))
+                                         water=9,
+                                         cirrus=10,
+                                         swir1=11,
+                                         swir2=12))
 
         self.search_dict = dict()
 
@@ -336,7 +337,7 @@ class GeoDownloads(object):
                         # Download data
                         if sensor.lower() == 's2':
 
-                            load_bands = sorted(['B{:02d}'.format(band_associations[bd]) for bd in bands])
+                            load_bands = sorted(['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:02d}A'.format(band_associations[bd]) for bd in bands])
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -474,7 +475,8 @@ class GeoDownloads(object):
 
                                     with gw.open(load_bands_names,
                                                  band_names=bands,
-                                                 stack_dim='band') as data:#, \
+                                                 stack_dim='band',
+                                                 resampling='cubic') as data:#, \
                                             # gw.open(finfo_dict['qa'].name,
                                             #         band_names=['qa']) as qa:
 
@@ -536,6 +538,10 @@ class GeoDownloads(object):
                                         # sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 65535)
                                         # sr_brdf = sr_brdf.transpose('band', 'y', 'x')
                                         # sr_brdf.attrs = attrs
+
+                                        attrs = sr_brdf.attrs.copy()
+                                        sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
+                                        sr_brdf.attrs = attrs.copy()
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
