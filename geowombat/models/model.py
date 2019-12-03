@@ -5,7 +5,7 @@ import inspect
 from contextlib import contextmanager
 from pathlib import Path
 
-from ._crf import probas_to_labels, time_to_crffeas
+from ._crf import transform_probas, time_to_crffeas
 from ..errors import logger
 from ..backends import Cluster
 from ..core.util import Chunks
@@ -54,15 +54,6 @@ def _backend_dummy(*args, **kwargs):
     yield None
 
 
-# def _pred_to_cloud_labels(model_pred):
-#
-#     return np.array([[[ps['l'] if 'l' in ps else 0,
-#                        ps['u'] if 'u' in ps else 0,
-#                        ps['w'] if 'w' in ps else 0,
-#                        ps['c'] if 'c' in ps else 0,
-#                        ps['s'] if 's' in ps else 0] for ps in p] for p in model_pred], dtype='float64')
-
-
 def dict_keys_to_bytes(data):
 
     if isinstance(data, int) or isinstance(data, float): return data
@@ -108,7 +99,7 @@ class IOMixin(object):
         self.x, self.y, self.model = joblib.load(filename)
 
 
-class BaseCRF(IOMixin):
+class CRFMixin(IOMixin):
 
     def fit(self, X, y):
 
@@ -153,23 +144,29 @@ class BaseCRF(IOMixin):
         with open(output, mode='w') as tx:
             tx.writelines(lines)
 
-    def predict(self):
-        # TODO
-        pass
-
-    def predict_probas(self, X, sensor, scale_factor=0.0001):
+    def predict_probas(self,
+                       X,
+                       sensor,
+                       scale_factor=0.0001,
+                       class_labels=None):
 
         """
-        Predicts CRF probabilities
+        Predicts class probabilities
 
         Args:
             X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
             sensor (str): The satellite sensor.
             scale_factor (Optional[float]): The scale factor to apply to `X`.
+            class_labels (Optional[list]): The class labels.
 
         Returns:
             ``4d array`` of predictions, shaped as [time x classes x rows x columns].
         """
+
+        if not class_labels:
+            class_labels = ['c', 'l', 's', 'u', 'w']
+
+        class_labels = [label.encode('utf-8') for label in class_labels]
 
         ntime, nbands, nrows, ncols = X.shape
 
@@ -184,29 +181,66 @@ class BaseCRF(IOMixin):
                                    ncols,
                                    scale_factor=scale_factor)
 
-        if self.crf_classifier_ == 'clouds':
+        return transform_probas(dict_keys_to_bytes(self.model.predict_marginals(features)),
+                                class_labels,
+                                len(class_labels),
+                                ntime,
+                                nrows,
+                                ncols)
 
-            # pred = _pred_to_cloud_labels(self.model.predict_marginals(features))
-            # return pred.transpose(1, 2, 0).reshape(ntime, pred.shape[2], nrows, ncols)
+    def predict(self,
+                X,
+                sensor,
+                scale_factor=0.0001,
+                class_labels=None):
 
-            pred = self.model.predict_marginals(features)
+        """
+        Predicts class labels
 
-            # TODO
-            return probas_to_labels(dict_keys_to_bytes(pred),
-                                    [b'c', b'l', b's', b'u', b'w'],
-                                    5,
-                                    ntime,
-                                    nrows,
-                                    ncols)
+        Args:
+            X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
+            sensor (str): The satellite sensor.
+            scale_factor (Optional[float]): The scale factor to apply to `X`.
+            class_labels (Optional[list]): The class labels.
+
+        Returns:
+            ``4d array`` of predictions, shaped as [time x classes x rows x columns].
+        """
+
+        probas = self.predict_probas(X,
+                                     sensor,
+                                     scale_factor=scale_factor,
+                                     class_labels=class_labels)
+
+        return probas.argmax(axis=0) + 1
 
 
-class CloudClassifier(BaseCRF):
+class CRFClassifier(CRFMixin):
+
+    """
+    A class for classification with Conditional Random Fields
+
+    Example keyword arguments:
+
+        algorithm='lbfgs',
+        c1=0.001,
+        c2=0.001,
+        max_iterations=2000,
+        num_memories=20,
+        epsilon=0.01,
+        delta=0.01,
+        period=20,
+        linesearch='MoreThuente',
+        max_linesearch=20,
+        all_possible_states=True,
+        all_possible_transitions=True,
+        verbose=False)
+    """
 
     def __init__(self, **kwargs):
 
         self.x = None
         self.y = None
-        self.crf_classifier_ = 'clouds'
         self.kwargs = kwargs
 
         self.model = sklearn_crfsuite.CRF(**kwargs)

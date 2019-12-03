@@ -277,7 +277,7 @@ cdef cpp_vector[double] _push_classes(cpp_vector[double] vct,
     return vct
 
 
-def probas_to_labels(cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] pred,
+def transform_probas(cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] pred,
                      cpp_vector[cpp_string] labels,
                      unsigned int n_classes,
                      unsigned int ntime,
@@ -285,7 +285,7 @@ def probas_to_labels(cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] pred,
                      unsigned int ncols):
 
     """
-    Converts CRF probabilities in dictionary format to probabilities in array format
+    Transforms CRF probabilities in dictionary format to probabilities in array format
     """
 
     cdef:
