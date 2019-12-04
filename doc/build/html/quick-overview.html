@@ -126,21 +126,23 @@
 <div class="section" id="open-a-dataarray-with-a-geowombat-accessor">
 <h2>Open a DataArray with a GeoWombat accessor<a class="headerlink" href="#open-a-dataarray-with-a-geowombat-accessor" title="Permalink to this headline">¶</a></h2>
 <p>Any DataArray or Dataset will have the GeoWombat accessors appended:</p>
-<pre class="literal-block">In [4]: data = xr.DataArray(np.random.randn(2, 3),
-   ...:                     dims=('x', 'y'),
-   ...:                     coords={'x': [10, 20]})
-   ...: 
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">   ...: </span>                    <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">),</span>
+<span class="gp">   ...: </span>                    <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">   ...: </span>
 
-In [5]: print(data)
-&lt;xarray.DataArray (x: 2, y: 3)&gt;
-array([[ 1.29691366, -0.54436916, -0.08838676],
-       [-0.74044195, -0.36066614, -0.27775958]])
-Coordinates:
-  * x        (x) int64 10 20
-Dimensions without coordinates: y
+<span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
+<span class="go">array([[ 1.22044831,  0.12028701, -1.84066113],</span>
+<span class="go">       [-1.11883405, -0.02652791, -2.2663404 ]])</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) int64 10 20</span>
+<span class="go">Dimensions without coordinates: y</span>
 
-In [6]: print(data.gw)
-&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fb34031ed68&gt;</pre>
+<span class="gp">In [6]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aad5473be80&gt;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
@@ -152,7 +154,7 @@ In [6]: print(data.gw)
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-632439ba7f2b19f2ea4f1e95f35f19d5&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-2f4a8a0d791c18ecdcb4beb4a04cb210&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -168,7 +170,7 @@ In [6]: print(data.gw)
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    resampling:     nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fb3403e24a8&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aad54a5ecc0&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -185,7 +187,7 @@ In [6]: print(data.gw)
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

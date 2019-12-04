@@ -16,8 +16,6 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="GeoWombatClassifier" href="geowombat.models.GeoWombatClassifier.html" />
-    <link rel="prev" title="predict" href="geowombat.models.predict.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -73,18 +71,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.models.predict.html" title="previous chapter">predict</a></li>
-      <li>Next: <a href="geowombat.models.GeoWombatClassifier.html" title="next chapter">GeoWombatClassifier</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -116,47 +110,6 @@
             
   <div class="section" id="cloudclassifier">
 <h1>CloudClassifier<a class="headerlink" href="#cloudclassifier" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="geowombat.models.CloudClassifier">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">CloudClassifier</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.CloudClassifier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.models.model.BaseCRF</span></code></p>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(self, X, y)</p></td>
-<td><p>Fits a Conditional Random Fields classifier</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_probas</span></code>(self, X, sensor[, scale_factor])</p></td>
-<td><p>Predicts CRF probabilities</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn_to_deepcrf</span></code>(X, y, output)</p></td>
-<td><p>Converts CRF features formatted for Scikit-learn CRFsuite to features formatted for deep-crf</p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 57%" />
-<col style="width: 43%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><strong>from_file</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>predict</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p><strong>to_file</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </div>
 
 
@@ -170,7 +123,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -114,11 +114,63 @@
             
   <div class="section" id="installation">
 <span id="installing"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="instructions">
-<h2>Instructions<a class="headerlink" href="#instructions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="general-instructions">
+<h2>General Instructions<a class="headerlink" href="#general-instructions" title="Permalink to this headline">¶</a></h2>
 <p>Install the latest development version from GitHub using pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install --user git+https://github.com/jgrss/geowombat
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
 </pre></div>
+</div>
+</div>
+<div class="section" id="linux-instructions">
+<h2>Linux Instructions<a class="headerlink" href="#linux-instructions" title="Permalink to this headline">¶</a></h2>
+<p>Install pip tools and ensure a working version of GDAL and Python bindings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
+
+$ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
+$ sudo apt-get update
+$ sudo apt-get install gdal-bin
+$ sudo apt-get install libgdal-dev
+$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
+$ export C_INCLUDE_PATH=/usr/include/gdal
+$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="virtual-environments">
+<h2>Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="virtual-environments-with-virtualenv">
+<h3>Virtual environments with <cite>virtualenv</cite><a class="headerlink" href="#virtual-environments-with-virtualenv" title="Permalink to this headline">¶</a></h3>
+<p>Install the <cite>virtualenv</cite> Python package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install virtualenv
+</pre></div>
+</div>
+<p>Create a virtual environment with a specific Python version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ virtualenv -p python3.7 gwenv
+</pre></div>
+</div>
+<p>Activate the virtual environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source gwenv/bin/activate
+</pre></div>
+</div>
+</div>
+<div class="section" id="virtual-environments-with-conda">
+<h3>Virtual environments with <cite>Conda</cite><a class="headerlink" href="#virtual-environments-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>Install Conda following the <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">online instructions</a>.</p>
+<p>Create a virtual Conda environment with a specific Python version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda create --name gwenv python=3.7 cython numpy
+</pre></div>
+</div>
+<p>Activate the virtual environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda activate gwenv
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-geowombat">
+<h3>Install <cite>GeoWombat</cite><a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h3>
+<p>With an environment activated, install <cite>GeoWombat</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ (gwenv) pip install git+https://github.com/jgrss/geowombat
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -134,7 +186,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

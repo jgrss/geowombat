@@ -3,17 +3,17 @@
 Installation
 ============
 
-Mac Instructions
-------------
+General Instructions
+--------------------
 
 Install the latest development version from GitHub using pip::
 
-    $ pip install --user git+https://github.com/jgrss/geowombat
+    $ pip install git+https://github.com/jgrss/geowombat
 
 Linux Instructions
------------
+------------------
 
-Install pip tools and ensure a working version of GDAL and python bindings:: 
+Install pip tools and ensure a working version of GDAL and Python bindings::
 
     $ pip install pip-tools
 
@@ -25,12 +25,40 @@ Install pip tools and ensure a working version of GDAL and python bindings::
     $ export C_INCLUDE_PATH=/usr/include/gdal
     $ pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
 
-Build conda environment (not required) to isolate geowombat::
+Virtual environments
+--------------------
 
-    $ conda create --name geowombat python=3.7 cython numpy
-    $ conda activate geowombat
+Virtual environments with `virtualenv`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install the latest development version from GitHub using pip::
+Install the `virtualenv` Python package::
 
-    $ pip install --user git+https://github.com/jgrss/geowombat
+    $ pip install virtualenv
 
+Create a virtual environment with a specific Python version::
+
+    $ virtualenv -p python3.7 gwenv
+
+Activate the virtual environment::
+
+    $ source gwenv/bin/activate
+
+Virtual environments with `Conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install Conda following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
+
+Create a virtual Conda environment with a specific Python version::
+
+    $ conda create --name gwenv python=3.7 cython numpy
+
+Activate the virtual environment::
+
+    $ conda activate gwenv
+
+Install `GeoWombat`
+~~~~~~~~~~~~~~~~~~~
+
+With an environment activated, install `GeoWombat`::
+
+    $ (gwenv) pip install git+https://github.com/jgrss/geowombat

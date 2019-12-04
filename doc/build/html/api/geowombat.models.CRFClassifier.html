@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Converters &#8212; GeoWombat 1.0.0b documentation</title>
+    <title>CRFClassifier &#8212; GeoWombat 1.0.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,6 +16,8 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GeoWombatClassifier" href="geowombat.models.GeoWombatClassifier.html" />
+    <link rel="prev" title="predict" href="geowombat.models.predict.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -71,14 +73,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.models.predict.html" title="previous chapter">predict</a></li>
+      <li>Next: <a href="geowombat.models.GeoWombatClassifier.html" title="next chapter">GeoWombatClassifier</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -108,12 +114,29 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="converters">
-<h1>Converters<a class="headerlink" href="#converters" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="crfclassifier">
+<h1>CRFClassifier<a class="headerlink" href="#crfclassifier" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="geowombat.core.util.Converters">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.core.util.</code><code class="sig-name descname">Converters</code><a class="headerlink" href="#geowombat.core.util.Converters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dt id="geowombat.models.CRFClassifier">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.models.</code><code class="sig-name descname">CRFClassifier</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.models.CRFClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.models.model.CRFMixin</span></code></p>
+<p>A class for classification with Conditional Random Fields</p>
+<p>Example keyword arguments:</p>
+<blockquote>
+<div><p>algorithm=’lbfgs’,
+c1=0.001,
+c2=0.001,
+max_iterations=2000,
+num_memories=20,
+epsilon=0.01,
+delta=0.01,
+period=20,
+linesearch=’MoreThuente’,
+max_linesearch=20,
+all_possible_states=True,
+all_possible_transitions=True,
+verbose=False)</p>
+</div></blockquote>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -121,62 +144,34 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ij_to_xy</span></code>(j, i, transform)</p></td>
-<td><p>Converts map coordinates to array indices</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(self, X, y)</p></td>
+<td><p>Fits a Conditional Random Fields classifier</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.util.Converters.polygons_to_points" title="geowombat.core.util.Converters.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
-<td><p>Converts polygons to points</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code>(self, X, sensor[, scale_factor, …])</p></td>
+<td><p>Predicts class labels</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy_to_ij</span></code>(x, y, transform)</p></td>
-<td><p>Converts map coordinates to array indices</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_probas</span></code>(self, X, sensor[, …])</p></td>
+<td><p>Predicts class probabilities</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn_to_deepcrf</span></code>(X, y, output)</p></td>
+<td><p>Converts CRF features formatted for Scikit-learn CRFsuite to features formatted for deep-crf</p></td>
 </tr>
 </tbody>
 </table>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 64%" />
-<col style="width: 36%" />
+<col style="width: 57%" />
+<col style="width: 43%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>prepare_points</strong></p></td>
+<tr class="row-odd"><td><p><strong>from_file</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_file</strong></p></td>
 <td></td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods Summary</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.util.Converters.polygons_to_points" title="geowombat.core.util.Converters.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
-<td><p>Converts polygons to points</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="geowombat.core.util.Converters.polygons_to_points">
-<em class="property">static </em><code class="sig-name descname">polygons_to_points</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">df</em>, <em class="sig-param">frac=1.0</em>, <em class="sig-param">all_touched=False</em>, <em class="sig-param">id_column='id'</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.util.Converters.polygons_to_points" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts polygons to points</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em><em> or </em><em>Dataset</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <a href="#id1"><span class="problematic" id="id2">``</span></a>xarray.Dataset`.</p></li>
-<li><p><strong>df</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> containing the geometry to rasterize.</p></li>
-<li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each feature.</p></li>
-<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> argument is passed to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
-<li><p><strong>id_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The ‘id’ column.</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of features to rasterize in parallel.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -196,7 +191,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.core.util.Converters.rst.txt"
+      <a href="../_sources/api/geowombat.models.CRFClassifier.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
