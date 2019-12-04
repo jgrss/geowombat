@@ -2,14 +2,14 @@ import os
 from pathlib import Path
 import shutil
 import itertools
-import time
 import fnmatch
 import ctypes
-from datetime import datetime
 import concurrent.futures
 from contextlib import contextmanager
 import multiprocessing as multi
 import threading
+import random
+import string
 
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
@@ -17,17 +17,13 @@ from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
 
 import numpy as np
-import distributed
-from distributed import as_completed
-import dask
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
-from dask.distributed import progress, Client, LocalCluster
+from dask.distributed import Client, LocalCluster
 
 import rasterio as rio
 from rasterio.windows import Window
-from rasterio.enums import Resampling
 
 import zarr
 from tqdm import tqdm
@@ -636,8 +632,12 @@ def to_raster(data,
                 p = Path(filename)
 
                 d_name = p.parent
-                f_base, f_ext = os.path.splitext(d_name.name)
-                temp_file = d_name.joinpath('{}_temp{}'.format(f_base, f_ext))
+                f_base, f_ext = os.path.splitext(p.name)
+
+                ld = string.ascii_letters + string.digits
+                rstr = ''.join(random.choice(ld) for i in range(0, 9))
+
+                temp_file = d_name.joinpath('{}_temp_{}{}'.format(f_base, rstr, f_ext))
 
                 compress_raster(filename,
                                 temp_file,
