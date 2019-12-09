@@ -51,7 +51,7 @@ Functions and arguments can be passed as Xarray attributes. Here is an example t
                         n_threads=2,
                         separate=True,
                         overwrite=True,
-                        compress='lzw)
+                        compress='lzw')
 
 In this example, a keyword argument is also used.
 
@@ -79,4 +79,4 @@ In this example, a keyword argument is also used.
                         n_threads=2,
                         separate=True,
                         overwrite=True,
-                        compress='lzw)
+                        compress='lzw')
