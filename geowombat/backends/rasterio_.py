@@ -11,6 +11,7 @@ from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
 from rasterio.transform import array_bounds
 from rasterio.windows import Window
+from rasterio.coords import BoundingBox
 
 from affine import Affine
 import zarr
@@ -469,6 +470,31 @@ def warp(filename,
 
         # Check if the data need to be subset
         if bounds and (bounds != src.bounds):
+
+            if isinstance(bounds, str):
+
+                if bounds.startswith('BoundingBox'):
+
+                    bounds_str = bounds.replace('BoundingBox(', '').split(',')
+
+                    for str_ in bounds_str:
+
+                        if str_.strip().startswith('left='):
+                            left_coord = float(str_.strip().split('=')[1].replace(')', ''))
+                        elif str_.strip().startswith('bottom='):
+                            bottom_coord = float(str_.strip().split('=')[1].replace(')', ''))
+                        elif str_.strip().startswith('right='):
+                            right_coord = float(str_.strip().split('=')[1].replace(')', ''))
+                        elif str_.strip().startswith('top='):
+                            top_coord = float(str_.strip().split('=')[1].replace(')', ''))
+
+                    bounds = BoundingBox(left=left_coord,
+                                         bottom=bottom_coord,
+                                         right=right_coord,
+                                         top=top_coord)
+
+                else:
+                    logger.exception('  The bounds were not accepted.')
 
             left, bottom, right, top = bounds
 
