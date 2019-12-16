@@ -317,19 +317,21 @@ def get_file_bounds(filenames,
         return bounds_transform, bounds_width, bounds_height
 
 
-def union(filenames,
-          crs=None,
-          res=None,
-          nodata=0,
-          resampling='nearest',
-          warp_mem_limit=512,
-          num_threads=1):
+def warp_images(filenames,
+                bounds=None,
+                crs=None,
+                res=None,
+                nodata=0,
+                resampling='nearest',
+                warp_mem_limit=512,
+                num_threads=1):
 
     """
-    Transforms a list of images to the union of all the files
+    Transforms a list of images to a common grid
 
     Args:
         filenames (list): The file names to mosaic.
+        bounds (Optional[tuple]): The extent bounds to warp to. If not give, the union of all images is used.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
         nodata (Optional[int or float]): The 'no data' value.
@@ -349,33 +351,52 @@ def union(filenames,
 
         resampling = 'nearest'
 
-    # Get the union bounds of all images
-    dst_transform, dst_width, dst_height = get_file_bounds(filenames,
-                                                           how='union',
-                                                           crs=crs,
-                                                           res=res)
-
-    vrt_options = {'resampling': getattr(Resampling, resampling),
+    warp_kwargs = {'resampling': resampling,
                    'crs': crs,
-                   'transform': dst_transform,
-                   'height': dst_height,
-                   'width': dst_width,
+                   'res': res,
                    'nodata': nodata,
                    'warp_mem_limit': warp_mem_limit,
-                   'warp_extras': {'multi': True,
-                                   'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+                   'num_threads': num_threads}
 
-    vrt_list = list()
+    if bounds:
+        warp_kwargs['bounds'] = bounds
+    else:
 
-    # Warp each image to a common grid
-    for fn in filenames:
+        # Get the union bounds of all images.
+        #   *Target-aligned-pixels are returned.
+        dst_transform, dst_width, dst_height = get_file_bounds(filenames,
+                                                               how='union',
+                                                               crs=crs,
+                                                               res=res)
 
-        with rio.open(fn) as src:
+        warp_kwargs['bounds'] = BoundingBox(left=dst_transform[2],
+                                            bottom=dst_transform[5]-(abs(dst_transform[4])*dst_height),
+                                            top=dst_transform[5],
+                                            right=dst_transform[2]+(abs(dst_transform[0])*dst_width))
 
-            with WarpedVRT(src, **vrt_options) as vrt:
-                vrt_list.append(vrt)
+    return [warp(fn, **warp_kwargs) for fn in filenames]
 
-    return vrt_list
+    # vrt_options = {'resampling': getattr(Resampling, resampling),
+    #                'crs': crs,
+    #                'transform': dst_transform,
+    #                'height': dst_height,
+    #                'width': dst_width,
+    #                'nodata': nodata,
+    #                'warp_mem_limit': warp_mem_limit,
+    #                'warp_extras': {'multi': True,
+    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+    #
+    # vrt_list = list()
+    #
+    # # Warp each image to a common grid
+    # for fn in filenames:
+    #
+    #     with rio.open(fn) as src:
+    #
+    #         with WarpedVRT(src, **vrt_options) as vrt:
+    #             vrt_list.append(vrt)
+    #
+    # return vrt_list
 
 
 def get_ref_image_meta(filename):

@@ -4,7 +4,7 @@ from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, union, warp, get_file_bounds
+from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds
 
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
@@ -169,7 +169,8 @@ def mosaic(filenames,
     if overlap not in ['min', 'max', 'mean']:
         logger.exception("  The overlap argument must be one of ['min', 'max', 'mean'].")
 
-    ref_kwargs = {'crs': None,
+    ref_kwargs = {'bounds': None,
+                  'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads}
@@ -187,22 +188,26 @@ def mosaic(filenames,
             ref_kwargs['crs'] = ref_meta.crs
             ref_kwargs['res'] = ref_meta.res
 
+    if 'ref_bounds' in config:
+        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
+
     if 'ref_crs' in config:
         ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
     if 'ref_res' in config:
         ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
-    # Get the union of all images
-    union_grids = union(filenames,
-                        resampling=resampling,
-                        **ref_kwargs)
+    # Warp all images to the same grid.
+    warped_objects = warp_images(filenames,
+                                 resampling=resampling,
+                                 **ref_kwargs)
 
-    with xr.open_rasterio(union_grids[0], **kwargs) as ds:
+    # Combine the data
+    with xr.open_rasterio(warped_objects[0], **kwargs) as ds:
 
-        attrs = ds.attrs
+        attrs = ds.attrs.copy()
 
-        for fn in union_grids[1:]:
+        for fn in warped_objects[1:]:
 
             with xr.open_rasterio(fn, **kwargs) as dsb:
 
