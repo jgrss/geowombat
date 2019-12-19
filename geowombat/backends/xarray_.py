@@ -10,8 +10,6 @@ import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
 
-import rasterio as rio
-
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
 
@@ -439,28 +437,5 @@ def concat(filenames,
 
                     ds.coords['band'] = new_band_names
                     ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
-
-    # if 'transform' not in ds.attrs:
-    #
-    #     if ref_kwargs['bounds']:
-    #
-    #         left_bounds = ref_kwargs['bounds'][0]
-    #         top_bounds = ref_kwargs['bounds'][-1]
-    #
-    #     else:
-    #
-    #         with rio.open(filenames[0]) as src:
-    #
-    #             left_bounds = src.bounds.left
-    #             top_bounds = src.bounds.top
-    #
-    #     if ref_kwargs['res']:
-    #         xres, yres = ref_kwargs['res']
-    #     else:
-    #
-    #         with rio.open(filenames[0]) as src:
-    #             xres, yres = src.res
-    #
-    #     ds.attrs['transform'] = (xres, 0.0, left_bounds, 0.0, -yres, top_bounds)
 
     return ds
