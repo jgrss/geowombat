@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 
 import numpy as np
 
-__version__ = '1.0.5b'
+__version__ = '1.0.6b'
 
 pkg_name = 'GeoWombat'
 maintainer = 'Jordan Graesser'
