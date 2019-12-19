@@ -44,6 +44,10 @@ cdef inline double _clip_high(double value):
     return 1.0 if value > 1 else value
 
 
+cdef inline double _scale_min_max(double xv, double mno, double mxo, double mni, double mxi) nogil:
+    return (((mxo - mno) * (xv - mni)) / (mxi - mni)) + mno
+
+
 cdef inline double _clip(double value):
     return _clip_low(value) if value < 1 else _clip_high(value)
 
@@ -244,7 +248,7 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
     features_map[brightness_string] = _nan_check(brightness)
     features_map[evi_string] = _clip(_nan_check(evi))
     features_map[evi2_string] = _clip(_nan_check(evi2))
-    features_map[evi2_string] = _nan_check(gndvi)
+    features_map[gndvi_string] = _nan_check(gndvi)
     features_map[nbr_string] = _nan_check(nbr)
     features_map[ndmi_string] = _nan_check(ndmi)
     features_map[ndvi_string] = _nan_check(ndvi)
