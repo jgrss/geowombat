@@ -10,6 +10,8 @@ import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
 
+import rasterio as rio
+
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
 
@@ -35,6 +37,86 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
 
         if ref_obj:
             ref_kwargs[key] = ref_obj
+
+    return ref_kwargs
+
+
+def _check_config_globals(filenames, how, ref_kwargs):
+
+    """
+    Checks global configuration parameters
+
+    Args:
+        filenames (str or str list)
+        how (str)
+        ref_kwargs (dict)
+    """
+
+    # Check if there is a reference image
+    if config['ref_image']:
+
+        if isinstance(config['ref_image'], str) and os.path.isfile(config['ref_image']):
+
+            # Get the metadata from the reference image
+            ref_meta = get_ref_image_meta(config['ref_image'])
+
+            ref_kwargs['bounds'] = ref_meta.bounds
+            ref_kwargs['crs'] = ref_meta.crs
+            ref_kwargs['res'] = ref_meta.res
+
+    if config['ref_bounds']:
+        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
+    else:
+
+        if isinstance(filenames, str):
+
+            # Use the bounds of the image
+            ref_kwargs['bounds'] = get_file_bounds([filenames],
+                                                   how='reference',
+                                                   crs=ref_kwargs['crs'],
+                                                   res=ref_kwargs['res'],
+                                                   return_bounds=True)
+
+        else:
+
+            # Replace the bounds keyword, if needed
+            if how.lower() == 'intersection':
+
+                # Get the intersecting bounds of all images
+                ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                       how='intersection',
+                                                       crs=ref_kwargs['crs'],
+                                                       res=ref_kwargs['res'],
+                                                       return_bounds=True)
+
+            elif how.lower() == 'union':
+
+                # Get the union bounds of all images
+                ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                       how='union',
+                                                       crs=ref_kwargs['crs'],
+                                                       res=ref_kwargs['res'],
+                                                       return_bounds=True)
+
+            elif how.lower() == 'reference':
+
+                # Use the bounds of the first image
+                ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                       how='reference',
+                                                       crs=ref_kwargs['crs'],
+                                                       res=ref_kwargs['res'],
+                                                       return_bounds=True)
+
+            else:
+                logger.exception("  Choose from 'intersection', 'union', or 'reference'.")
+
+            config['ref_bounds'] = ref_kwargs['bounds']
+
+    if config['ref_crs']:
+        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
+
+    if config['ref_res']:
+        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     return ref_kwargs
 
@@ -72,28 +154,7 @@ def warp_open(filename,
                   'num_threads': num_threads,
                   'tap': tap}
 
-    # Check if there is a reference image
-    if 'ref_image' in config:
-
-        ref_image = config['ref_image']
-
-        if isinstance(ref_image, str) and os.path.isfile(ref_image):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_image)
-
-            ref_kwargs['bounds'] = ref_meta.bounds
-            ref_kwargs['crs'] = ref_meta.crs
-            ref_kwargs['res'] = ref_meta.res
-
-    if 'ref_bounds' in config:
-        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
-
-    if 'ref_crs' in config:
-        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
-
-    if 'ref_res' in config:
-        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
+    ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
 
     with xr.open_rasterio(warp(filename,
                                resampling=resampling,
@@ -288,56 +349,20 @@ def concat(filenames,
     if stack_dim.lower() not in ['band', 'time']:
         logger.exception("  The stack dimension should be 'band' or 'time'")
 
-    if how.lower() not in ['intersection', 'union', 'reference']:
-        logger.exception("  Only 'intersection', 'union', and 'reference' are supported.")
-
     ref_kwargs = {'bounds': None,
                   'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads}
 
-    # Check if there is a reference image
-    if 'ref_image' in config:
+    ref_kwargs = _check_config_globals(filenames, how, ref_kwargs)
 
-        ref_image = config['ref_image']
+    # Keep a copy of the transformed attributes.
+    with xr.open_rasterio(warp(filenames[0],
+                               resampling=resampling,
+                               **ref_kwargs), **kwargs) as ds_:
 
-        if isinstance(ref_image, str) and os.path.isfile(ref_image):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_image)
-
-            ref_kwargs['bounds'] = ref_meta.bounds
-            ref_kwargs['crs'] = ref_meta.crs
-            ref_kwargs['res'] = ref_meta.res
-
-    if 'ref_bounds' in config:
-        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
-
-    if 'ref_crs' in config:
-        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
-
-    if 'ref_res' in config:
-        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
-
-    # Replace the bounds keyword, if needed
-    if how.lower() == 'intersection':
-
-        # Get the intersecting bounds of all images
-        ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                               how='intersection',
-                                               crs=ref_kwargs['crs'],
-                                               res=ref_kwargs['res'],
-                                               return_bounds=True)
-
-    elif how.lower() == 'union':
-
-        # Get the union bounds of all images
-        ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                               how='union',
-                                               crs=ref_kwargs['crs'],
-                                               res=ref_kwargs['res'],
-                                               return_bounds=True)
+        attrs = ds_.attrs.copy()
 
     if time_names:
 
@@ -381,11 +406,14 @@ def concat(filenames,
 
     else:
 
-        # Warp all images and concatenate along the 'time' axis into a DataArray
+        # Warp all images and concatenate along
+        #   the 'time' axis into a DataArray.
         ds = xr.concat([xr.open_rasterio(warp(fn,
                                               resampling=resampling,
                                               **ref_kwargs), **kwargs)
                         for fn in filenames], dim=stack_dim.lower())
+
+    ds.attrs = attrs
 
     if not time_names and (stack_dim == 'time'):
         ds.coords['time'] = parse_filename_dates(filenames)
@@ -411,5 +439,28 @@ def concat(filenames,
 
                     ds.coords['band'] = new_band_names
                     ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
+
+    # if 'transform' not in ds.attrs:
+    #
+    #     if ref_kwargs['bounds']:
+    #
+    #         left_bounds = ref_kwargs['bounds'][0]
+    #         top_bounds = ref_kwargs['bounds'][-1]
+    #
+    #     else:
+    #
+    #         with rio.open(filenames[0]) as src:
+    #
+    #             left_bounds = src.bounds.left
+    #             top_bounds = src.bounds.top
+    #
+    #     if ref_kwargs['res']:
+    #         xres, yres = ref_kwargs['res']
+    #     else:
+    #
+    #         with rio.open(filenames[0]) as src:
+    #             xres, yres = src.res
+    #
+    #     ds.attrs['transform'] = (xres, 0.0, left_bounds, 0.0, -yres, top_bounds)
 
     return ds

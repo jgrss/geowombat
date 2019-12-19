@@ -250,7 +250,7 @@ def open(filename,
         how (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
             Choices are ['intersection', 'union', 'reference'].
 
-            * reference: Use the bounds of the reference image
+            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
             * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
             * union: Use the union (i.e., maximum extent) of all the image bounds
 

@@ -491,7 +491,7 @@ class Converters(object):
         else:
 
             # Clip points to the image bounds
-            df = df[df.geometry.intersects(data.gw.meta.geometry.unary_union)]
+            df = df[df.geometry.intersects(data.gw.unary_union)]
 
         if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
 

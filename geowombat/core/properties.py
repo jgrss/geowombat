@@ -1,7 +1,10 @@
 from collections import namedtuple
 
 from affine import Affine
+import shapely
 from shapely.geometry import Polygon
+
+shapely.speedups.enable()
 
 
 WavelengthsPan = namedtuple('WavelengthsPan', 'pan')
@@ -436,6 +439,11 @@ class DataProperties(object):
                         (self.right, self.top),
                         (self.right, self.bottom),
                         (self.left, self.bottom)])
+
+    @property
+    def unary_union(self):
+        """Get a representation of the union of the image bounds"""
+        return shapely.ops.unary_union(self.geometry)
 
     @property
     def meta(self):

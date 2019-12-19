@@ -1,6 +1,7 @@
 import os
 import math
 import itertools
+from datetime import datetime
 
 from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
@@ -102,7 +103,7 @@ class SpatialOperations(_PropertyMixin):
             data (DataArray): An ``xarray.DataArray`` to extract data from.
             aoi (str or GeoDataFrame): A file or ``geopandas.GeoDataFrame`` to extract data frame.
             bands (Optional[int or 1d array-like]): A band or list of bands to extract.
-                If not given, all bands are used. *Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
+                If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
@@ -187,7 +188,12 @@ class SpatialOperations(_PropertyMixin):
 
             # `res` is shaped [samples x time x dimensions]
             if time_names:
-                time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
+
+                if isinstance(time_names[0], datetime):
+                    time_names = list(itertools.chain(*[[t.strftime('%Y-%m-%d')]*res.shape[2] for t in time_names]))
+                else:
+                    time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
+
             else:
                 time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
 

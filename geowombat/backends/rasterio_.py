@@ -9,7 +9,7 @@ from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
-from rasterio.transform import array_bounds
+from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 
@@ -256,9 +256,6 @@ def get_file_bounds(filenames,
         transform, width, height
     """
 
-    if how not in ['intersection', 'union']:
-        logger.exception("  Only 'intersection' and 'union' are supported.")
-
     with rio.open(filenames[0]) as src:
 
         if not crs:
@@ -276,40 +273,54 @@ def get_file_bounds(filenames,
                                                                                 src.bounds.top,
                                                                                 densify_pts=21)
 
-    for fn in filenames[1:]:
+    if how in ['union', 'intersection']:
 
-        with rio.open(fn) as src:
+        for fn in filenames[1:]:
 
-            # Transform the extent to the reference CRS
-            left, bottom, right, top = transform_bounds(src.crs,
-                                                        crs,
-                                                        src.bounds.left,
-                                                        src.bounds.bottom,
-                                                        src.bounds.right,
-                                                        src.bounds.top,
-                                                        densify_pts=21)
+            with rio.open(fn) as src:
 
-        # Update the mosaic bounds
-        if how == 'union':
+                # Transform the extent to the reference CRS
+                left, bottom, right, top = transform_bounds(src.crs,
+                                                            crs,
+                                                            src.bounds.left,
+                                                            src.bounds.bottom,
+                                                            src.bounds.right,
+                                                            src.bounds.top,
+                                                            densify_pts=21)
 
-            bounds_left = min(bounds_left, left)
-            bounds_bottom = min(bounds_bottom, bottom)
-            bounds_right = max(bounds_right, right)
-            bounds_top = max(bounds_top, top)
+            # Update the mosaic bounds
+            if how == 'union':
 
-        elif how == 'intersection':
+                bounds_left = min(bounds_left, left)
+                bounds_bottom = min(bounds_bottom, bottom)
+                bounds_right = max(bounds_right, right)
+                bounds_top = max(bounds_top, top)
 
-            bounds_left = max(bounds_left, left)
-            bounds_bottom = max(bounds_bottom, bottom)
-            bounds_right = min(bounds_right, right)
-            bounds_top = min(bounds_top, top)
+            elif how == 'intersection':
 
-    # Align the cells
-    bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
-                                                                 bounds_bottom,
-                                                                 bounds_right,
-                                                                 bounds_top,
-                                                                 res)
+                bounds_left = max(bounds_left, left)
+                bounds_bottom = max(bounds_bottom, bottom)
+                bounds_right = min(bounds_right, right)
+                bounds_top = min(bounds_top, top)
+
+        # Align the cells
+        bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
+                                                                     bounds_bottom,
+                                                                     bounds_right,
+                                                                     bounds_top,
+                                                                     res)
+
+    else:
+
+        bounds_width = int((bounds_right - bounds_left) / abs(res[0]))
+        bounds_height = int((bounds_top - bounds_bottom) / abs(res[1]))
+
+        bounds_transform = from_bounds(bounds_left,
+                                       bounds_bottom,
+                                       bounds_right,
+                                       bounds_top,
+                                       bounds_width,
+                                       bounds_height)
 
     if return_bounds:
         return array_bounds(bounds_height, bounds_width, bounds_transform)
@@ -364,15 +375,11 @@ def warp_images(filenames,
 
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
-        dst_transform, dst_width, dst_height = get_file_bounds(filenames,
-                                                               how='union',
-                                                               crs=crs,
-                                                               res=res)
-
-        warp_kwargs['bounds'] = BoundingBox(left=dst_transform[2],
-                                            bottom=dst_transform[5]-(abs(dst_transform[4])*dst_height),
-                                            top=dst_transform[5],
-                                            right=dst_transform[2]+(abs(dst_transform[0])*dst_width))
+        warp_kwargs['bounds'] = get_file_bounds(filenames,
+                                                how='union',
+                                                crs=crs,
+                                                res=res,
+                                                return_bounds=True)
 
     return [warp(fn, **warp_kwargs) for fn in filenames]
 

@@ -45,7 +45,7 @@ Extract values at point locations
 
 .. code:: python
 
-    with gw.open(rgbn,
+    with gw.open(rgbn)
         df = ds.gw.extract('point.shp')
 
 Extract values within polygons
@@ -56,7 +56,7 @@ Extract values within polygons
 
     df = gpd.read_file('poly.gpkg')
 
-    with gw.open(rgbn,
+    with gw.open(rgbn)
 
         df = ds.gw.extract(df,
                            bands=3,
