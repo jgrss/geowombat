@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>open &#8212; GeoWombat 1.0.3b documentation</title>
+    <title>open &#8212; GeoWombat 1.0.4b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -130,7 +130,7 @@ Default is None.</p></li>
 <li><p><strong>how</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.
 Choices are [‘intersection’, ‘union’, ‘reference’].</p>
 <ul>
-<li><p>reference: Use the bounds of the reference image</p></li>
+<li><p>reference: Use the bounds of the reference image. If a <code class="docutils literal notranslate"><span class="pre">ref_image</span></code> is not given, the first image in the <code class="docutils literal notranslate"><span class="pre">filename</span></code> list is used.</p></li>
 <li><p>intersection: Use the intersection (i.e., minimum extent) of all the image bounds</p></li>
 <li><p>union: Use the union (i.e., maximum extent) of all the image bounds</p></li>
 </ul>
@@ -150,7 +150,7 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open an image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -225,7 +225,7 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

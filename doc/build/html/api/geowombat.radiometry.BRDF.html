@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>BRDF &#8212; GeoWombat 1.0.3b documentation</title>
+    <title>BRDF &#8212; GeoWombat 1.0.4b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -196,15 +196,15 @@ using the global c-factor method (see Roy et al. (2016))</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>See <a class="bibtex reference internal" href="geowombat.radiometry.LinearAdjustments.html#roy-etal-2016" id="id1">[RZJ+16]</a> for the c-factor method.</p>
+<p>See <a class="bibtex reference internal" href="geowombat.radiometry.LinearAdjustments.html#roy-etal-2016" id="id1">[RKZ+16]</a> for the c-factor method.</p>
 <p>For further background on BRDF:</p>
 <blockquote>
-<div><p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#li-strahler-1992" id="id2">[LS92]</a></p>
-<p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#roujean-etal-1992" id="id3">[RLD92]</a></p>
-<p><a class="bibtex reference internal" href="geowombat.norm_brdf.html#schaaf-etal-2002" id="id4">[SGS+02]</a></p>
+<div><p><span class="bibtex" id="id2">[li_strahler_1992]</span></p>
+<p><span class="bibtex" id="id3">[roujean_etal_1992]</span></p>
+<p><span class="bibtex" id="id4">[schaaf_etal_2002]</span></p>
 </div></blockquote>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -237,7 +237,7 @@ using the global c-factor method (see Roy et al. (2016))</p>
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>extract &#8212; GeoWombat 1.0.3b documentation</title>
+    <title>extract &#8212; GeoWombat 1.0.4b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -127,7 +127,7 @@ as they are handled ‘on-the-fly’.</p>
 <li><p><strong>data</strong> (<em>DataArray</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to extract data from.</p></li>
 <li><p><strong>aoi</strong> (<em>str</em><em> or </em><em>GeoDataFrame</em>) – A file or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to extract data frame.</p></li>
 <li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>1d array-like</em><em>]</em>) – A band or list of bands to extract.
-If not given, all bands are used. <a href="#id1"><span class="problematic" id="id2">*</span></a>Bands should be GDAL-indexed (i.e., the first band is 1, not 0).</p></li>
+If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).</p></li>
 <li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of band names. Length should be the same as <cite>bands</cite>.</p></li>
 <li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of time names.</p></li>
 <li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each polygon feature.</p></li>
@@ -144,7 +144,7 @@ If not given, all bands are used. <a href="#id1"><span class="problematic" id="i
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
@@ -165,7 +165,7 @@ If not given, all bands are used. <a href="#id1"><span class="problematic" id="i
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
