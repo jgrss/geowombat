@@ -176,7 +176,10 @@ def warp_open(filename,
 
                     # Avoid nested opens within a `config` context
                     if len(new_band_names) != len(src.band.values.tolist()):
-                        logger.warning('  The band list length does not match the sensor bands.')
+
+                        logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
+                                                                                                        src.band.values.tolist()))
+
                     else:
 
                         src.coords['band'] = new_band_names
@@ -391,10 +394,12 @@ def concat(filenames,
                 new_time_names.append(time_names[tidx])
 
                 # Warp the date
-                concat_list.append(xr.open_rasterio(warp(filenames[tidx],
-                                                         resampling=resampling,
-                                                         **ref_kwargs),
-                                                    **kwargs))
+                concat_list.append(warp_open(filenames[tidx],
+                                             resampling=resampling,
+                                             band_names=band_names,
+                                             warp_mem_limit=warp_mem_limit,
+                                             num_threads=num_threads,
+                                             **kwargs))
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
         output = xr.concat(concat_list, dim=stack_dim.lower())
@@ -432,7 +437,10 @@ def concat(filenames,
                 new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
 
                 if len(new_band_names) != len(ds.band.values.tolist()):
-                    logger.warning('  The band list length does not match the sensor bands.')
+
+                    logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
+                                                                                                    ds.band.values.tolist()))
+
                 else:
 
                     ds.coords['band'] = new_band_names
