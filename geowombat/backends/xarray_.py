@@ -39,14 +39,14 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
-def _check_config_globals(filenames, how, ref_kwargs):
+def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
     """
     Checks global configuration parameters
 
     Args:
         filenames (str or str list)
-        how (str)
+        bounds_by (str)
         ref_kwargs (dict)
     """
 
@@ -70,7 +70,7 @@ def _check_config_globals(filenames, how, ref_kwargs):
 
             # Use the bounds of the image
             ref_kwargs['bounds'] = get_file_bounds([filenames],
-                                                   how='reference',
+                                                   bounds_by='reference',
                                                    crs=ref_kwargs['crs'],
                                                    res=ref_kwargs['res'],
                                                    return_bounds=True)
@@ -78,29 +78,29 @@ def _check_config_globals(filenames, how, ref_kwargs):
         else:
 
             # Replace the bounds keyword, if needed
-            if how.lower() == 'intersection':
+            if bounds_by.lower() == 'intersection':
 
                 # Get the intersecting bounds of all images
                 ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                                       how='intersection',
+                                                       bounds_by='intersection',
                                                        crs=ref_kwargs['crs'],
                                                        res=ref_kwargs['res'],
                                                        return_bounds=True)
 
-            elif how.lower() == 'union':
+            elif bounds_by.lower() == 'union':
 
                 # Get the union bounds of all images
                 ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                                       how='union',
+                                                       bounds_by='union',
                                                        crs=ref_kwargs['crs'],
                                                        res=ref_kwargs['res'],
                                                        return_bounds=True)
 
-            elif how.lower() == 'reference':
+            elif bounds_by.lower() == 'reference':
 
                 # Use the bounds of the first image
                 ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                                       how='reference',
+                                                       bounds_by='reference',
                                                        crs=ref_kwargs['crs'],
                                                        res=ref_kwargs['res'],
                                                        return_bounds=True)
@@ -122,6 +122,7 @@ def _check_config_globals(filenames, how, ref_kwargs):
 def warp_open(filename,
               band_names=None,
               resampling='nearest',
+              dtype=None,
               return_windows=False,
               warp_mem_limit=512,
               num_threads=1,
@@ -135,6 +136,8 @@ def warp_open(filename,
         filename (str): The file to open.
         band_names (Optional[int, str, or list]): The band names.
         resampling (Optional[str]): The resampling method.
+        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+            from the file.
         return_windows (Optional[bool]): Whether to return block windows.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
@@ -200,13 +203,18 @@ def warp_open(filename,
 
         src.attrs['resampling'] = resampling
 
-        return src
+        if dtype:
+            return src.astype(dtype)
+        else:
+            return src
 
 
 def mosaic(filenames,
            overlap='max',
+           bounds_by='reference',
            resampling='nearest',
            band_names=None,
+           dtype=None,
            warp_mem_limit=512,
            num_threads=1,
            **kwargs):
@@ -218,8 +226,16 @@ def mosaic(filenames,
         filenames (list): A list of file names to mosaic.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
             Choices are ['min', 'max', 'mean'].
+        bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
+
+            * reference: Use the bounds of the reference image
+            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+            * union: Use the union (i.e., maximum extent) of all the image bounds
+
         resampling (Optional[str]): The resampling method.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
+        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+            from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
@@ -237,27 +253,7 @@ def mosaic(filenames,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads}
 
-    # Check if there is a reference image
-    if 'ref_image' in config:
-
-        ref_image = config['ref_image']
-
-        if isinstance(ref_image, str) and os.path.isfile(ref_image):
-
-            # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(ref_image)
-
-            ref_kwargs['crs'] = ref_meta.crs
-            ref_kwargs['res'] = ref_meta.res
-
-    if 'ref_bounds' in config:
-        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
-
-    if 'ref_crs' in config:
-        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
-
-    if 'ref_res' in config:
-        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
+    ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
     # Warp all images to the same grid.
     warped_objects = warp_images(filenames,
@@ -308,15 +304,19 @@ def mosaic(filenames,
 
         ds.attrs['resampling'] = resampling
 
-        return ds
+        if dtype:
+            return ds.astype(dtype)
+        else:
+            return ds
 
 
 def concat(filenames,
            stack_dim='time',
-           how='reference',
+           bounds_by='reference',
            resampling='nearest',
            time_names=None,
            band_names=None,
+           dtype=None,
            overlap='max',
            warp_mem_limit=512,
            num_threads=1,
@@ -328,7 +328,7 @@ def concat(filenames,
     Args:
         filenames (list): A list of file names to concatenate.
         stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
-        how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
+        bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
 
             * reference: Use the bounds of the reference image
             * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
@@ -337,8 +337,10 @@ def concat(filenames,
         resampling (Optional[str]): The resampling method.
         time_names (Optional[1d array-like]): A list of names to give the time dimension.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
+        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+            from the file.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
-            Choices are ['min', 'max', 'mean'].
+            Choices are ['min', 'max', 'mean']. Only used when mosaicking arrays from the same timeframe.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
@@ -356,7 +358,7 @@ def concat(filenames,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads}
 
-    ref_kwargs = _check_config_globals(filenames, how, ref_kwargs)
+    ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
     # Keep a copy of the transformed attributes.
     with xr.open_rasterio(warp(filenames[0],
@@ -384,7 +386,11 @@ def concat(filenames,
                     # Mosaic the images into a single-date array
                     concat_list.append(mosaic(filenames_mosaic,
                                               overlap=overlap,
+                                              bounds_by=bounds_by,
                                               resampling=resampling,
+                                              band_names=band_names,
+                                              warp_mem_limit=warp_mem_limit,
+                                              num_threads=num_threads,
                                               **kwargs))
 
                     new_time_names.append(time_names[tidx])
@@ -446,4 +452,7 @@ def concat(filenames,
                     ds.coords['band'] = new_band_names
                     ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
 
-    return ds
+    if dtype:
+        return ds.astype(dtype)
+    else:
+        return ds

@@ -237,7 +237,7 @@ def align_bounds(minx, miny, maxx, maxy, res):
 
 
 def get_file_bounds(filenames,
-                    how='intersection',
+                    bounds_by='intersection',
                     crs=None,
                     res=None,
                     return_bounds=False):
@@ -247,7 +247,7 @@ def get_file_bounds(filenames,
 
     Args:
         filenames (list): The file names to mosaic.
-        how (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
+        bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         crs (Optional[crs]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
         return_bounds (Optional[bool]): Whether to return the bounds tuple.
@@ -273,7 +273,7 @@ def get_file_bounds(filenames,
                                                                                 src.bounds.top,
                                                                                 densify_pts=21)
 
-    if how in ['union', 'intersection']:
+    if bounds_by.lower() in ['union', 'intersection']:
 
         for fn in filenames[1:]:
 
@@ -289,14 +289,14 @@ def get_file_bounds(filenames,
                                                             densify_pts=21)
 
             # Update the mosaic bounds
-            if how == 'union':
+            if bounds_by.lower() == 'union':
 
                 bounds_left = min(bounds_left, left)
                 bounds_bottom = min(bounds_bottom, bottom)
                 bounds_right = max(bounds_right, right)
                 bounds_top = max(bounds_top, top)
 
-            elif how == 'intersection':
+            elif bounds_by.lower() == 'intersection':
 
                 bounds_left = max(bounds_left, left)
                 bounds_bottom = max(bounds_bottom, bottom)
@@ -376,7 +376,7 @@ def warp_images(filenames,
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
         warp_kwargs['bounds'] = get_file_bounds(filenames,
-                                                how='union',
+                                                bounds_by='union',
                                                 crs=crs,
                                                 res=res,
                                                 return_bounds=True)
