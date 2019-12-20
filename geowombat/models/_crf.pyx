@@ -487,8 +487,8 @@ def time_to_crffeas(double[:, :, ::1] data,
                                              tsample[rededge_idx]*scale_factor,
                                              tsample[swir1_idx]*scale_factor)
                     nbr = _nbr(tsample[rededge_idx]*scale_factor, tsample[swir2_idx]*scale_factor)
-                    ndvi = _ndvi(tsample[nir1_idx]*scale_factor, tsample[rededge_idx]*scale_factor)
                     ndmi = _ndmi(tsample[rededge_idx]*scale_factor, tsample[swir1_idx]*scale_factor)
+                    ndvi = _ndvi(tsample[nir1_idx]*scale_factor, tsample[rededge_idx]*scale_factor)
                     wi = _wi(tsample[nir1_idx]*scale_factor, tsample[swir1_idx]*scale_factor)
 
                     samples.push_back(_sample_to_dict_s220(tsample,
