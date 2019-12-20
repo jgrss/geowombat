@@ -31,6 +31,13 @@ Open a raster as a DataArray
     with gw.open(rgbn) as ds:
         print(ds)
 
+Force the output data type
+
+.. ipython:: python
+
+    with gw.open(rgbn, dtype='float32') as ds:
+        print(ds)
+
 Specify band names
 
 .. ipython:: python
@@ -45,6 +52,18 @@ Use the sensor name to set band names
     with gw.config.update(sensor='qb'):
         with gw.open(rgbn) as ds:
             print(ds)
+
+To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Open a list of files as a DataArray, with all bands stacked.
+
+.. ipython:: python
+
+    with gw.open([rgbn, rgbn],
+                 band_names=['b1', 'g1', 'r1', 'n1', 'b2', 'g2', 'r2', 'n2'],
+                 stack_dim='band') as ds:
+        print(ds)
 
 To open multiple images as a time stack, change the input to a list of files
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -102,7 +121,7 @@ Stack the intersection of all images
     with gw.open(concat_list,
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2', 't3'],
-                 how='intersection') as ds:
+                 bounds_by='intersection') as ds:
         print(ds)
 
 Stack the union of all images
@@ -113,11 +132,11 @@ Stack the union of all images
     with gw.open(concat_list,
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2', 't3'],
-                 how='union') as ds:
+                 bounds_by='union') as ds:
         print(ds)
 
 Keyword arguments always overwrite config settings. In this example, the reference image 'rgbn' is used to set the
-CRS, bounds, and cell size. Using how='intersection' overrides the reference image bounds.
+CRS, bounds, and cell size. Using ``bounds_by='intersection'`` overrides the reference image bounds.
 
 .. ipython:: python
 
@@ -126,7 +145,7 @@ CRS, bounds, and cell size. Using how='intersection' overrides the reference ima
         with gw.open(concat_list,
                      band_names=['blue', 'green', 'red', 'nir'],
                      time_names=['t1', 't2', 't3'],
-                     how='intersection') as ds:
+                     bounds_by='intersection') as ds:
             print(ds)
 
 When multiple images have matching dates, the arrays are merged into one layer

@@ -3,6 +3,20 @@
 Change Log
 ==========
 
+1.0.7b (20 December 2019)
+-------------------------
+
+New
+~~~
+
+- Added user argument `dtype` in :func:`open` function.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed time and band stacking error.
+- Fixed dictionary string name error in CRF feature processing
+
 1.0.0b (27 November 2019)
 -------------------------
 

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>open &#8212; GeoWombat 1.0.4b documentation</title>
+    <title>open &#8212; GeoWombat 1.0.7b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -118,7 +118,7 @@
 <h1>open<a class="headerlink" href="#open" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.open">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">stack_dim='time'</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">how='reference'</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">overlap='max'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">return_as='array'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">time_names=None</em>, <em class="sig-param">stack_dim='time'</em>, <em class="sig-param">bounds=None</em>, <em class="sig-param">bounds_by='reference'</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">overlap='max'</em>, <em class="sig-param">dtype=None</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -133,7 +133,7 @@ Default is None.</p></li>
 <li><p><strong>stack_dim</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The stack dimension. Choices are [‘time’, ‘band’].</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as [minx, maxy, miny, maxx].
 Default is None.</p></li>
-<li><p><strong>how</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.
+<li><p><strong>bounds_by</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.
 Choices are [‘intersection’, ‘union’, ‘reference’].</p>
 <ul>
 <li><p>reference: Use the bounds of the reference image. If a <code class="docutils literal notranslate"><span class="pre">ref_image</span></code> is not given, the first image in the <code class="docutils literal notranslate"><span class="pre">filename</span></code> list is used.</p></li>
@@ -146,6 +146,8 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 <li><p><strong>mosaic</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, whether to mosaic the arrays instead of stacking.</p></li>
 <li><p><strong>overlap</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The keyword that determines how to handle overlapping data if <code class="docutils literal notranslate"><span class="pre">filenames</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
 Choices are [‘min’, ‘max’, ‘mean’].</p></li>
+<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A data type to force the output to. If not given, the data type is extracted
+from the file.</p></li>
 <li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for Dask if <code class="docutils literal notranslate"><span class="pre">bounds</span></code>
 is given or <code class="docutils literal notranslate"><span class="pre">window</span></code> is given. Default is 1.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to the file opener.</p></li>
@@ -191,8 +193,8 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mix configuration keywords</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="n">ref_bounds</span><span class="o">=</span><span class="s1">&#39;image2.tif&#39;</span><span class="p">):</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># The ``how`` keyword overrides the extent bounds</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># The ``bounds_by`` keyword overrides the extent bounds</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span> <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Resample an image to 10m x 10m cell size</span>

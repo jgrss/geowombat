@@ -226,10 +226,11 @@ def open(filename,
          time_names=None,
          stack_dim='time',
          bounds=None,
-         how='reference',
+         bounds_by='reference',
          resampling='nearest',
          mosaic=False,
          overlap='max',
+         dtype=None,
          num_workers=1,
          **kwargs):
 
@@ -247,7 +248,7 @@ def open(filename,
         stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
-        how (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
+        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
             Choices are ['intersection', 'union', 'reference'].
 
             * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
@@ -259,6 +260,8 @@ def open(filename,
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
+        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+            from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
             is given or ``window`` is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
@@ -302,8 +305,8 @@ def open(filename,
         >>> # Mix configuration keywords
         >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
         >>>
-        >>>     # The ``how`` keyword overrides the extent bounds
-        >>>     with gw.open(['image1.tif', 'image2.tif'], how='union') as ds:
+        >>>     # The ``bounds_by`` keyword overrides the extent bounds
+        >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
         >>>         print(ds)
         >>>
         >>> # Resample an image to 10m x 10m cell size
@@ -369,6 +372,7 @@ def open(filename,
                                 overlap=overlap,
                                 resampling=resampling,
                                 band_names=band_names,
+                                dtype=dtype,
                                 **kwargs)
 
             else:
@@ -376,11 +380,12 @@ def open(filename,
                 # Stack images along the 'time' axis
                 yield gw_concat(filename,
                                 stack_dim=stack_dim,
-                                how=how,
+                                bounds_by=bounds_by,
                                 resampling=resampling,
                                 time_names=time_names,
                                 band_names=band_names,
                                 overlap=overlap,
+                                dtype=dtype,
                                 **kwargs)
 
         else:
@@ -402,6 +407,7 @@ def open(filename,
                 yield warp_open(filename,
                                 band_names=band_names,
                                 resampling=resampling,
+                                dtype=dtype,
                                 **kwargs)
 
             else:
