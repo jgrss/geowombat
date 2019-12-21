@@ -201,6 +201,7 @@ def warp_open(filename,
                                                             chunksize,
                                                             return_as='list')
 
+        src.attrs['filename'] = filename
         src.attrs['resampling'] = resampling
 
         if dtype:

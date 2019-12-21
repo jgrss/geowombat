@@ -10,6 +10,7 @@ extract = SpatialOperations().extract
 subset = SpatialOperations().subset
 clip = SpatialOperations().clip
 mask = SpatialOperations().mask
+coregister = SpatialOperations().coregister
 polygons_to_points = Converters().polygons_to_points
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
@@ -26,6 +27,7 @@ __all__ = ['apply',
            'subset',
            'clip',
            'mask',
+           'coregister',
            'polygons_to_points',
            'moving',
            'norm_diff',

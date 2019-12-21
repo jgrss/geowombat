@@ -15,8 +15,13 @@ import xarray as xr
 import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
-from rasterio.warp import calculate_default_transform
 from affine import Affine
+
+try:
+    import arosics
+    AROSICS_INSTALLED = True
+except:
+    AROSICS_INSTALLED = False
 
 try:
     import pymorph
@@ -34,7 +39,7 @@ class SpatialOperations(_PropertyMixin):
         Creates samples from the array
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to stratify.
+            data (DataArray): The ``xarray.DataArray`` to stratify.
             frac (Optional[float]): The sample fraction for each block.
             nodata (Optional[int]): The 'no data' value, which will be ignored.
 
@@ -48,38 +53,36 @@ class SpatialOperations(_PropertyMixin):
             >>>     df = gw.sample(ds)
         """
 
-        def _sample_func(block_data):
+        results = list()
 
-            results = list()
+        x, y = np.meshgrid(data.x.values,
+                           data.y.values)
 
-            x, y = np.meshgrid(block_data.x.values,
-                               block_data.y.values)
+        for cidx in data.unique():
 
-            for cidx in block_data.unique():
+            if cidx == nodata:
+                continue
 
-                if cidx == nodata:
-                    continue
+            idx = np.where(data == cidx)
+            xx = x[idx]
+            yy = y[idx]
 
-                idx = np.where(block_data == cidx)
-                xx = x[idx]
-                yy = y[idx]
+            n_samps = idx[0].shape[0]
+            n_samps_frac = int(n_samps*frac)
+            drange = list(range(0, n_samps))
 
-                n_samps = idx[0].shape[0]
-                n_samps_frac = int(n_samps*frac)
-                drange = list(range(0, n_samps))
+            rand_idx = np.random.choice(drange, size=n_samps_frac, replace=False)
 
-                rand_idx = np.random.choice(drange, size=n_samps_frac, replace=False)
+            xx = xx.flatten()[rand_idx]
+            yy = yy.flatten()[rand_idx]
 
-                xx = xx.flatten()[rand_idx]
-                yy = yy.flatten()[rand_idx]
+            df_tmp = gpd.GeoDataFrame(np.arange(0, n_samps_frac),
+                                      geometry=gpd.points_from_xy(xx, yy),
+                                      crs=data.crs)
 
-                df_tmp = gpd.GeoDataFrame(np.arange(0, n_samps_frac),
-                                          geometry=gpd.points_from_xy(xx, yy),
-                                          crs=data.crs)
+            results.append(df_tmp)
 
-                results.append(df_tmp)
-
-            return pd.concat(results, axis=0)
+        return pd.concat(results, axis=0)
 
     def extract(self,
                 data,
@@ -100,7 +103,7 @@ class SpatialOperations(_PropertyMixin):
         as they are handled 'on-the-fly'.
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to extract data from.
+            data (DataArray): The ``xarray.DataArray`` to extract data from.
             aoi (str or GeoDataFrame): A file or ``geopandas.GeoDataFrame`` to extract data frame.
             bands (Optional[int or 1d array-like]): A band or list of bands to extract.
                 If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).
@@ -218,7 +221,7 @@ class SpatialOperations(_PropertyMixin):
         Clips a DataArray by vector polygon geometry
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to subset.
+            data (DataArray): The ``xarray.DataArray`` to subset.
             df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to clip to.
             query (Optional[str]): A query to apply to ``df``.
             mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
@@ -310,8 +313,8 @@ class SpatialOperations(_PropertyMixin):
         else:
             return data
 
-    def mask(self,
-             data,
+    @staticmethod
+    def mask(data,
              df,
              query=None,
              keep='in'):
@@ -320,7 +323,7 @@ class SpatialOperations(_PropertyMixin):
         Masks a DataArray by vector polygon geometry
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to mask.
+            data (DataArray): The ``xarray.DataArray`` to mask.
             df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
             query (Optional[str]): A query to apply to ``df``.
             keep (Optional[str]): If ``keep`` = 'in', mask values outside of the geometry (keep inside).
@@ -389,7 +392,7 @@ class SpatialOperations(_PropertyMixin):
         Subsets a DataArray
 
         Args:
-            data (DataArray): An ``xarray.DataArray`` to subset.
+            data (DataArray): The ``xarray.DataArray`` to subset.
             left (Optional[float]): The left coordinate.
             top (Optional[float]): The top coordinate.
             right (Optional[float]): The right coordinate.
@@ -464,3 +467,71 @@ class SpatialOperations(_PropertyMixin):
         ds_sub.attrs['transform'] = dst_transform
 
         return ds_sub
+
+    @staticmethod
+    def coregister(target,
+                   reference,
+                   **kwargs):
+
+        """
+        Co-registers two images using AROSICS
+
+        Args:
+            target (DataArray): The target ``xarray.DataArray`` to co-register.
+            reference (DataArray): The reference ``xarray.DataArray`` to co-register to.
+            kwargs (dict): Keyword arguments passed to ``arosics``.
+
+        Reference:
+            https://pypi.org/project/arosics
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('target.tif') as tar, gw.open('reference.tif') as ref:
+            >>>     results = gw.coregister(tar, ref, q=True, ws=(512, 512), max_shift=3)
+        """
+
+        if not AROSICS_INSTALLED:
+            logger.exception('  AROSICS must be installed to co-register data. See https://pypi.org/project/arosics for details')
+
+        cr = arosics.COREG(reference.filename,
+                           target.filename,
+                           **kwargs)
+
+        try:
+            cr.calculate_spatial_shifts()
+        except:
+            logger.warning('  Could not co-register the data.')
+            return target
+
+        shift_info = cr.correct_shifts()
+
+        left = shift_info['updated geotransform'][0]
+        top = shift_info['updated geotransform'][3]
+
+        transform = (target.gw.cellx, 0.0, left, 0.0, -target.gw.celly, top)
+
+        target.attrs['transform'] = transform
+
+        data = shift_info['arr_shifted'].transpose(2, 0, 1)
+
+        ycoords = np.linspace(top-target.gw.cellyh,
+                              top-target.gw.cellyh-(data.shape[1] * target.gw.celly),
+                              data.shape[1])
+
+        xcoords = np.linspace(left+target.gw.cellxh,
+                              left+target.gw.cellxh+(data.shape[2] * target.gw.cellx),
+                              data.shape[2])
+
+        return xr.DataArray(data=da.from_array(data,
+                                               chunks=(target.gw.band_chunks,
+                                                       target.gw.row_chunks,
+                                                       target.gw.col_chunks)),
+                            dims=('band', 'y', 'x'),
+                            coords={'band': target.band.values.tolist(),
+                                    'y': ycoords,
+                                    'x': xcoords},
+                            attrs=target.attrs)
