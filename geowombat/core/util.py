@@ -559,7 +559,7 @@ class Converters(object):
         Converts polygons to points
 
         Args:
-            data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset`.
+            data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` containing the geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
