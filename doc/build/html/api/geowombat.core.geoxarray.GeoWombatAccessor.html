@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>GeoWombatAccessor &#8212; GeoWombat 1.0.7b documentation</title>
+    <title>GeoWombatAccessor &#8212; GeoWombat 1.2.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -231,8 +231,14 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code>(self[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_geodataframe</span></code>(self[, mask, connectivity])</p></td>
+<td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code>(self, filename[, mask, connectivity])</p></td>
+<td><p>Writes an Xarray DataArray to a vector file</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the woody vegetation index</p></td>

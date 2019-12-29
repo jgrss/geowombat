@@ -1,7 +1,7 @@
 import xarray as xr
 
 
-def dask_to_datarray(xarray_data, dask_data, band_name):
+def dask_to_xarray(xarray_data, dask_data, band_name):
 
     """
     Converts a Dask array to an Xarray DataArray

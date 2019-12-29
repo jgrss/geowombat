@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mask &#8212; GeoWombat 1.0.7b documentation</title>
+    <title>mask &#8212; GeoWombat 1.2.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="polygons_to_points" href="geowombat.polygons_to_points.html" />
+    <link rel="next" title="coregister" href="geowombat.coregister.html" />
     <link rel="prev" title="clip" href="geowombat.clip.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -83,7 +83,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.clip.html" title="previous chapter">clip</a></li>
-      <li>Next: <a href="geowombat.polygons_to_points.html" title="next chapter">polygons_to_points</a></li>
+      <li>Next: <a href="geowombat.coregister.html" title="next chapter">coregister</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -123,7 +123,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to mask.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to mask.</p></li>
 <li><p><strong>df</strong> (<em>GeoDataFrame</em><em> or </em><em>str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> or filename to use for masking.</p></li>
 <li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to apply to <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
 <li><p><strong>keep</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If <code class="docutils literal notranslate"><span class="pre">keep</span></code> = ‘in’, mask values outside of the geometry (keep inside).

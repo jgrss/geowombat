@@ -3,13 +3,26 @@
 Change Log
 ==========
 
+1.2.0b (29 December 2019)
+-------------------------
+
+New
+~~~
+
+- Added :func:`geowombat.to_geodataframe` function.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed GeoDataFrame CRS check in :func:`geowombat.extract` function.
+
 1.0.7b (20 December 2019)
 -------------------------
 
 New
 ~~~
 
-- Added user argument `dtype` in :func:`open` function.
+- Added user argument `dtype` in :func:`geowombat.open` function.
 
 Bug fixes
 ~~~~~~~~~
@@ -23,7 +36,7 @@ Bug fixes
 New
 ~~~
 
-- Added :func:`mask` function.
+- Added :func:`geowombat.mask` function.
 
 Bug fixes
 ~~~~~~~~~
@@ -36,7 +49,7 @@ Bug fixes
 New
 ~~~
 
-- Added :func:`download_cube` function.
+- Added :func:`download_cube` function in :class:`geowombat.util.web.GeoDownloads`.
 
 1.0.0b (1 November 2019)
 ------------------------
@@ -52,7 +65,7 @@ Enhancements
 New
 ~~~
 
-- Added user functions as Xarray attributes. See :ref:`apply` for an example.
+- Added user functions as Xarray attributes. See :ref:`geowombat.apply` for an example.
 
 1.0.0b (24 October 2019)
 ------------------------

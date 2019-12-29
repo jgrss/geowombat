@@ -343,12 +343,12 @@ def open(filename,
             # GDAL's default chunk size is typically 256
             kwargs['chunks'] = (1, 256, 256)
 
-        yield read(filename,
-                   band_names=band_names,
-                   time_names=time_names,
-                   bounds=bounds,
-                   num_workers=num_workers,
-                   **kwargs)
+        data = read(filename,
+                    band_names=band_names,
+                    time_names=time_names,
+                    bounds=bounds,
+                    num_workers=num_workers,
+                    **kwargs)
 
     else:
 
@@ -368,25 +368,25 @@ def open(filename,
             if mosaic:
 
                 # Mosaic images over space
-                yield gw_mosaic(filename,
-                                overlap=overlap,
-                                resampling=resampling,
-                                band_names=band_names,
-                                dtype=dtype,
-                                **kwargs)
+                data = gw_mosaic(filename,
+                                 overlap=overlap,
+                                 resampling=resampling,
+                                 band_names=band_names,
+                                 dtype=dtype,
+                                 **kwargs)
 
             else:
 
                 # Stack images along the 'time' axis
-                yield gw_concat(filename,
-                                stack_dim=stack_dim,
-                                bounds_by=bounds_by,
-                                resampling=resampling,
-                                time_names=time_names,
-                                band_names=band_names,
-                                overlap=overlap,
-                                dtype=dtype,
-                                **kwargs)
+                data = gw_concat(filename,
+                                 stack_dim=stack_dim,
+                                 bounds_by=bounds_by,
+                                 resampling=resampling,
+                                 time_names=time_names,
+                                 band_names=band_names,
+                                 overlap=overlap,
+                                 dtype=dtype,
+                                 **kwargs)
 
         else:
 
@@ -404,11 +404,11 @@ def open(filename,
                         w = src.block_window(1, 0, 0)
                         kwargs['chunks'] = (1, w.height, w.width)
 
-                yield warp_open(filename,
-                                band_names=band_names,
-                                resampling=resampling,
-                                dtype=dtype,
-                                **kwargs)
+                data = warp_open(filename,
+                                 band_names=band_names,
+                                 resampling=resampling,
+                                 dtype=dtype,
+                                 **kwargs)
 
             else:
 
@@ -416,4 +416,11 @@ def open(filename,
                     logger.exception('  The chunks should be a dictionary.')
 
                 with xr.open_dataset(filename, **kwargs) as src:
-                    yield src
+                    data = src
+
+    try:
+        yield data
+    finally:
+
+        data.close()
+        data = None

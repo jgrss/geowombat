@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>API reference &#8212; GeoWombat 1.0.7b documentation</title>
+    <title>API reference &#8212; GeoWombat 1.2.0b documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -158,14 +158,20 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.mask.html#geowombat.mask" title="geowombat.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a>(data, df[, query, keep])</p></td>
 <td><p>Masks a DataArray by vector polygon geometry</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.polygons_to_points.html#geowombat.polygons_to_points" title="geowombat.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.coregister.html#geowombat.coregister" title="geowombat.coregister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coregister</span></code></a>(target, reference, \*\*kwargs)</p></td>
+<td><p>Co-registers two images using AROSICS</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.polygons_to_points.html#geowombat.polygons_to_points" title="geowombat.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
 <td><p>Converts polygons to points</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(infile, outfile, block_func[, args, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(infile, outfile, block_func[, args, …])</p></td>
 <td><p>Applies a function and writes results to file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, readxsize, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, readxsize, …])</p></td>
 <td><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.to_geodataframe.html#geowombat.to_geodataframe" title="geowombat.to_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_geodataframe</span></code></a>(data[, mask, connectivity])</p></td>
+<td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, w, n_jobs])</p></td>
 <td><p>Applies a moving window function over Dask array blocks</p></td>

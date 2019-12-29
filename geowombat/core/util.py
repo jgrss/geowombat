@@ -465,10 +465,23 @@ class Converters(object):
             else:
                 logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
 
-        if data.crs != CRS.from_dict(df.crs).to_proj4():
+        # Re-project the data to match the image CRS
+        if isinstance(df.crs, str):
 
-            # Re-project the data to match the image CRS
-            df = df.to_crs(data.crs)
+            if df.crs.lower().startswith('+proj'):
+
+                if data.crs != df.crs:
+                    df = df.to_crs(data.crs)
+
+        elif isinstance(df.crs, int):
+
+            if data.crs != CRS.from_epsg(df.crs).to_proj4():
+                df = df.to_crs(data.crs)
+
+        else:
+
+            if data.crs != CRS.from_dict(df.crs).to_proj4():
+                df = df.to_crs(data.crs)
 
         if verbose > 0:
             logger.info('  Checking geometry validity ...')

@@ -1,5 +1,6 @@
 from .io import apply
 from .io import to_raster
+from .io import to_geodataframe
 from .sops import SpatialOperations
 from .util import Converters
 from .util import MapProcesses
@@ -23,6 +24,7 @@ tasseled_cap = TasseledCap().tasseled_cap
 
 __all__ = ['apply',
            'to_raster',
+           'to_geodataframe',
            'extract',
            'subset',
            'clip',

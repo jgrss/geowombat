@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, moving, extract, subset, clip, mask
+from . import to_raster, to_geodataframe, moving, extract, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
@@ -268,6 +268,49 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   text_color=text_color,
                   rot=rot,
                   **kwargs)
+
+    def to_geodataframe(self, mask=None, connectivity=4):
+
+        """
+        Converts a ``dask`` array to a ``GeoDataFrame``
+
+        Args:
+            mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
+                Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
+                Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
+                and mask is None, the source’s mask will be inverted and used in place of mask.
+            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+
+        Returns:
+            ``GeoDataFrame``
+        """
+
+        return to_geodataframe(self._obj,
+                               mask=mask,
+                               connectivity=connectivity)
+
+    def to_vector(self, filename, mask=None, connectivity=4):
+
+        """
+        Writes an Xarray DataArray to a vector file
+
+        Args:
+            filename (str): The output file name to write to.
+            mask (numpy ndarray or rasterio Band object, optional): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
+                Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
+                Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
+                and mask is None, the source’s mask will be inverted and used in place of mask.
+            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+
+        Returns:
+            None
+        """
+
+        df_ = self.to_geodataframe(self._obj,
+                                   mask=mask,
+                                   connectivity=connectivity)
+
+        df_.to_file(filename)
 
     def to_raster(self,
                   filename,

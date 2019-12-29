@@ -17,13 +17,20 @@ from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
 
 import numpy as np
+
+import geopandas as gpd
+
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
 
 import rasterio as rio
+from rasterio.features import shapes
 from rasterio.windows import Window
+
+import shapely
+from shapely.geometry import Polygon
 
 import zarr
 from tqdm import tqdm
@@ -32,6 +39,9 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+
+shapely.speedups.enable()
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
@@ -854,3 +864,38 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
               blockxsize=src.profile['blockxsize'],
               blockysize=src.profile['blockysize'],
               compress=compress)
+
+
+def to_geodataframe(data, mask=None, connectivity=4):
+
+    """
+    Converts a ``dask`` array to a ``GeoDataFrame``
+
+    Args:
+        data (DataArray): The ``xarray.DataArray`` to convert.
+        mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
+            Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
+            Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
+            and mask is None, the source’s mask will be inverted and used in place of mask.
+        connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+
+    Returns:
+        ``GeoDataFrame``
+    """
+
+    if not hasattr(data, 'transform'):
+        logger.exception("  The data should have a 'transform' object.")
+
+    if not hasattr(data, 'crs'):
+        logger.exception("  The data should have a 'crs' object.")
+
+    poly_objects = shapes(data.data.compute(),
+                          mask=mask,
+                          connectivity=connectivity,
+                          transform=data.transform)
+
+    poly_geom = [Polygon(p[0]['coordinates'][0]) for p in poly_objects]
+
+    return gpd.GeoDataFrame(data=np.ones(len(poly_geom), dtype='uint8'),
+                            geometry=poly_geom,
+                            crs=data.crs)
