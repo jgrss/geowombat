@@ -479,7 +479,7 @@ class SpatialOperations(_PropertyMixin):
         Args:
             target (DataArray): The target ``xarray.DataArray`` to co-register.
             reference (DataArray): The reference ``xarray.DataArray`` to co-register to.
-            kwargs (dict): Keyword arguments passed to ``arosics``.
+            kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
         Reference:
             https://pypi.org/project/arosics
