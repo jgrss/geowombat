@@ -116,8 +116,8 @@
 <span id="id1"></span><h1>Radiometry<a class="headerlink" href="#radiometry" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data">
 <h2><cite>GeoWombat</cite> uses the global c-factor method to apply BRDF normalization on surface reflectance data<a class="headerlink" href="#geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-oli-tirs-surface-reflectance-image">
-<h3>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 OLI TIRS surface reflectance image.<a class="headerlink" href="#in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-oli-tirs-surface-reflectance-image" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-surface-reflectance-image">
+<h3>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.<a class="headerlink" href="#in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-surface-reflectance-image" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
@@ -157,7 +157,7 @@
             <span class="n">brdf_data</span> <span class="o">=</span> <span class="n">brdf</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">sr_data</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">saz</span><span class="p">,</span> <span class="n">vza</span><span class="p">,</span> <span class="n">vaz</span><span class="p">,</span> <span class="n">wavelengths</span><span class="o">=</span><span class="n">dn</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
             <span class="c1"># Save the results to file</span>
-            <span class="n">brdf_data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;oli_tirs_sr_brdf.tif&#39;</span><span class="p">)</span>
+            <span class="n">brdf_data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;l8_sr_brdf.tif&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

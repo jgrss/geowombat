@@ -6,8 +6,8 @@ Radiometry
 `GeoWombat` uses the global c-factor method to apply BRDF normalization on surface reflectance data
 ---------------------------------------------------------------------------------------------------
 
-In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 OLI TIRS surface reflectance image.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface reflectance image.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -50,4 +50,4 @@ In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 OLI TIRS
                 brdf_data = brdf.norm_brdf(sr_data, sza, saz, vza, vaz, wavelengths=dn.band.values.tolist())
 
                 # Save the results to file
-                brdf_data.gw.to_raster('oli_tirs_sr_brdf.tif')
+                brdf_data.gw.to_raster('l8_sr_brdf.tif')
