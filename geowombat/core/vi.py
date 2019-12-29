@@ -429,7 +429,7 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
             Landsat ETM+:
                 See :cite:`huang_etal_2002`
 
-            Landsat OLI TIRS:
+            Landsat OLI:
                 See :cite:`baig_etal_2014`
 
             MODIS:
