@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Chunks &#8212; GeoWombat 1.3.0b documentation</title>
+    <title>to_vrt &#8212; GeoWombat 1.3.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,6 +16,8 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="to_geodataframe" href="geowombat.to_geodataframe.html" />
+    <link rel="prev" title="to_raster" href="geowombat.to_raster.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -71,14 +73,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.to_raster.html" title="previous chapter">to_raster</a></li>
+      <li>Next: <a href="geowombat.to_geodataframe.html" title="next chapter">to_geodataframe</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -108,64 +114,33 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="chunks">
-<h1>Chunks<a class="headerlink" href="#chunks" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="geowombat.core.util.Chunks">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.core.util.</code><code class="sig-name descname">Chunks</code><a class="headerlink" href="#geowombat.core.util.Chunks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p class="rubric">Methods</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 66%" />
-<col style="width: 34%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><strong>check_chunksize</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>check_chunktype</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p><strong>get_chunk_dim</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Summary</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.util.Chunks.check_chunksize" title="geowombat.core.util.Chunks.check_chunksize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_chunksize</span></code></a>(chunksize[, output])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.util.Chunks.check_chunktype" title="geowombat.core.util.Chunks.check_chunktype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_chunktype</span></code></a>(self, chunksize[, output])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.util.Chunks.get_chunk_dim" title="geowombat.core.util.Chunks.get_chunk_dim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_chunk_dim</span></code></a>(chunksize)</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="geowombat.core.util.Chunks.check_chunksize">
-<em class="property">static </em><code class="sig-name descname">check_chunksize</code><span class="sig-paren">(</span><em class="sig-param">chunksize</em>, <em class="sig-param">output='3d'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.util.Chunks.check_chunksize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="geowombat.core.util.Chunks.check_chunktype">
-<code class="sig-name descname">check_chunktype</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">chunksize</em>, <em class="sig-param">output='3d'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.util.Chunks.check_chunktype" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="geowombat.core.util.Chunks.get_chunk_dim">
-<em class="property">static </em><code class="sig-name descname">get_chunk_dim</code><span class="sig-paren">(</span><em class="sig-param">chunksize</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.util.Chunks.get_chunk_dim" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+  <div class="section" id="to-vrt">
+<h1>to_vrt<a class="headerlink" href="#to-vrt" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="geowombat.to_vrt">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_vrt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a file to a VRT file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.enums</span> <span class="k">import</span> <span class="n">Resampling</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="s1">&#39;image.vrt&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>              <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">nearest</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -185,7 +160,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.core.util.Chunks.rst.txt"
+      <a href="../_sources/api/geowombat.to_vrt.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

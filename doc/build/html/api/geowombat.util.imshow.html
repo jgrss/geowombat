@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>imshow &#8212; GeoWombat 1.2.0b documentation</title>
+    <title>imshow &#8212; GeoWombat 1.3.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -112,28 +112,40 @@
 <h1>imshow<a class="headerlink" href="#imshow" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.util.imshow">
-<code class="sig-prename descclassname">geowombat.util.</code><code class="sig-name descname">imshow</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">mask=False</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">flip=False</em>, <em class="sig-param">text_color='black'</em>, <em class="sig-param">rot=30</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.util.imshow" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.util.</code><code class="sig-name descname">imshow</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mask=False</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">flip=False</em>, <em class="sig-param">text_color='black'</em>, <em class="sig-param">rot=30</em>, <em class="sig-param">ax=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.util.imshow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shows an image on a plot</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>) – The data to plot.</p></li>
-<li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em> or </em><em>str</em><em>]</em>) – The band name or list of band names to plot.</p></li>
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask ‘no data’ values (given by <code class="docutils literal notranslate"><span class="pre">nodata</span></code>).</p></li>
 <li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value.</p></li>
 <li><p><strong>flip</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to flip an RGB array’s band order.</p></li>
 <li><p><strong>text_color</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The text color.</p></li>
 <li><p><strong>rot</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The degree rotation for the x-axis tick labels.</p></li>
+<li><p><strong>ax</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – A <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> axis object.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">xarray.plot.imshow</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Matplotlib axis object</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> axis object</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a 3-band image and plot the first band</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ax</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open and plot a 3-band image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ax</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                         <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                         <span class="n">vmin</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                         <span class="n">vmax</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                         <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

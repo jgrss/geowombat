@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.3.0b (9 January 2020)
+-----------------------
+
+New
+~~~
+
+- Added :func:`geowombat.to_vrt` function.
+
 1.2.0b (29 December 2019)
 -------------------------
 

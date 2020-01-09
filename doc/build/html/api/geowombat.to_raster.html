@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_raster &#8212; GeoWombat 1.2.0b documentation</title>
+    <title>to_raster &#8212; GeoWombat 1.3.0b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="to_geodataframe" href="geowombat.to_geodataframe.html" />
+    <link rel="next" title="to_vrt" href="geowombat.to_vrt.html" />
     <link rel="prev" title="apply" href="geowombat.apply.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -83,7 +83,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.apply.html" title="previous chapter">apply</a></li>
-      <li>Next: <a href="geowombat.to_geodataframe.html" title="next chapter">to_geodataframe</a></li>
+      <li>Next: <a href="geowombat.to_vrt.html" title="next chapter">to_vrt</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -119,7 +119,7 @@
 <dl class="function">
 <dt id="geowombat.to_raster">
 <code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">readxsize=None</em>, <em class="sig-param">readysize=None</em>, <em class="sig-param">use_dask_store=False</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='mpool'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to file</p>
+<dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
