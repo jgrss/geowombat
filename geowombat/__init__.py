@@ -8,6 +8,7 @@ from .core import coregister
 from .core import polygons_to_points
 from .core import apply
 from .core import to_raster
+from .core import to_vrt
 from .core import to_geodataframe
 from .core import moving
 from .core import norm_diff
@@ -30,6 +31,7 @@ __all__ = ['config',
            'polygons_to_points',
            'apply',
            'to_raster',
+           'to_vrt',
            'to_geodataframe',
            'moving',
            'norm_diff',

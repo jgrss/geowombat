@@ -28,6 +28,8 @@ from dask.distributed import Client, LocalCluster
 import rasterio as rio
 from rasterio.features import shapes
 from rasterio.windows import Window
+from rasterio.vrt import WarpedVRT
+from rasterio import shutil as rio_shutil
 
 import shapely
 from shapely.geometry import Polygon
@@ -235,6 +237,34 @@ def _write_xarray(*args):
     return zarr_file
 
 
+def to_vrt(data, filename, **kwargs):
+
+    """
+    Writes a file to a VRT file
+
+    Args:
+        data (DataArray): The ``xarray.DataArray`` to write.
+        filename (str): The output file name to write to.
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.vrt.WarpedVRT``.
+
+    Example:
+        >>> import geowombat as gw
+        >>> from rasterio.enums import Resampling
+        >>>
+        >>> with gw.open('image.tif') as ds:
+        >>>
+        >>>     gw.to_vrt(ds,
+        >>>               'image.vrt',
+        >>>               crs='EPSG:4326',
+        >>>               resampling=Resampling.nearest)
+    """
+
+    with rio.open(data.filename) as src:
+
+        with WarpedVRT(src, **kwargs) as vrt:
+            rio_shutil.copy(vrt, filename, driver='VRT')
+
+
 def to_raster(data,
               filename,
               readxsize=None,
@@ -259,7 +289,7 @@ def to_raster(data,
               **kwargs):
 
     """
-    Writes a ``dask`` array to file
+    Writes a ``dask`` array to a raster file
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.

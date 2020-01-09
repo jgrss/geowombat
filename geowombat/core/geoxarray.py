@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_geodataframe, moving, extract, subset, clip, mask
+from . import to_raster, to_vrt, to_geodataframe, moving, extract, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
@@ -433,6 +433,28 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   dtype=self._obj.data.dtype.name,
                   tags=tags,
                   **kwargs)
+
+    def to_vrt(self, filename, **kwargs):
+
+        """
+        Writes a file to a VRT file
+
+        Args:
+            filename (str): The output file name to write to.
+            kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.vrt.WarpedVRT``.
+
+        Example:
+            >>> import geowombat as gw
+            >>> from rasterio.enums import Resampling
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>
+            >>>     ds.gw.to_vrt('image.vrt',
+            >>>                  crs='EPSG:4326',
+            >>>                  resampling=Resampling.nearest)
+        """
+
+        to_vrt(self._obj, filename, **kwargs)
 
     def predict(self,
                 clf,
