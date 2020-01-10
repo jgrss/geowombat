@@ -553,7 +553,7 @@ class GeoDownloads(object):
 
                             angle_infos[finfo_key] = angle_info
 
-                            shutil.rmtree(outdir_angles)
+                            shutil.rmtree(outdir_angles.as_posix())
 
                             for k, v in finfo_dict.items():
                                 os.remove(v.name)
