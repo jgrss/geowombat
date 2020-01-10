@@ -243,7 +243,7 @@ class GeoDownloads(object):
             if not path_shp.is_file():
 
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
-                    tf.extractall(data_dir)
+                    tf.extractall(data_dir.as_posix())
 
             df_wrs = gpd.read_file(wrs)
             df_wrs = df_wrs[df_wrs.geometry.intersects(bounds_object)]
@@ -263,7 +263,7 @@ class GeoDownloads(object):
             if not path_shp.is_file():
 
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
-                    tf.extractall(data_dir)
+                    tf.extractall(data_dir.as_posix())
 
             df_mgrs = gpd.read_file(mgrs)
             df_mgrs = df_mgrs[df_mgrs.geometry.intersects(bounds_object)]
