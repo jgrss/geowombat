@@ -29,6 +29,7 @@ import rasterio as rio
 from rasterio.features import shapes
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
+from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
 
 import shapely
@@ -237,7 +238,12 @@ def _write_xarray(*args):
     return zarr_file
 
 
-def to_vrt(data, filename, **kwargs):
+def to_vrt(data,
+           filename,
+           resampling=None,
+           nodata=None,
+           init_dest_nodata=True,
+           warp_mem_limit=128):
 
     """
     Writes a file to a VRT file
@@ -245,23 +251,36 @@ def to_vrt(data, filename, **kwargs):
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
-        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.vrt.WarpedVRT``.
+        resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
+        nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
+        init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
+        warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
     Example:
         >>> import geowombat as gw
-        >>> from rasterio.enums import Resampling
         >>>
-        >>> with gw.open('image.tif') as ds:
+        >>> with gw.config.update(ref_crs=102033):
         >>>
-        >>>     gw.to_vrt(ds,
-        >>>               'image.vrt',
-        >>>               crs='EPSG:4326',
-        >>>               resampling=Resampling.nearest)
+        >>>     with gw.open('image.tif') as ds:
+        >>>         gw.to_vrt(ds, 'image.vrt')
     """
+
+    if not resampling:
+        resampling = Resampling.nearest
 
     with rio.open(data.filename) as src:
 
-        with WarpedVRT(src, **kwargs) as vrt:
+        with WarpedVRT(src,
+                       src_crs=src.crs,
+                       crs=data.crs,
+                       src_transform=src.transform,
+                       transform=data.transform,
+                       dtype=data.gw.dtype,
+                       resampling=resampling,
+                       nodata=nodata,
+                       init_dest_nodata=init_dest_nodata,
+                       warp_mem_limit=warp_mem_limit) as vrt:
+
             rio_shutil.copy(vrt, filename, driver='VRT')
 
 
