@@ -406,10 +406,15 @@ class SpatialOperations(_PropertyMixin):
             ``xarray.DataArray``
 
         Example:
-            >>> geowombat as gw
+            >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif', chunks=512) as ds:
-            >>>     ds_sub = gw.subset(ds, left=-263529.884, top=953985.314, rows=2048, cols=2048)
+            >>>
+            >>>     ds_sub = gw.subset(ds,
+            >>>                        left=-263529.884,
+            >>>                        top=953985.314,
+            >>>                        rows=2048,
+            >>>                        cols=2048)
         """
 
         if isinstance(right, int) or isinstance(right, float):
