@@ -131,6 +131,8 @@ class GeoDownloads(object):
                       crs=None,
                       outdir='.',
                       ref_res=None,
+                      l57_angles_path=None,
+                      l8_angles_path=None,
                       **kwargs):
 
         """
@@ -147,6 +149,8 @@ class GeoDownloads(object):
                 from the object.
             outdir (Optional[str]): The output directory.
             ref_res (Optional[tuple]): A reference cell resolution.
+            l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
+            l8_angles_path (str): The path to the Landsat 8 angles bin.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -443,6 +447,8 @@ class GeoDownloads(object):
                                                                   ref_file,
                                                                   outdir_angles.as_posix(),
                                                                   meta.sensor,
+                                                                  l57_angles_path=l57_angles_path,
+                                                                  l8_angles_path=l8_angles_path,
                                                                   verbose=1)
 
                                 if (len(bands) == 1) and (bands[0] == 'pan'):
