@@ -422,5 +422,8 @@ def open(filename,
         yield data
     finally:
 
+        if hasattr(data.gw, '_obj'):
+            data.gw._obj = None
+
         data.close()
         data = None
