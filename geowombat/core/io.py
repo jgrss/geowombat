@@ -705,12 +705,12 @@ def to_raster(data,
                 temp_file = d_name.joinpath('{}_temp_{}{}'.format(f_base, rstr, f_ext))
 
                 compress_raster(filename,
-                                temp_file,
+                                temp_file.as_posix(),
                                 n_jobs=n_jobs,
                                 gdal_cache=gdal_cache,
                                 compress=compress_type)
 
-                Path(temp_file).rename(filename)
+                temp_file.rename(filename)
 
             if verbose > 0:
                 logger.info('  Finished compressing')
