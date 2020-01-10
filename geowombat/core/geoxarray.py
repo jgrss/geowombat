@@ -454,11 +454,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Example:
             >>> import geowombat as gw
+            >>> from rasterio.enums import Resampling
             >>>
             >>> with gw.config.update(ref_crs=102033):
             >>>
             >>>     with gw.open('image.tif') as ds:
-            >>>         ds.gw.to_vrt('image.vrt')
+            >>>
+            >>>         ds.gw.to_vrt('image.vrt',
+            >>>                      resampling=Resampling.cubic,
+            >>>                      warp_mem_limit=256)
         """
 
         to_vrt(self._obj,

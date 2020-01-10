@@ -251,30 +251,36 @@ def to_vrt(data,
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
-        resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
+        resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``. Default is 'nearest'.
         nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
         init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
         warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
     Example:
         >>> import geowombat as gw
+        >>> from rasterio.enums import Resampling
         >>>
         >>> with gw.config.update(ref_crs=102033):
         >>>
         >>>     with gw.open('image.tif') as ds:
-        >>>         gw.to_vrt(ds, 'image.vrt')
+        >>>
+        >>>         gw.to_vrt(ds,
+        >>>                   'image.vrt',
+        >>>                   resampling=Resampling.cubic,
+        >>>                   warp_mem_limit=256)
     """
 
     if not resampling:
         resampling = Resampling.nearest
 
+    # Open the input file on disk
     with rio.open(data.filename) as src:
 
         with WarpedVRT(src,
-                       src_crs=src.crs,
-                       crs=data.crs,
-                       src_transform=src.transform,
-                       transform=data.transform,
+                       src_crs=src.crs,                         # the original CRS
+                       crs=data.crs,                            # the transformed CRS
+                       src_transform=src.transform,             # the original transform
+                       transform=data.transform,                # the new transform
                        dtype=data.gw.dtype,
                        resampling=resampling,
                        nodata=nodata,
