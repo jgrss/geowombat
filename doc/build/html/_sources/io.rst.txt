@@ -203,8 +203,27 @@ If the images in the mosaic list have different CRSs, use a context manager to w
 Writing DataArrays to file
 ++++++++++++++++++++++++++
 
-In the example below, ``ds`` is an ``xarray.DataArray``. Using Rasterio's :func:`write` and Dask.array :func:`store`
-as backends, we use the Xarray accessor :func:`to_raster` to write array chunks in parallel.
+GeoWombat's I/O can be accessed through the :func:`to_vrt` and :func:`to_raster` functions. These functions use
+Rasterio's :func:`write` and Dask.array :func:`store` functions as I/O backends. In the examples below,
+``ds`` is an ``xarray.DataArray`` with the necessary transform information to write to an image file.
+
+Write to a VRT file
++++++++++++++++++++
+
+.. code:: python
+
+    import geowombat as gw
+
+    # Transform the data to lat/lon
+    with gw.config.update(ref_crs=4326):
+
+        with gw.open(rgbn, chunks=1024) as ds:
+
+            # Write the data to a VRT
+            ds.gw.to_vrt('lat_lon_file.vrt')
+
+Write to a raster file
+++++++++++++++++++++++
 
 .. code:: python
 
@@ -212,14 +231,17 @@ as backends, we use the Xarray accessor :func:`to_raster` to write array chunks 
 
     with gw.open(rgbn, chunks=1024) as ds:
 
-        dss = ds * 10.0
-
         # Xarray drops attributes
-        dss.attrs = ds.attrs
+        attrs = ds.attrs.copy()
 
-        # Write the data
-        dss.gw.to_raster('output.tif',
-                         verbose=1,
-                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
-                         n_threads=2,    # number of thread workers sent to ``dask.compute``
-                         n_chunks=200)   # number of window chunks to send as concurrent futures
+        # Apply operations on the DataArray
+        ds = ds * 10.0
+
+        ds.attrs = attrs
+
+        # Write the data to a GeoTiff
+        ds.gw.to_raster('output.tif',
+                        verbose=1,
+                        n_workers=4,    # number of process workers sent to ``concurrent.futures``
+                        n_threads=2,    # number of thread workers sent to ``dask.compute``
+                        n_chunks=200)   # number of window chunks to send as concurrent futures

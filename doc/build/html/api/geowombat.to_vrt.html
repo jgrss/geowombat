@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_vrt &#8212; GeoWombat 1.3.0b documentation</title>
+    <title>to_vrt &#8212; GeoWombat 1.3.1b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -118,14 +118,17 @@
 <h1>to_vrt<a class="headerlink" href="#to-vrt" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_vrt">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_vrt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">resampling=None</em>, <em class="sig-param">nodata=None</em>, <em class="sig-param">init_dest_nodata=True</em>, <em class="sig-param">warp_mem_limit=128</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_vrt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a file to a VRT file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – The resampling algorithm for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>. Default is ‘nearest’.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+<li><p><strong>init_dest_nodata</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether or not to initialize output to <code class="docutils literal notranslate"><span class="pre">nodata</span></code> for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The GDAL memory limit for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -133,12 +136,14 @@
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.enums</span> <span class="k">import</span> <span class="n">Resampling</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102033</span><span class="p">):</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="s1">&#39;image.vrt&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>              <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">nearest</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="s1">&#39;image.vrt&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">cubic</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">warp_mem_limit</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
