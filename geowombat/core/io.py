@@ -921,18 +921,29 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
               compress=compress)
 
 
-def to_geodataframe(data, mask=None, connectivity=4):
+def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
 
     """
     Converts a ``dask`` array to a ``GeoDataFrame``
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to convert.
-        mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
+        mask (Optional[str, numpy ndarray, or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
             Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
             Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-            and mask is None, the source’s mask will be inverted and used in place of mask.
+            and mask is None, the source’s mask will be inverted and used in place of mask. if ``mask`` is equal to
+            'source', then ``data`` is used as the mask.
         connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+        num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
+
+    Examples:
+        >>> import geowombat as gw
+        >>>
+        >>> with gw.open('image.tif') as src:
+        >>>
+        >>>     # Convert the input image to a GeoDataFrame
+        >>>     df = src.gw.to_geodataframe(mask='source',
+        >>>                                 num_workers=8)
 
     Returns:
         ``GeoDataFrame``
@@ -944,7 +955,12 @@ def to_geodataframe(data, mask=None, connectivity=4):
     if not hasattr(data, 'crs'):
         logger.exception("  The data should have a 'crs' object.")
 
-    poly_objects = shapes(data.data.compute(),
+    if isinstance(mask, str):
+
+        if mask == 'source':
+            mask = data.astype('uint8').data.compute(num_workers=num_workers)
+
+    poly_objects = shapes(data.data.compute(num_workers=num_workers),
                           mask=mask,
                           connectivity=connectivity,
                           transform=data.transform)
