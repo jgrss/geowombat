@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_geodataframe &#8212; GeoWombat 1.3.1b documentation</title>
+    <title>to_geodataframe &#8212; GeoWombat 1.3.6b documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -118,21 +118,35 @@
 <h1>to_geodataframe<a class="headerlink" href="#to-geodataframe" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_geodataframe">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_geodataframe</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">connectivity=4</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_geodataframe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_geodataframe</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">connectivity=4</em>, <em class="sig-param">num_workers=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_geodataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to convert.</p></li>
-<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>numpy ndarray</em><em> or </em><em>rasterio Band object</em><em>]</em>) – Must evaluate to bool (<a href="#id1"><span class="problematic" id="id2">rasterio.bool_</span></a> or rasterio.uint8).
+<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>str</em><em>, </em><em>numpy ndarray</em><em>, or </em><em>rasterio Band object</em><em>]</em>) – Must evaluate to bool (<a href="#id1"><span class="problematic" id="id2">rasterio.bool_</span></a> or rasterio.uint8).
 Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
 Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-and mask is None, the source’s mask will be inverted and used in place of mask.</p></li>
+and mask is None, the source’s mask will be inverted and used in place of mask. if <code class="docutils literal notranslate"><span class="pre">mask</span></code> is equal to
+‘source’, then <code class="docutils literal notranslate"><span class="pre">data</span></code> is used as the mask.</p></li>
 <li><p><strong>connectivity</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Use 4 or 8 pixel connectivity for grouping pixels into features.</p></li>
+<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers to send to <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Convert the input image to a GeoDataFrame</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_geodataframe</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
 </dd>
 </dl>
 </dd></dl>
