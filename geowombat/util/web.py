@@ -129,6 +129,7 @@ class GeoDownloads(object):
                       bounds,
                       bands,
                       crs=None,
+                      out_bounds=None,
                       outdir='.',
                       ref_res=None,
                       l57_angles_path=None,
@@ -141,12 +142,14 @@ class GeoDownloads(object):
         Args:
             sensors (str or list): The sensors, or sensor, to download.
             date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
-            bounds (GeoDataFrame, list, or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent.
-                If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
+            bounds (GeoDataFrame, list, or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent
+                to download. If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
                 If given as a ``tuple`` or a ``list``, the order should be (left, bottom, right, top).
             bands (str or list): The bands to download.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
+            out_bounds (Optional[list or tuple]): The output bounds in ``crs``. If not given, the bounds are
+                taken from ``bounds``.
             outdir (Optional[str]): The output directory.
             ref_res (Optional[tuple]): A reference cell resolution.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
@@ -214,18 +217,22 @@ class GeoDownloads(object):
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
 
-            bounds = Polygon([(bounds[0], bounds[3]),
-                              (bounds[2], bounds[3]),
-                              (bounds[2], bounds[1]),
-                              (bounds[0], bounds[1])])
+            bounds = Polygon([(bounds[0], bounds[3]),   # upper left
+                              (bounds[2], bounds[3]),   # upper right
+                              (bounds[2], bounds[1]),   # lower right
+                              (bounds[0], bounds[1]),   # lower left
+                              (bounds[0], bounds[3])])  # upper left
 
             bounds = gpd.GeoDataFrame([0],
                                       geometry=[bounds],
                                       crs={'init': 'epsg:4326'})
 
         bounds_object = bounds.geometry.values[0]
-        bounds_proj = bounds.to_crs(crs)
-        bounds_info = bounds_proj.bounds.values[0].tolist()
+
+        if not out_bounds:
+
+            # Project the bounds
+            out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
         # Get WRS file
         data_bin = os.path.realpath(os.path.dirname(__file__))
@@ -470,7 +477,7 @@ class GeoDownloads(object):
                             load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
                             with gw.config.update(sensor=rad_sensor,
-                                                  ref_bounds=bounds_info,
+                                                  ref_bounds=out_bounds,
                                                   ref_crs=crs,
                                                   ref_res=ref_res if ref_res else load_bands_names[-1]):
 
