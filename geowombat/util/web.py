@@ -457,6 +457,10 @@ class GeoDownloads(object):
 
                                     if (len(bands) == 6) and (meta.sensor == 'l8'):
                                         rad_sensor = 'l8l7'
+                                    elif (len(bands) == 7) and (meta.sensor == 'l8') and ('pan' in bands):
+                                        rad_sensor = 'l8l7mspan'
+                                    elif (len(bands) == 7) and (meta.sensor == 'l7') and ('pan' in bands):
+                                        rad_sensor = 'l7mspan'
                                     else:
                                         rad_sensor = meta.sensor
 
@@ -468,7 +472,7 @@ class GeoDownloads(object):
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=bounds_info,
                                                   ref_crs=crs,
-                                                  ref_res=ref_res if ref_res else load_bands_names[0]):
+                                                  ref_res=ref_res if ref_res else load_bands_names[-1]):
 
                                 with gw.open(angle_info.sza,
                                              resampling='cubic') as sza, \
