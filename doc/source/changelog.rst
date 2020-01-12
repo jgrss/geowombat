@@ -3,6 +3,15 @@
 Change Log
 ==========
 
+1.3.7b (12 January 2020)
+------------------------
+
+New
+~~~
+
+- Added :func:`geowombat.radiometry.pan_sharpen` function.
+- Added properties for multi-spectral + panchromatic band stacks.
+
 1.3.0b (9 January 2020)
 -----------------------
 
