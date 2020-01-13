@@ -6,3 +6,5 @@ dependencies:
 - cython
 - numpy
 - libgdal=2.3.*
+- GDAL=2.3.*
+
