@@ -24,6 +24,6 @@ dateparser
 wget
 fsspec
 sphinx-automodapi
-sphinxcontrib.bibtex
+sphinxcontrib-bibtex
 numpydoc
 
