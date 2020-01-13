@@ -23,3 +23,5 @@ zarr
 dateparser
 wget
 fsspec
+sphinx-automodapi
+
