@@ -25,4 +25,5 @@ wget
 fsspec
 sphinx-automodapi
 sphinxcontrib.bibtex
+numpydoc
 
