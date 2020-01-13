@@ -1,0 +1,11 @@
+python:
+    version: 3.7
+    install:
+      - requirements: requirements.txt
+      - method: pip
+        path: .
+        extra_requirements:
+            - docs
+      - method: setuptools
+sphinx:
+    configuration: docs/source/conf.py
