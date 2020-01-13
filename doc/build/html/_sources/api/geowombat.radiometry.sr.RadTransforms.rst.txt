@@ -1,7 +1,7 @@
 RadTransforms
 =============
 
-.. currentmodule:: geowombat.radiometry
+.. currentmodule:: geowombat.radiometry.sr
 
 .. autoclass:: RadTransforms
    :show-inheritance:

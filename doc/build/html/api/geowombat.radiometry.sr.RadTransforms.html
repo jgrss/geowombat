@@ -111,8 +111,8 @@
   <div class="section" id="radtransforms">
 <h1>RadTransforms<a class="headerlink" href="#radtransforms" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="geowombat.radiometry.RadTransforms">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">RadTransforms</code><a class="headerlink" href="#geowombat.radiometry.RadTransforms" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.sr.</code><code class="sig-name descname">RadTransforms</code><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="geowombat.radiometry.sr.MetaData.html#geowombat.radiometry.sr.MetaData" title="geowombat.radiometry.sr.MetaData"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code></a></p>
 <p>A class for radiometric transformations</p>
 <p class="rubric">Methods</p>
@@ -122,22 +122,22 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="geowombat.radiometry.RadTransforms.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_radiance" title="geowombat.radiometry.sr.RadTransforms.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
 <td><p>Converts digital numbers to radiance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="geowombat.radiometry.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, solar_az, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_sr" title="geowombat.radiometry.sr.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, solar_az, …)</p></td>
 <td><p>Converts digital numbers to surface reflectance</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="geowombat.radiometry.RadTransforms.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_toar" title="geowombat.radiometry.sr.RadTransforms.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
 <td><p>Converts digital numbers to radiance</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_landsat_coefficients</span></code>(meta_file)</p></td>
 <td><p>Gets coefficients from a Landsat metadata file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.radiance_to_toar" title="geowombat.radiometry.sr.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
 <td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.toar_to_sr" title="geowombat.radiometry.sr.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
 <td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
 </tr>
 </tbody>
@@ -149,27 +149,27 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="geowombat.radiometry.RadTransforms.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_radiance" title="geowombat.radiometry.sr.RadTransforms.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
 <td><p>Converts digital numbers to radiance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="geowombat.radiometry.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, solar_az, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_sr" title="geowombat.radiometry.sr.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, solar_az, …)</p></td>
 <td><p>Converts digital numbers to surface reflectance</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="geowombat.radiometry.RadTransforms.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.dn_to_toar" title="geowombat.radiometry.sr.RadTransforms.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
 <td><p>Converts digital numbers to radiance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.radiance_to_toar" title="geowombat.radiometry.sr.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
 <td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.sr.RadTransforms.toar_to_sr" title="geowombat.radiometry.sr.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
 <td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
 <dl class="method">
-<dt id="geowombat.radiometry.RadTransforms.dn_to_radiance">
-<em class="property">static </em><code class="sig-name descname">dn_to_radiance</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms.dn_to_radiance">
+<em class="property">static </em><code class="sig-name descname">dn_to_radiance</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms.dn_to_radiance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to radiance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -186,8 +186,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="geowombat.radiometry.RadTransforms.dn_to_sr">
-<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dn</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">nodata=-32768</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">method='srem'</em>, <em class="sig-param">angle_factor=0.01</em>, <em class="sig-param">meta=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms.dn_to_sr">
+<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dn</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">nodata=-32768</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">method='srem'</em>, <em class="sig-param">angle_factor=0.01</em>, <em class="sig-param">meta=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -226,8 +226,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="geowombat.radiometry.RadTransforms.dn_to_toar">
-<em class="property">static </em><code class="sig-name descname">dn_to_toar</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms.dn_to_toar">
+<em class="property">static </em><code class="sig-name descname">dn_to_toar</code><span class="sig-paren">(</span><em class="sig-param">dn</em>, <em class="sig-param">gain</em>, <em class="sig-param">bias</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms.dn_to_toar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to radiance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -244,8 +244,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="geowombat.radiometry.RadTransforms.radiance_to_toar">
-<em class="property">static </em><code class="sig-name descname">radiance_to_toar</code><span class="sig-paren">(</span><em class="sig-param">radiance</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">global_args</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms.radiance_to_toar">
+<em class="property">static </em><code class="sig-name descname">radiance_to_toar</code><span class="sig-paren">(</span><em class="sig-param">radiance</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">global_args</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms.radiance_to_toar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to top-of-atmosphere reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -262,8 +262,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="geowombat.radiometry.RadTransforms.toar_to_sr">
-<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param">toar</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">sensor</em>, <em class="sig-param">nodata=-32768</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
+<dt id="geowombat.radiometry.sr.RadTransforms.toar_to_sr">
+<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param">toar</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">sensor</em>, <em class="sig-param">nodata=-32768</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sr.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts top-of-atmosphere reflectance to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -306,7 +306,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.radiometry.RadTransforms.rst.txt"
+      <a href="../_sources/api/geowombat.radiometry.sr.RadTransforms.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

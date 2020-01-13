@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>LinearAdjustments &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>pan_sharpen &#8212; GeoWombat 1.0.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -108,75 +108,33 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="linearadjustments">
-<h1>LinearAdjustments<a class="headerlink" href="#linearadjustments" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="geowombat.radiometry.LinearAdjustments">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">LinearAdjustments</code><a class="headerlink" href="#geowombat.radiometry.LinearAdjustments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class for linear bandpass adjustments</p>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.LinearAdjustments.bandpass" title="geowombat.radiometry.LinearAdjustments.bandpass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bandpass</span></code></a>(self, data[, sensor, to, …])</p></td>
-<td><p>Applies a bandpass adjustment by applying a linear function to surface reflectance values</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Summary</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.LinearAdjustments.bandpass" title="geowombat.radiometry.LinearAdjustments.bandpass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bandpass</span></code></a>(self, data[, sensor, to, …])</p></td>
-<td><p>Applies a bandpass adjustment by applying a linear function to surface reflectance values</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="geowombat.radiometry.LinearAdjustments.bandpass">
-<code class="sig-name descname">bandpass</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">to='l8'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">scale_factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.LinearAdjustments.bandpass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a bandpass adjustment by applying a linear function to surface reflectance values</p>
+  <div class="section" id="pan-sharpen">
+<h1>pan_sharpen<a class="headerlink" href="#pan-sharpen" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="geowombat.radiometry.pan_sharpen">
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">pan=None</em>, <em class="sig-param">blue_weight=0.2</em>, <em class="sig-param">green_weight=1.0</em>, <em class="sig-param">red_weight=1.0</em>, <em class="sig-param">scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sharpens wavelengths using the panchromatic band</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The data to adjust.</p></li>
-<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sensor to adjust.</p></li>
-<li><p><strong>to</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sensor to adjust to.</p></li>
-<li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to adjust. If not given, all bands are adjusted.</p></li>
-<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the input data.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – The band data.</p></li>
+<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to sharpen. If not given, ‘blue’, ‘green’, and ‘red’ are used.</p></li>
+<li><p><strong>pan</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – The panchromatic <code class="docutils literal notranslate"><span class="pre">DataArray</span></code>. <code class="docutils literal notranslate"><span class="pre">pan</span></code> is only needed if it is not included
+with <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>blue_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The blue band weight.</p></li>
+<li><p><strong>green_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The green band weight.</p></li>
+<li><p><strong>red_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The red band weight.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Reference:</p>
-<blockquote>
-<div><p>Sentinel-2 and Landsat 8:</p>
-<blockquote>
-<div><p><a class="reference external" href="https://hls.gsfc.nasa.gov/algorithms/bandpass-adjustment/">https://hls.gsfc.nasa.gov/algorithms/bandpass-adjustment/</a></p>
-<p>See <span class="bibtex" id="id1">[chastain_etal_2019]</span> for further details</p>
-</div></blockquote>
-<p>Landsat 7 and Landsat 8:</p>
-<blockquote>
-<div><p>See <span class="bibtex" id="id2">[roy_etal_2016]</span> (Table 2)</p>
-</div></blockquote>
-</div></blockquote>
-<p class="rubric">Examples</p>
+<p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">LinearAdjustments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">pan_sharpen</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">la</span> <span class="o">=</span> <span class="n">LinearAdjustments</span><span class="p">()</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Adjust all Sentinel-2 bands to Landsat 8</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;s2&#39;</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sentinel-2.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">ds_adjusted</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">pan_sharpen</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
@@ -184,8 +142,6 @@
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -205,7 +161,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.radiometry.LinearAdjustments.rst.txt"
+      <a href="../_sources/api/geowombat.radiometry.pan_sharpen.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

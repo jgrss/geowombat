@@ -1,7 +1,7 @@
 LinearAdjustments
 =================
 
-.. currentmodule:: geowombat.radiometry
+.. currentmodule:: geowombat.radiometry.sr
 
 .. autoclass:: LinearAdjustments
    :show-inheritance:

@@ -1,0 +1,17 @@
+MetaData
+========
+
+.. currentmodule:: geowombat.radiometry.sr
+
+.. autoclass:: MetaData
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~MetaData.get_landsat_coefficients
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: get_landsat_coefficients
