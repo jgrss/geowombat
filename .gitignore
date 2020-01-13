@@ -27,6 +27,7 @@ doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
+geowombat/core/geoarray.py
 logo/
 bin/ESPA/
 *.cpp
