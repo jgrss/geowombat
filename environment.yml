@@ -1,0 +1,6 @@
+name: _geowombat
+channels:
+- defaults
+dependencies:
+- python=3.6.*
+- libgdal=2.3.*

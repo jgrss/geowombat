@@ -1,7 +1,10 @@
 build:
     image: latest
+conda:
+    file: environment.yml
 python:
-    version: 3.7
+    version: 3
+    pip_install: true
     install:
       - requirements: requirements.txt
       - method: pip
@@ -9,6 +12,5 @@ python:
         extra_requirements:
             - docs
       - method: setuptools
-    system_packages: true
 sphinx:
     configuration: doc/source/conf.py
