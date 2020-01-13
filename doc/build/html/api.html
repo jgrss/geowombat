@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>API reference &#8212; GeoWombat 1.3.6b documentation</title>
+    <title>API reference &#8212; GeoWombat 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -199,83 +199,6 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.tasseled_cap.html#geowombat.tasseled_cap" title="geowombat.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(data[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="section" id="module-geowombat.models">
-<span id="geowombat-models-package"></span><h3>geowombat.models Package<a class="headerlink" href="#module-geowombat.models" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id1">
-<h4>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.models.predict.html#geowombat.models.predict" title="geowombat.models.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(data, clf[, band_names, outname, …])</p></td>
-<td><p>Predicts an image using a pre-fit model</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="id2">
-<h4>Classes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.models.CRFClassifier.html#geowombat.models.CRFClassifier" title="geowombat.models.CRFClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRFClassifier</span></code></a>(**kwargs)</p></td>
-<td><p>A class for classification with Conditional Random Fields</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.models.GeoWombatClassifier.html#geowombat.models.GeoWombatClassifier" title="geowombat.models.GeoWombatClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoWombatClassifier</span></code></a>([name, lightgbm_kwargs, …])</p></td>
-<td><p>A class for model fitting models with Dask</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="section" id="module-geowombat.radiometry">
-<span id="geowombat-radiometry-package"></span><h3>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id3">
-<h4>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.landsat_pixel_angles.html#geowombat.radiometry.landsat_pixel_angles" title="geowombat.radiometry.landsat_pixel_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">landsat_pixel_angles</span></code></a>(angles_file, ref_file, …)</p></td>
-<td><p>Generates Landsat pixel angle files</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.sentinel_pixel_angles.html#geowombat.radiometry.sentinel_pixel_angles" title="geowombat.radiometry.sentinel_pixel_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sentinel_pixel_angles</span></code></a>(metadata, ref_file[, …])</p></td>
-<td><p>Generates Sentinel pixel angle files</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="id4">
-<h4>Classes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BRDF</span></code></a>()</p></td>
-<td><p>A class for Nadir BRDF (NBAR) normalization</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.LinearAdjustments.html#geowombat.radiometry.LinearAdjustments" title="geowombat.radiometry.LinearAdjustments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearAdjustments</span></code></a>()</p></td>
-<td><p>A class for linear bandpass adjustments</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms" title="geowombat.radiometry.RadTransforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RadTransforms</span></code></a></p></td>
-<td><p>A class for radiometric transformations</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html#geowombat.radiometry.QAMasker" title="geowombat.radiometry.QAMasker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QAMasker</span></code></a>(qa, sensor[, mask_items, …])</p></td>
-<td><p>A class for masking bit-packed quality flags</p></td>
 </tr>
 </tbody>
 </table>

@@ -29,7 +29,7 @@ Virtual environments
 --------------------
 
 Virtual environments with `virtualenv`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install the `virtualenv` Python package::
 

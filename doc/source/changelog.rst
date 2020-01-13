@@ -82,7 +82,7 @@ Enhancements
 New
 ~~~
 
-- Added user functions as Xarray attributes. See :ref:`geowombat.apply` for an example.
+- Added user functions as Xarray attributes. See :func:`geowombat.apply` for an example.
 
 1.0.0b (24 October 2019)
 ------------------------

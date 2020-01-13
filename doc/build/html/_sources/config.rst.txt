@@ -4,7 +4,7 @@ GeoWombat configuration
 =======================
 
 GeoWombat has a context manager (:class:`geowombat.config`) to assist in configurations
-------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 Import GeoWombat
 
