@@ -6,7 +6,7 @@ python:
     version: 3
     pip_install: true
     install:
-      - requirements: doc/requirements.txt
+      - requirements: requirements.txt
       - method: pip
         path: .
         extra_requirements:
