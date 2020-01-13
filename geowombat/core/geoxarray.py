@@ -12,7 +12,7 @@ from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
 from ..util import imshow as gw_imshow
-from ..models import predict
+#from ..models import predict
 from ..radiometry import BRDF as _BRDF
 
 import numpy as np
