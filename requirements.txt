@@ -22,7 +22,7 @@ distributed>=2.5.2
 fasteners>=0.15           # via zarr
 fiona>=1.8.8              # via geopandas
 fsspec>=0.5.2
-gdal
+gdal=2.4.2
 geopandas>=0.6.1
 h5netcdf>=0.7.4
 h5py>=2.10.0              # via h5netcdf
