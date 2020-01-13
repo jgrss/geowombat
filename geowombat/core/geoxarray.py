@@ -357,8 +357,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
             scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads'].
             n_jobs (Optional[int]): The total number of parallel jobs.
-            n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
-            n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+            n_workers (Optional[int]): The number of processes.
+            n_threads (Optional[int]): The number of threads.
             n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 3.
             overviews (Optional[bool or list]): Whether to build overview layers.
             resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.

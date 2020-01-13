@@ -338,8 +338,8 @@ def to_raster(data,
             threads: thread pool of workers using ``concurrent.futures``
 
         n_jobs (Optional[int]): The total number of parallel jobs.
-        n_workers (Optional[int]): The number of processes. Only used when ``use_client`` = ``True``.
-        n_threads (Optional[int]): The number of threads. Only used when ``use_client`` = ``True``.
+        n_workers (Optional[int]): The number of processes.
+        n_threads (Optional[int]): The number of threads.
         n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
         overviews (Optional[bool or list]): Whether to build overview layers.
         resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
