@@ -1,4 +1,3 @@
-version: 2
 build:
     image: latest
 python:
@@ -10,5 +9,6 @@ python:
         extra_requirements:
             - docs
       - method: setuptools
+    system_packages: true
 sphinx:
     configuration: doc/source/conf.py
