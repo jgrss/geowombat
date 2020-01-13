@@ -19,32 +19,8 @@ with open('README.md') as f:
 with open('LICENSE.txt') as f:
     license_file = f.read()
 
-required_packages = ['cython',
-                     'matplotlib',
-                     'pandas',
-                     'gdal',
-                     'geopandas',
-                     'numpy',
-                     'rasterio',
-                     'xarray',
-                     'dask',
-                     'dask-ml',
-                     'dask[array,dataframe]',
-                     'distributed',
-                     'affine',
-                     'joblib',
-                     'tqdm',
-                     'shapely',
-                     'h5netcdf',
-                     'netCDF4',
-                     'scikit-learn',
-                     'numexpr',
-                     'numcodecs',
-                     'zarr',
-                     'dateparser',
-                     'gsutil',
-                     'opencv-python',
-                     'fsspec']
+with open('requirements.txt') as f:
+    required_packages = f.read()
 
 
 def get_packages():

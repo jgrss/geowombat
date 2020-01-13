@@ -1,6 +1,5 @@
 cython
 matplotlib
-GDAL
 pandas
 geopandas
 numpy
