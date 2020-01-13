@@ -8,4 +8,4 @@ python:
             - docs
       - method: setuptools
 sphinx:
-    configuration: docs/source/conf.py
+    configuration: doc/source/conf.py
