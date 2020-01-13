@@ -3,21 +3,21 @@
 Data extraction
 ===============
 
-.. ipython:: python
+.. code:: python
 
     import geowombat as gw
     from geowombat.data import rgbn
 
 Create a Rasterio window
 
-.. ipython:: python
+.. code:: python
 
     from rasterio.windows import Window
     w = Window(row_off=0, col_off=0, height=100, width=100)
 
 Slice a subset using a Rasterio window
 
-.. ipython:: python
+.. code:: python
 
     with gw.open(rgbn,
                  band_names=['blue', 'green', 'red'],
@@ -29,7 +29,7 @@ Slice a subset using a Rasterio window
 
 Slice a subset using a tuple of bounded coordinates
 
-.. ipython:: python
+.. code:: python
 
     bounds = (793000.0, 2049000.0, 794000.0, 2050000.0)
 
