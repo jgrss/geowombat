@@ -11,6 +11,7 @@ dask-ml
 distributed
 affine
 joblib
+opencv-python
 tqdm
 shapely
 h5netcdf
