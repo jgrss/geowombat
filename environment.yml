@@ -8,4 +8,5 @@ dependencies:
 - ipython
 - libgdal=2.3.3
 - gdal=2.3.3
+- sphinx-automodapi
 
