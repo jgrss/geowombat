@@ -34,6 +34,9 @@ class WriteDaskArray(object):
         gdal_cache (Optional[int]): The GDAL cache size (in MB).
         kwargs (Optional[dict]): Other keyword arguments passed to ``rasterio``.
 
+    Reference:
+        Code modified from https://github.com/dymaxionlabs/dask-rasterio
+
     Returns:
         None
     """
