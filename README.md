@@ -28,4 +28,4 @@ for I/O and distributed computing with named coordinates.
 ## Documentation
 ---
 
-Read the documentation by opening the [HTML file](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html).
+For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).
