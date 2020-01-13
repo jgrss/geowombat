@@ -25,9 +25,7 @@ for I/O and distributed computing with named coordinates.
 >>>     dss.gw.to_raster('output.tif', n_workers=4, n_threads=4)
 ```
 
-## Documentation (temporary location)
+## Documentation
 ---
 
 Read the documentation by opening the [HTML file](https://github.com/jgrss/geowombat/tree/master/doc/build/html/index.html).
-
-#### See the [notebooks](https://github.com/jgrss/geowombat/tree/master/notebooks) for more detailed examples
