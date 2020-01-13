@@ -24,4 +24,5 @@ dateparser
 wget
 fsspec
 sphinx-automodapi
+sphinxcontrib.bibtex
 
