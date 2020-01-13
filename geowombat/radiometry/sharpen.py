@@ -59,6 +59,7 @@ def pan_sharpen(data,
 
     data_sharp = xr.concat([(data.sel(band=bd) * dnf).transpose('band', 'y', 'x') for bd in bands], dim='band')
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
-    data_sharp = data_sharp.assign_attrs(**attrs)
 
-    return (data_sharp / scale_factor).astype(data.dtype)
+    data_sharp = (data_sharp / scale_factor).astype(data.dtype)
+
+    return data_sharp.assign_attrs(**attrs)
