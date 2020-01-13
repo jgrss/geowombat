@@ -22,7 +22,8 @@ distributed>=2.5.2
 fasteners>=0.15           # via zarr
 fiona>=1.8.8              # via geopandas
 fsspec>=0.5.2
-gdal=2.4.2
+numpy>=1.17.2
+gdal==2.4.2
 geopandas>=0.6.1
 h5netcdf>=0.7.4
 h5py>=2.10.0              # via h5netcdf
@@ -40,7 +41,6 @@ netcdf4>=1.5.2
 numba>=0.46.0             # via dask-ml
 numcodecs>=0.6.3
 numexpr>=2.7.0
-numpy>=1.17.2
 packaging>=19.2           # via dask-ml
 pandas>=0.25.1
 partd>=1.0.0              # via dask
