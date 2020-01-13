@@ -7,7 +7,7 @@ import numpy as np
 
 __version__ = '1.0.0'
 
-pkg_name = 'GeoWombat'
+pkg_name = 'geowombat'
 maintainer = 'Jordan Graesser'
 maintainer_email = ''
 description = 'Geo-enabled n-dimensional arrays from satellite imagery'
