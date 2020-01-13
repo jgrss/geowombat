@@ -24,6 +24,7 @@ __pycache__/
 envs/
 doc/*.log
 doc/source/*.log
+notebooks/
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
