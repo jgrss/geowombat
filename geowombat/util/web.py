@@ -825,7 +825,7 @@ class GeoDownloads(object):
                         subprocess.call(com, shell=True)
 
                         if rename:
-                            os.rename(Path(outdir).joinpath(Path(fn).name), down_file)
+                            os.rename(Path(outdir).joinpath(Path(fn).name).as_posix(), down_file)
 
                     downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
