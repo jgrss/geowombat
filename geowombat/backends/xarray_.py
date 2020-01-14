@@ -305,8 +305,10 @@ def mosaic(filenames,
 
         ds.attrs['resampling'] = resampling
 
+        attrs = ds.attrs.copy()
+
         if dtype:
-            return ds.astype(dtype)
+            return ds.astype(dtype).assign_attrs(**attrs)
         else:
             return ds
 
@@ -423,7 +425,7 @@ def concat(filenames,
                                               **ref_kwargs), **kwargs)
                         for fn in filenames], dim=stack_dim.lower())
 
-    ds.attrs = attrs
+    ds = ds.assign_attrs(**attrs)
 
     if not time_names and (stack_dim == 'time'):
         ds.coords['time'] = parse_filename_dates(filenames)
@@ -454,6 +456,9 @@ def concat(filenames,
                     ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
 
     if dtype:
-        return ds.astype(dtype)
+        
+        attrs = ds.attrs.copy()
+        return ds.astype(dtype).assign_attrs(**attrs)
+
     else:
         return ds
