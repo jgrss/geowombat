@@ -271,7 +271,7 @@ class MapProcesses(object):
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
             band_names (int or str or list): The output band name(s).
-            stat (Optional[str]): The statistic to compute.
+            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max'].
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -282,11 +282,14 @@ class MapProcesses(object):
             >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.moving(ds, band_names=['red'])
+            >>>     ds = gw.moving(ds, stat='mean', w=5, n_jobs=8)
         """
 
         if not isinstance(data, xr.DataArray):
             logger.exception('  The input data must be an Xarray DataArray.')
+
+        if w % 2 == 0:
+            logger.exception('  The window size must be an odd number.')
 
         y = data.y.values
         x = data.x.values
