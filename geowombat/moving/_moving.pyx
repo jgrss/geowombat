@@ -21,127 +21,270 @@ cdef extern from 'math.h':
    double sqrt(double val) nogil
 
 
+cdef extern from 'numpy/npy_math.h':
+    bint npy_isnan(double val) nogil
+
+
 # Define a function pointer to a metric.
-ctypedef double (*metric_ptr)(double[:, :, ::1], Py_ssize_t, Py_ssize_t, Py_ssize_t, unsigned int, double, double) nogil
+ctypedef double (*metric_ptr)(double[:, ::1], Py_ssize_t, Py_ssize_t, unsigned int, double, double, double) nogil
 
 
-cdef double _get_var(double[:, :, ::1] input_view,
-                     Py_ssize_t z,
+cdef double _get_var(double[:, ::1] input_view,
                      Py_ssize_t i,
                      Py_ssize_t j,
                      unsigned int w,
                      double w_samples,
-                     double perc) nogil:
+                     double perc,
+                     double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n
         double window_mean = 0.0
         double window_var = 0.0
+        double center_value
+        unsigned int count = 0
+        double res
 
     # Mean
     for m in range(0, w):
         for n in range(0, w):
-            window_mean += input_view[z, i+m, j+n]
 
-    window_mean /= w_samples
+            center_value = input_view[i+m, j+n]
+
+            if nodata == 1e9:
+
+                window_mean += input_view[i+m, j+n]
+                count += 1
+
+            else:
+
+                if center_value != nodata:
+
+                    window_mean += input_view[i+m, j+n]
+                    count += 1
+
+    window_mean /= <double>count
+
+    count = 0
 
     # Deviation from the mean
     for m in range(0, w):
         for n in range(0, w):
-            window_var += (input_view[z, i+m, j+n] - window_mean)**2
 
-    return window_var / w_samples
+            center_value = input_view[i+m, j+n]
+
+            if nodata == 1e9:
+
+                window_var += (input_view[i+m, j+n] - window_mean)**2
+                count += 1
+
+            else:
+
+                if center_value != nodata:
+
+                    window_var += (input_view[i+m, j+n] - window_mean)**2
+                    count += 1
+
+    res = window_var / <double>count
+
+    if nodata == 1e9:
+        return res
+    else:
+
+        if npy_isnan(res):
+            return nodata
+        else:
+            return res
 
 
-cdef double _get_std(double[:, :, ::1] input_view,
-                     Py_ssize_t z,
+cdef double _get_std(double[:, ::1] input_view,
                      Py_ssize_t i,
                      Py_ssize_t j,
                      unsigned int w,
                      double w_samples,
-                     double perc) nogil:
+                     double perc,
+                     double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n
         double window_mean = 0.0
         double window_var = 0.0
+        double center_value
+        unsigned int count = 0
+        double res
 
     # Mean
     for m in range(0, w):
         for n in range(0, w):
-            window_mean += input_view[z, i+m, j+n]
 
-    window_mean /= w_samples
+            center_value = input_view[i+m, j+n]
+
+            if nodata == 1e9:
+
+                window_mean += input_view[i+m, j+n]
+                count += 1
+
+            else:
+
+                if center_value != nodata:
+
+                    window_mean += input_view[i+m, j+n]
+                    count += 1
+
+    window_mean /= <double>count
+
+    count = 0
 
     # Deviation from the mean
     for m in range(0, w):
         for n in range(0, w):
-            window_var += (input_view[z, i+m, j+n] - window_mean)**2
 
-    window_var /= w_samples
+            center_value = input_view[i+m, j+n]
 
-    return sqrt(window_var)
+            if nodata == 1e9:
+
+                window_var += (input_view[i+m, j+n] - window_mean)**2
+                count += 1
+
+            else:
+
+                if center_value != nodata:
+
+                    window_var += (input_view[i+m, j+n] - window_mean)**2
+                    count += 1
+
+    window_var /= <double>count
+
+    res = sqrt(window_var)
+
+    if nodata == 1e9:
+        return res
+    else:
+
+        if npy_isnan(res):
+            return nodata
+        else:
+            return res
 
 
-cdef double _get_mean(double[:, :, ::1] input_view,
-                      Py_ssize_t z,
+cdef double _get_mean(double[:, ::1] input_view,
                       Py_ssize_t i,
                       Py_ssize_t j,
                       unsigned int w,
                       double w_samples,
-                      double perc) nogil:
+                      double perc,
+                      double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n
         double window_mean = 0.0
+        double center_value
+        unsigned int count = 0
+        double res
 
     for m in range(0, w):
         for n in range(0, w):
-            window_mean += input_view[z, i+m, j+n]
 
-    return window_mean / w_samples
+            center_value = input_view[i+m, j+n]
+
+            if nodata == 1e9:
+
+                window_mean += input_view[i+m, j+n]
+                count += 1
+
+            else:
+
+                if center_value != nodata:
+
+                    window_mean += input_view[i+m, j+n]
+                    count += 1
+
+    res = window_mean / <double>count
+
+    if nodata == 1e9:
+        return res
+    else:
+
+        if npy_isnan(res):
+            return nodata
+        else:
+            return res
 
 
-cdef double _get_min(double[:, :, ::1] input_view,
-                     Py_ssize_t z,
+cdef double _get_min(double[:, ::1] input_view,
                      Py_ssize_t i,
                      Py_ssize_t j,
                      unsigned int w,
                      double w_samples,
-                     double perc) nogil:
+                     double perc,
+                     double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n
         double window_min = 1e9
+        double center_value
 
     for m in range(0, w):
         for n in range(0, w):
 
-            if input_view[z, i+m, j+n] < window_min:
-                window_min = input_view[z, i+m, j+n]
+            center_value = input_view[i+m, j+n]
 
-    return window_min
+            if nodata == 1e9:
+
+                if center_value < window_min:
+                    window_ = center_value
+
+            else:
+
+                if (center_value < window_min) and (center_value != nodata):
+                    window_min = center_value
+
+    if nodata == 1e9:
+        return window_min
+    else:
+
+        if npy_isnan(window_min):
+            return nodata
+        else:
+            return window_min
 
 
-cdef double _get_max(double[:, :, ::1] input_view,
-                     Py_ssize_t z,
+cdef double _get_max(double[:, ::1] input_view,
                      Py_ssize_t i,
                      Py_ssize_t j,
                      unsigned int w,
                      double w_samples,
-                     double perc) nogil:
+                     double perc,
+                     double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n
         double window_max = -1e9
+        double center_value
 
     for m in range(0, w):
         for n in range(0, w):
 
-            if input_view[z, i+m, j+n] > window_max:
-                window_max = input_view[z, i+m, j+n]
+            center_value = input_view[i+m, j+n]
 
-    return window_max
+            if nodata == 1e9:
+
+                if center_value > window_max:
+                    window_max = center_value
+
+            else:
+
+                if (center_value > window_max) and (center_value != nodata):
+                    window_max = center_value
+
+    if nodata == 1e9:
+        return window_max
+    else:
+
+        if npy_isnan(window_max):
+            return nodata
+        else:
+            return window_max
 
 
 cdef int _cmp(const void * pa, const void * pb) nogil:
@@ -157,18 +300,19 @@ cdef int _cmp(const void * pa, const void * pb) nogil:
         return 0
 
 
-cdef double _get_perc(double[:, :, ::1] input_view,
-                      Py_ssize_t z,
+cdef double _get_perc(double[:, ::1] input_view,
                       Py_ssize_t i,
                       Py_ssize_t j,
                       unsigned int w,
                       double w_samples,
-                      double perc) nogil:
+                      double perc,
+                      double nodata) nogil:
 
     cdef:
         Py_ssize_t m, n, y
         int perc_index
-        double *new_buffer = <double *>malloc((w * w) * sizeof(double))
+        unsigned int n_samples = w * w
+        double *new_buffer = <double *>malloc(n_samples * sizeof(double))
         double perc_result
 
     y = 0
@@ -176,15 +320,15 @@ cdef double _get_perc(double[:, :, ::1] input_view,
     for m in range(0, w):
         for n in range(0, w):
 
-            new_buffer[y] = input_view[z, i+m, j+n]
+            new_buffer[y] = input_view[i+m, j+n]
 
             y += 1
 
     # Sort the buffer
-    qsort(new_buffer, w, sizeof(double), _cmp)
+    qsort(new_buffer, n_samples, sizeof(double), _cmp)
 
     # cut of the percentile
-    perc_index = <int>((<double>(w*w)) * perc / 100.0)
+    perc_index = <int>(<double>n_samples * perc / 100.0)
     perc_result = new_buffer[perc_index-1]
 
     # Deallocate the buffer
@@ -193,23 +337,24 @@ cdef double _get_perc(double[:, :, ::1] input_view,
     return perc_result
 
 
-cdef _moving_window3d(double[:, :, ::1] input,
-                      str stat,
-                      double perc,
-                      unsigned int window_size,
-                      unsigned int n_jobs):
+cdef _moving_window(double[:, ::1] input,
+                    str stat,
+                    unsigned int perc,
+                    unsigned int window_size,
+                    double nodata,
+                    unsigned int n_jobs):
 
     cdef:
-        Py_ssize_t z, i, j
-        unsigned int dims = input.shape[0]
-        unsigned int rows = input.shape[1]
-        unsigned int cols = input.shape[2]
+        Py_ssize_t i, j
+        unsigned int rows = input.shape[0]
+        unsigned int cols = input.shape[1]
         double w_samples = window_size * 2.0
         unsigned int hw = <int>(window_size / 2.0)
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
-        double[:, :, ::1] output = np.zeros((dims, rows, cols), dtype='float64')
-        double[:, :, ::1] output_view = output
+        double[:, ::1] output = np.zeros((rows, cols), dtype='float64')
+        double[:, ::1] output_view = output
+        double percf = <double>perc
 
         metric_ptr window_function
 
@@ -228,33 +373,33 @@ cdef _moving_window3d(double[:, :, ::1] input,
 
     with nogil, parallel(num_threads=n_jobs):
 
-        for z in prange(0, dims, schedule='static'):
-
-            for i in range(0, row_dims):
-                for j in range(0, col_dims):
-                    output_view[z, i+hw, j+hw] = window_function(input, z, i, j, window_size, w_samples, perc)
+        for i in prange(0, row_dims, schedule='static'):
+            for j in range(0, col_dims):
+                output_view[i+hw, j+hw] = window_function(input, i, j, window_size, w_samples, percf, nodata)
 
     return np.float64(output)
 
 
 def moving_window(np.ndarray input not None,
                   stat='mean',
-                  perc=50.0,
+                  perc=50,
                   w=3,
+                  nodata=1e9,
                   n_jobs=1):
 
     """
     Applies a moving window function over a NumPy array
 
     Args:
-        input (NumPy array): The array to process.
+        input (2d NumPy array): The array to process.
         stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
-        perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
+        perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
         w (Optional[int]): The moving window size (in pixels).
+        nodata (Optional[int or float]): A 'no data' value to ignore.
         n_jobs (Optional[int]): The number of bands to process in parallel.
 
     Returns:
-        ``numpy.array``
+        2d ``numpy.array``
     """
 
-    return _moving_window3d(input, stat, perc, w, n_jobs)
+    return _moving_window(input, stat, perc, w, nodata, n_jobs)

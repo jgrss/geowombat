@@ -266,8 +266,9 @@ class MapProcesses(object):
     def moving(data,
                band_names=None,
                stat='mean',
-               perc=50.0,
+               perc=50,
                w=3,
+               nodata=None,
                n_jobs=1):
 
         """
@@ -277,7 +278,8 @@ class MapProcesses(object):
             data (DataArray): The ``xarray.DataArray`` to process.
             band_names (int or str or list): The output band name(s).
             stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
-            perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
+            perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
+            nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -287,8 +289,11 @@ class MapProcesses(object):
         Examples:
             >>> import geowombat as gw
             >>>
+            >>> # Calculate the mean within a 5x5 window
             >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.moving(ds, stat='mean', w=5, n_jobs=8)
+            >>>     ds = gw.moving(ds, stat='mean', w=5, nodata=32767.0, n_jobs=8)
+            >>>
+            >>> # Calculate the 90th percentile within a 15x15 window
         """
 
         if not isinstance(data, xr.DataArray):
@@ -301,8 +306,6 @@ class MapProcesses(object):
         x = data.x.values
         attrs = data.attrs
 
-        data_array = data.data
-
         if n_jobs <= 0:
 
             logger.warning('  The number of parallel jobs should be a positive integer, so setting n_jobs=1.')
@@ -312,35 +315,35 @@ class MapProcesses(object):
 
         def _move_func(block_data):
 
+            """
+            Args:
+                block_data (2d array)
+            """
+
             if max(block_data.shape) <= hw:
                 return block_data
             else:
 
-                block_data_ = block_data[np.newaxis, :, :] if len(block_data.shape) == 2 else block_data
-
-                return moving_window(block_data_,
+                return moving_window(block_data,
                                      stat=stat,
                                      w=w,
                                      perc=perc,
+                                     nodata=nodata,
                                      n_jobs=n_jobs)
 
-        if len(data.shape) == 2:
+        results = list()
 
-            out_shape = (1,) + data_array.shape
-            # data_in = data_array.reshape(out_shape)
+        for band in data.band.values.tolist():
 
-        else:
+            band_array = data.sel(band=band)
 
-            out_shape = data_array.shape
-            # data_in = data_array
+            res = band_array.astype('float64').data.map_overlap(_move_func,
+                                                                depth=hw,
+                                                                trim=True,
+                                                                boundary='reflect',
+                                                                dtype='float64')
 
-        # if min(data.data.chunks[1:])[-1] < hw:
-
-        result = data_array.squeeze().astype('float64').map_overlap(_move_func,
-                                                                    depth=hw,
-                                                                    trim=True,
-                                                                    boundary='reflect',
-                                                                    dtype='float64').reshape(out_shape)
+            results.append(res)
 
         if isinstance(band_names, np.ndarray):
 
@@ -352,12 +355,20 @@ class MapProcesses(object):
             if not isinstance(band_names, np.ndarray):
                 band_names = np.arange(1, data_array.shape[0]+1)
 
-        return xr.DataArray(data=result,
-                            dims=('band', 'y', 'x'),
-                            coords={'band': band_names,
-                                    'y': y,
-                                    'x': x},
-                            attrs=attrs)
+        results = xr.DataArray(data=da.stack(results, axis=0),
+                               dims=('band', 'y', 'x'),
+                               coords={'band': band_names,
+                                       'y': y,
+                                       'x': x},
+                               attrs=attrs)
+
+        results.attrs['moving_stat'] = stat
+        results.attrs['moving_window_size'] = w
+
+        if stat == 'perc':
+            results.attrs['moving_perc'] = perc
+
+        return results
 
 
 def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=None):

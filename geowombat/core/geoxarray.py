@@ -711,7 +711,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def moving(self,
                band_coords='band',
                stat='mean',
-               perc=50.0,
+               perc=50,
+               nodata=None,
                w=3,
                n_jobs=1):
 
@@ -721,7 +722,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             band_coords (Optional[str]): The band coordinate name.
             stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
-            perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
+            perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
+            nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -731,13 +733,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Examples:
             >>> import geowombat as gw
             >>>
+            >>> # Calculate the mean within a 5x5 window
             >>> with gw.open('image.tif') as ds:
-            >>>     ds = ds.gw.moving(stat='mean', w=5, n_jobs=8)
+            >>>     ds = ds.gw.moving(stat='mean', w=5, nodata=32767.0, n_jobs=8)
+            >>>
+            >>> # Calculate the 90th percentile within a 15x15 window
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = ds.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
         """
 
         return moving(self._obj,
                       band_names=self._obj.coords[band_coords].values,
                       perc=perc,
+                      nodata=nodata,
                       w=w,
                       stat=stat,
                       n_jobs=n_jobs)
