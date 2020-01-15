@@ -172,6 +172,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                variable='bands',
                band_coords='band',
                stat='mean',
+               perc=50.0,
                w=3,
                n_jobs=1):
 
@@ -181,7 +182,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             variable (Optional[str]): The variable to compute.
             band_coords (Optional[str]): The band coordinate name.
-            stat (Optional[str]): The statistic to apply.
+            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max'].
+            perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
             w (Optional[int]): The moving window size.
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -192,6 +194,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return moving(self._obj[variable],
                       band_names=self._obj.coords[band_coords].values,
                       w=w,
+                      perc=perc,
                       stat=stat,
                       n_jobs=n_jobs)
 
@@ -705,14 +708,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        verbose=verbose,
                        **kwargs)
 
-    def moving(self, band_coords='band', stat='mean', w=3, n_jobs=1):
+    def moving(self,
+               band_coords='band',
+               stat='mean',
+               perc=50.0,
+               w=3,
+               n_jobs=1):
 
         """
         Applies a moving window function to the DataArray
 
         Args:
             band_coords (Optional[str]): The band coordinate name.
-            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max'].
+            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
+            perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -728,6 +737,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         return moving(self._obj,
                       band_names=self._obj.coords[band_coords].values,
+                      perc=perc,
                       w=w,
                       stat=stat,
                       n_jobs=n_jobs)

@@ -263,7 +263,12 @@ class Chunks(object):
 class MapProcesses(object):
 
     @staticmethod
-    def moving(data, band_names=None, stat='mean', w=3, n_jobs=1):
+    def moving(data,
+               band_names=None,
+               stat='mean',
+               perc=50.0,
+               w=3,
+               n_jobs=1):
 
         """
         Applies a moving window function over Dask array blocks
@@ -271,7 +276,8 @@ class MapProcesses(object):
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
             band_names (int or str or list): The output band name(s).
-            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max'].
+            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
+            perc (Optional[float]): The percentile to return if ``stat`` = 'perc'.
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -309,24 +315,40 @@ class MapProcesses(object):
             if max(block_data.shape) <= hw:
                 return block_data
             else:
-                return moving_window(block_data, stat=stat, w=w, n_jobs=n_jobs)
+
+                block_data_ = block_data[np.newaxis, :, :] if len(block_data.shape) == 2 else block_data
+
+                return moving_window(block_data_,
+                                     stat=stat,
+                                     w=w,
+                                     perc=perc,
+                                     n_jobs=n_jobs)
 
         if len(data.shape) == 2:
-            out_shape = (1,) + data_array.shape
-        else:
-            out_shape = data_array.shape
 
-        result = data_array.reshape(out_shape).astype('float64').map_overlap(_move_func,
-                                                                             depth=hw,
-                                                                             trim=True,
-                                                                             boundary='reflect',
-                                                                             dtype='float64').reshape(out_shape)
+            out_shape = (1,) + data_array.shape
+            # data_in = data_array.reshape(out_shape)
+
+        else:
+
+            out_shape = data_array.shape
+            # data_in = data_array
+
+        # if min(data.data.chunks[1:])[-1] < hw:
+
+        result = data_array.squeeze().astype('float64').map_overlap(_move_func,
+                                                                    depth=hw,
+                                                                    trim=True,
+                                                                    boundary='reflect',
+                                                                    dtype='float64').reshape(out_shape)
 
         if isinstance(band_names, np.ndarray):
+
             if isinstance(band_names.tolist(), str):
                 band_names = [band_names.tolist()]
 
         if not isinstance(band_names, list):
+
             if not isinstance(band_names, np.ndarray):
                 band_names = np.arange(1, data_array.shape[0]+1)
 
