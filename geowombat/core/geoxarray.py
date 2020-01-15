@@ -1,3 +1,4 @@
+from ..errors import logger
 from ..config import config
 
 from . import to_raster, to_vrt, to_geodataframe, moving, extract, subset, clip, mask
@@ -712,7 +713,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             band_coords (Optional[str]): The band coordinate name.
-            stat (Optional[str]): The statistic to compute.
+            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max'].
             w (Optional[int]): The moving window size (in pixels).
             n_jobs (Optional[int]): The number of bands to process in parallel.
 
@@ -725,6 +726,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.moving(stat='mean', w=5, n_jobs=8)
         """
+
+        if w % 2 == 0:
+            logger.exception('  The window size must be an odd number.')
 
         return moving(self._obj,
                       band_names=self._obj.coords[band_coords].values,
