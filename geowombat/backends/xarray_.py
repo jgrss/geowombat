@@ -205,7 +205,10 @@ def warp_open(filename,
         src.attrs['resampling'] = resampling
 
         if dtype:
-            return src.astype(dtype)
+
+            attrs = src.attrs.copy()
+            return src.astype(dtype).assign_attrs(**attrs)
+
         else:
             return src
 
@@ -305,10 +308,11 @@ def mosaic(filenames,
 
         ds.attrs['resampling'] = resampling
 
-        attrs = ds.attrs.copy()
-
         if dtype:
+
+            attrs = ds.attrs.copy()
             return ds.astype(dtype).assign_attrs(**attrs)
+
         else:
             return ds
 
