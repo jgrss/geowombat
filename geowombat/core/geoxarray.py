@@ -723,7 +723,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif') as ds:
-            >>>     ds = ds.gw.moving()
+            >>>     ds = ds.gw.moving(stat='mean', w=5, n_jobs=8)
         """
 
         return moving(self._obj,
