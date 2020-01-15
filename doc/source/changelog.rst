@@ -3,8 +3,34 @@
 Change Log
 ==========
 
+1.0.2 (16 January 2020)
+-----------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed a problem with :func:`geowombat.moving_window` block overlaps when requested window sizes were larger than the smallest Dask chunk size.
+- Fixed :func:`geowombat.moving_window` percentile quantile sorting of a full moving window.
+
+1.0.1 (15 January 2020)
+-----------------------
+
+New
+~~~
+
+- Added a check for even or odd window sizes with :func:`geowombat.moving_window`.
+- Added an option to co-register a list of images.
+- Added percentiles to :func:`geowombat.moving_window`.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed missing `DataArray` attributes after changing data type.
+
 1.0.0 (13 January 2020)
 -----------------------
+
+- First release
 
 1.3.7b (12 January 2020)
 ------------------------
