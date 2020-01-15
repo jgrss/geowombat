@@ -479,11 +479,16 @@ class SpatialOperations(_PropertyMixin):
                    **kwargs):
 
         """
-        Co-registers two images using AROSICS
+        Co-registers an image, or images, using AROSICS.
+
+        While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
+        Therefore, memory usage is constrained to the size of the input data. Dask is not used for any of the
+        computation in this function.
 
         Args:
-            target (DataArray): The target ``xarray.DataArray`` to co-register.
-            reference (DataArray): The reference ``xarray.DataArray`` to co-register to.
+            target (DataArray or list): The target ``xarray.DataArray`` or list of DataArrays
+                to co-register to ``reference``.
+            reference (DataArray): The reference ``xarray.DataArray`` used to co-register ``target``.
             kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
         Reference:
@@ -495,48 +500,62 @@ class SpatialOperations(_PropertyMixin):
         Example:
             >>> import geowombat as gw
             >>>
+            >>> # Co-register a single image to a reference image
             >>> with gw.open('target.tif') as tar, gw.open('reference.tif') as ref:
-            >>>     results = gw.coregister(tar, ref, q=True, ws=(512, 512), max_shift=3)
+            >>>     results = gw.coregister(tar, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4)
+            >>>
+            >>> # Co-register a list of raster files to a reference image
+            >>> targets = [gw.open(fn) for fn in target_list]
+            >>> with gw.open('reference.tif') as ref:
+            >>>     results = gw.coregister(targets, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4)
         """
 
         if not AROSICS_INSTALLED:
-            logger.exception('  AROSICS must be installed to co-register data. See https://pypi.org/project/arosics for details')
+            logger.exception('\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details')
 
-        cr = arosics.COREG(reference.filename,
-                           target.filename,
-                           **kwargs)
+        def _coregister(reference_, target_):
 
-        try:
-            cr.calculate_spatial_shifts()
-        except:
-            logger.warning('  Could not co-register the data.')
-            return target
+            cr = arosics.COREG(reference_.filename,
+                               target_.filename,
+                               **kwargs)
 
-        shift_info = cr.correct_shifts()
+            try:
+                cr.calculate_spatial_shifts()
+            except:
 
-        left = shift_info['updated geotransform'][0]
-        top = shift_info['updated geotransform'][3]
+                logger.warning('  Could not co-register the data.')
+                return target_
 
-        transform = (target.gw.cellx, 0.0, left, 0.0, -target.gw.celly, top)
+            shift_info = cr.correct_shifts()
 
-        target.attrs['transform'] = transform
+            left = shift_info['updated geotransform'][0]
+            top = shift_info['updated geotransform'][3]
 
-        data = shift_info['arr_shifted'].transpose(2, 0, 1)
+            transform = (target_.gw.cellx, 0.0, left, 0.0, -target_.gw.celly, top)
 
-        ycoords = np.linspace(top-target.gw.cellyh,
-                              top-target.gw.cellyh-(data.shape[1] * target.gw.celly),
-                              data.shape[1])
+            target_.attrs['transform'] = transform
 
-        xcoords = np.linspace(left+target.gw.cellxh,
-                              left+target.gw.cellxh+(data.shape[2] * target.gw.cellx),
-                              data.shape[2])
+            data = shift_info['arr_shifted'].transpose(2, 0, 1)
 
-        return xr.DataArray(data=da.from_array(data,
-                                               chunks=(target.gw.band_chunks,
-                                                       target.gw.row_chunks,
-                                                       target.gw.col_chunks)),
-                            dims=('band', 'y', 'x'),
-                            coords={'band': target.band.values.tolist(),
-                                    'y': ycoords,
-                                    'x': xcoords},
-                            attrs=target.attrs)
+            ycoords = np.linspace(top-target_.gw.cellyh,
+                                  top-target_.gw.cellyh-(data.shape[1] * target_.gw.celly),
+                                  data.shape[1])
+
+            xcoords = np.linspace(left+target_.gw.cellxh,
+                                  left+target_.gw.cellxh+(data.shape[2] * target_.gw.cellx),
+                                  data.shape[2])
+
+            return xr.DataArray(data=da.from_array(data,
+                                                   chunks=(target_.gw.band_chunks,
+                                                           target_.gw.row_chunks,
+                                                           target_.gw.col_chunks)),
+                                dims=('band', 'y', 'x'),
+                                coords={'band': target_.band.values.tolist(),
+                                        'y': ycoords,
+                                        'x': xcoords},
+                                attrs=target_.attrs)
+
+        if isinstance(target, list):
+            return [_coregister(reference, target_obj) for target_obj in target]
+        else:
+            return _coregister(reference, target)
