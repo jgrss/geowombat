@@ -9,8 +9,8 @@ Change Log
 Bug fixes
 ~~~~~~~~~
 
-- Fixed a problem with :func:`geowombat.moving_window` block overlaps when requested window sizes were larger than the smallest Dask chunk size.
-- Fixed :func:`geowombat.moving_window` percentile quantile sorting of a full moving window.
+- Fixed a problem with :func:`geowombat.moving` block overlaps when requested window sizes were larger than the smallest Dask chunk size.
+- Fixed :func:`geowombat.moving` percentile quantile sorting of a full moving window.
 
 1.0.1 (15 January 2020)
 -----------------------
@@ -18,9 +18,9 @@ Bug fixes
 New
 ~~~
 
-- Added a check for even or odd window sizes with :func:`geowombat.moving_window`.
+- Added a check for even or odd window sizes with :func:`geowombat.moving`.
 - Added an option to co-register a list of images.
-- Added percentiles to :func:`geowombat.moving_window`.
+- Added percentiles to :func:`geowombat.moving`.
 
 Bug fixes
 ~~~~~~~~~
