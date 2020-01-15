@@ -725,7 +725,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
             nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
-            n_jobs (Optional[int]): The number of bands to process in parallel.
+            n_jobs (Optional[int]): The number of rows to process in parallel.
 
         Returns:
             ``xarray.DataArray``
