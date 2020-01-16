@@ -37,6 +37,7 @@ Documentation
 * :doc:`machine-learning`
 * :doc:`config`
 * :doc:`apply`
+* :doc:`moving`
 * :doc:`radiometry`
 * :doc:`web`
 
@@ -52,6 +53,7 @@ Documentation
    machine-learning
    config
    apply
+   moving
    radiometry
    web
 
