@@ -14,6 +14,10 @@ Install the latest development version from GitHub.com::
 
     $ pip install git+https://github.com/jgrss/geowombat
 
+Install optional libraries::
+
+    $ pip install arosics earthpy pyfftw bottleneck
+
 Linux Instructions
 ------------------
 
