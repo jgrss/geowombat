@@ -290,17 +290,19 @@ class MapProcesses(object):
             >>> import geowombat as gw
             >>>
             >>> # Calculate the mean within a 5x5 window
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.moving(ds, stat='mean', w=5, nodata=32767.0, n_jobs=8)
+            >>> with gw.open('image.tif') as src:
+            >>>     res = gw.moving(ds, stat='mean', w=5, nodata=32767.0, n_jobs=8)
             >>>
             >>> # Calculate the 90th percentile within a 15x15 window
+            >>> with gw.open('image.tif') as src:
+            >>>     res = gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
         """
-
-        if not isinstance(data, xr.DataArray):
-            logger.exception('  The input data must be an Xarray DataArray.')
 
         if w % 2 == 0:
             logger.exception('  The window size must be an odd number.')
+
+        if not isinstance(data, xr.DataArray):
+            logger.exception('  The input data must be an Xarray DataArray.')
 
         y = data.y.values
         x = data.x.values

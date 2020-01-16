@@ -734,12 +734,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>>
             >>> # Calculate the mean within a 5x5 window
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = ds.gw.moving(stat='mean', w=5, nodata=32767.0, n_jobs=8)
+            >>> with gw.open('image.tif') as src:
+            >>>     res = src.gw.moving(stat='mean', w=5, nodata=32767.0, n_jobs=8)
             >>>
             >>> # Calculate the 90th percentile within a 15x15 window
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = ds.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
+            >>> with gw.open('image.tif') as src:
+            >>>     res = src.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
         """
 
         return moving(self._obj,

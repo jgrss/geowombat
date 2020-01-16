@@ -352,7 +352,7 @@ cdef _moving_window(double[:, ::1] input,
         unsigned int hw = <int>(window_size / 2.0)
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
-        double[:, ::1] output = np.zeros((rows, cols), dtype='float64')
+        double[:, ::1] output = np.float64(input).copy()
         double[:, ::1] output_view = output
         double percf = <double>perc
 
