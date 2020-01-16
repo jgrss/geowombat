@@ -12,6 +12,8 @@ maintainer = 'Jordan Graesser'
 maintainer_email = ''
 description = 'Geo-enabled n-dimensional arrays from satellite imagery'
 git_url = 'http://github.com/jgrss/geowombat.git'
+download_url = 'https://github.com/jgrss/geowombat/archive/{VERSION}.tar.gz'.format(VERSION=__version__)
+keywords = ['raster', 'remote sensing']
 
 with open('README.md') as f:
     long_description = f.read()
@@ -65,9 +67,14 @@ def setup_package():
                     package_data=get_package_data(),
                     ext_modules=cythonize(get_extensions()),
                     zip_safe=False,
-                    download_url=git_url,
+                    keywords=keywords,
+                    url=git_url,
+                    download_url=download_url,
                     install_requires=required_packages,
-                    include_dirs=include_dirs)
+                    include_dirs=include_dirs,
+                    classifiers=['Programming Language :: Python :: 3.5',
+                                 'Programming Language :: Python :: 3.6',
+                                 'Programming Language :: Python :: 3.7'])
 
     setup(**metadata)
 
