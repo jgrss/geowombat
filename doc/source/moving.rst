@@ -28,21 +28,26 @@ Calculate the local average
         res.data.compute()
 
 The moving window function uses Dask to partition chunks and calculate a statistic for the chunk. Calling :func:`geowombat.to_raster` on the Xarray object will result in `concurrent.futures` being unable to pickle the underlying worker function.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-A workaround is to pass :func:`geowombat.moving` as an Xarray attribute.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. note::
-
-    Note that there are three levels of parallelism in the example below: 1) The `n_jobs` argument passed as an Xarray attribute determines the number of image chunk rows to process in parallel. 2) The `n_workers` argument in the :func:`geowombat.to_raster` function determines the number of chunks to process in parallel. 3) The `n_threads` argument in the :func:`geowombat.to_raster` determines the number of thread workers to use for the Dask computation. The threads are set at 1 here because the computation happens in the :func:`geowombat.moving` function.
+A workaround is to compute the results before writing to file
 
 .. code:: python
 
+    import xarray as xr
+    import dask.array as da
+
     with gw.open(rgbn, chunks=512) as src:
 
-        src.attrs['apply'] = gw.moving
-        src.attrs['apply_kwargs'] = {'stat': 'mean', 'w': 5, 'n_jobs': 4, 'nodata': 0}
+        res = src.gw.moving(stat='mean', w=5, n_jobs=4, nodata=0)
+
+        # Compute the moving window and save as an Xarray
+        res = xr.DataArray(data=da.from_array(res.data.compute(num_workers=4), chunks=src.data.chunks),
+                           dims=('band', 'y', 'x'),
+                           coords={'band': src.band.values.tolist(),
+                                   'y': src.y,
+                                   'x': src.x},
+                           attrs=src.attrs)
 
         # Write the results to file
-        src.gw.to_raster('output.tif', n_workers=4, n_threads=1)
+        res.gw.to_raster('output.tif', n_workers=4, n_threads=1)
