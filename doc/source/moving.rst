@@ -3,6 +3,15 @@
 Two-dimensional moving windows
 ==============================
 
+Examine the :func:`geowombat.moving` help
++++++++++++++++++++++++++++++++++++++++++
+
+.. ipython:: python
+
+    import geowombat as gw
+
+    print(help(gw.moving))
+
 Calculate the local average
 +++++++++++++++++++++++++++
 
