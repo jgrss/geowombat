@@ -8,6 +8,8 @@ from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .util import Converters
 from .base import PropertyMixin as _PropertyMixin
 
+import geowombat as gw_
+
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -486,8 +488,8 @@ class SpatialOperations(_PropertyMixin):
         computation in this function.
 
         Args:
-            target (DataArray): The target ``xarray.DataArray`` to co-register to ``reference``.
-            reference (DataArray): The reference ``xarray.DataArray`` used to co-register ``target``.
+            target (DataArray or str): The target ``xarray.DataArray`` or file name to co-register to ``reference``.
+            reference (DataArray or str): The reference ``xarray.DataArray`` or file name used to co-register ``target``.
             kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
         Reference:
@@ -503,14 +505,27 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('target.tif') as tar, gw.open('reference.tif') as ref:
             >>>     results = gw.coregister(tar, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4)
             >>>
-            >>> # Co-register a list of raster files to a reference image
-            >>> targets = [gw.open(fn) for fn in target_list]
-            >>> with gw.open('reference.tif') as ref:
-            >>>     results = gw.coregister(targets, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4)
+            >>> # or
+            >>>
+            >>> results = gw.coregister('target.tif', 'reference.tif', q=True, ws=(512, 512), max_shift=3, CPUs=4)
         """
 
         if not AROSICS_INSTALLED:
             logger.exception('\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details')
+
+        if isinstance(reference, str):
+
+            if not os.path.isfile(reference):
+                logger.exception('  The reference file does not exist.')
+
+            reference = gw_.open(reference)
+
+        if isinstance(target, str):
+
+            if not os.path.isfile(target):
+                logger.exception('  The target file does not exist.')
+
+            target = gw_.open(target)
 
         cr = arosics.COREG(reference.filename,
                            target.filename,
