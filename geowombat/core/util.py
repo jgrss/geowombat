@@ -355,7 +355,7 @@ class MapProcesses(object):
         if not isinstance(band_names, list):
 
             if not isinstance(band_names, np.ndarray):
-                band_names = np.arange(1, data_array.shape[0]+1)
+                band_names = np.arange(1, data.shape[0]+1)
 
         results = xr.DataArray(data=da.stack(results, axis=0),
                                dims=('band', 'y', 'x'),
