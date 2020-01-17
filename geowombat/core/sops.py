@@ -486,8 +486,7 @@ class SpatialOperations(_PropertyMixin):
         computation in this function.
 
         Args:
-            target (DataArray or list): The target ``xarray.DataArray`` or list of DataArrays
-                to co-register to ``reference``.
+            target (DataArray): The target ``xarray.DataArray`` to co-register to ``reference``.
             reference (DataArray): The reference ``xarray.DataArray`` used to co-register ``target``.
             kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
@@ -513,49 +512,42 @@ class SpatialOperations(_PropertyMixin):
         if not AROSICS_INSTALLED:
             logger.exception('\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details')
 
-        def _coregister(reference_, target_):
+        cr = arosics.COREG(reference.filename,
+                           target.filename,
+                           **kwargs)
 
-            cr = arosics.COREG(reference_.filename,
-                               target_.filename,
-                               **kwargs)
+        try:
+            cr.calculate_spatial_shifts()
+        except:
 
-            try:
-                cr.calculate_spatial_shifts()
-            except:
+            logger.warning('  Could not co-register the data.')
+            return target
 
-                logger.warning('  Could not co-register the data.')
-                return target_
+        shift_info = cr.correct_shifts()
 
-            shift_info = cr.correct_shifts()
+        left = shift_info['updated geotransform'][0]
+        top = shift_info['updated geotransform'][3]
 
-            left = shift_info['updated geotransform'][0]
-            top = shift_info['updated geotransform'][3]
+        transform = (target.gw.cellx, 0.0, left, 0.0, -target.gw.celly, top)
 
-            transform = (target_.gw.cellx, 0.0, left, 0.0, -target_.gw.celly, top)
+        target.attrs['transform'] = transform
 
-            target_.attrs['transform'] = transform
+        data = shift_info['arr_shifted'].transpose(2, 0, 1)
 
-            data = shift_info['arr_shifted'].transpose(2, 0, 1)
+        ycoords = np.linspace(top-target.gw.cellyh,
+                              top-target.gw.cellyh-(data.shape[1] * target.gw.celly),
+                              data.shape[1])
 
-            ycoords = np.linspace(top-target_.gw.cellyh,
-                                  top-target_.gw.cellyh-(data.shape[1] * target_.gw.celly),
-                                  data.shape[1])
+        xcoords = np.linspace(left+target.gw.cellxh,
+                              left+target.gw.cellxh+(data.shape[2] * target.gw.cellx),
+                              data.shape[2])
 
-            xcoords = np.linspace(left+target_.gw.cellxh,
-                                  left+target_.gw.cellxh+(data.shape[2] * target_.gw.cellx),
-                                  data.shape[2])
-
-            return xr.DataArray(data=da.from_array(data,
-                                                   chunks=(target_.gw.band_chunks,
-                                                           target_.gw.row_chunks,
-                                                           target_.gw.col_chunks)),
-                                dims=('band', 'y', 'x'),
-                                coords={'band': target_.band.values.tolist(),
-                                        'y': ycoords,
-                                        'x': xcoords},
-                                attrs=target_.attrs)
-
-        if isinstance(target, list):
-            return [_coregister(reference, target_obj) for target_obj in target]
-        else:
-            return _coregister(reference, target)
+        return xr.DataArray(data=da.from_array(data,
+                                               chunks=(target.gw.band_chunks,
+                                                       target.gw.row_chunks,
+                                                       target.gw.col_chunks)),
+                            dims=('band', 'y', 'x'),
+                            coords={'band': target.band.values.tolist(),
+                                    'y': ycoords,
+                                    'x': xcoords},
+                            attrs=target.attrs)
