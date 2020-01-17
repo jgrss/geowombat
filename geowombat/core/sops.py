@@ -518,14 +518,16 @@ class SpatialOperations(_PropertyMixin):
             if not os.path.isfile(reference):
                 logger.exception('  The reference file does not exist.')
 
-            reference = gw_.open(reference)
+            with gw_.open(reference) as reference:
+                pass
 
         if isinstance(target, str):
 
             if not os.path.isfile(target):
                 logger.exception('  The target file does not exist.')
 
-            target = gw_.open(target)
+            with gw_.open(target) as target:
+                pass
 
         cr = arosics.COREG(reference.filename,
                            target.filename,
