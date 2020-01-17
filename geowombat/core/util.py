@@ -340,7 +340,7 @@ class MapProcesses(object):
             band_array = data.sel(band=band)
 
             res = band_array.astype('float64').data.map_overlap(_move_func,
-                                                                depth=hw,
+                                                                depth=(hw, hw),
                                                                 trim=True,
                                                                 boundary='reflect',
                                                                 dtype='float64')
