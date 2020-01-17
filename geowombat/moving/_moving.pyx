@@ -1,7 +1,9 @@
+# cython: language_level=3
 # cython: profile=False
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: nonecheck=False
 
 import cython
 cimport cython
@@ -337,12 +339,13 @@ cdef double _get_perc(double[:, ::1] input_view,
     return perc_result
 
 
-cdef _moving_window(double[:, ::1] input,
-                    str stat,
-                    unsigned int perc,
-                    unsigned int window_size,
-                    double nodata,
-                    unsigned int n_jobs):
+cdef double[:, ::1] _moving_window(double[:, ::1] input,
+                                   double[:, ::1] output,
+                                   str stat,
+                                   unsigned int perc,
+                                   unsigned int window_size,
+                                   double nodata,
+                                   unsigned int n_jobs):
 
     cdef:
         Py_ssize_t i, j
@@ -352,8 +355,6 @@ cdef _moving_window(double[:, ::1] input,
         unsigned int hw = <int>(window_size / 2.0)
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
-        double[:, ::1] output = np.float64(input).copy()
-        double[:, ::1] output_view = output
         double percf = <double>perc
 
         metric_ptr window_function
@@ -375,9 +376,9 @@ cdef _moving_window(double[:, ::1] input,
 
         for i in prange(0, row_dims, schedule='static'):
             for j in range(0, col_dims):
-                output_view[i+hw, j+hw] = window_function(input, i, j, window_size, w_samples, percf, nodata)
+                output[i+hw, j+hw] = window_function(input, i, j, window_size, w_samples, percf, nodata)
 
-    return np.float64(output)
+    return output
 
 
 def moving_window(np.ndarray input not None,
@@ -402,4 +403,7 @@ def moving_window(np.ndarray input not None,
         2d ``numpy.array``
     """
 
-    return _moving_window(input, stat, perc, w, nodata, n_jobs)
+    cdef:
+        double[:, ::1] output = np.float64(input).copy()
+
+    return np.float64(_moving_window(input, output, stat, perc, w, nodata, n_jobs))
