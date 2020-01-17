@@ -11,7 +11,6 @@ from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
-from .conversion import xarray_to_xdataset
 from .util import Chunks, get_file_extension, parse_wildcard
 
 import numpy as np
