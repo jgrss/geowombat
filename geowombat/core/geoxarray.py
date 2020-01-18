@@ -235,7 +235,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self._update_attrs()
 
     def imshow(self,
-               band_names=None,
                mask=False,
                nodata=0,
                flip=False,
@@ -247,7 +246,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Shows an image on a plot
 
         Args:
-            band_names (Optional[list or str]): The band name or list of band names to plot.
             mask (Optional[bool]): Whether to mask 'no data' values (given by ``nodata``).
             nodata (Optional[int or float]): The 'no data' value.
             flip (Optional[bool]): Whether to flip an RGB array's band order.
@@ -264,7 +262,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         gw_imshow(self._obj,
-                  band_names=band_names,
                   mask=mask,
                   nodata=nodata,
                   flip=flip,

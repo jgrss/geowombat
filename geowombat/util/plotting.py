@@ -66,9 +66,7 @@ class Plotting(object):
         plt.rcParams['savefig.pad_inches'] = 0.5
 
         if not ax:
-
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+            fig, ax = plt.subplots()
 
         if mask:
 
@@ -89,9 +87,9 @@ class Plotting(object):
         else:
             plot_data = data
 
-        if data.gw.nbands == 3:
+        if plot_data.gw.nbands == 3:
 
-            plot_data = data.transpose('y', 'x', 'band')
+            plot_data = plot_data.transpose('y', 'x', 'band')
 
             if flip:
                 plot_data = plot_data[..., ::-1]
