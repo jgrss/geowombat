@@ -6,9 +6,9 @@ Installation
 General Instructions
 --------------------
 
-Install the stable version from GitHub.com::
+Install the most recent stable version from GitHub.com::
 
-    $ pip install https://github.com/jgrss/geowombat/archive/1.0.3.tar.gz
+    $ pip install https://github.com/jgrss/geowombat/archive/1.0.4.tar.gz
 
 Install the latest development version from GitHub.com::
 
