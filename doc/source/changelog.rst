@@ -3,6 +3,28 @@
 Change Log
 ==========
 
+1.0.4 (19 January 2020)
+-----------------------
+
+Changes
+~~~~~~~
+
+- Removed `DataArray` list option from :func:`geowombat.coregister`.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed an error with global configuration settings that occurred when `ref_image` was used and subsequently overwritten.
+- Removed `band_names` argument from :func:`imshow`.
+
+1.0.3 (17 January 2020)
+-----------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added workaround example in the documentation for :func:`geowombat.moving`.
+
 1.0.2 (16 January 2020)
 -----------------------
 
