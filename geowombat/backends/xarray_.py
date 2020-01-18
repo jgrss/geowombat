@@ -62,59 +62,61 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             ref_kwargs['crs'] = ref_meta.crs
             ref_kwargs['res'] = ref_meta.res
 
-    if config['ref_bounds']:
-        ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
     else:
 
-        if isinstance(filenames, str):
-
-            # Use the bounds of the image
-            ref_kwargs['bounds'] = get_file_bounds([filenames],
-                                                   bounds_by='reference',
-                                                   crs=ref_kwargs['crs'],
-                                                   res=ref_kwargs['res'],
-                                                   return_bounds=True)
-
+        if config['ref_bounds']:
+            ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
         else:
 
-            # Replace the bounds keyword, if needed
-            if bounds_by.lower() == 'intersection':
+            if isinstance(filenames, str):
 
-                # Get the intersecting bounds of all images
-                ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                                       bounds_by='intersection',
-                                                       crs=ref_kwargs['crs'],
-                                                       res=ref_kwargs['res'],
-                                                       return_bounds=True)
-
-            elif bounds_by.lower() == 'union':
-
-                # Get the union bounds of all images
-                ref_kwargs['bounds'] = get_file_bounds(filenames,
-                                                       bounds_by='union',
-                                                       crs=ref_kwargs['crs'],
-                                                       res=ref_kwargs['res'],
-                                                       return_bounds=True)
-
-            elif bounds_by.lower() == 'reference':
-
-                # Use the bounds of the first image
-                ref_kwargs['bounds'] = get_file_bounds(filenames,
+                # Use the bounds of the image
+                ref_kwargs['bounds'] = get_file_bounds([filenames],
                                                        bounds_by='reference',
                                                        crs=ref_kwargs['crs'],
                                                        res=ref_kwargs['res'],
                                                        return_bounds=True)
 
             else:
-                logger.exception("  Choose from 'intersection', 'union', or 'reference'.")
 
-            config['ref_bounds'] = ref_kwargs['bounds']
+                # Replace the bounds keyword, if needed
+                if bounds_by.lower() == 'intersection':
 
-    if config['ref_crs']:
-        ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
+                    # Get the intersecting bounds of all images
+                    ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                           bounds_by='intersection',
+                                                           crs=ref_kwargs['crs'],
+                                                           res=ref_kwargs['res'],
+                                                           return_bounds=True)
 
-    if config['ref_res']:
-        ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
+                elif bounds_by.lower() == 'union':
+
+                    # Get the union bounds of all images
+                    ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                           bounds_by='union',
+                                                           crs=ref_kwargs['crs'],
+                                                           res=ref_kwargs['res'],
+                                                           return_bounds=True)
+
+                elif bounds_by.lower() == 'reference':
+
+                    # Use the bounds of the first image
+                    ref_kwargs['bounds'] = get_file_bounds(filenames,
+                                                           bounds_by='reference',
+                                                           crs=ref_kwargs['crs'],
+                                                           res=ref_kwargs['res'],
+                                                           return_bounds=True)
+
+                else:
+                    logger.exception("  Choose from 'intersection', 'union', or 'reference'.")
+
+                config['ref_bounds'] = ref_kwargs['bounds']
+
+        if config['ref_crs']:
+            ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
+
+        if config['ref_res']:
+            ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
     return ref_kwargs
 
