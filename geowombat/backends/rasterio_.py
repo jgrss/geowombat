@@ -8,7 +8,7 @@ import rasterio as rio
 from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
+from rasterio.warp import aligned_target, transform_bounds
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
