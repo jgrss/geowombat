@@ -489,16 +489,6 @@ def warp(filename,
         else:
             dst_crs = src.crs
 
-        dst_transform, dst_width, dst_height = calculate_default_transform(src.crs,
-                                                                           dst_crs,
-                                                                           src.width,
-                                                                           src.height,
-                                                                           left=src.bounds.left,
-                                                                           bottom=src.bounds.bottom,
-                                                                           right=src.bounds.right,
-                                                                           top=src.bounds.top,
-                                                                           resolution=dst_res)
-
         # Check if the data need to be subset
         if bounds and (bounds != src.bounds):
 
@@ -519,37 +509,39 @@ def warp(filename,
                         elif str_.strip().startswith('top='):
                             top_coord = float(str_.strip().split('=')[1].replace(')', ''))
 
-                    bounds = BoundingBox(left=left_coord,
-                                         bottom=bottom_coord,
-                                         right=right_coord,
-                                         top=top_coord)
+                    dst_bounds = BoundingBox(left=left_coord,
+                                             bottom=bottom_coord,
+                                             right=right_coord,
+                                             top=top_coord)
 
                 else:
                     logger.exception('  The bounds were not accepted.')
 
-            left, bottom, right, top = bounds
+            else:
 
-            # Keep the CRS but subset the data
-            dst_transform, dst_width, dst_height = calculate_default_transform(dst_crs,
-                                                                               dst_crs,
-                                                                               dst_width,
-                                                                               dst_height,
-                                                                               left=left,
-                                                                               bottom=bottom,
-                                                                               right=right,
-                                                                               top=top,
-                                                                               resolution=dst_res)
-
-            dst_width = int((right - left) / dst_res[0])
-            dst_height = int((top - bottom) / dst_res[1])
+                dst_bounds = BoundingBox(left=bounds[0],
+                                         bottom=bounds[1],
+                                         right=bounds[2],
+                                         top=bounds[3])
 
         else:
-            bounds = src.bounds
+            dst_bounds = src.bounds
+
+        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
+        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
         # Do not warp if all the key metadata match the reference information
-        if (src.bounds == bounds) and (src.res == dst_res) and (src.crs == dst_crs) and (src.width == dst_width) and (src.height == dst_height):
+        if (src.bounds == bounds) and \
+                (src.res == dst_res) and \
+                (src.crs == dst_crs) and \
+                (src.width == dst_width) and \
+                (src.height == dst_height):
+
             output = filename
+
         else:
+
+            dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
             if tap:
 
