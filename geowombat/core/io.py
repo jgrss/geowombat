@@ -795,7 +795,7 @@ def apply(infile,
 
     futures_executor = concurrent.futures.ThreadPoolExecutor if scheduler == 'threads' else concurrent.futures.ProcessPoolExecutor
 
-    with rio.Env(gdal_cache=gdal_cache):
+    with rio.Env(GDAL_CACHEMAX=gdal_cache):
 
         with rio.open(infile) as src:
 
