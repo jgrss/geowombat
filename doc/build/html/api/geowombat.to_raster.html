@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_raster &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>to_raster &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
 </ul>
@@ -143,8 +144,8 @@ processes: process pool of workers using <code class="docutils literal notransla
 threads: thread pool of workers using <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code></p>
 </p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total number of parallel jobs.</p></li>
-<li><p><strong>n_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of processes. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>n_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>n_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of processes.</p></li>
+<li><p><strong>n_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads.</p></li>
 <li><p><strong>n_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The chunk size of windows. If not given, equal to <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> x 50.</p></li>
 <li><p><strong>overviews</strong> (<em>Optional</em><em>[</em><em>bool</em><em> or </em><em>list</em><em>]</em>) – Whether to build overview layers.</p></li>
 <li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method for overviews when <code class="docutils literal notranslate"><span class="pre">overviews</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> or a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
@@ -194,7 +195,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

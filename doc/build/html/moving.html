@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Two-dimensional moving windows &#8212; GeoWombat 1.0.4 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Radiometry" href="radiometry.html" />
+    <link rel="prev" title="Applying custom user functions" href="apply.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="apply.html" title="previous chapter">Applying custom user functions</a></li>
+      <li>Next: <a href="radiometry.html" title="next chapter">Radiometry</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="two-dimensional-moving-windows">
+<span id="moving"></span><h1>Two-dimensional moving windows<a class="headerlink" href="#two-dimensional-moving-windows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="examine-the-geowombat-moving-help">
+<h2>Examine the <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a> help<a class="headerlink" href="#examine-the-geowombat-moving-help" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="nb">print</span><span class="p">(</span><span class="n">help</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">))</span>
+<span class="go">Help on function moving in module geowombat.core.util:</span>
+
+<span class="go">moving(data, band_names=None, stat=&#39;mean&#39;, perc=50, w=3, nodata=None, n_jobs=1)</span>
+<span class="go">    Applies a moving window function over Dask array blocks</span>
+<span class="go">    </span>
+<span class="go">    Args:</span>
+<span class="go">        data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="go">        band_names (int or str or list): The output band name(s).</span>
+<span class="go">        stat (Optional[str]): The statistic to compute. Choices are [&#39;mean&#39;, &#39;std&#39;, &#39;var&#39;, &#39;min&#39;, &#39;max&#39;, &#39;perc&#39;].</span>
+<span class="go">        perc (Optional[int]): The percentile to return if ``stat`` = &#39;perc&#39;.</span>
+<span class="go">        nodata (Optional[int or float]): A &#39;no data&#39; value to ignore.</span>
+<span class="go">        w (Optional[int]): The moving window size (in pixels).</span>
+<span class="go">        n_jobs (Optional[int]): The number of rows to process in parallel.</span>
+<span class="go">    </span>
+<span class="go">    Returns:</span>
+<span class="go">        ``xarray.DataArray``</span>
+<span class="go">    </span>
+<span class="go">    Examples:</span>
+<span class="go">        &gt;&gt;&gt; import geowombat as gw</span>
+<span class="go">        &gt;&gt;&gt;</span>
+<span class="go">        &gt;&gt;&gt; # Calculate the mean within a 5x5 window</span>
+<span class="go">        &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;) as src:</span>
+<span class="go">        &gt;&gt;&gt;     res = gw.moving(ds, stat=&#39;mean&#39;, w=5, nodata=32767.0, n_jobs=8)</span>
+<span class="go">        &gt;&gt;&gt;</span>
+<span class="go">        &gt;&gt;&gt; # Calculate the 90th percentile within a 15x15 window</span>
+<span class="go">        &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;) as src:</span>
+<span class="go">        &gt;&gt;&gt;     res = gw.moving(stat=&#39;perc&#39;, w=15, perc=90, nodata=32767.0, n_jobs=8)</span>
+
+<span class="go">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="calculate-the-local-average">
+<h2>Calculate the local average<a class="headerlink" href="#calculate-the-local-average" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Compute results</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-moving-window-function-uses-dask-to-partition-chunks-and-calculate-a-statistic-for-the-chunk-calling-geowombat-to-raster-on-the-xarray-object-will-result-in-concurrent-futures-being-unable-to-pickle-the-underlying-worker-function">
+<h2>The moving window function uses Dask to partition chunks and calculate a statistic for the chunk. Calling <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a> on the Xarray object will result in <cite>concurrent.futures</cite> being unable to pickle the underlying worker function.<a class="headerlink" href="#the-moving-window-function-uses-dask-to-partition-chunks-and-calculate-a-statistic-for-the-chunk-calling-geowombat-to-raster-on-the-xarray-object-will-result-in-concurrent-futures-being-unable-to-pickle-the-underlying-worker-function" title="Permalink to this headline">¶</a></h2>
+<p>A workaround is to compute the results before writing to file</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">dask.array</span> <span class="k">as</span> <span class="nn">da</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Compute the moving window and save as an Xarray</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chunks</span><span class="p">),</span>
+                       <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                       <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                               <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">src</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                               <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">src</span><span class="o">.</span><span class="n">x</span><span class="p">},</span>
+                       <span class="n">attrs</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+
+    <span class="c1"># Write the results to file</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/moving.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

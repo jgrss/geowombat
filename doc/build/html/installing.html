@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Installation &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>Installation &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -114,30 +115,9 @@
             
   <div class="section" id="installation">
 <span id="installing"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="general-instructions">
-<h2>General Instructions<a class="headerlink" href="#general-instructions" title="Permalink to this headline">¶</a></h2>
-<p>Install the latest development version from GitHub using pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
-</pre></div>
-</div>
-</div>
-<div class="section" id="linux-instructions">
-<h2>Linux Instructions<a class="headerlink" href="#linux-instructions" title="Permalink to this headline">¶</a></h2>
-<p>Install pip tools and ensure a working version of GDAL and Python bindings:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
-
-$ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
-$ sudo apt-get update
-$ sudo apt-get install gdal-bin
-$ sudo apt-get install libgdal-dev
-$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
-$ export C_INCLUDE_PATH=/usr/include/gdal
-$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;)
-</pre></div>
-</div>
-</div>
 <div class="section" id="virtual-environments">
 <h2>Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
+<p>We recommend using virtual environments, but this section can be skipped.</p>
 <div class="section" id="virtual-environments-with-virtualenv">
 <h3>Virtual environments with <cite>virtualenv</cite><a class="headerlink" href="#virtual-environments-with-virtualenv" title="Permalink to this headline">¶</a></h3>
 <p>Install the <cite>virtualenv</cite> Python package:</p>
@@ -165,12 +145,87 @@ $ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1
 </pre></div>
 </div>
 </div>
-<div class="section" id="install-geowombat">
-<h3>Install <cite>GeoWombat</cite><a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h3>
-<p>With an environment activated, install <cite>GeoWombat</cite>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ (gwenv) pip install git+https://github.com/jgrss/geowombat
+<div class="section" id="using-the-virtual-environment">
+<h3>Using the virtual environment<a class="headerlink" href="#using-the-virtual-environment" title="Permalink to this headline">¶</a></h3>
+<p>With an environment activated, the command line should look something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(gwenv) $
 </pre></div>
 </div>
+</div>
+</div>
+<div class="section" id="geowombat-requirements">
+<h2>GeoWombat requirements<a class="headerlink" href="#geowombat-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Cython, NumPy, and GDAL must be installed prior to installing GeoWombat.</p>
+<p>Cython and NumPy can be installed via pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install cython numpy
+</pre></div>
+</div>
+<p>GDAL can be installed via pip or conda, but it requires the GDAL binaries.</p>
+<div class="section" id="installing-gdal-on-linux">
+<h3>Installing GDAL on Linux<a class="headerlink" href="#installing-gdal-on-linux" title="Permalink to this headline">¶</a></h3>
+<p>Install Python 3 (if not installed):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Ubuntu&gt;=16.10
+$ sudo apt-get install python3
+</pre></div>
+</div>
+<p>If Python 3 is already installed, but pip is not, install pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
+</pre></div>
+</div>
+<p>Install the GDAL binaries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # update
+$ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
+$ sudo apt-get update
+$ # install the GDAL binaries
+$ sudo apt-get install gdal-bin
+$ sudo apt-get install libgdal-dev
+$ # update paths
+$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
+$ export C_INCLUDE_PATH=/usr/include/gdal
+$ # check the installed GDAL version
+$ gdalinfo --version
+</pre></div>
+</div>
+<p>Install the GDAL Python API:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # match the GDAL binaries
+$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;)
+$ # which is the same as the following if the GDAL binary version is 2.4.0
+$ # pip install GDAL==2.4.0
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-gdal-with-conda">
+<h3>Installing GDAL with <cite>Conda</cite><a class="headerlink" href="#installing-gdal-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference external" href="https://anaconda.org/conda-forge/gdal">conda-forge examples</a>.</p>
+</div>
+</div>
+<div class="section" id="install-geowombat">
+<h2>Install GeoWombat<a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h2>
+<p>Install the most recent stable version from GitHub.com:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install https://github.com/jgrss/geowombat/archive/1.0.4.tar.gz
+</pre></div>
+</div>
+<p>Or, install the latest development version from GitHub.com:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
+</pre></div>
+</div>
+<p>Install optional libraries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install arosics earthpy pyfftw bottleneck
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing-the-installation">
+<h2>Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
+<p>If GeoWombat installed correctly, you should be able to run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
+</pre></div>
+</div>
+<p>or in Python:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="nb">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="go">1.0.4</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -186,7 +241,7 @@ $ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

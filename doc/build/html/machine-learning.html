@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Use GeoWombat for a machine learning pipeline &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>Use GeoWombat for a machine learning pipeline &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -116,7 +117,7 @@
 <span id="machine-learning"></span><h1>Use GeoWombat for a machine learning pipeline<a class="headerlink" href="#use-geowombat-for-a-machine-learning-pipeline" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="use-a-scikit-learn-classifier">
 <h2>Use a Scikit-learn classifier<a class="headerlink" href="#use-a-scikit-learn-classifier" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">ensemble</span>
 
 <span class="c1"># Fit a Scikit-learn classifier</span>
@@ -131,7 +132,7 @@
 </div>
 <div class="section" id="use-geowombat-and-dask-to-fit-a-classifier">
 <h2>Use GeoWombat and Dask to fit a classifier<a class="headerlink" href="#use-geowombat-and-dask-to-fit-a-classifier" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.models</span> <span class="kn">import</span> <span class="n">GeoWombatClassifier</span>
 
 <span class="c1"># Fit a LightGBM classifier</span>
@@ -157,7 +158,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

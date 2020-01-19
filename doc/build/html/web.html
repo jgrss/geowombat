@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Web &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>Web &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Web</a></li>
 </ul>
@@ -130,7 +131,7 @@
     <span class="k">del</span> <span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="p">[</span><span class="n">dk</span><span class="p">]</span>
 
 <span class="c1"># Results are saved as a dictionary</span>
-<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
 <span class="n">search_wildcards</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANG.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;MTL.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;B8.TIF&#39;</span><span class="p">]</span>
 
@@ -173,7 +174,7 @@
 </div>
 <div class="section" id="in-the-example-above-the-bounds-can-also-be-taken-directly-from-a-file-as-shown-below">
 <h3>In the example above, the bounds can also be taken directly from a file, as shown below.<a class="headerlink" href="#in-the-example-above-the-bounds-can-also-be-taken-directly-from-a-file-as-shown-below" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;file.gpkg&#39;</span><span class="p">)</span>
 
@@ -196,7 +197,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

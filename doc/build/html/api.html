@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>API reference &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>API reference &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -159,7 +160,7 @@
 <td><p>Masks a DataArray by vector polygon geometry</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.coregister.html#geowombat.coregister" title="geowombat.coregister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coregister</span></code></a>(target, reference, \*\*kwargs)</p></td>
-<td><p>Co-registers two images using AROSICS</p></td>
+<td><p>Co-registers an image, or images, using AROSICS.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.polygons_to_points.html#geowombat.polygons_to_points" title="geowombat.polygons_to_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygons_to_points</span></code></a>(data, df[, frac, …])</p></td>
 <td><p>Converts polygons to points</p></td>
@@ -176,7 +177,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_geodataframe.html#geowombat.to_geodataframe" title="geowombat.to_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_geodataframe</span></code></a>(data[, mask, connectivity, …])</p></td>
 <td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, w, n_jobs])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, perc, w, …])</p></td>
 <td><p>Applies a moving window function over Dask array blocks</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.norm_diff.html#geowombat.norm_diff" title="geowombat.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(data, b1, b2[, sensor, nodata, …])</p></td>
@@ -218,7 +219,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

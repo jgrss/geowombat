@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Data extraction &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>Data extraction &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -114,109 +115,35 @@
             
   <div class="section" id="data-extraction">
 <span id="extraction"></span><h1>Data extraction<a class="headerlink" href="#data-extraction" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
-
-<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
 <p>Create a Rasterio window</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="kn">import</span> <span class="n">Window</span>
-
-<span class="gp">In [4]: </span><span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="kn">import</span> <span class="n">Window</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Slice a subset using a Rasterio window</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
-<span class="gp">   ...: </span>             <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-<span class="gp">   ...: </span>             <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 3, y: 100, x: 100)&gt;</span>
-<span class="go">array([[[ 70.,  63.,  72., ..., 144., 151., 153.],</span>
-<span class="go">        [ 59.,  57.,  62., ..., 144., 146., 138.],</span>
-<span class="go">        [ 58.,  61.,  60., ..., 138., 146., 138.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [144., 187.,  91., ...,  82.,  98.,  86.],</span>
-<span class="go">        [170., 196., 161., ...,  98., 110., 136.],</span>
-<span class="go">        [147., 183., 146., ...,  98., 100., 139.]],</span>
-
-<span class="go">       [[ 45.,  51.,  58., ..., 156., 165., 162.],</span>
-<span class="go">        [ 42.,  44.,  51., ..., 156., 160., 150.],</span>
-<span class="go">        [ 42.,  47.,  48., ..., 158., 155., 156.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [161., 193.,  82., ...,  91., 104., 104.],</span>
-<span class="go">        [183., 207., 164., ..., 109., 127., 149.],</span>
-<span class="go">        [153., 187., 139., ..., 102., 111., 150.]],</span>
-
-<span class="go">       [[ 45.,  49.,  54., ..., 160., 166., 163.],</span>
-<span class="go">        [ 48.,  43.,  49., ..., 156., 157., 153.],</span>
-<span class="go">        [ 43.,  47.,  41., ..., 157., 155., 155.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [161., 189., 104., ...,  86.,  99.,  96.],</span>
-<span class="go">        [180., 211., 181., ..., 101., 114., 143.],</span>
-<span class="go">        [147., 187., 139., ..., 103.,  97., 142.]]], dtype=float32)</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.05e+06 2.05e+06</span>
-<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.932e+05 7.932e+05</span>
-<span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
-<span class="go">    is_tiled:    1</span>
-<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
-<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+             <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+             <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+             <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
+             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Slice a subset using a tuple of bounded coordinates</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">793000.0</span><span class="p">,</span> <span class="mf">2049000.0</span><span class="p">,</span> <span class="mf">794000.0</span><span class="p">,</span> <span class="mf">2050000.0</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">793000.0</span><span class="p">,</span> <span class="mf">2049000.0</span><span class="p">,</span> <span class="mf">794000.0</span><span class="p">,</span> <span class="mf">2050000.0</span><span class="p">)</span>
 
-<span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
-<span class="gp">   ...: </span>             <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-<span class="gp">   ...: </span>             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-<span class="gp">   ...: </span>             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 3, y: 500, x: 500)&gt;</span>
-<span class="go">array([[[ 91.,  86.,  80., ..., 171., 174., 115.],</span>
-<span class="go">        [ 97.,  82.,  88., ..., 184., 158., 125.],</span>
-<span class="go">        [103.,  75.,  87., ..., 167., 137., 138.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [133., 120., 121., ..., 154., 153., 152.],</span>
-<span class="go">        [141., 118., 130., ..., 164., 148., 140.],</span>
-<span class="go">        [132., 140., 116., ..., 162., 145., 135.]],</span>
-
-<span class="go">       [[ 88.,  81.,  69., ..., 174., 180., 112.],</span>
-<span class="go">        [101.,  80.,  81., ..., 188., 159., 116.],</span>
-<span class="go">        [115.,  71.,  75., ..., 174., 141., 131.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [144., 113., 123., ..., 164., 163., 165.],</span>
-<span class="go">        [149., 122., 133., ..., 171., 164., 153.],</span>
-<span class="go">        [137., 144., 114., ..., 172., 162., 149.]],</span>
-
-<span class="go">       [[108.,  99.,  95., ..., 113., 140., 140.],</span>
-<span class="go">        [ 89.,  79., 106., ..., 135., 131., 130.],</span>
-<span class="go">        [ 70.,  62.,  99., ..., 112., 110., 121.],</span>
-<span class="go">        ...,</span>
-<span class="go">        [105.,  95., 100., ..., 105., 105., 105.],</span>
-<span class="go">        [113., 103., 108., ..., 116.,  99.,  90.],</span>
-<span class="go">        [112., 121., 100., ..., 122.,  95.,  78.]]], dtype=float32)</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * band     (band) &lt;U5 &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
-<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.94e+05 7.94e+05</span>
-<span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
-<span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
-<span class="go">    is_tiled:    1</span>
-<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
-<span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+             <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+             <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Extract values at point locations</p>
@@ -225,7 +152,7 @@
 </pre></div>
 </div>
 <p>Extract values within polygons</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
 
@@ -253,7 +180,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

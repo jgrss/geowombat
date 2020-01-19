@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Radiometry &#8212; GeoWombat 1.0.0 documentation</title>
+    <title>Radiometry &#8212; GeoWombat 1.0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Web" href="web.html" />
-    <link rel="prev" title="Applying custom user functions" href="apply.html" />
+    <link rel="prev" title="Two-dimensional moving windows" href="moving.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -81,7 +82,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="apply.html" title="previous chapter">Applying custom user functions</a></li>
+      <li>Previous: <a href="moving.html" title="previous chapter">Two-dimensional moving windows</a></li>
       <li>Next: <a href="web.html" title="next chapter">Web</a></li>
   </ul></li>
 </ul>
@@ -118,7 +119,7 @@
 <h2><cite>GeoWombat</cite> uses the global c-factor method to apply BRDF normalization on surface reflectance data<a class="headerlink" href="#geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-surface-reflectance-image">
 <h3>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.<a class="headerlink" href="#in-the-example-below-we-use-norm-brdf-to-normalize-a-landsat-8-surface-reflectance-image" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
 
@@ -175,7 +176,7 @@
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
