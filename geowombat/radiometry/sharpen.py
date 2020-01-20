@@ -1,12 +1,15 @@
+from ..errors import logger
+
 import xarray as xr
 
 
 def pan_sharpen(data,
                 bands=None,
                 pan=None,
-                blue_weight=0.2,
+                blue_weight=1.0,
                 green_weight=1.0,
                 red_weight=1.0,
+                nir_weight=1.0,
                 scale_factor=1.0):
 
     """
@@ -20,6 +23,7 @@ def pan_sharpen(data,
         blue_weight (Optional[float]): The blue band weight.
         green_weight (Optional[float]): The green band weight.
         red_weight (Optional[float]): The red band weight.
+        nir_weight (Optional[float]): The NIR band weight.
         scale_factor (Optional[float]): A scale factor to apply to the data.
 
     Example:
@@ -40,6 +44,10 @@ def pan_sharpen(data,
     if not bands:
         bands = ['blue', 'green', 'red']
 
+    if ','.join(sorted(bands)) != 'blue,green,red':
+        if ','.join(sorted(bands)) != 'blue,green,nir,red':
+            logger.exception('  The bands must be blue,green,red or blue,green,red,nir')
+
     attrs = data.attrs.copy()
 
     data = data * scale_factor
@@ -49,15 +57,27 @@ def pan_sharpen(data,
     else:
         pan = data.sel(band='pan')
 
-    dnf = pan / ((data.sel(band='blue') * blue_weight +
-                  data.sel(band='green') * green_weight +
-                  data.sel(band='red') * red_weight) / (blue_weight + green_weight + red_weight))
+    if ','.join(sorted(bands)) == 'blue,green,red':
 
-    dnf = dnf.assign_coords(coords={'band': 'pan'})
-    dnf = dnf.expand_dims(dim='band')
-    dnf = dnf.assign_attrs(**attrs)
+        weights = blue_weight + green_weight + red_weight
 
-    data_sharp = xr.concat([(data.sel(band=bd) * dnf).transpose('band', 'y', 'x') for bd in bands], dim='band')
+        band_avg = (data.sel(band='blue') * blue_weight +
+                    data.sel(band='green') * green_weight +
+                    data.sel(band='red') * red_weight) / weights
+
+    else:
+
+        weights = blue_weight + green_weight + red_weight + nir_weight
+
+        band_avg = (data.sel(band='blue') * blue_weight +
+                    data.sel(band='green') * green_weight +
+                    data.sel(band='red') * red_weight +
+                    data.sel(band='nir') * nir_weight) / weights
+
+    dnf = pan / band_avg
+
+    data_sharp = data * dnf
+
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
     data_sharp = (data_sharp / scale_factor).astype(data.dtype)
