@@ -9,6 +9,7 @@ from .vi import VegetationIndices
 from .vi import TasseledCap
 
 extract = SpatialOperations().extract
+sample = SpatialOperations().sample
 subset = SpatialOperations().subset
 clip = SpatialOperations().clip
 mask = SpatialOperations().mask
@@ -28,6 +29,7 @@ __all__ = ['apply',
            'to_vrt',
            'to_geodataframe',
            'extract',
+           'sample',
            'subset',
            'clip',
            'mask',
