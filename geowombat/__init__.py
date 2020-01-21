@@ -1,6 +1,7 @@
 from . import config
 from .core.api import open
 from .core import extract
+from .core import sample
 from .core import subset
 from .core import clip
 from .core import mask
@@ -24,6 +25,7 @@ from .version import __version__
 __all__ = ['config',
            'open',
            'extract',
+           'sample',
            'subset',
            'clip',
            'mask',
