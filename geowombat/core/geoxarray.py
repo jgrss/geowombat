@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, to_geodataframe, moving, extract, subset, clip, mask
+from . import to_raster, to_vrt, to_geodataframe, moving, extract, sample, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
@@ -651,6 +651,67 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       cols=cols,
                       center=center,
                       mask_corners=mask_corners)
+
+    def sample(self,
+               method='random',
+               band=None,
+               n=None,
+               strata=None,
+               spacing=None,
+               min_dist=None,
+               **kwargs):
+
+        """
+        Generates samples from a raster
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to extract data from.
+            method (Optional[str]): The sampling method. Choices are ['random', 'systematic'].
+            band (Optional[int or str]): The band name to extract from. Only required if ``method`` = 'random' and ``strata`` is given.
+            n (Optional[int]): The total number of samples. Only required if ``method`` = 'random'.
+            strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': proportion}.
+
+                E.g.,
+                    strata = {'==,1': 0.5, '>=,2': 0.5}
+
+                    ... would sample 50% of total samples within class 1 and 50% of total samples in class >= 2.
+
+            spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
+            min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
+            kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
+
+        Returns:
+            ``geopandas.GeoDataFrame``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Sample 100 points randomly across the image
+            >>> with gw.open('image.tif') as ds:
+            >>>     df = ds.gw.sample(n=100)
+            >>>
+            >>> # Sample points systematically (with 10km spacing) across the image
+            >>> with gw.open('image.tif') as ds:
+            >>>     df = ds.gw.sample(method='systematic', spacing=10000.0)
+            >>>
+            >>> # Sample 50% of 100 in class 1 and 50% in classes >= 2
+            >>> strata = {'==,1': 0.5, '>=,2': 0.5}
+            >>> with gw.open('image.tif') as ds:
+            >>>     df = ds.gw.sample(band=1, n=100, strata=strata)
+            >>>
+            >>> # Specify a per-stratum minimum allowed point distance of 1,000 meters
+            >>> with gw.open('image.tif') as ds:
+            >>>     df = ds.gw.sample(band=1, n=100, min_dist=1000, strata=strata)
+        """
+
+        return extract(self._obj,
+                       method=method,
+                       band=band,
+                       n=n,
+                       strata=strata,
+                       spacing=spacing,
+                       min_dist=min_dist,
+                       **kwargs)
 
     def extract(self,
                 aoi,
