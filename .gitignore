@@ -28,7 +28,6 @@ notebooks/
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
-geowombat/models/
 geowombat/util/starfm*
 logo/
 bin/ESPA/
