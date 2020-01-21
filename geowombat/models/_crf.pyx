@@ -257,6 +257,24 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
     return features_map
 
 
+cdef cpp_map[cpp_string, double] _samples_to_dict(cpp_vector[char*] labels,
+                                                  double[::1] tsamp,
+                                                  unsigned int nvars):
+
+    """
+    Converts names and a 1d array to a dictionary
+    """
+
+    cdef:
+        Py_ssize_t v
+        cpp_map[cpp_string, double] features_map
+
+    for v in range(0, nvars):
+        features_map[labels[v]] = tsamp[v]
+
+    return features_map
+
+
 cdef cpp_vector[double] _push_classes(cpp_vector[double] vct,
                                       cpp_map[cpp_string, double] ps,
                                       cpp_vector[cpp_string] labels_bytes,
@@ -555,3 +573,58 @@ def time_to_crffeas(double[:, :, ::1] data,
         samples.clear()
 
     return samples_full
+
+
+def time_to_feas(double[:, :, ::1] data,
+                 cpp_vector[char*] labels):
+
+    """
+    Transforms time-formatted variables to CRF-formatted features
+    """
+
+    cdef:
+        Py_ssize_t s, t
+        unsigned int ntime = data.shape[0]
+        unsigned int nsamples = data.shape[1]
+        unsigned int nvars = data.shape[2]
+        cpp_vector[cpp_map[cpp_string, double]] samples
+        cpp_vector[cpp_vector[cpp_map[cpp_string, double]]] samples_full
+
+    for s in range(0, nsamples):
+
+        for t in range(0, ntime):
+            samples.push_back(_samples_to_dict(labels, data[t, s, :], nvars))
+
+        samples_full.push_back(samples)
+
+        samples.clear()
+
+    return samples_full
+
+
+def labels_to_values(cpp_vector[cpp_vector[char_ptr]] labels,
+                     cpp_map[cpp_string, int] label_mappings,
+                     unsigned int nsamples,
+                     unsigned int ntime):
+
+    """
+    Transforms CRF labels to values
+    """
+
+    cdef:
+        Py_ssize_t s
+        cpp_vector[char*] sample
+        cpp_vector[int] out_sample
+        cpp_vector[cpp_vector[int]] out_full
+
+    for s in range(0, nsamples):
+
+        sample = labels[s]
+
+        for t in range(0, ntime):
+            out_sample.push_back(label_mappings[sample[t]])
+
+        out_full.push_back(out_sample)
+        out_sample.clear()
+
+    return out_full
