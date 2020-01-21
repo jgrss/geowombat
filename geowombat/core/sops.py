@@ -11,6 +11,7 @@ from .base import PropertyMixin as _PropertyMixin
 import geowombat as gw_
 
 import numpy as np
+from scipy.spatial import cKDTree
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
@@ -32,18 +33,65 @@ except:
     PYMORPH_INSTALLED = False
 
 
+def _remove_near_points(dataframe, r):
+
+    """
+    Removes points less than a specified distance to another point
+
+    Args:
+        dataframe (GeoDataFrame): The ``GeoDataFrame`` with point geometry.
+        r (float or int): The minimum distance (radius) in the CRS units of ``dataframe``.
+
+    Returns:
+        ``geopandas.GeoDataFrame``
+    """
+
+    # Setup a KD tree
+    tree = cKDTree(np.c_[dataframe.geometry.x, dataframe.geometry.y])
+
+    # Query all pairs within ``min_dist`` of each other
+    near_pairs = tree.query_pairs(r=r, output_type='ndarray')
+
+    if near_pairs.shape[0] > 0:
+
+        # Get a list of pairs to remove
+        rm_idx = list(sorted(set(near_pairs[:, 0].tolist())))
+
+        return dataframe.query("index != {}".format(rm_idx))
+
+    return dataframe
+
+
 class SpatialOperations(_PropertyMixin):
 
     @staticmethod
-    def sample(data, frac=0.1, nodata=0):
+    def sample(data,
+               method='random',
+               band=None,
+               n=None,
+               strata=None,
+               spacing=None,
+               min_dist=None,
+               **kwargs):
 
         """
-        Creates samples from the array
+        Generates samples from a raster
 
         Args:
-            data (DataArray): The ``xarray.DataArray`` to stratify.
-            frac (Optional[float]): The sample fraction for each block.
-            nodata (Optional[int]): The 'no data' value, which will be ignored.
+            data (DataArray): The ``xarray.DataArray`` to extract data from.
+            method (Optional[str]): The sampling method. Choices are ['random', 'systematic'].
+            band (Optional[int or str]): The band name to extract from. Only required if ``method`` = 'random' and ``strata`` is given.
+            n (Optional[int]): The total number of samples. Only required if ``method`` = 'random'.
+            strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': proportion}.
+
+                E.g.,
+                    strata = {'==,1': 0.5, '>=,2': 0.5}
+
+                    ... would sample 50% of total samples within class 1 and 50% of total samples in class >= 2.
+
+            spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
+            min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
+            kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -51,40 +99,217 @@ class SpatialOperations(_PropertyMixin):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     df = gw.sample(ds)
+            >>> # Sample 100 points randomly across the image
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.sample(src, n=100)
+            >>>
+            >>> # Sample points systematically (with 10km spacing) across the image
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.sample(src, method='systematic', spacing=10000.0)
+            >>>
+            >>> # Sample 50% of 100 in class 1 and 50% in classes >= 2
+            >>> strata = {'==,1': 0.5, '>=,2': 0.5}
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.sample(src, band=1, n=100, strata=strata)
+            >>>
+            >>> # Specify a per-stratum minimum allowed point distance of 1,000 meters
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.sample(src, band=1, n=100, min_dist=1000, strata=strata)
         """
 
-        results = list()
+        if method.strip().lower() not in ['random', 'systematic']:
+            raise NameError("The method must be 'random' or 'systematic'.")
 
-        x, y = np.meshgrid(data.x.values,
-                           data.y.values)
+        if method.strip().lower() == 'systematic':
+            if not isinstance(spacing, float):
+                if not isinstance(spacing, int):
 
-        for cidx in data.unique():
+                    logger.exception("  If the method is 'systematic', the spacing should be provided as a float or integer.")
+                    raise TypeError
 
-            if cidx == nodata:
-                continue
+        if strata and not band and (method.strip().lower() == 'random'):
 
-            idx = np.where(data == cidx)
-            xx = x[idx]
-            yy = y[idx]
+            logger.exception('  The band name must be provided with random stratified sampling.')
+            raise NameError
 
-            n_samps = idx[0].shape[0]
-            n_samps_frac = int(n_samps*frac)
-            drange = list(range(0, n_samps))
+        df = None
 
-            rand_idx = np.random.choice(drange, size=n_samps_frac, replace=False)
+        if not strata:
 
-            xx = xx.flatten()[rand_idx]
-            yy = yy.flatten()[rand_idx]
+            if method == 'systematic':
 
-            df_tmp = gpd.GeoDataFrame(np.arange(0, n_samps_frac),
-                                      geometry=gpd.points_from_xy(xx, yy),
-                                      crs=data.crs)
+                x_samples = list()
+                y_samples = list()
 
-            results.append(df_tmp)
+                for i in range(0, data.gw.nrows, int(spacing / data.gw.celly)):
+                    for j in range(0, data.gw.ncols, int(spacing / data.gw.cellx)):
 
-        return pd.concat(results, axis=0)
+                        x_samples.append(j)
+                        y_samples.append(i)
+
+                x_samples = np.array(x_samples, dtype='int64')
+                y_samples = np.array(y_samples, dtype='int64')
+
+                # Convert the map indices to map coordinates
+                x_coords, y_coords = data.gw.meta.affine * (x_samples, y_samples)
+
+                df = gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
+                                      geometry=gpd.points_from_xy(x_coords, y_coords),
+                                      crs=data.crs,
+                                      columns=['point'])
+
+            else:
+
+                dfs = None
+                sample_size = n
+                attempts = 0
+
+                while True:
+
+                    if attempts >= 50:
+
+                        logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+                        break
+
+                        # Sample directly from the coordinates
+                    y_coords = np.random.choice(data.y.values, size=sample_size, replace=False)
+                    x_coords = np.random.choice(data.x.values, size=sample_size, replace=False)
+
+                    if isinstance(dfs, gpd.GeoDataFrame):
+
+                        dfs = pd.concat((dfs, gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
+                                                               geometry=gpd.points_from_xy(x_coords, y_coords),
+                                                               crs=data.crs,
+                                                               columns=['point'])), axis=0)
+
+                    else:
+
+                        dfs = gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
+                                               geometry=gpd.points_from_xy(x_coords, y_coords),
+                                               crs=data.crs,
+                                               columns=['point'])
+
+                    if isinstance(min_dist, float) or isinstance(min_dist, int):
+
+                        # Remove samples within a minimum distance
+                        dfn = _remove_near_points(dfs, min_dist)
+
+                        df_diff = dfs.shape[0] - dfn.shape[0]
+
+                        if df_diff > 0:
+                            dfs = dfn.copy()
+                            sample_size = df_diff
+
+                            attempts += 1
+
+                            continue
+
+                    break
+
+                df = dfs.copy()
+
+        else:
+
+            counter = 0
+            dfs = None
+
+            for cond, prop in strata.items():
+
+                sign, value = cond.split(',')
+                sign = sign.strip()
+                value = float(value)
+
+                sample_size = int(n * prop)
+
+                attempts = 0
+
+                while True:
+
+                    if attempts >= 50:
+
+                        logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
+
+                        if not isinstance(df, gpd.GeoDataFrame):
+                            df = dfs.copy()
+                        else:
+                            df = pd.concat((df, dfs), axis=0)
+
+                        break
+
+                    if sign == '>':
+                        valid_samples = da.where(data.sel(band=band).data > value)
+                    elif sign == '>=':
+                        valid_samples = da.where(data.sel(band=band).data >= value)
+                    elif sign == '<':
+                        valid_samples = da.where(data.sel(band=band).data < value)
+                    elif sign == '<=':
+                        valid_samples = da.where(data.sel(band=band).data <= value)
+                    elif sign == '==':
+                        valid_samples = da.where(data.sel(band=band).data == value)
+                    else:
+                        logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
+                        raise NameError
+
+                    valid_samples = dask.compute(valid_samples)[0]
+
+                    y_samples = valid_samples[0]
+                    x_samples = valid_samples[1]
+
+                    if y_samples.shape[0] > 0:
+
+                        # Get indices within the stratum
+                        idx = np.random.choice(range(0, y_samples.shape[0]), size=sample_size, replace=False)
+
+                        y_samples = y_samples[idx]
+                        x_samples = x_samples[idx]
+
+                        # Convert the map indices to map coordinates
+                        x_coords, y_coords = data.gw.meta.affine * (x_samples, y_samples)
+
+                        if isinstance(dfs, gpd.GeoDataFrame):
+
+                            dfs = pd.concat((dfs, gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
+                                                                   geometry=gpd.points_from_xy(x_coords, y_coords),
+                                                                   crs=data.crs,
+                                                                   columns=['point'])), axis=0)
+
+                        else:
+
+                            dfs = gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
+                                                   geometry=gpd.points_from_xy(x_coords, y_coords),
+                                                   crs=data.crs,
+                                                   columns=['point'])
+
+                        if isinstance(min_dist, float) or isinstance(min_dist, int):
+
+                            # Remove samples within a minimum distance
+                            dfn = _remove_near_points(dfs, min_dist)
+
+                            df_diff = dfs.shape[0] - dfn.shape[0]
+
+                            if df_diff > 0:
+                                dfs = dfn.copy()
+                                sample_size = df_diff
+
+                                attempts += 1
+
+                                continue
+
+                        if not isinstance(df, gpd.GeoDataFrame):
+                            df = dfs.copy()
+                        else:
+                            df = pd.concat((df, dfs), axis=0)
+
+                        dfs = None
+
+                    break
+
+                counter += 1
+
+        if isinstance(df, gpd.GeoDataFrame):
+            return gw.extract(data, df, **kwargs)
+        else:
+            return None
 
     def extract(self,
                 data,
@@ -423,13 +648,17 @@ class SpatialOperations(_PropertyMixin):
             cols = int((right - left) / data.gw.celly)
 
         if not isinstance(cols, int):
+
             logger.exception('  The right coordinate or columns must be specified.')
+            raise NameError
 
         if isinstance(bottom, int) or isinstance(bottom, float):
             rows = int((top - bottom) / data.gw.celly)
 
         if not isinstance(rows, int):
+
             logger.exception('  The bottom coordinate or rows must be specified.')
+            raise NameError
 
         x_idx = np.linspace(math.ceil(left), math.ceil(left) + (cols * abs(data.gw.cellx)), cols) + abs(data.gw.cellxh)
         y_idx = np.linspace(math.ceil(top), math.ceil(top) - (rows * abs(data.gw.celly)), rows) - abs(data.gw.cellyh)
@@ -511,12 +740,16 @@ class SpatialOperations(_PropertyMixin):
         """
 
         if not AROSICS_INSTALLED:
+
             logger.exception('\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details')
+            raise NameError
 
         if isinstance(reference, str):
 
             if not os.path.isfile(reference):
+
                 logger.exception('  The reference file does not exist.')
+                raise OSError
 
             with gw_.open(reference) as reference:
                 pass
@@ -524,7 +757,9 @@ class SpatialOperations(_PropertyMixin):
         if isinstance(target, str):
 
             if not os.path.isfile(target):
+
                 logger.exception('  The target file does not exist.')
+                raise OSError
 
             with gw_.open(target) as target:
                 pass
