@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>GeoWombatAccessor &#8212; GeoWombat 1.0.4 documentation</title>
+    <title>GeoWombatAccessor &#8212; GeoWombat 1.0.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -226,25 +226,28 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code>(self[, method, band, n, strata, …])</p></td>
+<td><p>Generates samples from a raster</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(self[, nodata, sensor, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(self[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_geodataframe" title="geowombat.core.geoxarray.GeoWombatAccessor.to_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_geodataframe</span></code></a>(self[, mask, connectivity])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_geodataframe" title="geowombat.core.geoxarray.GeoWombatAccessor.to_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_geodataframe</span></code></a>(self[, mask, connectivity])</p></td>
 <td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vector" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code></a>(self, filename[, mask, connectivity])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vector" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code></a>(self, filename[, mask, connectivity])</p></td>
 <td><p>Writes an Xarray DataArray to a vector file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(self, filename[, resampling, nodata, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(self, filename[, resampling, nodata, …])</p></td>
 <td><p>Writes a file to a VRT file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.wi" title="geowombat.core.geoxarray.GeoWombatAccessor.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.wi" title="geowombat.core.geoxarray.GeoWombatAccessor.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the woody vegetation index</p></td>
 </tr>
 </tbody>
