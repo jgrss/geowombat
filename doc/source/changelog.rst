@@ -3,6 +3,18 @@
 Change Log
 ==========
 
+1.0.5 (21 January 2020)
+-----------------------
+
+Changes
+~~~~~~~
+
+- Modified :func:`geowombat.sample`. New functionality includes:
+
+    - Systematic sampling
+    - Random sampling
+    - Stratified random sampling
+
 1.0.4 (19 January 2020)
 -----------------------
 
