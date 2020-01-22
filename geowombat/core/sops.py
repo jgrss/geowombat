@@ -15,6 +15,7 @@ from scipy.spatial import cKDTree
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
+import dask
 import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
@@ -64,8 +65,8 @@ def _remove_near_points(dataframe, r):
 
 class SpatialOperations(_PropertyMixin):
 
-    @staticmethod
-    def sample(data,
+    def sample(self,
+               data,
                method='random',
                band=None,
                n=None,
@@ -307,7 +308,7 @@ class SpatialOperations(_PropertyMixin):
                 counter += 1
 
         if isinstance(df, gpd.GeoDataFrame):
-            return gw.extract(data, df, **kwargs)
+            return self.extract(data, df, **kwargs)
         else:
             return None
 
