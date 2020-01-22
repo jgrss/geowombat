@@ -580,6 +580,14 @@ def time_to_feas(double[:, :, ::1] data,
 
     """
     Transforms time-formatted variables to CRF-formatted features
+
+    Args:
+        data (3d array): The data to transform. The shape should be [time x
+        samples x predictors].
+        labels (vector): The labels that correspond to each predictor.
+
+    Returns:
+        ``list``
     """
 
     cdef:
@@ -609,6 +617,15 @@ def labels_to_values(cpp_vector[cpp_vector[char_ptr]] labels,
 
     """
     Transforms CRF labels to values
+
+    Args:
+        labels (list)
+        label_mappings (dict)
+        nsamples (int)
+        ntime (int)
+
+    Returns:
+        ``list``
     """
 
     cdef:
