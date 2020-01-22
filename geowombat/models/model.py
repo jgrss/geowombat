@@ -5,7 +5,7 @@ import inspect
 from contextlib import contextmanager
 from pathlib import Path
 
-from ._crf import transform_probas, time_to_crffeas
+from . import time_to_sensor_feas, transform_probas
 from ..errors import logger
 from ..backends import Cluster
 from ..core.util import Chunks
@@ -174,12 +174,12 @@ class CRFMixin(IOMixin):
                                                                            nbands)
                                          for tlayer in X], dtype='float64')
 
-        features = time_to_crffeas(features,
-                                   sensor.encode('utf-8'),
-                                   ntime,
-                                   nrows,
-                                   ncols,
-                                   scale_factor=scale_factor)
+        features = time_to_sensor_feas(features,
+                                       sensor.encode('utf-8'),
+                                       ntime,
+                                       nrows,
+                                       ncols,
+                                       scale_factor=scale_factor)
 
         return transform_probas(dict_keys_to_bytes(self.model.predict_marginals(features)),
                                 class_labels,
