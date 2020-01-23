@@ -19,6 +19,8 @@ from .core import nbr
 from .core import ndvi
 from .core import wi
 from .core import tasseled_cap
+from .core import coords_to_indices
+from .core import indices_to_coords
 
 from .version import __version__
 
@@ -43,4 +45,6 @@ __all__ = ['config',
            'ndvi',
            'wi',
            'tasseled_cap',
+           'coords_to_indices',
+           'indices_to_coords',
            '__version__']
