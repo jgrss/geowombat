@@ -9,8 +9,6 @@ from .vi import VegetationIndices
 from .vi import TasseledCap
 
 # Imports intended for module level
-from .util import parse_filename_dates
-from .util import parse_wildcard
 from .util import sort_images_by_date
 
 # Imports intended for package level
@@ -45,8 +43,6 @@ __all__ = ['apply',
            'polygons_to_points',
            'indices_to_coords',
            'coords_to_indices',
-           'parse_filename_dates',
-           'parse_wildcard',
            'sort_images_by_date',
            'moving',
            'norm_diff',

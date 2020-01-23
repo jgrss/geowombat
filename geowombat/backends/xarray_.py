@@ -1,7 +1,7 @@
 import os
 
 from ..core.windows import get_window_offsets
-from ..core import parse_filename_dates
+from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds
