@@ -3,6 +3,16 @@
 Change Log
 ==========
 
+1.0.7 (23 January 2020)
+-----------------------
+
+- Added new functions :func:`geowombat.core.indices_to_coords` and :func:`geowombat.core.coords_to_indices` to replace :func:`geowombat.core.ij_to_xy` and :func:`geowombat.core.xy_to_ij`.
+
+1.0.6 (21 January 2020)
+-----------------------
+
+- Added missing imports for :func:`geowombat.sample`.
+
 1.0.5 (21 January 2020)
 -----------------------
 

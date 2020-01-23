@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Quick overview &#8212; GeoWombat 1.0.6 documentation</title>
+    <title>Quick overview &#8212; GeoWombat 1.0.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -134,14 +134,14 @@
 
 <span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
-<span class="go">array([[ 0.80121368,  0.06421694,  0.51871188],</span>
-<span class="go">       [ 0.07916412, -0.0907042 , -1.6139588 ]])</span>
+<span class="go">array([[-0.40766545, -0.52242388, -1.21478068],</span>
+<span class="go">       [ 0.76381649,  1.83132127,  1.04029633]])</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) int64 10 20</span>
 <span class="go">Dimensions without coordinates: y</span>
 
 <span class="gp">In [6]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aac634694e0&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aac5f68fda0&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -155,7 +155,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-ee4ca02df3e7f9d473f8c58297bc9a9d&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-b51ff1c227d76a13f4a0f628dbac7394&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -172,7 +172,7 @@
 <span class="go">    DataType:       Generic</span>
 <span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aabe3fb10f0&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aac5f91fb70&gt;</span>
 </pre></div>
 </div>
 </div>

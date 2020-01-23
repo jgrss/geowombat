@@ -97,7 +97,7 @@ Install GeoWombat
 
 Install the most recent stable version from GitHub.com::
 
-    $ pip install https://github.com/jgrss/geowombat/archive/1.0.6.tar.gz
+    $ pip install https://github.com/jgrss/geowombat/archive/1.0.7.tar.gz
 
 Or, install the latest development version from GitHub.com::
 
