@@ -387,9 +387,9 @@ class SpatialOperations(_PropertyMixin):
             logger.info('  Extracting data ...')
 
         # Convert the map coordinates to indices
-        x, y = converters.xy_to_ij(df.geometry.x.values,
-                                   df.geometry.y.values,
-                                   data.transform)
+        x, y = converters.coords_to_indices(df.geometry.x.values,
+                                            df.geometry.y.values,
+                                            data.transform)
 
         vidx = (y.tolist(), x.tolist())
 

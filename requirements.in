@@ -26,4 +26,4 @@ fsspec
 sphinx-automodapi
 sphinxcontrib-bibtex
 numpydoc
-
+deprecated

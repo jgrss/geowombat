@@ -22,6 +22,7 @@ from shapely.geometry import Polygon
 from affine import Affine
 from tqdm import tqdm
 from dateparser.search import search_dates
+from deprecated import deprecated
 
 
 shapely.speedups.enable()
@@ -441,10 +442,81 @@ def _iter_func(a):
 class Converters(object):
 
     @staticmethod
-    def ij_to_xy(j, i, transform):
+    def indices_to_coords(col_index, row_index, transform):
+
+        """
+        Converts array indices to map coordinates
+
+        Args:
+            col_index (float or 1d array): The column index.
+            row_index (float or 1d array): The row index.
+            transform (Affine, DataArray, or tuple): The affine transform.
+
+        Returns:
+            ``tuple`` (x, y)
+
+        Example:
+            >>> import geowombat as gw
+            >>> from geowombat.core import indices_to_coords
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     x, y = indices_to_coords(j, i, src)
+        """
+
+        if not isinstance(transform, Affine):
+
+            if isinstance(transform, tuple):
+                transform = Affine(*transform)
+            elif isinstance(transform, xr.DataArray):
+                transform = transform.gw.meta.affine
+            else:
+                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                raise TypeError
+
+        return transform * (col_index, row_index)
+
+    @staticmethod
+    def coords_to_indices(x, y, transform):
 
         """
         Converts map coordinates to array indices
+
+        Args:
+            x (float or 1d array): The x coordinates.
+            y (float or 1d array): The y coordinates.
+            transform (object): The affine transform.
+
+        Returns:
+            ``tuple`` (col_index, row_index)
+
+        Example:
+            >>> import geowombat as gw
+            >>> from geowombat.core import coords_to_indices
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     j, i = coords_to_indices(x, y, src)
+        """
+
+        if not isinstance(transform, Affine):
+
+            if isinstance(transform, tuple):
+                transform = Affine(*transform)
+            elif isinstance(transform, xr.DataArray):
+                transform = transform.gw.meta.affine
+            else:
+                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                raise TypeError
+
+        col_index, row_index = ~transform * (x, y)
+
+        return np.int64(col_index), np.int64(row_index)
+
+    @staticmethod
+    @deprecated('Deprecated since 1.0.6. Use indices_to_coords() instead.')
+    def ij_to_xy(j, i, transform):
+
+        """
+        Converts to array indices to map coordinates
 
         Args:
             j (float or 1d array): The column index.
@@ -458,6 +530,7 @@ class Converters(object):
         return transform * (j, i)
 
     @staticmethod
+    @deprecated('Deprecated since 1.0.6. Use coords_to_indices() instead.')
     def xy_to_ij(x, y, transform):
 
         """
