@@ -4,10 +4,12 @@ from .io import to_vrt
 from .io import to_geodataframe
 from .sops import SpatialOperations
 from .util import Converters
+from .util import FileFilters
 from .util import MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
 
+# Imports intended for package level
 extract = SpatialOperations().extract
 sample = SpatialOperations().sample
 subset = SpatialOperations().subset
@@ -26,6 +28,10 @@ ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
 
+# Imports intended for module level
+parse_filename_dates = FileFilters().parse_filename_dates
+parse_wildcard = FileFilters().parse_wildcard
+
 __all__ = ['apply',
            'to_raster',
            'to_vrt',
@@ -39,6 +45,8 @@ __all__ = ['apply',
            'polygons_to_points',
            'indices_to_coords',
            'coords_to_indices',
+           'parse_filename_dates',
+           'parse_wildcard',
            'moving',
            'norm_diff',
            'evi',

@@ -6,12 +6,12 @@ import warnings
 
 from contextlib import contextmanager
 
-from . import geoxarray
+from . import geoxarray, parse_wildcard
 from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
-from .util import Chunks, get_file_extension, parse_wildcard
+from .util import Chunks, get_file_extension
 
 import numpy as np
 import xarray as xr
