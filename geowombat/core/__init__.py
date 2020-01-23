@@ -4,10 +4,14 @@ from .io import to_vrt
 from .io import to_geodataframe
 from .sops import SpatialOperations
 from .util import Converters
-from .util import FileFilters
 from .util import MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
+
+# Imports intended for module level
+from .util import parse_filename_dates
+from .util import parse_wildcard
+from .util import sort_images_by_date
 
 # Imports intended for package level
 extract = SpatialOperations().extract
@@ -27,11 +31,6 @@ nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
 wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
-
-# Imports intended for module level
-parse_filename_dates = FileFilters().parse_filename_dates
-parse_wildcard = FileFilters().parse_wildcard
-sort_images_by_date = FileFilters().sort_images_by_date
 
 __all__ = ['apply',
            'to_raster',

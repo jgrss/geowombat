@@ -28,115 +28,112 @@ from deprecated import deprecated
 shapely.speedups.enable()
 
 
-class FileFilters(object):
+def parse_filename_dates(filenames):
 
-    @staticmethod
-    def parse_filename_dates(filenames):
+    """
+    Parses dates from file names
 
-        """
-        Parses dates from file names
+    Args:
+        filenames (list): A list of files to parse.
 
-        Args:
-            filenames (list): A list of files to parse.
+    Returns:
+        ``list``
+    """
 
-        Returns:
-            ``list``
-        """
+    date_filenames = list()
 
-        date_filenames = list()
+    for fn in filenames:
 
-        for fn in filenames:
+        d_name, f_name = os.path.split(fn)
+        f_base, f_ext = os.path.splitext(f_name)
 
-            d_name, f_name = os.path.split(fn)
-            f_base, f_ext = os.path.splitext(f_name)
+        try:
 
-            try:
+            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
+                                           settings={'DATE_ORDER': 'YMD',
+                                                     'STRICT_PARSING': False,
+                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
 
-                s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
-                                               settings={'DATE_ORDER': 'YMD',
-                                                         'STRICT_PARSING': False,
-                                                         'PREFER_LANGUAGE_DATE_ORDER': False})))
+        except:
+            return list(range(1, len(filenames) + 1))
 
-            except:
-                return list(range(1, len(filenames) + 1))
+        if not dt:
+            return list(range(1, len(filenames) + 1))
 
-            if not dt:
-                return list(range(1, len(filenames) + 1))
+        date_filenames.append(dt[0])
 
-            date_filenames.append(dt[0])
+    return date_filenames
 
-        return date_filenames
 
-    @staticmethod
-    def parse_wildcard(string):
+def parse_wildcard(string):
 
-        """
-        Parses a search wildcard from a string
+    """
+    Parses a search wildcard from a string
 
-        Args:
-            string (str): The string to parse.
+    Args:
+        string (str): The string to parse.
 
-        Returns:
-            ``list``
-        """
+    Returns:
+        ``list``
+    """
 
-        if os.path.dirname(string):
-            d_name, wildcard = os.path.split(string)
-        else:
+    if os.path.dirname(string):
+        d_name, wildcard = os.path.split(string)
+    else:
 
-            d_name = '.'
-            wildcard = string
+        d_name = '.'
+        wildcard = string
 
-        matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
+    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
 
-        if matches:
-            matches = [os.path.join(d_name, fn) for fn in matches]
+    if matches:
+        matches = [os.path.join(d_name, fn) for fn in matches]
 
-        if not matches:
-            logger.exception('  There were no images found with the string search.')
+    if not matches:
+        logger.exception('  There were no images found with the string search.')
 
-        return matches
+    return matches
 
-    @staticmethod
-    def sort_images_by_date(image_path,
-                            image_wildcard,
-                            date_pos,
-                            date_start,
-                            date_end,
-                            split_by='_',
-                            date_format='%Y%m%d'):
 
-        """
-        Sorts images by date
+def sort_images_by_date(image_path,
+                        image_wildcard,
+                        date_pos,
+                        date_start,
+                        date_end,
+                        split_by='_',
+                        date_format='%Y%m%d'):
 
-        Args:
-            image_path (Path): The image directory.
-            image_wildcard (str): The image search wildcard.
-            date_pos (int): The date starting position in the file name.
-            date_start (int): The date starting position in the split.
-            date_end (int): The date ending position in the split.
-            split_by (Optional[str]): How to split the file name.
-            date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
+    """
+    Sorts images by date
 
-        Returns:
-            ``collections.OrderedDict``
+    Args:
+        image_path (Path): The image directory.
+        image_wildcard (str): The image search wildcard.
+        date_pos (int): The date starting position in the file name.
+        date_start (int): The date starting position in the split.
+        date_end (int): The date ending position in the split.
+        split_by (Optional[str]): How to split the file name.
+        date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
 
-        Example:
-            >>> from geowombat.core import sort_images
-            >>>
-            >>> # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif
-            >>> image_path = '/path/to/images'
-            >>>
-            >>> image_dict = sort_images(image_path, '*.tif', 3, 0, 8)
-            >>> image_names = list(image_dict.keys())
-            >>> time_names = list(image_dict.values())
-        """
+    Returns:
+        ``collections.OrderedDict``
 
-        fl = fnmatch.filter(os.listdir(image_path.as_posix()), image_wildcard)
-        fl = [image_path.joinpath(fn) for fn in fl]
-        dates = [datetime.strptime(fn.name.split(split_by)[date_pos][date_start:date_end], date_format) for fn in fl]
+    Example:
+        >>> from geowombat.core import sort_images
+        >>>
+        >>> # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif
+        >>> image_path = '/path/to/images'
+        >>>
+        >>> image_dict = sort_images(image_path, '*.tif', 3, 0, 8)
+        >>> image_names = list(image_dict.keys())
+        >>> time_names = list(image_dict.values())
+    """
 
-        return OrderedDict(sorted(dict(zip([fn.as_posix() for fn in fl], dates)).items(), key=lambda x_: x_[1]))
+    fl = fnmatch.filter(os.listdir(image_path.as_posix()), image_wildcard)
+    fl = [image_path.joinpath(fn) for fn in fl]
+    dates = [datetime.strptime(fn.name.split(split_by)[date_pos][date_start:date_end], date_format) for fn in fl]
+
+    return OrderedDict(sorted(dict(zip([fn.as_posix() for fn in fl], dates)).items(), key=lambda x_: x_[1]))
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
