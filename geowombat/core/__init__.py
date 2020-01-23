@@ -31,6 +31,7 @@ tasseled_cap = TasseledCap().tasseled_cap
 # Imports intended for module level
 parse_filename_dates = FileFilters().parse_filename_dates
 parse_wildcard = FileFilters().parse_wildcard
+sort_images_by_date = FileFilters().sort_images_by_date
 
 __all__ = ['apply',
            'to_raster',
@@ -47,6 +48,7 @@ __all__ = ['apply',
            'coords_to_indices',
            'parse_filename_dates',
            'parse_wildcard',
+           'sort_images_by_date',
            'moving',
            'norm_diff',
            'evi',
