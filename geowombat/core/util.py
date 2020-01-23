@@ -28,71 +28,74 @@ from deprecated import deprecated
 shapely.speedups.enable()
 
 
-def parse_filename_dates(filenames):
+class FileFilters(object):
 
-    """
-    Parses dates from file names
+    @staticmethod
+    def parse_filename_dates(filenames):
 
-    Args:
-        filenames (list): A list of files to parse.
+        """
+        Parses dates from file names
 
-    Returns:
-        ``list``
-    """
+        Args:
+            filenames (list): A list of files to parse.
 
-    date_filenames = list()
+        Returns:
+            ``list``
+        """
 
-    for fn in filenames:
+        date_filenames = list()
 
-        d_name, f_name = os.path.split(fn)
-        f_base, f_ext = os.path.splitext(f_name)
+        for fn in filenames:
 
-        try:
+            d_name, f_name = os.path.split(fn)
+            f_base, f_ext = os.path.splitext(f_name)
 
-            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
-                                           settings={'DATE_ORDER': 'YMD',
-                                                     'STRICT_PARSING': False,
-                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
+            try:
 
-        except:
-            return list(range(1, len(filenames) + 1))
+                s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
+                                               settings={'DATE_ORDER': 'YMD',
+                                                         'STRICT_PARSING': False,
+                                                         'PREFER_LANGUAGE_DATE_ORDER': False})))
 
-        if not dt:
-            return list(range(1, len(filenames) + 1))
+            except:
+                return list(range(1, len(filenames) + 1))
 
-        date_filenames.append(dt[0])
+            if not dt:
+                return list(range(1, len(filenames) + 1))
 
-    return date_filenames
+            date_filenames.append(dt[0])
 
+        return date_filenames
 
-def parse_wildcard(string):
+    @staticmethod
+    def parse_wildcard(string):
 
-    """
-    Parses a search wildcard from a string
+        """
+        Parses a search wildcard from a string
 
-    Args:
-        string (str): The string to parse.
+        Args:
+            string (str): The string to parse.
 
-    Returns:
-        ``list``
-    """
+        Returns:
+            ``list``
+        """
 
-    if os.path.dirname(string):
-        d_name, wildcard = os.path.split(string)
-    else:
+        if os.path.dirname(string):
+            d_name, wildcard = os.path.split(string)
+        else:
 
-        d_name = '.'
-        wildcard = string
+            d_name = '.'
+            wildcard = string
 
-    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
+        matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
 
-    if matches:
-        matches = [os.path.join(d_name, fn) for fn in matches]
+        if matches:
+            matches = [os.path.join(d_name, fn) for fn in matches]
 
-    if not matches:
-        logger.exception('  There were no images found with the string search.')
+        if not matches:
+            logger.exception('  There were no images found with the string search.')
 
-    return matches
+        return matches
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
