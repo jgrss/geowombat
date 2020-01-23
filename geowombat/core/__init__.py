@@ -15,6 +15,8 @@ clip = SpatialOperations().clip
 mask = SpatialOperations().mask
 coregister = SpatialOperations().coregister
 polygons_to_points = Converters().polygons_to_points
+indices_to_coords = Converters().indices_to_coords
+coords_to_indices = Converters().coords_to_indices
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
 evi = VegetationIndices().evi
@@ -35,6 +37,8 @@ __all__ = ['apply',
            'mask',
            'coregister',
            'polygons_to_points',
+           'indices_to_coords',
+           'coords_to_indices',
            'moving',
            'norm_diff',
            'evi',
