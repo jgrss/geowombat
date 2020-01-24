@@ -29,7 +29,6 @@ notebooks/
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
-geowombat/models/
 geowombat/util/starfm*
 geowombat/radiometry/_fill_gaps.pyx
 geowombat/radiometry/impute.py
