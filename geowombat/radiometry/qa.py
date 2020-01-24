@@ -57,18 +57,18 @@ class QAMasker(object):
 
         Returns:
 
-            ``xarray.DataArray`` with:
+            ``xarray.DataArray``:
 
-                0: clear
-                1: water
-                2: shadow
-                3: snow or ice
-                4: cloud
-                5: cirrus cloud
-                6: adjacent cloud
-                7: saturated
-                8: dropped
-                9: terrain occluded
+                0: clear,
+                1: water,
+                2: shadow,
+                3: snow or ice,
+                4: cloud,
+                5: cirrus cloud,
+                6: adjacent cloud,
+                7: saturated,
+                8: dropped,
+                9: terrain occluded,
                 255: fill
         """
 

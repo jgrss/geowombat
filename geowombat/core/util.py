@@ -495,7 +495,10 @@ class Converters(object):
             transform (Affine, DataArray, or tuple): The affine transform.
 
         Returns:
-            ``tuple`` (x, y)
+
+            ``tuple``:
+
+                (x, y)
 
         Example:
             >>> import geowombat as gw
@@ -529,7 +532,10 @@ class Converters(object):
             transform (object): The affine transform.
 
         Returns:
-            ``tuple`` (col_index, row_index)
+
+            ``tuple``:
+
+                (col_index, row_index)
 
         Example:
             >>> import geowombat as gw
