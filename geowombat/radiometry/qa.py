@@ -21,11 +21,16 @@ class QAMasker(object):
             https://landsat.usgs.gov/collectionqualityband
 
     Examples:
-        >>> # Get the MODIS cloud mask.
-        >>> mask = QAMasker(<array>, 'modis').to_mask()
+        >>> import geowombat as gw
+        >>> from geowombat.radiometry import QAMasker
         >>>
-        >>> # HLS
-        >>> mask = QAMasker(<array>, 'hls', ['cloud']).to_mask()
+        >>> # Get the MODIS cloud mask.
+        >>> with gw.open('qa.tif') as qa:
+        >>>     mask = QAMasker(qs, 'modis').to_mask()
+        >>>
+        >>> # NASA HLS
+        >>> with gw.open('qa.tif') as qa:
+        >>>     mask = QAMasker(qs, 'hls', ['cloud']).to_mask()
     """
 
     def __init__(self,
