@@ -1236,7 +1236,7 @@ class RossLiKernels(object):
 class BRDF(RelativeBRDFNorm, RossLiKernels):
 
     """
-    A class for Nadir BRDF (NBAR) normalization
+    A class for Bidirectional Reflectance Distribution Function (BRDF) normalization
     """
 
     def __init__(self):
