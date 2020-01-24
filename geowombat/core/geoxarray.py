@@ -1009,7 +1009,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>>     with gw.open('solarz.tif') as solarz,
             >>>         gw.open('solara.tif') as solara,
-            >>>             gw.open('sensorz.tif') as sensorz, 
+            >>>             gw.open('sensorz.tif') as sensorz,
             >>>                 gw.open('sensora.tif') as sensora:
             >>>
             >>>         with gw.open('landsat.tif') as ds:

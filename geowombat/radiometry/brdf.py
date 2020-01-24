@@ -1199,7 +1199,7 @@ class RelativeBRDFNorm(object):
 
 class RossLiKernels(object):
 
-    def get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
+    def _get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
 
         # if isinstance(central_latitude, np.ndarray) or isinstance(central_latitude, xr.DataArray):
         #     delayed = True
@@ -1274,7 +1274,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                                         fgeo=0.01613,
                                         fvol=0.0509))
 
-    def get_coeffs(self, sensor_band):
+    def _get_coeffs(self, sensor_band):
         return self.coeff_dict[sensor_band]
 
     def norm_brdf(self,
@@ -1409,11 +1409,11 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             sensor_az.coords['band'] = [1]
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude,
-                         solar_za,
-                         solar_az,
-                         sensor_za,
-                         sensor_az)
+        self._get_kernels(central_latitude,
+                          solar_za,
+                          solar_az,
+                          sensor_za,
+                          sensor_az)
 
         # if len(wavelengths) == 1:
         #
@@ -1439,7 +1439,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
             # Get the band iso, geo,
             #   and vol coefficients.
-            coeffs = self.get_coeffs(wavelength)
+            coeffs = self._get_coeffs(wavelength)
 
             # c-factor
             c_factor = ((coeffs['fiso'] +
