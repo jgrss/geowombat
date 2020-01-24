@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>sentinel_pixel_angles &#8212; GeoWombat 1.0.8 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pan_sharpen" href="geowombat.radiometry.pan_sharpen.html" />
+    <link rel="prev" title="landsat_pixel_angles" href="geowombat.radiometry.landsat_pixel_angles.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.landsat_pixel_angles.html" title="previous chapter">landsat_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.pan_sharpen.html" title="next chapter">pan_sharpen</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="sentinel-pixel-angles">
+<h1>sentinel_pixel_angles<a class="headerlink" href="#sentinel-pixel-angles" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="geowombat.radiometry.sentinel_pixel_angles">
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">sentinel_pixel_angles</code><span class="sig-paren">(</span><em class="sig-param">metadata</em>, <em class="sig-param">ref_file</em>, <em class="sig-param">outdir='.'</em>, <em class="sig-param">nodata=-32768</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">verbose=0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.sentinel_pixel_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates Sentinel pixel angle files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metadata</strong> (<em>str</em>) – The metadata file.</p></li>
+<li><p><strong>ref_file</strong> (<em>str</em>) – A reference image to use for geo-information.</p></li>
+<li><p><strong>outdir</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>)</em>) – The output directory to save the angle files to.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value.</p></li>
+<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite existing angle files.</p></li>
+<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://www.sentinel-hub.com/faq/how-can-i-access-meta-data-information-sentinel-2-l2a">https://www.sentinel-hub.com/faq/how-can-i-access-meta-data-information-sentinel-2-l2a</a>
+<a class="reference external" href="https://github.com/marujore/sentinel_angle_bands/blob/master/sentinel2_angle_bands.py">https://github.com/marujore/sentinel_angle_bands/blob/master/sentinel2_angle_bands.py</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>zenith and azimuth angles as a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> of angle file names</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.radiometry.sentinel_pixel_angles.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

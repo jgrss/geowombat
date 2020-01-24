@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>pan_sharpen &#8212; GeoWombat 1.0.8 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="BRDF" href="geowombat.radiometry.BRDF.html" />
+    <link rel="prev" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="previous chapter">sentinel_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.BRDF.html" title="next chapter">BRDF</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pan-sharpen">
+<h1>pan_sharpen<a class="headerlink" href="#pan-sharpen" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="geowombat.radiometry.pan_sharpen">
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">pan=None</em>, <em class="sig-param">blue_weight=1.0</em>, <em class="sig-param">green_weight=1.0</em>, <em class="sig-param">red_weight=1.0</em>, <em class="sig-param">nir_weight=1.0</em>, <em class="sig-param">scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sharpens wavelengths using the panchromatic band</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The band data.</p></li>
+<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to sharpen. If not given, ‘blue’, ‘green’, and ‘red’ are used.</p></li>
+<li><p><strong>pan</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – The panchromatic <code class="docutils literal notranslate"><span class="pre">DataArray</span></code>. <code class="docutils literal notranslate"><span class="pre">pan</span></code> is only needed if it is not included
+with <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>blue_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The blue band weight.</p></li>
+<li><p><strong>green_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The green band weight.</p></li>
+<li><p><strong>red_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The red band weight.</p></li>
+<li><p><strong>nir_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The NIR band weight.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">pan_sharpen</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">pan_sharpen</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.radiometry.pan_sharpen.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

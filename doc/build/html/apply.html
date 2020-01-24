@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Applying custom user functions &#8212; GeoWombat 1.0.7 documentation</title>
+    <title>Applying custom user functions &#8212; GeoWombat 1.0.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -124,7 +124,7 @@
     <span class="k">return</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">my_func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
@@ -136,7 +136,7 @@
 <div class="section" id="unlike-the-example-above-the-example-below-has-guaranteed-image-alignment">
 <h3>Unlike the example above, the example below has guaranteed image alignment.<a class="headerlink" href="#unlike-the-example-above-the-example-below-has-guaranteed-image-alignment" title="Permalink to this headline">¶</a></h3>
 <p>Functions and arguments can be passed as Xarray attributes. Here is an example that uses one user argument.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Function with one argument</span>
 <span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -153,8 +153,8 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -179,8 +179,8 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>

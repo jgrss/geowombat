@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Accessing raster attributes &#8212; GeoWombat 1.0.7 documentation</title>
+    <title>Accessing raster attributes &#8212; GeoWombat 1.0.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -118,27 +118,27 @@
 <div class="section" id="geowombat-has-additional-raster-attributes-on-top-of-xarray-rasterio-attributes">
 <h2>GeoWombat has additional raster attributes on top of Xarray/Rasterio attributes<a class="headerlink" href="#geowombat-has-additional-raster-attributes-on-top-of-xarray-rasterio-attributes" title="Permalink to this headline">¶</a></h2>
 <p>Import GeoWombat</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
 <p>Access raster attributes using the file opening API (<a class="reference internal" href="io.html#io"><span class="std std-ref">Reading and writing files</span></a>):</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ndims</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">top</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ndims</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">top</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">Meta(left=792988.0, right=795562.0, top=2050382.0, bottom=2048366.0, bounds=(792988.0, 2048366.0, 795562.0, 2050382.0), affine=Affine(2.0, 0.0, 792988.0,</span>
-<span class="go">       0.0, -2.0, 2050382.0), geometry=&lt;shapely.geometry.polygon.Polygon object at 0x2aaab004c470&gt;)</span>
+<span class="go">       0.0, -2.0, 2050382.0), geometry=&lt;shapely.geometry.polygon.Polygon object at 0x7fb1b01d7198&gt;)</span>
 <span class="go">3</span>
 <span class="go">4</span>
 <span class="go">1008</span>

@@ -1,6 +1,0 @@
-dask_to_xarray
-==============
-
-.. currentmodule:: geowombat.core.conversion
-
-.. autofunction:: dask_to_xarray

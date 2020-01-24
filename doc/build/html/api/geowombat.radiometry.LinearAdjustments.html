@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>LinearAdjustments &#8212; GeoWombat 1.0.8 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="RadTransforms" href="geowombat.radiometry.RadTransforms.html" />
+    <link rel="prev" title="BRDF" href="geowombat.radiometry.BRDF.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Change Log</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.BRDF.html" title="previous chapter">BRDF</a></li>
+      <li>Next: <a href="geowombat.radiometry.RadTransforms.html" title="next chapter">RadTransforms</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="linearadjustments">
+<h1>LinearAdjustments<a class="headerlink" href="#linearadjustments" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="geowombat.radiometry.LinearAdjustments">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">LinearAdjustments</code><a class="headerlink" href="#geowombat.radiometry.LinearAdjustments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for linear bandpass adjustments</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.LinearAdjustments.bandpass" title="geowombat.radiometry.LinearAdjustments.bandpass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bandpass</span></code></a>(self, data[, sensor, to, …])</p></td>
+<td><p>Applies a bandpass adjustment by applying a linear function to surface reflectance values</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Documentation</p>
+<dl class="method">
+<dt id="geowombat.radiometry.LinearAdjustments.bandpass">
+<code class="sig-name descname">bandpass</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">to='l8'</em>, <em class="sig-param">band_names=None</em>, <em class="sig-param">scale_factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.LinearAdjustments.bandpass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a bandpass adjustment by applying a linear function to surface reflectance values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to adjust.</p></li>
+<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sensor to adjust.</p></li>
+<li><p><strong>to</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sensor to adjust to.</p></li>
+<li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to adjust. If not given, all bands are adjusted.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the input data.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Reference:</p>
+<blockquote>
+<div><p>Sentinel-2 and Landsat 8:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://hls.gsfc.nasa.gov/algorithms/bandpass-adjustment/">https://hls.gsfc.nasa.gov/algorithms/bandpass-adjustment/</a></p>
+<p>See <a class="bibtex reference internal" href="#chastain-etal-2019" id="id1">[CHGF19]</a> for further details</p>
+</div></blockquote>
+<p>Landsat 7 and Landsat 8:</p>
+<blockquote>
+<div><p>See <a class="bibtex reference internal" href="#roy-etal-2016" id="id2">[RZJ+16]</a> (Table 2)</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">LinearAdjustments</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">la</span> <span class="o">=</span> <span class="n">LinearAdjustments</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Adjust all Sentinel-2 bands to Landsat 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;s2&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sentinel-2.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">ds_adjusted</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<p id="bibtex-bibliography-api/geowombat.radiometry.LinearAdjustments-0"><dl class="citation">
+<dt class="bibtex label" id="chastain-etal-2019"><span class="brackets"><a class="fn-backref" href="#id1">CHGF19</a></span></dt>
+<dd><p>Robert Chastain, Ian Housman, Joshua Goldstein, and Mark Finco. Empirical cross sensor comparison of Sentinel-2A and 2B MSI, Landsat-8 OLI, and Landsat-7 ETM+ top of atmosphere spectral characteristics over the conterminous United States. <em>Remote sensing of environment</em>, 221:274–285, 2019.</p>
+</dd>
+<dt class="bibtex label" id="roy-etal-2016"><span class="brackets"><a class="fn-backref" href="#id2">RZJ+16</a></span></dt>
+<dd><p>David P Roy, V Kovalskyy, HK Zhang, Eric F Vermote, L Yan, SS Kumar, and A Egorov. Characterization of Landsat-7 to Landsat-8 reflective wavelength and normalized difference vegetation index continuity. <em>Remote sensing of Environment</em>, 185:57–70, 2016.</p>
+</dd>
+</dl>
+</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2019, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.radiometry.LinearAdjustments.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

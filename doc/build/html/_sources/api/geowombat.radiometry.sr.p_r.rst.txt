@@ -1,6 +1,0 @@
-p_r
-===
-
-.. currentmodule:: geowombat.radiometry.sr
-
-.. autofunction:: p_r
