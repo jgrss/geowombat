@@ -253,6 +253,9 @@ class LinearAdjustments(object):
 
                 See :cite:`roy_etal_2016` (Table 2)
 
+        Returns:
+            ``xarray.DataArray``
+
         Examples:
             >>> import geowombat as gw
             >>> from geowombat.radiometry import LinearAdjustments
@@ -263,9 +266,6 @@ class LinearAdjustments(object):
             >>> with gw.config.update(sensor='s2'):
             >>>     with gw.open('sentinel-2.tif') as ds:
             >>>         ds_adjusted = la.bandpass(ds, to='l8')
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         attrs = data.attrs.copy()
@@ -452,7 +452,7 @@ class RadTransforms(MetaData):
     def dn_to_toar(dn, gain, bias):
 
         """
-        Converts digital numbers to radiance
+        Converts digital numbers to top-of-atmosphere reflectance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
