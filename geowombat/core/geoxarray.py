@@ -974,10 +974,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return gw_tasseled_cap(self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor)
 
     def norm_brdf(self,
-                  solar_zenith,
-                  solar_azimuth,
-                  sensor_zenith,
-                  sensor_azimuth,
+                  solar_za,
+                  solar_az,
+                  sensor_za,
+                  sensor_az,
                   sensor=None,
                   wavelengths=None,
                   nodata=None,
@@ -985,21 +985,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   scale_factor=1.0,
                   scale_angles=True):
 
-        r"""
+        """
         Applies Bidirectional Reflectance Distribution Function (BRDF) normalization
 
         Args:
-            solar_zenith (DataArray): The solar zenith angles for each pixel.
-            solar_azimuth (DataArray): The solar azimuth angles for each pixel.
-            sensor_zenith (DataArray): The sensor zenith angles for each pixel.
-            sensor_azimuth (DataArray): The sensor azimuth angles for each pixel.
-            mask (DataArray): A mask array where 0 values indicate clear sky.
+            solar_za (2d DataArray): The solar zenith angles (degrees).
+            solar_az (2d DataArray): The solar azimuth angles (degrees).
+            sensor_za (2d DataArray): The sensor azimuth angles (degrees).
+            sensor_az (2d DataArray): The sensor azimuth angles (degrees).
             sensor (Optional[str]): The satellite sensor.
-            wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
-            nodata (Optional[int or float]): A 'no data' value.
-            mask (Optional[bool]): Whether to mask the results.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            wavelengths (str list): The wavelength(s) to normalize.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[DataArray]): A data mask, where clear values are 0.
+            scale_factor (Optional[float]): A scale factor to apply to the input data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
+
+        Returns:
+            ``xarray.DataArray``
 
         Examples:
             >>> import geowombat as gw
@@ -1014,9 +1016,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>>         with gw.open('landsat.tif') as ds:
             >>>             ds_brdf = ds.gw.norm_brdf(solarz, solara, sensorz, sensora)
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         # Get the central latitude
@@ -1026,10 +1025,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                      {'init': 'epsg:4326'})[1][0]
 
         return _BRDF().norm_brdf(self._obj,
-                                 solar_zenith,
-                                 solar_azimuth,
-                                 sensor_zenith,
-                                 sensor_azimuth,
+                                 solar_za,
+                                 solar_az,
+                                 sensor_za,
+                                 sensor_az,
                                  central_lat,
                                  sensor=sensor,
                                  wavelengths=wavelengths,
