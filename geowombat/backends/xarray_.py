@@ -507,6 +507,9 @@ def to_crs(data_src,
     x = np.linspace(dst_transform[2], dst_transform[2] + (dst_transform[0] * nrows) - abs(dst_transform[0]), nrows) - abs(dst_transform[0]) / 2.0
     y = np.linspace(dst_transform[5], dst_transform[5] - (dst_transform[4] * ncols) - abs(dst_transform[4]), ncols) - abs(dst_transform[4]) / 2.0
 
+    if not dst_res:
+        dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
+
     data_dst = xr.DataArray(data=da.from_array(data_dst,
                                                chunks=data_src.data.chunksize),
                             coords={'band': data_src.band.values.tolist(),
@@ -517,6 +520,7 @@ def to_crs(data_src,
 
     data_dst.attrs['transform'] = tuple(dst_transform)
     data_dst.attrs['crs'] = dst_crs
+    data_dst.attrs['res'] = dst_res
     data_dst.attrs['resampling'] = resampling
 
     if 'sensor' in data_src.attrs:
