@@ -514,8 +514,13 @@ def to_crs(data_src,
 
     nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
 
-    x = np.linspace(dst_transform[2], dst_transform[2] + (dst_transform[0] * nrows) - abs(dst_transform[0]), nrows) - abs(dst_transform[0]) / 2.0
-    y = np.linspace(dst_transform[5], dst_transform[5] - (dst_transform[4] * ncols) - abs(dst_transform[4]), ncols) - abs(dst_transform[4]) / 2.0
+    left = dst_transform[2]
+    cellx = abs(dst_transform[0])
+    x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)
+
+    top = dst_transform[5]
+    celly = abs(dst_transform[4])
+    y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)
 
     if not dst_res:
         dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
