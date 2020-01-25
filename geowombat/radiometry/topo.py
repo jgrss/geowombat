@@ -271,14 +271,14 @@ class Topo(object):
             w += 1
 
         if isinstance(slope, xr.DataArray):
-            slope_deg_fd = slope.data
+            slope_deg_fd = slope.squeeze().data
         else:
 
             slope_deg = calc_slope_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs)
             slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
 
         if isinstance(aspect, xr.DataArray):
-            aspect_deg_fd = aspect.data
+            aspect_deg_fd = aspect.squeeze().data
         else:
 
             aspect_deg = calc_aspect_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs)
