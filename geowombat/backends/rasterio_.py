@@ -4,6 +4,7 @@ from collections import namedtuple
 
 from ..errors import logger
 
+import numpy as np
 import rasterio as rio
 from rasterio.crs import CRS
 from rasterio.enums import Resampling
