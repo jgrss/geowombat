@@ -583,13 +583,13 @@ def warp(filename,
     return output
 
 
-def to_crs(data_src,
-           dst_crs,
-           dst_res=None,
-           resampling='nearest',
-           nodata=0,
-           warp_mem_limit=512,
-           num_threads=1):
+def transform_crs(data_src,
+                  dst_crs,
+                  dst_res=None,
+                  resampling='nearest',
+                  nodata=0,
+                  warp_mem_limit=512,
+                  num_threads=1):
 
     """
     Transforms a DataArray to a new coordinate reference system
@@ -609,8 +609,6 @@ def to_crs(data_src,
     """
 
     dst_crs = check_crs(dst_crs)
-
-    dtype = data_src.dtype
 
     if not dst_res:
 
@@ -648,19 +646,5 @@ def to_crs(data_src,
                                    'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
 
     with rio.open(data_src.attrs['filename']) as src_:
-        with WarpedVRT(src_, **vrt_options) as vrt:
-            with xr.open_rasterio(vrt) as dst_:
-
-                dst_.coords['band'] = data_src.band.values.tolist()
-
-                dst_.attrs['resampling'] = resampling
-
-                if 'sensor' in data_src.attrs:
-                    dst_.attrs['sensor'] = data_src.attrs['sensor']
-
-                if 'filename' in data_src.attrs:
-                    dst_.attrs['filename'] = data_src.attrs['filename']
-
-                attrs = data_src.attrs.copy()
-
-                return dst_.astype(dtype).assign_attrs(**attrs)
+        with WarpedVRT(src_, **vrt_options) as vrt_:
+            return vrt_
