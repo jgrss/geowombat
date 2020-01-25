@@ -245,7 +245,7 @@ class Topo(object):
 
         # Force to SRTM resolution
         proc_dims = (int((data.gw.ncols*data.gw.cellx) / 30.0),
-                     int((data.gw.nrows*data.gw.celly) / 30.0)),
+                     int((data.gw.nrows*data.gw.celly) / 30.0))
 
         slope_deg = calc_slope_d(elev.squeeze().data, proc_dims=proc_dims, **slope_kwargs)
         aspect_deg = calc_aspect_d(elev.squeeze().data, proc_dims=proc_dims, **aspect_kwargs)
