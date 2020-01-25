@@ -4,7 +4,7 @@ from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds
+from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, transform_crs
 
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
@@ -468,3 +468,53 @@ def concat(filenames,
 
     else:
         return ds
+
+
+def to_crs(data_src,
+           dst_crs,
+           dst_res=None,
+           resampling='nearest',
+           nodata=0,
+           warp_mem_limit=512,
+           num_threads=1):
+
+    """
+    Transforms a DataArray to a new coordinate reference system
+
+    Args:
+        data_src (DataArray): The data to transform.
+        dst_crs (``CRS`` | int | dict | str): The destination CRS.
+        dst_res (Optional[tuple]): The destination resolution.
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        nodata (Optional[float or int]: The 'no data' value.
+        warp_mem_limit (Optional[int]): The warp memory limit.
+        num_threads (Optional[int]): The number of parallel threads.
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    dtype = data_src.dtype
+
+    with xr.open_rasterio(transform_crs(data_src,
+                                        dst_crs,
+                                        dst_res=dst_res,
+                                        resampling=resampling,
+                                        nodata=nodata,
+                                        warp_mem_limit=warp_mem_limit,
+                                        num_threads=num_threads)) as dst_:
+
+        dst_.coords['band'] = data_src.band.values.tolist()
+
+        dst_.attrs['resampling'] = resampling
+
+        if 'sensor' in data_src.attrs:
+            dst_.attrs['sensor'] = data_src.attrs['sensor']
+
+        if 'filename' in data_src.attrs:
+            dst_.attrs['filename'] = data_src.attrs['filename']
+
+        attrs = data_src.attrs.copy()
+
+        return dst_.astype(dtype).assign_attrs(**attrs)
