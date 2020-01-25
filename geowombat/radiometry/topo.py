@@ -1,22 +1,33 @@
 import numpy as np
 from osgeo import gdal, gdal_array
+import cv2
 import dask
 import dask.array as da
 import xarray as xr
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 
-def calc_slope(elev, **kwargs):
+def calc_slope(elev, proc_dims=None, **kwargs):
+
     """
     Calculates slope from elevation
 
     Args:
         elev (2d array): The elevation data.
+        proc_dims (Optional[tuple]): Dimensions to resize to.
         kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
 
     Returns:
         ``numpy.ndarray``
     """
+
+    if proc_dims:
+
+        inrows, incols = elev.shape
+
+        elev = cv2.resize(elev.astype('float32'),
+                          proc_dims,
+                          interpolation=cv2.INTER_CUBIC)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 
@@ -29,20 +40,37 @@ def calc_slope(elev, **kwargs):
     ds = None
     out_ds = None
 
-    return np.float64(dst_array)
+    if proc_dims:
+
+        return np.float64(cv2.resize(dst_array.astype('float32'),
+                                     (incols, inrows),
+                                     interpolation=cv2.INTER_CUBIC))
+
+    else:
+        return np.float64(dst_array)
 
 
-def calc_aspect(elev, **kwargs):
+def calc_aspect(elev, proc_dims=None, **kwargs):
+
     """
     Calculates aspect from elevation
 
     Args:
         elev (2d array): The elevation data.
+        proc_dims (Optional[tuple]): Dimensions to resize to.
         kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
 
     Returns:
         ``numpy.ndarray``
     """
+
+    if proc_dims:
+
+        inrows, incols = elev.shape
+
+        elev = cv2.resize(elev.astype('float32'),
+                          proc_dims,
+                          interpolation=cv2.INTER_CUBIC)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 
@@ -55,7 +83,14 @@ def calc_aspect(elev, **kwargs):
     ds = None
     out_ds = None
 
-    return np.float64(dst_array)
+    if proc_dims:
+
+        return np.float64(cv2.resize(dst_array.astype('float32'),
+                                     (incols, inrows),
+                                     interpolation=cv2.INTER_CUBIC))
+
+    else:
+        return np.float64(dst_array)
 
 
 class Topo(object):
@@ -64,7 +99,7 @@ class Topo(object):
     A class for topographic normalization
     """
 
-    def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1):
+    def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
 
         r"""
         Normalizes terrain using the C-correction method
@@ -74,7 +109,9 @@ class Topo(object):
             il (Dask Array): The solar illumination.
             cos_z (Dask Array): The cosine of the solar zenith angle.
             nodata_samps (Dask Array): Samples where 1='no data' and 0='valid data'.
-            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit``.
+            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
+                ``TheilSenRegressor.fit``.
+            robust (Optional[bool]): Whether to fit a robust regression.
 
         References:
 
@@ -90,7 +127,10 @@ class Topo(object):
         X = il.compute().flatten()[idx][:, np.newaxis]
         y = sr.compute().flatten()[idx]
 
-        model = LinearRegression(n_jobs=n_jobs)
+        if robust:
+            model = TheilSenRegressor(n_jobs=n_jobs)
+        else:
+            model = LinearRegression(n_jobs=n_jobs)
 
         model.fit(X, y)
 
@@ -119,7 +159,10 @@ class Topo(object):
                   elev_nodata=-32768,
                   scale_factor=1,
                   angle_scale=0.01,
-                  n_jobs=1):
+                  n_jobs=1,
+                  robust=False,
+                  slope_kwargs=None,
+                  aspect_kwargs=None):
 
         """
         Applies topographic normalization
@@ -136,6 +179,11 @@ class Topo(object):
             scale_factor (Optional[float]): A scale factor to apply to the input data.
             angle_scale (Optional[float]): The angle scale factor.
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit``.
+            robust (Optional[bool]): Whether to fit a robust regression.
+            slope_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``
+                to calculate the slope.
+            aspect_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``
+                to calculate the aspect.
 
         References:
 
@@ -176,18 +224,31 @@ class Topo(object):
         calc_slope_d = dask.delayed(calc_slope)
         calc_aspect_d = dask.delayed(calc_aspect)
 
-        slope_deg = calc_slope_d(elev.squeeze().data,
-                                 format='MEM',
+        if not slope_kwargs:
+
+            slope_kwargs = dict(format='MEM',
+                                computeEdges=True,
+                                alg='ZevenbergenThorne',
+                                slopeFormat='degree')
+
+        if not aspect_kwargs:
+
+            aspect_kwargs = dict(format='MEM',
                                  computeEdges=True,
                                  alg='ZevenbergenThorne',
-                                 slopeFormat='degree')
+                                 trigonometric=False,
+                                 zeroForFlat=True)
 
-        aspect_deg = calc_aspect_d(elev.squeeze().data,
-                                   format='MEM',
-                                   computeEdges=True,
-                                   alg='ZevenbergenThorne',
-                                   trigonometric=False,
-                                   zeroForFlat=True)
+        slope_kwargs['format'] = 'MEM'
+        slope_kwargs['slopeFormat'] = 'degree'
+        aspect_kwargs['format'] = 'MEM'
+
+        # Force to SRTM resolution
+        proc_dims = (int((data.gw.ncols*data.gw.cellx) / 30.0),
+                     int((data.gw.nrows*data.gw.celly) / 30.0)),
+
+        slope_deg = calc_slope_d(elev.squeeze().data, proc_dims=proc_dims, **slope_kwargs)
+        aspect_deg = calc_aspect_d(elev.squeeze().data, proc_dims=proc_dims, **aspect_kwargs)
 
         slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
         aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
@@ -218,7 +279,8 @@ class Topo(object):
                                          il,
                                          cos_z,
                                          nodata_samps,
-                                         n_jobs=n_jobs))
+                                         n_jobs=n_jobs,
+                                         robust=robust))
 
         adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
                                                                      data.gw.nrows,
