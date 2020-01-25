@@ -8,7 +8,7 @@ import rasterio as rio
 from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds
+from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
@@ -587,7 +587,6 @@ def transform_crs(data_src,
                   dst_crs,
                   dst_res=None,
                   resampling='nearest',
-                  nodata=0,
                   warp_mem_limit=512,
                   num_threads=1):
 
@@ -600,7 +599,6 @@ def transform_crs(data_src,
         dst_res (Optional[tuple]): The destination resolution.
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-        nodata (Optional[float or int]: The 'no data' value.
         warp_mem_limit (Optional[int]): The warp memory limit.
         num_threads (Optional[int]): The number of parallel threads.
 
@@ -635,16 +633,32 @@ def transform_crs(data_src,
                                                                            top=data_src.gw.top,
                                                                            resolution=dst_res)
 
-    vrt_options = {'resampling': getattr(Resampling, resampling),
-                   'crs': dst_crs,
-                   'transform': dst_transform,
-                   'height': dst_height,
-                   'width': dst_width,
-                   'nodata': nodata,
-                   'warp_mem_limit': warp_mem_limit,
-                   'warp_extras': {'multi': True,
-                                   'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+    # vrt_options = {'resampling': getattr(Resampling, resampling),
+    #                'crs': dst_crs,
+    #                'transform': dst_transform,
+    #                'height': dst_height,
+    #                'width': dst_width,
+    #                'nodata': nodata,
+    #                'warp_mem_limit': warp_mem_limit,
+    #                'warp_extras': {'multi': True,
+    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
 
-    with rio.open(data_src.attrs['filename']) as src_:
-        with WarpedVRT(src_, **vrt_options) as vrt_:
-            return vrt_
+    destination = np.zeros((dst_height, dst_width), dtype=data_src.dtype)
+
+    reproject(data_src.squeeze().data.compute(),
+              destination,
+              src_transform=data_src.transform,
+              src_crs=data_src.crs,
+              dst_transform=dst_transform,
+              dst_crs=dst_crs,
+              resampling=getattr(Resampling, resampling),
+              dst_nodata=nodata,
+              dst_resolution=dst_res,
+              warp_mem_limit=warp_mem_limit,
+              num_threads=num_threads)
+
+    return destination
+
+    # with rio.open(data_src.attrs['filename']) as src_:
+    #     with WarpedVRT(src_, **vrt_options) as vrt_:
+    #         return vrt_
