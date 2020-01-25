@@ -567,7 +567,7 @@ class GeoDownloads(object):
 
                                         if write_angle_files:
 
-                                            angle_stack = xr.concat((sza, saa, vza, vaa), dim='band')
+                                            angle_stack = xr.concat((sza, saa), dim='band')
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(out_angles, **kwargs)
 
