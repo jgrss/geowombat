@@ -653,7 +653,6 @@ def transform_crs(data_src,
               dst_transform=dst_transform,
               dst_crs=dst_crs,
               resampling=getattr(Resampling, resampling),
-              dst_nodata=nodata,
               dst_resolution=dst_res,
               warp_mem_limit=warp_mem_limit,
               num_threads=num_threads)
