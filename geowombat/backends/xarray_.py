@@ -6,6 +6,7 @@ from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, transform_crs
 
+import numpy as np
 import dask.array as da
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
