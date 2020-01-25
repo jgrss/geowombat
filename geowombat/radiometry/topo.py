@@ -27,7 +27,7 @@ def calc_slope(elev, proc_dims=None, **kwargs):
 
         elev = cv2.resize(elev.astype('float32'),
                           proc_dims,
-                          interpolation=cv2.INTER_CUBIC)
+                          interpolation=cv2.INTER_LINEAR)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 
@@ -42,9 +42,11 @@ def calc_slope(elev, proc_dims=None, **kwargs):
 
     if proc_dims:
 
-        return np.float64(cv2.resize(dst_array.astype('float32'),
-                                     (incols, inrows),
-                                     interpolation=cv2.INTER_CUBIC))
+        dst_array = cv2.resize(dst_array.astype('float32'),
+                               (incols, inrows),
+                               interpolation=cv2.INTER_LINEAR)
+
+        return np.float64(cv2.bilateralFilter(np.float32(dst_array), 5, 10, 10))
 
     else:
         return np.float64(dst_array)
@@ -70,7 +72,7 @@ def calc_aspect(elev, proc_dims=None, **kwargs):
 
         elev = cv2.resize(elev.astype('float32'),
                           proc_dims,
-                          interpolation=cv2.INTER_CUBIC)
+                          interpolation=cv2.INTER_LINEAR)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 
@@ -85,9 +87,11 @@ def calc_aspect(elev, proc_dims=None, **kwargs):
 
     if proc_dims:
 
-        return np.float64(cv2.resize(dst_array.astype('float32'),
-                                     (incols, inrows),
-                                     interpolation=cv2.INTER_CUBIC))
+        dst_array = cv2.resize(dst_array.astype('float32'),
+                               (incols, inrows),
+                               interpolation=cv2.INTER_LINEAR)
+
+        return np.float64(cv2.bilateralFilter(np.float32(dst_array), 5, 10, 10))
 
     else:
         return np.float64(dst_array)
