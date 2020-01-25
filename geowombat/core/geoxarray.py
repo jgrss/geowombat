@@ -315,6 +315,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def to_crs(self,
                dst_crs,
                dst_res=None,
+               dst_width=None,
+               dst_height=None,
                resampling='nearest',
                warp_mem_limit=512,
                num_threads=1):
@@ -325,6 +327,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             dst_crs (``CRS`` | int | dict | str): The destination CRS.
             dst_res (Optional[tuple]): The destination resolution.
+            dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
+            dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
             resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
             warp_mem_limit (Optional[int]): The warp memory limit.
@@ -343,6 +347,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return _to_crs(self._obj,
                        dst_crs,
                        dst_res=dst_res,
+                       dst_width=dst_width,
+                       dst_height=dst_height,
                        resampling=resampling,
                        warp_mem_limit=warp_mem_limit,
                        num_threads=num_threads)
