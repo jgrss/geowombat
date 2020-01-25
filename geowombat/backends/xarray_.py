@@ -518,7 +518,7 @@ def to_crs(data_src,
                             dims=('band', 'y', 'x'),
                             attrs=data_src.attrs)
 
-    data_dst.attrs['transform'] = tuple(dst_transform)
+    data_dst.attrs['transform'] = tuple(dst_transform)[:6]
     data_dst.attrs['crs'] = dst_crs
     data_dst.attrs['res'] = dst_res
     data_dst.attrs['resampling'] = resampling
