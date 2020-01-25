@@ -197,6 +197,9 @@ using the global c-factor method</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -207,7 +210,7 @@ using the global c-factor method</p>
 <span class="gp">&gt;&gt;&gt; </span>                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensora.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensora</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;landsat.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>            <span class="n">src_norm</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>            <span class="n">src_norm</span> <span class="o">=</span> <span class="n">brdf</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

@@ -129,55 +129,15 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.Topo.calc_aspect" title="geowombat.radiometry.Topo.calc_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_aspect</span></code></a>(elev, \*\*kwargs)</p></td>
-<td><p>Calculates aspect from elevation</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.Topo.calc_slope" title="geowombat.radiometry.Topo.calc_slope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_slope</span></code></a>(elev, \*\*kwargs)</p></td>
-<td><p>Calculates slope from elevation</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.Topo.norm_topo" title="geowombat.radiometry.Topo.norm_topo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_topo</span></code></a>(data, elev, solar_za, solar_az[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.Topo.norm_topo" title="geowombat.radiometry.Topo.norm_topo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_topo</span></code></a>(self, data, elev, solar_za, solar_az)</p></td>
 <td><p>Applies topographic normalization</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
 <dl class="method">
-<dt id="geowombat.radiometry.Topo.calc_aspect">
-<em class="property">static </em><code class="sig-name descname">calc_aspect</code><span class="sig-paren">(</span><em class="sig-param">elev</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.calc_aspect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates aspect from elevation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>elev</strong> (<em>2d array</em>) – The elevation data.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="geowombat.radiometry.Topo.calc_slope">
-<em class="property">static </em><code class="sig-name descname">calc_slope</code><span class="sig-paren">(</span><em class="sig-param">elev</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.calc_slope" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates slope from elevation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>elev</strong> (<em>2d array</em>) – The elevation data.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="geowombat.radiometry.Topo.norm_topo">
-<em class="property">static </em><code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">elev</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">method='c'</em>, <em class="sig-param">angle_scale=0.01</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">elev</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">method='c'</em>, <em class="sig-param">slope_thresh=2</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">elev_nodata=-32768</em>, <em class="sig-param">scale_factor=1</em>, <em class="sig-param">angle_scale=0.01</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">robust=False</em>, <em class="sig-param">slope_kwargs=None</em>, <em class="sig-param">aspect_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies topographic normalization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -186,8 +146,18 @@
 <li><p><strong>solar_za</strong> (<em>2d DataArray</em>) – The solar zenith angles (degrees).</p></li>
 <li><p><strong>solar_az</strong> (<em>2d DataArray</em>) – The solar azimuth angles (degrees).</p></li>
 <li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to apply. Choices are [‘c’].</p></li>
+<li><p><strong>slope_thresh</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The slope threshold. Any samples with
+values &lt; <code class="docutils literal notranslate"><span class="pre">slope_thresh</span></code> are not adjusted.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>elev_nodata</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">elev</span></code>.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the input data.</p></li>
 <li><p><strong>angle_scale</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The angle scale factor.</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">LinearRegression.fit</span></code>.</p></li>
+<li><p><strong>robust</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to fit a robust regression.</p></li>
+<li><p><strong>slope_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>
+to calculate the slope.</p></li>
+<li><p><strong>aspect_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>
+to calculate the aspect.</p></li>
 </ul>
 </dd>
 </dl>
@@ -200,6 +170,9 @@
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">Topo</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">topo</span> <span class="o">=</span> <span class="n">Topo</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -209,7 +182,7 @@
 <span class="gp">&gt;&gt;&gt; </span>            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solarz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solarz</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solara.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solara</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">src_norm</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_topo</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">src_norm</span> <span class="o">=</span> <span class="n">topo</span><span class="o">.</span><span class="n">norm_topo</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
