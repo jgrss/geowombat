@@ -1291,7 +1291,7 @@ class BRDF(RossLiKernels):
 
         r"""
         Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
-        using the global c-factor method (see Roy et al. (2016))
+        using the global c-factor method
 
         Args:
             data (2d or 3d DataArray): The data to normalize.
@@ -1334,8 +1334,8 @@ class BRDF(RossLiKernels):
             >>>             gw.open('sensorz.tif') as sensorz,
             >>>                 gw.open('sensora.tif') as sensora:
             >>>
-            >>>         with gw.open('landsat.tif') as ds:
-            >>>             ds_brdf = gw.norm_brdf(ds, solarz, solara, sensorz, sensora)
+            >>>         with gw.open('landsat.tif') as src:
+            >>>             src_norm = gw.norm_brdf(src, solarz, solara, sensorz, sensora)
         """
 
         if not wavelengths:
