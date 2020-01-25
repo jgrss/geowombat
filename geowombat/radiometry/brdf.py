@@ -1325,6 +1325,9 @@ class BRDF(RossLiKernels):
 
         Examples:
             >>> import geowombat as gw
+            >>> from geowombat.radiometry import BRDF
+            >>>
+            >>> brdf = BRDF()
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
             >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
@@ -1335,7 +1338,7 @@ class BRDF(RossLiKernels):
             >>>                 gw.open('sensora.tif') as sensora:
             >>>
             >>>         with gw.open('landsat.tif') as src:
-            >>>             src_norm = gw.norm_brdf(src, solarz, solara, sensorz, sensora)
+            >>>             src_norm = brdf.norm_brdf(src, solarz, solara, sensorz, sensora)
         """
 
         if not wavelengths:

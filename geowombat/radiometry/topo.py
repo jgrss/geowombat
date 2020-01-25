@@ -6,65 +6,63 @@ import xarray as xr
 from sklearn.linear_model import LinearRegression
 
 
+def calc_slope(elev, **kwargs):
+    """
+    Calculates slope from elevation
+
+    Args:
+        elev (2d array): The elevation data.
+        kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
+
+    Returns:
+        ``numpy.ndarray``
+    """
+
+    ds = gdal_array.OpenArray(elev.astype('float64'))
+
+    slope_options = gdal.DEMProcessingOptions(**kwargs)
+
+    out_ds = gdal.DEMProcessing('', ds, 'slope', options=slope_options)
+
+    dst_array = out_ds.GetRasterBand(1).ReadAsArray()
+
+    ds = None
+    out_ds = None
+
+    return np.float64(dst_array)
+
+
+def calc_aspect(elev, **kwargs):
+    """
+    Calculates aspect from elevation
+
+    Args:
+        elev (2d array): The elevation data.
+        kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
+
+    Returns:
+        ``numpy.ndarray``
+    """
+
+    ds = gdal_array.OpenArray(elev.astype('float64'))
+
+    aspect_options = gdal.DEMProcessingOptions(**kwargs)
+
+    out_ds = gdal.DEMProcessing('', ds, 'aspect', options=aspect_options)
+
+    dst_array = out_ds.GetRasterBand(1).ReadAsArray()
+
+    ds = None
+    out_ds = None
+
+    return np.float64(dst_array)
+
+
 class Topo(object):
 
     """
     A class for topographic normalization
     """
-
-    @staticmethod
-    def calc_slope(elev, **kwargs):
-
-        """
-        Calculates slope from elevation
-
-        Args:
-            elev (2d array): The elevation data.
-            kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
-
-        Returns:
-            ``numpy.ndarray``
-        """
-
-        ds = gdal_array.OpenArray(elev.astype('float64'))
-
-        slope_options = gdal.DEMProcessingOptions(**kwargs)
-
-        out_ds = gdal.DEMProcessing('', ds, 'slope', options=slope_options)
-
-        dst_array = out_ds.GetRasterBand(1).ReadAsArray()
-
-        ds = None
-        out_ds = None
-
-        return np.float64(dst_array)
-
-    @staticmethod
-    def calc_aspect(elev, **kwargs):
-
-        """
-        Calculates aspect from elevation
-
-        Args:
-            elev (2d array): The elevation data.
-            kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
-
-        Returns:
-            ``numpy.ndarray``
-        """
-
-        ds = gdal_array.OpenArray(elev.astype('float64'))
-
-        aspect_options = gdal.DEMProcessingOptions(**kwargs)
-
-        out_ds = gdal.DEMProcessing('', ds, 'aspect', options=aspect_options)
-
-        dst_array = out_ds.GetRasterBand(1).ReadAsArray()
-
-        ds = None
-        out_ds = None
-
-        return np.float64(dst_array)
 
     def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1):
 
@@ -110,8 +108,8 @@ class Topo(object):
 
         return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
 
-    @staticmethod
-    def norm_topo(data,
+    def norm_topo(self,
+                  data,
                   elev,
                   solar_za,
                   solar_az,
@@ -148,6 +146,9 @@ class Topo(object):
 
         Examples:
             >>> import geowombat as gw
+            >>> from geowombat.radiometry import Topo
+            >>>
+            >>> topo = Topo()
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
             >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
@@ -157,7 +158,7 @@ class Topo(object):
             >>>             gw.open('solarz.tif') as solarz,
             >>>                 gw.open('solara.tif') as solara:
             >>>
-            >>>         src_norm = gw.norm_topo(src, elev, solarz, solara, n_jobs=-1)
+            >>>         src_norm = topo.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
 
         attrs = data.attrs.copy()
