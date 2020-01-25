@@ -112,7 +112,7 @@ class Topo(object):
 
     @staticmethod
     def norm_topo(data,
-                  elev_data,
+                  elev,
                   solar_za,
                   solar_az,
                   method='c',
@@ -148,19 +148,19 @@ class Topo(object):
             >>>             gw.open('solarz.tif') as solarz,
             >>>                 gw.open('solara.tif') as solara:
             >>>
-            >>>         src_norm = gw.norm_topo(src, solarz, solara)
+            >>>         src_norm = gw.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
 
         calc_slope_d = dask.delayed(calc_slope)
         calc_aspect_d = dask.delayed(calc_aspect)
 
-        slope_deg = calc_slope_d(elev_data.squeeze().data,
+        slope_deg = calc_slope_d(elev.squeeze().data,
                                  format='MEM',
                                  computeEdges=True,
                                  alg='ZevenbergenThorne',
                                  slopeFormat='degree')
 
-        aspect_deg = calc_aspect_d(elev_data.squeeze().data,
+        aspect_deg = calc_aspect_d(elev.squeeze().data,
                                    format='MEM',
                                    computeEdges=True,
                                    alg='ZevenbergenThorne',
@@ -170,7 +170,7 @@ class Topo(object):
         slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
         aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
 
-        nodata_samps = da.where((elev_data.data == -32768) | (slope_deg_fd < 2), 1, 0)
+        nodata_samps = da.where((elev.data == -32768) | (slope_deg_fd < 2), 1, 0)
 
         # valid_samples = da.where((slopefd != srtm_nodata) & (slopefd > slope_thresh))
 
@@ -188,7 +188,7 @@ class Topo(object):
 
         sr_adj = list()
         for band in data.band.values.tolist():
-            
+
             # TODO: add other methods
             sr_adj.append(self._method_c(data.sel(band=band).data,
                                          il,
