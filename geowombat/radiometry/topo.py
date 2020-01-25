@@ -259,7 +259,7 @@ class Topo(object):
         proc_dims = (int((data.gw.ncols*data.gw.cellx) / 30.0),
                      int((data.gw.nrows*data.gw.celly) / 30.0))
 
-        w = (5 * 30.0) / data.gw.celly
+        w = int((5 * 30.0) / data.gw.celly)
 
         if w % 2 == 0:
             w += 1
