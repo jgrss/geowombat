@@ -134,6 +134,7 @@ class GeoDownloads(object):
                       ref_res=None,
                       l57_angles_path=None,
                       l8_angles_path=None,
+                      write_angle_files=False,
                       **kwargs):
 
         """
@@ -154,6 +155,7 @@ class GeoDownloads(object):
             ref_res (Optional[tuple]): A reference cell resolution.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
+            write_angle_files (Optional[bool]): Whether to write the angles to file.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -409,6 +411,7 @@ class GeoDownloads(object):
                             logger.info('  Processing {} ...'.format(brdfp))
 
                             out_brdf = outdir_brdf.joinpath(brdfp + '.tif').as_posix()
+                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif').as_posix()
 
                             if os.path.isfile(out_brdf):
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
@@ -561,6 +564,12 @@ class GeoDownloads(object):
                                         sr_brdf.attrs = attrs.copy()
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                                        if write_angle_files:
+
+                                            angle_stack = xr.concat((sza, saa, vza, vaa), dim='band')
+                                            angle_stack.attrs = sza.attrs.copy()
+                                            angle_stack.gw.to_raster(out_angles, **kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
