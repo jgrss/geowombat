@@ -643,9 +643,9 @@ def transform_crs(data_src,
     #                'warp_extras': {'multi': True,
     #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
 
-    destination = np.zeros((dst_height, dst_width), dtype=data_src.dtype)
+    destination = np.zeros((1, dst_height, dst_width), dtype=data_src.dtype)
 
-    reproject(data_src.squeeze().data.compute(),
+    reproject(data_src.data.compute(),
               destination,
               src_transform=data_src.transform,
               src_crs=data_src.crs,

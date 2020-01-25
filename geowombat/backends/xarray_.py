@@ -6,6 +6,7 @@ from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, transform_crs
 
+import dask.array as da
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
@@ -493,26 +494,47 @@ def to_crs(data_src,
         ``xarray.DataArray``
     """
 
-    dtype = data_src.dtype
+    data_dst = xr.DataArray(data=da.from_array(transform_crs(data_src,
+                                                             dst_crs,
+                                                             dst_res=dst_res,
+                                                             resampling=resampling,
+                                                             warp_mem_limit=warp_mem_limit,
+                                                             num_threads=num_threads),
+                                               chunks=data_src.data.chunksize),
+                            coords={'band': data_src.band.values.tolist(),
+                                    'y': data_src.y.values,
+                                    'x': data_src.x.values},
+                            dims=('band', 'y', 'x'),
+                            attrs=data_src.attrs)
 
-    with xr.open_rasterio(transform_crs(data_src,
-                                        dst_crs,
-                                        dst_res=dst_res,
-                                        resampling=resampling,
-                                        warp_mem_limit=warp_mem_limit,
-                                        num_threads=num_threads),
-                          chunks=data_src.data.chunksize) as dst_:
+    data_dst.attrs['resampling'] = resampling
 
-        dst_.coords['band'] = data_src.band.values.tolist()
+    if 'sensor' in data_src.attrs:
+        data_dst.attrs['sensor'] = data_src.attrs['sensor']
 
-        dst_.attrs['resampling'] = resampling
+    if 'filename' in data_src.attrs:
+        data_dst.attrs['filename'] = data_src.attrs['filename']
 
-        if 'sensor' in data_src.attrs:
-            dst_.attrs['sensor'] = data_src.attrs['sensor']
+    return data_dst
 
-        if 'filename' in data_src.attrs:
-            dst_.attrs['filename'] = data_src.attrs['filename']
-
-        attrs = data_src.attrs.copy()
-
-        return dst_.astype(dtype).assign_attrs(**attrs)
+    # with xr.open_rasterio(transform_crs(data_src,
+    #                                     dst_crs,
+    #                                     dst_res=dst_res,
+    #                                     resampling=resampling,
+    #                                     warp_mem_limit=warp_mem_limit,
+    #                                     num_threads=num_threads),
+    #                       chunks=data_src.data.chunksize) as dst_:
+    #
+    #     dst_.coords['band'] = data_src.band.values.tolist()
+    #
+    #     dst_.attrs['resampling'] = resampling
+    #
+    #     if 'sensor' in data_src.attrs:
+    #         dst_.attrs['sensor'] = data_src.attrs['sensor']
+    #
+    #     if 'filename' in data_src.attrs:
+    #         dst_.attrs['filename'] = data_src.attrs['filename']
+    #
+    #     attrs = data_src.attrs.copy()
+    #
+    #     return dst_.astype(dtype).assign_attrs(**attrs)
