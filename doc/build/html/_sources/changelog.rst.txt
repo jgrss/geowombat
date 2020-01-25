@@ -8,6 +8,7 @@ Change Log
 
 - Added new function :func:`geowombat.core.sort_images_by_date`.
 - Added `geowombat.radiometry` module to the documentation.
+- Rearranged documentation and fixed minor docstring issues.
 
 1.0.7 (23 January 2020)
 -----------------------
