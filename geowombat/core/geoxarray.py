@@ -11,8 +11,8 @@ from . import tasseled_cap as gw_tasseled_cap
 from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
+from ..backends import to_crs as _to_crs
 from ..util import imshow as gw_imshow
-#from ..models import predict
 from ..radiometry import BRDF as _BRDF
 
 import numpy as np
@@ -311,6 +311,44 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                    connectivity=connectivity)
 
         df_.to_file(filename)
+
+    def to_crs(self,
+               dst_crs,
+               dst_res=None,
+               resampling='nearest',
+               nodata=0,
+               warp_mem_limit=512,
+               num_threads=1):
+
+        """
+        Transforms a DataArray to a new coordinate reference system
+
+        Args:
+            dst_crs (``CRS`` | int | dict | str): The destination CRS.
+            dst_res (Optional[tuple]): The destination resolution.
+            resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+            nodata (Optional[float or int]: The 'no data' value.
+            warp_mem_limit (Optional[int]): The warp memory limit.
+            num_threads (Optional[int]): The number of parallel threads.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     dst = src.gw.to_crs(4326)
+        """
+
+        return _to_crs(self._obj,
+                       dst_crs,
+                       dst_res=dst_res,
+                       resampling=resampling,
+                       nodata=nodata,
+                       warp_mem_limit=warp_mem_limit,
+                       num_threads=num_threads)
 
     def to_raster(self,
                   filename,
