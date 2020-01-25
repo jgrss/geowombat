@@ -1377,7 +1377,7 @@ class BRDF(RossLiKernels):
                     #                                   num_threads=1,
                     #                                   warp_mem_limit=512)
 
-        attrs = data.attrs
+        attrs = data.attrs.copy()
 
         if not nodata:
             nodata = data.gw.nodata

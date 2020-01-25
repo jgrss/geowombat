@@ -116,6 +116,10 @@ class Topo(object):
                   solar_za,
                   solar_az,
                   method='c',
+                  slope_thresh=2,
+                  nodata=0,
+                  elev_nodata=-32768,
+                  scale_factor=1,
                   angle_scale=0.01,
                   n_jobs=1):
 
@@ -127,6 +131,11 @@ class Topo(object):
             solar_za (2d DataArray): The solar zenith angles (degrees).
             solar_az (2d DataArray): The solar azimuth angles (degrees).
             method (Optional[str]): The method to apply. Choices are ['c'].
+            slope_thresh (Optional[float or int]): The slope threshold. Any samples with
+                values < ``slope_thresh`` are not adjusted.
+            nodata (Optional[int or float]): The 'no data' value for ``data``.
+            elev_nodata (Optional[float or int]): The 'no data' value for ``elev``.
+            scale_factor (Optional[float]): A scale factor to apply to the input data.
             angle_scale (Optional[float]): The angle scale factor.
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit``.
 
@@ -151,6 +160,18 @@ class Topo(object):
             >>>         src_norm = gw.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
 
+        attrs = data.attrs.copy()
+
+        if not nodata:
+            nodata = data.gw.nodata
+
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        # Scale the reflectance data
+        if scale_factor != 1:
+            data = data * scale_factor
+
         calc_slope_d = dask.delayed(calc_slope)
         calc_aspect_d = dask.delayed(calc_aspect)
 
@@ -170,7 +191,9 @@ class Topo(object):
         slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
         aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
 
-        nodata_samps = da.where((elev.data == -32768) | (slope_deg_fd < 2), 1, 0)
+        nodata_samps = da.where((elev.data == elev_nodata) |
+                                (data.max(dim='band').data == nodata) |
+                                (slope_deg_fd < slope_thresh), 1, 0)
 
         # valid_samples = da.where((slopefd != srtm_nodata) & (slopefd > slope_thresh))
 
@@ -196,11 +219,19 @@ class Topo(object):
                                          nodata_samps,
                                          n_jobs=n_jobs))
 
-        return xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
-                                                                 data.gw.nrows,
-                                                                 data.gw.ncols)),
-                            coords={'band': data.band.values.tolist(),
-                                    'y': data.y.values,
-                                    'x': data.x.values},
-                            dims=('band', 'y', 'x'),
-                            attrs=data.attrs)
+        adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
+                                                                     data.gw.nrows,
+                                                                     data.gw.ncols)),
+                                coords={'band': data.band.values.tolist(),
+                                        'y': data.y.values,
+                                        'x': data.x.values},
+                                dims=('band', 'y', 'x'),
+                                attrs=data.attrs)
+
+        attrs['calibration'] = 'Topographic-adjusted'
+        attrs['nodata'] = nodata
+        attrs['drange'] = (0, 1)
+
+        adj_data.attrs = attrs
+
+        return adj_data
