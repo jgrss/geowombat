@@ -494,19 +494,28 @@ def to_crs(data_src,
         ``xarray.DataArray``
     """
 
-    data_dst = xr.DataArray(data=da.from_array(transform_crs(data_src,
-                                                             dst_crs,
-                                                             dst_res=dst_res,
-                                                             resampling=resampling,
-                                                             warp_mem_limit=warp_mem_limit,
-                                                             num_threads=num_threads),
+    data_dst, dst_transform, dst_crs = transform_crs(data_src,
+                                                     dst_crs,
+                                                     dst_res=dst_res,
+                                                     resampling=resampling,
+                                                     warp_mem_limit=warp_mem_limit,
+                                                     num_threads=num_threads)
+
+    nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
+
+    x = np.linspace(dst_transform[2], dst_transform[2] + (dst_transform[0] * nrows) - abs(dst_transform[0]), nrows) - abs(dst_transform[0]) / 2.0
+    y = np.linspace(dst_transform[5], dst_transform[5] - (dst_transform[4] * ncols) - abs(dst_transform[4]), ncols) - abs(dst_transform[4]) / 2.0
+
+    data_dst = xr.DataArray(data=da.from_array(data_dst,
                                                chunks=data_src.data.chunksize),
                             coords={'band': data_src.band.values.tolist(),
-                                    'y': data_src.y.values,
-                                    'x': data_src.x.values},
+                                    'y': y,
+                                    'x': x},
                             dims=('band', 'y', 'x'),
                             attrs=data_src.attrs)
 
+    data_dst.attrs['transform'] = dst_transform
+    data_dst.attrs['crs'] = dst_crs
     data_dst.attrs['resampling'] = resampling
 
     if 'sensor' in data_src.attrs:

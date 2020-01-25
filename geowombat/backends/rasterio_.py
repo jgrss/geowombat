@@ -604,7 +604,7 @@ def transform_crs(data_src,
         num_threads (Optional[int]): The number of parallel threads.
 
     Returns:
-        ``xarray.DataArray``
+        ``numpy.ndarray`` ``tuple`` ``CRS``
     """
 
     dst_crs = check_crs(dst_crs)
@@ -646,18 +646,18 @@ def transform_crs(data_src,
 
     destination = np.zeros((1, dst_height, dst_width), dtype=data_src.dtype)
 
-    reproject(data_src.data.compute(),
-              destination,
-              src_transform=data_src.transform,
-              src_crs=data_src.crs,
-              dst_transform=dst_transform,
-              dst_crs=dst_crs,
-              resampling=getattr(Resampling, resampling),
-              dst_resolution=dst_res,
-              warp_mem_limit=warp_mem_limit,
-              num_threads=num_threads)
+    data_dst, dst_transform = reproject(data_src.data.compute(),
+                                        destination,
+                                        src_transform=data_src.transform,
+                                        src_crs=data_src.crs,
+                                        dst_transform=dst_transform,
+                                        dst_crs=dst_crs,
+                                        resampling=getattr(Resampling, resampling),
+                                        dst_resolution=dst_res,
+                                        warp_mem_limit=warp_mem_limit,
+                                        num_threads=num_threads)
 
-    return destination
+    return data_dst, dst_transform, dst_crs
 
     # with rio.open(data_src.attrs['filename']) as src_:
     #     with WarpedVRT(src_, **vrt_options) as vrt_:
