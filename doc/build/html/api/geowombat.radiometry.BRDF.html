@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="LinearAdjustments" href="geowombat.radiometry.LinearAdjustments.html" />
+    <link rel="next" title="Topo" href="geowombat.radiometry.Topo.html" />
     <link rel="prev" title="pan_sharpen" href="geowombat.radiometry.pan_sharpen.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -84,7 +84,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.radiometry.pan_sharpen.html" title="previous chapter">pan_sharpen</a></li>
-      <li>Next: <a href="geowombat.radiometry.LinearAdjustments.html" title="next chapter">LinearAdjustments</a></li>
+      <li>Next: <a href="geowombat.radiometry.Topo.html" title="next chapter">Topo</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -133,7 +133,7 @@
 <td><p>Returns the mean solar zenith angle (SZA) as a function of the central latitude</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
-<td><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method (see Roy et al.</p></td>
+<td><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method</p></td>
 </tr>
 </tbody>
 </table>
@@ -162,7 +162,7 @@
 <dt id="geowombat.radiometry.BRDF.norm_brdf">
 <code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude=None</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">out_range=None</em>, <em class="sig-param">scale_angles=True</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
-using the global c-factor method (see Roy et al. (2016))</p>
+using the global c-factor method</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -206,8 +206,8 @@ using the global c-factor method (see Roy et al. (2016))</p>
 <span class="gp">&gt;&gt;&gt; </span>            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensorz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensorz</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;sensora.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensora</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;landsat.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>            <span class="n">ds_brdf</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;landsat.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>            <span class="n">src_norm</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">solarz</span><span class="p">,</span> <span class="n">solara</span><span class="p">,</span> <span class="n">sensorz</span><span class="p">,</span> <span class="n">sensora</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
