@@ -503,7 +503,8 @@ def to_crs(data_src,
                                         resampling=resampling,
                                         nodata=nodata,
                                         warp_mem_limit=warp_mem_limit,
-                                        num_threads=num_threads)) as dst_:
+                                        num_threads=num_threads),
+                          chunks=data_src.data.chunksize) as dst_:
 
         dst_.coords['band'] = data_src.band.values.tolist()
 
