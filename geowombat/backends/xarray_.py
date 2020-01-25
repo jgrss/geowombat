@@ -517,11 +517,6 @@ def to_crs(data_src,
     x = np.linspace(dst_transform[2], dst_transform[2] + (dst_transform[0] * nrows) - abs(dst_transform[0]), nrows) - abs(dst_transform[0]) / 2.0
     y = np.linspace(dst_transform[5], dst_transform[5] - (dst_transform[4] * ncols) - abs(dst_transform[4]), ncols) - abs(dst_transform[4]) / 2.0
 
-    print(data_dst.shape)
-    print(dst_transform)
-    print(x.shape)
-    print(y.shape)
-
     if not dst_res:
         dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
 
