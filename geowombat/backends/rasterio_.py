@@ -628,6 +628,7 @@ def transform_crs(data_src,
 
     if not dst_res and not dst_width:
 
+        # Transform to the same dimensions as the input
         dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
@@ -636,11 +637,12 @@ def transform_crs(data_src,
                                                                            bottom=dst_bounds.bottom,
                                                                            right=dst_bounds.right,
                                                                            top=dst_bounds.top,
-                                                                           dst_width=data_src.gw.width,
-                                                                           dst_height=data_src.gw.height)
+                                                                           dst_width=data_src.gw.ncols,
+                                                                           dst_height=data_src.gw.nrows)
 
     elif dst_res:
 
+        # Transform by cell resolution
         dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
@@ -653,6 +655,7 @@ def transform_crs(data_src,
 
     else:
 
+        # Transform by destination dimensions
         dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
