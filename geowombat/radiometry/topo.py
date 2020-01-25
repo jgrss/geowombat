@@ -105,6 +105,10 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
         return np.float64(dst_array)
 
 
+calc_slope_delayed = dask.delayed(calc_slope)
+calc_aspect_delayed = dask.delayed(calc_aspect)
+
+
 class Topo(object):
 
     """
@@ -165,6 +169,8 @@ class Topo(object):
                   elev,
                   solar_za,
                   solar_az,
+                  slope=None,
+                  aspect=None,
                   method='c',
                   slope_thresh=2,
                   nodata=0,
@@ -181,8 +187,11 @@ class Topo(object):
 
         Args:
             data (2d or 3d DataArray): The data to normalize, in the range 0-1.
+            elev (2d DataArray): The elevation data.
             solar_za (2d DataArray): The solar zenith angles (degrees).
             solar_az (2d DataArray): The solar azimuth angles (degrees).
+            slope (2d DataArray): The slope data. If not given, slope is calculated from ``elev``.
+            aspect (2d DataArray): The aspect data. If not given, aspect is calculated from ``elev``.
             method (Optional[str]): The method to apply. Choices are ['c'].
             slope_thresh (Optional[float or int]): The slope threshold. Any samples with
                 values < ``slope_thresh`` are not adjusted.
@@ -233,9 +242,6 @@ class Topo(object):
         if scale_factor != 1:
             data = data * scale_factor
 
-        calc_slope_d = dask.delayed(calc_slope)
-        calc_aspect_d = dask.delayed(calc_aspect)
-
         if not slope_kwargs:
 
             slope_kwargs = dict(format='MEM',
@@ -264,17 +270,23 @@ class Topo(object):
         if w % 2 == 0:
             w += 1
 
-        slope_deg = calc_slope_d(elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs)
-        aspect_deg = calc_aspect_d(elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs)
+        if isinstance(slope, xr.DataArray):
+            slope_deg_fd = slope.data
+        else:
 
-        slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
-        aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
+            slope_deg = calc_slope_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs)
+            slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
+
+        if isinstance(aspect, xr.DataArray):
+            aspect_deg_fd = aspect.data
+        else:
+
+            aspect_deg = calc_aspect_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs)
+            aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
 
         nodata_samps = da.where((elev.data == elev_nodata) |
                                 (data.max(dim='band').data == nodata) |
                                 (slope_deg_fd < slope_thresh), 1, 0)
-
-        # valid_samples = da.where((slopefd != srtm_nodata) & (slopefd > slope_thresh))
 
         slope_rad = da.deg2rad(slope_deg_fd)
         aspect_rad = da.deg2rad(aspect_deg_fd)
