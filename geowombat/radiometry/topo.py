@@ -148,6 +148,9 @@ class Topo(object):
 
         Examples:
             >>> import geowombat as gw
+            >>> from geowombat.radiometry import Topo
+            >>>
+            >>> topo = Topo()
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
             >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
@@ -157,7 +160,7 @@ class Topo(object):
             >>>             gw.open('solarz.tif') as solarz,
             >>>                 gw.open('solara.tif') as solara:
             >>>
-            >>>         src_norm = gw.norm_topo(src, elev, solarz, solara, n_jobs=-1)
+            >>>         src_norm = topo.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
 
         attrs = data.attrs.copy()
