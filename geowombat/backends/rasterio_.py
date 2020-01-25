@@ -589,6 +589,7 @@ def transform_crs(data_src,
                   dst_res=None,
                   dst_width=None,
                   dst_height=None,
+                  dst_bounds=None,
                   resampling='nearest',
                   warp_mem_limit=512,
                   num_threads=1):
@@ -598,10 +599,12 @@ def transform_crs(data_src,
 
     Args:
         data_src (DataArray): The data to transform.
-        dst_crs (``CRS`` | int | dict | str): The destination CRS.
+        dst_crs (CRS | int | dict | str): The destination CRS.
         dst_res (Optional[tuple]): The destination resolution.
         dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
+        dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
+            or as a tuple of (left, bottom, right, top).
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         warp_mem_limit (Optional[int]): The warp memory limit.
@@ -613,16 +616,26 @@ def transform_crs(data_src,
 
     dst_crs = check_crs(dst_crs)
 
+    if not dst_bounds:
+        dst_bounds = data_src.gw.bounds
+
+    if not isinstance(dst_bounds, BoundingBox):
+
+        dst_bounds = BoundingBox(left=dst_bounds[0],
+                                 bottom=dst_bounds[1],
+                                 right=dst_bounds[2],
+                                 top=dst_bounds[3])
+
     if not dst_res and not dst_width:
 
         dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
                                                                            data_src.gw.nrows,
-                                                                           left=data_src.gw.left,
-                                                                           bottom=data_src.gw.bottom,
-                                                                           right=data_src.gw.right,
-                                                                           top=data_src.gw.top,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
                                                                            dst_width=data_src.gw.width,
                                                                            dst_height=data_src.gw.height)
 
@@ -632,10 +645,10 @@ def transform_crs(data_src,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
                                                                            data_src.gw.nrows,
-                                                                           left=data_src.gw.left,
-                                                                           bottom=data_src.gw.bottom,
-                                                                           right=data_src.gw.right,
-                                                                           top=data_src.gw.top,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
                                                                            resolution=dst_res)
 
     else:
@@ -644,10 +657,10 @@ def transform_crs(data_src,
                                                                            dst_crs,
                                                                            data_src.gw.ncols,
                                                                            data_src.gw.nrows,
-                                                                           left=data_src.gw.left,
-                                                                           bottom=data_src.gw.bottom,
-                                                                           right=data_src.gw.right,
-                                                                           top=data_src.gw.top,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
                                                                            dst_width=dst_width,
                                                                            dst_height=dst_height)
 
