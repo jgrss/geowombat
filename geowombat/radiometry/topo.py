@@ -7,7 +7,7 @@ import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 
-def calc_slope(elev, proc_dims=None, **kwargs):
+def calc_slope(elev, proc_dims=None, w=None, **kwargs):
 
     """
     Calculates slope from elevation
@@ -15,6 +15,7 @@ def calc_slope(elev, proc_dims=None, **kwargs):
     Args:
         elev (2d array): The elevation data.
         proc_dims (Optional[tuple]): Dimensions to resize to.
+        w (Optional[int]): The smoothing window size when ``proc_dims`` is given.
         kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
 
     Returns:
@@ -46,13 +47,16 @@ def calc_slope(elev, proc_dims=None, **kwargs):
                                (incols, inrows),
                                interpolation=cv2.INTER_LINEAR)
 
-        return np.float64(cv2.bilateralFilter(np.float32(dst_array), 5, 10, 10))
+        if not w:
+            w = 15
+
+        return np.float64(cv2.bilateralFilter(np.float32(dst_array), w, 10, 10))
 
     else:
         return np.float64(dst_array)
 
 
-def calc_aspect(elev, proc_dims=None, **kwargs):
+def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
 
     """
     Calculates aspect from elevation
@@ -60,6 +64,7 @@ def calc_aspect(elev, proc_dims=None, **kwargs):
     Args:
         elev (2d array): The elevation data.
         proc_dims (Optional[tuple]): Dimensions to resize to.
+        w (Optional[int]): The smoothing window size when ``proc_dims`` is given.
         kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.
 
     Returns:
@@ -91,7 +96,10 @@ def calc_aspect(elev, proc_dims=None, **kwargs):
                                (incols, inrows),
                                interpolation=cv2.INTER_LINEAR)
 
-        return np.float64(cv2.bilateralFilter(np.float32(dst_array), 5, 10, 10))
+        if not w:
+            w = 15
+
+        return np.float64(cv2.bilateralFilter(np.float32(dst_array), w, 10, 10))
 
     else:
         return np.float64(dst_array)
@@ -251,8 +259,13 @@ class Topo(object):
         proc_dims = (int((data.gw.ncols*data.gw.cellx) / 30.0),
                      int((data.gw.nrows*data.gw.celly) / 30.0))
 
-        slope_deg = calc_slope_d(elev.squeeze().data, proc_dims=proc_dims, **slope_kwargs)
-        aspect_deg = calc_aspect_d(elev.squeeze().data, proc_dims=proc_dims, **aspect_kwargs)
+        w = (5 * 30.0) / data.gw.celly
+
+        if w % 2 == 0:
+            w += 1
+
+        slope_deg = calc_slope_d(elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs)
+        aspect_deg = calc_aspect_d(elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs)
 
         slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
         aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
