@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Change Log &#8212; GeoWombat 1.0.8 documentation</title>
+    <title>Change Log &#8212; GeoWombat 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -60,10 +60,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
@@ -116,10 +117,13 @@
   <div class="section" id="change-log">
 <span id="changelog"></span><h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="january-2020">
-<h2>1.0.8 (24 January 2020)<a class="headerlink" href="#january-2020" title="Permalink to this headline">¶</a></h2>
+<h2>1.1.0 (24 January 2020)<a class="headerlink" href="#january-2020" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
+<li><p>Added new class <a class="reference internal" href="api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo" title="geowombat.radiometry.Topo"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.Topo</span></code></a> for topographic corrections.</p></li>
+<li><p>Added new <cite>xarray.DataArray</cite> <cite>geowombat</cite> accessor <code class="xref py py-func docutils literal notranslate"><span class="pre">to_crs()</span></code> for CRS transformations.</p></li>
 <li><p>Added new function <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code>.</p></li>
 <li><p>Added <cite>geowombat.radiometry</cite> module to the documentation.</p></li>
+<li><p>Added new <cite>xarray.DataArray</cite> <cite>geowombat</cite> property <cite>bounds_as_namedtuple</cite>.</p></li>
 <li><p>Rearranged documentation and fixed minor docstring issues.</p></li>
 </ul>
 </div>

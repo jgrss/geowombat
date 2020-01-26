@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>sample &#8212; GeoWombat 1.0.8 documentation</title>
+    <title>sample &#8212; GeoWombat 1.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -60,10 +60,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
@@ -119,7 +120,7 @@
 <h1>sample<a class="headerlink" href="#sample" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.sample">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">method='random'</em>, <em class="sig-param">band=None</em>, <em class="sig-param">n=None</em>, <em class="sig-param">strata=None</em>, <em class="sig-param">spacing=None</em>, <em class="sig-param">min_dist=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">method='random'</em>, <em class="sig-param">band=None</em>, <em class="sig-param">n=None</em>, <em class="sig-param">strata=None</em>, <em class="sig-param">spacing=None</em>, <em class="sig-param">min_dist=None</em>, <em class="sig-param">max_attempts=10</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates samples from a raster</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -128,15 +129,18 @@
 <li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The sampling method. Choices are [‘random’, ‘systematic’].</p></li>
 <li><p><strong>band</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>str</em><em>]</em>) – The band name to extract from. Only required if <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘random’ and <code class="docutils literal notranslate"><span class="pre">strata</span></code> is given.</p></li>
 <li><p><strong>n</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total number of samples. Only required if <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘random’.</p></li>
-<li><p><strong>strata</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – <p>The strata to sample within. The dictionary key–&gt;value pairs should be {‘conditional,value’: proportion}.</p>
-<dl>
-<dt>E.g.,</dt><dd><p>strata = {‘==,1’: 0.5, ‘&gt;=,2’: 0.5}</p>
-<p>… would sample 50% of total samples within class 1 and 50% of total samples in class &gt;= 2.</p>
-</dd>
-</dl>
+<li><p><strong>strata</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – <p>The strata to sample within. The dictionary key–&gt;value pairs should be {‘conditional,value’: sample size}.</p>
+<p>E.g.,</p>
+<blockquote>
+<div><p>strata = {‘==,1’: 0.5, ‘&gt;=,2’: 0.5}
+… would sample 50% of total samples within class 1 and 50% of total samples in class &gt;= 2.</p>
+<p>strata = {‘==,1’: 10, ‘&gt;=,2’: 20}
+… would sample 10 samples within class 1 and 20 samples in class &gt;= 2.</p>
+</div></blockquote>
 </p></li>
 <li><p><strong>spacing</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The spacing (in map projection units) when <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘systematic’.</p></li>
 <li><p><strong>min_dist</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – A minimum distance allowed between samples. Only applies when <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘random’.</p></li>
+<li><p><strong>max_attempts</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The maximum numer of attempts to sample points &gt; <code class="docutils literal notranslate"><span class="pre">min_dist</span></code> from each other.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">geowombat.extract</span></code>.</p></li>
 </ul>
 </dd>
