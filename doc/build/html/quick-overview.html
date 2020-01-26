@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Quick overview &#8212; GeoWombat 1.0.8 documentation</title>
+    <title>Quick overview &#8212; GeoWombat 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -60,10 +60,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
@@ -134,14 +135,14 @@
 
 <span class="gp">In [5]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
-<span class="go">array([[ 0.82686742, -0.04001731,  2.07619255],</span>
-<span class="go">       [-0.05354176, -0.2290351 , -0.21065892]])</span>
+<span class="go">array([[-0.29307095, -0.66884196, -0.65036845],</span>
+<span class="go">       [-0.5730233 ,  1.1076764 , -0.62833863]])</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) int64 10 20</span>
 <span class="go">Dimensions without coordinates: y</span>
 
 <span class="gp">In [6]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fc28d93ce48&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fbaa8412ef0&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -155,7 +156,7 @@
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-75e59b80b98c46314513262db50c2369&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-28ec0b38f1d0139ea629f57a81596b9a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -172,7 +173,7 @@
 <span class="go">    DataType:       Generic</span>
 <span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fc28d93c6d8&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fbaa85ef470&gt;</span>
 </pre></div>
 </div>
 </div>

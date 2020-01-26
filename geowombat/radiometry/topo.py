@@ -1,3 +1,5 @@
+from ..errors import logger
+
 import numpy as np
 from osgeo import gdal, gdal_array
 import cv2
@@ -229,6 +231,11 @@ class Topo(object):
             >>>
             >>>         src_norm = topo.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
+
+        if method.lower() != 'c':
+
+            logger.exception("  Currently, the only supported method is 'c'.")
+            raise NameError
 
         attrs = data.attrs.copy()
 

@@ -32,10 +32,11 @@ Documentation
 
 * :doc:`io`
 * :doc:`attributes`
+* :doc:`config`
+* :doc:`crs`
 * :doc:`extraction`
 * :doc:`band-math`
 * :doc:`machine-learning`
-* :doc:`config`
 * :doc:`apply`
 * :doc:`moving`
 * :doc:`radiometry`
@@ -48,10 +49,11 @@ Documentation
 
    io
    attributes
+   config
+   crs
    extraction
    band-math
    machine-learning
-   config
    apply
    moving
    radiometry
