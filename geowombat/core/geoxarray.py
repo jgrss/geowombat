@@ -704,6 +704,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                strata=None,
                spacing=None,
                min_dist=None,
+               max_attempts=10,
                **kwargs):
 
         """
@@ -723,6 +724,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
+            max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -756,6 +758,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        strata=strata,
                        spacing=spacing,
                        min_dist=min_dist,
+                       max_attempts=max_attempts,
                        **kwargs)
 
     def extract(self,
