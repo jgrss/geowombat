@@ -718,9 +718,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': proportion}.
 
                 E.g.,
-                    strata = {'==,1': 0.5, '>=,2': 0.5}
 
+                    strata = {'==,1': 0.5, '>=,2': 0.5}
                     ... would sample 50% of total samples within class 1 and 50% of total samples in class >= 2.
+
+                    strata = {'==,1': 10, '>=,2': 20}
+                    ... would sample 10 samples within class 1 and 20 samples in class >= 2.
 
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
