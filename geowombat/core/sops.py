@@ -84,12 +84,15 @@ class SpatialOperations(_PropertyMixin):
             method (Optional[str]): The sampling method. Choices are ['random', 'systematic'].
             band (Optional[int or str]): The band name to extract from. Only required if ``method`` = 'random' and ``strata`` is given.
             n (Optional[int]): The total number of samples. Only required if ``method`` = 'random'.
-            strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': proportion}.
+            strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': sample size}.
 
                 E.g.,
-                    strata = {'==,1': 0.5, '>=,2': 0.5}
 
+                    strata = {'==,1': 0.5, '>=,2': 0.5}
                     ... would sample 50% of total samples within class 1 and 50% of total samples in class >= 2.
+
+                    strata = {'==,1': 10, '>=,2': 20}
+                    ... would sample 10 samples within class 1 and 20 samples in class >= 2.
 
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
@@ -216,13 +219,16 @@ class SpatialOperations(_PropertyMixin):
             counter = 0
             dfs = None
 
-            for cond, prop in strata.items():
+            for cond, stratum_size in strata.items():
 
                 sign, value = cond.split(',')
                 sign = sign.strip()
                 value = float(value)
 
-                sample_size = int(n * prop)
+                if isinstance(stratum_size, int):
+                    sample_size = stratum_size
+                else:
+                    sample_size = int(n * stratum_size)
 
                 attempts = 0
 
