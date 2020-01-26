@@ -3,11 +3,14 @@
 Change Log
 ==========
 
-1.0.8 (24 January 2020)
+1.1.0 (24 January 2020)
 -----------------------
 
+- Added new class :class:`geowombat.radiometry.Topo` for topographic corrections.
+- Added new `xarray.DataArray` `geowombat` accessor :func:`to_crs` for CRS transformations.
 - Added new function :func:`geowombat.core.sort_images_by_date`.
 - Added `geowombat.radiometry` module to the documentation.
+- Added new `xarray.DataArray` `geowombat` property `bounds_as_namedtuple`.
 - Rearranged documentation and fixed minor docstring issues.
 
 1.0.7 (23 January 2020)
