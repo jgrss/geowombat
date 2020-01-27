@@ -88,7 +88,7 @@ def get_attrs(src, **kwargs):
 
 
 @dask.delayed
-def read_delayed(fname, extra_dim, **kwargs):
+def read_delayed(fname, extra_dim, chunks, **kwargs):
 
     with rio.open(fname) as src:
 
@@ -96,22 +96,26 @@ def read_delayed(fname, extra_dim, **kwargs):
 
         single_band = True if len(data_slice.shape) == 2 else False
 
-        yblock = src.block_shapes[0][0]
-        xblock = src.block_shapes[0][1]
-
         if extra_dim == 0:
 
             if single_band:
 
-                # Expand to 1 band and the z dimension
+                # Expand to 1 band
                 data_slice = da.from_array(data_slice[np.newaxis, :, :],
-                                           chunks=(1, yblock, xblock))
+                                           chunks=chunks)
+
+            else:
+
+                data_slice = da.from_array(data_slice,
+                                           chunks=chunks)
 
         else:
 
+            chunks_ = (1,) + chunks if len(chunks) < 4 else chunks
+
             # Expand the z dimension
             data_slice = da.from_array(data_slice[np.newaxis, :, :, :],
-                                       chunks=(1, 1, yblock, xblock))
+                                       chunks=chunks_)
 
         ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
@@ -135,14 +139,15 @@ def read_delayed(fname, extra_dim, **kwargs):
                                 attrs=attrs)
 
 
-def read_list(file_list, **kwargs):
-    return [read_delayed(fn, 1, **kwargs) for fn in file_list]
+def read_list(file_list, chunks, **kwargs):
+    return [read_delayed(fn, 1, chunks, **kwargs) for fn in file_list]
 
 
 def read(filename,
          band_names=None,
          time_names=None,
          bounds=None,
+         chunks=256,
          num_workers=1,
          **kwargs):
 
@@ -154,7 +159,8 @@ def read(filename,
         band_names (Optional[list]): A list of names to give the output band dimension.
         time_names (Optional[list]): A list of names to give the time dimension.
         bounds (Optional[1d array-like]): A bounding box to subset to, given as
-            [minx, miny, maxx, maxy] or [left, bottom, right, top]. Default is None.
+            [minx, miny, maxx, maxy] or [left, bottom, right, top].
+        chunks (Optional[tuple]): The data chunk size.
         num_workers (Optional[int]): The number of parallel ``dask`` workers.
         kwargs (Optional[dict]): Keyword arguments to pass to ``rasterio.write``.
 
@@ -175,7 +181,7 @@ def read(filename,
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
-        data = dask.compute(read_delayed(filename, 0, **kwargs),
+        data = dask.compute(read_delayed(filename, 0, chunks, **kwargs),
                             num_workers=num_workers)[0]
 
         if not band_names:
@@ -214,6 +220,7 @@ def read(filename,
                 kwargs['window'] = from_bounds(*bounds, transform=src.transform)
 
         data = xr.concat(dask.compute(read_list(filename,
+                                                chunks,
                                                 **kwargs),
                                       num_workers=num_workers),
                          dim='time')
@@ -351,13 +358,28 @@ def open(filename,
 
         if 'chunks' not in kwargs:
 
-            # GDAL's default chunk size is typically 256
-            kwargs['chunks'] = (1, 256, 256)
+            if isinstance(filename, list):
+
+                with rio.open(filename[0]) as src_:
+
+                    w = src_.block_window(1, 0, 0)
+                    chunks = (1, w.height, w.width)
+
+            else:
+
+                with rio.open(filename) as src_:
+
+                    w = src_.block_window(1, 0, 0)
+                    chunks = (1, w.height, w.width)
+
+        else:
+            chunks = kwargs['chunks']
 
         data = read(filename,
                     band_names=band_names,
                     time_names=time_names,
                     bounds=bounds,
+                    chunks=chunks,
                     num_workers=num_workers,
                     **kwargs)
 
