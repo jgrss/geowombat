@@ -118,11 +118,10 @@
 <span id="config"></span><h1>GeoWombat configuration<a class="headerlink" href="#geowombat-configuration" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="geowombat-has-a-context-manager-geowombat-config-to-assist-in-configurations">
 <h2>GeoWombat has a context manager (<code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.config</span></code>) to assist in configurations<a class="headerlink" href="#geowombat-has-a-context-manager-geowombat-config-to-assist-in-configurations" title="Permalink to this headline">¶</a></h2>
-<p>Import GeoWombat</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 </pre></div>
 </div>
-<p>Wrap functions in a context manager to control global arguments</p>
+<p>Wrap functions in a context manager to control global arguments.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>

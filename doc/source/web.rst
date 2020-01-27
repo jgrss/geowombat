@@ -7,7 +7,6 @@ GeoWombat can be used to download directly from the Google Cloud Platform.
 --------------------------------------------------------------------------
 
 Here, a Landsat 7 panchromatic image is downloaded.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -36,7 +35,6 @@ GeoWombat provides a convenience function to download, radiometrically adjust, a
 ---------------------------------------------------------------------------------------------
 
 In this example, data are downloaded and processed for a given time range and geographic extent.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -64,7 +62,6 @@ In this example, data are downloaded and processed for a given time range and ge
                       crs=crs)
 
 In the example above, the bounds can also be taken directly from a file, as shown below.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 

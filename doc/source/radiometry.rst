@@ -7,7 +7,6 @@ Radiometry
 ---------------------------------------------------------------------------------------------------
 
 In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface reflectance image.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
