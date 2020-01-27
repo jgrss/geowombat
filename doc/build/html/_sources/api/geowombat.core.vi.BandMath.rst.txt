@@ -1,7 +1,0 @@
-BandMath
-========
-
-.. currentmodule:: geowombat.core.vi
-
-.. autoclass:: BandMath
-   :show-inheritance:

@@ -4,11 +4,12 @@ from collections import namedtuple
 
 from ..errors import logger
 
+import numpy as np
 import rasterio as rio
 from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.warp import aligned_target, transform_bounds
+from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
@@ -211,6 +212,38 @@ class WriteDaskArray(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         pass
+
+
+def check_crs(crs):
+
+    """
+    Checks a CRS instance
+
+    Args:
+        crs (``CRS`` | int | dict | str): The CRS instance.
+
+    Returns:
+        ``rasterio.crs.CRS``
+    """
+
+    if isinstance(crs, CRS):
+        dst_crs = crs
+    elif isinstance(crs, int):
+        dst_crs = CRS.from_epsg(crs)
+    elif isinstance(crs, dict):
+        dst_crs = CRS.from_dict(crs)
+    elif isinstance(crs, str):
+
+        if crs.startswith('+proj'):
+            dst_crs = CRS.from_proj4(crs)
+        else:
+            dst_crs = CRS.from_string(crs)
+
+    else:
+        logger.exception('  The CRS was not understood.')
+        raise TypeError
+
+    return dst_crs
 
 
 def align_bounds(minx, miny, maxx, maxy, res):
@@ -450,7 +483,7 @@ def warp(filename,
         resampling (Optional[str]): The resampling method. Choices are ['average', 'bilinear', 'cubic',
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         bounds (Optional[tuple]): The extent bounds to warp to.
-        crs (Optional[object]): The CRS to warp to.
+        crs (Optional[``CRS`` | int | dict | str]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
         nodata (Optional[int or float]): The 'no data' value.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
@@ -469,23 +502,7 @@ def warp(filename,
             dst_res = src.res
 
         if crs:
-
-            if isinstance(crs, CRS):
-                dst_crs = crs
-            elif isinstance(crs, int):
-                dst_crs = CRS.from_epsg(crs)
-            elif isinstance(crs, dict):
-                dst_crs = CRS.from_dict(crs)
-            elif isinstance(crs, str):
-
-                if crs.startswith('+proj'):
-                    dst_crs = CRS.from_proj4(crs)
-                else:
-                    dst_crs = CRS.from_string(crs)
-
-            else:
-                logger.exception('  The CRS was not understood.')
-
+            dst_crs = check_crs(crs)
         else:
             dst_crs = src.crs
 
@@ -565,3 +582,118 @@ def warp(filename,
                 output = vrt
 
     return output
+
+
+def transform_crs(data_src,
+                  dst_crs,
+                  dst_res=None,
+                  dst_width=None,
+                  dst_height=None,
+                  dst_bounds=None,
+                  resampling='nearest',
+                  warp_mem_limit=512,
+                  num_threads=1):
+
+    """
+    Transforms a DataArray to a new coordinate reference system
+
+    Args:
+        data_src (DataArray): The data to transform.
+        dst_crs (CRS | int | dict | str): The destination CRS.
+        dst_res (Optional[tuple]): The destination resolution.
+        dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
+        dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
+        dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
+            or as a tuple of (left, bottom, right, top).
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        warp_mem_limit (Optional[int]): The warp memory limit.
+        num_threads (Optional[int]): The number of parallel threads.
+
+    Returns:
+        ``numpy.ndarray`` ``tuple`` ``CRS``
+    """
+
+    dst_crs = check_crs(dst_crs)
+
+    if not dst_bounds:
+        dst_bounds = data_src.gw.bounds
+
+    if not isinstance(dst_bounds, BoundingBox):
+
+        dst_bounds = BoundingBox(left=dst_bounds[0],
+                                 bottom=dst_bounds[1],
+                                 right=dst_bounds[2],
+                                 top=dst_bounds[3])
+
+    if not dst_res and not dst_width:
+
+        # Transform to the same dimensions as the input
+        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
+                                                                           dst_crs,
+                                                                           data_src.gw.ncols,
+                                                                           data_src.gw.nrows,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
+                                                                           dst_width=data_src.gw.ncols,
+                                                                           dst_height=data_src.gw.nrows)
+
+    elif dst_res:
+
+        # Transform by cell resolution
+        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
+                                                                           dst_crs,
+                                                                           data_src.gw.ncols,
+                                                                           data_src.gw.nrows,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
+                                                                           resolution=dst_res)
+
+    else:
+
+        # Transform by destination dimensions
+        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
+                                                                           dst_crs,
+                                                                           data_src.gw.ncols,
+                                                                           data_src.gw.nrows,
+                                                                           left=dst_bounds.left,
+                                                                           bottom=dst_bounds.bottom,
+                                                                           right=dst_bounds.right,
+                                                                           top=dst_bounds.top,
+                                                                           dst_width=dst_width,
+                                                                           dst_height=dst_height)
+
+    # vrt_options = {'resampling': getattr(Resampling, resampling),
+    #                'crs': dst_crs,
+    #                'transform': dst_transform,
+    #                'height': dst_height,
+    #                'width': dst_width,
+    #                'nodata': nodata,
+    #                'warp_mem_limit': warp_mem_limit,
+    #                'warp_extras': {'multi': True,
+    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+
+    destination = np.zeros((data_src.gw.nbands,
+                            dst_height,
+                            dst_width), dtype=data_src.dtype)
+
+    data_dst, dst_transform = reproject(data_src.data.compute(),
+                                        destination,
+                                        src_transform=data_src.transform,
+                                        src_crs=data_src.crs,
+                                        dst_transform=dst_transform,
+                                        dst_crs=dst_crs,
+                                        resampling=getattr(Resampling, resampling),
+                                        dst_resolution=dst_res,
+                                        warp_mem_limit=warp_mem_limit,
+                                        num_threads=num_threads)
+
+    return data_dst, dst_transform, dst_crs
+
+    # with rio.open(data_src.attrs['filename']) as src_:
+    #     with WarpedVRT(src_, **vrt_options) as vrt_:
+    #         return vrt_

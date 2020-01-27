@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from rasterio.coords import BoundingBox
 from affine import Affine
 import shapely
 from shapely.geometry import Polygon
@@ -437,6 +438,11 @@ class DataProperties(object):
     def bounds(self):
         """Get the array bounding box (left, bottom, right, top)"""
         return self.left, self.bottom, self.right, self.top
+
+    @property
+    def bounds_as_namedtuple(self):
+        """Get the array bounding box as a ``rasterio.coords.BoundingBox``"""
+        return BoundingBox(left=self.left, bottom=self.bottom, right=self.right, top=self.top)
 
     @property
     def celly(self):

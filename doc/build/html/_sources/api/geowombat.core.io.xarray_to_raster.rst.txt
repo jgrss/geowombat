@@ -1,6 +1,0 @@
-xarray_to_raster
-================
-
-.. currentmodule:: geowombat.core.conversion
-
-.. autofunction:: xarray_to_raster

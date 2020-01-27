@@ -1169,37 +1169,9 @@ def LiFunctionForIntegral(phi, mu, sza, self):
     return mu * self.Li[0] / np.pi
 
 
-class RelativeBRDFNorm(object):
-
-    @staticmethod
-    def sza(central_latitude):
-
-        """
-        Returns the mean sun zenith angle (SZA) as a function of the central latitude
-
-        Args:
-            central_latitude (float)
-
-        Reference:
-
-            See :cite:`zhang_etal_2016`
-
-        Returns:
-            ``float``
-        """
-
-        return 31.0076 + \
-               -0.1272*central_latitude + \
-               0.01187*(central_latitude**2) + \
-               2.40e-05*(central_latitude**3) + \
-               -9.48e-07*(central_latitude**4) + \
-               -1.95e-09*(central_latitude**5) + \
-               6.15e-11*(central_latitude**6)
-
-
 class RossLiKernels(object):
 
-    def get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
+    def _get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
 
         # if isinstance(central_latitude, np.ndarray) or isinstance(central_latitude, xr.DataArray):
         #     delayed = True
@@ -1211,7 +1183,7 @@ class RossLiKernels(object):
         # HLS uses a constant (per location) sun zenith angle (`solar_za`).
         # HLS uses 0 for sun azimuth angle (`solar_az`).
         # theta_v, theta_s, delta_gamma
-        kl = Kernels(0.0, self.sza(central_latitude), 0.0, delayed=False, doIntegrals=False)
+        kl = Kernels(0.0, self.get_mean_sza(central_latitude), 0.0, delayed=False, doIntegrals=False)
 
         # Copy the geometric scattering
         #   coefficients so they are
@@ -1233,10 +1205,10 @@ class RossLiKernels(object):
         self.vol_sensor = kl.Ross
 
 
-class BRDF(RelativeBRDFNorm, RossLiKernels):
+class BRDF(RossLiKernels):
 
     """
-    A class for Nadir BRDF (NBAR) normalization
+    A class for Bidirectional Reflectance Distribution Function (BRDF) normalization
     """
 
     def __init__(self):
@@ -1274,8 +1246,33 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                                         fgeo=0.01613,
                                         fvol=0.0509))
 
-    def get_coeffs(self, sensor_band):
+    def _get_coeffs(self, sensor_band):
         return self.coeff_dict[sensor_band]
+
+    @staticmethod
+    def get_mean_sza(central_latitude):
+
+        """
+        Returns the mean solar zenith angle (SZA) as a function of the central latitude
+
+        Args:
+            central_latitude (float): The central latitude.
+
+        Reference:
+
+            See :cite:`zhang_etal_2016`
+
+        Returns:
+            ``float``
+        """
+
+        return 31.0076 + \
+               -0.1272 * central_latitude + \
+               0.01187 * (central_latitude ** 2) + \
+               2.40e-05 * (central_latitude ** 3) + \
+               -9.48e-07 * (central_latitude ** 4) + \
+               -1.95e-09 * (central_latitude ** 5) + \
+               6.15e-11 * (central_latitude ** 6)
 
     def norm_brdf(self,
                   data,
@@ -1292,19 +1289,19 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                   out_range=None,
                   scale_angles=True):
 
-        """
+        r"""
         Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
-        using the global c-factor method (see Roy et al. (2016))
+        using the global c-factor method
 
         Args:
-            data (2d or 3d array): The data to normalize.
-            solar_za (2d array): The solar zenith angles (degrees).
-            solar_az (2d array): The solar azimuth angles (degrees).
-            sensor_za (2d array): The sensor azimuth angles (degrees).
-            sensor_az (2d array): The sensor azimuth angles (degrees).
-            central_latitude (Optional[float or 2d array]): The central latitude.
+            data (2d or 3d DataArray): The data to normalize.
+            solar_za (2d DataArray): The solar zenith angles (degrees).
+            solar_az (2d DataArray): The solar azimuth angles (degrees).
+            sensor_za (2d DataArray): The sensor azimuth angles (degrees).
+            sensor_az (2d DataArray): The sensor azimuth angles (degrees).
+            central_latitude (Optional[float or 2d DataArray]): The central latitude.
             sensor (Optional[str]): The satellite sensor.
-            wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
+            wavelengths (str list): The wavelength(s) to normalize.
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
             mask (Optional[DataArray]): A data mask, where clear values are 0.
             scale_factor (Optional[float]): A scale factor to apply to the input data.
@@ -1323,19 +1320,25 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
                 :cite:`schaaf_etal_2002`
 
+        Returns:
+            ``xarray.DataArray``
+
         Examples:
             >>> import geowombat as gw
+            >>> from geowombat.radiometry import BRDF
+            >>>
+            >>> brdf = BRDF()
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
             >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
             >>>
-            >>>     with gw.open('solarz.tif') as solarz, gw.open('solara.tif') as solara, gw.open('sensorz.tif') as sensorz, gw.open('sensora.tif') as sensora:
+            >>>     with gw.open('solarz.tif') as solarz,
+            >>>         gw.open('solara.tif') as solara,
+            >>>             gw.open('sensorz.tif') as sensorz,
+            >>>                 gw.open('sensora.tif') as sensora:
             >>>
-            >>>         with gw.open('landsat.tif') as ds:
-            >>>             ds_brdf = gw.norm_brdf(ds, solarz, solara, sensorz, sensora)
-
-        Returns:
-            ``xarray.DataArray``
+            >>>         with gw.open('landsat.tif') as src:
+            >>>             src_norm = brdf.norm_brdf(src, solarz, solara, sensorz, sensora)
         """
 
         if not wavelengths:
@@ -1377,7 +1380,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
                     #                                   num_threads=1,
                     #                                   warp_mem_limit=512)
 
-        attrs = data.attrs
+        attrs = data.attrs.copy()
 
         if not nodata:
             nodata = data.gw.nodata
@@ -1406,11 +1409,11 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
             sensor_az.coords['band'] = [1]
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude,
-                         solar_za,
-                         solar_az,
-                         sensor_za,
-                         sensor_az)
+        self._get_kernels(central_latitude,
+                          solar_za,
+                          solar_az,
+                          sensor_za,
+                          sensor_az)
 
         # if len(wavelengths) == 1:
         #
@@ -1436,7 +1439,7 @@ class BRDF(RelativeBRDFNorm, RossLiKernels):
 
             # Get the band iso, geo,
             #   and vol coefficients.
-            coeffs = self.get_coeffs(wavelength)
+            coeffs = self._get_coeffs(wavelength)
 
             # c-factor
             c_factor = ((coeffs['fiso'] +

@@ -6,14 +6,12 @@ Accessing raster attributes
 GeoWombat has additional raster attributes on top of Xarray/Rasterio attributes
 -------------------------------------------------------------------------------
 
-Import GeoWombat
-
 .. ipython:: python
 
     import geowombat as gw
     from geowombat.data import rgbn
 
-Access raster attributes using the file opening API (:ref:`io`):
+Access raster attributes using the file opening API (:ref:`io`).
 
 .. ipython:: python
 

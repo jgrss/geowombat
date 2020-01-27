@@ -4,8 +4,10 @@ from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds
+from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, transform_crs
 
+import numpy as np
+import dask.array as da
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
@@ -468,3 +470,100 @@ def concat(filenames,
 
     else:
         return ds
+
+
+def to_crs(data_src,
+           dst_crs,
+           dst_res=None,
+           dst_width=None,
+           dst_height=None,
+           dst_bounds=None,
+           resampling='nearest',
+           warp_mem_limit=512,
+           num_threads=1):
+
+    """
+    Transforms a DataArray to a new coordinate reference system
+
+    Args:
+        data_src (DataArray): The data to transform.
+        dst_crs (CRS | int | dict | str): The destination CRS.
+        dst_res (Optional[tuple]): The destination resolution.
+        dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
+        dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
+        dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
+            or as a tuple of (left, bottom, right, top).
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        warp_mem_limit (Optional[int]): The warp memory limit.
+        num_threads (Optional[int]): The number of parallel threads.
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    data_dst, dst_transform, dst_crs = transform_crs(data_src,
+                                                     dst_crs,
+                                                     dst_res=dst_res,
+                                                     dst_width=dst_width,
+                                                     dst_height=dst_height,
+                                                     dst_bounds=dst_bounds,
+                                                     resampling=resampling,
+                                                     warp_mem_limit=warp_mem_limit,
+                                                     num_threads=num_threads)
+
+    nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
+
+    left = dst_transform[2]
+    cellx = abs(dst_transform[0])
+    x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)
+
+    top = dst_transform[5]
+    celly = abs(dst_transform[4])
+    y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)
+
+    if not dst_res:
+        dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
+
+    data_dst = xr.DataArray(data=da.from_array(data_dst,
+                                               chunks=data_src.data.chunksize),
+                            coords={'band': data_src.band.values.tolist(),
+                                    'y': y,
+                                    'x': x},
+                            dims=('band', 'y', 'x'),
+                            attrs=data_src.attrs)
+
+    data_dst.attrs['transform'] = tuple(dst_transform)[:6]
+    data_dst.attrs['crs'] = dst_crs
+    data_dst.attrs['res'] = dst_res
+    data_dst.attrs['resampling'] = resampling
+
+    if 'sensor' in data_src.attrs:
+        data_dst.attrs['sensor'] = data_src.attrs['sensor']
+
+    if 'filename' in data_src.attrs:
+        data_dst.attrs['filename'] = data_src.attrs['filename']
+
+    return data_dst
+
+    # with xr.open_rasterio(transform_crs(data_src,
+    #                                     dst_crs,
+    #                                     dst_res=dst_res,
+    #                                     resampling=resampling,
+    #                                     warp_mem_limit=warp_mem_limit,
+    #                                     num_threads=num_threads),
+    #                       chunks=data_src.data.chunksize) as dst_:
+    #
+    #     dst_.coords['band'] = data_src.band.values.tolist()
+    #
+    #     dst_.attrs['resampling'] = resampling
+    #
+    #     if 'sensor' in data_src.attrs:
+    #         dst_.attrs['sensor'] = data_src.attrs['sensor']
+    #
+    #     if 'filename' in data_src.attrs:
+    #         dst_.attrs['filename'] = data_src.attrs['filename']
+    #
+    #     attrs = data_src.attrs.copy()
+    #
+    #     return dst_.astype(dtype).assign_attrs(**attrs)

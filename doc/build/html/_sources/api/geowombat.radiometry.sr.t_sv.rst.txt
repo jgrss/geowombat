@@ -1,6 +1,0 @@
-t_sv
-====
-
-.. currentmodule:: geowombat.radiometry.sr
-
-.. autofunction:: t_sv

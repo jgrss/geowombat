@@ -8,6 +8,10 @@ from .util import MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
 
+# Imports intended for module level
+from .util import sort_images_by_date
+
+# Imports intended for package level
 extract = SpatialOperations().extract
 sample = SpatialOperations().sample
 subset = SpatialOperations().subset
@@ -39,6 +43,7 @@ __all__ = ['apply',
            'polygons_to_points',
            'indices_to_coords',
            'coords_to_indices',
+           'sort_images_by_date',
            'moving',
            'norm_diff',
            'evi',

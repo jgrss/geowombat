@@ -11,8 +11,8 @@ from . import tasseled_cap as gw_tasseled_cap
 from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
+from ..backends import to_crs as _to_crs
 from ..util import imshow as gw_imshow
-#from ..models import predict
 from ..radiometry import BRDF as _BRDF
 
 import numpy as np
@@ -311,6 +311,51 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                    connectivity=connectivity)
 
         df_.to_file(filename)
+
+    def to_crs(self,
+               dst_crs,
+               dst_res=None,
+               dst_width=None,
+               dst_height=None,
+               dst_bounds=None,
+               resampling='nearest',
+               warp_mem_limit=512,
+               num_threads=1):
+
+        """
+        Transforms a DataArray to a new coordinate reference system
+
+        Args:
+            dst_crs (``CRS`` | int | dict | str): The destination CRS.
+            dst_res (Optional[tuple]): The destination resolution.
+            dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
+            dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
+            dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
+                or as a tuple of (left, bottom, right, top).
+            resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+            warp_mem_limit (Optional[int]): The warp memory limit.
+            num_threads (Optional[int]): The number of parallel threads.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     dst = src.gw.to_crs(4326)
+        """
+
+        return _to_crs(self._obj,
+                       dst_crs,
+                       dst_res=dst_res,
+                       dst_width=dst_width,
+                       dst_height=dst_height,
+                       dst_bounds=dst_bounds,
+                       resampling=resampling,
+                       warp_mem_limit=warp_mem_limit,
+                       num_threads=num_threads)
 
     def to_raster(self,
                   filename,
@@ -659,6 +704,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                strata=None,
                spacing=None,
                min_dist=None,
+               max_attempts=10,
                **kwargs):
 
         """
@@ -672,12 +718,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             strata (Optional[dict]): The strata to sample within. The dictionary key-->value pairs should be {'conditional,value': proportion}.
 
                 E.g.,
-                    strata = {'==,1': 0.5, '>=,2': 0.5}
 
+                    strata = {'==,1': 0.5, '>=,2': 0.5}
                     ... would sample 50% of total samples within class 1 and 50% of total samples in class >= 2.
+
+                    strata = {'==,1': 10, '>=,2': 20}
+                    ... would sample 10 samples within class 1 and 20 samples in class >= 2.
 
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
+            max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -711,6 +761,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        strata=strata,
                        spacing=spacing,
                        min_dist=min_dist,
+                       max_attempts=max_attempts,
                        **kwargs)
 
     def extract(self,
@@ -974,10 +1025,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return gw_tasseled_cap(self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor)
 
     def norm_brdf(self,
-                  solar_zenith,
-                  solar_azimuth,
-                  sensor_zenith,
-                  sensor_azimuth,
+                  solar_za,
+                  solar_az,
+                  sensor_za,
+                  sensor_az,
                   sensor=None,
                   wavelengths=None,
                   nodata=None,
@@ -985,21 +1036,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   scale_factor=1.0,
                   scale_angles=True):
 
-        r"""
+        """
         Applies Bidirectional Reflectance Distribution Function (BRDF) normalization
 
         Args:
-            solar_zenith (DataArray): The solar zenith angles for each pixel.
-            solar_azimuth (DataArray): The solar azimuth angles for each pixel.
-            sensor_zenith (DataArray): The sensor zenith angles for each pixel.
-            sensor_azimuth (DataArray): The sensor azimuth angles for each pixel.
-            mask (DataArray): A mask array where 0 values indicate clear sky.
+            solar_za (2d DataArray): The solar zenith angles (degrees).
+            solar_az (2d DataArray): The solar azimuth angles (degrees).
+            sensor_za (2d DataArray): The sensor azimuth angles (degrees).
+            sensor_az (2d DataArray): The sensor azimuth angles (degrees).
             sensor (Optional[str]): The satellite sensor.
-            wavelengths (str list): Choices are ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'].
-            nodata (Optional[int or float]): A 'no data' value.
-            mask (Optional[bool]): Whether to mask the results.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            wavelengths (str list): The wavelength(s) to normalize.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[DataArray]): A data mask, where clear values are 0.
+            scale_factor (Optional[float]): A scale factor to apply to the input data.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
+
+        Returns:
+            ``xarray.DataArray``
 
         Examples:
             >>> import geowombat as gw
@@ -1007,13 +1060,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> # Example where pixel angles are stored in separate GeoTiff files
             >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
             >>>
-            >>>     with gw.open('solarz.tif') as solarz, gw.open('solara.tif') as solara, gw.open('sensorz.tif') as sensorz, gw.open('sensora.tif') as sensora:
+            >>>     with gw.open('solarz.tif') as solarz,
+            >>>         gw.open('solara.tif') as solara,
+            >>>             gw.open('sensorz.tif') as sensorz,
+            >>>                 gw.open('sensora.tif') as sensora:
             >>>
             >>>         with gw.open('landsat.tif') as ds:
             >>>             ds_brdf = ds.gw.norm_brdf(solarz, solara, sensorz, sensora)
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         # Get the central latitude
@@ -1023,10 +1076,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                      {'init': 'epsg:4326'})[1][0]
 
         return _BRDF().norm_brdf(self._obj,
-                                 solar_zenith,
-                                 solar_azimuth,
-                                 sensor_zenith,
-                                 sensor_azimuth,
+                                 solar_za,
+                                 solar_az,
+                                 sensor_za,
+                                 sensor_az,
                                  central_lat,
                                  sensor=sensor,
                                  wavelengths=wavelengths,

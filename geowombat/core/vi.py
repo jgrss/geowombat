@@ -415,6 +415,9 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
             >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
             >>>         tcap = gw.tasseled_cap(ds)
 
+        Returns:
+            ``xarray.DataArray``
+
         References:
 
             ASTER:
@@ -440,9 +443,6 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
 
             RapidEye:
                 See :cite:`arnett_etal_2014`
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -484,7 +484,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 {norm}_{diff} = \frac{b2 - b1}{b2 + b1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -516,7 +519,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 EVI = 2.5 \times \frac{NIR - red}{NIR \times 6 \times red - 7.5 \times blue + 1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -548,7 +554,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -610,7 +619,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 NDVI = \frac{NIR - red}{NIR + red}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -641,7 +653,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 WI = SWIR1 + red
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         sensor = self.check_sensor(data, sensor)

@@ -4,14 +4,14 @@ Use named coordinates for band math
 ===================================
 
 Vegetation indices
-++++++++++++++++++
+------------------
 
 .. ipython:: python
 
     import geowombat as gw
     from geowombat.data import rgbn
 
-Calculate a vegetation index, returning an `Xarray.DataArray`
+Calculate a vegetation index, returning an `Xarray.DataArray`.
 
 .. ipython:: python
 
@@ -20,7 +20,7 @@ Calculate a vegetation index, returning an `Xarray.DataArray`
         evi = ds.gw.evi(sensor='rgbn', scale_factor=0.0001)
         print(evi)
 
-Use the configuration context to set parameters
+Use the configuration context to set parameters.
 
 .. ipython:: python
 
@@ -29,7 +29,7 @@ Use the configuration context to set parameters
             evi = ds.gw.evi()
             print(evi)
 
-Load the data to return a `NumPy` array
+Load the data to return a `NumPy` array.
 
 .. ipython:: python
 
@@ -38,7 +38,7 @@ Load the data to return a `NumPy` array
             evi2 = ds.gw.evi2().squeeze().load().data
             print(evi2)
 
-Use the generic :func:`norm_diff` function with any two-band combination
+Use the generic :func:`norm_diff` function with any two-band combination.
 
 .. ipython:: python
 
@@ -48,7 +48,7 @@ Use the generic :func:`norm_diff` function with any two-band combination
             print(d)
 
 Tasseled cap transformations
-++++++++++++++++++++++++++++
+----------------------------
 
 .. ipython:: python
 

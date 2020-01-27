@@ -3,8 +3,7 @@
 Two-dimensional moving windows
 ==============================
 
-Examine the :func:`geowombat.moving` help
-+++++++++++++++++++++++++++++++++++++++++
+Examine the :func:`geowombat.moving` help.
 
 .. ipython:: python
 
@@ -12,8 +11,7 @@ Examine the :func:`geowombat.moving` help
 
     print(help(gw.moving))
 
-Calculate the local average
-+++++++++++++++++++++++++++
+Calculate the local average.
 
 .. code:: python
 
@@ -27,8 +25,9 @@ Calculate the local average
         # Compute results
         res.data.compute()
 
-The moving window function uses Dask to partition chunks and calculate a statistic for the chunk. Calling :func:`geowombat.to_raster` on the Xarray object will result in `concurrent.futures` being unable to pickle the underlying worker function.
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+.. note::
+
+    The moving window function uses Dask to partition chunks and calculate a statistic for the chunk. Calling :func:`geowombat.to_raster` on the Xarray object will result in `concurrent.futures` being unable to pickle the underlying worker function.
 
 A workaround is to compute the results before writing to file
 

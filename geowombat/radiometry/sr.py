@@ -122,7 +122,10 @@ class MetaData(object):
             meta_file (str): A metadata file.
 
         Returns:
-            ``namedtuple``
+
+            ``namedtuple``:
+
+                sensor, m_l, a_l, m_p, a_p
         """
 
         associations = {'LANDSAT_5': 'l5',
@@ -253,6 +256,9 @@ class LinearAdjustments(object):
 
                 See :cite:`roy_etal_2016` (Table 2)
 
+        Returns:
+            ``xarray.DataArray``
+
         Examples:
             >>> import geowombat as gw
             >>> from geowombat.radiometry import LinearAdjustments
@@ -263,9 +269,6 @@ class LinearAdjustments(object):
             >>> with gw.config.update(sensor='s2'):
             >>>     with gw.open('sentinel-2.tif') as ds:
             >>>         ds_adjusted = la.bandpass(ds, to='l8')
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         attrs = data.attrs.copy()
@@ -348,6 +351,12 @@ class RadTransforms(MetaData):
         References:
             https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product
 
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: 0-1
+
         Examples:
             >>> from geowombat.radiometry import RadTransforms
             >>>
@@ -357,9 +366,6 @@ class RadTransforms(MetaData):
             >>> # Convert DNs to surface reflectance using Landsat metadata
             >>> with gw.open('dn.tif') as ds:
             >>>     sr_data = sr.dn_to_sr(ds, solar_za, sensor_za, meta=meta)
-
-        Returns:
-            ``xarray.DataArray``
         """
 
         attrs = dn.attrs.copy()
@@ -452,7 +458,7 @@ class RadTransforms(MetaData):
     def dn_to_toar(dn, gain, bias):
 
         """
-        Converts digital numbers to radiance
+        Converts digital numbers to top-of-atmosphere reflectance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
@@ -527,7 +533,10 @@ class RadTransforms(MetaData):
             See :cite:`bilal_etal_2019`
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0-1
         """
 
         attrs = toar.attrs.copy()

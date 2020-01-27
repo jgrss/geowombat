@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>API reference &#8212; GeoWombat 1.0.7 documentation</title>
+    <title>API reference &#8212; GeoWombat 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -60,10 +60,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
@@ -203,6 +204,61 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.tasseled_cap.html#geowombat.tasseled_cap" title="geowombat.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(data[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.coords_to_indices.html#geowombat.coords_to_indices" title="geowombat.coords_to_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coords_to_indices</span></code></a>(x, y, transform)</p></td>
+<td><p>Converts map coordinates to array indices</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.indices_to_coords.html#geowombat.indices_to_coords" title="geowombat.indices_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_coords</span></code></a>(col_index, row_index, …)</p></td>
+<td><p>Converts array indices to map coordinates</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.radiometry">
+<span id="geowombat-radiometry-package"></span><h3>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.landsat_pixel_angles.html#geowombat.radiometry.landsat_pixel_angles" title="geowombat.radiometry.landsat_pixel_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">landsat_pixel_angles</span></code></a>(angles_file, ref_file, …)</p></td>
+<td><p>Generates Landsat pixel angle files</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.sentinel_pixel_angles.html#geowombat.radiometry.sentinel_pixel_angles" title="geowombat.radiometry.sentinel_pixel_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sentinel_pixel_angles</span></code></a>(metadata, ref_file[, …])</p></td>
+<td><p>Generates Sentinel pixel angle files</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.pan_sharpen.html#geowombat.radiometry.pan_sharpen" title="geowombat.radiometry.pan_sharpen"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pan_sharpen</span></code></a>(data[, bands, pan, blue_weight, …])</p></td>
+<td><p>Sharpens wavelengths using the panchromatic band</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id2">
+<h4>Classes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BRDF</span></code></a>()</p></td>
+<td><p>A class for Bidirectional Reflectance Distribution Function (BRDF) normalization</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo" title="geowombat.radiometry.Topo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Topo</span></code></a></p></td>
+<td><p>A class for topographic normalization</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.LinearAdjustments.html#geowombat.radiometry.LinearAdjustments" title="geowombat.radiometry.LinearAdjustments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearAdjustments</span></code></a>()</p></td>
+<td><p>A class for linear bandpass adjustments</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms" title="geowombat.radiometry.RadTransforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RadTransforms</span></code></a></p></td>
+<td><p>A class for radiometric transformations</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html#geowombat.radiometry.QAMasker" title="geowombat.radiometry.QAMasker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QAMasker</span></code></a>(qa, sensor[, mask_items, …])</p></td>
+<td><p>A class for masking bit-packed quality flags</p></td>
 </tr>
 </tbody>
 </table>

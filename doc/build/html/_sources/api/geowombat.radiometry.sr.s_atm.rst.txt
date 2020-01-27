@@ -1,6 +1,0 @@
-s_atm
-=====
-
-.. currentmodule:: geowombat.radiometry.sr
-
-.. autofunction:: s_atm
