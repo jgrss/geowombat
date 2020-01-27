@@ -43,13 +43,11 @@ IO_DICT = dict(rasterio=['.tif',
 
 def get_attrs(src, **kwargs):
 
-    ycoords = np.linspace(src.bounds.top - (kwargs['window'].row_off * src.res[0]),
-                          src.bounds.top - (kwargs['window'].row_off * src.res[0]) -
-                          (kwargs['window'].height * src.res[0]), kwargs['window'].height)
+    left_ = src.gw.left + (kwargs['window'].col_off * src.gw.cellx) + src.gw.cellxh
+    top_ = src.gw.top - (kwargs['window'].row_off * src.gw.celly) - src.gw.cellyh
 
-    xcoords = np.linspace(src.bounds.left + (kwargs['window'].col_off * src.res[0]),
-                          src.bounds.left + (kwargs['window'].col_off * src.res[0]) +
-                          (kwargs['window'].width * src.res[0]), kwargs['window'].width)
+    xcoords = np.arange(left_, left_ + kwargs['window'].col_off * src.gw.cellx, src.gw.cellx)
+    ycoords = np.arange(top_, top_ - kwargs['window'].row_off * src.gw.celly, -src.gw.celly)
 
     attrs = dict()
 
