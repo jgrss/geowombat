@@ -49,8 +49,8 @@ def get_attrs(src, **kwargs):
     left_ = src.bounds.left + (kwargs['window'].col_off * src.res[0]) + cellxh
     top_ = src.bounds.top - (kwargs['window'].row_off * src.res[1]) - cellyh
 
-    xcoords = np.arange(left_, left_ + kwargs['window'].col_off * src.res[0], src.res[0])
-    ycoords = np.arange(top_, top_ - kwargs['window'].row_off * src.res[1], -src.res[1])
+    xcoords = np.arange(left_, left_ + kwargs['window'].width * src.res[0], src.res[0])
+    ycoords = np.arange(top_, top_ - kwargs['window'].height * src.res[1], -src.res[1])
 
     attrs = dict()
 
