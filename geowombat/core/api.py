@@ -88,7 +88,7 @@ def get_attrs(src, **kwargs):
 
 
 @dask.delayed
-def read_delayed(fname, extra_dim, chunks, **kwargs):
+def read_delayed(fname, chunks, **kwargs):
 
     with rio.open(fname) as src:
 
@@ -96,51 +96,27 @@ def read_delayed(fname, extra_dim, chunks, **kwargs):
 
         single_band = True if len(data_slice.shape) == 2 else False
 
-        if extra_dim == 0:
+        if isinstance(chunks, int):
+            chunks_ = (1, chunks, chunks)
+        elif isinstance(chunks, tuple):
+            chunks_ = (1,) + chunks if len(chunks) < 3 else chunks
 
-            if single_band:
+        if single_band:
 
-                # Expand to 1 band
-                data_slice = da.from_array(data_slice[np.newaxis, :, :],
-                                           chunks=chunks)
-
-            else:
-
-                data_slice = da.from_array(data_slice,
-                                           chunks=chunks)
-
-        else:
-
-            chunks_ = (1,) + chunks if len(chunks) < 4 else chunks
-
-            # Expand the z dimension
-            data_slice = da.from_array(data_slice[np.newaxis, :, :, :],
+            # Expand to 1 band
+            data_slice = da.from_array(data_slice[np.newaxis, :, :],
                                        chunks=chunks_)
 
-        ycoords, xcoords, attrs = get_attrs(src, **kwargs)
-
-        if extra_dim == 0:
-
-            return xr.DataArray(data_slice,
-                                dims=('band', 'y', 'x'),
-                                coords={'band': np.arange(1, data_slice.shape[0]+1),
-                                        'y': ycoords,
-                                        'x': xcoords},
-                                attrs=attrs)
-
         else:
 
-            return xr.DataArray(data_slice,
-                                dims=('time', 'band', 'y', 'x'),
-                                coords={'time': np.arange(1, data_slice.shape[0]+1),
-                                        'band': np.arange(1, data_slice.shape[1]+1),
-                                        'y': ycoords,
-                                        'x': xcoords},
-                                attrs=attrs)
+            data_slice = da.from_array(data_slice,
+                                       chunks=chunks)
+
+        return data_slice
 
 
 def read_list(file_list, chunks, **kwargs):
-    return [read_delayed(fn, 1, chunks, **kwargs) for fn in file_list]
+    return [read_delayed(fn, chunks, **kwargs) for fn in file_list]
 
 
 def read(filename,
@@ -181,7 +157,9 @@ def read(filename,
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
-        data = dask.compute(read_delayed(filename, 0, chunks, **kwargs),
+        data = dask.compute(read_delayed(filename,
+                                         chunks,
+                                         **kwargs),
                             num_workers=num_workers)[0]
 
         if not band_names:
@@ -189,6 +167,7 @@ def read(filename,
 
         if len(band_names) != data.shape[0]:
             logger.exception('  The band names do not match the output dimensions.')
+            raise ValueError
 
         data = xr.DataArray(data,
                             dims=('band', 'y', 'x'),
@@ -199,40 +178,40 @@ def read(filename,
 
     else:
 
-        if 'indexes' in kwargs:
-
-            if isinstance(kwargs['indexes'], int):
-                count = 1
-            elif isinstance(kwargs['indexes'], list) or isinstance(kwargs['indexes'], np.ndarray):
-                count = len(kwargs['indexes'])
-            else:
-                logger.exception("  Unknown `rasterio.open.read` `indexes` value")
-
-        else:
-
-            # If no `indexes` is given, all bands are read
-            with rio.open(filename[0]) as src:
-                count = src.count
-
         with rio.open(filename[0]) as src:
 
             if bounds and ('window' not in kwargs):
                 kwargs['window'] = from_bounds(*bounds, transform=src.transform)
 
-        data = xr.concat(dask.compute(read_list(filename,
-                                                chunks,
-                                                **kwargs),
-                                      num_workers=num_workers),
-                         dim='time')
+            ycoords, xcoords, attrs = get_attrs(src, **kwargs)
+
+        data = da.concatenate(dask.compute(read_list(filename,
+                                                     chunks,
+                                                     **kwargs),
+                                           num_workers=num_workers),
+                              axis=0)
 
         if not band_names:
-            band_names = np.arange(1, count+1)
+            band_names = np.arange(1, data.shape[-3]+1)
+
+        if len(band_names) != data.shape[-3]:
+            logger.exception('  The band names do not match the output dimensions.')
+            raise ValueError
 
         if not time_names:
             time_names = np.arange(1, len(filename)+1)
 
-        data.coords['band'] = band_names
-        data.coords['time'] = time_names
+        if len(time_names) != data.shape[-4]:
+            logger.exception('  The time names do not match the output dimensions.')
+            raise ValueError
+
+        data = xr.DataArray(data,
+                            dims=('time', 'band', 'y', 'x'),
+                            coords={'time': time_names,
+                                    'band': band_names,
+                                    'y': ycoords,
+                                    'x': xcoords},
+                            attrs=attrs)
 
     return data
 
