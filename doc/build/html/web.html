@@ -131,7 +131,7 @@
     <span class="k">del</span> <span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="p">[</span><span class="n">dk</span><span class="p">]</span>
 
 <span class="c1"># Results are saved as a dictionary</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
 <span class="n">search_wildcards</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANG.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;MTL.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;B8.TIF&#39;</span><span class="p">]</span>
 
@@ -170,7 +170,7 @@
 </pre></div>
 </div>
 <p>In the example above, the bounds can also be taken directly from a file, as shown below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;file.gpkg&#39;</span><span class="p">)</span>
 
