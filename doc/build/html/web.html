@@ -118,8 +118,7 @@
 <span id="id1"></span><h1>Web<a class="headerlink" href="#web" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="geowombat-can-be-used-to-download-directly-from-the-google-cloud-platform">
 <h2>GeoWombat can be used to download directly from the Google Cloud Platform.<a class="headerlink" href="#geowombat-can-be-used-to-download-directly-from-the-google-cloud-platform" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="here-a-landsat-7-panchromatic-image-is-downloaded">
-<h3>Here, a Landsat 7 panchromatic image is downloaded.<a class="headerlink" href="#here-a-landsat-7-panchromatic-image-is-downloaded" title="Permalink to this headline">¶</a></h3>
+<p>Here, a Landsat 7 panchromatic image is downloaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geowombat.web</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
 
 <span class="n">gdl</span> <span class="o">=</span> <span class="n">GeoDownloads</span><span class="p">()</span>
@@ -143,11 +142,9 @@
 </pre></div>
 </div>
 </div>
-</div>
 <div class="section" id="geowombat-provides-a-convenience-function-to-download-radiometrically-adjust-and-cube-data">
 <h2>GeoWombat provides a convenience function to download, radiometrically adjust, and cube data.<a class="headerlink" href="#geowombat-provides-a-convenience-function-to-download-radiometrically-adjust-and-cube-data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="in-this-example-data-are-downloaded-and-processed-for-a-given-time-range-and-geographic-extent">
-<h3>In this example, data are downloaded and processed for a given time range and geographic extent.<a class="headerlink" href="#in-this-example-data-are-downloaded-and-processed-for-a-given-time-range-and-geographic-extent" title="Permalink to this headline">¶</a></h3>
+<p>In this example, data are downloaded and processed for a given time range and geographic extent.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download Landsat 7 data</span>
 <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;l7&#39;</span><span class="p">]</span>
 
@@ -172,9 +169,7 @@
                   <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="in-the-example-above-the-bounds-can-also-be-taken-directly-from-a-file-as-shown-below">
-<h3>In the example above, the bounds can also be taken directly from a file, as shown below.<a class="headerlink" href="#in-the-example-above-the-bounds-can-also-be-taken-directly-from-a-file-as-shown-below" title="Permalink to this headline">¶</a></h3>
+<p>In the example above, the bounds can also be taken directly from a file, as shown below.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;file.gpkg&#39;</span><span class="p">)</span>
@@ -182,7 +177,6 @@
 <span class="c1"># The CRS should be WGS84 lat/long</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">to_crs</span><span class="p">({</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="s1">&#39;epsg:4326&#39;</span><span class="p">})</span>
 </pre></div>
-</div>
 </div>
 </div>
 </div>

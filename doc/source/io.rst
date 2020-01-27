@@ -3,8 +3,7 @@
 Reading and writing files
 =========================
 
-File opening with GeoWombat uses the :func:`geowombat.open` function to open raster files
------------------------------------------------------------------------------------------
+File opening with GeoWombat uses the :func:`geowombat.open` function to open raster files.
 
 .. ipython:: python
 
@@ -21,31 +20,30 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     # Load two images that partially overlap
     from geowombat.data import rgbn_suba, rgbn_subb
 
-To open individual images, GeoWombat wraps :func:`xarray.open_rasterio` and :func:`xarray.open_dataset`:
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+To open individual images, GeoWombat wraps the :func:`xarray.open_rasterio` and :func:`xarray.open_dataset` functions.
 
-Open a raster as a DataArray
+Open a raster as a DataArray.
 
 .. ipython:: python
 
     with gw.open(rgbn) as ds:
         print(ds)
 
-Force the output data type
+Force the output data type.
 
 .. ipython:: python
 
     with gw.open(rgbn, dtype='float32') as ds:
         print(ds)
 
-Specify band names
+Specify band names.
 
 .. ipython:: python
 
     with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
         print(ds)
 
-Use the sensor name to set band names
+Use the sensor name to set band names.
 
 .. ipython:: python
 
@@ -53,8 +51,7 @@ Use the sensor name to set band names
         with gw.open(rgbn) as ds:
             print(ds)
 
-To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``.
 
 Open a list of files as a DataArray, with all bands stacked.
 
@@ -65,10 +62,9 @@ Open a list of files as a DataArray, with all bands stacked.
                  stack_dim='band') as ds:
         print(ds)
 
-To open multiple images as a time stack, change the input to a list of files
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+To open multiple images as a time stack, change the input to a list of files.
 
-Open a list of files as a DataArray
+Open a list of files as a DataArray.
 
 .. ipython:: python
 
@@ -90,11 +86,11 @@ If `time_names` is not provided, GeoWombat will attempt to parse date strings us
         with gw.open(rgbn_time_list) as ds:
             print(ds)
 
-Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned". If images are
-not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and
-a reference image to handle image alignment.
+.. note::
 
-In the example below, we specify a reference image using GeoWombat's configuration manager:
+    Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned". If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and a reference image to handle image alignment.
+
+In the example below, we specify a reference image using GeoWombat's configuration manager.
 
 .. note::
 
@@ -113,7 +109,7 @@ In the example below, we specify a reference image using GeoWombat's configurati
                      time_names=['t1', 't2']) as ds:
             print(ds)
 
-Stack the intersection of all images
+Stack the intersection of all images.
 
 .. ipython:: python
 
@@ -124,7 +120,7 @@ Stack the intersection of all images
                  bounds_by='intersection') as ds:
         print(ds)
 
-Stack the union of all images
+Stack the union of all images.
 
 .. ipython:: python
 
@@ -148,7 +144,7 @@ CRS, bounds, and cell size. Using ``bounds_by='intersection'`` overrides the ref
                      bounds_by='intersection') as ds:
             print(ds)
 
-When multiple images have matching dates, the arrays are merged into one layer
+When multiple images have matching dates, the arrays are merged into one layer.
 
 .. ipython:: python
 
@@ -158,7 +154,7 @@ When multiple images have matching dates, the arrays are merged into one layer
                  time_names=['t1', 't1', 't2']) as ds:
         print(ds)
 
-Use search wildcards to open a list of images
+Use search wildcards to open a list of images.
 
 .. ipython:: python
 
@@ -172,7 +168,7 @@ Use search wildcards to open a list of images
         print(ds)
 
 Image mosaicking
-++++++++++++++++
+----------------
 
 Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
 is needed.
@@ -201,14 +197,13 @@ If the images in the mosaic list have different CRSs, use a context manager to w
             print(ds)
 
 Writing DataArrays to file
-++++++++++++++++++++++++++
+--------------------------
 
 GeoWombat's I/O can be accessed through the :func:`to_vrt` and :func:`to_raster` functions. These functions use
 Rasterio's :func:`write` and Dask.array :func:`store` functions as I/O backends. In the examples below,
 ``ds`` is an ``xarray.DataArray`` with the necessary transform information to write to an image file.
 
-Write to a VRT file
-+++++++++++++++++++
+Write to a VRT file.
 
 .. code:: python
 
@@ -222,8 +217,7 @@ Write to a VRT file
             # Write the data to a VRT
             ds.gw.to_vrt('lat_lon_file.vrt')
 
-Write to a raster file
-++++++++++++++++++++++
+Write to a raster file.
 
 .. code:: python
 

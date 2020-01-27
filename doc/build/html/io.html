@@ -116,8 +116,7 @@
             
   <div class="section" id="reading-and-writing-files">
 <span id="io"></span><h1>Reading and writing files<a class="headerlink" href="#reading-and-writing-files" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="file-opening-with-geowombat-uses-the-geowombat-open-function-to-open-raster-files">
-<h2>File opening with GeoWombat uses the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function to open raster files<a class="headerlink" href="#file-opening-with-geowombat-uses-the-geowombat-open-function-to-open-raster-files" title="Permalink to this headline">¶</a></h2>
+<p>File opening with GeoWombat uses the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function to open raster files.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Import GeoWombat</span>
 <span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 </pre></div>
@@ -130,14 +129,13 @@
 <span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span>
 </pre></div>
 </div>
-<div class="section" id="to-open-individual-images-geowombat-wraps-xarray-open-rasterio-and-xarray-open-dataset">
-<h3>To open individual images, GeoWombat wraps <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_dataset()</span></code>:<a class="headerlink" href="#to-open-individual-images-geowombat-wraps-xarray-open-rasterio-and-xarray-open-dataset" title="Permalink to this headline">¶</a></h3>
-<p>Open a raster as a DataArray</p>
+<p>To open individual images, GeoWombat wraps the <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_dataset()</span></code> functions.</p>
+<p>Open a raster as a DataArray.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-28ec0b38f1d0139ea629f57a81596b9a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-a6ce3ace881b5d219397e1dff49499a3&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -156,7 +154,7 @@
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>Force the output data type</p>
+<p>Force the output data type.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
@@ -180,12 +178,12 @@
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>Specify band names</p>
+<p>Specify band names.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-28ec0b38f1d0139ea629f57a81596b9a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-a6ce3ace881b5d219397e1dff49499a3&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -204,13 +202,13 @@
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>Use the sensor name to set band names</p>
+<p>Use the sensor name to set band names.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-28ec0b38f1d0139ea629f57a81596b9a&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-a6ce3ace881b5d219397e1dff49499a3&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -230,9 +228,7 @@
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="to-open-multiple-images-stacked-by-bands-use-a-list-of-files-with-stack-dim-band">
-<h3>To open multiple images stacked by bands, use a list of files with <code class="docutils literal notranslate"><span class="pre">stack_dim='band'</span></code><a class="headerlink" href="#to-open-multiple-images-stacked-by-bands-use-a-list-of-files-with-stack-dim-band" title="Permalink to this headline">¶</a></h3>
+<p>To open multiple images stacked by bands, use a list of files with <code class="docutils literal notranslate"><span class="pre">stack_dim='band'</span></code>.</p>
 <p>Open a list of files as a DataArray, with all bands stacked.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b1&#39;</span><span class="p">,</span> <span class="s1">&#39;g1&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">,</span> <span class="s1">&#39;n1&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">,</span> <span class="s1">&#39;g2&#39;</span><span class="p">,</span> <span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;n2&#39;</span><span class="p">],</span>
@@ -242,8 +238,8 @@
 <span class="go">&lt;xarray.DataArray (band: 8, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(8, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U2 &#39;b1&#39; &#39;g1&#39; &#39;r1&#39; &#39;n1&#39; &#39;b2&#39; &#39;g2&#39; &#39;r2&#39; &#39;n2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
@@ -257,10 +253,8 @@
 <span class="go">    DataType:       Generic</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="to-open-multiple-images-as-a-time-stack-change-the-input-to-a-list-of-files">
-<h3>To open multiple images as a time stack, change the input to a list of files<a class="headerlink" href="#to-open-multiple-images-as-a-time-stack-change-the-input-to-a-list-of-files" title="Permalink to this headline">¶</a></h3>
-<p>Open a list of files as a DataArray</p>
+<p>To open multiple images as a time stack, change the input to a list of files.</p>
+<p>Open a list of files as a DataArray.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -270,8 +264,8 @@
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
@@ -304,8 +298,8 @@
 <span class="go">dask.array&lt;concatenate, shape=(4, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;red&#39; &#39;green&#39; &#39;blue&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * time     (time) datetime64[ns] 2016-01-01 2016-04-01 2016-05-17 2017-02-03</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
@@ -320,10 +314,11 @@
 <span class="go">    sensor:         red, green, blue, and NIR</span>
 </pre></div>
 </div>
-<p>Xarray will handle alignment of images of varying sizes as long as the the resolutions are “target aligned”. If images are
-not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and
-a reference image to handle image alignment.</p>
-<p>In the example below, we specify a reference image using GeoWombat’s configuration manager:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Xarray will handle alignment of images of varying sizes as long as the the resolutions are “target aligned”. If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and a reference image to handle image alignment.</p>
+</div>
+<p>In the example below, we specify a reference image using GeoWombat’s configuration manager.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The two images in this example are identical. The point here is just to illustrate the use of the configuration manager.</p>
@@ -344,8 +339,8 @@ a reference image to handle image alignment.</p>
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
@@ -361,7 +356,7 @@ a reference image to handle image alignment.</p>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>Stack the intersection of all images</p>
+<p>Stack the intersection of all images.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [16]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
 
 <span class="gp">In [17]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
@@ -374,8 +369,8 @@ a reference image to handle image alignment.</p>
 <span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:   (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
@@ -388,7 +383,7 @@ a reference image to handle image alignment.</p>
 <span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
 </pre></div>
 </div>
-<p>Stack the union of all images</p>
+<p>Stack the union of all images.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [18]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
 
 <span class="gp">In [19]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
@@ -401,8 +396,8 @@ a reference image to handle image alignment.</p>
 <span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:   (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
@@ -430,8 +425,8 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">dask.array&lt;concatenate, shape=(3, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
@@ -446,7 +441,7 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">    DataType:       Generic</span>
 </pre></div>
 </div>
-<p>When multiple images have matching dates, the arrays are merged into one layer</p>
+<p>When multiple images have matching dates, the arrays are merged into one layer.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [22]: </span><span class="n">concat_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">,</span> <span class="n">rgbn_suba</span><span class="p">]</span>
 
 <span class="gp">In [23]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
@@ -458,8 +453,8 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 530, 691), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
@@ -474,7 +469,7 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>Use search wildcards to open a list of images</p>
+<p>Use search wildcards to open a list of images.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [24]: </span><span class="kn">import</span> <span class="nn">os</span>
 
 <span class="gp">In [25]: </span><span class="n">search</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rgbn</span><span class="p">),</span> <span class="s1">&#39;*sub*.tif&#39;</span><span class="p">)</span>
@@ -488,8 +483,8 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">dask.array&lt;concatenate, shape=(2, 4, 530, 691), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * time     (time) int64 1 2</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
@@ -503,9 +498,8 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="go">    DataType:       Generic</span>
 </pre></div>
 </div>
-</div>
 <div class="section" id="image-mosaicking">
-<h3>Image mosaicking<a class="headerlink" href="#image-mosaicking" title="Permalink to this headline">¶</a></h3>
+<h2>Image mosaicking<a class="headerlink" href="#image-mosaicking" title="Permalink to this headline">¶</a></h2>
 <p>Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
 is needed.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
@@ -564,13 +558,11 @@ is needed.</p>
 </div>
 </div>
 <div class="section" id="writing-dataarrays-to-file">
-<h3>Writing DataArrays to file<a class="headerlink" href="#writing-dataarrays-to-file" title="Permalink to this headline">¶</a></h3>
+<h2>Writing DataArrays to file<a class="headerlink" href="#writing-dataarrays-to-file" title="Permalink to this headline">¶</a></h2>
 <p>GeoWombat’s I/O can be accessed through the <code class="xref py py-func docutils literal notranslate"><span class="pre">to_vrt()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">to_raster()</span></code> functions. These functions use
 Rasterio’s <code class="xref py py-func docutils literal notranslate"><span class="pre">write()</span></code> and Dask.array <code class="xref py py-func docutils literal notranslate"><span class="pre">store()</span></code> functions as I/O backends. In the examples below,
 <code class="docutils literal notranslate"><span class="pre">ds</span></code> is an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> with the necessary transform information to write to an image file.</p>
-</div>
-<div class="section" id="write-to-a-vrt-file">
-<h3>Write to a VRT file<a class="headerlink" href="#write-to-a-vrt-file" title="Permalink to this headline">¶</a></h3>
+<p>Write to a VRT file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Transform the data to lat/lon</span>
@@ -582,9 +574,7 @@ Rasterio’s <code class="xref py py-func docutils literal notranslate"><span cl
         <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="s1">&#39;lat_lon_file.vrt&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="write-to-a-raster-file">
-<h3>Write to a raster file<a class="headerlink" href="#write-to-a-raster-file" title="Permalink to this headline">¶</a></h3>
+<p>Write to a raster file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -604,7 +594,6 @@ Rasterio’s <code class="xref py py-func docutils literal notranslate"><span cl
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>    <span class="c1"># number of thread workers sent to ``dask.compute``</span>
                     <span class="n">n_chunks</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>   <span class="c1"># number of window chunks to send as concurrent futures</span>
 </pre></div>
-</div>
 </div>
 </div>
 </div>

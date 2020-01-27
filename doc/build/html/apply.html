@@ -118,9 +118,11 @@
 <span id="apply"></span><h1>Applying custom user functions<a class="headerlink" href="#applying-custom-user-functions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently">
 <h2>With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.<a class="headerlink" href="#with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="the-example-below-applies-a-custom-function-concurrently-over-an-image">
-<h3>The example below applies a custom function concurrently over an image.<a class="headerlink" href="#the-example-below-applies-a-custom-function-concurrently-over-an-image" title="Permalink to this headline">¶</a></h3>
-<p>The downside here is that GeoWombat does not handle image alignment as is done with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>.</p>
+<p>The example below applies a custom function concurrently over an image.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GeoWombat will not handle image alignment with the <a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.apply()</span></code></a> function.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_func</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
 </pre></div>
@@ -130,13 +132,7 @@
 <span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">my_func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="user-functions-that-do-not-use-a-dask-task-graph-can-be-passed-as-attributes">
-<h2>User functions that do not use a Dask task graph can be passed as attributes.<a class="headerlink" href="#user-functions-that-do-not-use-a-dask-task-graph-can-be-passed-as-attributes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="unlike-the-example-above-the-example-below-has-guaranteed-image-alignment">
-<h3>Unlike the example above, the example below has guaranteed image alignment.<a class="headerlink" href="#unlike-the-example-above-the-example-below-has-guaranteed-image-alignment" title="Permalink to this headline">¶</a></h3>
-<p>Functions and arguments can be passed as Xarray attributes. Here is an example that uses one user argument.</p>
+<p>User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as <cite>Xarray</cite> attributes. Here is an example that uses one user argument.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Function with one argument</span>
@@ -184,7 +180,6 @@
                     <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
-</div>
 </div>
 </div>
 </div>
