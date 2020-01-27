@@ -374,6 +374,7 @@ def open(filename,
 
         else:
             chunks = kwargs['chunks']
+            del kwargs['chunks']
 
         data = read(filename,
                     band_names=band_names,
