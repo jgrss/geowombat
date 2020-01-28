@@ -230,7 +230,8 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
                                                  cpp_string ndmi_string,
                                                  cpp_string ndvi_string,
                                                  cpp_string wi_string,
-                                                 double scale_factor) nogil:
+                                                 double scale_factor,
+                                                 bint nodata) nogil:
 
     """
     Converts names and a 1d array to a dictionary
@@ -241,17 +242,33 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
         unsigned int tsamp_len = tsamp.shape[0]
         cpp_map[cpp_string, double] features_map
 
-    for t in range(0, tsamp_len):
-        features_map[string_ints[t]] = tsamp[t] * scale_factor
+    if nodata:
 
-    features_map[brightness_string] = _nan_check(brightness)
-    features_map[evi_string] = _clip(_nan_check(evi))
-    features_map[evi2_string] = _clip(_nan_check(evi2))
-    features_map[gndvi_string] = _nan_check(gndvi)
-    features_map[nbr_string] = _nan_check(nbr)
-    features_map[ndmi_string] = _nan_check(ndmi)
-    features_map[ndvi_string] = _nan_check(ndvi)
-    features_map[wi_string] = _clip(_nan_check(wi))
+        for t in range(0, tsamp_len):
+            features_map[string_ints[t]] = 0.0
+
+        features_map[brightness_string] = 0.0
+        features_map[evi_string] = 0.0
+        features_map[evi2_string] = 0.0
+        features_map[gndvi_string] = 0.0
+        features_map[nbr_string] = 0.0
+        features_map[ndmi_string] = 0.0
+        features_map[ndvi_string] = 0.0
+        features_map[wi_string] = 0.0
+
+    else:
+
+        for t in range(0, tsamp_len):
+            features_map[string_ints[t]] = tsamp[t] * scale_factor
+
+        features_map[brightness_string] = _scale_min_max(_nan_check(brightness), 0.01, 1.0, 0.0, 1.0)
+        features_map[evi_string] = _scale_min_max(_clip(_nan_check(evi)), 0.01, 1.0, 0.0, 1.0)
+        features_map[evi2_string] = _scale_min_max(_clip(_nan_check(evi2)), 0.01, 1.0, 0.0, 1.0)
+        features_map[gndvi_string] = _scale_min_max(_nan_check(gndvi), 0.01, 1.0, -1.0, 1.0)
+        features_map[nbr_string] = _scale_min_max(_nan_check(nbr), 0.01, 1.0, -1.0, 1.0)
+        features_map[ndmi_string] = _scale_min_max(_nan_check(ndmi), 0.01, 1.0, -1.0, 1.0)
+        features_map[ndvi_string] = _scale_min_max(_nan_check(ndvi), 0.01, 1.0, -1.0, 1.0)
+        features_map[wi_string] = _scale_min_max(_clip(_nan_check(wi)), 0.01, 1.0, 0.0, 1.0)
 
     return features_map
 
@@ -390,6 +407,8 @@ def time_to_sensor_feas(double[:, :, ::1] data,
         cpp_map[cpp_string, int] s220
         cpp_map[cpp_string, int] s2
 
+        bint nodata
+
     for v in range(1, ncols+1):
         string_ints.push_back(<cpp_string>str(v).encode('utf-8'))
 
@@ -490,14 +509,24 @@ def time_to_sensor_feas(double[:, :, ::1] data,
 
                     if (sensor == b's210') or (sensor == b'l5bgrn') or (sensor == b'l7bgrn') or (sensor == b'l8bgrn') or (sensor == b'bgrn') or (sensor == b'qb') or (sensor == b'ps'):
 
-                        brightness = _brightness(tsample[green_idx]*scale_factor,
-                                                 tsample[red_idx]*scale_factor,
-                                                 tsample[nir_idx]*scale_factor)
+                        if (tsample[blue_idx] * scale_factor < 0.01) and (tsample[green_idx] * scale_factor < 0.01) and (tsample[red_idx] * scale_factor < 0.01):
 
-                        evi = _evi(tsample[blue_idx]*scale_factor, tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
-                        evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
-                        gndvi = _gndvi(tsample[green_idx]*scale_factor, tsample[nir_idx]*scale_factor)
-                        ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                            brightness = 0.0
+                            evi = 0.0
+                            evi2 = 0.0
+                            gndvi = 0.0
+                            ndvi = 0.0
+
+                        else:
+
+                            brightness = _brightness(tsample[green_idx]*scale_factor,
+                                                     tsample[red_idx]*scale_factor,
+                                                     tsample[nir_idx]*scale_factor)
+
+                            evi = _evi(tsample[blue_idx]*scale_factor, tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                            evi2 = _evi2(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                            gndvi = _gndvi(tsample[green_idx]*scale_factor, tsample[nir_idx]*scale_factor)
+                            ndvi = _ndvi(tsample[red_idx]*scale_factor, tsample[nir_idx]*scale_factor)
 
                         samples.push_back(_sample_to_dict_bgrn(tsample,
                                                                string_ints,
@@ -539,28 +568,38 @@ def time_to_sensor_feas(double[:, :, ::1] data,
 
                     else:
 
-                        brightness = _brightness_swir(tsample[green_idx] * scale_factor,
-                                                      tsample[red_idx] * scale_factor,
-                                                      tsample[nir_idx] * scale_factor,
-                                                      tsample[swir1_idx] * scale_factor)
+                        if (tsample[blue_idx] * scale_factor < 0.01) and (tsample[green_idx] * scale_factor < 0.01) and (tsample[red_idx] * scale_factor < 0.01):
 
-                        # dbsi = _dbsi(tsample[green_idx] * scale_factor,
-                        #              tsample[red_idx] * scale_factor,
-                        #              tsample[nir_idx] * scale_factor,
-                        #              tsample[swir1_idx] * scale_factor)
+                            brightness = 0.0
+                            evi = 0.0
+                            evi2 = 0.0
+                            gndvi = 0.0
+                            nbr = 0.0
+                            ndmi = 0.0
+                            ndvi = 0.0
+                            wi = 0.0
 
-                        evi = _evi(tsample[blue_idx] * scale_factor,
-                                   tsample[red_idx] * scale_factor,
-                                   tsample[nir_idx] * scale_factor)
+                            nodata = True
 
-                        evi2 = _evi2(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                        else:
 
-                        gndvi = _gndvi(tsample[green_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                            brightness = _brightness_swir(tsample[green_idx] * scale_factor,
+                                                          tsample[red_idx] * scale_factor,
+                                                          tsample[nir_idx] * scale_factor,
+                                                          tsample[swir1_idx] * scale_factor)
 
-                        nbr = _nbr(tsample[nir_idx] * scale_factor, tsample[swir2_idx] * scale_factor)
-                        ndmi = _ndmi(tsample[nir_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
-                        ndvi = _ndvi(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
-                        wi = _wi(tsample[red_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
+                            evi = _evi(tsample[blue_idx] * scale_factor,
+                                       tsample[red_idx] * scale_factor,
+                                       tsample[nir_idx] * scale_factor)
+
+                            evi2 = _evi2(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                            gndvi = _gndvi(tsample[green_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                            nbr = _nbr(tsample[nir_idx] * scale_factor, tsample[swir2_idx] * scale_factor)
+                            ndmi = _ndmi(tsample[nir_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
+                            ndvi = _ndvi(tsample[red_idx] * scale_factor, tsample[nir_idx] * scale_factor)
+                            wi = _wi(tsample[red_idx] * scale_factor, tsample[swir1_idx] * scale_factor)
+
+                            nodata = False
 
                         samples.push_back(_sample_to_dict(tsample,
                                                           string_ints,
@@ -580,7 +619,8 @@ def time_to_sensor_feas(double[:, :, ::1] data,
                                                           ndmi_string,
                                                           ndvi_string,
                                                           wi_string,
-                                                          scale_factor))
+                                                          scale_factor,
+                                                          nodata))
 
             samples_full.push_back(samples)
             samples.clear()
