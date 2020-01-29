@@ -247,28 +247,28 @@ cdef cpp_map[cpp_string, double] _sample_to_dict(double[::1] tsamp,
         for t in range(0, tsamp_len):
             features_map[string_ints[t]] = 0.0
 
-        # features_map[brightness_string] = 0.0
-        # features_map[evi_string] = 0.0
-        # features_map[evi2_string] = 0.0
-        # features_map[gndvi_string] = 0.0
-        # features_map[nbr_string] = 0.0
-        # features_map[ndmi_string] = 0.0
-        # features_map[ndvi_string] = 0.0
-        # features_map[wi_string] = 0.0
+        features_map[brightness_string] = 0.0
+        features_map[evi_string] = 0.0
+        features_map[evi2_string] = 0.0
+        features_map[gndvi_string] = 0.0
+        features_map[nbr_string] = 0.0
+        features_map[ndmi_string] = 0.0
+        features_map[ndvi_string] = 0.0
+        features_map[wi_string] = 0.0
 
     else:
 
         for t in range(0, tsamp_len):
             features_map[string_ints[t]] = tsamp[t] * scale_factor
 
-        # features_map[brightness_string] = _scale_min_max(_nan_check(brightness), 0.01, 1.0, 0.0, 1.0)
-        # features_map[evi_string] = _scale_min_max(_clip(_nan_check(evi)), 0.01, 1.0, 0.0, 1.0)
-        # features_map[evi2_string] = _scale_min_max(_clip(_nan_check(evi2)), 0.01, 1.0, 0.0, 1.0)
-        # features_map[gndvi_string] = _clip(_scale_min_max(_nan_check(gndvi), 0.01, 1.0, -1.0, 1.0))
-        # features_map[nbr_string] = _clip(_scale_min_max(_nan_check(nbr), 0.01, 1.0, -1.0, 1.0))
-        # features_map[ndmi_string] = _clip(_scale_min_max(_nan_check(ndmi), 0.01, 1.0, -1.0, 1.0))
-        # features_map[ndvi_string] = _clip(_scale_min_max(_nan_check(ndvi), 0.01, 1.0, -1.0, 1.0))
-        # features_map[wi_string] = _scale_min_max(_clip(_nan_check(wi)), 0.01, 1.0, 0.0, 1.0)
+        features_map[brightness_string] = _scale_min_max(_nan_check(brightness), 0.01, 1.0, 0.0, 1.0)
+        features_map[evi_string] = _scale_min_max(_clip(_nan_check(evi)), 0.01, 1.0, 0.0, 1.0)
+        features_map[evi2_string] = _scale_min_max(_clip(_nan_check(evi2)), 0.01, 1.0, 0.0, 1.0)
+        features_map[gndvi_string] = _clip(_scale_min_max(_nan_check(gndvi), 0.01, 1.0, -1.0, 1.0))
+        features_map[nbr_string] = _clip(_scale_min_max(_nan_check(nbr), 0.01, 1.0, -1.0, 1.0))
+        features_map[ndmi_string] = _clip(_scale_min_max(_nan_check(ndmi), 0.01, 1.0, -1.0, 1.0))
+        features_map[ndvi_string] = _clip(_scale_min_max(_nan_check(ndvi), 0.01, 1.0, -1.0, 1.0))
+        features_map[wi_string] = _scale_min_max(_clip(_nan_check(wi)), 0.01, 1.0, 0.0, 1.0)
 
     return features_map
 
