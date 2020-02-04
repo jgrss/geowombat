@@ -117,6 +117,85 @@ class Topo(object):
     A class for topographic normalization
     """
 
+    def _regress_a(self, X, y, robust, n_jobs):
+
+        """
+        Calculates the slope and intercept
+        """
+
+        if robust:
+            model = TheilSenRegressor(n_jobs=n_jobs)
+        else:
+            model = LinearRegression(n_jobs=n_jobs)
+
+        model.fit(X, y)
+
+        slope_m = model.coef_[0]
+        intercept_b = model.intercept_
+
+        return slope_m, intercept_b
+
+    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
+
+        r"""
+        Normalizes terrain using the Empirical Rotation method
+
+        Args:
+            sr (Dask Array): The surface reflectance data.
+            il (Dask Array): The solar illumination.
+            cos_z (Dask Array): The cosine of the solar zenith angle.
+            nodata_samps (Dask Array): Samples where 1='no data' and 0='valid data'.
+            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
+                ``TheilSenRegressor.fit``.
+            robust (Optional[bool]): Whether to fit a robust regression.
+
+        References:
+
+            See :cite:`tan_etal_2010` for the Empirical Rotation method.
+
+        Returns:
+            ``dask.array``
+        """
+
+        nodata = nodata_samps.compute().flatten()
+        idx = np.where(nodata == 0)[0]
+
+        X = il.compute().flatten()[idx][:, np.newaxis]
+        y = sr.compute().flatten()[idx]
+
+        slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
+
+        # https://reader.elsevier.com/reader/sd/pii/S0034425713001673?token=6C93FB2E69ABF5729CE9ECBBDFD9C2D985613156753C822A3D160102D46135E01457EE33500DB4648C6AF636F39D8B62
+        # Improved forest change detection with terrain illumination corrected Landsat images
+        # sr_a = sr - slope_m * (il - cos_z)
+
+        sr_a = sr - (slope_m * il + intercept_b)
+
+        return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
+
+    def _method_cos(self, sr, il, cos_z, nodata_samps):
+
+        r"""
+        Normalizes terrain using the Cosine method
+
+        Args:
+            sr (Dask Array): The surface reflectance data.
+            il (Dask Array): The solar illumination.
+            cos_z (Dask Array): The cosine of the solar zenith angle.
+            nodata_samps (Dask Array): Samples where 1='no data' and 0='valid data'.
+
+        References:
+
+            See :cite:`teillet_etal_1982` for the C-correction method.
+
+        Returns:
+            ``dask.array``
+        """
+
+        sr_a = sr * (cos_z / il)
+
+        return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
+
     def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
 
         r"""
@@ -145,15 +224,7 @@ class Topo(object):
         X = il.compute().flatten()[idx][:, np.newaxis]
         y = sr.compute().flatten()[idx]
 
-        if robust:
-            model = TheilSenRegressor(n_jobs=n_jobs)
-        else:
-            model = LinearRegression(n_jobs=n_jobs)
-
-        model.fit(X, y)
-
-        slope_m = model.coef_[0]
-        intercept_b = model.intercept_
+        slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
 
         c = intercept_b / slope_m
 
@@ -194,7 +265,7 @@ class Topo(object):
             solar_az (2d DataArray): The solar azimuth angles (degrees).
             slope (2d DataArray): The slope data. If not given, slope is calculated from ``elev``.
             aspect (2d DataArray): The aspect data. If not given, aspect is calculated from ``elev``.
-            method (Optional[str]): The method to apply. Choices are ['c'].
+            method (Optional[str]): The method to apply. Choices are ['c', 'cos', 'empirical-rotation'].
             slope_thresh (Optional[float or int]): The slope threshold. Any samples with
                 values < ``slope_thresh`` are not adjusted.
             nodata (Optional[int or float]): The 'no data' value for ``data``.
@@ -210,7 +281,8 @@ class Topo(object):
 
         References:
 
-            See :cite:`teillet_etal_1982` for the C-correction method.
+            See :cite:`teillet_etal_1982` for the C-correction and Cosine methods.
+            See :cite:`tan_etal_2010` for the Empirical Rotation method.
 
         Returns:
             ``xarray.DataArray``
@@ -232,9 +304,11 @@ class Topo(object):
             >>>         src_norm = topo.norm_topo(src, elev, solarz, solara, n_jobs=-1)
         """
 
-        if method.lower() != 'c':
+        method = method.strip().lower()
 
-            logger.exception("  Currently, the only supported method is 'c'.")
+        if method not in ['c', 'cos', 'empirical-rotation']:
+
+            logger.exception("  Currently, the only supported methods are 'c' and 'empirical-rotation'.")
             raise NameError
 
         attrs = data.attrs.copy()
@@ -310,13 +384,30 @@ class Topo(object):
         sr_adj = list()
         for band in data.band.values.tolist():
 
-            # TODO: add other methods
-            sr_adj.append(self._method_c(data.sel(band=band).data,
-                                         il,
-                                         cos_z,
-                                         nodata_samps,
-                                         n_jobs=n_jobs,
-                                         robust=robust))
+            if method == 'c':
+
+                sr_adj.append(self._method_c(data.sel(band=band).data,
+                                             il,
+                                             cos_z,
+                                             nodata_samps,
+                                             n_jobs=n_jobs,
+                                             robust=robust))
+
+            elif method == 'cos':
+
+                sr_adj.append(self._method_cos(data.sel(band=band).data,
+                                               il,
+                                               cos_z,
+                                               nodata_samps))
+
+            else:
+
+                sr_adj.append(self._method_empirical_rotation(data.sel(band=band).data,
+                                                              il,
+                                                              cos_z,
+                                                              nodata_samps,
+                                                              n_jobs=n_jobs,
+                                                              robust=robust))
 
         adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
                                                                      data.gw.nrows,
