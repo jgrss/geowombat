@@ -167,11 +167,10 @@ class Topo(object):
 
         # https://reader.elsevier.com/reader/sd/pii/S0034425713001673?token=6C93FB2E69ABF5729CE9ECBBDFD9C2D985613156753C822A3D160102D46135E01457EE33500DB4648C6AF636F39D8B62
         # Improved forest change detection with terrain illumination corrected Landsat images
-        # sr_a = sr - slope_m * (il - cos_z)
+        sr_a = sr - slope_m * (il - cos_z)
+        # sr_a = sr - (slope_m * il + intercept_b)
 
-        sr_a = sr - (slope_m * il + intercept_b)
-
-        return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
+        return da.where(nodata_samps == 1, sr, sr_a).clip(0, 1)
 
     def _method_cos(self, sr, il, cos_z, nodata_samps):
 
@@ -194,7 +193,7 @@ class Topo(object):
 
         sr_a = sr * (cos_z / il)
 
-        return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
+        return da.where(nodata_samps == 1, sr, sr_a).clip(0, 1)
 
     def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
 
@@ -244,7 +243,7 @@ class Topo(object):
                   solar_az,
                   slope=None,
                   aspect=None,
-                  method='c',
+                  method='empirical-rotation',
                   slope_thresh=2,
                   nodata=0,
                   elev_nodata=-32768,
@@ -265,7 +264,7 @@ class Topo(object):
             solar_az (2d DataArray): The solar azimuth angles (degrees).
             slope (2d DataArray): The slope data. If not given, slope is calculated from ``elev``.
             aspect (2d DataArray): The aspect data. If not given, aspect is calculated from ``elev``.
-            method (Optional[str]): The method to apply. Choices are ['c', 'cos', 'empirical-rotation'].
+            method (Optional[str]): The method to apply. Choices are ['c', 'empirical-rotation'].
             slope_thresh (Optional[float or int]): The slope threshold. Any samples with
                 values < ``slope_thresh`` are not adjusted.
             nodata (Optional[int or float]): The 'no data' value for ``data``.
@@ -281,7 +280,7 @@ class Topo(object):
 
         References:
 
-            See :cite:`teillet_etal_1982` for the C-correction and Cosine methods.
+            See :cite:`teillet_etal_1982` for the C-correction method.
             See :cite:`tan_etal_2010` for the Empirical Rotation method.
 
         Returns:
@@ -306,7 +305,7 @@ class Topo(object):
 
         method = method.strip().lower()
 
-        if method not in ['c', 'cos', 'empirical-rotation']:
+        if method not in ['c', 'empirical-rotation']:
 
             logger.exception("  Currently, the only supported methods are 'c' and 'empirical-rotation'.")
             raise NameError
@@ -392,13 +391,6 @@ class Topo(object):
                                              nodata_samps,
                                              n_jobs=n_jobs,
                                              robust=robust))
-
-            elif method == 'cos':
-
-                sr_adj.append(self._method_cos(data.sel(band=band).data,
-                                               il,
-                                               cos_z,
-                                               nodata_samps))
 
             else:
 
