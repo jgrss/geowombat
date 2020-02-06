@@ -565,8 +565,10 @@ def warp(filename,
             if tac:
 
                 # Align the cells to target coordinates
-                import ipdb
-                ipdb.set_trace()
+                tap_left = tac[0][np.abs(tac[0] - dst_bounds.left).argmin()]
+                tap_top = tac[1][np.abs(tac[1] - dst_bounds.top).argmin()]
+
+                dst_transform = Affine(dst_res[0], 0.0, tap_left, 0.0, -dst_res[1], tap_top)
 
             if tap:
 
