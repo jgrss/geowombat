@@ -1023,7 +1023,7 @@ def geodataframe_to_array(dataframe,
         >>>                                     src.gw.celly,
         >>>                                     row_chunks=src.gw.row_chunks,
         >>>                                     col_chunks=src.gw.col_chunks,
-        >>>                                     src_ref=(src.gw.ncols, src.gw.nrows, src.res))
+        >>>                                     src_res=src_res)
     """
 
     if not band_name:
