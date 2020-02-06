@@ -11,6 +11,7 @@ from .core import apply
 from .core import to_raster
 from .core import to_vrt
 from .core import to_geodataframe
+from .core import geodataframe_to_array
 from .core import moving
 from .core import norm_diff
 from .core import evi
@@ -37,6 +38,7 @@ __all__ = ['config',
            'to_raster',
            'to_vrt',
            'to_geodataframe',
+           'geodataframe_to_array',
            'moving',
            'norm_diff',
            'evi',

@@ -283,6 +283,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Returns:
             ``GeoDataFrame``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>
+            >>>     # Convert the input image to a GeoDataFrame
+            >>>     df = src.gw.to_geodataframe(mask='source',
+            >>>                                 num_workers=8)
         """
 
         return to_geodataframe(self._obj,
