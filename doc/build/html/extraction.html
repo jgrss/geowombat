@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Data extraction &#8212; GeoWombat 1.1.0 documentation</title>
+    <title>Data extraction &#8212; GeoWombat 1.1.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -116,57 +116,77 @@
             
   <div class="section" id="data-extraction">
 <span id="extraction"></span><h1>Data extraction<a class="headerlink" href="#data-extraction" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
-<p>Create a Rasterio window</p>
+<div class="section" id="subsetting-rasters">
+<h2>Subsetting rasters<a class="headerlink" href="#subsetting-rasters" title="Permalink to this headline">¶</a></h2>
+<p>Either a <cite>rasterio.window.Window</cite> object or tuple can be used with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="kn">import</span> <span class="n">Window</span>
 <span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">793475.76</span><span class="p">,</span> <span class="mf">2049033.03</span><span class="p">,</span> <span class="mf">794222.03</span><span class="p">,</span> <span class="mf">2049527.24</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Slice a subset using a Rasterio window</p>
+<p>Slice a subset using a <cite>rasterio.window.Window</cite>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
              <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
              <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
              <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
              <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
-             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Slice a subset using a tuple of bounded coordinates</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">793000.0</span><span class="p">,</span> <span class="mf">2049000.0</span><span class="p">,</span> <span class="mf">794000.0</span><span class="p">,</span> <span class="mf">2050000.0</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+<p>Slice a subset using a tuple of bounded coordinates.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
              <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
              <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
              <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
              <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+             <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Extract values at point locations</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;point.shp&#39;</span><span class="p">)</span>
+<p>The configuration manager provides an alternative method to subset rasters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Extract values within polygons</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<p>By default, the subset will be returned by the upper left coordinates of the bounds, potentially shifting cell alignment with the reference raster. To subset a raster and align it to the same grid, use the <cite>ref_tar</cite> keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">ref_tar</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="extracting-data-at-coordinates">
+<h2>Extracting data at coordinates<a class="headerlink" href="#extracting-data-at-coordinates" title="Permalink to this headline">¶</a></h2>
+<p>Extract values at point locations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;point.shp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Extract values within polygons.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
-                       <span class="n">bands</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                       <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span>
-                       <span class="n">frac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-                       <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-                       <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-                       <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                        <span class="n">bands</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span>
+                        <span class="n">frac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                        <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
+</div>
 </div>
 </div>
 

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Use named coordinates for band math &#8212; GeoWombat 1.1.0 documentation</title>
+    <title>Use named coordinates for band math &#8212; GeoWombat 1.1.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -118,19 +118,19 @@
 <span id="band-math"></span><h1>Use named coordinates for band math<a class="headerlink" href="#use-named-coordinates-for-band-math" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="vegetation-indices">
 <h2>Vegetation indices<a class="headerlink" href="#vegetation-indices" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
 <p>Calculate a vegetation index, returning an <cite>Xarray.DataArray</cite>.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>    <span class="n">evi</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-667dd8df382b01805eb464c3c08a1a0b&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-0e9c7d9e348b49b68a0d0242dc969564&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -145,7 +145,7 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
@@ -163,7 +163,7 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
@@ -174,7 +174,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">evi</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi</span><span class="p">()</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
@@ -193,7 +193,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    drange:         (0, 1)</span>
@@ -203,7 +203,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">evi2</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi2</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">evi2</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">evi2</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">[[-0.01671583 -0.01106282 -0.00979931 ...  0.00654108  0.00535353</span>
 <span class="go">   0.0014551 ]</span>
@@ -224,7 +224,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">d</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1008, 1287), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
@@ -243,7 +243,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    1.0</span>
 <span class="go">    drange:         (-1, 1)</span>
@@ -255,7 +255,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">tcap</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">tasseled_cap</span><span class="p">()</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">tcap</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">tcap</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1008, x: 1287)&gt;</span>
 <span class="go">dask.array&lt;transpose, shape=(3, 1008, 1287), dtype=object, chunksize=(3, 256, 256), chunktype=numpy.ndarray&gt;</span>
@@ -274,7 +274,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         Quickbird with 4 (visible + NIR) bands</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
