@@ -45,8 +45,8 @@ def _get_raster_coords(filename):
 
     with xr.open_rasterio(filename) as src:
 
-        x = src.x.values - abs(src.res[0])
-        y = src.y.values + abs(src.res[1])
+        x = src.x.values
+        y = src.y.values
 
     return x, y
 
@@ -394,7 +394,8 @@ def concat(filenames,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
-                  'tap': tap}
+                  'tap': tap,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
