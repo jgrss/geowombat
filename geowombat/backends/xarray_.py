@@ -41,6 +41,16 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
+def _get_raster_coords(filename):
+
+    with xr.open_rasterio(filename) as src:
+
+        x = src.x.values - src.res[0] / 2.0
+        y = src.y.values + src.res[1] / 2.0
+
+    return x, y
+
+
 def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
     """
@@ -63,6 +73,9 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             ref_kwargs['bounds'] = ref_meta.bounds
             ref_kwargs['crs'] = ref_meta.crs
             ref_kwargs['res'] = ref_meta.res
+
+        else:
+            logger.warning('  The reference image does not exist')
 
     else:
 
@@ -120,6 +133,16 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
         if config['ref_res']:
             ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
+        if config['ref_tar']:
+
+            if isinstance(config['ref_tar'], str) and os.path.isfile(config['ref_tar']):
+
+                config['ref_tar'] = _get_raster_coords(config['ref_tar'])
+                ref_kwargs = _update_kwarg(config['ref_tar'], ref_kwargs, 'tac')
+
+            else:
+                logger.warning('  The target aligned raster does not exist.')
+
     return ref_kwargs
 
 
@@ -157,7 +180,8 @@ def warp_open(filename,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
-                  'tap': tap}
+                  'tap': tap,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
 
@@ -259,7 +283,8 @@ def mosaic(filenames,
                   'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads}
+                  'num_threads': num_threads,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
@@ -370,7 +395,8 @@ def concat(filenames,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
-                  'tap': tap}
+                  'tap': tap,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 

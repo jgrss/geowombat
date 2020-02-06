@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Topo &#8212; GeoWombat 1.1.0 documentation</title>
+    <title>Topo &#8212; GeoWombat 1.1.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -138,7 +138,7 @@
 <p class="rubric">Methods Documentation</p>
 <dl class="method">
 <dt id="geowombat.radiometry.Topo.norm_topo">
-<code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">elev</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">slope=None</em>, <em class="sig-param">aspect=None</em>, <em class="sig-param">method='c'</em>, <em class="sig-param">slope_thresh=2</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">elev_nodata=-32768</em>, <em class="sig-param">scale_factor=1</em>, <em class="sig-param">angle_scale=0.01</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">robust=False</em>, <em class="sig-param">slope_kwargs=None</em>, <em class="sig-param">aspect_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">elev</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">slope=None</em>, <em class="sig-param">aspect=None</em>, <em class="sig-param">method='empirical-rotation'</em>, <em class="sig-param">slope_thresh=2</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">elev_nodata=-32768</em>, <em class="sig-param">scale_factor=1</em>, <em class="sig-param">angle_scale=0.01</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">robust=False</em>, <em class="sig-param">slope_kwargs=None</em>, <em class="sig-param">aspect_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies topographic normalization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -149,7 +149,7 @@
 <li><p><strong>solar_az</strong> (<em>2d DataArray</em>) – The solar azimuth angles (degrees).</p></li>
 <li><p><strong>slope</strong> (<em>2d DataArray</em>) – The slope data. If not given, slope is calculated from <code class="docutils literal notranslate"><span class="pre">elev</span></code>.</p></li>
 <li><p><strong>aspect</strong> (<em>2d DataArray</em>) – The aspect data. If not given, aspect is calculated from <code class="docutils literal notranslate"><span class="pre">elev</span></code>.</p></li>
-<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to apply. Choices are [‘c’].</p></li>
+<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to apply. Choices are [‘c’, ‘empirical-rotation’].</p></li>
 <li><p><strong>slope_thresh</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The slope threshold. Any samples with
 values &lt; <code class="docutils literal notranslate"><span class="pre">slope_thresh</span></code> are not adjusted.</p></li>
 <li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
@@ -166,7 +166,8 @@ to calculate the aspect.</p></li>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>See <a class="bibtex reference internal" href="#teillet-etal-1982" id="id1">[TGG82]</a> for the C-correction method.</p>
+<p>See <a class="bibtex reference internal" href="#teillet-etal-1982" id="id1">[TGG82]</a> for the C-correction method.
+See <a class="bibtex reference internal" href="#tan-etal-2010" id="id2">[TWM+10]</a> for the Empirical Rotation method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
@@ -174,7 +175,7 @@ to calculate the aspect.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">Topo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">Topo</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">topo</span> <span class="o">=</span> <span class="n">Topo</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -194,6 +195,9 @@ to calculate the aspect.</p></li>
 </dd></dl>
 
 <p id="bibtex-bibliography-api/geowombat.radiometry.Topo-0"><dl class="citation">
+<dt class="bibtex label" id="tan-etal-2010"><span class="brackets"><a class="fn-backref" href="#id2">TWM+10</a></span></dt>
+<dd><p>Bin Tan, Robert Wolfe, Jeffrey Masek, Feng Gao, and Eric F Vermote. An illumination correction algorithm on Landsat-TM data. In <em>2010 IEEE International Geoscience and Remote Sensing Symposium</em>, 1964–1967. IEEE, 2010.</p>
+</dd>
 <dt class="bibtex label" id="teillet-etal-1982"><span class="brackets"><a class="fn-backref" href="#id1">TGG82</a></span></dt>
 <dd><p>PM Teillet, B Guindon, and DG Goodenough. On the slope-aspect correction of multispectral scanner data. <em>Canadian Journal of Remote Sensing</em>, 8(2):84–106, 1982.</p>
 </dd>

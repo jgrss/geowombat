@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_geodataframe &#8212; GeoWombat 1.1.0 documentation</title>
+    <title>to_geodataframe &#8212; GeoWombat 1.1.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="moving" href="geowombat.moving.html" />
+    <link rel="next" title="geodataframe_to_array" href="geowombat.geodataframe_to_array.html" />
     <link rel="prev" title="to_vrt" href="geowombat.to_vrt.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -85,7 +85,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.to_vrt.html" title="previous chapter">to_vrt</a></li>
-      <li>Next: <a href="geowombat.moving.html" title="next chapter">moving</a></li>
+      <li>Next: <a href="geowombat.geodataframe_to_array.html" title="next chapter">geodataframe_to_array</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -135,22 +135,21 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 <li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers to send to <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
+</dd>
 </dl>
-<p class="rubric">Examples</p>
+<p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Convert the input image to a GeoDataFrame</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_geodataframe</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                                <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">to_geodataframe</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                            <span class="n">mask</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                            <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
