@@ -1023,7 +1023,7 @@ def geodataframe_to_array(dataframe,
         >>>                                     src.gw.celly,
         >>>                                     row_chunks=src.gw.row_chunks,
         >>>                                     col_chunks=src.gw.col_chunks,
-        >>>                                     src_ref=(src.gw.width, src.gw.height, src.res))
+        >>>                                     src_ref=(src.gw.ncols, src.gw.nrows, src.res))
     """
 
     if not band_name:
@@ -1043,7 +1043,7 @@ def geodataframe_to_array(dataframe,
                                                               src_ref[1],
                                                               src_ref[2])
 
-    data = rasterize(df_bio_crs.geometry.values,
+    data = rasterize(dataframe.geometry.values,
                      out_shape=(dst_height, dst_width),
                      transform=dst_transform,
                      fill=fill,
