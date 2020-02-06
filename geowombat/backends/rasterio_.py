@@ -371,7 +371,8 @@ def warp_images(filenames,
                 nodata=0,
                 resampling='nearest',
                 warp_mem_limit=512,
-                num_threads=1):
+                num_threads=1,
+                tac=None):
 
     """
     Transforms a list of images to a common grid
@@ -386,6 +387,7 @@ def warp_images(filenames,
             'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
+        tac (Optional[tuple]): Target aligned raster coordinates (x, y).
 
     Returns:
         ``list`` of ``rasterio.vrt.WarpedVRT`` objects
@@ -403,7 +405,8 @@ def warp_images(filenames,
                    'res': res,
                    'nodata': nodata,
                    'warp_mem_limit': warp_mem_limit,
-                   'num_threads': num_threads}
+                   'num_threads': num_threads,
+                   'tac': tac}
 
     if bounds:
         warp_kwargs['bounds'] = bounds
@@ -418,28 +421,6 @@ def warp_images(filenames,
                                                 return_bounds=True)
 
     return [warp(fn, **warp_kwargs) for fn in filenames]
-
-    # vrt_options = {'resampling': getattr(Resampling, resampling),
-    #                'crs': crs,
-    #                'transform': dst_transform,
-    #                'height': dst_height,
-    #                'width': dst_width,
-    #                'nodata': nodata,
-    #                'warp_mem_limit': warp_mem_limit,
-    #                'warp_extras': {'multi': True,
-    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
-    #
-    # vrt_list = list()
-    #
-    # # Warp each image to a common grid
-    # for fn in filenames:
-    #
-    #     with rio.open(fn) as src:
-    #
-    #         with WarpedVRT(src, **vrt_options) as vrt:
-    #             vrt_list.append(vrt)
-    #
-    # return vrt_list
 
 
 def get_ref_image_meta(filename):
