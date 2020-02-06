@@ -331,6 +331,7 @@ def concat(filenames,
            overlap='max',
            warp_mem_limit=512,
            num_threads=1,
+           tap=False,
            **kwargs):
 
     """
@@ -354,6 +355,7 @@ def concat(filenames,
             Choices are ['min', 'max', 'mean']. Only used when mosaicking arrays from the same timeframe.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
+        tap (Optional[bool]): Whether to target align pixels.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
@@ -367,7 +369,8 @@ def concat(filenames,
                   'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads}
+                  'num_threads': num_threads,
+                  'tap': tap}
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
