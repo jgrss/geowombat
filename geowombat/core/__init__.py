@@ -2,6 +2,7 @@ from .io import apply
 from .io import to_raster
 from .io import to_vrt
 from .io import to_geodataframe
+from .io import geodataframe_to_array
 from .sops import SpatialOperations
 from .util import Converters
 from .util import MapProcesses
@@ -34,6 +35,7 @@ __all__ = ['apply',
            'to_raster',
            'to_vrt',
            'to_geodataframe',
+           'geodataframe_to_array',
            'extract',
            'sample',
            'subset',

@@ -3,6 +3,21 @@
 Change Log
 ==========
 
+1.1.3 (6 February 2020)
+-----------------------
+
+- Added new function :func:`geowombat.geodataframe_to_array` to convert a `geopandas.GeoDataFrame` to an `xarray.DataArray`.
+
+1.1.2 (5 February 2020)
+-----------------------
+
+- Added 'empirical-rotation' method to :func:`geowombat.Topo().norm_topo` function in :class:`geowombat.Topo`
+
+1.1.1 (28 January 2020)
+-----------------------
+
+- Fixed error reading by a extent bounds with `dask.delayed`
+
 1.1.0 (24 January 2020)
 -----------------------
 

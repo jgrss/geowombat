@@ -17,8 +17,8 @@ from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
 
 import numpy as np
-
 import geopandas as gpd
+import xarray as xr
 
 import dask.array as da
 from dask import is_dask_collection
@@ -26,14 +26,16 @@ from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
 
 import rasterio as rio
-from rasterio.features import shapes
+from rasterio.features import rasterize, shapes
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
 from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
+from rasterio.warp import aligned_target
 
 import shapely
 from shapely.geometry import Polygon
+from affine import Affine
 
 import zarr
 from tqdm import tqdm
@@ -936,17 +938,18 @@ def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
         connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
         num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
 
-    Examples:
+    Returns:
+        ``GeoDataFrame``
+
+    Example:
         >>> import geowombat as gw
         >>>
         >>> with gw.open('image.tif') as src:
         >>>
         >>>     # Convert the input image to a GeoDataFrame
-        >>>     df = src.gw.to_geodataframe(mask='source',
-        >>>                                 num_workers=8)
-
-    Returns:
-        ``GeoDataFrame``
+        >>>     df = gw.to_geodataframe(src,
+        >>>                             mask='source',
+        >>>                             num_workers=8)
     """
 
     if not hasattr(data, 'transform'):
@@ -970,3 +973,104 @@ def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
     return gpd.GeoDataFrame(data=np.ones(len(poly_geom), dtype='uint8'),
                             geometry=poly_geom,
                             crs=data.crs)
+
+
+def geodataframe_to_array(dataframe,
+                          cellx,
+                          celly,
+                          band_name=None,
+                          row_chunks=512,
+                          col_chunks=512,
+                          src_res=None,
+                          fill=0,
+                          default_value=1,
+                          all_touched=True,
+                          dtype='uint8'):
+
+    """
+    Converts a polygon ``geopandas.GeoDataFrame`` to an ``xarray.DataArray``.
+
+    Args:
+        dataframe (GeoDataFrame): The ``geopandas.DataFrame`` with polygon geometries.
+        cellx (float): The output cell x size.
+        celly (float): The output cell y size.
+        band_name (Optional[list]): The ``xarray.DataArray`` band name.
+        row_chunks (Optional[int]): The ``dask`` row chunk size.
+        col_chunks (Optional[int]): The ``dask`` column chunk size.
+        src_res (Optional[tuple]: A source resolution to align to.
+        fill (Optional[int]): The output fill value for ``rasterio.features.rasterize``.
+        default_value (Optional[int]): The output default value for ``rasterio.features.rasterize``.
+        all_touched (Optional[int]): The ``all_touched`` value for ``rasterio.features.rasterize``.
+        dtype (Optional[int]): The output data type for ``rasterio.features.rasterize``.
+
+    Returns:
+        ``xarray.DataArray``
+
+    Example:
+        >>> import geowombat as gw
+        >>> import geopandas as gpd
+        >>>
+        >>> df = gpd.read_file('polygons.gpkg')
+        >>>
+        >>> # 100x100 cell size
+        >>> data = gw.geodataframe_to_array(df, 100.0, 100.0)
+        >>>
+        >>> # Align to an existing image
+        >>> with gw.open('image.tif') as src:
+        >>>
+        >>>     data = gw.geodataframe_to_array(df,
+        >>>                                     src.gw.cellx,
+        >>>                                     src.gw.celly,
+        >>>                                     row_chunks=src.gw.row_chunks,
+        >>>                                     col_chunks=src.gw.col_chunks,
+        >>>                                     src_res=src_res)
+    """
+
+    if not band_name:
+        band_name = [1]
+
+    left, bottom, right, top = dataframe.bounds.values.flatten().tolist()
+
+    dst_height = int((top - bottom) / abs(celly))
+    dst_width = int((right - left) / abs(cellx))
+
+    dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
+
+    if src_res:
+
+        dst_transform = aligned_target(dst_transform,
+                                       dst_width,
+                                       dst_height,
+                                       src_res)[0]
+
+        left = dst_transform[2]
+        top = dst_transform[5]
+
+        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
+
+    data = rasterize(dataframe.geometry.values,
+                     out_shape=(dst_height, dst_width),
+                     transform=dst_transform,
+                     fill=fill,
+                     default_value=default_value,
+                     all_touched=all_touched,
+                     dtype=dtype)
+
+    cellxh = abs(cellx) / 2.0
+    cellyh = abs(celly) / 2.0
+
+    xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
+    ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
+
+    attrs = {'transform': dst_transform[:6],
+             'crs': dataframe.crs,
+             'res': (cellx, celly),
+             'is_tiled': 1}
+
+    return xr.DataArray(data=da.from_array(data[np.newaxis, :, :],
+                                           chunks=(1, row_chunks, col_chunks)),
+                        coords={'band': band_name,
+                                'y': ycoords,
+                                'x': xcoords},
+                        dims=('band', 'y', 'x'),
+                        attrs=attrs)
