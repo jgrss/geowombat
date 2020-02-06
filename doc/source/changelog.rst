@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.1.3 (6 February 2020)
+-----------------------
+
+- Added new function :func:`geowombat.geodataframe_to_array` to convert a `geopandas.GeoDataFrame` to an `xarray.DataArray`.
+
 1.1.2 (5 February 2020)
 -----------------------
 
