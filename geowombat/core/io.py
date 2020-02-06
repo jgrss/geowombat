@@ -1036,7 +1036,7 @@ def geodataframe_to_array(dataframe,
 
     dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
-    if res:
+    if src_res:
 
         dst_transform = aligned_target(dst_transform,
                                        dst_width,
