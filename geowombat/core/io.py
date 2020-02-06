@@ -981,7 +981,7 @@ def geodataframe_to_array(dataframe,
                           band_name=None,
                           row_chunks=512,
                           col_chunks=512,
-                          src_ref=None,
+                          src_res=None,
                           fill=0,
                           default_value=1,
                           all_touched=True,
@@ -997,7 +997,7 @@ def geodataframe_to_array(dataframe,
         band_name (Optional[list]): The ``xarray.DataArray`` band name.
         row_chunks (Optional[int]): The ``dask`` row chunk size.
         col_chunks (Optional[int]): The ``dask`` column chunk size.
-        src_ref (Optional[tuple]: A tuple of (width, height, res) to align the output transform to.
+        src_res (Optional[tuple]: A source resolution to align to.
         fill (Optional[int]): The output fill value for ``rasterio.features.rasterize``.
         default_value (Optional[int]): The output default value for ``rasterio.features.rasterize``.
         all_touched (Optional[int]): The ``all_touched`` value for ``rasterio.features.rasterize``.
@@ -1036,12 +1036,14 @@ def geodataframe_to_array(dataframe,
 
     dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
-    if src_ref:
+    if res:
 
-        dst_transform, dst_width, dst_height = aligned_target(dst_transform,
-                                                              src_ref[0],
-                                                              src_ref[1],
-                                                              src_ref[2])
+        dst_transform = aligned_target(dst_transform,
+                                       dst_width,
+                                       dst_height,
+                                       src_res)[0]
+
+        dst_transform = Affine(cellx, 0.0, dst_transform[2], 0.0, -celly, dst_transform[5])
 
     data = rasterize(dataframe.geometry.values,
                      out_shape=(dst_height, dst_width),
