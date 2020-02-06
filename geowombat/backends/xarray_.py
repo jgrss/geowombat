@@ -74,6 +74,9 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             ref_kwargs['crs'] = ref_meta.crs
             ref_kwargs['res'] = ref_meta.res
 
+        else:
+            logger.warning('  The reference image does not exist')
+
     else:
 
         if config['ref_bounds']:
@@ -132,8 +135,13 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
         if config['ref_tar']:
 
-            config['ref_tar'] = _get_raster_coords(config['ref_tar'])
-            ref_kwargs = _update_kwarg(config['ref_tar'], ref_kwargs, 'tac')
+            if isinstance(config['ref_tar'], str) and os.path.isfile(config['ref_tar']):
+
+                config['ref_tar'] = _get_raster_coords(config['ref_tar'])
+                ref_kwargs = _update_kwarg(config['ref_tar'], ref_kwargs, 'tac')
+
+            else:
+                logger.warning('  The target aligned raster does not exist.')
 
     return ref_kwargs
 
