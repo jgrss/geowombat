@@ -45,8 +45,8 @@ def _get_raster_coords(filename):
 
     with xr.open_rasterio(filename) as src:
 
-        x = src.x.values
-        y = src.y.values
+        x = src.x.values - src.res[0] / 2.0
+        y = src.y.values + src.res[1] / 2.0
 
     return x, y
 
