@@ -41,6 +41,16 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
+def _get_raster_coords(filename):
+
+    with xr.open_rasterio(filename) as src:
+
+        x = src.x.values - abs(src.res[0])
+        y = src.y.values + abs(src.res[1])
+
+    return x, y
+
+
 def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
     """
@@ -120,6 +130,11 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
         if config['ref_res']:
             ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
+        if config['ref_tar']:
+
+            config['ref_tar'] = _get_raster_coords(config['ref_tar'])
+            ref_kwargs = _update_kwarg(config['ref_tar'], ref_kwargs, 'tac')
+
     return ref_kwargs
 
 
@@ -157,7 +172,8 @@ def warp_open(filename,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
-                  'tap': tap}
+                  'tap': tap,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
 

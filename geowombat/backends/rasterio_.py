@@ -473,7 +473,8 @@ def warp(filename,
          nodata=0,
          warp_mem_limit=512,
          num_threads=1,
-         tap=False):
+         tap=False,
+         tac=None):
 
     """
     Warps an image to a VRT object
@@ -489,6 +490,7 @@ def warp(filename,
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         tap (Optional[bool]): Whether to target align pixels.
+        tac (Optional[tuple]): Target aligned raster coordinates (x, y).
 
     Returns:
         ``rasterio.vrt.WarpedVRT``
@@ -560,9 +562,15 @@ def warp(filename,
 
             dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
+            if tac:
+
+                # Align the cells to target coordinates
+                import ipdb
+                ipdb.set_trace()
+
             if tap:
 
-                # Align the cells
+                # Align the cells to the resolution
                 dst_transform, dst_width, dst_height = aligned_target(dst_transform,
                                                                       dst_width,
                                                                       dst_height,
