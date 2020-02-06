@@ -17,8 +17,8 @@ from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
 
 import numpy as np
-
 import geopandas as gpd
+import xarray as xr
 
 import dask.array as da
 from dask import is_dask_collection
