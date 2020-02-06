@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 
 import numpy as np
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 pkg_name = 'geowombat'
 maintainer = 'Jordan Graesser'
