@@ -283,7 +283,8 @@ def mosaic(filenames,
                   'crs': None,
                   'res': None,
                   'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads}
+                  'num_threads': num_threads,
+                  'tac': None}
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
