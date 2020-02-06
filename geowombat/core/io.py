@@ -1031,8 +1031,8 @@ def geodataframe_to_array(dataframe,
 
     left, bottom, right, top = dataframe.bounds.values.flatten().tolist()
 
-    dst_height = int((top - bottom) / celly)
-    dst_width = int((right - left) / cellx)
+    dst_height = int((top - bottom) / abs(celly))
+    dst_width = int((right - left) / abs(cellx))
 
     dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
@@ -1043,7 +1043,10 @@ def geodataframe_to_array(dataframe,
                                        dst_height,
                                        src_res)[0]
 
-        dst_transform = Affine(cellx, 0.0, dst_transform[2], 0.0, -celly, dst_transform[5])
+        left = dst_transform[2]
+        top = dst_transform[5]
+
+        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
     data = rasterize(dataframe.geometry.values,
                      out_shape=(dst_height, dst_width),
@@ -1053,8 +1056,11 @@ def geodataframe_to_array(dataframe,
                      all_touched=all_touched,
                      dtype=dtype)
 
-    xcoords = np.arange(left, left + dst_width * cellx, cellx)
-    ycoords = np.arange(top, top - dst_height * celly, -celly)
+    cellxh = abs(cellx) / 2.0
+    cellyh = abs(celly) / 2.0
+
+    xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
+    ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
 
     attrs = {'transform': dst_transform[:6],
              'crs': dataframe.crs,
