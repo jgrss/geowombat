@@ -3,6 +3,18 @@
 Change Log
 ==========
 
+1.1.4 (7 February 2020)
+-----------------------
+
+- Added configuration option `ref_tar` to target align outputs to a reference raster. Example usage looks like:
+
+.. code:: python
+
+    # Subset a raster but align to a target grid
+    with gw.config.update(ref_bounds=bounds, ref_tar='image.tif'):
+        with gw.open() as src:
+            ...
+
 1.1.3 (6 February 2020)
 -----------------------
 
