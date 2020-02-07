@@ -1061,15 +1061,21 @@ def geodataframe_to_array(dataframe,
         col_chunks = data.gw.col_chunks
         src_res = None
 
-    import ipdb
-    ipdb.set_trace()
+        left, bottom, right, top = data.gw.bounds
 
-    left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
+        dst_height = data.gw.height
+        dst_width = data.gw.width
 
-    dst_height = int((top - bottom) / abs(celly))
-    dst_width = int((right - left) / abs(cellx))
+        dst_transform = data.transform
 
-    dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
+    else:
+
+        left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
+
+        dst_height = int((top - bottom) / abs(celly))
+        dst_width = int((right - left) / abs(cellx))
+
+        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
     if src_res:
 
