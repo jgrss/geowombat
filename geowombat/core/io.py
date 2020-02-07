@@ -1046,8 +1046,8 @@ def geodataframe_to_array(dataframe,
 
         if not int_idx:
 
-            logger.exception('  There were no intersecting features.')
-            raise ValueError
+            logger.warning('  There were no intersecting features.')
+            return None
 
         # Subset to the intersecting features
         dataframe = dataframe.iloc[int_idx]
