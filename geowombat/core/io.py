@@ -976,8 +976,9 @@ def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
 
 
 def geodataframe_to_array(dataframe,
-                          cellx,
-                          celly,
+                          data=None,
+                          cellx=None,
+                          celly=None,
                           band_name=None,
                           row_chunks=512,
                           col_chunks=512,
@@ -992,8 +993,9 @@ def geodataframe_to_array(dataframe,
 
     Args:
         dataframe (GeoDataFrame): The ``geopandas.DataFrame`` with polygon geometries.
-        cellx (float): The output cell x size.
-        celly (float): The output cell y size.
+        data (Optional[DataArray]): A ``xarray.DataArray`` to use as a reference.
+        cellx (Optional[float]): The output cell x size.
+        celly (Optional[float]): The output cell y size.
         band_name (Optional[list]): The ``xarray.DataArray`` band name.
         row_chunks (Optional[int]): The ``dask`` row chunk size.
         col_chunks (Optional[int]): The ``dask`` column chunk size.
@@ -1019,8 +1021,8 @@ def geodataframe_to_array(dataframe,
         >>> with gw.open('image.tif') as src:
         >>>
         >>>     data = gw.geodataframe_to_array(df,
-        >>>                                     src.gw.cellx,
-        >>>                                     src.gw.celly,
+        >>>                                     cellx=src.gw.cellx,
+        >>>                                     celly=src.gw.celly,
         >>>                                     row_chunks=src.gw.row_chunks,
         >>>                                     col_chunks=src.gw.col_chunks,
         >>>                                     src_res=src_res)
@@ -1028,6 +1030,34 @@ def geodataframe_to_array(dataframe,
 
     if not band_name:
         band_name = [1]
+
+    if isinstance(data, xr.DataArray):
+
+        # Transform the geometry
+        dataframe = dataframe.to_crs(data.crs)
+
+        # Get the R-tree spatial index
+        sindex = dataframe.sindex
+
+        # Get intersecting features
+        int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.bounds.values.flatten()))))
+
+        if not int_idx:
+
+            logger.exception('  There were no intersecting features.')
+            raise ValueError
+
+        # Subset to the intersecting features
+        dataframe = dataframe.iloc[int_idx]
+
+        # Clip the geometry
+        dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
+
+        cellx = data.gw.cellx
+        celly = data.gw.celly
+        row_chunks = data.gw.row_chunks
+        col_chunks = data.gw.col_chunks
+        src_res = None
 
     left, bottom, right, top = dataframe.bounds.values.flatten().tolist()
 
@@ -1048,13 +1078,13 @@ def geodataframe_to_array(dataframe,
 
         dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
-    data = rasterize(dataframe.geometry.values,
-                     out_shape=(dst_height, dst_width),
-                     transform=dst_transform,
-                     fill=fill,
-                     default_value=default_value,
-                     all_touched=all_touched,
-                     dtype=dtype)
+    varray = rasterize(dataframe.geometry.values,
+                       out_shape=(dst_height, dst_width),
+                       transform=dst_transform,
+                       fill=fill,
+                       default_value=default_value,
+                       all_touched=all_touched,
+                       dtype=dtype)
 
     cellxh = abs(cellx) / 2.0
     cellyh = abs(celly) / 2.0
@@ -1067,7 +1097,7 @@ def geodataframe_to_array(dataframe,
              'res': (cellx, celly),
              'is_tiled': 1}
 
-    return xr.DataArray(data=da.from_array(data[np.newaxis, :, :],
+    return xr.DataArray(data=da.from_array(varray[np.newaxis, :, :],
                                            chunks=(1, row_chunks, col_chunks)),
                         coords={'band': band_name,
                                 'y': ycoords,
