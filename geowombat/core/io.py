@@ -1047,7 +1047,15 @@ def geodataframe_to_array(dataframe,
         if not int_idx:
 
             logger.warning('  There were no intersecting features.')
-            return None
+            
+            return xr.DataArray(data=da.zeros((1, data.gw.nrows, data.gw.ncols),
+                                              chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                                              dtype=data.dtype.name),
+                                coords={'band': [1],
+                                        'y': data.y.values,
+                                        'x': data.x.values},
+                                dims=('band', 'y', 'x'),
+                                attrs=data.attrs)
 
         # Subset to the intersecting features
         dataframe = dataframe.iloc[int_idx]
