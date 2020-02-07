@@ -482,7 +482,7 @@ class DataProperties(object):
     @property
     def geodataframe(self):
 
-        return gpd.GeoDataFrame(data=[Path(self._obj.filename).name],
+        return gpd.GeoDataFrame(data=[Path(self._obj.filename).name if hasattr(self._obj, 'filename') else 1],
                                 columns=['grid'],
                                 geometry=[self._obj.gw.geometry],
                                 crs=self._obj.crs)
