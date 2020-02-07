@@ -1033,7 +1033,7 @@ def geodataframe_to_array(dataframe,
 
     if isinstance(data, xr.DataArray):
 
-        if dataframe.crs != data.gw.crs:
+        if dataframe.crs != data.crs:
 
             # Transform the geometry
             dataframe = dataframe.to_crs(data.crs)
