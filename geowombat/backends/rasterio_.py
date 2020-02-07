@@ -296,7 +296,7 @@ def align_bounds(minx, miny, maxx, maxy, res):
 
 
 def get_file_bounds(filenames,
-                    bounds_by='intersection',
+                    bounds_by='union',
                     crs=None,
                     res=None,
                     return_bounds=False):
@@ -392,6 +392,7 @@ def get_file_bounds(filenames,
 
 
 def warp_images(filenames,
+                bounds_by='union',
                 bounds=None,
                 crs=None,
                 res=None,
@@ -406,6 +407,7 @@ def warp_images(filenames,
 
     Args:
         filenames (list): The file names to mosaic.
+        bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         bounds (Optional[tuple]): The extent bounds to warp to. If not give, the union of all images is used.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
@@ -442,11 +444,12 @@ def warp_images(filenames,
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
         warp_kwargs['bounds'] = get_file_bounds(filenames,
-                                                bounds_by='union',
+                                                bounds_by=bounds_by,
                                                 crs=crs,
                                                 res=res,
                                                 return_bounds=True)
-
+    import ipdb
+    ipdb.set_trace()
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
 

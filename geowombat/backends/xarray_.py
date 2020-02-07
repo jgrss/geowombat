@@ -292,6 +292,7 @@ def mosaic(filenames,
 
     # Warp all images to the same grid.
     warped_objects = warp_images(filenames,
+                                 bounds_by=bounds_by,
                                  resampling=resampling,
                                  **ref_kwargs)
 
