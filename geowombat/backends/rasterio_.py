@@ -214,6 +214,29 @@ class WriteDaskArray(object):
         pass
 
 
+def check_res(res):
+
+    """
+    Checks a resolution
+
+    Args:
+        res (int | float | tuple): The resolution.
+
+    Returns:
+        ``tuple``
+    """
+
+    if isinstance(res, tuple):
+        dst_res = res
+    elif isinstance(res, int) or isinstance(res, float):
+        dst_res = (res, res)
+    else:
+        logger.exception('  The resolution should be given as an integer, float, or tuple.')
+        raise TypeError
+
+    return dst_res
+
+
 def check_crs(crs):
 
     """
@@ -480,7 +503,7 @@ def warp(filename,
     with rio.open(filename) as src:
 
         if res:
-            dst_res = res
+            dst_res = check_res(res)
         else:
             dst_res = src.res
 
@@ -527,12 +550,8 @@ def warp(filename,
         else:
             dst_bounds = src.bounds
 
-        try:
-            dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
-            dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
-        except:
-            import ipdb
-            ipdb.set_trace()
+        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
+        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
         # Do not warp if all the key metadata match the reference information
         if (src.bounds == bounds) and \
