@@ -317,15 +317,19 @@ def get_file_bounds(filenames,
 
     with rio.open(filenames[0]) as src:
 
-        if not crs:
-            crs = src.crs
+        if crs:
+            dst_crs = check_crs(crs)
+        else:
+            dst_crs = src.crs
 
-        if not res:
-            res = src.res
+        if res:
+            dst_res = check_res(res)
+        else:
+            dst_res = src.res
 
         # Transform the extent to the reference CRS
         bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
-                                                                                crs,
+                                                                                dst_crs,
                                                                                 src.bounds.left,
                                                                                 src.bounds.bottom,
                                                                                 src.bounds.right,
@@ -340,7 +344,7 @@ def get_file_bounds(filenames,
 
                 # Transform the extent to the reference CRS
                 left, bottom, right, top = transform_bounds(src.crs,
-                                                            crs,
+                                                            dst_crs,
                                                             src.bounds.left,
                                                             src.bounds.bottom,
                                                             src.bounds.right,
@@ -367,12 +371,12 @@ def get_file_bounds(filenames,
                                                                      bounds_bottom,
                                                                      bounds_right,
                                                                      bounds_top,
-                                                                     res)
+                                                                     dst_res)
 
     else:
 
-        bounds_width = int((bounds_right - bounds_left) / abs(res[0]))
-        bounds_height = int((bounds_top - bounds_bottom) / abs(res[1]))
+        bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
+        bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
         bounds_transform = from_bounds(bounds_left,
                                        bounds_bottom,
