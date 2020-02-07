@@ -1061,6 +1061,9 @@ def geodataframe_to_array(dataframe,
         col_chunks = data.gw.col_chunks
         src_res = None
 
+    import ipdb
+    ipdb.set_trace()
+
     left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
 
     dst_height = int((top - bottom) / abs(celly))
