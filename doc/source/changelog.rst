@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.1.5 (7 February 2020)
+-----------------------
+
+- Fixed error that caused the deletion of `ref_tar` when multiple raster files were opened.
+
 1.1.4 (7 February 2020)
 -----------------------
 

@@ -135,13 +135,15 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
         if config['ref_tar']:
 
-            if isinstance(config['ref_tar'], str) and os.path.isfile(config['ref_tar']):
+            if isinstance(config['ref_tar'], str):
 
-                config['ref_tar'] = _get_raster_coords(config['ref_tar'])
-                ref_kwargs = _update_kwarg(config['ref_tar'], ref_kwargs, 'tac')
+                if os.path.isfile(config['ref_tar']):
+                    ref_kwargs = _update_kwarg(_get_raster_coords(config['ref_tar']), ref_kwargs, 'tac')
+                else:
+                    logger.warning('  The target aligned raster does not exist.')
 
             else:
-                logger.warning('  The target aligned raster does not exist.')
+                logger.warning('  The target aligned raster must be an image.')
 
     return ref_kwargs
 
