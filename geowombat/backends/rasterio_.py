@@ -336,9 +336,6 @@ def get_file_bounds(filenames,
                                                                                 src.bounds.top,
                                                                                 densify_pts=21)
 
-    import ipdb
-    ipdb.set_trace()
-
     if bounds_by.lower() in ['union', 'intersection']:
 
         for fn in filenames[1:]:
