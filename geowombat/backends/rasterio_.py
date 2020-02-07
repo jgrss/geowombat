@@ -527,8 +527,12 @@ def warp(filename,
         else:
             dst_bounds = src.bounds
 
-        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
-        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
+        try:
+            dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
+            dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
+        except:
+            import ipdb
+            ipdb.set_trace()
 
         # Do not warp if all the key metadata match the reference information
         if (src.bounds == bounds) and \
