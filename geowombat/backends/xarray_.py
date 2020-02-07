@@ -133,6 +133,9 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
         if config['ref_res']:
             ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
+        import ipdb
+        ipdb.set_trace()
+
         if config['ref_tar']:
 
             if isinstance(config['ref_tar'], str) and os.path.isfile(config['ref_tar']):
