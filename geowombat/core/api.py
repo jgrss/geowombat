@@ -383,6 +383,7 @@ def open(filename,
                 # Mosaic images over space
                 data = gw_mosaic(filename,
                                  overlap=overlap,
+                                 bounds_by=bounds_by,
                                  resampling=resampling,
                                  band_names=band_names,
                                  dtype=dtype,
