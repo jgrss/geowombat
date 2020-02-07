@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.1.6 (7 February 2020)
+-----------------------
+
+- Added new property `geodataframe`.
+
 1.1.5 (7 February 2020)
 -----------------------
 
