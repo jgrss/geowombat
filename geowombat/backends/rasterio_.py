@@ -448,8 +448,7 @@ def warp_images(filenames,
                                                 crs=crs,
                                                 res=res,
                                                 return_bounds=True)
-    import ipdb
-    ipdb.set_trace()
+
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
 
