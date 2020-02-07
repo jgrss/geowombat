@@ -1033,8 +1033,10 @@ def geodataframe_to_array(dataframe,
 
     if isinstance(data, xr.DataArray):
 
-        # Transform the geometry
-        dataframe = dataframe.to_crs(data.crs)
+        if dataframe.crs != data.gw.crs:
+
+            # Transform the geometry
+            dataframe = dataframe.to_crs(data.crs)
 
         # Get the R-tree spatial index
         sindex = dataframe.sindex
@@ -1059,7 +1061,7 @@ def geodataframe_to_array(dataframe,
         col_chunks = data.gw.col_chunks
         src_res = None
 
-    left, bottom, right, top = dataframe.bounds.values.flatten().tolist()
+    left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
 
     dst_height = int((top - bottom) / abs(celly))
     dst_width = int((right - left) / abs(cellx))
