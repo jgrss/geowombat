@@ -1063,8 +1063,8 @@ def geodataframe_to_array(dataframe,
 
         left, bottom, right, top = data.gw.bounds
 
-        dst_height = data.gw.height
-        dst_width = data.gw.width
+        dst_height = data.gw.nrows
+        dst_width = data.gw.ncols
 
         dst_transform = data.transform
 
