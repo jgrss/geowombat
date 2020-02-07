@@ -1,5 +1,7 @@
+from pathlib import Path
 from collections import namedtuple
 
+import geopandas as gpd
 from rasterio.coords import BoundingBox
 from affine import Affine
 import shapely
@@ -476,6 +478,14 @@ class DataProperties(object):
                         (self.right, self.top),
                         (self.right, self.bottom),
                         (self.left, self.bottom)])
+
+    @property
+    def geodataframe(self):
+
+        return gpd.GeoDataFrame(data=[Path(self._obj.filename).name],
+                                columns=['grid'],
+                                geometry=[self._obj.gw.geometry],
+                                crs=self._obj.crs)
 
     @property
     def unary_union(self):
