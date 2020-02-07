@@ -7,6 +7,7 @@ Change Log
 -----------------------
 
 - Added new property `geodataframe`.
+- Fixed error with pass `bounds_by` argument option to :func:`mosaic`.
 
 1.1.5 (7 February 2020)
 -----------------------
