@@ -1094,15 +1094,17 @@ def geodataframe_to_array(dataframe,
         top = dst_transform[5]
 
         dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
-
-    varray = rasterize(dataframe.geometry.values,
-                       out_shape=(dst_height, dst_width),
-                       transform=dst_transform,
-                       fill=fill,
-                       default_value=default_value,
-                       all_touched=all_touched,
-                       dtype=dtype)
-
+    try:
+        varray = rasterize(dataframe.geometry.values,
+                           out_shape=(dst_height, dst_width),
+                           transform=dst_transform,
+                           fill=fill,
+                           default_value=default_value,
+                           all_touched=all_touched,
+                           dtype=dtype)
+    except:
+        import ipdb
+        ipdb.set_trace()
     cellxh = abs(cellx) / 2.0
     cellyh = abs(celly) / 2.0
 
