@@ -2,7 +2,7 @@ import dask.array as da
 import xarray as xr
 
 
-def dask_to_xarray(data, dask_data):
+def dask_to_xarray(data, dask_data, band_names):
 
     """
     Converts a Dask array to an Xarray DataArray
@@ -10,14 +10,18 @@ def dask_to_xarray(data, dask_data):
     Args:
         data (DataArray): The DataArray with attribute information.
         dask_data (Dask Array): The Dask array to convert.
+        band_names (1d array-like): The output band names.
 
     Returns:
         ``xarray.DataArray``
     """
 
-    return xr.DataArray(dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1]),
+    if len(dask_data.shape) == 2:
+        dask_data = dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1])
+
+    return xr.DataArray(dask_data,
                         dims=('band', 'y', 'x'),
-                        coords={'band': data.band.values.tolist(),
+                        coords={'band': band_names,
                                 'y': data.y,
                                 'x': data.x},
                         attrs=data.attrs)
@@ -36,6 +40,9 @@ def ndarray_to_xarray(data, numpy_data, band_names):
     Returns:
         ``xarray.DataArray``
     """
+
+    if len(numpy_data.shape) == 2:
+        numpy_data = numpy_data[np.newaxis, :, :]
 
     return xr.DataArray(da.from_array(numpy_data,
                                       chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
