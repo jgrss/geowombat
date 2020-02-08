@@ -1046,8 +1046,6 @@ def geodataframe_to_array(dataframe,
 
         if not int_idx:
 
-            logger.warning('  There were no intersecting features.')
-            
             return xr.DataArray(data=da.zeros((1, data.gw.nrows, data.gw.ncols),
                                               chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
                                               dtype=data.dtype.name),
