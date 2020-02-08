@@ -11,6 +11,7 @@ import threading
 import random
 import string
 
+from .conversion import dask_to_xarray
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
 from ..backends.zarr_ import to_zarr
@@ -1046,20 +1047,21 @@ def geodataframe_to_array(dataframe,
 
         if not int_idx:
 
-            return xr.DataArray(data=da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                              chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                              dtype=data.dtype.name),
-                                coords={'band': [1],
-                                        'y': data.y.values,
-                                        'x': data.x.values},
-                                dims=('band', 'y', 'x'),
-                                attrs=data.attrs)
+            return dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
+                                                 chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                                                 dtype=data.dtype.name), [1])
 
         # Subset to the intersecting features
         dataframe = dataframe.iloc[int_idx]
 
         # Clip the geometry
         dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
+
+        if dataframe.empty:
+
+            return dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
+                                                 chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                                                 dtype=data.dtype.name), [1])
 
         cellx = data.gw.cellx
         celly = data.gw.celly
@@ -1094,17 +1096,15 @@ def geodataframe_to_array(dataframe,
         top = dst_transform[5]
 
         dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
-    try:
-        varray = rasterize(dataframe.geometry.values,
-                           out_shape=(dst_height, dst_width),
-                           transform=dst_transform,
-                           fill=fill,
-                           default_value=default_value,
-                           all_touched=all_touched,
-                           dtype=dtype)
-    except:
-        import ipdb
-        ipdb.set_trace()
+
+    varray = rasterize(dataframe.geometry.values,
+                       out_shape=(dst_height, dst_width),
+                       transform=dst_transform,
+                       fill=fill,
+                       default_value=default_value,
+                       all_touched=all_touched,
+                       dtype=dtype)
+
     cellxh = abs(cellx) / 2.0
     cellyh = abs(celly) / 2.0
 
