@@ -322,7 +322,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         df_.to_file(filename)
 
     def to_crs(self,
-               dst_crs,
+               dst_crs=None,
                dst_res=None,
                dst_width=None,
                dst_height=None,
@@ -335,7 +335,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Transforms a DataArray to a new coordinate reference system
 
         Args:
-            dst_crs (``CRS`` | int | dict | str): The destination CRS.
+            dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
             dst_res (Optional[tuple]): The destination resolution.
             dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
             dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
@@ -357,7 +357,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return _to_crs(self._obj,
-                       dst_crs,
+                       dst_crs=dst_crs,
                        dst_res=dst_res,
                        dst_width=dst_width,
                        dst_height=dst_height,
