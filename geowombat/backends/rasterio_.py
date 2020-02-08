@@ -709,6 +709,9 @@ def transform_crs(data_src,
 
         transformed_array.append(data_dst)
 
+    import ipdb
+    ipdb.set_trace()
+
     data_dst = np.array(transformed_array)
 
     if data_src.gw.nbands == 1:

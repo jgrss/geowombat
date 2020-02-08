@@ -557,9 +557,6 @@ def to_crs(data_src,
     if not dst_res:
         dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
 
-    import ipdb
-    ipdb.set_trace()
-
     data_dst = xr.DataArray(data=da.from_array(data_dst,
                                                chunks=data_src.data.chunksize),
                             coords={'band': data_src.band.values.tolist(),
