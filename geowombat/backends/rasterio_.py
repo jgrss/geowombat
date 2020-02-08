@@ -709,12 +709,4 @@ def transform_crs(data_src,
 
         transformed_array.append(data_dst)
 
-    import ipdb
-    ipdb.set_trace()
-
-    data_dst = np.array(transformed_array)
-
-    if data_src.gw.nbands == 1:
-        data_dst = data_dst[np.newaxis, :, :]
-
-    return data_dst, dst_transform, dst_crs
+    return np.array(transformed_array), dst_transform, dst_crs
