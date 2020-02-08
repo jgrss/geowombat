@@ -8,10 +8,10 @@ from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
+from . import to_crs as _to_crs
 from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
-from ..backends import to_crs as _to_crs
 from ..util import imshow as gw_imshow
 from ..radiometry import BRDF as _BRDF
 
