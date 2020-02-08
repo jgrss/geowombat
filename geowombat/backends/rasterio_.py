@@ -615,7 +615,7 @@ def transform_crs(data_src,
                   num_threads=1):
 
     """
-    Transforms a DataArray to a new coordinate reference system
+    Transforms a DataArray to a new coordinate reference system.
 
     Args:
         data_src (DataArray): The data to transform.
@@ -682,10 +682,6 @@ def transform_crs(data_src,
                                                                        dst_height=dst_height,
                                                                        resolution=dst_res)
 
-    destination = np.zeros((data_src.gw.nbands,
-                            dst_height,
-                            dst_width), dtype=data_src.dtype)
-
     if not dst_res:
 
         cellx = (dst_bounds.right - dst_bounds.left) / dst_width
@@ -693,15 +689,29 @@ def transform_crs(data_src,
 
         dst_res = (cellx, celly)
 
-    data_dst, dst_transform = reproject(data_src.data.compute(),
-                                        destination,
-                                        src_transform=data_src.transform,
-                                        src_crs=data_src.crs,
-                                        dst_transform=dst_transform,
-                                        dst_crs=dst_crs,
-                                        resampling=getattr(Resampling, resampling),
-                                        dst_resolution=dst_res,
-                                        warp_mem_limit=warp_mem_limit,
-                                        num_threads=num_threads)
+    transformed_array = list()
+
+    for band in range(0, data_src.gw.nbands):
+
+        destination = np.zeros((dst_height,
+                                dst_width), dtype=data_src.dtype)
+
+        data_dst, dst_transform = reproject(data_src[band, :, :].data.compute(num_workers=num_threads),
+                                            destination,
+                                            src_transform=data_src.transform,
+                                            src_crs=data_src.crs,
+                                            dst_transform=dst_transform,
+                                            dst_crs=dst_crs,
+                                            resampling=getattr(Resampling, resampling),
+                                            dst_resolution=dst_res,
+                                            warp_mem_limit=warp_mem_limit,
+                                            num_threads=num_threads)
+
+        transformed_array.append(data_dst)
+
+    data_dst = np.array(transformed_array)
+
+    if data_src.gw.nbands == 1:
+        data_dst = data_dst[np.newaxis, :, :]
 
     return data_dst, dst_transform, dst_crs
