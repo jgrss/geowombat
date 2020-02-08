@@ -605,7 +605,7 @@ def warp(filename,
 
 
 def transform_crs(data_src,
-                  dst_crs,
+                  dst_crs=None,
                   dst_res=None,
                   dst_width=None,
                   dst_height=None,
@@ -619,8 +619,8 @@ def transform_crs(data_src,
 
     Args:
         data_src (DataArray): The data to transform.
-        dst_crs (CRS | int | dict | str): The destination CRS.
-        dst_res (Optional[tuple]): The destination resolution.
+        dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
+        dst_res (Optional[float | int | tuple]): The destination resolution.
         dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
@@ -634,7 +634,31 @@ def transform_crs(data_src,
         ``numpy.ndarray`` ``tuple`` ``CRS``
     """
 
-    dst_crs = check_crs(dst_crs)
+    if dst_crs:
+        dst_crs = check_crs(dst_crs)
+    else:
+        dst_crs = data_src.crs
+
+    if isinstance(dst_res, int) or isinstance(dst_res, float) or isinstance(dst_res, tuple):
+
+        dst_res = check_res(dst_res)
+
+        dst_width = None
+        dst_height = None
+
+    else:
+
+        if not isinstance(dst_width, int):
+            if not isinstance(dst_height, int):
+                dst_res = data_src.res
+
+    if not dst_res:
+
+        if not dst_width:
+            dst_width = data_src.gw.ncols
+
+        if not dst_height:
+            dst_height = data_src.gw.nrows
 
     if not dst_bounds:
         dst_bounds = data_src.gw.bounds
@@ -646,60 +670,28 @@ def transform_crs(data_src,
                                  right=dst_bounds[2],
                                  top=dst_bounds[3])
 
-    if not dst_res and not dst_width:
-
-        # Transform to the same dimensions as the input
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           dst_width=data_src.gw.ncols,
-                                                                           dst_height=data_src.gw.nrows)
-
-    elif dst_res:
-
-        # Transform by cell resolution
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           resolution=dst_res)
-
-    else:
-
-        # Transform by destination dimensions
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           dst_width=dst_width,
-                                                                           dst_height=dst_height)
-
-    # vrt_options = {'resampling': getattr(Resampling, resampling),
-    #                'crs': dst_crs,
-    #                'transform': dst_transform,
-    #                'height': dst_height,
-    #                'width': dst_width,
-    #                'nodata': nodata,
-    #                'warp_mem_limit': warp_mem_limit,
-    #                'warp_extras': {'multi': True,
-    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+    dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
+                                                                       dst_crs,
+                                                                       data_src.gw.ncols,
+                                                                       data_src.gw.nrows,
+                                                                       left=dst_bounds.left,
+                                                                       bottom=dst_bounds.bottom,
+                                                                       right=dst_bounds.right,
+                                                                       top=dst_bounds.top,
+                                                                       dst_width=dst_width,
+                                                                       dst_height=dst_height,
+                                                                       resolution=dst_res)
 
     destination = np.zeros((data_src.gw.nbands,
                             dst_height,
                             dst_width), dtype=data_src.dtype)
+
+    if not dst_res:
+
+        cellx = (dst_bounds.right - dst_bounds.left) / dst_width
+        celly = (dst_bounds.top - dst_bounds.bottom) / dst_height
+
+        dst_res = (cellx, celly)
 
     data_dst, dst_transform = reproject(data_src.data.compute(),
                                         destination,
@@ -713,7 +705,3 @@ def transform_crs(data_src,
                                         num_threads=num_threads)
 
     return data_dst, dst_transform, dst_crs
-
-    # with rio.open(data_src.attrs['filename']) as src_:
-    #     with WarpedVRT(src_, **vrt_options) as vrt_:
-    #         return vrt_

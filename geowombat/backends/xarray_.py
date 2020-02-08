@@ -505,7 +505,7 @@ def concat(filenames,
 
 
 def to_crs(data_src,
-           dst_crs,
+           dst_crs=None,
            dst_res=None,
            dst_width=None,
            dst_height=None,
@@ -519,7 +519,7 @@ def to_crs(data_src,
 
     Args:
         data_src (DataArray): The data to transform.
-        dst_crs (CRS | int | dict | str): The destination CRS.
+        dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
         dst_res (Optional[tuple]): The destination resolution.
         dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
@@ -535,7 +535,7 @@ def to_crs(data_src,
     """
 
     data_dst, dst_transform, dst_crs = transform_crs(data_src,
-                                                     dst_crs,
+                                                     dst_crs=dst_crs,
                                                      dst_res=dst_res,
                                                      dst_width=dst_width,
                                                      dst_height=dst_height,
