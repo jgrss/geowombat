@@ -8,10 +8,10 @@ from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
+from . import to_crs as _to_crs
 from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
-from ..backends import to_crs as _to_crs
 from ..util import imshow as gw_imshow
 from ..radiometry import BRDF as _BRDF
 
@@ -322,7 +322,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         df_.to_file(filename)
 
     def to_crs(self,
-               dst_crs,
+               dst_crs=None,
                dst_res=None,
                dst_width=None,
                dst_height=None,
@@ -335,7 +335,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Transforms a DataArray to a new coordinate reference system
 
         Args:
-            dst_crs (``CRS`` | int | dict | str): The destination CRS.
+            dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
             dst_res (Optional[tuple]): The destination resolution.
             dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
             dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
@@ -357,7 +357,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return _to_crs(self._obj,
-                       dst_crs,
+                       dst_crs=dst_crs,
                        dst_res=dst_res,
                        dst_width=dst_width,
                        dst_height=dst_height,

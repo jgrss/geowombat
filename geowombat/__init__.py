@@ -8,6 +8,7 @@ from .core import mask
 from .core import coregister
 from .core import polygons_to_points
 from .core import apply
+from .core import to_crs
 from .core import to_raster
 from .core import to_vrt
 from .core import to_geodataframe
@@ -35,6 +36,7 @@ __all__ = ['config',
            'coregister',
            'polygons_to_points',
            'apply',
+           'to_crs',
            'to_raster',
            'to_vrt',
            'to_geodataframe',

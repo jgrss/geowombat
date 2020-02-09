@@ -3,6 +3,13 @@
 Change Log
 ==========
 
+1.1.6 (9 February 2020)
+-----------------------
+
+- Added new property `geodataframe`.
+- Fixed error with pass `bounds_by` argument option to :func:`mosaic`.
+- Modified :func:`geowombat.to_crs` to handle grid resampling.
+
 1.1.5 (7 February 2020)
 -----------------------
 

@@ -214,6 +214,29 @@ class WriteDaskArray(object):
         pass
 
 
+def check_res(res):
+
+    """
+    Checks a resolution
+
+    Args:
+        res (int | float | tuple): The resolution.
+
+    Returns:
+        ``tuple``
+    """
+
+    if isinstance(res, tuple):
+        dst_res = res
+    elif isinstance(res, int) or isinstance(res, float):
+        dst_res = (res, res)
+    else:
+        logger.exception('  The resolution should be given as an integer, float, or tuple.')
+        raise TypeError
+
+    return dst_res
+
+
 def check_crs(crs):
 
     """
@@ -273,7 +296,7 @@ def align_bounds(minx, miny, maxx, maxy, res):
 
 
 def get_file_bounds(filenames,
-                    bounds_by='intersection',
+                    bounds_by='union',
                     crs=None,
                     res=None,
                     return_bounds=False):
@@ -294,15 +317,19 @@ def get_file_bounds(filenames,
 
     with rio.open(filenames[0]) as src:
 
-        if not crs:
-            crs = src.crs
+        if crs:
+            dst_crs = check_crs(crs)
+        else:
+            dst_crs = src.crs
 
-        if not res:
-            res = src.res
+        if res:
+            dst_res = check_res(res)
+        else:
+            dst_res = src.res
 
         # Transform the extent to the reference CRS
         bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
-                                                                                crs,
+                                                                                dst_crs,
                                                                                 src.bounds.left,
                                                                                 src.bounds.bottom,
                                                                                 src.bounds.right,
@@ -317,7 +344,7 @@ def get_file_bounds(filenames,
 
                 # Transform the extent to the reference CRS
                 left, bottom, right, top = transform_bounds(src.crs,
-                                                            crs,
+                                                            dst_crs,
                                                             src.bounds.left,
                                                             src.bounds.bottom,
                                                             src.bounds.right,
@@ -344,12 +371,12 @@ def get_file_bounds(filenames,
                                                                      bounds_bottom,
                                                                      bounds_right,
                                                                      bounds_top,
-                                                                     res)
+                                                                     dst_res)
 
     else:
 
-        bounds_width = int((bounds_right - bounds_left) / abs(res[0]))
-        bounds_height = int((bounds_top - bounds_bottom) / abs(res[1]))
+        bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
+        bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
         bounds_transform = from_bounds(bounds_left,
                                        bounds_bottom,
@@ -365,6 +392,7 @@ def get_file_bounds(filenames,
 
 
 def warp_images(filenames,
+                bounds_by='union',
                 bounds=None,
                 crs=None,
                 res=None,
@@ -379,6 +407,7 @@ def warp_images(filenames,
 
     Args:
         filenames (list): The file names to mosaic.
+        bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         bounds (Optional[tuple]): The extent bounds to warp to. If not give, the union of all images is used.
         crs (Optional[object]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
@@ -415,7 +444,7 @@ def warp_images(filenames,
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
         warp_kwargs['bounds'] = get_file_bounds(filenames,
-                                                bounds_by='union',
+                                                bounds_by=bounds_by,
                                                 crs=crs,
                                                 res=res,
                                                 return_bounds=True)
@@ -480,7 +509,7 @@ def warp(filename,
     with rio.open(filename) as src:
 
         if res:
-            dst_res = res
+            dst_res = check_res(res)
         else:
             dst_res = src.res
 
@@ -576,7 +605,7 @@ def warp(filename,
 
 
 def transform_crs(data_src,
-                  dst_crs,
+                  dst_crs=None,
                   dst_res=None,
                   dst_width=None,
                   dst_height=None,
@@ -586,12 +615,12 @@ def transform_crs(data_src,
                   num_threads=1):
 
     """
-    Transforms a DataArray to a new coordinate reference system
+    Transforms a DataArray to a new coordinate reference system.
 
     Args:
         data_src (DataArray): The data to transform.
-        dst_crs (CRS | int | dict | str): The destination CRS.
-        dst_res (Optional[tuple]): The destination resolution.
+        dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
+        dst_res (Optional[float | int | tuple]): The destination resolution.
         dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
@@ -605,7 +634,31 @@ def transform_crs(data_src,
         ``numpy.ndarray`` ``tuple`` ``CRS``
     """
 
-    dst_crs = check_crs(dst_crs)
+    if dst_crs:
+        dst_crs = check_crs(dst_crs)
+    else:
+        dst_crs = data_src.crs
+
+    if isinstance(dst_res, int) or isinstance(dst_res, float) or isinstance(dst_res, tuple):
+
+        dst_res = check_res(dst_res)
+
+        dst_width = None
+        dst_height = None
+
+    else:
+
+        if not isinstance(dst_width, int):
+            if not isinstance(dst_height, int):
+                dst_res = data_src.res
+
+    if not dst_res:
+
+        if not dst_width:
+            dst_width = data_src.gw.ncols
+
+        if not dst_height:
+            dst_height = data_src.gw.nrows
 
     if not dst_bounds:
         dst_bounds = data_src.gw.bounds
@@ -617,74 +670,43 @@ def transform_crs(data_src,
                                  right=dst_bounds[2],
                                  top=dst_bounds[3])
 
-    if not dst_res and not dst_width:
+    dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
+                                                                       dst_crs,
+                                                                       data_src.gw.ncols,
+                                                                       data_src.gw.nrows,
+                                                                       left=dst_bounds.left,
+                                                                       bottom=dst_bounds.bottom,
+                                                                       right=dst_bounds.right,
+                                                                       top=dst_bounds.top,
+                                                                       dst_width=dst_width,
+                                                                       dst_height=dst_height,
+                                                                       resolution=dst_res)
 
-        # Transform to the same dimensions as the input
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           dst_width=data_src.gw.ncols,
-                                                                           dst_height=data_src.gw.nrows)
+    if not dst_res:
 
-    elif dst_res:
+        cellx = (dst_bounds.right - dst_bounds.left) / dst_width
+        celly = (dst_bounds.top - dst_bounds.bottom) / dst_height
 
-        # Transform by cell resolution
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           resolution=dst_res)
+        dst_res = (cellx, celly)
 
-    else:
+    transformed_array = list()
 
-        # Transform by destination dimensions
-        dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                           dst_crs,
-                                                                           data_src.gw.ncols,
-                                                                           data_src.gw.nrows,
-                                                                           left=dst_bounds.left,
-                                                                           bottom=dst_bounds.bottom,
-                                                                           right=dst_bounds.right,
-                                                                           top=dst_bounds.top,
-                                                                           dst_width=dst_width,
-                                                                           dst_height=dst_height)
+    for band in range(0, data_src.gw.nbands):
 
-    # vrt_options = {'resampling': getattr(Resampling, resampling),
-    #                'crs': dst_crs,
-    #                'transform': dst_transform,
-    #                'height': dst_height,
-    #                'width': dst_width,
-    #                'nodata': nodata,
-    #                'warp_mem_limit': warp_mem_limit,
-    #                'warp_extras': {'multi': True,
-    #                                'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+        destination = np.zeros((dst_height,
+                                dst_width), dtype=data_src.dtype)
 
-    destination = np.zeros((data_src.gw.nbands,
-                            dst_height,
-                            dst_width), dtype=data_src.dtype)
+        data_dst, dst_transform = reproject(data_src[band, :, :].data.compute(num_workers=num_threads),
+                                            destination,
+                                            src_transform=data_src.transform,
+                                            src_crs=data_src.crs,
+                                            dst_transform=dst_transform,
+                                            dst_crs=dst_crs,
+                                            resampling=getattr(Resampling, resampling),
+                                            dst_resolution=dst_res,
+                                            warp_mem_limit=warp_mem_limit,
+                                            num_threads=num_threads)
 
-    data_dst, dst_transform = reproject(data_src.data.compute(),
-                                        destination,
-                                        src_transform=data_src.transform,
-                                        src_crs=data_src.crs,
-                                        dst_transform=dst_transform,
-                                        dst_crs=dst_crs,
-                                        resampling=getattr(Resampling, resampling),
-                                        dst_resolution=dst_res,
-                                        warp_mem_limit=warp_mem_limit,
-                                        num_threads=num_threads)
+        transformed_array.append(data_dst)
 
-    return data_dst, dst_transform, dst_crs
-
-    # with rio.open(data_src.attrs['filename']) as src_:
-    #     with WarpedVRT(src_, **vrt_options) as vrt_:
-    #         return vrt_
+    return np.array(transformed_array), dst_transform, dst_crs
