@@ -2,8 +2,6 @@ from ..backends import to_crs
 from .io import apply
 from .io import to_raster
 from .io import to_vrt
-from .io import to_geodataframe
-from .io import geodataframe_to_array
 from .sops import SpatialOperations
 from .util import Converters
 from .util import MapProcesses
@@ -23,6 +21,12 @@ coregister = SpatialOperations().coregister
 polygons_to_points = Converters().polygons_to_points
 indices_to_coords = Converters().indices_to_coords
 coords_to_indices = Converters().coords_to_indices
+dask_to_xarray = Converters().dask_to_xarray
+ndarray_to_xarray = Converters().ndarray_to_xarray
+array_to_polygon = Converters().array_to_polygon
+polygon_to_array = Converters().polygon_to_array
+geodataframe_to_array = Converters().geodataframe_to_array
+to_geodataframe = Converters().to_geodataframe
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
 evi = VegetationIndices().evi
@@ -47,6 +51,10 @@ __all__ = ['apply',
            'polygons_to_points',
            'indices_to_coords',
            'coords_to_indices',
+           'dask_to_xarray',
+           'ndarray_to_xarray',
+           'array_to_polygon',
+           'polygon_to_array',
            'sort_images_by_date',
            'moving',
            'norm_diff',

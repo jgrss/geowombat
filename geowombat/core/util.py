@@ -2,13 +2,11 @@ import os
 import fnmatch
 from collections import namedtuple, OrderedDict
 from datetime import datetime
-import multiprocessing as multi
 
 from ..errors import logger
 from ..moving import moving_window
 
 import numpy as np
-import pandas as pd
 import geopandas as gpd
 import xarray as xr
 import dask.array as da
@@ -19,14 +17,15 @@ from rasterio.warp import reproject, transform_bounds
 from rasterio.transform import from_bounds
 
 import shapely
-from shapely.geometry import Polygon
 from affine import Affine
-from tqdm import tqdm
 from dateparser.search import search_dates
-from deprecated import deprecated
-
 
 shapely.speedups.enable()
+
+
+def wombat(func):
+    func.wombat_func_ = True
+    return func
 
 
 def parse_filename_dates(filenames):
@@ -418,6 +417,23 @@ class MapProcesses(object):
 
 def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=None):
 
+    """
+    Samples a polygon features
+
+    Args:
+        fid
+        geom
+        crs
+        res
+        all_touched
+        meta
+        frac
+        feature_array
+
+    Returns:
+        ``geopandas.GeoDataFrame``
+    """
+
     # Get the feature's bounding extent
     geom_info = get_geometry_info(geom, res)
 
@@ -475,285 +491,3 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=N
                             geometry=gpd.points_from_xy(x_coords, y_coords),
                             crs=crs,
                             columns=['poly', 'point'])
-
-
-def _iter_func(a):
-    return a
-
-
-class Converters(object):
-
-    @staticmethod
-    def indices_to_coords(col_index, row_index, transform):
-
-        """
-        Converts array indices to map coordinates
-
-        Args:
-            col_index (float or 1d array): The column index.
-            row_index (float or 1d array): The row index.
-            transform (Affine, DataArray, or tuple): The affine transform.
-
-        Returns:
-
-            ``tuple``:
-
-                (x, y)
-
-        Example:
-            >>> import geowombat as gw
-            >>> from geowombat.core import indices_to_coords
-            >>>
-            >>> with gw.open('image.tif') as src:
-            >>>     x, y = indices_to_coords(j, i, src)
-        """
-
-        if not isinstance(transform, Affine):
-
-            if isinstance(transform, tuple):
-                transform = Affine(*transform)
-            elif isinstance(transform, xr.DataArray):
-                transform = transform.gw.meta.affine
-            else:
-                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
-                raise TypeError
-
-        return transform * (col_index, row_index)
-
-    @staticmethod
-    def coords_to_indices(x, y, transform):
-
-        """
-        Converts map coordinates to array indices
-
-        Args:
-            x (float or 1d array): The x coordinates.
-            y (float or 1d array): The y coordinates.
-            transform (object): The affine transform.
-
-        Returns:
-
-            ``tuple``:
-
-                (col_index, row_index)
-
-        Example:
-            >>> import geowombat as gw
-            >>> from geowombat.core import coords_to_indices
-            >>>
-            >>> with gw.open('image.tif') as src:
-            >>>     j, i = coords_to_indices(x, y, src)
-        """
-
-        if not isinstance(transform, Affine):
-
-            if isinstance(transform, tuple):
-                transform = Affine(*transform)
-            elif isinstance(transform, xr.DataArray):
-                transform = transform.gw.meta.affine
-            else:
-                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
-                raise TypeError
-
-        col_index, row_index = ~transform * (x, y)
-
-        return np.int64(col_index), np.int64(row_index)
-
-    @staticmethod
-    @deprecated('Deprecated since 1.0.6. Use indices_to_coords() instead.')
-    def ij_to_xy(j, i, transform):
-
-        """
-        Converts to array indices to map coordinates
-
-        Args:
-            j (float or 1d array): The column index.
-            i (float or 1d array): The row index.
-            transform (object): The affine transform.
-
-        Returns:
-            x, y
-        """
-
-        return transform * (j, i)
-
-    @staticmethod
-    @deprecated('Deprecated since 1.0.6. Use coords_to_indices() instead.')
-    def xy_to_ij(x, y, transform):
-
-        """
-        Converts map coordinates to array indices
-
-        Args:
-            x (float or 1d array): The x coordinates.
-            y (float or 1d array): The y coordinates.
-            transform (object): The affine transform.
-
-        Returns:
-            j, i
-        """
-
-        if not isinstance(transform, Affine):
-            transform = Affine(*transform)
-
-        x, y = ~transform * (x, y)
-
-        return np.int64(x), np.int64(y)
-
-    def prepare_points(self,
-                       data,
-                       aoi,
-                       frac=1.0,
-                       all_touched=False,
-                       id_column='id',
-                       mask=None,
-                       n_jobs=8,
-                       verbose=0):
-
-        if isinstance(aoi, gpd.GeoDataFrame):
-            df = aoi
-        else:
-
-            if isinstance(aoi, str):
-
-                if not os.path.isfile(aoi):
-                    logger.exception('  The AOI file does not exist.')
-
-                df = gpd.read_file(aoi)
-
-            else:
-                logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
-
-        # Re-project the data to match the image CRS
-        if isinstance(df.crs, str):
-
-            if df.crs.lower().startswith('+proj'):
-
-                if data.crs != df.crs:
-                    df = df.to_crs(data.crs)
-
-        elif isinstance(df.crs, int):
-
-            if data.crs != CRS.from_epsg(df.crs).to_proj4():
-                df = df.to_crs(data.crs)
-
-        else:
-
-            if data.crs != CRS.from_dict(df.crs).to_proj4():
-                df = df.to_crs(data.crs)
-
-        if verbose > 0:
-            logger.info('  Checking geometry validity ...')
-
-        # Ensure all geometry is valid
-        df = df[df['geometry'].apply(lambda x_: x_ is not None)]
-
-        if verbose > 0:
-            logger.info('  Checking geometry extent ...')
-
-        # Remove data outside of the image bounds
-        if type(df.iloc[0].geometry) == Polygon:
-
-            df = gpd.overlay(df,
-                             gpd.GeoDataFrame(data=[0],
-                                              geometry=[data.gw.meta.geometry],
-                                              crs=df.crs),
-                             how='intersection')
-
-        else:
-
-            # Clip points to the image bounds
-            df = df[df.geometry.intersects(data.gw.unary_union)]
-
-        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
-
-            if isinstance(mask, gpd.GeoDataFrame):
-
-                if CRS.from_dict(mask.crs).to_proj4() != CRS.from_dict(df.crs).to_proj4():
-                    mask = mask.to_crs(df.crs)
-
-            if verbose > 0:
-                logger.info('  Clipping geometry ...')
-
-            df = df[df.within(mask)]
-
-            if df.empty:
-                logger.exception('  No geometry intersects the user-provided mask.')
-
-        # Subset the DataArray
-        # minx, miny, maxx, maxy = df.total_bounds
-        #
-        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
-        #                                  top=float(maxy)+self._obj.res[0],
-        #                                  right=float(maxx)+self._obj.res[0],
-        #                                  bottom=float(miny)-self._obj.res[0])
-
-        # Convert polygons to points
-        if type(df.iloc[0].geometry) == Polygon:
-
-            if verbose > 0:
-                logger.info('  Converting polygons to points ...')
-
-            df = self.polygons_to_points(data,
-                                         df,
-                                         frac=frac,
-                                         all_touched=all_touched,
-                                         id_column=id_column,
-                                         n_jobs=n_jobs)
-
-        # Ensure a unique index
-        df.index = list(range(0, df.shape[0]))
-
-        return df
-
-    @staticmethod
-    def polygons_to_points(data,
-                           df,
-                           frac=1.0,
-                           all_touched=False,
-                           id_column='id',
-                           n_jobs=1):
-
-        """
-        Converts polygons to points
-
-        Args:
-            data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
-            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` containing the geometry to rasterize.
-            frac (Optional[float]): A fractional subset of points to extract in each feature.
-            all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
-            id_column (Optional[str]): The 'id' column.
-            n_jobs (Optional[int]): The number of features to rasterize in parallel.
-
-        Returns:
-            ``geopandas.GeoDataFrame``
-        """
-
-        meta = data.gw.meta
-
-        dataframes = list()
-
-        with multi.Pool(processes=n_jobs) as pool:
-
-            for i in tqdm(pool.imap(_iter_func, range(0, df.shape[0])), total=df.shape[0]):
-
-                # Get the current feature's geometry
-                dfrow = df.iloc[i]
-
-                point_df = sample_feature(dfrow[id_column],
-                                          dfrow.geometry,
-                                          data.crs,
-                                          data.res,
-                                          all_touched,
-                                          meta,
-                                          frac)
-
-                if not point_df.empty:
-                    dataframes.append(point_df)
-
-        dataframes = pd.concat(dataframes, axis=0)
-
-        # Make the points unique
-        dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
-
-        return dataframes
