@@ -23,6 +23,9 @@ The example below applies a custom function concurrently over an image.
 
     gw.apply('input.tif', 'output.tif', my_func, args=(10.0,), n_jobs=4)
 
+User functions as attributes
+----------------------------
+
 User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as `Xarray` attributes. Here is an example that uses one user argument.
 
 .. code:: python
@@ -75,3 +78,33 @@ In this example, a keyword argument is also used.
                         separate=True,
                         overwrite=True,
                         compress='lzw')
+
+Applying in-memory GeoWombat functions lazily
+---------------------------------------------
+
+Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. These GeoWombat functions can be applied at the block level.
+
+.. code:: python
+
+    import geowombat as gw
+    import geopandas as gpd
+
+    # Confirm that the function is supported for block-level processing
+    print(hasattr(gw.polygon_to_array, 'wombat_func_'))
+
+    # We can load the geometry spatial index once and pass it to the block level
+    sindex = gpd.read_file('vector.gpkg').sindex
+
+    with gw.open('input.tif') as src:
+
+        src.attrs['apply'] = gw.polygon_to_array
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'polygon': 'vector.gpkg',
+                                     'sindex': sindex,
+                                     'all_touched': False}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')
