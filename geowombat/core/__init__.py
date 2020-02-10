@@ -3,7 +3,7 @@ from .io import apply
 from .io import to_raster
 from .io import to_vrt
 from .sops import SpatialOperations
-from .util import Converters
+from .conversion import Converters
 from .util import MapProcesses
 from .vi import VegetationIndices
 from .vi import TasseledCap
