@@ -11,7 +11,7 @@ import threading
 import random
 import string
 
-from .conversion import dask_to_xarray
+from . import indices_to_coords
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
 from ..backends.zarr_ import to_zarr
@@ -182,19 +182,44 @@ def _block_read_func(fn_, g_, t_):
 
 def _return_window(window_, block, num_workers):
 
-    with threading.Lock():
-        out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
-
     if 'apply' in block.attrs:
 
-        if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
-            out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
-        elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
-            out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
-        elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
-            out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+        if hasattr(block.attrs['apply'], 'wombat_func_'):
+
+            if block.attrs['apply'].wombat_func_:
+
+                # The geo-transform is needed on the block
+                left_, top_ = indices_to_coords(window_.col_off, window_.row_off, block.transform)
+
+                # Update the block transform
+                transform_ = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+
+                # Add the data to the keyword arguments
+                block.attrs['apply_kwargs']['data'] = block.assign_attrs(*transform_)
+
+                out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
+
+                with threading.Lock():
+                    out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
+
         else:
-            out_data_ = block.attrs['apply'](out_data_)
+
+            with threading.Lock():
+                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+
+            if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
+            elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
+            elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+            else:
+                out_data_ = block.attrs['apply'](out_data_)
+
+    else:
+
+        with threading.Lock():
+            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
     dshape = out_data_.shape
 
@@ -922,204 +947,3 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
               blockxsize=src.profile['blockxsize'],
               blockysize=src.profile['blockysize'],
               compress=compress)
-
-
-def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
-
-    """
-    Converts a ``dask`` array to a ``GeoDataFrame``
-
-    Args:
-        data (DataArray): The ``xarray.DataArray`` to convert.
-        mask (Optional[str, numpy ndarray, or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
-            Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
-            Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-            and mask is None, the source’s mask will be inverted and used in place of mask. if ``mask`` is equal to
-            'source', then ``data`` is used as the mask.
-        connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
-        num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
-
-    Returns:
-        ``GeoDataFrame``
-
-    Example:
-        >>> import geowombat as gw
-        >>>
-        >>> with gw.open('image.tif') as src:
-        >>>
-        >>>     # Convert the input image to a GeoDataFrame
-        >>>     df = gw.to_geodataframe(src,
-        >>>                             mask='source',
-        >>>                             num_workers=8)
-    """
-
-    if not hasattr(data, 'transform'):
-        logger.exception("  The data should have a 'transform' object.")
-
-    if not hasattr(data, 'crs'):
-        logger.exception("  The data should have a 'crs' object.")
-
-    if isinstance(mask, str):
-
-        if mask == 'source':
-            mask = data.astype('uint8').data.compute(num_workers=num_workers)
-
-    poly_objects = shapes(data.data.compute(num_workers=num_workers),
-                          mask=mask,
-                          connectivity=connectivity,
-                          transform=data.transform)
-
-    poly_geom = [Polygon(p[0]['coordinates'][0]) for p in poly_objects]
-
-    return gpd.GeoDataFrame(data=np.ones(len(poly_geom), dtype='uint8'),
-                            geometry=poly_geom,
-                            crs=data.crs)
-
-
-def geodataframe_to_array(dataframe,
-                          data=None,
-                          cellx=None,
-                          celly=None,
-                          band_name=None,
-                          row_chunks=512,
-                          col_chunks=512,
-                          src_res=None,
-                          fill=0,
-                          default_value=1,
-                          all_touched=True,
-                          dtype='uint8'):
-
-    """
-    Converts a polygon ``geopandas.GeoDataFrame`` to an ``xarray.DataArray``.
-
-    Args:
-        dataframe (GeoDataFrame): The ``geopandas.DataFrame`` with polygon geometries.
-        data (Optional[DataArray]): A ``xarray.DataArray`` to use as a reference.
-        cellx (Optional[float]): The output cell x size.
-        celly (Optional[float]): The output cell y size.
-        band_name (Optional[list]): The ``xarray.DataArray`` band name.
-        row_chunks (Optional[int]): The ``dask`` row chunk size.
-        col_chunks (Optional[int]): The ``dask`` column chunk size.
-        src_res (Optional[tuple]: A source resolution to align to.
-        fill (Optional[int]): The output fill value for ``rasterio.features.rasterize``.
-        default_value (Optional[int]): The output default value for ``rasterio.features.rasterize``.
-        all_touched (Optional[int]): The ``all_touched`` value for ``rasterio.features.rasterize``.
-        dtype (Optional[int]): The output data type for ``rasterio.features.rasterize``.
-
-    Returns:
-        ``xarray.DataArray``
-
-    Example:
-        >>> import geowombat as gw
-        >>> import geopandas as gpd
-        >>>
-        >>> df = gpd.read_file('polygons.gpkg')
-        >>>
-        >>> # 100x100 cell size
-        >>> data = gw.geodataframe_to_array(df, 100.0, 100.0)
-        >>>
-        >>> # Align to an existing image
-        >>> with gw.open('image.tif') as src:
-        >>>
-        >>>     data = gw.geodataframe_to_array(df,
-        >>>                                     cellx=src.gw.cellx,
-        >>>                                     celly=src.gw.celly,
-        >>>                                     row_chunks=src.gw.row_chunks,
-        >>>                                     col_chunks=src.gw.col_chunks,
-        >>>                                     src_res=src_res)
-    """
-
-    if not band_name:
-        band_name = [1]
-
-    if isinstance(data, xr.DataArray):
-
-        if dataframe.crs != data.crs:
-
-            # Transform the geometry
-            dataframe = dataframe.to_crs(data.crs)
-
-        # Get the R-tree spatial index
-        sindex = dataframe.sindex
-
-        # Get intersecting features
-        int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.bounds.values.flatten()))))
-
-        if not int_idx:
-
-            return dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                                 chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                 dtype=data.dtype.name), [1])
-
-        # Subset to the intersecting features
-        dataframe = dataframe.iloc[int_idx]
-
-        # Clip the geometry
-        dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
-
-        if dataframe.empty:
-
-            return dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                                 chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                 dtype=data.dtype.name), [1])
-
-        cellx = data.gw.cellx
-        celly = data.gw.celly
-        row_chunks = data.gw.row_chunks
-        col_chunks = data.gw.col_chunks
-        src_res = None
-
-        left, bottom, right, top = data.gw.bounds
-
-        dst_height = data.gw.nrows
-        dst_width = data.gw.ncols
-
-        dst_transform = data.transform
-
-    else:
-
-        left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
-
-        dst_height = int((top - bottom) / abs(celly))
-        dst_width = int((right - left) / abs(cellx))
-
-        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
-
-    if src_res:
-
-        dst_transform = aligned_target(dst_transform,
-                                       dst_width,
-                                       dst_height,
-                                       src_res)[0]
-
-        left = dst_transform[2]
-        top = dst_transform[5]
-
-        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
-
-    varray = rasterize(dataframe.geometry.values,
-                       out_shape=(dst_height, dst_width),
-                       transform=dst_transform,
-                       fill=fill,
-                       default_value=default_value,
-                       all_touched=all_touched,
-                       dtype=dtype)
-
-    cellxh = abs(cellx) / 2.0
-    cellyh = abs(celly) / 2.0
-
-    xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
-    ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
-
-    attrs = {'transform': dst_transform[:6],
-             'crs': dataframe.crs,
-             'res': (cellx, celly),
-             'is_tiled': 1}
-
-    return xr.DataArray(data=da.from_array(varray[np.newaxis, :, :],
-                                           chunks=(1, row_chunks, col_chunks)),
-                        coords={'band': band_name,
-                                'y': ycoords,
-                                'x': xcoords},
-                        dims=('band', 'y', 'x'),
-                        attrs=attrs)
