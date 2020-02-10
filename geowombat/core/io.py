@@ -11,11 +11,11 @@ import threading
 import random
 import string
 
-from . import indices_to_coords
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
 from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
+from . import indices_to_coords
 
 import numpy as np
 import geopandas as gpd
