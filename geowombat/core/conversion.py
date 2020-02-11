@@ -9,6 +9,8 @@ import dask.array as da
 import xarray as xr
 import pandas as pd
 import geopandas as gpd
+from rasterio.features import rasterize, shapes
+from rasterio.warp import aligned_target
 import shapely
 from shapely.geometry import Polygon
 from affine import Affine
