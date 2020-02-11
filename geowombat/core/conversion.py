@@ -465,7 +465,7 @@ class Converters(object):
                                 crs=data.crs)
 
     @staticmethod
-    @deprecated('Deprecated since 1.1.7. Use array_to_polygon() instead.')
+    @deprecated('Deprecated since 1.2.0. Use array_to_polygon() instead.')
     def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
 
         """
@@ -675,7 +675,7 @@ class Converters(object):
                             attrs=attrs)
 
     @staticmethod
-    @deprecated('Deprecated since 1.1.7. Use polygon_to_array() instead.')
+    @deprecated('Deprecated since 1.2.0. Use polygon_to_array() instead.')
     def geodataframe_to_array(dataframe,
                               data=None,
                               cellx=None,
@@ -826,7 +826,7 @@ class Converters(object):
                             attrs=attrs)
 
 
-@deprecated('Deprecated since 1.1.7. Use geowombat.core.dask_to_xarray() instead.')
+@deprecated('Deprecated since 1.2.0. Use geowombat.core.dask_to_xarray() instead.')
 def dask_to_xarray(data, dask_data, band_names):
 
     """
@@ -852,7 +852,7 @@ def dask_to_xarray(data, dask_data, band_names):
                         attrs=data.attrs)
 
 
-@deprecated('Deprecated since 1.1.7. Use geowombat.core.ndarray_to_xarray() instead.')
+@deprecated('Deprecated since 1.2.0. Use geowombat.core.ndarray_to_xarray() instead.')
 def ndarray_to_xarray(data, numpy_data, band_names):
 
     """
@@ -879,7 +879,7 @@ def ndarray_to_xarray(data, numpy_data, band_names):
                         attrs=data.attrs)
 
 
-@deprecated('Deprecated since 1.1.7.')
+@deprecated('Deprecated since 1.2.0.')
 def xarray_to_xdataset(data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None):
 
     """
