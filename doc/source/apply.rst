@@ -82,25 +82,26 @@ In this example, a keyword argument is also used.
 Applying in-memory GeoWombat functions lazily
 ---------------------------------------------
 
-Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. These GeoWombat functions can be applied at the block level.
+Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework. In the example below, :func:`geowombat.polygon_to_array` is applied at the raster block level.
 
 .. code:: python
 
     import geowombat as gw
     import geopandas as gpd
 
-    # Confirm that the function is supported for block-level processing
+    # Confirm that the GeoWombat function is supported for block-level processing
     print(hasattr(gw.polygon_to_array, 'wombat_func_'))
 
-    # We can load the geometry spatial index once and pass it to the block level
-    sindex = gpd.read_file('vector.gpkg').sindex
-
     with gw.open('input.tif') as src:
+
+        # We can load the geometry spatial index once and pass it to the block level. However, be sure that the CRS matches the raster CRS.
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
 
         src.attrs['apply'] = gw.polygon_to_array
 
         # All arguments must be passed as keyword arguments
-        src.attrs['apply_kwargs'] = {'polygon': 'vector.gpkg',
+        src.attrs['apply_kwargs'] = {'polygon': df,
                                      'sindex': sindex,
                                      'all_touched': False}
 
