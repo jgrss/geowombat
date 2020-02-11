@@ -172,7 +172,20 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _return_window(block, wid, window_, num_workers):
+def _compute_block(block, wid, window_, num_workers):
+
+    """
+    Computes a DataArray window block of data
+
+    Args:
+        block (DataArray): The ``xarray.DataArray`` to compute.
+        wid (int): The window id.
+        window_ (namedtuple): The window ``rasterio.windows.Window`` object.
+        num_workers (int): The number of parallel workers for ``dask.compute``.
+
+    Returns:
+        ``numpy.ndarray``, ``rasterio.windows.Window``, ``int`` | ``list``
+    """
 
     if 'apply' in block.attrs:
 
@@ -234,17 +247,23 @@ def _return_window(block, wid, window_, num_workers):
 def _write_xarray(*args):
 
     """
-    Writes a NumPy array to file
+    Writes a DataArray to file
+
+    Args:
+        args (iterable): A tuple from the window generator.
 
     Reference:
         https://github.com/dask/dask/issues/3600
+
+    Returns:
+        ``str`` | None
     """
 
     zarr_file = None
 
     block, filename, wid, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
 
-    output, out_window, out_indexes = _return_window(block, wid, block_window, n_threads)
+    output, out_window, out_indexes = _compute_block(block, wid, block_window, n_threads)
 
     if separate:
         zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
