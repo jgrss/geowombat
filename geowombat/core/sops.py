@@ -7,8 +7,7 @@ from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
-
-import geowombat as gw_
+from .util import wombat
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -550,6 +549,7 @@ class SpatialOperations(_PropertyMixin):
             return data
 
     @staticmethod
+    @wombat
     def mask(data,
              df,
              query=None,
@@ -747,6 +747,8 @@ class SpatialOperations(_PropertyMixin):
             >>>
             >>> results = gw.coregister('target.tif', 'reference.tif', q=True, ws=(512, 512), max_shift=3, CPUs=4)
         """
+
+        import geowombat as gw_
 
         if not AROSICS_INSTALLED:
 
