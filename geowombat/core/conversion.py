@@ -2,7 +2,7 @@ import os
 import multiprocessing as multi
 
 from .util import sample_feature
-from .util import wombat
+from .util import lazy_wombat
 
 import numpy as np
 import dask.array as da
@@ -414,7 +414,6 @@ class Converters(object):
         return dataframes
 
     @staticmethod
-    @wombat
     def array_to_polygon(data, mask=None, connectivity=4, num_workers=1):
 
         """
@@ -519,7 +518,7 @@ class Converters(object):
                                 geometry=poly_geom,
                                 crs=data.crs)
 
-    @wombat
+    @lazy_wombat
     def polygon_to_array(self,
                          polygon,
                          data=None,
