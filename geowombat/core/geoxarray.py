@@ -9,6 +9,7 @@ from . import ndvi as gw_ndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
 from . import to_crs as _to_crs
+from . import transform_crs as _transform_crs
 from .properties import DataProperties as _DataProperties
 from .util import project_coords
 from ..backends import Cluster as _Cluster
@@ -320,6 +321,51 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                    connectivity=connectivity)
 
         df_.to_file(filename)
+
+    def transform_crs(self,
+                      dst_crs=None,
+                      dst_res=None,
+                      dst_width=None,
+                      dst_height=None,
+                      dst_bounds=None,
+                      resampling='nearest',
+                      warp_mem_limit=512,
+                      num_threads=1):
+
+        """
+        Transforms a DataArray to a new coordinate reference system
+
+        Args:
+            dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
+            dst_res (Optional[tuple]): The destination resolution.
+            dst_width (Optional[int]): The destination width. Cannot be used with ``dst_res``.
+            dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
+            dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
+                or as a tuple of (left, bottom, right, top).
+            resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+            warp_mem_limit (Optional[int]): The warp memory limit.
+            num_threads (Optional[int]): The number of parallel threads.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     dst = src.gw.transform_crs(4326)
+        """
+
+        return _transform_crs(self._obj,
+                              dst_crs=dst_crs,
+                              dst_res=dst_res,
+                              dst_width=dst_width,
+                              dst_height=dst_height,
+                              dst_bounds=dst_bounds,
+                              resampling=resampling,
+                              warp_mem_limit=warp_mem_limit,
+                              num_threads=num_threads)
 
     def to_crs(self,
                dst_crs=None,

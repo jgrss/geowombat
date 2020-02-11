@@ -1,4 +1,5 @@
 from ..backends import to_crs
+from ..backends import transform_crs
 from .io import apply
 from .io import to_raster
 from .io import to_vrt
@@ -38,6 +39,7 @@ tasseled_cap = TasseledCap().tasseled_cap
 
 __all__ = ['apply',
            'to_crs',
+           'transform_crs',
            'to_raster',
            'to_vrt',
            'to_geodataframe',
