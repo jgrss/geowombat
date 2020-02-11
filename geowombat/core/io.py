@@ -193,6 +193,9 @@ def _return_window(window_, block, num_workers):
                 # Update the block transform
                 transform_ = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
 
+                import ipdb
+                ipdb.set_trace()
+
                 # Add the data to the keyword arguments
                 block.attrs['apply_kwargs']['data'] = block.assign_attrs(*transform_)
 
