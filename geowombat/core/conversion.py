@@ -588,7 +588,7 @@ class Converters(object):
                 # Transform the geometry
                 dataframe = dataframe.to_crs(data.crs)
 
-            if not isinstance(sindex, gpd.GeoDataFrame.sindex):
+            if sindex:
 
                 # Get the R-tree spatial index
                 sindex = dataframe.sindex
