@@ -1,6 +1,7 @@
 import os
 import multiprocessing as multi
 
+from ..errors import logger
 from .util import sample_feature
 from .util import lazy_wombat
 
