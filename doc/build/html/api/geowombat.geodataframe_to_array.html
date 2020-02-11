@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>geodataframe_to_array &#8212; GeoWombat 1.1.4 documentation</title>
+    <title>geodataframe_to_array &#8212; GeoWombat 1.2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,7 +16,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="moving" href="geowombat.moving.html" />
+    <link rel="next" title="array_to_polygon" href="geowombat.array_to_polygon.html" />
     <link rel="prev" title="to_geodataframe" href="geowombat.to_geodataframe.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -85,7 +85,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.to_geodataframe.html" title="previous chapter">to_geodataframe</a></li>
-      <li>Next: <a href="geowombat.moving.html" title="next chapter">moving</a></li>
+      <li>Next: <a href="geowombat.array_to_polygon.html" title="next chapter">array_to_polygon</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -120,14 +120,18 @@
 <h1>geodataframe_to_array<a class="headerlink" href="#geodataframe-to-array" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.geodataframe_to_array">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">geodataframe_to_array</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">cellx</em>, <em class="sig-param">celly</em>, <em class="sig-param">band_name=None</em>, <em class="sig-param">row_chunks=512</em>, <em class="sig-param">col_chunks=512</em>, <em class="sig-param">src_res=None</em>, <em class="sig-param">fill=0</em>, <em class="sig-param">default_value=1</em>, <em class="sig-param">all_touched=True</em>, <em class="sig-param">dtype='uint8'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.geodataframe_to_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a polygon <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">geodataframe_to_array</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">data=None</em>, <em class="sig-param">cellx=None</em>, <em class="sig-param">celly=None</em>, <em class="sig-param">band_name=None</em>, <em class="sig-param">row_chunks=512</em>, <em class="sig-param">col_chunks=512</em>, <em class="sig-param">src_res=None</em>, <em class="sig-param">fill=0</em>, <em class="sig-param">default_value=1</em>, <em class="sig-param">all_touched=True</em>, <em class="sig-param">dtype='uint8'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.geodataframe_to_array" title="Permalink to this definition">¶</a></dt>
+<dd><div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 1.2.0: </span>Use <a class="reference internal" href="geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.polygon_to_array()</span></code></a> instead.</p>
+</div>
+<p>Converts a polygon <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataframe</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.DataFrame</span></code> with polygon geometries.</p></li>
-<li><p><strong>cellx</strong> (<em>float</em>) – The output cell x size.</p></li>
-<li><p><strong>celly</strong> (<em>float</em>) – The output cell y size.</p></li>
+<li><p><strong>dataframe</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.DataFrame</span></code> or file with polygon geometries.</p></li>
+<li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to use as a reference.</p></li>
+<li><p><strong>cellx</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell x size.</p></li>
+<li><p><strong>celly</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell y size.</p></li>
 <li><p><strong>band_name</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> band name.</p></li>
 <li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> row chunk size.</p></li>
 <li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> column chunk size.</p></li>
@@ -155,8 +159,8 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">geodataframe_to_array</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">cellx</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">celly</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">row_chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">row_chunks</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">col_chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">col_chunks</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">src_res</span><span class="o">=</span><span class="n">src_res</span><span class="p">)</span>

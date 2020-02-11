@@ -23,6 +23,9 @@ The example below applies a custom function concurrently over an image.
 
     gw.apply('input.tif', 'output.tif', my_func, args=(10.0,), n_jobs=4)
 
+User functions as attributes
+----------------------------
+
 User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as `Xarray` attributes. Here is an example that uses one user argument.
 
 .. code:: python
@@ -75,3 +78,87 @@ In this example, a keyword argument is also used.
                         separate=True,
                         overwrite=True,
                         compress='lzw')
+
+Applying in-memory GeoWombat functions lazily
+---------------------------------------------
+
+Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework. In the example below, :func:`geowombat.polygon_to_array` is applied at the raster block level.
+
+.. code:: python
+
+    import geowombat as gw
+    import geopandas as gpd
+
+    # Confirm that the GeoWombat function is supported for block-level lazy processing
+    print(hasattr(gw.polygon_to_array, 'wombat_func_'))
+
+    with gw.open('input.tif') as src:
+
+        # We can load the geometry spatial index once and pass it to the block level.
+        # However, be sure that the CRS matches the raster CRS.
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
+
+        src.attrs['apply'] = gw.polygon_to_array
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'polygon': df,
+                                     'sindex': sindex,
+                                     'all_touched': False}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')
+
+By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
+
+.. code:: python
+
+    import geowombat as gw
+    from geowombat.core.util import lazy_wombat
+
+    @lazy_wombat
+    def user_func(data=None, polygon=None, sindex=None, all_touched=None):
+        """Converts a polygon to an array and then masks the array"""
+        mask = gw.polygon_to_array(polygon=polygon, data=data, sindex=sindex, all_touched=all_touched)
+        return (mask * data).astype('float64')
+
+    with gw.open('input.tif') as src:
+
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
+
+        src.attrs['apply'] = user_func
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'polygon': df,
+                                     'sindex': sindex,
+                                     'all_touched': False}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')
+
+The above example is similar to the following with the :func:`geowombat.mask` function.
+
+.. code:: python
+
+    import geowombat as gw
+
+    with gw.open('input.tif') as src:
+
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
+
+        src.attrs['apply'] = gw.mask
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'dataframe': df,
+                                     'keep': 'in'}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')

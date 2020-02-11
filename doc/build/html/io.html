@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Reading and writing files &#8212; GeoWombat 1.1.4 documentation</title>
+    <title>Reading and writing files &#8212; GeoWombat 1.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -118,7 +118,7 @@
 <span id="io"></span><h1>Reading and writing files<a class="headerlink" href="#reading-and-writing-files" title="Permalink to this headline">¶</a></h1>
 <p>File opening with GeoWombat uses the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function to open raster files.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Import GeoWombat</span>
-<span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Load a 4-band test image</span>
@@ -132,91 +132,91 @@
 <p>To open individual images, GeoWombat wraps the <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_dataset()</span></code> functions.</p>
 <p>Open a raster as a DataArray.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0e9c7d9e348b49b68a0d0242dc969564&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-36aa22a806dfef994e3a318ed5758fa1&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
 <p>Force the output data type.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;astype, shape=(4, 1008, 1287), dtype=float32, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;astype, shape=(4, 403, 515), dtype=float32, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
 <p>Specify band names.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0e9c7d9e348b49b68a0d0242dc969564&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-36aa22a806dfef994e3a318ed5758fa1&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
 <p>Use the sensor name to set band names.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0e9c7d9e348b49b68a0d0242dc969564&lt;this-array&gt;, shape=(4, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-36aa22a806dfef994e3a318ed5758fa1&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
@@ -224,7 +224,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         Quickbird with 4 (visible + NIR) bands</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -233,18 +233,18 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b1&#39;</span><span class="p">,</span> <span class="s1">&#39;g1&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">,</span> <span class="s1">&#39;n1&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">,</span> <span class="s1">&#39;g2&#39;</span><span class="p">,</span> <span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;n2&#39;</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 8, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(8, 1008, 1287), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 8, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(8, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U2 &#39;b1&#39; &#39;g1&#39; &#39;r1&#39; &#39;n1&#39; &#39;b2&#39; &#39;g2&#39; &#39;r2&#39; &#39;n2&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
@@ -258,26 +258,26 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">rgbn</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 403, 515), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -286,25 +286,25 @@
 
 <span class="gp">In [11]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn_time_list</span>
 
-<span class="gp">In [12]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">rgbn_time_list</span><span class="p">]))</span>
+<span class="gp">In [12]: </span><span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">rgbn_time_list</span><span class="p">]))</span>
 
 <span class="go"> rgbn_20160101.tif, rgbn_20160401.tif, rgbn_20160517.tif, rgbn_20170203.tif</span>
 
 <span class="gp">In [13]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn_time_list</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 4, band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(4, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 4, band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(4, 4, 403, 515), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;red&#39; &#39;green&#39; &#39;blue&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) datetime64[ns] 2016-01-01 2016-04-01 2016-05-17 2017-02-03</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
@@ -333,26 +333,26 @@
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
 <span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(2, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 403, 515), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
+<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -363,25 +363,24 @@
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 372, x: 305)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 150, x: 122)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 150, 122), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
+<span class="go">    transform:   (5.0, 0.0, 793700.0, 0.0, -5.0, 2049800.0)</span>
 <span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    res:         (5.0, 5.0)</span>
 <span class="go">    is_tiled:    0</span>
-<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
 <span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    filename:    /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3.6/s...</span>
 <span class="go">    resampling:  nearest</span>
+<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
 </pre></div>
 </div>
 <p>Stack the union of all images.</p>
@@ -391,25 +390,24 @@
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 372, x: 305)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(3, 4, 372, 305), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 150, x: 122)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 150, 122), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.937e+05 7.937e+05 7.937e+05 ... 7.943e+05 7.943e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 793700.0, 0.0, -2.0, 2049796.0)</span>
+<span class="go">    transform:   (5.0, 0.0, 793700.0, 0.0, -5.0, 2049800.0)</span>
 <span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    res:         (5.0, 5.0)</span>
 <span class="go">    is_tiled:    0</span>
-<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
 <span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:     (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    filename:    /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3.6/s...</span>
 <span class="go">    resampling:  nearest</span>
+<span class="go">    nodatavals:  (nan, nan, nan, nan)</span>
 </pre></div>
 </div>
 <p>Keyword arguments always overwrite config settings. In this example, the reference image ‘rgbn’ is used to set the
@@ -421,27 +419,26 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;t3&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(3, 4, 1008, 1287), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 4, 403, 515), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39; &#39;t3&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    resampling:     nearest</span>
+<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3/lib/python3....</span>
-<span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
 <p>When multiple images have matching dates, the arrays are merged into one layer.</p>
@@ -450,19 +447,19 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 <span class="gp">In [23]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">concat_list</span><span class="p">,</span>
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 530, x: 691)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(2, 4, 530, 691), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 212, x: 276)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 212, 276), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792928.0, 0.0, -5.0, 2050112.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
@@ -480,23 +477,23 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [26]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">search</span><span class="p">,</span>
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 530, x: 691)&gt;</span>
-<span class="go">dask.array&lt;concatenate, shape=(2, 4, 530, 691), dtype=uint8, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 4, y: 212, x: 276)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 4, 212, 276), dtype=uint8, chunksize=(1, 1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39; &#39;nir&#39;</span>
 <span class="go">  * time     (time) int64 1 2</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792928.0, 0.0, -5.0, 2050112.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
-<span class="go">    is_tiled:       1</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    is_tiled:       1</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 </pre></div>
@@ -507,19 +504,19 @@ CRS, bounds, and cell size. Using <code class="docutils literal notranslate"><sp
 is needed.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
 <span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span>
-<span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 530, x: 691)&gt;</span>
-<span class="go">dask.array&lt;maximum, shape=(4, 530, 691), dtype=uint8, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 212, x: 276)&gt;</span>
+<span class="go">dask.array&lt;maximum, shape=(4, 212, 276), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39; &#39;n&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.049e+06 2.049e+06</span>
 <span class="go">  * x        (x) float64 7.929e+05 7.929e+05 7.929e+05 ... 7.943e+05 7.943e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (2.0, 0.0, 792928.0, 0.0, -2.0, 2050112.0)</span>
+<span class="go">    transform:      (5.0, 0.0, 792928.0, 0.0, -5.0, 2050112.0)</span>
 <span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (2.0, 2.0)</span>
+<span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
@@ -538,20 +535,20 @@ is needed.</p>
 <span class="gp">In [28]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">rgbn_suba</span><span class="p">,</span> <span class="n">rgbn_subb</span><span class="p">],</span>
 <span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span>
-<span class="gp">   ....: </span>                 <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">   ....: </span>                 <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
 <span class="gp">   ....: </span>                 <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 1008, x: 1287)&gt;</span>
-<span class="go">dask.array&lt;maximum, shape=(4, 1008, 1287), dtype=uint8, chunksize=(4, 512, 512), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;maximum, shape=(4, 403, 515), dtype=uint8, chunksize=(4, 403, 512), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39; &#39;n&#39;</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
 <span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:   (2.0, 0.0, 792988.0, 0.0, -2.0, 2050382.0)</span>
+<span class="go">    transform:   (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">    crs:         +init=epsg:32618</span>
-<span class="go">    res:         (2.0, 2.0)</span>
+<span class="go">    res:         (5.0, 5.0)</span>
 <span class="go">    is_tiled:    1</span>
 <span class="go">    nodatavals:  (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    scales:      (1.0, 1.0, 1.0, 1.0)</span>
@@ -566,7 +563,7 @@ is needed.</p>
 Rasterio’s <code class="xref py py-func docutils literal notranslate"><span class="pre">write()</span></code> and Dask.array <code class="xref py py-func docutils literal notranslate"><span class="pre">store()</span></code> functions as I/O backends. In the examples below,
 <code class="docutils literal notranslate"><span class="pre">ds</span></code> is an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> with the necessary transform information to write to an image file.</p>
 <p>Write to a VRT file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Transform the data to lat/lon</span>
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">):</span>
@@ -578,7 +575,7 @@ Rasterio’s <code class="xref py py-func docutils literal notranslate"><span cl
 </pre></div>
 </div>
 <p>Write to a raster file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 

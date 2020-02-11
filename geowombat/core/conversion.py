@@ -109,6 +109,9 @@ class Converters(object):
     def ij_to_xy(j, i, transform):
 
         """
+        .. deprecated:: 1.0.6
+            Use :func:`geowombat.indices_to_coords()` instead.
+
         Converts to array indices to map coordinates
 
         Args:
@@ -127,6 +130,9 @@ class Converters(object):
     def xy_to_ij(x, y, transform):
 
         """
+        .. deprecated:: 1.0.6
+            Use :func:`geowombat.coords_to_indices()` instead.
+
         Converts map coordinates to array indices
 
         Args:
@@ -470,6 +476,9 @@ class Converters(object):
     def to_geodataframe(data, mask=None, connectivity=4, num_workers=1):
 
         """
+        .. deprecated:: 1.2.0
+            Use :func:`geowombat.array_to_polygon()` instead.
+
         Converts a Dask array to a GeoDataFrame
 
         Args:
@@ -691,6 +700,9 @@ class Converters(object):
                               dtype='uint8'):
 
         """
+        .. deprecated:: 1.2.0
+            Use :func:`geowombat.polygon_to_array()` instead.
+
         Converts a polygon ``geopandas.GeoDataFrame`` to an ``xarray.DataArray``.
 
         Args:
@@ -831,6 +843,9 @@ class Converters(object):
 def dask_to_xarray(data, dask_data, band_names):
 
     """
+    .. deprecated:: 1.2.0
+        Use :func:`geowombat.core.dask_to_xarray()` instead.
+
     Converts a Dask array to an Xarray DataArray
 
     Args:
@@ -857,6 +872,9 @@ def dask_to_xarray(data, dask_data, band_names):
 def ndarray_to_xarray(data, numpy_data, band_names):
 
     """
+    .. deprecated:: 1.2.0
+        Use :func:`geowombat.core.ndarray_to_xarray()` instead.
+
     Converts a NumPy array to an Xarray DataArray
 
     Args:
@@ -884,6 +902,8 @@ def ndarray_to_xarray(data, numpy_data, band_names):
 def xarray_to_xdataset(data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None):
 
     """
+    .. deprecated:: 1.2.0
+
     Converts an Xarray DataArray to a Xarray Dataset
 
     Args:

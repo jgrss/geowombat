@@ -593,6 +593,9 @@ def to_crs(data_src,
            num_threads=1):
 
     """
+    .. deprecated:: 1.2.0
+        Use :func:`geowombat.transform_crs()` instead.
+
     Transforms a DataArray to a new coordinate reference system
 
     Args:

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mask &#8212; GeoWombat 1.1.4 documentation</title>
+    <title>mask &#8212; GeoWombat 1.2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -120,14 +120,14 @@
 <h1>mask<a class="headerlink" href="#mask" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.mask">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">df</em>, <em class="sig-param">query=None</em>, <em class="sig-param">keep='in'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.mask" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">dataframe</em>, <em class="sig-param">query=None</em>, <em class="sig-param">keep='in'</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Masks a DataArray by vector polygon geometry</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to mask.</p></li>
-<li><p><strong>df</strong> (<em>GeoDataFrame</em><em> or </em><em>str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> or filename to use for masking.</p></li>
-<li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to apply to <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
+<li><p><strong>dataframe</strong> (<em>GeoDataFrame</em><em> or </em><em>str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> or filename to use for masking.</p></li>
+<li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to apply to <code class="docutils literal notranslate"><span class="pre">dataframe</span></code>.</p></li>
 <li><p><strong>keep</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If <code class="docutils literal notranslate"><span class="pre">keep</span></code> = ‘in’, mask values outside of the geometry (keep inside).
 Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep</span></code> = ‘out’, mask values inside (keep outside).</p></li>
 </ul>
