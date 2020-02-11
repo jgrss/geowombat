@@ -187,14 +187,14 @@ def _return_window(window_, block, num_workers):
 
             if block.attrs['apply'].wombat_func_:
 
+                import ipdb
+                ipdb.set_trace()
+
                 # The geo-transform is needed on the block
                 left_, top_ = block.transform * (window_.col_off, window_.row_off)
 
                 # Update the block transform
                 transform_ = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
-
-                import ipdb
-                ipdb.set_trace()
 
                 # Add the data to the keyword arguments
                 block.attrs['apply_kwargs']['data'] = block.assign_attrs(*transform_)
