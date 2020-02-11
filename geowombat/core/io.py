@@ -15,7 +15,6 @@ from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
 from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
-from . import indices_to_coords
 
 import numpy as np
 import geopandas as gpd
@@ -189,7 +188,7 @@ def _return_window(window_, block, num_workers):
             if block.attrs['apply'].wombat_func_:
 
                 # The geo-transform is needed on the block
-                left_, top_ = indices_to_coords(window_.col_off, window_.row_off, block.transform)
+                left_, top_ = block.transform * (window_.col_off, window_.row_off)
 
                 # Update the block transform
                 transform_ = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
