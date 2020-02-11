@@ -190,11 +190,13 @@ def _return_window(window_, block, num_workers):
                 # The geo-transform is needed on the block
                 left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
 
+                attrs = block.attrs.copy()
+
                 # Update the block transform
-                transform_ = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+                attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
 
                 # Add the data to the keyword arguments
-                block.attrs['apply_kwargs']['data'] = block.assign_attrs(*transform_)
+                block.attrs['apply_kwargs']['data'] = block.assign_attrs(**attrs)
 
                 out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
 
