@@ -2,6 +2,7 @@ import os
 import multiprocessing as multi
 
 from .util import sample_feature
+from .util import wombat
 
 import numpy as np
 import dask.array as da
