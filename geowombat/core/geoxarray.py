@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, to_geodataframe, moving, extract, sample, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
@@ -269,7 +269,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   rot=rot,
                   **kwargs)
 
-    def to_geodataframe(self, mask=None, connectivity=4):
+    def to_polygon(self, mask=None, connectivity=4):
 
         """
         Converts a ``dask`` array to a ``GeoDataFrame``
@@ -294,9 +294,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>                                 num_workers=8)
         """
 
-        return to_geodataframe(self._obj,
-                               mask=mask,
-                               connectivity=connectivity)
+        return array_to_polygon(self._obj,
+                                mask=mask,
+                                connectivity=connectivity)
 
     def to_vector(self, filename, mask=None, connectivity=4):
 
