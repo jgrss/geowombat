@@ -187,11 +187,9 @@ def _return_window(block, wid, window_, num_workers):
 
         block = block.assign_attrs(**attrs)
 
-        if hasattr(block.attrs['apply'], 'wombat_func_') or ('wombat_func_' in block.attrs):
+        if hasattr(block.attrs['apply'], 'wombat_func_'):
 
-            wombat_func_ = block.attrs['apply'].wombat_func_ if hasattr(block.attrs['apply'], 'wombat_func_') else block.attrs['wombat_func_']
-
-            if wombat_func_:
+            if block.attrs['apply'].wombat_func_:
 
                 # Add the data to the keyword arguments
                 block.attrs['apply_kwargs']['data'] = block
