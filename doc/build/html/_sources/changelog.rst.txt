@@ -12,7 +12,7 @@ Change Log
     - :func:`geowombat.geodataframe_to_array` is deprecated in favor of :func:`geowombat.polygon_to_array`.
     - :func:`geowombat.to_geodataframe` is deprecated in favor of :func:`geowombat.array_to_polygon`.
 
-- Added `lazy_wombat` decorator to allow users to apply in-memory functions lazily. See `Applying custom user functions`_ for examples.
+- Added `lazy_wombat` decorator to allow the user to apply in-memory functions lazily. See :ref:`apply` for examples.
 
 1.1.6 (9 February 2020)
 -----------------------
