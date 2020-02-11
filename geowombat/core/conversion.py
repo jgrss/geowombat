@@ -599,7 +599,7 @@ class Converters(object):
                 # Transform the geometry
                 dataframe = dataframe.to_crs(data.crs)
 
-            if sindex:
+            if not sindex:
 
                 # Get the R-tree spatial index
                 sindex = dataframe.sindex
