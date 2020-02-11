@@ -172,7 +172,7 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _return_window(window_, block, num_workers):
+def _return_window(block, wid, window_, num_workers):
 
     if 'apply' in block.attrs:
 
@@ -183,6 +183,7 @@ def _return_window(window_, block, num_workers):
 
         # Update the block transform
         attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+        attrs['window_id'] = wid
 
         block = block.assign_attrs(**attrs)
 
@@ -243,9 +244,9 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
+    block, filename, wid, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
 
-    output, out_window, out_indexes = _return_window(block_window, block, n_threads)
+    output, out_window, out_indexes = _return_window(block, wid, block_window, n_threads)
 
     if separate:
         zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
@@ -550,11 +551,19 @@ def to_raster(data,
                                                                              n_windows))
 
                 if len(data.shape) == 2:
-                    data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+
+                    data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
                 elif len(data.shape) == 3:
-                    data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+
+                    data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
                 else:
-                    data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], filename, w, n_threads, separate, chunksize, root) for w in window_slice)
+
+                    data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                 with pool_executor(n_workers) as executor:
 
