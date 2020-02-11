@@ -26,15 +26,11 @@ from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
 
 import rasterio as rio
-from rasterio.features import rasterize, shapes
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
 from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
-from rasterio.warp import aligned_target
 
-import shapely
-from shapely.geometry import Polygon
 from affine import Affine
 
 import zarr
@@ -44,9 +40,6 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
-
-
-shapely.speedups.enable()
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
