@@ -94,7 +94,8 @@ Several GeoWombat functions execute in-memory, and are therefore not optimized f
 
     with gw.open('input.tif') as src:
 
-        # We can load the geometry spatial index once and pass it to the block level. However, be sure that the CRS matches the raster CRS.
+        # We can load the geometry spatial index once and pass it to the block level.
+        # However, be sure that the CRS matches the raster CRS.
         df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
         sindex = df.sindex
 

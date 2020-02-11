@@ -64,12 +64,12 @@ The transformed cell resolution can be added in the context manager.
             print(src.resampling)
             print(src.res)
 
-To transform an `xarray.DataArray` outside of a configuration context, use the :func:`to_crs` function.
+To transform an `xarray.DataArray` outside of a configuration context, use the :func:`geowombat.transform_crs` function.
 
 .. ipython:: python
 
     with gw.open(rgbn, resampling='cubic') as src:
-        print(help(src.gw.to_crs))
+        print(help(src.gw.transform_crs))
 
 .. ipython:: python
 
@@ -79,7 +79,7 @@ To transform an `xarray.DataArray` outside of a configuration context, use the :
         print(src.resampling)
         print(src.res)
         print('')
-        src_tr = src.gw.to_crs(102008, dst_res=(10, 10), resampling='bilinear')
+        src_tr = src.gw.transform_crs(102008, dst_res=(10, 10), resampling='bilinear')
         print(src_tr.transform)
         print(src_tr.crs)
         print(src_tr.resampling)

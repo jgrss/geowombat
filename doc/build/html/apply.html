@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Applying custom user functions &#8212; GeoWombat 1.1.4 documentation</title>
+    <title>Applying custom user functions &#8212; GeoWombat 1.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -127,13 +127,16 @@
     <span class="k">return</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">my_func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="user-functions-as-attributes">
+<h2>User functions as attributes<a class="headerlink" href="#user-functions-as-attributes" title="Permalink to this headline">¶</a></h2>
 <p>User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as <cite>Xarray</cite> attributes. Here is an example that uses one user argument.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Function with one argument</span>
 <span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -150,8 +153,8 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -176,9 +179,87 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="applying-in-memory-geowombat-functions-lazily">
+<h2>Applying in-memory GeoWombat functions lazily<a class="headerlink" href="#applying-in-memory-geowombat-functions-lazily" title="Permalink to this headline">¶</a></h2>
+<p>Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework. In the example below, <a class="reference internal" href="api/geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.polygon_to_array()</span></code></a> is applied at the raster block level.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+
+<span class="c1"># Confirm that the GeoWombat function is supported for block-level lazy processing</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span><span class="p">,</span> <span class="s1">&#39;wombat_func_&#39;</span><span class="p">))</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># We can load the geometry spatial index once and pass it to the block level.</span>
+    <span class="c1"># However, be sure that the CRS matches the raster CRS.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;vector.gpkg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">sindex</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sindex</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span>
+
+    <span class="c1"># All arguments must be passed as keyword arguments</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply_kwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;polygon&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
+                                 <span class="s1">&#39;sindex&#39;</span><span class="p">:</span> <span class="n">sindex</span><span class="p">,</span>
+                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.core.util</span> <span class="kn">import</span> <span class="n">lazy_wombat</span>
+
+<span class="nd">@lazy_wombat</span>
+<span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">polygon</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sindex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a polygon to an array and then masks the array&quot;&quot;&quot;</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span><span class="p">(</span><span class="n">polygon</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">sindex</span><span class="o">=</span><span class="n">sindex</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="n">all_touched</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;vector.gpkg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">sindex</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sindex</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_func</span>
+
+    <span class="c1"># All arguments must be passed as keyword arguments</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply_kwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;polygon&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
+                                 <span class="s1">&#39;sindex&#39;</span><span class="p">:</span> <span class="n">sindex</span><span class="p">,</span>
+                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above example is similar to the following with the <a class="reference internal" href="api/geowombat.mask.html#geowombat.mask" title="geowombat.mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.mask()</span></code></a> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;vector.gpkg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">sindex</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sindex</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">mask</span>
+
+    <span class="c1"># All arguments must be passed as keyword arguments</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply_kwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dataframe&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
+                                 <span class="s1">&#39;keep&#39;</span><span class="p">:</span> <span class="s1">&#39;in&#39;</span><span class="p">}</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
