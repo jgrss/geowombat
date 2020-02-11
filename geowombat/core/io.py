@@ -188,10 +188,17 @@ def _return_window(window_, block, num_workers):
                 # Update the block transform
                 attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
 
+                print(attrs['transform'])
+
                 # Add the data to the keyword arguments
                 block.attrs['apply_kwargs']['data'] = block.assign_attrs(**attrs)
 
+                print(block.attrs['apply_kwargs']['data'])
+
                 out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
+
+                print(out_data_)
+                print('')
 
                 with threading.Lock():
                     out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
