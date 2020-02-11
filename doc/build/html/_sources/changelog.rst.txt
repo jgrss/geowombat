@@ -3,6 +3,17 @@
 Change Log
 ==========
 
+1.2.0 (11 February 2020)
+------------------------
+
+- Rearranged and renamed various functions.
+
+    - :func:`geowombat.to_crs` is deprecated in favor of :func:`geowombat.transform_crs`.
+    - :func:`geowombat.geodataframe_to_array` is deprecated in favor of :func:`geowombat.polygon_to_array`.
+    - :func:`geowombat.to_geodataframe` is deprecated in favor of :func:`geowombat.array_to_polygon`.
+
+- Added `lazy_wombat` decorator to allow users to apply in-memory functions lazily. See `Applying custom user functions`_ for examples.
+
 1.1.6 (9 February 2020)
 -----------------------
 
