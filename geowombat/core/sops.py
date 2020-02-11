@@ -7,7 +7,7 @@ from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
-from .util import wombat
+from .util import lazy_wombat
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -549,9 +549,9 @@ class SpatialOperations(_PropertyMixin):
             return data
 
     @staticmethod
-    @wombat
+    @lazy_wombat
     def mask(data,
-             df,
+             dataframe,
              query=None,
              keep='in'):
 
@@ -560,8 +560,8 @@ class SpatialOperations(_PropertyMixin):
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to mask.
-            df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
-            query (Optional[str]): A query to apply to ``df``.
+            dataframe (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
+            query (Optional[str]): A query to apply to ``dataframe``.
             keep (Optional[str]): If ``keep`` = 'in', mask values outside of the geometry (keep inside).
                 Otherwise, if ``keep`` = 'out', mask values inside (keep outside).
 
@@ -575,26 +575,26 @@ class SpatialOperations(_PropertyMixin):
             >>>     ds = ds.gw.mask(df)
         """
 
-        if isinstance(df, str) and os.path.isfile(df):
-            df = gpd.read_file(df)
+        if isinstance(dataframe, str) and os.path.isfile(dataframe):
+            dataframe = gpd.read_file(dataframe)
 
         if query:
-            df = df.query(query)
+            dataframe = dataframe.query(query)
 
         try:
 
-            if data.crs.strip() != CRS.from_dict(df.crs).to_proj4().strip():
+            if data.crs.strip() != CRS.from_dict(dataframe.crs).to_proj4().strip():
 
                 # Re-project the DataFrame to match the image CRS
-                df = df.to_crs(data.crs)
+                dataframe = dataframe.to_crs(data.crs)
 
         except:
 
-            if data.crs.strip() != CRS.from_proj4(df.crs).to_proj4().strip():
-                df = df.to_crs(data.crs)
+            if data.crs.strip() != CRS.from_proj4(dataframe.crs).to_proj4().strip():
+                dataframe = dataframe.to_crs(data.crs)
 
         # Rasterize the geometry and store as a DataArray
-        mask = xr.DataArray(data=da.from_array(features.rasterize(list(df.geometry.values),
+        mask = xr.DataArray(data=da.from_array(features.rasterize(list(dataframe.geometry.values),
                                                                   out_shape=(data.gw.nrows, data.gw.ncols),
                                                                   transform=data.transform,
                                                                   fill=0,

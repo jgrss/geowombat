@@ -89,7 +89,7 @@ Several GeoWombat functions execute in-memory, and are therefore not optimized f
     import geowombat as gw
     import geopandas as gpd
 
-    # Confirm that the GeoWombat function is supported for block-level processing
+    # Confirm that the GeoWombat function is supported for block-level lazy processing
     print(hasattr(gw.polygon_to_array, 'wombat_func_'))
 
     with gw.open('input.tif') as src:
@@ -104,6 +104,58 @@ Several GeoWombat functions execute in-memory, and are therefore not optimized f
         src.attrs['apply_kwargs'] = {'polygon': df,
                                      'sindex': sindex,
                                      'all_touched': False}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')
+
+By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
+
+.. code:: python
+
+    import geowombat as gw
+    from geowombat.core.util import lazy_wombat
+
+    @lazy_wombat
+    def user_func(data=None, polygon=None, sindex=None, all_touched=None):
+        """Converts a polygon to an array and then masks the array"""
+        mask = gw.polygon_to_array(polygon=polygon, data=data, sindex=sindex, all_touched=all_touched)
+        return (mask * data).astype('float64')
+
+    with gw.open('input.tif') as src:
+
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
+
+        src.attrs['apply'] = user_func
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'polygon': df,
+                                     'sindex': sindex,
+                                     'all_touched': False}
+
+        src.gw.to_raster('output.tif',
+                         n_workers=4,
+                         n_threads=2,
+                         compress='lzw')
+
+The above example is similar to the following with the :func:`geowombat.mask` function.
+
+.. code:: python
+
+    import geowombat as gw
+
+    with gw.open('input.tif') as src:
+
+        df = gpd.gpd.read_file('vector.gpkg').to_crs(src.crs)
+        sindex = df.sindex
+
+        src.attrs['apply'] = gw.mask
+
+        # All arguments must be passed as keyword arguments
+        src.attrs['apply_kwargs'] = {'dataframe': df,
+                                     'keep': 'in'}
 
         src.gw.to_raster('output.tif',
                          n_workers=4,

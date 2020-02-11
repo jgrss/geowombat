@@ -23,7 +23,7 @@ from dateparser.search import search_dates
 shapely.speedups.enable()
 
 
-def wombat(func):
+def lazy_wombat(func):
     func.wombat_func_ = True
     return func
 
