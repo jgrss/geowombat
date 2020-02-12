@@ -7,6 +7,7 @@ Change Log
 ------------------------
 
 - Added `padding` option to :func:`geowombat.to_raster`.
+- Added half cell adjustment to transformed samples in :func:`geowombat.sample`.
 
 1.2.1 (12 February 2020)
 ------------------------
