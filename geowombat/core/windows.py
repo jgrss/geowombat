@@ -63,9 +63,9 @@ def get_window_offsets(n_rows,
                 padded_width = n_rows_cols(padded_col_off, abs(col_off-padded_col_off)+col_chunks+rpad, n_cols)
 
                 window_info.append((Window(col_off=col_off,
-                                          row_off=row_off,
-                                          width=width,
-                                          height=height),
+                                           row_off=row_off,
+                                           width=width,
+                                           height=height),
                                     Window(col_off=padded_col_off,
                                            row_off=padded_row_off,
                                            width=padded_width,
