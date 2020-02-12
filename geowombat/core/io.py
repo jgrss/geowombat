@@ -520,6 +520,12 @@ def to_raster(data,
     if 'height' not in kwargs:
         kwargs['height'] = data.gw.nrows
 
+    if 'crs' not in kwargs:
+        kwargs['crs'] = data.crs
+
+    if 'transform' not in kwargs:
+        kwargs['transform'] = data.transform
+
     if separate:
 
         d_name = pfile.parent
