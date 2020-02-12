@@ -172,7 +172,7 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _compute_block(block, wid, window_, num_workers):
+def _compute_block(block, wid, window_, padded_window_, num_workers):
 
     """
     Computes a DataArray window block of data
@@ -181,6 +181,7 @@ def _compute_block(block, wid, window_, num_workers):
         block (DataArray): The ``xarray.DataArray`` to compute.
         wid (int): The window id.
         window_ (namedtuple): The window ``rasterio.windows.Window`` object.
+        padded_window_ (namedtuple): A padded window ``rasterio.windows.Window`` object.
         num_workers (int): The number of parallel workers for ``dask.compute``.
 
     Returns:
@@ -231,6 +232,21 @@ def _compute_block(block, wid, window_, num_workers):
         with threading.Lock():
             out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
+    if padded_window_:
+
+        dshape = out_data_.shape
+
+        # Get the non-padded array slice
+        row_diff = abs(window_.row_off - padded_window_.row_off)
+        col_diff = abs(window_.col_off - padded_window_.col_off)
+
+        if len(dshape) == 2:
+            out_data_ = out_data_[row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+        elif len(dshape) == 3:
+            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+        elif len(dshape) == 4:
+            out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+
     dshape = out_data_.shape
 
     if len(dshape) > 2:
@@ -241,7 +257,7 @@ def _compute_block(block, wid, window_, num_workers):
     else:
         indexes_ = 1 if dshape[0] == 1 else list(range(1, dshape[0]+1))
 
-    return out_data_, window_, indexes_
+    return out_data_, indexes_
 
 
 def _write_xarray(*args):
@@ -261,12 +277,12 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
 
-    output, out_window, out_indexes = _compute_block(block, wid, block_window, n_threads)
+    output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_threads)
 
     if separate:
-        zarr_file = to_zarr(filename, output, out_window, chunks, root=root)
+        zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
 
         with threading.Lock():
@@ -276,7 +292,7 @@ def _write_xarray(*args):
                           sharing=False) as dst_:
 
                 dst_.write(output,
-                           window=out_window,
+                           window=block_window,
                            indexes=out_indexes)
 
     return zarr_file
@@ -355,6 +371,7 @@ def to_raster(data,
               use_client=False,
               address=None,
               total_memory=48,
+              padding=None,
               **kwargs):
 
     """
@@ -391,6 +408,10 @@ def to_raster(data,
         use_client (Optional[bool]): Whether to use a ``dask`` client.
         address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
         total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
+        padding (Optional[tuple]): Padding for each window. ``padding`` should be given as a tuple
+            of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
+            a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
+            and w2 contains the padded window offsets.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
@@ -557,7 +578,8 @@ def to_raster(data,
                                          data.gw.ncols,
                                          readysize,
                                          readxsize,
-                                         return_as='list')
+                                         return_as='list',
+                                         padding=padding)
 
             n_windows = len(windows)
 
@@ -573,20 +595,41 @@ def to_raster(data,
                                                                              wchunk+n_windows_slice,
                                                                              n_windows))
 
-                if len(data.shape) == 2:
+                if padding:
 
-                    data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                    # Read the padded window
 
-                elif len(data.shape) == 3:
+                    if len(data.shape) == 2:
 
-                    data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                        data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
+                    elif len(data.shape) == 3:
+
+                        data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
+                    else:
+
+                        data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                 else:
 
-                    data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                 filename, widx, w, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                    if len(data.shape) == 2:
+
+                        data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
+                    elif len(data.shape) == 3:
+
+                        data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+
+                    else:
+
+                        data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                 with pool_executor(n_workers) as executor:
 
