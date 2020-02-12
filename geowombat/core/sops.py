@@ -62,6 +62,16 @@ def _remove_near_points(dataframe, r):
     return dataframe
 
 
+def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cellyh):
+
+    x_coords, y_coords = affine_transform * (col_indices, row_indices)
+
+    x_coords += abs(cellxh)
+    y_coords -= abs(cellyh)
+
+    return x_coords, y_coords
+
+
 class SpatialOperations(_PropertyMixin):
 
     def sample(self,
@@ -156,7 +166,11 @@ class SpatialOperations(_PropertyMixin):
                 y_samples = np.array(y_samples, dtype='int64')
 
                 # Convert the map indices to map coordinates
-                x_coords, y_coords = data.gw.meta.affine * (x_samples, y_samples)
+                x_coords, y_coords = _transform_and_shift(data.gw.meta.affine,
+                                                          x_samples,
+                                                          y_samples,
+                                                          data.gw.cellxh,
+                                                          data.gw.cellyh)
 
                 df = gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
                                       geometry=gpd.points_from_xy(x_coords, y_coords),
@@ -272,7 +286,11 @@ class SpatialOperations(_PropertyMixin):
                         x_samples = x_samples[idx]
 
                         # Convert the map indices to map coordinates
-                        x_coords, y_coords = data.gw.meta.affine * (x_samples, y_samples)
+                        x_coords, y_coords = _transform_and_shift(data.gw.meta.affine,
+                                                                  x_samples,
+                                                                  y_samples,
+                                                                  data.gw.cellxh,
+                                                                  data.gw.cellyh)
 
                         if isinstance(dfs, gpd.GeoDataFrame):
 
