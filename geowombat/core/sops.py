@@ -64,6 +64,20 @@ def _remove_near_points(dataframe, r):
 
 def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cellyh):
 
+    """
+    Transforms indices to coordinates and applies a half pixel shift
+
+    Args:
+        affine_transform (object): The affine transform.
+        col_indices (1d array): The column indices.
+        row_indices (1d array): The row indices.
+        cellxh (float): The half cell width in the x direction.
+        cellyh (float): The half cell width in the y direction.
+
+    Returns:
+        ``numpy.ndarray``, ``numpy.ndarray``
+    """
+
     x_coords, y_coords = affine_transform * (col_indices, row_indices)
 
     x_coords += abs(cellxh)
