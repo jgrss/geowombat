@@ -3,6 +3,16 @@
 Change Log
 ==========
 
+1.2.2 (12 February 2020)
+------------------------
+
+- Added `padding` option to :func:`geowombat.to_raster`.
+
+1.2.1 (12 February 2020)
+------------------------
+
+- Fixed a error in checking the spatial index.
+
 1.2.0 (11 February 2020)
 ------------------------
 
