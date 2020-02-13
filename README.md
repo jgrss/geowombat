@@ -14,15 +14,44 @@ for I/O and distributed computing with named coordinates.
 
 ```python
 >>> import geowombat as gw
+```
+
+Use a context manager and Xarray plotting to analyze processing chains
+
+```python
+>>> # Define geographic bounds to warp images to
+>>> with gw.config.update(ref_bounds=bounds):
 >>>
->>> # Open images as Xarray DataArrays
->>> with gw.open('image.tif', chunks=512) as ds:
+>>>     # Open images as Xarray DataArrays
+>>>     with gw.open('image_a.tif') as srca, \
+>>>         gw.open('image_b.tif') as srcb:
 >>>
->>>     # Do Xarray and Dask operations
->>>     dss = ds * 10.0
+>>>         # Apply calculations using Xarray and Dask
+>>>         results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
 >>>
->>>     # Write the computation task to file using 16 parallel jobs
->>>     dss.gw.to_raster('output.tif', n_workers=4, n_threads=4)
+>>>         # Check results by computing the task and plotting
+>>>         results.gw.imshow()
+```
+
+Computation scales easily over large datasets with minimal changes to the code.
+
+```python
+>>> # Set a reference image to align to
+>>> with gw.config.update(ref_image='image_a.tif'):
+>>>
+>>>     # Open images as Xarray DataArrays
+>>>     with gw.open('image_a.tif') as srca, \
+>>>         gw.open('image_b.tif') as srcb:
+>>>
+>>>         # The size of srca, srcb, and results are determined by the configuration context
+>>>         results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
+>>>
+>>>         # Initiate computation by writing the results to file. 
+>>>         # Mix process and thread workers to execute the task in parallel. 
+>>>         results.gw.to_raster('output.tif', 
+>>>                              n_workers=4, 
+>>>                              n_threads=4,
+>>>                              compress='lzw')
 ```
 
 ## Documentation
