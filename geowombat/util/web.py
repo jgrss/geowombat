@@ -555,13 +555,13 @@ class GeoDownloads(object):
 
                                         # Mask non-clear pixels
                                         attrs = sr_brdf.attrs
-                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 65535)
+                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
                                         sr_brdf = sr_brdf.transpose('band', 'y', 'x')
                                         sr_brdf.attrs = attrs
 
-                                        attrs = sr_brdf.attrs.copy()
-                                        sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
-                                        sr_brdf.attrs = attrs.copy()
+                                        # attrs = sr_brdf.attrs.copy()
+                                        # sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
+                                        # sr_brdf.attrs = attrs.copy()
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
