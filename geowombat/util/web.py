@@ -496,27 +496,27 @@ class GeoDownloads(object):
                                     with gw.open(load_bands_names,
                                                  band_names=bands,
                                                  stack_dim='band',
-                                                 resampling='cubic') as data:#, \
-                                            # gw.open(finfo_dict['qa'].name,
-                                            #         band_names=['qa']) as qa:
+                                                 resampling='cubic') as data, \
+                                            gw.open(finfo_dict['qa'].name,
+                                                    band_names=['qa']) as qa:
 
                                         # Setup the mask
-                                        # if sensor.lower() != 's2':
-                                        #
-                                        #     if sensor.lower() == 'l8':
-                                        #         qa_sensor = 'l8-c1'
-                                        #     else:
-                                        #         qa_sensor = 'l-c1'
+                                        if sensor.lower() != 's2':
 
-                                        # mask = QAMasker(qa,
-                                        #                 qa_sensor,
-                                        #                 mask_items=['clear',
-                                        #                             'fill',
-                                        #                             'shadow',
-                                        #                             'cloudconf',
-                                        #                             'cirrusconf',
-                                        #                             'snowiceconf'],
-                                        #                 confidence_level='maybe').to_mask()
+                                            if sensor.lower() == 'l8':
+                                                qa_sensor = 'l8-c1'
+                                            else:
+                                                qa_sensor = 'l-c1'
+
+                                        mask = QAMasker(qa,
+                                                        qa_sensor,
+                                                        mask_items=['clear',
+                                                                    'fill',
+                                                                    'shadow',
+                                                                    'cloudconf',
+                                                                    'cirrusconf',
+                                                                    'snowiceconf'],
+                                                        confidence_level='maybe').to_mask()
 
                                         if sensor.lower() == 's2':
 
@@ -547,17 +547,17 @@ class GeoDownloads(object):
 
                                         if bandpass_sensor.lower() in ['l5', 'l7', 's2a', 's2b']:
 
-                                            # Linear adjust to Landsat 8
+                                            # Linearly adjust to Landsat 8
                                             sr_brdf = la.bandpass(sr_brdf,
                                                                   bandpass_sensor.lower(),
                                                                   to='l8',
                                                                   scale_factor=0.0001)
 
                                         # Mask non-clear pixels
-                                        # attrs = sr_brdf.attrs
-                                        # sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 65535)
-                                        # sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                        # sr_brdf.attrs = attrs
+                                        attrs = sr_brdf.attrs
+                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf, 65535)
+                                        sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                        sr_brdf.attrs = attrs
 
                                         attrs = sr_brdf.attrs.copy()
                                         sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
