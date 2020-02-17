@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.2.3 (17 February 2020)
+------------------------
+
+- Added padding to image edges when using the `padding` option in :func:`geowombat.to_raster`.
+
 1.2.2 (12 February 2020)
 ------------------------
 
