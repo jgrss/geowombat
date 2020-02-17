@@ -249,11 +249,11 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
                 dshape = out_data_.shape
 
                 if len(dshape) == 2:
-                    out_data_ = out_data_[rspad:-repad, cspad:-cepad]
+                    out_data_ = out_data_[rspad:rspad+window_.height, cspad:cspad+window_.width]
                 elif len(dshape) == 3:
-                    out_data_ = out_data_[:, rspad:-repad, cspad:-cepad]
+                    out_data_ = out_data_[:, rspad:rspad+window_.height, cspad:cspad+window_.width]
                 elif len(dshape) == 4:
-                    out_data_ = out_data_[:, :, rspad:-repad, cspad:-cepad]
+                    out_data_ = out_data_[:, :, rspad:rspad+window_.height, cspad:cspad+window_.width]
 
     else:
 
