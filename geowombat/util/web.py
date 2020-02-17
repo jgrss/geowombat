@@ -135,6 +135,7 @@ class GeoDownloads(object):
                       l57_angles_path=None,
                       l8_angles_path=None,
                       write_angle_files=False,
+                      mask_qa=False,
                       **kwargs):
 
         """
@@ -156,6 +157,7 @@ class GeoDownloads(object):
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
+            mask_qa (Optional[bool]): Whether to mask data with the QA file.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -546,24 +548,33 @@ class GeoDownloads(object):
                                                               to='l8',
                                                               scale_factor=0.0001)
 
-                                    if sensor.lower() not in ['s2a', 's2c']:
+                                    attrs = sr_brdf.attrs.copy()
 
-                                        mask = QAMasker(qa,
-                                                        qa_sensor,
-                                                        mask_items=['clear',
-                                                                    'fill',
-                                                                    'shadow',
-                                                                    'cloud',
-                                                                    'shadow',
-                                                                    'cirrus',
-                                                                    'cloudconf',
-                                                                    'cirrusconf',
-                                                                    'snowiceconf'],
-                                                        confidence_level='yes').to_mask()
+                                    if mask_qa:
 
-                                        # Mask non-clear pixels
-                                        attrs = sr_brdf.attrs
-                                        sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+                                        if sensor.lower() not in ['s2a', 's2c']:
+
+                                            mask = QAMasker(qa,
+                                                            qa_sensor,
+                                                            mask_items=['clear',
+                                                                        'fill',
+                                                                        'shadow',
+                                                                        'cloud',
+                                                                        'shadow',
+                                                                        'cirrus',
+                                                                        'cloudconf',
+                                                                        'cirrusconf',
+                                                                        'snowiceconf'],
+                                                            confidence_level='yes').to_mask()
+
+                                            # Mask non-clear pixels
+                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+                                            sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                            sr_brdf.attrs = attrs
+
+                                    else:
+
+                                        sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
                                         sr_brdf = sr_brdf.transpose('band', 'y', 'x')
                                         sr_brdf.attrs = attrs
 
