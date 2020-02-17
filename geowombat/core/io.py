@@ -228,8 +228,6 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
 
                 dshape = out_data_.shape
 
-                print('A', dshape, rspad, repad, cspad, cepad)
-
                 if len(dshape) == 2:
                     out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
                 elif len(dshape) == 3:
@@ -249,8 +247,6 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
             if padded_window_:
 
                 dshape = out_data_.shape
-
-                print('B', dshape, rspad, repad, cspad, cepad)
 
                 if len(dshape) == 2:
                     out_data_ = out_data_[rspad:rspad+window_.height, cspad:cspad+window_.width]
