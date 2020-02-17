@@ -498,13 +498,10 @@ class GeoDownloads(object):
                                                  stack_dim='band',
                                                  resampling='cubic') as data, \
                                             gw.open(finfo_dict['qa'].name,
-                                                    band_names=['qa'],
-                                                    resampling='nearest') as qa:
+                                                    band_names=['qa']) as qa:
 
                                         # Setup the mask
-                                        if sensor.lower() == 's2':
-                                            qa_sensor = 's2a'
-                                        else:
+                                        if sensor.lower() != 's2':
 
                                             if sensor.lower() == 'l8':
                                                 qa_sensor = 'l8-c1'
@@ -516,13 +513,10 @@ class GeoDownloads(object):
                                                         mask_items=['clear',
                                                                     'fill',
                                                                     'shadow',
-                                                                    'cloud',
-                                                                    'shadow',
-                                                                    'cirrus',
                                                                     'cloudconf',
                                                                     'cirrusconf',
                                                                     'snowiceconf'],
-                                                        confidence_level='yes').to_mask()
+                                                        confidence_level='maybe').to_mask()
 
                                         if sensor.lower() == 's2':
 
@@ -784,6 +778,8 @@ class GeoDownloads(object):
                 elif down_file.endswith('MTD_TL.xml'):
 
                     fbase = Path(fn).parent.name
+                    # fsplit = fbase.split('_')
+                    # fbase = fsplit[1] + '_' + fsplit[3][:8]
                     down_file = poutdir.joinpath(fbase + '_MTD_TL.xml').as_posix()
                     key = 'meta'
                     rename = True
@@ -796,6 +792,8 @@ class GeoDownloads(object):
                     if fname.endswith('.jp2'):
 
                         fbase = Path(fn).parent.parent.name
+                        # fsplit = fbase.split('_')
+                        # fbase = fsplit[0] + '_' + fsplit[1][:8]
                         key = Path(fn).name.split('.')[0].split('_')[-1]
                         down_file = poutdir.joinpath(fbase + '_' + key + '.jp2').as_posix()
                         rename = True
@@ -805,8 +803,6 @@ class GeoDownloads(object):
                         fsplit = fname.split('_')
                         fbase = '_'.join(fsplit[:-1])
                         key = fsplit[-1].split('.')[0]
-
-                    # TODO: QA60
 
                 continue_download = True
 

@@ -9,22 +9,8 @@ class QAMasker(object):
 
     Args:
         qa (DataArray): The band quality array.
-        sensor (str): The sensor name. Choices are ['ard', 'hls', 'l8-pre', 'l8-c1', 'l-c1', 'modis', 's2a', 's2c'].
-
-            Codes:
-                'ard':
-                    `USGS Landsat Analysis Ready Data <https://www.usgs.gov/land-resources/nli/landsat/us-landsat-analysis-ready-data?qt-science_support_page_related_con=0#qt`-science_support_page_related_con>`_
-                'hls':
-                    `NASA Harmonized Landsat Sentinel <https://hls.gsfc.nasa.gov/>`_
-                'l-c1':
-                    Landsat Collection 1 L4-5 and L7
-                'l8-c1':
-                    Landsat Collection 1 L8
-                's2a':
-                    Sentinel 2A
-                's2c':
-                    Sentinel 2C
-
+        sensor (str): The sensor name. Choices are ['hls', 'l8-pre', 'l8-c1', 'l-c1', 'modis'].
+                'l-c1' refers to Collection 1 L4-5 and L7. 'l8-c1' refers to Collection 1 L8.
         mask_items (str list): A list of items to mask.
         modis_qa_position (Optional[int]): The MODIS QA band position. Default is 1.
         modis_quality (Optional[int]): The MODIS quality level. Default is 2.
@@ -189,11 +175,7 @@ class QAMasker(object):
                                    'daynight': (3, 3),
                                    'sunglint': (4, 4),
                                    'snowice': (5, 5),
-                                   'landwater': (7, 6)},
-                         's2a': {'cloud': (10, 10),
-                                 'cirrus': (11, 11)},
-                         's2c': {'cloud': (10, 10),
-                                 'cirrus': (11, 11)}}
+                                   'landwater': (7, 6)}}
 
         self.modis_bit_shifts = {1: 0,
                                  2: 4,
