@@ -76,8 +76,7 @@ def pan_sharpen(data,
 
     dnf = pan / band_avg
 
-    data_sharp = data * dnf
-
+    data_sharp = data.sel(band=bands) * dnf
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
     data_sharp = (data_sharp / scale_factor).astype(data.dtype)
