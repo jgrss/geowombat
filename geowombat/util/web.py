@@ -20,6 +20,7 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+
 # import wget
 
 
@@ -27,7 +28,6 @@ shapely.speedups.enable()
 
 
 def _random_id(string_length):
-
     """
     Generates a random string of letters and digits
     """
@@ -38,7 +38,6 @@ def _random_id(string_length):
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
-
     FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
 
     file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
@@ -48,7 +47,6 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
-
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -224,17 +222,15 @@ class GeoDownloads(object):
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
-
             with open(status.as_posix(), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
-
-            bounds = Polygon([(bounds[0], bounds[3]),   # upper left
-                              (bounds[2], bounds[3]),   # upper right
-                              (bounds[2], bounds[1]),   # lower right
-                              (bounds[0], bounds[1]),   # lower left
+            bounds = Polygon([(bounds[0], bounds[3]),  # upper left
+                              (bounds[2], bounds[3]),  # upper right
+                              (bounds[2], bounds[1]),  # lower right
+                              (bounds[0], bounds[1]),  # lower left
                               (bounds[0], bounds[3])])  # upper left
 
             bounds = gpd.GeoDataFrame([0],
@@ -244,7 +240,6 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
-
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -262,7 +257,6 @@ class GeoDownloads(object):
             wrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
-
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -282,7 +276,6 @@ class GeoDownloads(object):
             mgrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
-
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -304,9 +297,9 @@ class GeoDownloads(object):
         months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
         if month < dt2.month:
-            month_range = months[months.index(month):months.index(dt2.month)+1]
+            month_range = months[months.index(month):months.index(dt2.month) + 1]
         else:
-            month_range = months[months.index(month):] + months[:months.index(dt2.month)+1]
+            month_range = months[months.index(month):] + months[:months.index(dt2.month) + 1]
 
         while True:
 
@@ -352,18 +345,21 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
-
-                            logger.warning('  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(SENSOR=sensor,
-                                                                                                                                       LOC=location,
-                                                                                                                                       YEAR=year,
-                                                                                                                                       MONTH=m))
+                            logger.warning(
+                                '  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(
+                                    SENSOR=sensor,
+                                    LOC=location,
+                                    YEAR=year,
+                                    MONTH=m))
 
                             continue
 
                         # Download data
                         if sensor.lower() in ['s2', 's2a', 's2c']:
 
-                            load_bands = sorted(['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd]) for bd in bands])
+                            load_bands = sorted(['B{:02d}'.format(
+                                band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd])
+                                                 for bd in bands])
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -434,9 +430,11 @@ class GeoDownloads(object):
                                 lines = tx.readlines()
 
                             if sensor in ['s2', 's2a', 's2c']:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
@@ -465,7 +463,7 @@ class GeoDownloads(object):
                                     rad_sensor = 's2'
 
                                 bandpass_sensor = angle_info.sensor
-                                
+
                             else:
 
                                 meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
@@ -565,7 +563,6 @@ class GeoDownloads(object):
                                                            nodata=65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2']:
-
                                         # Linearly adjust to Landsat 8
                                         sr_brdf = la.bandpass(sr_brdf,
                                                               bandpass_sensor.lower(),
@@ -577,9 +574,9 @@ class GeoDownloads(object):
                                     if mask_qa:
 
                                         if sensor.lower() not in ['s2', 's2a', 's2c']:
-
                                             # Mask non-clear pixels
-                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
+                                                               65535).astype('uint16')
 
                                     else:
                                         sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
@@ -591,7 +588,6 @@ class GeoDownloads(object):
                                     sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                     if write_angle_files:
-
                                         angle_stack = xr.concat((sza, saa), dim='band')
                                         angle_stack.attrs = sza.attrs.copy()
                                         angle_stack.gw.to_raster(out_angles, **kwargs)
@@ -746,7 +742,8 @@ class GeoDownloads(object):
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception(
+                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -837,7 +834,6 @@ class GeoDownloads(object):
                         lines = tx.readlines()
 
                     if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
-
                         null_items.append(fbase)
                         continue_download = False
 
@@ -885,7 +881,6 @@ class GeoDownloads(object):
         """
 
         if (len(date_range) == 2) and not isinstance(date_range[0], datetime):
-
             start_date = date_range[0]
             end_date = date_range[1]
 
@@ -899,16 +894,16 @@ class GeoDownloads(object):
                 for path in path_range:
                     for row in row_range:
                         for dt in date_range:
-
                             str_date = '{:d}{:02d}{:02d}'.format(dt.year, dt.month, dt.day)
 
                             # TODO: check if L1TP is used for all sensors
                             # TODO: fixed DATE2
-                            filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(SENSOR=sensor.upper(),
-                                                                                                                  PATH=path,
-                                                                                                                  ROW=row,
-                                                                                                                  DATE=str_date,
-                                                                                                                  DATE2=None,
-                                                                                                                  BAND=band)
+                            filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(
+                                SENSOR=sensor.upper(),
+                                PATH=path,
+                                ROW=row,
+                                DATE=str_date,
+                                DATE2=None,
+                                BAND=band)
 
                             self.download(filename, **kwargs)
