@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.2.3 (20 February 2020)
+------------------------
+
+- Added check to support new CRS object in `geowombat`.
+
 1.2.2 (12 February 2020)
 ------------------------
 
