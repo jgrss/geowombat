@@ -140,6 +140,7 @@ class GeoDownloads(object):
                       l57_angles_path=None,
                       l8_angles_path=None,
                       write_angle_files=False,
+                      mask_qa=False,
                       **kwargs):
 
         """
@@ -168,6 +169,7 @@ class GeoDownloads(object):
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
+            mask_qa (Optional[bool]): Whether to mask data with the QA file.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -338,8 +340,9 @@ class GeoDownloads(object):
 
                         if sensor.lower() in ['s2', 's2a', 's2c']:
 
-                            query = '{LOCATION}/*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location,
-                                                                              YM=yearmonth_query)
+                            query = '{LOCATION}/{LEVEL}*{YM}*.SAFE/GRANULE/*'.format(LEVEL=sensor.upper(),
+                                                                                     LOCATION=location,
+                                                                                     YM=yearmonth_query)
 
                         else:
 
@@ -571,15 +574,21 @@ class GeoDownloads(object):
                                                               to='l8',
                                                               scale_factor=0.0001)
 
+                                    attrs = sr_brdf.attrs.copy()
+
+                                    if mask_qa:
+
+                                        if sensor.lower() not in ['s2', 's2a', 's2c']:
+
+                                            # Mask non-clear pixels
+                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+
+                                    else:
+                                        sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
+
                                     # Mask non-clear pixels
-                                    attrs = sr_brdf.attrs
-                                    sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
                                     sr_brdf = sr_brdf.transpose('band', 'y', 'x')
                                     sr_brdf.attrs = attrs
-
-                                    # attrs = sr_brdf.attrs.copy()
-                                    # sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
-                                    # sr_brdf.attrs = attrs.copy()
 
                                     sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
@@ -637,19 +646,18 @@ class GeoDownloads(object):
         gcp_dict = dict(l5='LT05/01',
                         l7='LE07/01',
                         l8='LC08/01',
-                        s2='tiles')
+                        s2='tiles',
+                        s2a='tiles',
+                        s2c='tiles')
 
         if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2c']:
             logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', or 's2c'.")
+            raise NameError
 
         if sensor in ['s2', 's2a', 's2c']:
             gcp_str = "gsutil ls -r gs://gcp-public-data-sentinel-2"
         else:
             gcp_str = "gsutil ls -r gs://gcp-public-data-landsat"
-
-        # gsutil_str = '{GSUTIL}/{COLLECTION}/{QUERY}'.format(GSUTIL=gcp_str,
-        #                                                     COLLECTION=gcp_dict[sensor],
-        #                                                     QUERY=query)
 
         gsutil_str = gcp_str + "/" + gcp_dict[sensor] + "/" + query
 
@@ -663,7 +671,7 @@ class GeoDownloads(object):
 
         if search_list:
 
-            # Check for lenth-1 lists with empty strings
+            # Check for length-1 lists with empty strings
             if search_list[0]:
 
                 if sensor in ['s2', 's2a', 's2c']:
@@ -796,8 +804,6 @@ class GeoDownloads(object):
                 elif down_file.endswith('MTD_TL.xml'):
 
                     fbase = Path(fn).parent.name
-                    # fsplit = fbase.split('_')
-                    # fbase = fsplit[1] + '_' + fsplit[3][:8]
                     down_file = poutdir.joinpath(fbase + '_MTD_TL.xml').as_posix()
                     key = 'meta'
                     rename = True
@@ -810,8 +816,6 @@ class GeoDownloads(object):
                     if fname.endswith('.jp2'):
 
                         fbase = Path(fn).parent.parent.name
-                        # fsplit = fbase.split('_')
-                        # fbase = fsplit[0] + '_' + fsplit[1][:8]
                         key = Path(fn).name.split('.')[0].split('_')[-1]
                         down_file = poutdir.joinpath(fbase + '_' + key + '.jp2').as_posix()
                         rename = True
@@ -821,6 +825,8 @@ class GeoDownloads(object):
                         fsplit = fname.split('_')
                         fbase = '_'.join(fsplit[:-1])
                         key = fsplit[-1].split('.')[0]
+
+                    # TODO: QA60
 
                 continue_download = True
 
@@ -908,74 +914,3 @@ class GeoDownloads(object):
                                                                                                                   BAND=band)
 
                             self.download(filename, **kwargs)
-
-    # def download(self, filename, outdir='.', from_google=True, metadata=True, overwrite=False):
-    #
-    #     """
-    #     Downloads an individual file
-    #
-    #     Args:
-    #         filename (str or list): The file to download.
-    #         outdir (Optional[str]): The output directory.
-    #         from_google (Optional[bool]): Whether to download from Google Cloud storage
-    #         metadata (Optional[bool]): Whether to download metadata files.
-    #         overwrite (Optional[bool]): Whether to overwrite an existing file.
-    #
-    #     https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20170616_20170629_01_T1/LC08_L1TP_042034_20170616_20170629_01_T1_B4.TIF
-    #
-    #     Examples:
-    #         >>> from geowombat.util import download
-    #         >>>
-    #         >>> # Download band 4 from Google Cloud storage to the current directory
-    #         >>> download('LC08_L1TP_042034_20170616_20170629_01_T1_B4.TIF')
-    #
-    #     Returns:
-    #         None
-    #     """
-    #
-    #     outputs = list()
-    #
-    #     if not isinstance(filename, list):
-    #         filename = [filename]
-    #
-    #     FileInfo = namedtuple('FileInfo', 'band meta angles')
-    #
-    #     if outdir != '.':
-    #         Path(outdir).mkdir(parents=True, exist_ok=True)
-    #
-    #     for fn in filename:
-    #
-    #         if from_google:
-    #
-    #             file_info = _parse_google_filename(fn,
-    #                                                self.landsat_parts,
-    #                                                self.sentinel_parts,
-    #                                                self.gcp_public)
-    #
-    #             file_on_disc = Path(outdir).joinpath(fn)
-    #             meta_on_disc = Path(outdir).joinpath(Path(file_info.meta).name)
-    #             angles_on_disc = Path(outdir).joinpath(Path(file_info.angles).name)
-    #
-    #             if file_info.url:
-    #
-    #                 if overwrite:
-    #
-    #                     if file_on_disc.exists():
-    #                         file_on_disc.unlink()
-    #
-    #                 if file_on_disc.exists():
-    #                     logger.warning('  The file already exists.')
-    #                 else:
-    #
-    #                     wget.download(file_info.url_file, out=outdir)
-    #
-    #                     if metadata:
-    #
-    #                         wget.download(file_info.meta, out=outdir)
-    #                         wget.download(file_info.angles, out=outdir)
-    #
-    #             outputs.append(FileInfo(band=file_on_disc.as_posix(),
-    #                                     meta=meta_on_disc.as_posix(),
-    #                                     angles=angles_on_disc.as_posix()))
-    #
-    #     return outputs
