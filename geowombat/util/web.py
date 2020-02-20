@@ -358,7 +358,7 @@ class GeoDownloads(object):
                         if sensor.lower() in ['s2', 's2a', 's2c']:
 
                             load_bands = sorted(['B{:02d}'.format(
-                                band_associations[bd]) if bd != 'rededge' else 'B{:02d}A'.format(band_associations[bd])
+                                band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd])
                                                  for bd in bands])
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
