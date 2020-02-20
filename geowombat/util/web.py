@@ -20,6 +20,7 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+
 # import wget
 
 
@@ -27,7 +28,6 @@ shapely.speedups.enable()
 
 
 def _random_id(string_length):
-
     """
     Generates a random string of letters and digits
     """
@@ -38,7 +38,6 @@ def _random_id(string_length):
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
-
     FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
 
     file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
@@ -48,7 +47,6 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
-
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -132,6 +130,7 @@ class GeoDownloads(object):
                       date_range,
                       bounds,
                       bands,
+                      mask_qa=False,
                       crs=None,
                       out_bounds=None,
                       outdir='.',
@@ -158,6 +157,7 @@ class GeoDownloads(object):
                     Sentinel s2cloudless bands:
                         bands = ['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']
 
+            mask_qa (Optional[bool]): Whether to mask QA.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             out_bounds (Optional[list or tuple]): The output bounds in ``crs``. If not given, the bounds are
@@ -224,17 +224,15 @@ class GeoDownloads(object):
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
-
             with open(status.as_posix(), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
-
-            bounds = Polygon([(bounds[0], bounds[3]),   # upper left
-                              (bounds[2], bounds[3]),   # upper right
-                              (bounds[2], bounds[1]),   # lower right
-                              (bounds[0], bounds[1]),   # lower left
+            bounds = Polygon([(bounds[0], bounds[3]),  # upper left
+                              (bounds[2], bounds[3]),  # upper right
+                              (bounds[2], bounds[1]),  # lower right
+                              (bounds[0], bounds[1]),  # lower left
                               (bounds[0], bounds[3])])  # upper left
 
             bounds = gpd.GeoDataFrame([0],
@@ -244,7 +242,6 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
-
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -262,7 +259,6 @@ class GeoDownloads(object):
             wrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
-
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -275,14 +271,13 @@ class GeoDownloads(object):
 
             shp_dict['wrs'] = df_wrs
 
-        if ('s2c' in sensors) or ('s2a' in sensors):
+        if ('s2a' in sensors) or ('s2c' in sensors):
 
             path_tar = Path(data_dir).joinpath('mgrs.tar.gz')
             path_shp = Path(data_dir).joinpath('sentinel2_grid.shp')
             mgrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
-
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -304,9 +299,9 @@ class GeoDownloads(object):
         months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
         if month < dt2.month:
-            month_range = months[months.index(month):months.index(dt2.month)+1]
+            month_range = months[months.index(month):months.index(dt2.month) + 1]
         else:
-            month_range = months[months.index(month):] + months[:months.index(dt2.month)+1]
+            month_range = months[months.index(month):] + months[:months.index(dt2.month) + 1]
 
         while True:
 
@@ -324,7 +319,7 @@ class GeoDownloads(object):
                     # TODO: get path/row and MGRS from geometry
                     # location = '21/H/UD' # or '225/083'
 
-                    if sensor.lower() in ['s2a', 's2c']:
+                    if sensor.lower() in ['s2', 's2a', 's2c']:
 
                         locations = ['{}/{}/{}'.format(dfrow.Name[:2], dfrow.Name[2], dfrow.Name[3:])
                                      for dfi, dfrow in shp_dict['mgrs'].iterrows()]
@@ -336,7 +331,7 @@ class GeoDownloads(object):
 
                     for location in locations:
 
-                        if sensor.lower() in ['s2a', 's2c']:
+                        if sensor.lower() in ['s2', 's2a', 's2c']:
 
                             query = '{LOCATION}/{LEVEL}*{YM}*.SAFE/GRANULE/*'.format(LEVEL=sensor.upper(),
                                                                                      LOCATION=location,
@@ -352,18 +347,21 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
-
-                            logger.warning('  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(SENSOR=sensor,
-                                                                                                                                       LOC=location,
-                                                                                                                                       YEAR=year,
-                                                                                                                                       MONTH=m))
+                            logger.warning(
+                                '  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(
+                                    SENSOR=sensor,
+                                    LOC=location,
+                                    YEAR=year,
+                                    MONTH=m))
 
                             continue
 
                         # Download data
-                        if sensor.lower() in ['s2a', 's2c']:
+                        if sensor.lower() in ['s2', 's2a', 's2c']:
 
-                            load_bands = sorted(['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:02d}A'.format(band_associations[bd]) for bd in bands])
+                            load_bands = sorted(['B{:02d}'.format(
+                                band_associations[bd]) if bd != 'rededge' else 'B{:02d}A'.format(band_associations[bd])
+                                                 for bd in bands])
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -433,16 +431,18 @@ class GeoDownloads(object):
                             with open(status.as_posix(), mode='r') as tx:
                                 lines = tx.readlines()
 
-                            if sensor in ['s2a', 's2c']:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                            if sensor in ['s2', 's2a', 's2c']:
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
                             ref_file = finfo_dict[load_bands[0]].name
 
-                            if sensor.lower() in ['s2a', 's2c']:
+                            if sensor.lower() in ['s2', 's2a', 's2c']:
 
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
@@ -451,17 +451,21 @@ class GeoDownloads(object):
                                                                    overwrite=False,
                                                                    verbose=1)
 
-                                if ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
+                                if ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
+                                    rad_sensor = 's2cloudless'
+                                elif ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
                                     rad_sensor = 's2'
                                 elif ' '.join(bands) == 'blue green red nir swir1 swir2':
                                     rad_sensor = 's2l7'
+                                elif ' '.join(bands) == 'nir1 nir2 nir3 rededge swir1 swir2':
+                                    rad_sensor = 's220'
                                 elif ' '.join(bands) == 'blue green red nir':
                                     rad_sensor = 's210'
                                 else:
                                     rad_sensor = 's2'
 
                                 bandpass_sensor = angle_info.sensor
-                                
+
                             else:
 
                                 meta = rt.get_landsat_coefficients(finfo_dict['meta'].name)
@@ -508,22 +512,32 @@ class GeoDownloads(object):
                                         gw.open(load_bands_names,
                                                 band_names=bands,
                                                 stack_dim='band',
-                                                resampling='cubic') as data, \
-                                        gw.open(finfo_dict['qa'].name,
-                                                band_names=['qa'],
-                                                resampling='nearest') as qa:
+                                                resampling='cubic') as data:
 
-                                    # Setup the mask
-                                    if sensor.lower() in ['s2a', 's2c']:
-                                        qa_sensor = 's2a'
-                                    else:
+                                    if mask_qa:
 
-                                        if sensor.lower() == 'l8':
-                                            qa_sensor = 'l8-c1'
-                                        else:
-                                            qa_sensor = 'l-c1'
+                                        with gw.open(finfo_dict['qa'].name,
+                                                     band_names=['qa']) as qa:
 
-                                    if sensor.lower() in ['s2a', 's2c']:
+                                            # Setup the mask
+                                            if sensor.lower() not in ['s2', 's2a', 's2c']:
+
+                                                if sensor.lower() == 'l8':
+                                                    qa_sensor = 'l8-c1'
+                                                else:
+                                                    qa_sensor = 'l-c1'
+
+                                                mask = QAMasker(qa,
+                                                                qa_sensor,
+                                                                mask_items=['clear',
+                                                                            'fill',
+                                                                            'shadow',
+                                                                            'cloudconf',
+                                                                            'cirrusconf',
+                                                                            'snowiceconf'],
+                                                                confidence_level='maybe').to_mask()
+
+                                    if sensor.lower() in ['s2', 's2a', 's2c']:
 
                                         # The S-2 data are in TOAR (0-10000)
                                         toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
@@ -550,8 +564,7 @@ class GeoDownloads(object):
                                                            out_range=10000.0,
                                                            nodata=65535)
 
-                                    if bandpass_sensor.lower() in ['l5', 'l7', 's2a', 's2b', 's2c']:
-
+                                    if bandpass_sensor.lower() in ['l5', 'l7', 's2']:
                                         # Linearly adjust to Landsat 8
                                         sr_brdf = la.bandpass(sr_brdf,
                                                               bandpass_sensor.lower(),
@@ -562,36 +575,21 @@ class GeoDownloads(object):
 
                                     if mask_qa:
 
-                                        if sensor.lower() not in ['s2a', 's2c']:
-
-                                            mask = QAMasker(qa,
-                                                            qa_sensor,
-                                                            mask_items=['clear',
-                                                                        'fill',
-                                                                        'shadow',
-                                                                        'cloud',
-                                                                        'shadow',
-                                                                        'cirrus',
-                                                                        'cloudconf',
-                                                                        'cirrusconf',
-                                                                        'snowiceconf'],
-                                                            confidence_level='yes').to_mask()
-
+                                        if sensor.lower() not in ['s2', 's2a', 's2c']:
                                             # Mask non-clear pixels
-                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000), 65535).astype('uint16')
-                                            sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                            sr_brdf.attrs = attrs
+                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
+                                                               65535).astype('uint16')
 
                                     else:
-
                                         sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
-                                        sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                        sr_brdf.attrs = attrs
+
+                                    # Mask non-clear pixels
+                                    sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                    sr_brdf.attrs = attrs
 
                                     sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                     if write_angle_files:
-
                                         angle_stack = xr.concat((sza, saa), dim='band')
                                         angle_stack.attrs = sza.attrs.copy()
                                         angle_stack.gw.to_raster(out_angles, **kwargs)
@@ -644,13 +642,15 @@ class GeoDownloads(object):
         gcp_dict = dict(l5='LT05/01',
                         l7='LE07/01',
                         l8='LC08/01',
+                        s2='tiles',
                         s2a='tiles',
                         s2c='tiles')
 
-        if sensor not in ['l5', 'l7', 'l8', 's2a', 's2c']:
-            logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2a', or 's2c'.")
+        if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2c']:
+            logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', or 's2c'.")
+            raise NameError
 
-        if sensor in ['s2a', 's2c']:
+        if sensor in ['s2', 's2a', 's2c']:
             gcp_str = "gsutil ls -r gs://gcp-public-data-sentinel-2"
         else:
             gcp_str = "gsutil ls -r gs://gcp-public-data-landsat"
@@ -670,7 +670,7 @@ class GeoDownloads(object):
             # Check for length-1 lists with empty strings
             if search_list[0]:
 
-                if sensor in ['s2a', 's2c']:
+                if sensor in ['s2', 's2a', 's2c']:
                     self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
                 else:
                     self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
@@ -744,7 +744,8 @@ class GeoDownloads(object):
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception(
+                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -835,7 +836,6 @@ class GeoDownloads(object):
                         lines = tx.readlines()
 
                     if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
-
                         null_items.append(fbase)
                         continue_download = False
 
@@ -883,7 +883,6 @@ class GeoDownloads(object):
         """
 
         if (len(date_range) == 2) and not isinstance(date_range[0], datetime):
-
             start_date = date_range[0]
             end_date = date_range[1]
 
@@ -897,87 +896,16 @@ class GeoDownloads(object):
                 for path in path_range:
                     for row in row_range:
                         for dt in date_range:
-
                             str_date = '{:d}{:02d}{:02d}'.format(dt.year, dt.month, dt.day)
 
                             # TODO: check if L1TP is used for all sensors
                             # TODO: fixed DATE2
-                            filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(SENSOR=sensor.upper(),
-                                                                                                                  PATH=path,
-                                                                                                                  ROW=row,
-                                                                                                                  DATE=str_date,
-                                                                                                                  DATE2=None,
-                                                                                                                  BAND=band)
+                            filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(
+                                SENSOR=sensor.upper(),
+                                PATH=path,
+                                ROW=row,
+                                DATE=str_date,
+                                DATE2=None,
+                                BAND=band)
 
                             self.download(filename, **kwargs)
-
-    # def download(self, filename, outdir='.', from_google=True, metadata=True, overwrite=False):
-    #
-    #     """
-    #     Downloads an individual file
-    #
-    #     Args:
-    #         filename (str or list): The file to download.
-    #         outdir (Optional[str]): The output directory.
-    #         from_google (Optional[bool]): Whether to download from Google Cloud storage
-    #         metadata (Optional[bool]): Whether to download metadata files.
-    #         overwrite (Optional[bool]): Whether to overwrite an existing file.
-    #
-    #     https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20170616_20170629_01_T1/LC08_L1TP_042034_20170616_20170629_01_T1_B4.TIF
-    #
-    #     Examples:
-    #         >>> from geowombat.util import download
-    #         >>>
-    #         >>> # Download band 4 from Google Cloud storage to the current directory
-    #         >>> download('LC08_L1TP_042034_20170616_20170629_01_T1_B4.TIF')
-    #
-    #     Returns:
-    #         None
-    #     """
-    #
-    #     outputs = list()
-    #
-    #     if not isinstance(filename, list):
-    #         filename = [filename]
-    #
-    #     FileInfo = namedtuple('FileInfo', 'band meta angles')
-    #
-    #     if outdir != '.':
-    #         Path(outdir).mkdir(parents=True, exist_ok=True)
-    #
-    #     for fn in filename:
-    #
-    #         if from_google:
-    #
-    #             file_info = _parse_google_filename(fn,
-    #                                                self.landsat_parts,
-    #                                                self.sentinel_parts,
-    #                                                self.gcp_public)
-    #
-    #             file_on_disc = Path(outdir).joinpath(fn)
-    #             meta_on_disc = Path(outdir).joinpath(Path(file_info.meta).name)
-    #             angles_on_disc = Path(outdir).joinpath(Path(file_info.angles).name)
-    #
-    #             if file_info.url:
-    #
-    #                 if overwrite:
-    #
-    #                     if file_on_disc.exists():
-    #                         file_on_disc.unlink()
-    #
-    #                 if file_on_disc.exists():
-    #                     logger.warning('  The file already exists.')
-    #                 else:
-    #
-    #                     wget.download(file_info.url_file, out=outdir)
-    #
-    #                     if metadata:
-    #
-    #                         wget.download(file_info.meta, out=outdir)
-    #                         wget.download(file_info.angles, out=outdir)
-    #
-    #             outputs.append(FileInfo(band=file_on_disc.as_posix(),
-    #                                     meta=meta_on_disc.as_posix(),
-    #                                     angles=angles_on_disc.as_posix()))
-    #
-    #     return outputs
