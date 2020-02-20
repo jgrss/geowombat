@@ -130,7 +130,6 @@ class GeoDownloads(object):
                       date_range,
                       bounds,
                       bands,
-                      mask_qa=False,
                       crs=None,
                       out_bounds=None,
                       outdir='.',
@@ -157,7 +156,6 @@ class GeoDownloads(object):
                     Sentinel s2cloudless bands:
                         bands = ['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']
 
-            mask_qa (Optional[bool]): Whether to mask QA.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             out_bounds (Optional[list or tuple]): The output bounds in ``crs``. If not given, the bounds are
