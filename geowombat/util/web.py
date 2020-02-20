@@ -88,6 +88,20 @@ class GeoDownloads(object):
         self.landsat_parts = ['lt05', 'le07', 'lc08']
         self.sentinel_parts = ['s2a']
 
+        s2_dict = dict(coastal=1,
+                       blue=2,
+                       green=3,
+                       red=4,
+                       nir1=5,
+                       nir2=6,
+                       nir3=7,
+                       nir=8,
+                       rededge=8,
+                       water=9,
+                       cirrus=10,
+                       swir1=11,
+                       swir2=12)
+
         self.associations = dict(l7=dict(blue=1,
                                          green=2,
                                          red=3,
@@ -107,19 +121,9 @@ class GeoDownloads(object):
                                          cirrus=9,
                                          tirs1=10,
                                          tirs2=11),
-                                 s2=dict(coastal=1,
-                                         blue=2,
-                                         green=3,
-                                         red=4,
-                                         nir1=5,
-                                         nir2=6,
-                                         nir3=7,
-                                         nir=8,
-                                         rededge=8,
-                                         water=9,
-                                         cirrus=10,
-                                         swir1=11,
-                                         swir2=12))
+                                 s2=s2_dict,
+                                 s2a=s2_dict,
+                                 s2c=s2_dict)
 
         self.search_dict = dict()
 
@@ -148,6 +152,12 @@ class GeoDownloads(object):
                 to download. If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
                 If given as a ``tuple`` or a ``list``, the order should be (left, bottom, right, top).
             bands (str or list): The bands to download.
+
+                E.g.:
+
+                    Sentinel s2cloudless bands:
+                        bands = ['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']
+
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             out_bounds (Optional[list or tuple]): The output bounds in ``crs``. If not given, the bounds are

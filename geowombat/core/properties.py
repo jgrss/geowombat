@@ -23,6 +23,7 @@ WavelengthsL8Thermal = namedtuple('WavelengthsL8Thermal', 'coastal blue green re
 WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2')
 WavelengthsS2Full = namedtuple('WavelengthsS2', 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2')
 WavelengthsS220 = namedtuple('WavelengthsS220', 'nir1 nir2 nir3 rededge swir1 swir2')
+WavelengthsS2Cloudless = namedtuple('WavelengthsS2Cloudless', 'coastal blue red nir1 nir rededge water cirrus swir1 swir2')
 
 
 class DataProperties(object):
@@ -156,6 +157,16 @@ class DataProperties(object):
                                          rededge=0.865,
                                          swir1=1.61,
                                          swir2=2.19),
+                    s2cloudless=WavelengthsS2Cloudless(coastal=0.443,
+                                                       blue=0.49,
+                                                       red=0.665,
+                                                       nir1=0.705,
+                                                       nir=0.842,
+                                                       rededge=0.865,
+                                                       water=0.945,
+                                                       cirrus=1.375,
+                                                       swir1=1.61,
+                                                       swir2=2.19),
                     ps=WavelengthsBGRN(blue=0.485,
                                        green=0.545,
                                        red=0.63,
@@ -187,6 +198,7 @@ class DataProperties(object):
                     s2l7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
                     s210='Sentinel 2 Multi-Spectral Instrument (MSI) with 4 10m (visible + NIR) bands',
                     s220='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 20m bands',
+                    s2cloudless='Sentinel 2 Multi-Spectral Instrument (MSI) with 10 bands for s2cloudless',
                     ps='PlanetScope with 4 (visible + NIR) bands',
                     qb='Quickbird with 4 (visible + NIR) bands',
                     ik='IKONOS with 4 (visible + NIR) bands')
@@ -322,6 +334,16 @@ class DataProperties(object):
                                          rededge=4,
                                          swir1=5,
                                          swir2=6),
+                    s2cloudless=dict(coastal=1,
+                                     blue=2,
+                                     red=3,
+                                     nir1=4,
+                                     nir=5,
+                                     rededge=6,
+                                     water=7,
+                                     cirrus=8,
+                                     swir1=9,
+                                     swir2=10),
                     ps=WavelengthsBGRN(blue=1,
                                        green=2,
                                        red=3,
