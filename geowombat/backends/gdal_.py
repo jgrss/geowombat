@@ -3,15 +3,20 @@ from pathlib import Path
 from osgeo import gdal
 
 
-def warp(in_image, out_image, overwrite=False, **kwargs):
+def warp(in_image,
+         out_image,
+         overwrite=False,
+         delete_input=False,
+         **kwargs):
 
     """
     Warps an image
 
     Args:
-        in_image (str)
-        out_image (str)
-        overwrite (Optional[bool])
+        in_image (str): The input image.
+        out_image (str): The output image.
+        overwrite (Optional[bool]): Whether to overwrite an existing output.
+        delete_input (Optional[bool]): Whether to delete the input image after warping.
         kwargs (Optional[dict]):
             format=None, outputBounds=None (minX, minY, maxX, maxY),
             outputBoundsSRS=None, targetAlignedPixels=False,
@@ -39,3 +44,6 @@ def warp(in_image, out_image, overwrite=False, **kwargs):
                        options=warp_options)
 
     out_ds = None
+
+    if delete_input:
+        Path(in_image).unlink()
