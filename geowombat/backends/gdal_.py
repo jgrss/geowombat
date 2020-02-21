@@ -39,10 +39,6 @@ def warp(in_image,
 
     warp_options = gdal.WarpOptions(**kwargs)
 
-    print(warp_options)
-    print(in_image)
-    print(out_image)
-
     out_ds = gdal.Warp(out_image,
                        in_image,
                        options=warp_options)
