@@ -13,6 +13,7 @@ from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 
 import geowombat as gw
+from geowombat.core import ndarray_to_xarray
 from ..backends.gdal_ import warp
 
 import numpy as np
@@ -21,6 +22,14 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+
+try:
+
+    from s2cloudless import S2PixelCloudDetector
+    S2CLOUDLESS_INSTALLED = True
+
+except:
+    S2CLOUDLESS_INSTALLED = False
 
 # import wget
 
@@ -546,29 +555,6 @@ class GeoDownloads(object):
                                                 resampling='cubic',
                                                 num_threads=num_threads) as data:
 
-                                    if mask_qa:
-
-                                        with gw.open(finfo_dict['qa'].name,
-                                                     band_names=['qa']) as qa:
-
-                                            # Setup the mask
-                                            if sensor.lower() not in ['s2', 's2a', 's2c']:
-
-                                                if sensor.lower() == 'l8':
-                                                    qa_sensor = 'l8-c1'
-                                                else:
-                                                    qa_sensor = 'l-c1'
-
-                                                mask = QAMasker(qa,
-                                                                qa_sensor,
-                                                                mask_items=['clear',
-                                                                            'fill',
-                                                                            'shadow',
-                                                                            'cloudconf',
-                                                                            'cirrusconf',
-                                                                            'snowiceconf'],
-                                                                confidence_level='maybe').to_mask()
-
                                     if sensor.lower() in ['s2', 's2a', 's2c']:
 
                                         # The S-2 data are in TOAR (0-10000)
@@ -608,22 +594,69 @@ class GeoDownloads(object):
 
                                     if mask_qa:
 
-                                        if sensor.lower() not in ['s2', 's2a', 's2c']:
-                                            
-                                            # Mask non-clear pixels
-                                            sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
-                                                               65535).astype('uint16')
+                                        if sensor.lower() in ['s2', 's2a', 's2c']:
+
+                                            if S2CLOUDLESS_INSTALLED:
+
+                                                cloud_detector = S2PixelCloudDetector(threshold=0.4,
+                                                                                      average_over=4,
+                                                                                      dilation_size=2,
+                                                                                      all_bands=False)
+
+                                                X = (sr_brdf * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
+                                                mask = ndarray_to_xarray(sr_brdf, np.squeeze(cloud_detector.get_cloud_masks(X)), ['mask'])
+
+                                                # Mask non-clear pixels
+                                                sr_brdf = xr.where(mask.sel(band='mask') != 1, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+
+                                                sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                                sr_brdf.attrs = attrs
+
+                                                sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                                            else:
+                                                logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
+
+                                        else:
+
+                                            with gw.open(finfo_dict['qa'].name,
+                                                         band_names=['qa']) as qa:
+
+                                                if sensor.lower() == 'l8':
+                                                    qa_sensor = 'l8-c1'
+                                                else:
+                                                    qa_sensor = 'l-c1'
+
+                                                mask = QAMasker(qa,
+                                                                qa_sensor,
+                                                                mask_items=['clear',
+                                                                            'fill',
+                                                                            'shadow',
+                                                                            'cloudconf',
+                                                                            'cirrusconf',
+                                                                            'snowiceconf'],
+                                                                confidence_level='maybe').to_mask()
+
+                                                # Mask non-clear pixels
+                                                sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
+                                                                   65535).astype('uint16')
+
+                                                sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                                sr_brdf.attrs = attrs
+
+                                                sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                     else:
+
                                         sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
 
-                                    # Mask non-clear pixels
-                                    sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                    sr_brdf.attrs = attrs
+                                        sr_brdf = sr_brdf.transpose('band', 'y', 'x')
+                                        sr_brdf.attrs = attrs
 
-                                    sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                        sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                     if write_angle_files:
+
                                         angle_stack = xr.concat((sza, saa), dim='band')
                                         angle_stack.attrs = sza.attrs.copy()
                                         angle_stack.gw.to_raster(out_angles, **kwargs)
