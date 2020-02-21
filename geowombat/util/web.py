@@ -37,7 +37,19 @@ except:
 shapely.speedups.enable()
 
 
+def _assign_attrs(data, attrs, bands_out):
+
+    if bands_out:
+        data = data.sel(band=bands_out)
+
+    data = data.transpose('band', 'y', 'x')
+    data.attrs = attrs
+
+    return data
+
+
 def _random_id(string_length):
+
     """
     Generates a random string of letters and digits
     """
@@ -48,6 +60,7 @@ def _random_id(string_length):
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
+
     FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
 
     file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
@@ -57,6 +70,7 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
+
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -140,6 +154,7 @@ class GeoDownloads(object):
                       date_range,
                       bounds,
                       bands,
+                      bands_out=None,
                       crs=None,
                       out_bounds=None,
                       outdir='.',
@@ -168,6 +183,8 @@ class GeoDownloads(object):
                     Sentinel s2cloudless bands:
                         bands = ['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']
 
+            bands_out (Optional[list]): The bands to write to file. This might be useful after downloading all bands to
+                mask clouds, but are only interested in subset of those bands.
             crs (Optional[str or object]): The output CRS. If ``bounds`` is a ``GeoDataFrame``, the CRS is taken
                 from the object.
             out_bounds (Optional[list or tuple]): The output bounds in ``crs``. If not given, the bounds are
@@ -359,6 +376,7 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
+
                             logger.warning(
                                 '  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(
                                     SENSOR=sensor,
@@ -371,9 +389,7 @@ class GeoDownloads(object):
                         # Download data
                         if sensor.lower() in ['s2', 's2a', 's2c']:
 
-                            load_bands = sorted(['B{:02d}'.format(
-                                band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd])
-                                                 for bd in bands])
+                            load_bands = ['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd]) for bd in bands]
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -463,7 +479,9 @@ class GeoDownloads(object):
                                                                    overwrite=False,
                                                                    verbose=1)
 
-                                if ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
+                                if ' '.join(bands) == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2':
+                                    rad_sensor = 's2f'
+                                elif ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
                                     rad_sensor = 's2cloudless'
                                 elif ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
                                     rad_sensor = 's2'
@@ -603,14 +621,16 @@ class GeoDownloads(object):
                                                                                       dilation_size=2,
                                                                                       all_bands=False)
 
-                                                X = (sr_brdf * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
+                                                sr_brdf_cloudless = sr_brdf.sel(band=['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2'])
+
+                                                X = (sr_brdf_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
                                                 mask = ndarray_to_xarray(sr_brdf, cloud_detector.get_cloud_masks(X), ['mask'])
 
                                                 # Mask non-clear pixels
-                                                sr_brdf = xr.where(mask.sel(band='mask') != 1, sr_brdf.clip(0, 10000), 65535).astype('uint16')
+                                                sr_brdf = xr.where(mask.sel(band='mask') != 1, sr_brdf.clip(0, 10000),
+                                                                   65535).astype('uint16')
 
-                                                sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                                sr_brdf.attrs = attrs
+                                                sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
 
                                                 sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
@@ -644,8 +664,7 @@ class GeoDownloads(object):
                                                 sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
                                                                    65535).astype('uint16')
 
-                                                sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                                sr_brdf.attrs = attrs
+                                                sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
 
                                                 sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
@@ -653,8 +672,7 @@ class GeoDownloads(object):
 
                                         sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
 
-                                        sr_brdf = sr_brdf.transpose('band', 'y', 'x')
-                                        sr_brdf.attrs = attrs
+                                        sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
 
                                         sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
