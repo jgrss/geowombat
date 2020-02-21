@@ -602,11 +602,8 @@ class GeoDownloads(object):
                                                 X = (data_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                 # Predict clouds
+                                                # clear=0, clouds=1, shadow=2, show=3, cirrus=4, water=5
                                                 mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
-
-                                                # Mask non-clear pixels
-                                                data = xr.where(mask.sel(band='mask') == 1, 0, data).astype('float64')
-                                                data = _assign_attrs(data, attrs, bands_out)
 
                                             else:
                                                 logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
@@ -636,7 +633,7 @@ class GeoDownloads(object):
                                                            sensor=rad_sensor,
                                                            wavelengths=data.band.values.tolist(),
                                                            out_range=10000.0,
-                                                           nodata=65535)
+                                                           nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
 
@@ -653,11 +650,18 @@ class GeoDownloads(object):
 
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                            # Mask non-clear pixels
-                                            sr_brdf = xr.where(sr_brdf == 0,
-                                                               65535,
-                                                               sr_brdf.clip(0, 10000)).astype('uint16')
+                                            if S2CLOUDLESS_INSTALLED:
 
+                                                sr_brdf = xr.where((mask.sel(band='mask') == 0) | (mask.sel(band='mask') == 5),
+                                                                   sr_brdf.clip(0, 10000),
+                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+
+                                            else:
+
+                                                sr_brdf = xr.where(sr_brdf != 0,
+                                                                   sr_brdf.clip(0, 10000),
+                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+    
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
@@ -685,9 +689,9 @@ class GeoDownloads(object):
                                                                 confidence_level='yes').to_mask()
 
                                                 # Mask non-clear pixels
-                                                sr_brdf = xr.where(mask.sel(band='mask') >= 2,
-                                                                   65535,
-                                                                   sr_brdf.clip(0, 10000)).astype('uint16')
+                                                sr_brdf = xr.where(mask.sel(band='mask') < 2,
+                                                                   sr_brdf.clip(0, 10000),
+                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                                 sr_brdf.gw.to_raster(out_brdf, **kwargs)
