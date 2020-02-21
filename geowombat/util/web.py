@@ -349,7 +349,7 @@ class GeoDownloads(object):
                     # TODO: get path/row and MGRS from geometry
                     # location = '21/H/UD' # or '225/083'
 
-                    if sensor.lower() in ['s2', 's2a', 's2c']:
+                    if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                         locations = ['{}/{}/{}'.format(dfrow.Name[:2], dfrow.Name[2], dfrow.Name[3:])
                                      for dfi, dfrow in shp_dict['mgrs'].iterrows()]
@@ -361,7 +361,7 @@ class GeoDownloads(object):
 
                     for location in locations:
 
-                        if sensor.lower() in ['s2', 's2a', 's2c']:
+                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                             query = '{LOCATION}/{LEVEL}*{YM}*.SAFE/GRANULE/*'.format(LEVEL=sensor.upper(),
                                                                                      LOCATION=location,
@@ -388,7 +388,7 @@ class GeoDownloads(object):
                             continue
 
                         # Download data
-                        if sensor.lower() in ['s2', 's2a', 's2c']:
+                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                             load_bands = ['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd]) for bd in bands]
 
@@ -460,18 +460,16 @@ class GeoDownloads(object):
                             with open(status.as_posix(), mode='r') as tx:
                                 lines = tx.readlines()
 
-                            if sensor in ['s2', 's2a', 's2c']:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                            if sensor in ['s2', 's2a', 's2b', 's2c']:
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
                             ref_file = finfo_dict[load_bands[0]].name
 
-                            if sensor.lower() in ['s2', 's2a', 's2c']:
+                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
@@ -524,7 +522,7 @@ class GeoDownloads(object):
 
                                 bandpass_sensor = sensor
 
-                            if sensor in ['s2', 's2a', 's2c']:
+                            if sensor in ['s2', 's2a', 's2b', 's2c']:
 
                                 load_bands_names = []
 
@@ -574,7 +572,7 @@ class GeoDownloads(object):
                                                 resampling='cubic',
                                                 num_threads=num_threads) as data:
 
-                                    if sensor.lower() in ['s2', 's2a', 's2c']:
+                                    if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                         # The S-2 data are in TOAR (0-10000)
                                         toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
@@ -601,7 +599,10 @@ class GeoDownloads(object):
                                                            out_range=10000.0,
                                                            nodata=65535)
 
-                                    if bandpass_sensor.lower() in ['l5', 'l7', 's2']:
+                                    if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
+
+                                        if bandpass_sensor.lower() in ['s2', 's2b', 's2c']:
+                                            bandpass_sensor = 's2a'
 
                                         # Linearly adjust to Landsat 8
                                         sr_brdf = la.bandpass(sr_brdf,
@@ -613,7 +614,7 @@ class GeoDownloads(object):
 
                                     if mask_qa:
 
-                                        if sensor.lower() in ['s2', 's2a', 's2c']:
+                                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                             if S2CLOUDLESS_INSTALLED:
 
@@ -735,11 +736,11 @@ class GeoDownloads(object):
                         s2a='tiles',
                         s2c='tiles')
 
-        if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2c']:
-            logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', or 's2c'.")
+        if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2b', 's2c']:
+            logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', 's2b', or 's2c'.")
             raise NameError
 
-        if sensor in ['s2', 's2a', 's2c']:
+        if sensor in ['s2', 's2a', 's2b', 's2c']:
             gcp_str = "gsutil ls -r gs://gcp-public-data-sentinel-2"
         else:
             gcp_str = "gsutil ls -r gs://gcp-public-data-landsat"
@@ -759,7 +760,7 @@ class GeoDownloads(object):
             # Check for length-1 lists with empty strings
             if search_list[0]:
 
-                if sensor in ['s2', 's2a', 's2c']:
+                if sensor in ['s2', 's2a', 's2b', 's2c']:
                     self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
                 else:
                     self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
@@ -833,8 +834,7 @@ class GeoDownloads(object):
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception(
-                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -849,7 +849,7 @@ class GeoDownloads(object):
         if not isinstance(downloads, list):
             downloads = [downloads]
 
-        if sensor in ['s2a', 's2c']:
+        if sensor in ['s2', 's2a', 's2b', 's2c']:
             gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
         else:
             gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
