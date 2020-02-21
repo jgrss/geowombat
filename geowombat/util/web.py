@@ -17,6 +17,7 @@ from ..backends.gdal_ import warp
 import geowombat as gw
 
 import numpy as np
+from osgeo import gdal
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
@@ -538,6 +539,10 @@ class GeoDownloads(object):
                                              delete_input=True,
                                              multithread=True,
                                              warpMemoryLimit=256,
+                                             outputBounds=out_bounds,
+                                             xRes=ref_res[0],
+                                             yRes=ref_res[1],
+                                             resampleAlg=gdal.GRA_Cubic,
                                              creationOptions=['TILED=YES',
                                                               'COMPRESS=LZW',
                                                               'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
