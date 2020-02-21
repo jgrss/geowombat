@@ -526,28 +526,24 @@ class GeoDownloads(object):
 
                                 load_bands_names = []
 
-                                print(load_bands)
-
                                 # Convert to GeoTiffs to avoid CRS issue with jp2 format
                                 for bd in load_bands:
 
-                                    print(finfo_dict[bd].name)
-                                    print(finfo_dict[bd].name.replace('.jp2', '.tif'))
+                                    # Check if the file exists to avoid duplicate GCP filenames
+                                    if Path(finfo_dict[bd].name).is_file():
 
-                                    warp(finfo_dict[bd].name,
-                                         finfo_dict[bd].name.replace('.jp2', '.tif'),
-                                         overwrite=True,
-                                         delete_input=True,
-                                         multithread=True,
-                                         warpMemoryLimit=256,
-                                         creationOptions=['TILED=YES',
-                                                          'COMPRESS=LZW',
-                                                          'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
-                                                          'BLOCKYSIZE={CHUNKS:d}'.format(CHUNKS=chunks)])
+                                        warp(finfo_dict[bd].name,
+                                             finfo_dict[bd].name.replace('.jp2', '.tif'),
+                                             overwrite=True,
+                                             delete_input=True,
+                                             multithread=True,
+                                             warpMemoryLimit=256,
+                                             creationOptions=['TILED=YES',
+                                                              'COMPRESS=LZW',
+                                                              'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
+                                                              'BLOCKYSIZE={CHUNKS:d}'.format(CHUNKS=chunks)])
 
-                                    load_bands_names.append(finfo_dict[bd].name.replace('.jp2', '.tif'))
-
-                                print('')
+                                        load_bands_names.append(finfo_dict[bd].name.replace('.jp2', '.tif'))
 
                             else:
 
