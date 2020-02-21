@@ -656,7 +656,6 @@ class GeoDownloads(object):
                                                                sr_brdf.clip(0, 10000)).astype('uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            logger.info(sr_brdf)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                         else:

@@ -172,7 +172,7 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _compute_block(block, wid, window_, padded_window_, num_workers):
+def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
     """
     Computes a DataArray window block of data
@@ -182,6 +182,7 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
         wid (int): The window id.
         window_ (namedtuple): The window ``rasterio.windows.Window`` object.
         padded_window_ (namedtuple): A padded window ``rasterio.windows.Window`` object.
+        n_workers (int): The number of parallel workers for chunks.
         num_workers (int): The number of parallel workers for ``dask.compute``.
 
     Returns:
@@ -210,13 +211,21 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
 
                 out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
 
-                with threading.Lock():
+                if n_workers == 1:
                     out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
+                else:
+
+                    with threading.Lock():
+                        out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
 
         else:
 
-            with threading.Lock():
+            if n_workers == 1:
                 out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+            else:
+
+                with threading.Lock():
+                    out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
             if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
                 out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
@@ -229,8 +238,12 @@ def _compute_block(block, wid, window_, padded_window_, num_workers):
 
     else:
 
-        with threading.Lock():
+        if n_workers == 1:
             out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+        else:
+
+            with threading.Lock():
+                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
     if padded_window_:
 
@@ -277,23 +290,34 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_threads, separate, chunks, root = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root = list(itertools.chain(*args))
 
-    output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_threads)
+    output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads)
 
     if separate:
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
 
-        with threading.Lock():
+        if n_workers == 1:
 
             with rio.open(filename,
-                          mode='r+',
-                          sharing=False) as dst_:
+                          mode='r+') as dst_:
 
                 dst_.write(output,
                            window=block_window,
                            indexes=out_indexes)
+
+        else:
+
+            with threading.Lock():
+
+                with rio.open(filename,
+                              mode='r+',
+                              sharing=False) as dst_:
+
+                    dst_.write(output,
+                               window=block_window,
+                               indexes=out_indexes)
 
     return zarr_file
 
@@ -602,48 +626,53 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
 
-                with pool_executor(n_workers) as executor:
+                if n_workers == 1:
 
-                    if scheduler == 'mpool':
+                    for zarr_file in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
+                        pass
+                    
+                else:
 
-                        for zarr_file in tqdm(executor.imap_unordered(_write_xarray,
-                                                                      data_gen),
-                                              total=n_windows_slice):
-                            pass
+                    with pool_executor(n_workers) as executor:
 
-                    else:
+                        if scheduler == 'mpool':
 
-                        for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
-                            pass
+                            for zarr_file in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                                pass
+
+                        else:
+
+                            for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
+                                pass
 
             # if overviews:
             #
