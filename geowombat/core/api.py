@@ -11,6 +11,7 @@ from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
+from ..backends.rasterio_ import check_src_crs
 from .util import Chunks, get_file_extension, parse_wildcard
 
 import numpy as np
@@ -56,12 +57,14 @@ def get_attrs(src, **kwargs):
 
     attrs['transform'] = tuple(src.transform)[:6]
 
-    if hasattr(src, 'crs') and src.crs:
+    if hasattr(src, 'crs'):
+
+        src_crs = check_src_crs(src)
 
         try:
-            attrs['crs'] = src.crs.to_proj4()
+            attrs['crs'] = src_crs.to_proj4()
         except:
-            attrs['crs'] = src.crs.to_string()
+            attrs['crs'] = src_crs.to_string()
 
     if hasattr(src, 'res'):
         attrs['res'] = src.res
