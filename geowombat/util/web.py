@@ -36,6 +36,16 @@ except:
 shapely.speedups.enable()
 
 
+def _rmdir(pathdir):
+
+    for child in pathdir.iterdir():
+
+        if child.is_file():
+            child.unlink()
+
+    pathdir.rmdir()
+
+
 def _assign_attrs(data, attrs, bands_out):
 
     if bands_out:
@@ -710,7 +720,7 @@ class GeoDownloads(object):
 
                             angle_infos[finfo_key] = angle_info
 
-                            shutil.rmtree(outdir_angles.as_posix())
+                            _rmdir(outdir_angles)
 
                             for k, v in finfo_dict.items():
                                 os.remove(v.name)
