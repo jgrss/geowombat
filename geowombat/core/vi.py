@@ -156,6 +156,38 @@ class BandMath(object):
 
         return self.mask_and_assign(band_data, result, band_variable, b2, nodata, name, mask, -1, 1, scale_factor, sensor)
 
+    def avi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+
+        """
+        Advanced vegetation index
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
+            nir = 'nir'
+            red = 'red'
+        else:
+            nir = wavelengths[sensor].nir
+            red = wavelengths[sensor].red
+
+        data = self.scale_and_assign(data, band_variable, scale_factor, [red, nir], ['red', 'nir'])
+
+        if band_variable == 'wavelength':
+
+            result = ((data.sel(wavelength='nir') * (1.0 - data.sel(wavelength='red')) *
+                       (data.sel(wavelength='nir') - data.sel(wavelength='red'))) ** 0.3334).fillna(nodata).astype('float64')
+
+        else:
+
+            result = ((data.sel(band='nir') * (1.0 - data.sel(band='red')) *
+                       (data.sel(band='nir') - data.sel(band='red'))) ** 0.3334).fillna(nodata).astype('float64')
+
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'avi', mask, 0, 1, scale_factor, sensor)
+
     def evi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
@@ -499,6 +531,41 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor = data.gw.scale_factor
 
         return self.norm_diff_math(data, b1, b2, 'norm-diff', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+
+    def avi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the advanced vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                AVI = {(NIR \times (1.0 - red) \times (NIR - red))}^{0.3334}
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
+        """
+
+        sensor = self.check_sensor(data, sensor)
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        return self.avi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def evi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 

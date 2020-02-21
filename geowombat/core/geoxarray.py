@@ -2,6 +2,7 @@ from ..config import config
 
 from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, subset, clip, mask
 from . import norm_diff as gw_norm_diff
+from . import avi as gw_avi
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
 from . import nbr as gw_nbr
@@ -938,6 +939,30 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return gw_norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+
+    def avi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the advanced vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                AVI = {(NIR \times (1.0 - red) \times (NIR - red))}^{0.3334}
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return gw_avi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def evi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
