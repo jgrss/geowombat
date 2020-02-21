@@ -61,7 +61,7 @@ Starting in GeoWombat version 1.2.2, the moving window can be computed directly 
     with gw.open(rgbn, chunks=512) as src:
 
         src.attrs['apply'] = moving_window
-        src.attrs['apply_kwargs'] = {'stat': 'mean', 'w': 5, 'n_jobs': 4, 'nodata': 0}
+        src.attrs['apply_kwargs'] = {'stat': 'mean', 'w': w, 'n_jobs': 4, 'nodata': 0}
 
         res.gw.to_raster('output.tif',
                          n_workers=4,
