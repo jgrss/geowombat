@@ -3,6 +3,24 @@
 Change Log
 ==========
 
+1.2.3 (21 February 2020)
+------------------------
+
+- Added check to support new CRS object in `geowombat`.
+- Added padding to image edges when using the `padding` option in :func:`geowombat.to_raster`.
+- Added checks for empty CRS.
+
+1.2.2 (12 February 2020)
+------------------------
+
+- Added `padding` option to :func:`geowombat.to_raster`.
+- Added half cell adjustment to transformed samples in :func:`geowombat.sample`.
+
+1.2.1 (12 February 2020)
+------------------------
+
+- Fixed a error in checking the spatial index.
+
 1.2.0 (11 February 2020)
 ------------------------
 
