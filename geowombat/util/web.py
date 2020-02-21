@@ -602,7 +602,7 @@ class GeoDownloads(object):
 
                                                 cloud_detector = S2PixelCloudDetector(threshold=0.4,
                                                                                       average_over=4,
-                                                                                      dilation_size=2,
+                                                                                      dilation_size=5,
                                                                                       all_bands=False)
 
                                                 # Get the S2Cloudless bands
