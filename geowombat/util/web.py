@@ -604,7 +604,7 @@ class GeoDownloads(object):
                                                                                       all_bands=False)
 
                                                 X = (sr_brdf * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
-                                                mask = ndarray_to_xarray(sr_brdf, np.squeeze(cloud_detector.get_cloud_masks(X)), ['mask'])
+                                                mask = ndarray_to_xarray(sr_brdf, cloud_detector.get_cloud_masks(X), ['mask'])
 
                                                 # Mask non-clear pixels
                                                 sr_brdf = xr.where(mask.sel(band='mask') != 1, sr_brdf.clip(0, 10000), 65535).astype('uint16')
