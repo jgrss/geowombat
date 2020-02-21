@@ -27,3 +27,4 @@ sphinx-automodapi
 sphinxcontrib-bibtex
 numpydoc
 deprecated
+rtree

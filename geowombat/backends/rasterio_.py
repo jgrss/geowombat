@@ -237,6 +237,21 @@ def check_res(res):
     return dst_res
 
 
+def check_src_crs(src):
+
+    """
+    Checks a rasterio open() instance
+
+    Args:
+        src (object): An `rasterio.open` instance.
+
+    Returns:
+        ``rasterio.crs.CRS``
+    """
+
+    return src.crs if src.crs else src.gcps[1]
+
+
 def check_crs(crs):
 
     """
@@ -468,11 +483,11 @@ def get_ref_image_meta(filename):
 
     with rio.open(filename) as src:
 
+        src_crs = check_src_crs(src)
         bounds = src.bounds
-        crs = src.crs
         res = src.res
 
-    return WarpInfo(bounds=bounds, crs=crs, res=res)
+    return WarpInfo(bounds=bounds, crs=src_crs, res=res)
 
 
 def warp(filename,
