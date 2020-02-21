@@ -335,7 +335,7 @@ def get_file_bounds(filenames,
         if crs:
             dst_crs = check_crs(crs)
         else:
-            dst_crs = src.crs
+            dst_crs = check_src_crs(src)
 
         if res:
             dst_res = check_res(res)
@@ -358,7 +358,7 @@ def get_file_bounds(filenames,
             with rio.open(fn) as src:
 
                 # Transform the extent to the reference CRS
-                left, bottom, right, top = transform_bounds(src.crs,
+                left, bottom, right, top = transform_bounds(check_src_crs(src),
                                                             dst_crs,
                                                             src.bounds.left,
                                                             src.bounds.bottom,
@@ -531,7 +531,7 @@ def warp(filename,
         if crs:
             dst_crs = check_crs(crs)
         else:
-            dst_crs = src.crs
+            dst_crs = check_src_crs(src)
 
         # Check if the data need to be subset
         if bounds and (bounds != src.bounds):
