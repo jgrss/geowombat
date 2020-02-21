@@ -506,6 +506,7 @@ class GeoDownloads(object):
                                     warp(finfo_dict[bd].name,
                                          finfo_dict[bd].name.replace('.jp2', '.tif'),
                                          overwrite=True,
+                                         delete_input=True,
                                          multithread=True,
                                          warpMemoryLimit=256,
                                          creationOptions=['GDAL_CACHEMAX=256',
@@ -514,7 +515,7 @@ class GeoDownloads(object):
                                                           f'BLOCKXSIZE={chunks}',
                                                           f'BLOCKYSIZE={chunks}'])
 
-                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                    load_bands_names.append(finfo_dict[bd].name.replace('.jp2', '.tif'))
 
                             else:
 
