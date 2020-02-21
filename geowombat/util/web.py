@@ -578,7 +578,7 @@ class GeoDownloads(object):
                                         # Convert TOAR to surface reflectance
                                         sr = rt.toar_to_sr(toar_scaled,
                                                            sza, saa, vza, vaa,
-                                                           sensor)
+                                                           rad_sensor)
 
                                     else:
 
@@ -597,6 +597,7 @@ class GeoDownloads(object):
                                                            nodata=65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2']:
+
                                         # Linearly adjust to Landsat 8
                                         sr_brdf = la.bandpass(sr_brdf,
                                                               bandpass_sensor.lower(),
@@ -608,6 +609,7 @@ class GeoDownloads(object):
                                     if mask_qa:
 
                                         if sensor.lower() not in ['s2', 's2a', 's2c']:
+                                            
                                             # Mask non-clear pixels
                                             sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
                                                                65535).astype('uint16')
