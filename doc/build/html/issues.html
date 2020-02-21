@@ -4,28 +4,25 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Search &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>Issues &#8212; GeoWombat 1.2.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script src="_static/searchtools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" />
-  <script src="searchindex.js" defer></script>
-  
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick overview" href="quick-overview.html" />
+    <link rel="prev" title="Installation" href="installing.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
 
   </head><body>
   <div class="document">
@@ -55,9 +52,9 @@
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Issues</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
@@ -87,9 +84,21 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installing.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="quick-overview.html" title="next chapter">Quick overview</a></li>
   </ul></li>
 </ul>
 </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -106,29 +115,19 @@
 
           <div class="body" role="main">
             
-  <h1 id="search-documentation">Search</h1>
-  <div id="fallback" class="admonition warning">
-  <script>$('#fallback').hide();</script>
-  <p>
-    Please activate JavaScript to enable the search
-    functionality.
-  </p>
-  </div>
-  <p>
-    From here you can search these documents. Enter your search
-    words into the box below and click "search". Note that the search
-    function will automatically search for all of the words. Pages
-    containing fewer words won't appear in the result list.
-  </p>
-  <form action="" method="get">
-    <input type="text" name="q" aria-labelledby="search-documentation" value="" />
-    <input type="submit" value="search" />
-    <span id="search-progress" style="padding-left: 10px"></span>
-  </form>
-  
-  <div id="search-results">
-  
-  </div>
+  <div class="section" id="issues">
+<span id="id1"></span><h1>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="gdal-3-0-and-gdal-data">
+<h2>GDAL 3.0 and GDAL_DATA<a class="headerlink" href="#gdal-3-0-and-gdal-data" title="Permalink to this headline">¶</a></h2>
+<p>First, see <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/faq.html">here</a> for issues with the GDAL data path.</p>
+<p>If the GDAL_DATA directory is missing the gcs.csv file, point the GDAL_DATA environment variable to the Fiona path.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ GDAL_DATA=/envs/ts3.7/lib/python3.7/site-packages/fiona/gdal_data
+</pre></div>
+</div>
+</div>
+</div>
+
 
           </div>
           
@@ -143,6 +142,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
+      |
+      <a href="_sources/issues.rst.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

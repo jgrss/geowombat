@@ -26,6 +26,7 @@ Documentation
    :caption: Getting Started
 
    installing
+   issues
    quick-overview
 
 **User Guide**

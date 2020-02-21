@@ -4,16 +4,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>to_raster &#8212; GeoWombat 1.2.0 documentation</title>
+    <title>to_raster &#8212; GeoWombat 1.2.3 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="to_vrt" href="geowombat.to_vrt.html" />
@@ -54,6 +54,7 @@
 <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
@@ -99,7 +100,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -120,7 +121,7 @@
 <h1>to_raster<a class="headerlink" href="#to-raster" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.to_raster">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">readxsize=None</em>, <em class="sig-param">readysize=None</em>, <em class="sig-param">use_dask_store=False</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='mpool'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">filename</em>, <em class="sig-param">readxsize=None</em>, <em class="sig-param">readysize=None</em>, <em class="sig-param">use_dask_store=False</em>, <em class="sig-param">separate=False</em>, <em class="sig-param">out_block_type='zarr'</em>, <em class="sig-param">keep_blocks=False</em>, <em class="sig-param">verbose=0</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">gdal_cache=512</em>, <em class="sig-param">scheduler='mpool'</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">n_workers=None</em>, <em class="sig-param">n_threads=None</em>, <em class="sig-param">n_chunks=None</em>, <em class="sig-param">overviews=False</em>, <em class="sig-param">resampling='nearest'</em>, <em class="sig-param">use_client=False</em>, <em class="sig-param">address=None</em>, <em class="sig-param">total_memory=48</em>, <em class="sig-param">padding=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -154,6 +155,10 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 <li><p><strong>use_client</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use a <code class="docutils literal notranslate"><span class="pre">dask</span></code> client.</p></li>
 <li><p><strong>address</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A cluster address to pass to client. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>total_memory</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total memory (in GB) required when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>padding</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Padding for each window. <code class="docutils literal notranslate"><span class="pre">padding</span></code> should be given as a tuple
+of (left pad, bottom pad, right pad, top pad). If <code class="docutils literal notranslate"><span class="pre">padding</span></code> is given, the returned list will contain
+a tuple of <code class="docutils literal notranslate"><span class="pre">rasterio.windows.Window</span></code> objects as (w1, w2), where w1 contains the normal window offsets
+and w2 contains the padded window offsets.</p></li>
 <li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
 </ul>
 </dd>
@@ -196,7 +201,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
       &copy;2019, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
