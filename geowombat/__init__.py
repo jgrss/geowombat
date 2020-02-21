@@ -18,6 +18,7 @@ from .core import array_to_polygon
 from .core import polygon_to_array
 from .core import moving
 from .core import norm_diff
+from .core import avi
 from .core import evi
 from .core import evi2
 from .core import nbr
@@ -49,6 +50,7 @@ __all__ = ['config',
            'polygon_to_array',
            'moving',
            'norm_diff',
+           'avi',
            'evi',
            'evi2',
            'nbr',

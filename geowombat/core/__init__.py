@@ -30,6 +30,7 @@ geodataframe_to_array = Converters().geodataframe_to_array
 to_geodataframe = Converters().to_geodataframe
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
+avi = VegetationIndices().avi
 evi = VegetationIndices().evi
 evi2 = VegetationIndices().evi2
 nbr = VegetationIndices().nbr
@@ -60,6 +61,7 @@ __all__ = ['apply',
            'sort_images_by_date',
            'moving',
            'norm_diff',
+           'avi',
            'evi',
            'evi2',
            'nbr',
