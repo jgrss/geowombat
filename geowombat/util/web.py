@@ -231,6 +231,9 @@ class GeoDownloads(object):
         #               n_chunks=100,
         #               overwrite=False)
 
+        angle_kwargs = kwargs.copy()
+        angle_kwargs['nodata'] = -32768
+
         angle_infos = dict()
 
         rt = RadTransforms()
@@ -530,7 +533,7 @@ class GeoDownloads(object):
                                 # Convert to GeoTiffs to avoid CRS issue with jp2 format
                                 for bd in load_bands:
 
-                                    # Check if the file exists to avoid duplicate GCP filenames
+                                    # Check if the file exists to avoid duplicate GCP filenames`
                                     if Path(finfo_dict[bd].name).is_file():
 
                                         warp(finfo_dict[bd].name,
@@ -697,9 +700,9 @@ class GeoDownloads(object):
 
                                     if write_angle_files:
 
-                                        angle_stack = xr.concat((sza, saa), dim='band')
+                                        angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                         angle_stack.attrs = sza.attrs.copy()
-                                        angle_stack.gw.to_raster(out_angles, **kwargs)
+                                        angle_stack.gw.to_raster(out_angles, **angle_kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
