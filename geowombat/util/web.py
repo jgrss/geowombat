@@ -512,8 +512,8 @@ class GeoDownloads(object):
                                          creationOptions=['GDAL_CACHEMAX=256',
                                                           'TILED=YES',
                                                           'COMPRESS=LZW',
-                                                          f'BLOCKXSIZE={chunks}',
-                                                          f'BLOCKYSIZE={chunks}'])
+                                                          'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
+                                                          'BLOCKYSIZE={CHUNKS:d}'.format(CHUNKS=chunks)])
 
                                     load_bands_names.append(finfo_dict[bd].name.replace('.jp2', '.tif'))
 
