@@ -8,7 +8,8 @@ Change Log
 
 - Added check to support new CRS object in `geowombat`.
 - Added padding to image edges when using the `padding` option in :func:`geowombat.to_raster`.
-- Added check for empty CRS.
+- Added checks for empty CRS.
+    - [](https://gis.stackexchange.com/questions/233375/sentinel-1-data-opened-with-rasterio-has-no-affine-transform-crs)
 
 1.2.2 (12 February 2020)
 ------------------------
