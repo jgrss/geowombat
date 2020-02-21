@@ -631,11 +631,14 @@ class GeoDownloads(object):
                                                                 qa_sensor,
                                                                 mask_items=['clear',
                                                                             'fill',
+                                                                            'water',
+                                                                            'cloud',
                                                                             'shadow',
+                                                                            'saturated',
                                                                             'cloudconf',
                                                                             'cirrusconf',
                                                                             'snowiceconf'],
-                                                                confidence_level='maybe').to_mask()
+                                                                confidence_level='yes').to_mask()
 
                                                 # Mask non-clear pixels
                                                 sr_brdf = xr.where(mask.sel(band='mask') < 2, sr_brdf.clip(0, 10000),
