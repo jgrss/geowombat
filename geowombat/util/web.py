@@ -11,10 +11,10 @@ import string
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
+from ..core import ndarray_to_xarray
+from ..backends.gdal_ import warp
 
 import geowombat as gw
-from geowombat.core import ndarray_to_xarray
-from ..backends.gdal_ import warp
 
 import numpy as np
 import pandas as pd
@@ -30,8 +30,6 @@ try:
 
 except:
     S2CLOUDLESS_INSTALLED = False
-
-# import wget
 
 
 shapely.speedups.enable()
@@ -253,15 +251,17 @@ class GeoDownloads(object):
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
+
             with open(status.as_posix(), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
-            bounds = Polygon([(bounds[0], bounds[3]),  # upper left
-                              (bounds[2], bounds[3]),  # upper right
-                              (bounds[2], bounds[1]),  # lower right
-                              (bounds[0], bounds[1]),  # lower left
+
+            bounds = Polygon([(bounds[0], bounds[3]),   # upper left
+                              (bounds[2], bounds[3]),   # upper right
+                              (bounds[2], bounds[1]),   # lower right
+                              (bounds[0], bounds[1]),   # lower left
                               (bounds[0], bounds[3])])  # upper left
 
             bounds = gpd.GeoDataFrame([0],
@@ -271,6 +271,7 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
+
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -924,6 +925,7 @@ class GeoDownloads(object):
                         lines = tx.readlines()
 
                     if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
+
                         null_items.append(fbase)
                         continue_download = False
 
