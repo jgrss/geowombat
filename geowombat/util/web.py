@@ -13,6 +13,7 @@ from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 
 import geowombat as gw
+from ..backends.gdal_ import warp
 
 import numpy as np
 import pandas as pd
@@ -138,6 +139,8 @@ class GeoDownloads(object):
                       l8_angles_path=None,
                       write_angle_files=False,
                       mask_qa=False,
+                      chunks=512,
+                      num_threads=1,
                       **kwargs):
 
         """
@@ -166,6 +169,8 @@ class GeoDownloads(object):
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
+            chunks (Optional[int]): The chunk size to read at.
+            num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
         Examples:
@@ -491,8 +496,30 @@ class GeoDownloads(object):
 
                                 bandpass_sensor = sensor
 
-                            # Get band names from user
-                            load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                            if sensor in ['s2', 's2a', 's2c']:
+
+                                load_bands_names = []
+
+                                # Convert to GeoTiffs to avoid CRS issue with jp2 format
+                                for bd in load_bands:
+
+                                    warp(finfo_dict[bd].name,
+                                         finfo_dict[bd].name.replace('.jp2', '.tif'),
+                                         overwrite=True,
+                                         multithread=True,
+                                         warpMemoryLimit=256,
+                                         creationOptions=['GDAL_CACHEMAX=256',
+                                                          'TILED=YES',
+                                                          'COMPRESS=LZW',
+                                                          f'BLOCKXSIZE={chunks}',
+                                                          f'BLOCKYSIZE={chunks}'])
+
+                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+
+                            else:
+
+                                # Get band names from user
+                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
@@ -500,17 +527,23 @@ class GeoDownloads(object):
                                                   ref_res=ref_res if ref_res else load_bands_names[-1]):
 
                                 with gw.open(angle_info.sza,
+                                             chunks=chunks,
                                              resampling='cubic') as sza, \
                                         gw.open(angle_info.vza,
+                                                chunks=chunks,
                                                 resampling='cubic') as vza, \
                                         gw.open(angle_info.saa,
+                                                chunks=chunks,
                                                 resampling='cubic') as saa, \
                                         gw.open(angle_info.vaa,
+                                                chunks=chunks,
                                                 resampling='cubic') as vaa, \
                                         gw.open(load_bands_names,
                                                 band_names=bands,
                                                 stack_dim='band',
-                                                resampling='cubic') as data:
+                                                chunks=chunks,
+                                                resampling='cubic',
+                                                num_threads=num_threads) as data:
 
                                     if mask_qa:
 
