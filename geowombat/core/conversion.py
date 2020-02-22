@@ -12,9 +12,11 @@ import pandas as pd
 import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
+from rasterio.crs import CRS
 import shapely
 from shapely.geometry import Polygon
 from affine import Affine
+import pyproj
 from tqdm import tqdm
 from deprecated import deprecated
 
@@ -25,7 +27,107 @@ def _iter_func(a):
     return a
 
 
+class PointTransform(object):
+
+    """
+    A class for point coordinate CRS transformations
+
+    Args:
+        dst_crs (str | object): The CRS to transform to. It can be provided as a string or a
+            CRS instance (e.g., ``pyproj.crs.CRS``).
+
+    Returns:
+        ``tuple`` as (x, y) or (longitude, latitude)
+
+    Example:
+        >>> import geowombat as gw
+        >>> from geowombat.core import PointTransform
+        >>>
+        >>> lat, lon = -25.46214220, -55.56822206
+        >>>
+        >>> p = PointTransform('epsg:32721')
+        >>>
+        >>> x, y = p.lonlat_to_xy(lon, lat)
+        >>> lon, lat = p.xy_to_lonlat(x, y)
+    """
+
+    def __init__(self, dst_crs):
+        self._transformer = pyproj.Proj(dst_crs)
+
+    def lonlat_to_xy(self, lon, lat):
+        return self._transformer(lon, lat)
+
+    def xy_to_lonlat(self, x, y):
+        return self._transformer(x, y, inverse=True)
+
+
 class Converters(object):
+
+    @staticmethod
+    def lonlat_to_xy(lon, lat, dst_crs):
+
+        """
+        Converts from longitude and latitude to native map coordinates
+
+        Args:
+            lon (float): The longitude to convert.
+            lat (float): The latitude to convert.
+            dst_crs (str, object, or DataArray): The CRS to transform to. It can be provided as a string, a
+                CRS instance (e.g., ``pyproj.crs.CRS``), or a ``geowombat.DataArray``.
+
+        Returns:
+
+            ``tuple``:
+
+                (x, y)
+
+        Example:
+            >>> import geowombat as gw
+            >>> from geowombat.core import lonlat_to_xy
+            >>>
+            >>> lon, lat = -55.56822206, -25.46214220
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     x, y = lonlat_to_xy(lon, lat, src)
+        """
+
+        if isinstance(dst_crs, xr.DataArray):
+            dst_crs = dst_crs.crs
+
+        return pyproj.Proj(dst_crs)(lon, lat)
+
+    @staticmethod
+    def xy_to_lonlat(x, y, dst_crs):
+
+        """
+        Converts from native map coordinates to longitude and latitude
+
+        Args:
+            x (float): The x coordinate to convert.
+            y (float): The y coordinate to convert.
+            dst_crs (str, object, or DataArray): The CRS to transform to. It can be provided as a string, a
+                CRS instance (e.g., ``pyproj.crs.CRS``), or a ``geowombat.DataArray``.
+
+        Returns:
+
+            ``tuple``:
+
+                (longitude, latitude)
+
+        Example:
+            >>> import geowombat as gw
+            >>> from geowombat.core import xy_to_lonlat
+            >>>
+            >>> x, y = 643944.6956113526, 7183104.984484519
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     lon, lat = xy_to_lonlat(x, y, src)
+        """
+
+        if isinstance(dst_crs, xr.DataArray):
+            dst_crs = dst_crs.crs
+
+        return pyproj.Proj(dst_crs)(x, y, inverse=True)
 
     @staticmethod
     def indices_to_coords(col_index, row_index, transform):
