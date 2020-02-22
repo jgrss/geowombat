@@ -27,6 +27,8 @@ from .core import wi
 from .core import tasseled_cap
 from .core import coords_to_indices
 from .core import indices_to_coords
+from .core import lonlat_to_xy
+from .core import xy_to_lonlat
 
 from .version import __version__
 
@@ -59,4 +61,6 @@ __all__ = ['config',
            'tasseled_cap',
            'coords_to_indices',
            'indices_to_coords',
+           'lonlat_to_xy',
+           'xy_to_lonlat',
            '__version__']
