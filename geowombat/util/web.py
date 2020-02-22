@@ -702,7 +702,7 @@ class GeoDownloads(object):
                                                                             'cloudconf',
                                                                             'shadowconf',
                                                                             'cirrusconf'],
-                                                                confidence_level='yes').to_mask()
+                                                                confidence_level='maybe').to_mask()
 
                                                 # Mask non-clear pixels
                                                 sr_brdf = xr.where(mask.sel(band='mask') < 2,
