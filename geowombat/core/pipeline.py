@@ -6,19 +6,27 @@ import geowombat as gw
 import xarray as xr
 
 
+rt = RadTransforms()
+br = BRDF()
+la = LinearAdjustments()
+
+
 class GeoPipeline(ABC, metaclass=ABCMeta):
 
     @abstractmethod
-    def __init__(self):
-        pass
+    def __init__(self, processes):
+        self.processes = processes
 
     @abstractmethod
     def submit(self, *args, **kwargs):
         raise NotImplementedError
 
-    def _validate_indices(self, object_):
+    def _validate_methods(self, *args):
 
-        for proc_ in self.processes:
+        if len(args) != len(self.processes):
+            raise AttributeError('The lengths do not match.')
+
+        for object_, proc_ in zip(*args, self.processes):
 
             if not hasattr(object_, proc_):
                 raise NameError(f'The {proc_} process is not supported.')
@@ -59,14 +67,10 @@ class LandsatBRDFPipeline(GeoPipeline):
 
     def __init__(self, processes):
 
-        self.processes = processes
-        self._validate_indices()
+        super().__init__(processes)
+        self._validate_methods([rt, br, la])
 
     def submit(self, data, *args, **kwargs):
-
-        rt = RadTransforms()
-        br = BRDF()
-        la = LinearAdjustments()
 
         for i, func_ in enumerate(self.processes):
 
@@ -156,8 +160,8 @@ class IndicesPipeline(GeoPipeline):
 
     def __init__(self, processes):
 
-        self.processes = processes
-        self._validate_indices(gw)
+        super().__init__(processes)
+        self._validate_methods([gw]*len(processes))
 
     def submit(self, data, *args, **kwargs):
 

@@ -41,9 +41,16 @@ def _rmdir(pathdir):
     for child in pathdir.iterdir():
 
         if child.is_file():
-            child.unlink()
 
-    pathdir.rmdir()
+            try:
+                child.unlink()
+            except:
+                pass
+
+    try:
+        pathdir.rmdir()
+    except:
+        pass
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -726,7 +733,11 @@ class GeoDownloads(object):
                             _rmdir(outdir_angles)
 
                             for k, v in finfo_dict.items():
-                                os.remove(v.name)
+
+                                try:
+                                    Path(v.name).unlink()
+                                except:
+                                    pass
 
                             lines.append(finfo_dict['meta'].name + '\n')
 
