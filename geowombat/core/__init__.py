@@ -19,6 +19,8 @@ subset = SpatialOperations().subset
 clip = SpatialOperations().clip
 mask = SpatialOperations().mask
 coregister = SpatialOperations().coregister
+lonlat_to_xy = Converters().lonlat_to_xy
+xy_to_lonlat = Converters().xy_to_lonlat
 polygons_to_points = Converters().polygons_to_points
 indices_to_coords = Converters().indices_to_coords
 coords_to_indices = Converters().coords_to_indices
@@ -51,6 +53,8 @@ __all__ = ['apply',
            'clip',
            'mask',
            'coregister',
+           'lonlat_to_xy',
+           'xy_to_lonlat',
            'polygons_to_points',
            'indices_to_coords',
            'coords_to_indices',
