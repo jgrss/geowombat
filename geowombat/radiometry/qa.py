@@ -93,7 +93,9 @@ class QAMasker(object):
                     else:
                         mask_value = 1
 
-                    mask = da.where(self._get_qa_mask(mask_item) >= mask_value, self.fmask_dict[mask_item], mask)
+                    mask = da.where(self._get_qa_mask(mask_item) >= mask_value,
+                                    self.fmask_dict[mask_item],
+                                    mask)
 
         mask = xr.DataArray(mask,
                             dims=('y', 'x'),
