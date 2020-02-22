@@ -10,6 +10,7 @@ Change Log
 - Added padding to image edges when using the `padding` option in :func:`geowombat.to_raster`.
 - Added checks for empty CRS objects.
 - Added the Advanced Vegetation Index.
+- Added :func:`geowombat.core.lonlat_to_xy` and :func:`geowombat.core.xy_to_lonlat` functions.
 
 1.2.2 (12 February 2020)
 ------------------------
