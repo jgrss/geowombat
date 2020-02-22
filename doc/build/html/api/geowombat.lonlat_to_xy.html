@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>landsat_pixel_angles &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>lonlat_to_xy &#8212; GeoWombat 1.2.3 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,8 +16,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
-    <link rel="prev" title="xy_to_lonlat" href="geowombat.xy_to_lonlat.html" />
+    <link rel="next" title="xy_to_lonlat" href="geowombat.xy_to_lonlat.html" />
+    <link rel="prev" title="indices_to_coords" href="geowombat.indices_to_coords.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -85,8 +85,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.xy_to_lonlat.html" title="previous chapter">xy_to_lonlat</a></li>
-      <li>Next: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="next chapter">sentinel_pixel_angles</a></li>
+      <li>Previous: <a href="geowombat.indices_to_coords.html" title="previous chapter">indices_to_coords</a></li>
+      <li>Next: <a href="geowombat.xy_to_lonlat.html" title="next chapter">xy_to_lonlat</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -117,28 +117,38 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="landsat-pixel-angles">
-<h1>landsat_pixel_angles<a class="headerlink" href="#landsat-pixel-angles" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="lonlat-to-xy">
+<h1>lonlat_to_xy<a class="headerlink" href="#lonlat-to-xy" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="geowombat.radiometry.landsat_pixel_angles">
-<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">landsat_pixel_angles</code><span class="sig-paren">(</span><em class="sig-param">angles_file</em>, <em class="sig-param">ref_file</em>, <em class="sig-param">outdir</em>, <em class="sig-param">sensor</em>, <em class="sig-param">l57_angles_path=None</em>, <em class="sig-param">l8_angles_path=None</em>, <em class="sig-param">verbose=0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.landsat_pixel_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates Landsat pixel angle files</p>
+<dt id="geowombat.lonlat_to_xy">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">lonlat_to_xy</code><span class="sig-paren">(</span><em class="sig-param">lon</em>, <em class="sig-param">lat</em>, <em class="sig-param">dst_crs</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.lonlat_to_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from longitude and latitude to native map coordinates</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>angles_file</strong> (<em>str</em>) – The angles file.</p></li>
-<li><p><strong>ref_file</strong> (<em>str</em>) – A reference file.</p></li>
-<li><p><strong>outdir</strong> (<em>str</em>) – The output directory.</p></li>
-<li><p><strong>sensor</strong> (<em>str</em>) – The sensor.</p></li>
-<li><p><strong>l57_angles_path</strong> (<em>str</em>) – The path to the Landsat 5 and 7 angles bin.</p></li>
-<li><p><strong>l8_angles_path</strong> (<em>str</em>) – The path to the Landsat 8 angles bin.</p></li>
-<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
+<li><p><strong>lon</strong> (<em>float</em>) – The longitude to convert.</p></li>
+<li><p><strong>lat</strong> (<em>float</em>) – The latitude to convert.</p></li>
+<li><p><strong>dst_crs</strong> (<em>str</em><em>, </em><em>object</em><em>, or </em><em>DataArray</em>) – The CRS to transform to. It can be provided as a string, a
+CRS instance (e.g., <code class="docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code>), or a <code class="docutils literal notranslate"><span class="pre">geowombat.DataArray</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>zenith and azimuth angles as a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> of angle file names</p>
+<dd class="field-even"><p>(x, y)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">tuple</span></code></p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.core</span> <span class="kn">import</span> <span class="n">lonlat_to_xy</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="o">-</span><span class="mf">55.56822206</span><span class="p">,</span> <span class="o">-</span><span class="mf">25.46214220</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">lonlat_to_xy</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -158,7 +168,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.radiometry.landsat_pixel_angles.rst.txt"
+      <a href="../_sources/api/geowombat.lonlat_to_xy.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
