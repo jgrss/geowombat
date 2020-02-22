@@ -41,9 +41,16 @@ def _rmdir(pathdir):
     for child in pathdir.iterdir():
 
         if child.is_file():
-            child.unlink()
 
-    pathdir.rmdir()
+            try:
+                child.unlink()
+            except:
+                pass
+
+    try:
+        pathdir.rmdir()
+    except:
+        pass
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -615,7 +622,8 @@ class GeoDownloads(object):
                                                 # clear=0, clouds=1, shadow=2, show=3, cirrus=4, water=5
                                                 mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
 
-                                                data = _assign_attrs(data, attrs, bands_out)
+                                                if bands_out:
+                                                    data = _assign_attrs(data, attrs, bands_out)
 
                                             else:
                                                 logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
@@ -725,7 +733,11 @@ class GeoDownloads(object):
                             _rmdir(outdir_angles)
 
                             for k, v in finfo_dict.items():
-                                os.remove(v.name)
+
+                                try:
+                                    Path(v.name).unlink()
+                                except:
+                                    pass
 
                             lines.append(finfo_dict['meta'].name + '\n')
 
