@@ -672,7 +672,7 @@ class GeoDownloads(object):
 
                                             if S2CLOUDLESS_INSTALLED:
 
-                                                sr_brdf = xr.where((mask.sel(band='mask') == 0) | (mask.sel(band='mask') == 5),
+                                                sr_brdf = xr.where(mask.sel(band='mask') == 0,
                                                                    sr_brdf.clip(0, 10000),
                                                                    kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
 
@@ -697,15 +697,11 @@ class GeoDownloads(object):
 
                                                 mask = QAMasker(qa,
                                                                 qa_sensor,
-                                                                mask_items=['clear',
-                                                                            'fill',
-                                                                            'water',
-                                                                            'cloud',
-                                                                            'shadow',
+                                                                mask_items=['fill',
                                                                             'saturated',
                                                                             'cloudconf',
-                                                                            'cirrusconf',
-                                                                            'snowiceconf'],
+                                                                            'shadowconf',
+                                                                            'cirrusconf'],
                                                                 confidence_level='yes').to_mask()
 
                                                 # Mask non-clear pixels
