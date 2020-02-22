@@ -615,6 +615,8 @@ class GeoDownloads(object):
                                                 # clear=0, clouds=1, shadow=2, show=3, cirrus=4, water=5
                                                 mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
 
+                                                data = _assign_attrs(data, attrs, bands_out)
+
                                             else:
                                                 logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
 
