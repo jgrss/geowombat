@@ -49,9 +49,9 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust):
             y_ = y_[idx]
 
             if robust:
-                lr = LinearRegression(n_jobs=num_workers)
-            else:
                 lr = TheilSenRegressor(n_jobs=num_workers)
+            else:
+                lr = LinearRegression(n_jobs=num_workers)
 
             lr.fit(X_, y_)
 
