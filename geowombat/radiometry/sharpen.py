@@ -5,7 +5,7 @@ import numpy as np
 import dask
 import dask.array as da
 import xarray as xr
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 
 @dask.delayed
@@ -21,7 +21,7 @@ def _assign_and_expand(obj, name, **attrs):
     return obj.assign_attrs(**attrs)
 
 
-def regress(datax, datay, bands, frac, num_workers, nodata):
+def regress(datax, datay, bands, frac, num_workers, nodata, robust):
 
     predictions = []
 
@@ -48,7 +48,11 @@ def regress(datax, datay, bands, frac, num_workers, nodata):
             X_ = X_[idx][:, np.newaxis]
             y_ = y_[idx]
 
-            lr = LinearRegression(n_jobs=num_workers)
+            if robust:
+                lr = LinearRegression(n_jobs=num_workers)
+            else:
+                lr = TheilSenRegressor(n_jobs=num_workers)
+
             lr.fit(X_, y_)
 
             # Predict on the full array
@@ -142,6 +146,7 @@ def pan_sharpen(data,
                 frac=0.1,
                 num_workers=8,
                 nodata=65535,
+                robust=False,
                 hist_match=False):
 
     """
@@ -160,6 +165,7 @@ def pan_sharpen(data,
         frac (Optional[float]): The sample fraction.
         num_workers (Optional[int]): The number of parallel workers for ``sklearn.linear_model.LinearRegression``.
         nodata (Optional[int | float]): A 'no data' value to ignore.
+        robust (Optional[bool]): Whether to fit a robust regression.
         hist_match (Optional[bool]): Whether to match histograms after sharpening.
 
     Example:
@@ -222,7 +228,7 @@ def pan_sharpen(data,
         #
         # data_sharp = data.sel(band=bands) + adj
 
-        data_sharp = regress(pan, data, bands, frac, num_workers, nodata)
+        data_sharp = regress(pan, data, bands, frac, num_workers, nodata, robust)
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
