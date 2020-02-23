@@ -117,7 +117,8 @@ class Topo(object):
     A class for topographic normalization
     """
 
-    def _regress_a(self, X, y, robust, n_jobs):
+    @staticmethod
+    def _regress_a(X, y, robust, n_jobs):
 
         """
         Calculates the slope and intercept

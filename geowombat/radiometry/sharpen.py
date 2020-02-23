@@ -1,9 +1,11 @@
 from ..errors import logger
+from ..core import ndarray_to_xarray
 
 import numpy as np
 import dask
 import dask.array as da
 import xarray as xr
+from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 
 @dask.delayed
@@ -17,6 +19,49 @@ def _assign_and_expand(obj, name, **attrs):
     obj = obj.expand_dims(dim='band')
 
     return obj.assign_attrs(**attrs)
+
+
+def regress(datax, datay, bands, frac, num_workers, nodata):
+
+    predictions = []
+
+    for band in bands:
+
+        # Get the data for the current band
+        X = datax.sel(band=band).squeeze().data.compute(num_workers=num_workers)
+        y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers)
+
+        # Get indices of valid samples
+        idx = np.where((X != nodata) & (y != nodata))
+
+        X_ = X[idx].flatten()
+        y_ = y[idx].flatten()
+
+        if y_.shape[0] > 0:
+
+            # Get a fraction of the samples
+            idx = np.random.choice(range(0, y_.shape[0]),
+                                   size=int(y_.shape[0] * frac),
+                                   replace=False)
+
+            X_ = X_[idx][:, np.newaxis]
+            y_ = y_[idx]
+
+            lr = LinearRegression(n_jobs=num_workers)
+            lr.fit(X_, y_)
+
+            # Predict on the full array
+            yhat = lr.predict(X.flatten()[:, np.newaxis])
+
+            # Convert to DataArray
+            yhat = ndarray_to_xarray(datay, yhat, [band])
+
+            predictions.append(_assign_and_expand(yhat, band, **datay.attrs.copy()))
+
+        else:
+            predictions.append(datay.sel(band=band))
+
+    return xr.concat(predictions, dim='band')
 
 
 def histogram_matching(data, ref_hist, **hist_kwargs):
@@ -161,14 +206,16 @@ def pan_sharpen(data,
         #                                                    data.sel(band='red') * red_weight)
 
         # ESRI method with NIR
-        wa = (data.sel(band='blue') * blue_weight +
-              data.sel(band='green') * green_weight +
-              data.sel(band='red') * red_weight +
-              data.sel(band='nir') * nir_weight) / (blue_weight + green_weight + red_weight + nir_weight)
+        # wa = (data.sel(band='blue') * blue_weight +
+        #       data.sel(band='green') * green_weight +
+        #       data.sel(band='red') * red_weight +
+        #       data.sel(band='nir') * nir_weight) / (blue_weight + green_weight + red_weight + nir_weight)
+        #
+        # adj = pan - wa
+        #
+        # data_sharp = data.sel(band=bands) + adj
 
-        adj = pan - wa
-
-        data_sharp = data.sel(band=bands) + adj
+        data_sharp = regress(pan, data, bands, 0.1, 8, 65535)
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
