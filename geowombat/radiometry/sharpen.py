@@ -57,7 +57,7 @@ def regress(datax, datay, bands, frac, num_workers, nodata):
             # Convert to DataArray
             yhat = ndarray_to_xarray(datay, yhat, [band])
 
-            predictions.append(_assign_and_expand(yhat, band, **datay.attrs.copy()))
+            predictions.append(yhat)
 
         else:
             predictions.append(datay.sel(band=band))
