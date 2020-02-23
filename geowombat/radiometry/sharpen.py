@@ -52,12 +52,12 @@ def regress(datax, datay, bands, frac, num_workers, nodata):
             lr.fit(X_, y_)
 
             # Predict on the full array
-            yhat = lr.predict(X.flatten()[:, np.newaxis])
+            yhat = lr.predict(X.flatten()[:, np.newaxis]).reshape(datay.gw.nrows, datay.gw.ncols)
 
             # Convert to DataArray
             yhat = ndarray_to_xarray(datay, yhat, [band])
 
-            predictions.append(_assign_and_expand(yhat, band, **datay.attrs.copy()).chunk(datay.data.chunksize))
+            predictions.append(_assign_and_expand(yhat, band, **datay.attrs.copy()))
 
         else:
             predictions.append(datay.sel(band=band))
