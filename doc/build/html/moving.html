@@ -179,7 +179,7 @@
 
     <span class="c1"># Compute the moving window and save as an Xarray</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">dask_to_xarray</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
-                         <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chunks</span><span class="p">),</span>
+                         <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chunksize</span><span class="p">),</span>
                          <span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
     <span class="c1"># Write the results to file</span>

@@ -121,7 +121,7 @@
 <h1>pan_sharpen<a class="headerlink" href="#pan-sharpen" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="geowombat.radiometry.pan_sharpen">
-<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">pan=None</em>, <em class="sig-param">blue_weight=1.0</em>, <em class="sig-param">green_weight=1.0</em>, <em class="sig-param">red_weight=1.0</em>, <em class="sig-param">nir_weight=1.0</em>, <em class="sig-param">scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">pan=None</em>, <em class="sig-param">blue_weight=1.0</em>, <em class="sig-param">green_weight=1.0</em>, <em class="sig-param">red_weight=1.0</em>, <em class="sig-param">nir_weight=1.0</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">hist_match=False</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sharpens wavelengths using the panchromatic band</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -135,6 +135,7 @@ with <code class="docutils literal notranslate"><span class="pre">data</span></c
 <li><p><strong>red_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The red band weight.</p></li>
 <li><p><strong>nir_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The NIR band weight.</p></li>
 <li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+<li><p><strong>hist_match</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to match histograms after sharpening.</p></li>
 </ul>
 </dd>
 </dl>
