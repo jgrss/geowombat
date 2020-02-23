@@ -1,6 +1,88 @@
 from ..errors import logger
 
+import numpy as np
+import dask
+import dask.array as da
 import xarray as xr
+
+
+@dask.delayed
+def _interp(data, bins, cdf1, cdf2):
+    return np.interp(np.interp(data.flatten(), bins[:-1], cdf1).flatten(), cdf2, bins[:-1])
+
+
+def _assign_and_expand(obj, name, **attrs):
+
+    obj = obj.assign_coords(coords={'band': name})
+    obj = obj.expand_dims(dim='band')
+
+    return obj.assign_attrs(**attrs)
+
+
+def histogram_matching(data, ref_hist, **hist_kwargs):
+
+    """
+    Matches histograms
+
+    Args:
+        data (DataArray): The data to adjust.
+        ref_hist (1d dask array): The reference histogram.
+        hist_kwargs (Optional[dict]): The histogram keyword arguments.
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    nrows = data.gw.nrows
+    ncols = data.gw.ncols
+
+    h, b = da.histogram(data.data, **hist_kwargs)
+
+    # Cumulative distribution function.
+    cdf1 = h.cumsum(axis=0)
+    cdf2 = ref_hist.cumsum(axis=0)
+
+    # Normalize
+    cdf1 = (hist_kwargs['range'][1] * cdf1 / cdf1[-1]).astype('float64')
+    cdf2 = (hist_kwargs['range'][1] * cdf2 / cdf2[-1]).astype('float64')
+
+    matched = da.from_delayed(_interp(data.data, b, cdf1, cdf2),
+                              (nrows * ncols,),
+                              dtype='float64').reshape(nrows,
+                                                       ncols).rechunk(data.gw.row_chunks,
+                                                                      data.gw.col_chunks)
+
+    return xr.DataArray(data=matched,
+                        dims=('y', 'x'),
+                        coords={'y': data.y,
+                                'x': data.x},
+                        attrs=data.attrs.copy())
+
+
+def match_histograms(src_ms, src_sharp, bands, **hist_kwargs):
+
+    """
+    Matches histograms for multiple bands
+
+    Args:
+        src_ms (DataArray)
+        src_sharp (DataArray)
+        bands (1d array-like)
+        hist_kwargs (Optional[dict]): The histogram keyword arguments.
+
+    Return:
+        ``xarray.DataArray``
+    """
+
+    matched = list()
+
+    for band in bands:
+
+        h = da.histogram(src_ms.sel(band=band).data, **hist_kwargs)[0]
+        m = histogram_matching(src_sharp.clip(0, 1).sel(band=band), h, **hist_kwargs)
+        matched.append(_assign_and_expand(m, band, **src_ms.attrs.copy()))
+
+    return xr.concat(matched, dim='band')
 
 
 def pan_sharpen(data,
@@ -10,7 +92,8 @@ def pan_sharpen(data,
                 green_weight=1.0,
                 red_weight=1.0,
                 nir_weight=1.0,
-                scale_factor=1.0):
+                scale_factor=1.0,
+                hist_match=False):
 
     """
     Sharpens wavelengths using the panchromatic band
@@ -25,6 +108,7 @@ def pan_sharpen(data,
         red_weight (Optional[float]): The red band weight.
         nir_weight (Optional[float]): The NIR band weight.
         scale_factor (Optional[float]): A scale factor to apply to the data.
+        hist_match (Optional[bool]): Whether to match histograms after sharpening.
 
     Example:
         >>> import geowombat as gw
@@ -88,5 +172,8 @@ def pan_sharpen(data,
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
     data_sharp = (data_sharp / scale_factor).astype(data.dtype)
+
+    if hist_match:
+        data_sharp = match_histograms(data, data_sharp, bands, bins=50, range=(0.01, 1))
 
     return data_sharp.assign_attrs(**attrs)
