@@ -43,7 +43,7 @@ A workaround is to compute the results before writing to file
 
         # Compute the moving window and save as an Xarray
         res = dask_to_xarray(src,
-                             da.from_array(res.data.compute(num_workers=4), chunks=src.data.chunks),
+                             da.from_array(res.data.compute(num_workers=4), chunks=src.data.chunksize),
                              src.band.values.tolist())
 
         # Write the results to file

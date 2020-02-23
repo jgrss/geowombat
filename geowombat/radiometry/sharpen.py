@@ -171,9 +171,10 @@ def pan_sharpen(data,
         data_sharp = data.sel(band=bands) + adj
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
-    data_sharp = (data_sharp / scale_factor).astype(data.dtype)
 
     if hist_match:
-        data_sharp = match_histograms(data, data_sharp, bands, bins=50, range=(0.01, 1))
+        data_sharp = match_histograms(data, data_sharp, bands, bins=100, range=(0.01, 1))
+    
+    data_sharp = (data_sharp / scale_factor).astype(data.dtype)
 
     return data_sharp.assign_attrs(**attrs)
