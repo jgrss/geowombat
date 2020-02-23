@@ -27,40 +27,6 @@ def _iter_func(a):
     return a
 
 
-class PointTransform(object):
-
-    """
-    A class for point coordinate CRS transformations
-
-    Args:
-        dst_crs (str | object): The CRS to transform to. It can be provided as a string or a
-            CRS instance (e.g., ``pyproj.crs.CRS``).
-
-    Returns:
-        ``tuple`` as (x, y) or (longitude, latitude)
-
-    Example:
-        >>> import geowombat as gw
-        >>> from geowombat.core import PointTransform
-        >>>
-        >>> lat, lon = -25.46214220, -55.56822206
-        >>>
-        >>> p = PointTransform('epsg:32721')
-        >>>
-        >>> x, y = p.lonlat_to_xy(lon, lat)
-        >>> lon, lat = p.xy_to_lonlat(x, y)
-    """
-
-    def __init__(self, dst_crs):
-        self._transformer = pyproj.Proj(dst_crs)
-
-    def lonlat_to_xy(self, lon, lat):
-        return self._transformer(lon, lat)
-
-    def xy_to_lonlat(self, x, y):
-        return self._transformer(x, y, inverse=True)
-
-
 class Converters(object):
 
     @staticmethod
