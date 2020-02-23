@@ -67,12 +67,20 @@ def pan_sharpen(data,
 
         dnf = pan / band_avg
 
+        data_sharp = data.sel(band=bands) * dnf
+
     else:
 
         # ESRI Brovey method with NIR
         dnf = (pan - nir_weight * data.sel(band='nir')) / (data.sel(band='blue') * blue_weight +
                                                            data.sel(band='green') * green_weight +
                                                            data.sel(band='red') * red_weight)
+
+        # ESRI method with NIR
+        wa = (data.sel(band='blue') * blue_weight +
+              data.sel(band='green') * green_weight +
+              data.sel(band='red') * red_weight,
+              data.sel(band='nir') * nir_weight)
 
         # weights = blue_weight + green_weight + red_weight + nir_weight
         #
@@ -81,9 +89,9 @@ def pan_sharpen(data,
         #             data.sel(band='red') * red_weight +
         #             data.sel(band='nir') * nir_weight) / weights
 
-    data_sharp = data.sel(band=bands) * dnf
-    data_sharp = data_sharp.assign_coords(coords={'band': bands})
+        data_sharp = data.sel(band=bands) - wa
 
+    data_sharp = data_sharp.assign_coords(coords={'band': bands})
     data_sharp = (data_sharp / scale_factor).astype(data.dtype)
 
     return data_sharp.assign_attrs(**attrs)
