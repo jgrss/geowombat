@@ -25,10 +25,11 @@ def regress(datax, datay, bands, frac, num_workers, nodata):
 
     predictions = []
 
+    X = datax.squeeze().data.compute(num_workers=num_workers)
+
     for band in bands:
 
         # Get the data for the current band
-        X = datax.sel(band=band).squeeze().data.compute(num_workers=num_workers)
         y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers)
 
         # Get indices of valid samples
