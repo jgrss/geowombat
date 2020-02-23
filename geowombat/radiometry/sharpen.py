@@ -5,7 +5,7 @@ import numpy as np
 import dask
 import dask.array as da
 import xarray as xr
-from sklearn.linear_model import LinearRegression, TheilSenRegressor
+from sklearn.linear_model import LinearRegression
 
 
 @dask.delayed
@@ -139,6 +139,9 @@ def pan_sharpen(data,
                 red_weight=1.0,
                 nir_weight=1.0,
                 scale_factor=1.0,
+                frac=0.1,
+                num_workers=8,
+                nodata=65535,
                 hist_match=False):
 
     """
@@ -154,6 +157,9 @@ def pan_sharpen(data,
         red_weight (Optional[float]): The red band weight.
         nir_weight (Optional[float]): The NIR band weight.
         scale_factor (Optional[float]): A scale factor to apply to the data.
+        frac (Optional[float]): The sample fraction.
+        num_workers (Optional[int]): The number of parallel workers for ``sklearn.linear_model.LinearRegression``.
+        nodata (Optional[int | float]): A 'no data' value to ignore.
         hist_match (Optional[bool]): Whether to match histograms after sharpening.
 
     Example:
@@ -216,7 +222,7 @@ def pan_sharpen(data,
         #
         # data_sharp = data.sel(band=bands) + adj
 
-        data_sharp = regress(pan, data, bands, 0.1, 8, 65535)
+        data_sharp = regress(pan, data, bands, frac, num_workers, nodata)
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
