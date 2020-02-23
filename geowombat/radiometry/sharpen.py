@@ -79,8 +79,8 @@ def pan_sharpen(data,
         # ESRI method with NIR
         wa = (data.sel(band='blue') * blue_weight +
               data.sel(band='green') * green_weight +
-              data.sel(band='red') * red_weight,
-              data.sel(band='nir') * nir_weight)
+              data.sel(band='red') * red_weight +
+              data.sel(band='nir') * nir_weight) / (blue_weight + green_weight + red_weight + nir_weight)
 
         # weights = blue_weight + green_weight + red_weight + nir_weight
         #
