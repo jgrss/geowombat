@@ -1,4 +1,5 @@
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
+from contextlib import ExitStack
 
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms
 
@@ -11,14 +12,26 @@ br = BRDF()
 la = LinearAdjustments()
 
 
-class GeoPipeline(ABC, metaclass=ABCMeta):
+class BaseGeoTasks(ABC):
 
     @abstractmethod
-    def __init__(self, processes):
-        self.processes = processes
+    def __init__(self, inputs, outputs, tasks, config, kwargs, outkwargs):
+
+        self.inputs = inputs
+        self.outputs = outputs
+        self.tasks = tasks
+        self.config = config
+        self.kwargs = kwargs
+        self.outkwargs = outkwargs
 
     @abstractmethod
-    def submit(self, *args, **kwargs):
+    def clean(self):
+        """Clean intermediate data"""
+        pass
+
+    @abstractmethod
+    def submit(self):
+        """Submit a task pipeline"""
         raise NotImplementedError
 
     def _validate_methods(self, *args):
@@ -33,6 +46,58 @@ class GeoPipeline(ABC, metaclass=ABCMeta):
 
     def __len__(self):
         return len(self.processes)
+
+
+class GeoTasks(BaseGeoTasks):
+
+    """
+    Example:
+        >>> import geowombat as gw
+        >>> from geowombat.core import pipeline
+        >>> from geowombat.radiometry import RadTransforms
+        >>>
+        >>> rt = RadTransforms()
+        >>>
+        >>> inputs = {rt.dn_to_sr: ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
+        >>>           gw.ndvi: 'dn_to_sr'}
+        >>>
+        >>> outputs = {rt.dn_to_sr: None,
+        >>>            gw.ndvi: 'ndvi.tif'}
+        >>>
+        >>> kwargs = {rt.dn_to_sr: {'meta': 'meta.mtl'}}
+        >>> config = {'sensor': 'l7', 'scale_factor': 0.0001}
+        >>> outkwargs = {'compress': 'lzw', 'overwrite': True}
+        >>>
+        >>> tasks = (rt.dn_to_sr, gw.ndvi)
+        >>>
+        >>> task = pipeline.GeoTasks(inputs, outputs, tasks, config, kwargs, outkwargs)
+        >>> task.submit()
+    """
+
+    def __init__(self, inputs, outputs, tasks, config, kwargs, outkwargs):
+        super().__init__(inputs, outputs, tasks, config, kwargs, outkwargs)
+
+    def submit(self):
+
+        with gw.config.update(**self.config):
+
+            for task in self.tasks:
+
+                kwargs = self.kwargs[task] if task in self.kwargs else {}
+
+                # TODO
+                with ExitStack as stack:
+                    files = [stack.enter_context([gw.open(image), gw.open(image)])]
+
+                res = task(*self.inputs[task], **kwargs)
+
+                if (task in self.outputs) and self.outputs[task]:
+                    res.gw.to_raster(self.outputs[task], **self.outkwargs)
+
+
+
+    def clean(self):
+        pass
 
 
 class LandsatBRDFPipeline(GeoPipeline):
