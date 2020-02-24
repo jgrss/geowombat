@@ -6,7 +6,6 @@ from ..core.util import project_coords
 from ..errors import logger
 
 import numpy as np
-import numexpr as ne
 import xarray as xr
 import dask
 import dask.array as da
