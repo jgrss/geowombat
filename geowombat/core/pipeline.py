@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
+from pathlib import Path
 
+from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms
 
 import geowombat as gw
@@ -15,14 +17,24 @@ la = LinearAdjustments()
 class BaseGeoTasks(ABC):
 
     @abstractmethod
-    def __init__(self, inputs, outputs, tasks, config, kwargs, outkwargs):
+    def __init__(self,
+                 inputs,
+                 outputs,
+                 tasks,
+                 clean,
+                 config_args=None,
+                 open_args=None,
+                 func_args=None,
+                 out_args=None):
 
         self.inputs = inputs
         self.outputs = outputs
         self.tasks = tasks
-        self.config = config
-        self.kwargs = kwargs
-        self.outkwargs = outkwargs
+        self.clean = clean
+        self.config_args = config_args if inputs else {}
+        self.open_args = open_args if inputs else {}
+        self.func_args = func_args if inputs else {}
+        self.out_args = out_args if inputs else {}
 
     @abstractmethod
     def clean(self):
@@ -30,9 +42,19 @@ class BaseGeoTasks(ABC):
         pass
 
     @abstractmethod
+    def execute(self, task_id, task, src, **kwargs):
+        """Execute a task"""
+        pass
+
+    @abstractmethod
     def submit(self):
         """Submit a task pipeline"""
         raise NotImplementedError
+
+    @abstractmethod
+    def cleanup(self):
+        """Cleanup task outputs"""
+        pass
 
     def _validate_methods(self, *args):
 
@@ -55,49 +77,112 @@ class GeoTasks(BaseGeoTasks):
         >>> import geowombat as gw
         >>> from geowombat.core import pipeline
         >>> from geowombat.radiometry import RadTransforms
-        >>>
         >>> rt = RadTransforms()
         >>>
-        >>> inputs = {rt.dn_to_sr: ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
-        >>>           gw.ndvi: 'dn_to_sr'}
+        >>> tasks = (('A', rt.dn_to_sr), ('B', gw.ndvi))
+        >>> clean = ('A')
         >>>
-        >>> outputs = {rt.dn_to_sr: None,
-        >>>            gw.ndvi: 'ndvi.tif'}
+        >>> inputs = {'A': ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
+        >>>           'B': 'A'}
         >>>
-        >>> kwargs = {rt.dn_to_sr: {'meta': 'meta.mtl'}}
-        >>> config = {'sensor': 'l7', 'scale_factor': 0.0001}
-        >>> outkwargs = {'compress': 'lzw', 'overwrite': True}
+        >>> # {'task': (func, output)}
+        >>> outputs = {'A': 'sr.tif',
+        >>>            'B': 'ndvi.tif'}
         >>>
-        >>> tasks = (rt.dn_to_sr, gw.ndvi)
+        >>> func_args = {'A': {'meta': 'meta.mtl'}}
         >>>
-        >>> task = pipeline.GeoTasks(inputs, outputs, tasks, config, kwargs, outkwargs)
+        >>> open_args = {'chunks': 512}
+        >>> config_args = {'sensor': 'l7', 'scale_factor': 0.0001}
+        >>> out_args = {'compress': 'lzw', 'overwrite': True}
+        >>>
+        >>> task = pipeline.GeoTasks(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
+        >>>
         >>> task.submit()
+        >>> task.cleanup()
     """
 
-    def __init__(self, inputs, outputs, tasks, config, kwargs, outkwargs):
-        super().__init__(inputs, outputs, tasks, config, kwargs, outkwargs)
+    def __init__(self,
+                 inputs,
+                 outputs,
+                 tasks,
+                 clean,
+                 config_args=None,
+                 open_args=None,
+                 func_args=None,
+                 out_args=None):
+
+        super().__init__(inputs,
+                         outputs,
+                         tasks,
+                         clean,
+                         config_args,
+                         open_args,
+                         func_args,
+                         out_args)
+
+    def execute(self, task_id, task, src, **kwargs):
+
+        # Execute the task
+        res = task(*src, **kwargs)
+
+        # Write to file, if needed
+        # TODO: how to handle in-memory results
+        if task_id in self.outputs:
+            res.gw.to_raster(self.outputs[task_id], **self.out_args)
 
     def submit(self):
 
-        with gw.config.update(**self.config):
+        with gw.config.update(**self.config_args):
 
-            for task in self.tasks:
+            for task_id, task in self.tasks:
 
-                kwargs = self.kwargs[task] if task in self.kwargs else {}
+                # Check task keywords
+                kwargs = self.func_args[task_id] if task_id in self.func_args else {}
 
-                # TODO
-                with ExitStack as stack:
-                    files = [stack.enter_context([gw.open(image), gw.open(image)])]
+                # Check task input(s)
+                if isinstance(self.inputs[task_id], str) and not Path(self.inputs[task_id]).is_file():
 
-                res = task(*self.inputs[task], **kwargs)
+                    with gw.open(self.outputs[self.inputs[task_id]]) as src:
+                        self.execute(task_id, task, src, **kwargs)
 
-                if (task in self.outputs) and self.outputs[task]:
-                    res.gw.to_raster(self.outputs[task], **self.outkwargs)
+                if isinstance(self.inputs[task_id], str) and Path(self.inputs[task_id]).is_file():
 
+                    with gw.open(self.inputs[task_id], **self.open_args) as src:
+                        self.execute(task_id, task, src, **kwargs)
 
+                else:
 
-    def clean(self):
-        pass
+                    with ExitStack() as stack:
+
+                        # Open input files for the task
+                        src = [stack.enter_context(gw.open(fn, **self.open_args)) for fn in self.inputs[task_id]]
+                        self.execute(task_id, task, src, **kwargs)
+
+    def cleanup(self):
+
+        for task_id in self.clean:
+
+            fn = Path(self.outputs[task_id])
+
+            if fn.is_file():
+
+                try:
+                    fn.unlink()
+                except:
+                    logger.warning(f'  Could not remove task {task_id} output.')
+
+    def visualize(self):
+
+        from graphviz import Digraph
+
+        dot = Digraph()
+
+        for task_id, task in self.tasks:
+            dot.node(task_id, f'Task {task_id}')
+
+        # dot.edges(['AB', 'BR'])
+
+        dot.render(view=True)
 
 
 class LandsatBRDFPipeline(GeoPipeline):
