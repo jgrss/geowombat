@@ -20,7 +20,3 @@ zarr
 dateparser
 deprecated
 rtree
-#sphinx-automodapi
-#sphinxcontrib-bibtex
-#numpydoc
-#fsspec
