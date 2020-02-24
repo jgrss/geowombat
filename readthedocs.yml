@@ -1,7 +1,7 @@
 build:
     image: latest
 conda:
-    environment: environment.yml
+    file: environment.yml
 python:
     version: 3.7
     pip_install: true
