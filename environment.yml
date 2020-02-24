@@ -6,6 +6,7 @@ dependencies:
 - cython
 - numpy
 - ipython
+- libspatialindex
 - libgdal=2.3.3
 - gdal=2.3.3
 
