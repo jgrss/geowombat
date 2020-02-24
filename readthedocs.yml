@@ -3,7 +3,7 @@ build:
 conda:
     environment: environment.yml
 python:
-    version: 3
+    version: 3.7
     pip_install: true
     install:
       - requirements: doc/requirements.txt
