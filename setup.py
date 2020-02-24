@@ -134,7 +134,11 @@ def setup_package():
                     install_requires=required_packages,
                     extras_require=get_extra_requires(extras),
                     include_dirs=include_dirs,
-                    classifiers=['Programming Language :: Python :: 3.5',
+                    classifiers=['Intended Audience :: Science/Research',
+                                 'License :: MIT',
+                                 'Topic :: Scientific :: Remote Sensing',
+                                 'Programming Language :: Cython',
+                                 'Programming Language :: Python :: 3.5',
                                  'Programming Language :: Python :: 3.6',
                                  'Programming Language :: Python :: 3.7'])
 

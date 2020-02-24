@@ -1,4 +1,4 @@
-name: _geowombat
+name: gwenv
 channels:
 - defaults
 dependencies:
@@ -9,3 +9,6 @@ dependencies:
 - libspatialindex
 - libgdal=2.3.3
 - gdal=2.3.3
+- pip
+- pip:
+  - -r file:doc/requirements.txt
