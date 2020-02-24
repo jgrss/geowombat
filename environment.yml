@@ -11,4 +11,7 @@ dependencies:
 - gdal=2.3.3
 - pip
 - pip:
-  - -r file:doc/requirements.txt
+  - gdal==2.3.3
+  - numpydoc
+  - sphinx-automodapi
+  - sphinxcontrib-bibtex
