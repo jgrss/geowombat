@@ -107,11 +107,6 @@ def get_package_data():
 
 def get_extensions():
 
-    # return [Extension('*',
-    #                   sources=['geowombat/moving/_moving.pyx'],
-    #                   extra_compile_args=['-fopenmp'],
-    #                   extra_link_args=['-fopenmp'])]
-
     return [Extension('*',
                       sources=['geowombat/moving/_moving.pyx'],
                       extra_compile_args=['-fopenmp'],
