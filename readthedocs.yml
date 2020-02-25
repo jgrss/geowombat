@@ -3,12 +3,11 @@ build:
 conda:
     file: environment.yml
 python:
-    version: 3
+    version: 3.7
     pip_install: true
     install:
-      - requirements: requirements-build.txt
+      - requirements: doc/requirements.txt
       - method: pip
-        path: .
         extra_requirements:
             - docs
       - method: setuptools

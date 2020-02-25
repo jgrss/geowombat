@@ -1,19 +1,43 @@
 import setuptools
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Build import cythonize
+import re
+from collections import defaultdict
+import subprocess
 
-import numpy as np
+try:
+    from Cython.Build import cythonize
+except:
+    raise ImportError('Cython must be installed to build GeoWombat.')
 
-__version__ = '1.2.3'
+try:
+    import numpy as np
+except:
+    raise ImportError('NumPy must be installed to build GeoWombat.')
+
+
+# Parse the version from the module.
+# Source: https://github.com/mapbox/rasterio/blob/master/setup.py
+with open('geowombat/version.py') as f:
+
+    for line in f:
+
+        if line.find("__version__") >= 0:
+
+            version = line.split("=")[1].strip()
+            version = version.strip('"')
+            version = version.strip("'")
+
+            continue
 
 pkg_name = 'geowombat'
 maintainer = 'Jordan Graesser'
 maintainer_email = ''
-description = 'Geo-enabled n-dimensional arrays from satellite imagery'
-git_url = 'http://github.com/jgrss/geowombat.git'
-download_url = 'https://github.com/jgrss/geowombat/archive/{VERSION}.tar.gz'.format(VERSION=__version__)
-keywords = ['raster', 'remote sensing']
+description = 'Geo-utilities for large-scale processing of air- and space-borne imagery'
+git_url = 'https://github.com/jgrss/geowombat'
+download_url = 'https://github.com/jgrss/geowombat/archive/{VERSION}.tar.gz'.format(VERSION=version)
+keywords = ['raster', 'satellite']
+extras = 'extra-requirements.txt'
 
 with open('README.md') as f:
     long_description = f.read()
@@ -22,7 +46,48 @@ with open('LICENSE.txt') as f:
     license_file = f.read()
 
 with open('requirements.txt') as f:
-    required_packages = f.read()
+    required_packages = f.readlines()
+
+
+# Attempt to get the GDAL binary version
+try:
+
+    process = subprocess.Popen(['gdalinfo', '--version'], stdout=subprocess.PIPE, stderr=None)
+    gdal_version = str(process.communicate()[0]).split(',')[0].split(' ')[1].strip()
+
+except:
+    gdal_version = None
+
+if gdal_version:
+    required_packages.append(f'GDAL=={gdal_version}\n')
+
+
+def get_extra_requires(path, add_all=True):
+
+    with open(path) as fp:
+
+        extra_deps = defaultdict(set)
+
+        for k in fp:
+
+            if k.strip() and not k.startswith('#'):
+
+                tags = set()
+
+                if ':' in k:
+                    k, v = k.split(':')
+                    tags.update(vv.strip() for vv in v.split(','))
+
+                tags.add(re.split('[<=>]', k)[0])
+
+                for t in tags:
+                    extra_deps[t].add(k)
+
+        # add tag `all` at the end
+        if add_all:
+            extra_deps['all'] = set(vv for v in extra_deps.values() for vv in v)
+
+    return extra_deps
 
 
 def get_packages():
@@ -69,18 +134,23 @@ def setup_package():
                     maintainer_email=maintainer_email,
                     description=description,
                     license=license_file,
-                    version=__version__,
+                    version=version,
                     long_description=long_description,
                     packages=get_packages(),
                     package_data=get_package_data(),
                     ext_modules=cythonize(get_extensions()),
                     zip_safe=False,
-                    keywords=keywords,
+                    keywords=' '.join(keywords),
                     url=git_url,
                     download_url=download_url,
                     install_requires=required_packages,
+                    extras_require=get_extra_requires(extras),
                     include_dirs=include_dirs,
-                    classifiers=['Programming Language :: Python :: 3.5',
+                    classifiers=['Intended Audience :: Science/Research',
+                                 'License :: MIT',
+                                 'Topic :: Scientific :: Remote Sensing',
+                                 'Programming Language :: Cython',
+                                 'Programming Language :: Python :: 3.5',
                                  'Programming Language :: Python :: 3.6',
                                  'Programming Language :: Python :: 3.7'])
 
