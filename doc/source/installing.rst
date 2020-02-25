@@ -103,9 +103,9 @@ Or, install the latest development version from GitHub.com::
 
     $ pip install git+https://github.com/jgrss/geowombat
 
-Install optional libraries::
+Install GeoWombat with libraries for co-registration::
 
-    $ pip install arosics earthpy pyfftw bottleneck
+    $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 
 Testing the installation
 ------------------------
