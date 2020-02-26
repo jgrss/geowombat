@@ -1,7 +1,12 @@
+import os
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from pathlib import Path
 from copy import copy
+import string
+import random
+from datetime import datetime
+# from inspect import signature
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms
@@ -56,7 +61,7 @@ VAR_NODE_ATTRS = {"shape": "box", "color": "#555555", "fontcolor": "#555555", "s
 VAR_EDGE_ATTRS = {"color": "#555555"}
 
 
-class BaseGeoTasks(ABC):
+class BaseGeoTask(ABC):
 
     @abstractmethod
     def __init__(self,
@@ -67,7 +72,8 @@ class BaseGeoTasks(ABC):
                  config_args=None,
                  open_args=None,
                  func_args=None,
-                 out_args=None):
+                 out_args=None,
+                 log_file=None):
 
         self.inputs = inputs
         self.outputs = outputs
@@ -77,13 +83,24 @@ class BaseGeoTasks(ABC):
         self.open_args = open_args if inputs else {}
         self.func_args = func_args if inputs else {}
         self.out_args = out_args if inputs else {}
+        self.log_file = log_file
+
+        _log_home = os.path.abspath(os.path.dirname(__file__))
+
+        if not os.access(_log_home, os.W_OK):
+            _log_home = os.path.expanduser('~')
+
+        if not self.log_file:
+            self.log_file = os.path.join(_log_home, 'task.log')
 
     def copy(self):
         return copy(self)
 
     def __add__(self, other):
 
-        """Add another pipeline"""
+        """
+        Add another pipeline
+        """
 
         self_inputs_copy = self.inputs.copy()
         self_outputs_copy = self.outputs.copy()
@@ -128,7 +145,7 @@ class BaseGeoTasks(ABC):
         """Submit a task pipeline"""
         raise NotImplementedError
 
-    def cleanup(self, level, task_id):
+    def _cleanup(self, level, task_id):
 
         clean_level = self.clean[task_id]
 
@@ -143,15 +160,48 @@ class BaseGeoTasks(ABC):
                 except:
                     logger.warning(f'  Could not remove task {task_id} output.')
 
-    def _validate_methods(self, *args):
+    def _check_task(self, task_id):
+        return True if Path(self.outputs[task_id]).is_file() else False
 
-        if len(args) != len(self.processes):
-            raise AttributeError('The lengths do not match.')
+    def _set_log(self, task_id):
 
-        for object_, proc_ in zip(*args, self.processes):
+        letters_digits = string.ascii_letters + string.digits
+        random_id = ''.join(random.choice(letters_digits) for i in range(0, 9))
 
-            if not hasattr(object_, proc_):
-                raise NameError(f'The {proc_} process is not supported.')
+        task_output = self.outputs[task_id]
+        when = datetime.now().strftime('%A, %d-%m-%Y at %H:%M:%S')
+
+        task_log = f'{when} | {task_output} | {task_id-random_id}'
+
+        return f'{task_log} ok\n' if self._check_task(task_id) else f'{task_log} failed\n'
+
+    def _log_task(self, task_id):
+
+        if Path(self.log_file).is_file():
+
+            with open(self.log_file, mode='r') as f:
+                lines = f.readlines()
+
+        else:
+            lines = []
+
+        with open(self.log_file, mode='r+') as f:
+
+            lines.append(self._set_log(task_id))
+            f.writelines(lines)
+
+    # @staticmethod
+    # def _validate_methods(task_func):
+    #
+    #     sig = signature(task_func)
+    #
+    #     if len(args) != len(self.processes):
+    #         raise AttributeError('The lengths do not match.')
+    #
+    #     for object_, proc_ in zip(*args, self.processes):
+    #
+    #         if not hasattr(object_, proc_):
+    #             raise NameError(f'The {proc_} process is not supported.')
 
     def __len__(self):
         return len(self.processes)
@@ -292,12 +342,26 @@ class GraphBuilder(object):
                     self.g.edge(f'{task_id_b} {input_}', task_id, weight='200', **INPUT_EDGE_ATTRS)
 
 
-class GeoTasks(BaseGeoTasks, GraphBuilder):
+class GeoTask(BaseGeoTask, GraphBuilder):
 
     """
+    A Geo-task scheduler
+
+    Args:
+        inputs (dict)
+        outputs (dict)
+        tasks (tuple)
+        clean (Optional[dict])
+        config_args (Optional[dict])
+        open_args (Optional[dict])
+        func_args (Optional[dict])
+        out_args (Optional[dict])
+        log_file (Optional[str])
+
     Example:
         >>> import geowombat as gw
-        >>> from geowombat.tasks import GeoTasks
+        >>> from geowombat.tasks import GeoTask
+        >>>
         >>> from geowombat.radiometry import RadTransforms
         >>> rt = RadTransforms()
         >>>
@@ -307,7 +371,6 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
         >>> inputs = {'A': ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
         >>>           'B': 'A'}
         >>>
-        >>> # {'task': (func, output)}
         >>> outputs = {'A': 'sr.tif',
         >>>            'B': 'ndvi.tif'}
         >>>
@@ -317,13 +380,13 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
         >>> config_args = {'sensor': 'l7', 'scale_factor': 0.0001}
         >>> out_args = {'compress': 'lzw', 'overwrite': True}
         >>>
-        >>> task = GeoTasks(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
+        >>> task = GeoTask(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
         >>>
         >>> task.visualize()
         >>> task.submit()
         >>>
         >>> # Add pipelines
-        >>> task_sum = pipeline.GeoTasks(...)
+        >>> task_sum = GeoTask(...)
         >>> task = task + task_sum
     """
 
@@ -335,28 +398,46 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
                  config_args=None,
                  open_args=None,
                  func_args=None,
-                 out_args=None):
+                 out_args=None,
+                 log_file=None):
 
         super().__init__(inputs,
                          outputs,
                          tasks,
                          clean,
-                         config_args,
-                         open_args,
-                         func_args,
-                         out_args)
+                         config_args=config_args,
+                         open_args=open_args,
+                         func_args=func_args,
+                         out_args=out_args,
+                         log_file=log_file)
 
     def execute(self, task_id, task, src, **kwargs):
 
-        # Execute the task
-        res = task(*src, **kwargs)
+        """
+        Executes an individual task
 
-        # Write to file, if needed
-        # TODO: how to handle in-memory results
+        Args:
+            task_id (str)
+            task (object)
+            src (DataArray | list)
+            kwargs (Optional[dict])
+        """
+
+        # Execute the task
+        if isinstance(src, list):
+            res = task(*src, **kwargs)
+        else:
+            res = task(src, **kwargs)
+
+        # Write to file
         if task_id in self.outputs:
             res.gw.to_raster(self.outputs[task_id], **self.out_args)
 
     def submit(self):
+
+        """
+        Submits a pipeline task
+        """
 
         with gw.config.update(**self.config_args):
 
@@ -386,13 +467,15 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
                         src = [stack.enter_context(gw.open(fn, **self.open_args)) for fn in self.inputs[task_id]]
                         self.execute(task_id, task, src, **kwargs)
 
+                self._log_task(task_id)
+
                 if counter > 0:
-                    self.cleanup('task', self.tasks[counter-1][[0]])
+                    self._cleanup('task', self.tasks[counter-1][[0]])
 
                 counter += 1
 
         for task_id, __ in self.tasks:
-            self.cleanup('pipeline', task_id)
+            self._cleanup('pipeline', task_id)
 
 
 # class LandsatBRDFPipeline(GeoPipeline):

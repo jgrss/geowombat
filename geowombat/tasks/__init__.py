@@ -1,3 +1,3 @@
-from .pipeline import GeoTasks
+from .pipeline import GeoTask
 
-__all__ = ['GeoTasks']
+__all__ = ['GeoTask']
