@@ -13,5 +13,7 @@ arosics:                coreg
 earthpy:                coreg
 pyfftw:                 coreg
 bottleneck:             coreg
+zarr:                   zarr
+numcodecs:              zarr
 dask-ml:                ml
 ipython:                view
