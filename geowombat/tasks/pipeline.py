@@ -91,9 +91,9 @@ class BaseGeoTasks(ABC):
         self_config_args_copy = self.config_args.copy()
         self_open_args_copy = self.open_args.copy()
         self_out_args_copy = self.out_args.copy()
+        self_clean_copy = self.clean.copy()
 
         tasks = list()
-        clean = list()
 
         for task_id, task in self.tasks:
             tasks.append((task_id, task))
@@ -101,23 +101,18 @@ class BaseGeoTasks(ABC):
         for task_id, task in other.tasks:
             tasks.append((task_id, task))
 
-        for task_id in self.clean:
-            clean.append(task_id)
-
-        for task_id in other.clean:
-            clean.append(task_id)
-
         self_inputs_copy.update(other.inputs)
         self_outputs_copy.update(other.outputs)
         self_func_args_copy.update(other.func_args)
         self_config_args_copy.update(other.config_args)
         self_open_args_copy.update(other.open_args)
         self_out_args_copy.update(other.out_args)
+        self_clean_copy.update(other.clean)
 
         return GeoTasks(self_inputs_copy,
                         self_outputs_copy,
                         tuple(tasks),
-                        tuple(clean),
+                        clean=self_clean_copy,
                         config_args=self_config_args_copy,
                         open_args=self_open_args_copy,
                         func_args=self_func_args_copy,
@@ -133,10 +128,20 @@ class BaseGeoTasks(ABC):
         """Submit a task pipeline"""
         raise NotImplementedError
 
-    @abstractmethod
-    def cleanup(self):
-        """Cleanup task outputs"""
-        pass
+    def cleanup(self, level, task_id):
+
+        clean_level = self.clean[task_id]
+
+        if clean_level == level:
+
+            fn = Path(self.outputs[task_id])
+
+            if fn.is_file():
+
+                try:
+                    fn.unlink()
+                except:
+                    logger.warning(f'  Could not remove task {task_id} output.')
 
     def _validate_methods(self, *args):
 
@@ -182,8 +187,13 @@ class GraphBuilder(object):
 
             for config_key, config_setting in self.config_args.items():
 
-                self.g.node(config_key, label=f'{config_key}: {config_setting}', **CONFIG_NODE_ATTRS)
-                self.g.edge(config_key, list(self.tasks)[counter - 1][0], **CONFIG_EDGE_ATTRS)
+                with self.g.subgraph(name='cluster_0') as c:
+
+                    c.attr(style='filled', color='lightgrey')
+                    c.node(config_key, label=f'{config_key}: {config_setting}', **CONFIG_NODE_ATTRS)
+                    c.attr(label='geowombat.config.update() args')
+
+                self.g.edge(config_key, list(self.tasks)[counter-1][0], **CONFIG_EDGE_ATTRS)
 
             counter += 1
 
@@ -198,7 +208,11 @@ class GraphBuilder(object):
             edge_attrs = INPUT_EDGE_ATTRS.copy()
 
             if task_id in self.clean:
-                node_attrs['color'] = 'red'
+
+                if self.clean[task_id] == 'task':
+                    node_attrs['color'] = 'red'
+                elif self.clean[task_id] == 'pipeline':
+                    node_attrs['color'] = 'purple'
 
             if task_id == list(self.outputs.keys())[-1]:
                 node_attrs['color'] = 'blue'
@@ -211,7 +225,12 @@ class GraphBuilder(object):
 
             for out_key, out_setting in self.out_args.items():
 
-                self.g.node(out_key, label=f'{out_key}: {out_setting}', **OUT_NODE_ATTRS)
+                with self.g.subgraph(name='cluster_1') as c:
+
+                    c.attr(style='filled', color='#a6d5ab')
+                    c.node(out_key, label=f'{out_key}: {out_setting}', **OUT_NODE_ATTRS)
+                    c.attr(label='geowombat.to_raster() args')
+
                 self.g.edge(out_key, f'{task_id} {self.outputs[task_id]}', **OUT_EDGE_ATTRS)
 
             if counter > 0:
@@ -252,14 +271,25 @@ class GraphBuilder(object):
                 if input_ not in self.inputs_seen:
 
                     self.inputs_seen.add(input_)
-                    self.g.node(f'{task_id} {input_}', label=input_, **INPUT_NODE_ATTRS)
+
+                    if input_ not in self.outputs:
+                        self.g.node(f'{task_id} {input_}', label=input_, **INPUT_NODE_ATTRS)
+
                     task_id_b = task_id
 
                 else:
-                    task_id_b = list(self.tasks)[0][counter-1]
+                    task_id_b = list(self.tasks)[counter-1][0]
 
             if task_id_b:
-                self.g.edge(f'{task_id_b} {input_}', task_id, weight='200', **INPUT_EDGE_ATTRS)
+
+                if input_ not in self.outputs:
+
+                    for itask, iinputs in self.inputs.items():
+                        if input_ in iinputs:
+                            task_id_b = itask
+                            break
+
+                    self.g.edge(f'{task_id_b} {input_}', task_id, weight='200', **INPUT_EDGE_ATTRS)
 
 
 class GeoTasks(BaseGeoTasks, GraphBuilder):
@@ -267,12 +297,12 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
     """
     Example:
         >>> import geowombat as gw
-        >>> from geowombat.core import pipeline
+        >>> from geowombat.tasks import GeoTasks
         >>> from geowombat.radiometry import RadTransforms
         >>> rt = RadTransforms()
         >>>
         >>> tasks = (('A', rt.dn_to_sr), ('B', gw.ndvi))
-        >>> clean = ('A')
+        >>> clean = {'A': 'task'}
         >>>
         >>> inputs = {'A': ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
         >>>           'B': 'A'}
@@ -287,7 +317,7 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
         >>> config_args = {'sensor': 'l7', 'scale_factor': 0.0001}
         >>> out_args = {'compress': 'lzw', 'overwrite': True}
         >>>
-        >>> task = pipeline.GeoTasks(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
+        >>> task = GeoTasks(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
         >>>
         >>> task.visualize()
         >>> task.submit()
@@ -301,7 +331,7 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
                  inputs,
                  outputs,
                  tasks,
-                 clean,
+                 clean=None,
                  config_args=None,
                  open_args=None,
                  func_args=None,
@@ -330,6 +360,8 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
 
         with gw.config.update(**self.config_args):
 
+            counter = 0
+
             for task_id, task in self.tasks:
 
                 # Check task keywords
@@ -354,21 +386,13 @@ class GeoTasks(BaseGeoTasks, GraphBuilder):
                         src = [stack.enter_context(gw.open(fn, **self.open_args)) for fn in self.inputs[task_id]]
                         self.execute(task_id, task, src, **kwargs)
 
-        self.cleanup()
+                if counter > 0:
+                    self.cleanup('task', self.tasks[counter-1][[0]])
 
-    def cleanup(self):
+                counter += 1
 
-        for task_id in self.clean:
-
-            fn = Path(self.outputs[task_id])
-
-            if fn.is_file():
-
-                try:
-                    fn.unlink()
-                except:
-                    logger.warning(f'  Could not remove task {task_id} output.')
-
+        for task_id, __ in self.tasks:
+            self.cleanup('pipeline', task_id)
 
 
 # class LandsatBRDFPipeline(GeoPipeline):
