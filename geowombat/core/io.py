@@ -13,8 +13,13 @@ import string
 
 from ..errors import logger
 from ..backends.rasterio_ import WriteDaskArray
-from ..backends.zarr_ import to_zarr
 from .windows import get_window_offsets
+
+try:
+    from ..backends.zarr_ import to_zarr
+    ZARR_INSTALLED = True
+except:
+    ZARR_INSTALLED = False
 
 import numpy as np
 import geopandas as gpd
@@ -488,6 +493,10 @@ def to_raster(data,
         >>> with gw.open('input.tif') as ds:
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
+
+    if separate and not ZARR_INSTALLED:
+        logger.exception('  zarr must be installed to write separate blocks.')
+        raise ImportError
 
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)

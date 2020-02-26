@@ -14,6 +14,7 @@ from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 
+import pyproj
 from affine import Affine
 import zarr
 import numcodecs
@@ -264,7 +265,9 @@ def check_crs(crs):
         ``rasterio.crs.CRS``
     """
 
-    if isinstance(crs, CRS):
+    if isinstance(crs, pyproj.crs.crs.CRS):
+        dst_crs = CRS.from_proj4(crs.to_proj4())
+    elif isinstance(crs, CRS):
         dst_crs = crs
     elif isinstance(crs, int):
         dst_crs = CRS.from_epsg(crs)
