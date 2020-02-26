@@ -2,6 +2,7 @@ import os
 import multiprocessing as multi
 
 from ..errors import logger
+from ..backends.rasterio_ import check_crs
 from .util import sample_feature
 from .util import lazy_wombat
 
@@ -127,8 +128,7 @@ class Converters(object):
             elif isinstance(transform, xr.DataArray):
                 transform = transform.gw.meta.affine
             else:
-                logger.exception(
-                    '  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
                 raise TypeError
 
         return transform * (col_index, row_index)
@@ -165,8 +165,7 @@ class Converters(object):
             elif isinstance(transform, xr.DataArray):
                 transform = transform.gw.meta.affine
             else:
-                logger.exception(
-                    '  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
                 raise TypeError
 
         col_index, row_index = ~transform * (x, y)
@@ -348,29 +347,20 @@ class Converters(object):
 
                 if not os.path.isfile(aoi):
                     logger.exception('  The AOI file does not exist.')
+                    raise OSError
 
                 df = gpd.read_file(aoi)
 
             else:
                 logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
+                raise TypeError
+
+        df_crs = check_crs(df.crs).to_proj4()
+        data_crs = check_crs(data.crs).to_proj4()
 
         # Re-project the data to match the image CRS
-        if isinstance(df.crs, str):
-
-            if df.crs.lower().startswith('+proj'):
-
-                if data.crs != df.crs:
-                    df = df.to_crs(data.crs)
-
-        elif isinstance(df.crs, int):
-
-            if data.crs != CRS.from_epsg(df.crs).to_proj4():
-                df = df.to_crs(data.crs)
-
-        else:
-
-            if data.crs != CRS.from_dict(df.crs).to_proj4():
-                df = df.to_crs(data.crs)
+        if data_crs != df_crs:
+            df = df.to_crs(data_crs)
 
         if verbose > 0:
             logger.info('  Checking geometry validity ...')
@@ -387,7 +377,7 @@ class Converters(object):
             df = gpd.overlay(df,
                              gpd.GeoDataFrame(data=[0],
                                               geometry=[data.gw.meta.geometry],
-                                              crs=df.crs),
+                                              crs=df_crs),
                              how='intersection')
 
         else:
@@ -399,8 +389,8 @@ class Converters(object):
 
             if isinstance(mask, gpd.GeoDataFrame):
 
-                if CRS.from_dict(mask.crs).to_proj4() != CRS.from_dict(df.crs).to_proj4():
-                    mask = mask.to_crs(df.crs)
+                if CRS.from_dict(mask.crs).to_proj4() != df_crs:
+                    mask = mask.to_crs(df_crs)
 
             if verbose > 0:
                 logger.info('  Clipping geometry ...')
@@ -409,6 +399,7 @@ class Converters(object):
 
             if df.empty:
                 logger.exception('  No geometry intersects the user-provided mask.')
+                raise LookupError
 
         # Subset the DataArray
         # minx, miny, maxx, maxy = df.total_bounds
@@ -520,9 +511,11 @@ class Converters(object):
 
         if not hasattr(data, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
+            raise AttributeError
 
         if not hasattr(data, 'crs'):
             logger.exception("  The data should have a 'crs' object.")
+            raise AttributeError
 
         if isinstance(mask, str):
 
@@ -576,9 +569,11 @@ class Converters(object):
 
         if not hasattr(data, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
+            raise AttributeError
 
         if not hasattr(data, 'crs'):
             logger.exception("  The data should have a 'crs' object.")
+            raise AttributeError
 
         if isinstance(mask, str):
 
