@@ -36,4 +36,5 @@ geowombat/radiometry/impute.py
 logo/
 bin/ESPA/
 geowombat/tasks
+geowombat/radiometry/sharpen.py
 
