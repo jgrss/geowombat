@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.2.4 (26 February 2020)
+------------------------
+
+- Added CRS check for `pyproj` CRS instances.
+
 1.2.3 (23 February 2020)
 ------------------------
 
