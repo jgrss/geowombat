@@ -45,7 +45,7 @@ OUT_NODE_ATTRS = {
     "style": "rounded,filled",
     "fillcolor": "none"}
 
-OUT_EDGE_ATTRS = {"color": "grey", "style": "dashed"}
+OUT_EDGE_ATTRS = {"color": "#edcec6", "style": "dashed"}
 
 INPUT_NODE_ATTRS = {
     "shape": "box",
