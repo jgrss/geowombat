@@ -126,14 +126,14 @@ class BaseGeoTask(ABC):
         self_out_args_copy.update(other.out_args)
         self_clean_copy.update(other.clean)
 
-        return GeoTasks(self_inputs_copy,
-                        self_outputs_copy,
-                        tuple(tasks),
-                        clean=self_clean_copy,
-                        config_args=self_config_args_copy,
-                        open_args=self_open_args_copy,
-                        func_args=self_func_args_copy,
-                        out_args=self_out_args_copy)
+        return GeoTask(self_inputs_copy,
+                       self_outputs_copy,
+                       tuple(tasks),
+                       clean=self_clean_copy,
+                       config_args=self_config_args_copy,
+                       open_args=self_open_args_copy,
+                       func_args=self_func_args_copy,
+                       out_args=self_out_args_copy)
 
     @abstractmethod
     def execute(self, task_id, task, src, **kwargs):
