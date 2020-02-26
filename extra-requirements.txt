@@ -16,4 +16,5 @@ bottleneck:             coreg
 zarr:                   zarr
 numcodecs:              zarr
 dask-ml:                ml
+lightgbm:               ml
 ipython:                view
