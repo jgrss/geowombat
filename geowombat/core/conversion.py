@@ -355,9 +355,6 @@ class Converters(object):
                 logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
                 raise TypeError
 
-        import ipdb
-        ipdb.set_trace()
-
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
 
