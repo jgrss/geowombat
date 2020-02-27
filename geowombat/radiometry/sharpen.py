@@ -6,6 +6,13 @@ import dask
 import dask.array as da
 import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
+from sklearn.ensemble import RandomForestRegressor
+
+try:
+    from lightgbm import LGBMRegressor
+    LIGHTGBM_INSTALLED = True
+except:
+    LIGHTGBM_INSTALLED = False
 
 
 @dask.delayed
@@ -21,7 +28,71 @@ def _assign_and_expand(obj, name, **attrs):
     return obj.assign_attrs(**attrs)
 
 
-def regress(datax, datay, bands, frac, num_workers, nodata, robust):
+def predict(datax, datay, bands, model_dict, ordinal):
+
+    """
+    Applies a pre-trained regressor
+
+    Args:
+        datax (DataArray)
+        datay (DataArray)
+        bands (1d array-like)
+        model_dict (dict)
+        ordinal (int)
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    predictions = []
+
+    X = datax.squeeze().data.compute(num_workers=num_workers).flatten()
+
+    if isinstance(date, int):
+
+        ordinals = np.array([ordinal] * X.shape[0], dtype='float64')
+        X = np.c_[X, ordinals]
+
+    else:
+        X = X[:, np.newaxis]
+
+    for band in bands:
+
+        lr = model_dict[band]
+
+        # Predict on the full array
+        yhat = lr.predict(X).reshape(datay.gw.nrows, datay.gw.ncols)
+
+        # Convert to DataArray
+        yhat = ndarray_to_xarray(datay, yhat, [band])
+
+        predictions.append(yhat)
+
+    return xr.concat(predictions, dim='band')
+
+
+def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kwargs):
+
+    """
+    Fits and applies a regressor
+
+    Args:
+        datax (DataArray)
+        datay (DataArray)
+        bands (1d array-like)
+        frac (float)
+        num_workers (int)
+        nodata (float | int)
+        robust (bool)
+        method (str)
+        kwargs (dict)
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    if 'n_jobs' in kwargs:
+        del kwargs['n_jobs']
 
     predictions = []
 
@@ -48,10 +119,35 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust):
             X_ = X_[idx][:, np.newaxis]
             y_ = y_[idx]
 
-            if robust:
-                lr = TheilSenRegressor(n_jobs=num_workers)
-            else:
-                lr = LinearRegression(n_jobs=num_workers)
+            if method.lower() == 'linear':
+
+                if robust:
+                    lr = TheilSenRegressor(n_jobs=num_workers, **kwargs)
+                else:
+                    lr = LinearRegression(n_jobs=num_workers, **kwargs)
+
+            elif method.lower() == 'gb':
+
+                if not LIGHTGBM_INSTALLED:
+                    logger.exception('  LightGBM must be installed to use gradient boosting.')
+                    raise ImportError
+
+                if not kwargs:
+
+                    kwargs = dict(boosting_type='dart',
+                                  num_leaves=100,
+                                  max_depth=50,
+                                  n_estimators=200,
+                                  subsample=0.75,
+                                  subsample_freq=10,
+                                  reg_alpha=0.1,
+                                  reg_lambda=0.1,
+                                  silent=True)
+
+                lr = LGBMRegressor(n_jobs=num_workers, **kwargs)
+
+            elif method.lower() == 'rf':
+                lr = RandomForestRegressor(n_jobs=num_workers, **kwargs)
 
             lr.fit(X_, y_)
 
@@ -138,16 +234,19 @@ def match_histograms(src_ms, src_sharp, bands, **hist_kwargs):
 def pan_sharpen(data,
                 bands=None,
                 pan=None,
+                method='brovey',
                 blue_weight=1.0,
                 green_weight=1.0,
                 red_weight=1.0,
-                nir_weight=1.0,
                 scale_factor=1.0,
                 frac=0.1,
                 num_workers=8,
                 nodata=65535,
                 robust=False,
-                hist_match=False):
+                hist_match=False,
+                model_dict=None,
+                ordinal=None,
+                **kwargs):
 
     """
     Sharpens wavelengths using the panchromatic band
@@ -157,16 +256,19 @@ def pan_sharpen(data,
         bands (Optional[list]): The bands to sharpen. If not given, 'blue', 'green', and 'red' are used.
         pan (Optional[DataArray]): The panchromatic ``DataArray``. ``pan`` is only needed if it is not included
             with ``data``.
+        method (Optional[str]): The method to use. Choices are ['brovey', 'linear', 'rf', 'gb'].
         blue_weight (Optional[float]): The blue band weight.
         green_weight (Optional[float]): The green band weight.
         red_weight (Optional[float]): The red band weight.
-        nir_weight (Optional[float]): The NIR band weight.
         scale_factor (Optional[float]): A scale factor to apply to the data.
         frac (Optional[float]): The sample fraction.
         num_workers (Optional[int]): The number of parallel workers for ``sklearn.linear_model.LinearRegression``.
         nodata (Optional[int | float]): A 'no data' value to ignore.
-        robust (Optional[bool]): Whether to fit a robust regression.
+        robust (Optional[bool]): Whether to fit a robust regression. Only applies when `method` = 'linear'.
         hist_match (Optional[bool]): Whether to match histograms after sharpening.
+        model_dict (Optional[dict]): A dictionary of pre-trained regressors to apply to each band.
+        ordinal (Optional[int]): A date ordinal to use for predictions.
+        kwargs (Optional[dict]): Keyword arguments for the regressor. Only applies when `method` != 'brovey'.
 
     Example:
         >>> import geowombat as gw
@@ -179,6 +281,10 @@ def pan_sharpen(data,
     Returns:
         ``xarray.DataArray``
     """
+
+    if method.lower() not in ['brovey', 'linear', 'rf', 'gb']:
+        logger.exception('  The method was not understood.')
+        raise NameError
 
     if scale_factor == 1.0:
         scale_factor = data.gw.scale_factor
@@ -199,36 +305,24 @@ def pan_sharpen(data,
     else:
         pan = data.sel(band='pan')
 
-    if ','.join(sorted(bands)) == 'blue,green,red':
-
-        weights = blue_weight + green_weight + red_weight
-
-        band_avg = (data.sel(band='blue') * blue_weight +
-                    data.sel(band='green') * green_weight +
-                    data.sel(band='red') * red_weight) / weights
-
-        dnf = pan / band_avg
-
-        data_sharp = data.sel(band=bands) * dnf
-
+    if model_dict:
+        data_sharp = predict(pan, data, bands, model_dict, ordinal)
     else:
 
-        # ESRI Brovey method with NIR
-        # dnf = (pan - nir_weight * data.sel(band='nir')) / (data.sel(band='blue') * blue_weight +
-        #                                                    data.sel(band='green') * green_weight +
-        #                                                    data.sel(band='red') * red_weight)
+        if (method.lower() == 'brovey') and (','.join(sorted(bands)) == 'blue,green,red'):
 
-        # ESRI method with NIR
-        # wa = (data.sel(band='blue') * blue_weight +
-        #       data.sel(band='green') * green_weight +
-        #       data.sel(band='red') * red_weight +
-        #       data.sel(band='nir') * nir_weight) / (blue_weight + green_weight + red_weight + nir_weight)
-        #
-        # adj = pan - wa
-        #
-        # data_sharp = data.sel(band=bands) + adj
+            weights = blue_weight + green_weight + red_weight
 
-        data_sharp = regress(pan, data, bands, frac, num_workers, nodata, robust)
+            band_avg = (data.sel(band='blue') * blue_weight +
+                        data.sel(band='green') * green_weight +
+                        data.sel(band='red') * red_weight) / weights
+
+            dnf = pan / band_avg
+
+            data_sharp = data.sel(band=bands) * dnf
+
+        else:
+            data_sharp = regress(pan, data, bands, frac, num_workers, nodata, robust, method, **kwargs)
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 
