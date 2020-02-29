@@ -14,7 +14,6 @@ class Plotting(object):
                flip=False,
                text_color='black',
                rot=30,
-               ax=None,
                **kwargs):
 
         """
@@ -27,7 +26,6 @@ class Plotting(object):
             flip (Optional[bool]): Whether to flip an RGB array's band order.
             text_color (Optional[str]): The text color.
             rot (Optional[int]): The degree rotation for the x-axis tick labels.
-            ax (Optional[object]): A ``matplotlib`` axis object.
             kwargs (Optional[dict]): Keyword arguments passed to ``xarray.plot.imshow``.
 
         Returns:
@@ -65,8 +63,9 @@ class Plotting(object):
         plt.rcParams['savefig.bbox'] = 'tight'
         plt.rcParams['savefig.pad_inches'] = 0.5
 
-        if not ax:
+        if 'ax' not in kwargs:
             fig, ax = plt.subplots()
+            kwargs['ax'] = ax
 
         if mask:
 
@@ -95,13 +94,10 @@ class Plotting(object):
                 plot_data = plot_data[..., ::-1]
 
             plot_data.plot.imshow(rgb='band',
-                                  ax=ax,
                                   **kwargs)
 
         else:
-
-            plot_data.plot.imshow(ax=ax,
-                                  **kwargs)
+            plot_data.plot.imshow(**kwargs)
 
         ax.xaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
         ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
