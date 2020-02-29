@@ -67,6 +67,8 @@ class Plotting(object):
             fig, ax = plt.subplots()
             kwargs['ax'] = ax
 
+        ax = kwargs['ax']
+
         if mask:
 
             if isinstance(data, xr.Dataset):
