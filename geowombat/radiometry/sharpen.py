@@ -52,17 +52,22 @@ def predict(datax, datay, bands, model_dict, ordinal, num_workers):
     if isinstance(ordinal, int):
 
         ordinals = np.array([ordinal] * X.shape[0], dtype='float64')
-        X = np.c_[X, ordinals]
+
+        # y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers).flatten()
+
+        X_ = np.c_[X, X ** 2, X ** 3, X ** 0.5, ordinals]
 
     else:
-        X = X[:, np.newaxis]
+        X_ = X[:, np.newaxis]
 
     for band in bands:
 
         lr = model_dict[band]
 
+        X_[np.isnan(X_) | np.isinf(X_)] = 0
+
         # Predict on the full array
-        yhat = lr.predict(X).reshape(datay.gw.nrows, datay.gw.ncols)
+        yhat = lr.predict(X_).reshape(datay.gw.nrows, datay.gw.ncols)
 
         # Convert to DataArray
         yhat = ndarray_to_xarray(datay, yhat, [band])
@@ -105,20 +110,39 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
         y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers)
 
         # Get indices of valid samples
-        idx = np.where((X != nodata) & (y != nodata))
+        idx0 = np.where((X != nodata) & (y != nodata))
 
-        X_ = X[idx].flatten()
-        y_ = y[idx].flatten()
+        X_ = X[idx0].flatten()
+        y_ = y[idx0].flatten()
 
         if y_.shape[0] > 0:
 
             # Get a fraction of the samples
-            idx = np.random.choice(range(0, y_.shape[0]),
-                                   size=int(y_.shape[0] * frac),
-                                   replace=False)
+            idx1 = np.random.choice(range(0, y_.shape[0]),
+                                    size=int(y_.shape[0] * frac),
+                                    replace=False)
 
-            X_ = X_[idx][:, np.newaxis]
-            y_ = y_[idx]
+            X_ = X_[idx1]
+
+            def prepare_x(xdata, index_y=True):
+
+                # weights = [xdata, xdata ** 2, xdata ** 3, xdata ** 0.5]
+                #
+                # for other_band in bands:
+                #
+                #     if index_y:
+                #         y0 = datay.sel(band=other_band).squeeze().data.compute(num_workers=num_workers)[idx0].flatten()[idx1]
+                #     else:
+                #         y0 = datay.sel(band=other_band).squeeze().data.compute(num_workers=num_workers).flatten()
+                #
+                #     weights.append(xdata / ((y0*0.1 + xdata) / 1.1))
+
+                return np.c_[xdata, xdata ** 2, xdata ** 3, xdata ** 0.5]
+
+            X_ = prepare_x(X_)
+
+            # X_ = X_[idx][:, np.newaxis]
+            y_ = y_[idx1]
 
             if method.lower() == 'linear':
 
@@ -153,7 +177,7 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
             lr.fit(X_, y_)
 
             # Predict on the full array
-            yhat = lr.predict(X.flatten()[:, np.newaxis]).reshape(datay.gw.nrows, datay.gw.ncols)
+            yhat = lr.predict(prepare_x(X.flatten(), index_y=False)).reshape(datay.gw.nrows, datay.gw.ncols)
 
             # Convert to DataArray
             yhat = ndarray_to_xarray(datay, yhat, [band])
