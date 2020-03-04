@@ -137,7 +137,13 @@
 <p>Equation:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
-\[WI = SWIR1 + red\]</div>
+\[\begin{split}\[
+    WI =
+\begin{cases}
+    0 &amp; \text{if } SWIR1 + red \ge 0.5\\
+    1 - \frac{SWIR1 + red}{0.5} &amp; \text{otherwise}
+\end{cases}
+\]\end{split}\]</div>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
