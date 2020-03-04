@@ -142,8 +142,8 @@ Install GeoWombat with libraries for co-registration::
 
     $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 
-Testing the installation
-------------------------
+4. Testing the installation
+---------------------------
 
 If GeoWombat installed correctly, you should be able to run the following command::
 

@@ -3,6 +3,16 @@
 Change Log
 ==========
 
+1.2.5 (4 March 2020)
+------------------------
+
+- Added attribute updating for band math.
+
+1.2.4 (26 February 2020)
+------------------------
+
+- Added CRS check for `pyproj` CRS instances.
+
 1.2.3 (23 February 2020)
 ------------------------
 
