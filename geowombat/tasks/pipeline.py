@@ -9,16 +9,11 @@ from datetime import datetime
 # from inspect import signature
 
 from ..errors import logger
-from ..radiometry import BRDF, LinearAdjustments, RadTransforms
-
 import geowombat as gw
+
 import xarray as xr
 import graphviz
 
-
-rt = RadTransforms()
-br = BRDF()
-la = LinearAdjustments()
 
 PROC_NODE_ATTRS = {
     "shape": "oval",
@@ -189,19 +184,6 @@ class BaseGeoTask(ABC):
 
             lines.append(self._set_log(task_id))
             f.writelines(lines)
-
-    # @staticmethod
-    # def _validate_methods(task_func):
-    #
-    #     sig = signature(task_func)
-    #
-    #     if len(args) != len(self.processes):
-    #         raise AttributeError('The lengths do not match.')
-    #
-    #     for object_, proc_ in zip(*args, self.processes):
-    #
-    #         if not hasattr(object_, proc_):
-    #             raise NameError(f'The {proc_} process is not supported.')
 
     def __len__(self):
         return len(self.processes)
@@ -578,44 +560,53 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 #                                    scale_factor=0.0001)
 #
 #         return res
-#
-#
-# class IndicesPipeline(GeoPipeline):
-#
-#     """
-#     A pipeline class for spectral indices
-#
-#     Args:
-#         processes (tuple): The spectral indices to process.
-#
-#     Returns:
-#         ``xarray.DataArray``
-#
-#     Example:
-#         >>> import geowombat as gw
-#         >>> from geowombat.core import pipeline
-#         >>>
-#         >>> task = pipeline.IndicesPipeline(('avi', 'evi2', 'evi', 'nbr', 'ndvi', 'tasseled_cap'))
-#         >>>
-#         >>> with gw.open('image.tif') as src:
-#         >>>     res = task.submit(src, scale_factor=0.0001)
-#     """
-#
-#     def __init__(self, processes):
-#
-#         super().__init__(processes)
-#         self._validate_methods([gw]*len(processes))
-#
-#     def submit(self, data, *args, **kwargs):
-#
-#         attrs = data.attrs.copy()
-#         results = []
-#
-#         for vi in self.processes:
-#
-#             vi_func = getattr(gw, vi)
-#             results.append(vi_func(data, *args, **kwargs))
-#
-#         results = xr.concat(results, dim='band').astype('float64')
-#
-#         return results.assign_attrs(**attrs)
+
+
+class IndicesStack(object):
+
+    """
+    A class for stacking spectral indices
+
+    Args:
+        processes (tuple): The spectral indices to process.
+
+    Returns:
+        ``xarray.DataArray``
+
+    Example:
+        >>> import geowombat as gw
+        >>> from geowombat.tasks import IndicesStack
+        >>>
+        >>> task = IndicesStack(('avi', 'evi2', 'evi', 'nbr', 'ndvi', 'tasseled_cap'))
+        >>>
+        >>> with gw.open('image.tif') as src:
+        >>>     res = task.submit(src, scale_factor=0.0001)
+    """
+
+    def __init__(self, processes):
+
+        self.processes = processes
+        self._validate_methods()
+
+    def _validate_methods(self):
+
+        args = [gw] * len(self.processes)
+
+        for object_, proc_ in zip(*args, self.processes):
+
+            if not hasattr(object_, proc_):
+                raise NameError(f'The {proc_} process is not supported.')
+
+    def submit(self, data, *args, **kwargs):
+
+        attrs = data.attrs.copy()
+        results = []
+
+        for vi in self.processes:
+
+            vi_func = getattr(gw, vi)
+            results.append(vi_func(data, *args, **kwargs))
+
+        results = xr.concat(results, dim='band').astype('float64')
+
+        return results.assign_attrs(**attrs)
