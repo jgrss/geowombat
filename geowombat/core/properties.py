@@ -522,7 +522,7 @@ class DataProperties(object):
     def meta(self):
 
         """
-        Get the array metdata
+        Get the array metadata
         """
 
         Meta = namedtuple('Meta', 'left right top bottom bounds affine geometry')
