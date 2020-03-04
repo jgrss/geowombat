@@ -38,7 +38,7 @@ In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface 
 
             # Open the pixel angle files
             with gw.open(solar_za, chunks=512) as sza,
-                gw.open(solar_za, chunks=512) as saz,
+                gw.open(solar_az, chunks=512) as saz,
                     gw.open(sensor_za, chunks=512) as vza,
                         gw.open(sensor_az, chunks=512) as vaz:
 
