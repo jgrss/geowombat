@@ -28,7 +28,7 @@ def _assign_and_expand(obj, name, **attrs):
     return obj.assign_attrs(**attrs)
 
 
-def predict(datax, datay, bands, model_dict, ordinal):
+def predict(datax, datay, bands, model_dict, ordinal, num_workers):
 
     """
     Applies a pre-trained regressor
@@ -39,6 +39,7 @@ def predict(datax, datay, bands, model_dict, ordinal):
         bands (1d array-like)
         model_dict (dict)
         ordinal (int)
+        num_workers (int)
 
     Returns:
         ``xarray.DataArray``
@@ -48,7 +49,7 @@ def predict(datax, datay, bands, model_dict, ordinal):
 
     X = datax.squeeze().data.compute(num_workers=num_workers).flatten()
 
-    if isinstance(date, int):
+    if isinstance(ordinal, int):
 
         ordinals = np.array([ordinal] * X.shape[0], dtype='float64')
         X = np.c_[X, ordinals]
@@ -306,7 +307,7 @@ def pan_sharpen(data,
         pan = data.sel(band='pan')
 
     if model_dict:
-        data_sharp = predict(pan, data, bands, model_dict, ordinal)
+        data_sharp = predict(pan, data, bands, model_dict, ordinal, num_workers)
     else:
 
         if (method.lower() == 'brovey') and (','.join(sorted(bands)) == 'blue,green,red'):
