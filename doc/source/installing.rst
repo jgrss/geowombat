@@ -3,8 +3,8 @@
 Installation
 ============
 
-Virtual environments
---------------------
+1. Virtual environments
+-----------------------
 
 We recommend using virtual environments, but this section can be skipped.
 
@@ -43,19 +43,30 @@ With an environment activated, the command line should look something like::
 
     (gwenv) $
 
-GeoWombat requirements
-----------------------
+2. `GeoWombat` requirements
+---------------------------
 
-Cython, NumPy, and GDAL must be installed prior to installing GeoWombat.
-
-Cython and NumPy can be installed via pip::
+Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython and NumPy can be installed via pip (note that the conda example above installs Cython and NumPy)::
 
     $ pip install cython numpy
 
 GDAL can be installed via pip or conda, but it requires the GDAL binaries.
 
+<<<<<<< HEAD
 Installing GDAL on Ubuntu
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+=======
+Installing non-Python `GeoWombat` prerequisites
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeoWombat requires `GDAL <https://gdal.org/>`_ and `libspatialindex <https://libspatialindex.org/>`_.
+
+.. note::
+
+    This GDAL requirement is a prerequisite itself for the `Python GDAL bindings <https://pypi.org/project/GDAL/>`_.
+
+Installing `GDAL` on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install Python 3 (if not installed)::
 
@@ -93,24 +104,35 @@ Install the GDAL binaries::
     $ # 4) Check the installed GDAL version
     $ gdalinfo --version
 
-(Optional) Install libspatialindex::
+Installing `libspatialindex` on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install `libspatialindex` (which is a requirement for `Rtree <https://pypi.org/project/Rtree/>`_)::
 
     $ apt install libspatialindex-c4v5
 
-Install the GDAL Python API::
+Installing `GDAL` with `Conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See `conda-forge examples <https://anaconda.org/conda-forge/gdal>`_.
+
+Installing `libspatialindex` with `Conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See `conda-forge examples <https://anaconda.org/conda-forge/libspatialindex>`_.
+
+Install the `GDAL` Python bindings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. To install Python GDAL manually, use pip::
 
     $ # match the GDAL binaries
     $ pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
     $ # which is the same as the following if the GDAL binary version is 2.4.x
     $ # pip install GDAL==2.4
 
-Installing GDAL with `Conda`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-See `conda-forge examples <https://anaconda.org/conda-forge/gdal>`_.
-
-Install GeoWombat
------------------
+3. Install `GeoWombat`
+----------------------
 
 Install the most recent stable version from GitHub.com::
 
@@ -124,8 +146,8 @@ Install GeoWombat with libraries for co-registration::
 
     $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 
-Testing the installation
-------------------------
+4. Testing the installation
+---------------------------
 
 If GeoWombat installed correctly, you should be able to run the following command::
 
