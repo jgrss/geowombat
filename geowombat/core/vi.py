@@ -93,9 +93,14 @@ class BandMath(object):
                 else:
                     result = result.where(data.sel(band='mask') < 3)
 
-        new_attrs = data.attrs
+        new_attrs = data.attrs.copy()
+
+        new_attrs['nodatavals'] = (nodata)
+        new_attrs['scales'] = (1.0)
+        new_attrs['offsets'] = (0.0)
         new_attrs['pre-scaling'] = scale_factor
         new_attrs['sensor'] = sensor
+        new_attrs['vi'] = new_name
         new_attrs['drange'] = (clip_min, clip_max)
 
         result.clip(min=clip_min, max=clip_max)
