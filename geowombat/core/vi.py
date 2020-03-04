@@ -722,7 +722,14 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
-                WI = SWIR1 + red
+                
+                \[
+                    WI =
+                \begin{cases}
+                    0 & \text{if } SWIR1 + red \ge 0.5\\
+                    1 - \frac{SWIR1 + red}{0.5} & \text{otherwise}
+                \end{cases}
+                \]
 
         Returns:
 
