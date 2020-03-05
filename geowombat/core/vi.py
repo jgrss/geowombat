@@ -723,12 +723,12 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
             .. math::
 
-                WI = \lbrace
+                WI = \Biggl \lbrace
                 {
                 0,\text{ if }
-                   { SWIR1 + red \ge 0.5 }
+                   { red + SWIR1 \ge 0.5 }
                 \atop
-                1 - \frac{SWIR1 + red}{0.5}, \text{ otherwise }
+                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
                 }
 
         Returns:
