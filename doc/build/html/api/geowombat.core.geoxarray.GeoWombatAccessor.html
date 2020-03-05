@@ -335,7 +335,10 @@
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: 0 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -362,7 +365,10 @@
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: 0 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -501,7 +507,10 @@ Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep<
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: -1 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -528,7 +537,10 @@ Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep<
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: -1 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -597,7 +609,10 @@ Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep<
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: -1 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -882,11 +897,20 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 <p>Equation:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
-\[WI = SWIR1 + red\]</div>
+\[WI = \Biggl \lbrace
+{
+0,\text{ if }
+   { red + SWIR1 \ge 0.5 }
+\atop
+1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+}\]</div>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dd class="field-odd"><p>Data range: 0 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
