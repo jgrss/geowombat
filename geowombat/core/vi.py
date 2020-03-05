@@ -660,7 +660,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
