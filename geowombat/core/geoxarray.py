@@ -1073,7 +1073,14 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Equation:
 
             .. math::
-                WI = SWIR1 + red
+
+                WI = \Biggl \lbrace
+                {
+                0,\text{ if }
+                   { red + SWIR1 \ge 0.5 }
+                \atop
+                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+                }
 
         Returns:
             ``xarray.DataArray``
