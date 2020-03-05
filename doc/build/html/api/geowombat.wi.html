@@ -137,7 +137,13 @@
 <p>Equation:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
-\[WI = SWIR1 + red\]</div>
+\[WI = \Biggl \lbrace
+{
+0,\text{ if }
+   { red + SWIR1 \ge 0.5 }
+\atop
+1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+}\]</div>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>

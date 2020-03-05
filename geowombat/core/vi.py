@@ -660,7 +660,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -722,7 +725,14 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
-                WI = SWIR1 + red
+
+                WI = \Biggl \lbrace
+                {
+                0,\text{ if }
+                   { red + SWIR1 \ge 0.5 }
+                \atop
+                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+                }
 
         Returns:
 
