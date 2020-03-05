@@ -137,13 +137,13 @@
 <p>Equation:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
-\[\begin{split}\[
-    WI =
-\begin{cases}
-    0 &amp; \text{if } SWIR1 + red \ge 0.5\\
-    1 - \frac{SWIR1 + red}{0.5} &amp; \text{otherwise}
-\end{cases}
-\]\end{split}\]</div>
+\[WI = \Biggl \lbrace
+{
+0,\text{ if }
+   { red + SWIR1 \ge 0.5 }
+\atop
+1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+}\]</div>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
