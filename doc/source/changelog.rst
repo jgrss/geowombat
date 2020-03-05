@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+1.2.5 (4 March 2020)
+------------------------
+
+- Added attribute updating for band math.
+
 1.2.4 (26 February 2020)
 ------------------------
 

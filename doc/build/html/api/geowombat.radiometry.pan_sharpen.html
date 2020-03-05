@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>pan_sharpen &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>pan_sharpen &#8212; GeoWombat 1.2.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -16,8 +16,6 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="BRDF" href="geowombat.radiometry.BRDF.html" />
-    <link rel="prev" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -76,18 +74,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="previous chapter">sentinel_pixel_angles</a></li>
-      <li>Next: <a href="geowombat.radiometry.BRDF.html" title="next chapter">BRDF</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -119,46 +113,6 @@
             
   <div class="section" id="pan-sharpen">
 <h1>pan_sharpen<a class="headerlink" href="#pan-sharpen" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="geowombat.radiometry.pan_sharpen">
-<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">bands=None</em>, <em class="sig-param">pan=None</em>, <em class="sig-param">blue_weight=1.0</em>, <em class="sig-param">green_weight=1.0</em>, <em class="sig-param">red_weight=1.0</em>, <em class="sig-param">nir_weight=1.0</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">frac=0.1</em>, <em class="sig-param">num_workers=8</em>, <em class="sig-param">nodata=65535</em>, <em class="sig-param">robust=False</em>, <em class="sig-param">hist_match=False</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sharpens wavelengths using the panchromatic band</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The band data.</p></li>
-<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to sharpen. If not given, ‘blue’, ‘green’, and ‘red’ are used.</p></li>
-<li><p><strong>pan</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – The panchromatic <code class="docutils literal notranslate"><span class="pre">DataArray</span></code>. <code class="docutils literal notranslate"><span class="pre">pan</span></code> is only needed if it is not included
-with <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
-<li><p><strong>blue_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The blue band weight.</p></li>
-<li><p><strong>green_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The green band weight.</p></li>
-<li><p><strong>red_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The red band weight.</p></li>
-<li><p><strong>nir_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The NIR band weight.</p></li>
-<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
-<li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The sample fraction.</p></li>
-<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">sklearn.linear_model.LinearRegression</span></code>.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int | float</em><em>]</em>) – A ‘no data’ value to ignore.</p></li>
-<li><p><strong>robust</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to fit a robust regression.</p></li>
-<li><p><strong>hist_match</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to match histograms after sharpening.</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">pan_sharpen</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">pan_sharpen</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>QAMasker &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>QAMasker &#8212; GeoWombat 1.2.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -126,25 +126,8 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>qa</strong> (<em>DataArray</em>) – The band quality array.</p></li>
-<li><p><strong>sensor</strong> (<em>str</em>) – <p>The sensor name. Choices are [‘ard’, ‘hls’, ‘l8-pre’, ‘l8-c1’, ‘l-c1’, ‘modis’, ‘s2a’, ‘s2c’].</p>
-<dl class="simple">
-<dt>Codes:</dt><dd><dl class="simple">
-<dt>’ard’:</dt><dd><p><cite>USGS Landsat Analysis Ready Data &lt;https://www.usgs.gov/land-resources/nli/landsat/us-landsat-analysis-ready-data?qt-science_support_page_related_con=0#qt</cite>-science_support_page_related_con&gt;`_</p>
-</dd>
-<dt>’hls’:</dt><dd><p><a class="reference external" href="https://hls.gsfc.nasa.gov/">NASA Harmonized Landsat Sentinel</a></p>
-</dd>
-<dt>’l-c1’:</dt><dd><p>Landsat Collection 1 L4-5 and L7</p>
-</dd>
-<dt>’l8-c1’:</dt><dd><p>Landsat Collection 1 L8</p>
-</dd>
-<dt>’s2a’:</dt><dd><p>Sentinel 2A (surface reflectance)</p>
-</dd>
-<dt>’s2c’:</dt><dd><p>Sentinel 2C (top of atmosphere)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</p></li>
+<li><p><strong>sensor</strong> (<em>str</em>) – The sensor name. Choices are [‘hls’, ‘l8-pre’, ‘l8-c1’, ‘l-c1’, ‘modis’].
+‘l-c1’ refers to Collection 1 L4-5 and L7. ‘l8-c1’ refers to Collection 1 L8.</p></li>
 <li><p><strong>mask_items</strong> (<em>str list</em>) – A list of items to mask.</p></li>
 <li><p><strong>modis_qa_position</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS QA band position. Default is 1.</p></li>
 <li><p><strong>modis_quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS quality level. Default is 2.</p></li>
@@ -159,7 +142,7 @@
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">QAMasker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">QAMasker</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the MODIS cloud mask.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>

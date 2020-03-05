@@ -93,9 +93,14 @@ class BandMath(object):
                 else:
                     result = result.where(data.sel(band='mask') < 3)
 
-        new_attrs = data.attrs
+        new_attrs = data.attrs.copy()
+
+        new_attrs['nodatavals'] = (nodata)
+        new_attrs['scales'] = (1.0)
+        new_attrs['offsets'] = (0.0)
         new_attrs['pre-scaling'] = scale_factor
         new_attrs['sensor'] = sensor
+        new_attrs['vi'] = new_name
         new_attrs['drange'] = (clip_min, clip_max)
 
         result.clip(min=clip_min, max=clip_max)
@@ -655,7 +660,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
@@ -717,7 +725,14 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
-                WI = SWIR1 + red
+
+                WI = \Biggl \lbrace
+                {
+                0,\text{ if }
+                   { red + SWIR1 \ge 0.5 }
+                \atop
+                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+                }
 
         Returns:
 

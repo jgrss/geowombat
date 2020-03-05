@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Two-dimensional moving windows &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>Two-dimensional moving windows &#8212; GeoWombat 1.2.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -118,9 +118,9 @@
   <div class="section" id="two-dimensional-moving-windows">
 <span id="moving"></span><h1>Two-dimensional moving windows<a class="headerlink" href="#two-dimensional-moving-windows" title="Permalink to this headline">¶</a></h1>
 <p>Examine the <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a> help.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
-<span class="gp">In [2]: </span><span class="nb">print</span><span class="p">(</span><span class="n">help</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">))</span>
+<span class="gp">In [2]: </span><span class="k">print</span><span class="p">(</span><span class="n">help</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">))</span>
 <span class="go">Help on function moving in module geowombat.core.util:</span>
 
 <span class="go">moving(data, band_names=None, stat=&#39;mean&#39;, perc=50, w=3, nodata=None, n_jobs=1)</span>
@@ -153,7 +153,7 @@
 </pre></div>
 </div>
 <p>Calculate the local average.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
@@ -170,8 +170,8 @@
 </div>
 <p>A workaround is to compute the results before writing to file</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geowombat.core</span> <span class="kn">import</span> <span class="n">dask_to_xarray</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">dask.array</span> <span class="k">as</span> <span class="nn">da</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="kn">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">dask.array</span> <span class="kn">as</span> <span class="nn">da</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 

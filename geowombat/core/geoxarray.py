@@ -935,7 +935,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 {norm}_{diff} = \frac{b2 - b1}{b2 + b1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         return gw_norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
@@ -959,7 +962,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 AVI = {(NIR \times (1.0 - red) \times (NIR - red))}^{0.3334}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         return gw_avi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
@@ -983,7 +989,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 EVI = 2.5 \times \frac{NIR - red}{NIR \times 6 \times red - 7.5 \times blue + 1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         return gw_evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
@@ -1007,7 +1016,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
@@ -1030,7 +1042,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         return gw_nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
@@ -1053,7 +1068,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 NDVI = \frac{NIR - red}{NIR + red}
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
         """
 
         return gw_ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
@@ -1073,10 +1091,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Equation:
 
             .. math::
-                WI = SWIR1 + red
+
+                WI = \Biggl \lbrace
+                {
+                0,\text{ if }
+                   { red + SWIR1 \ge 0.5 }
+                \atop
+                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+                }
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0 to 1
         """
 
         return gw_wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)

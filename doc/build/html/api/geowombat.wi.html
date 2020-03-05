@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>wi &#8212; GeoWombat 1.2.3 documentation</title>
+    <title>wi &#8212; GeoWombat 1.2.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -137,7 +137,13 @@
 <p>Equation:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
-\[WI = SWIR1 + red\]</div>
+\[WI = \Biggl \lbrace
+{
+0,\text{ if }
+   { red + SWIR1 \ge 0.5 }
+\atop
+1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
+}\]</div>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>

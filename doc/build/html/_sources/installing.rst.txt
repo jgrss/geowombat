@@ -3,8 +3,8 @@
 Installation
 ============
 
-Virtual environments
---------------------
+1. Virtual environments
+-----------------------
 
 We recommend using virtual environments, but this section can be skipped.
 
@@ -43,72 +43,107 @@ With an environment activated, the command line should look something like::
 
     (gwenv) $
 
-GeoWombat requirements
-----------------------
+2. `GeoWombat` requirements
+---------------------------
 
-Cython, NumPy, and GDAL must be installed prior to installing GeoWombat.
-
-Cython and NumPy can be installed via pip::
+Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython and NumPy can be installed via pip (note that the conda example above installs Cython and NumPy)::
 
     $ pip install cython numpy
 
 GDAL can be installed via pip or conda, but it requires the GDAL binaries.
 
-Installing GDAL on Linux
-~~~~~~~~~~~~~~~~~~~~~~~~
+Installing non-Python `GeoWombat` prerequisites
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeoWombat requires `GDAL <https://gdal.org/>`_ and `libspatialindex <https://libspatialindex.org/>`_.
+
+.. note::
+
+    This GDAL requirement is a prerequisite itself for the `Python GDAL bindings <https://pypi.org/project/GDAL/>`_.
+
+Installing `GDAL` on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install Python 3 (if not installed)::
 
     $ # Ubuntu>=16.10
-    $ sudo apt-get install python3
+    $ sudo apt install python3
 
 If Python 3 is already installed, but pip is not, install pip::
 
-    $ pip install pip-tools
+    $ apt install python3-pip
+    $
+    $ # or
+    $ # pip install pip-tools
 
 Install the GDAL binaries::
 
-    $ # update
+    $ # 1) Add GDAL and update Ubuntu
     $ sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
-    $ sudo apt-get update
-    $ # install the GDAL binaries
-    $ sudo apt-get install gdal-bin
-    $ sudo apt-get install libgdal-dev
-    $ # update paths
+    $ # Optional--add the latest unstable version (for GDAL 3.0)
+    $ # sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+    $
+    $ # 2) Install the GDAL binaries
+    $ sudo apt install gdal-bin
+    $ sudo apt install libgdal-dev
+    $
+    $ # 3) Update environment paths
     $ export CPLUS_INCLUDE_PATH=/usr/include/gdal
     $ export C_INCLUDE_PATH=/usr/include/gdal
-    $ # check the installed GDAL version
+    $ export LD_LIBRARY_PATH=/usr/local/lib
+    $
+    $ # Optional, add permanently to a .profile file
+    $ # echo 'export CPLUS_INCLUDE_PATH="/usr/include/gdal"' >> ~/.profile
+    $ # echo 'export C_INCLUDE_PATH="/usr/include/gdal"' >> ~/.profile
+    $ # echo 'export LD_LIBRARY_PATH="/usr/local/lib"' >> ~/.profile
+    $
+    $ # 4) Check the installed GDAL version
     $ gdalinfo --version
 
-Install the GDAL Python API::
+Installing `libspatialindex` on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    $ # match the GDAL binaries
-    $ pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
-    $ # which is the same as the following if the GDAL binary version is 2.4.0
-    $ # pip install GDAL==2.4.0
+Install `libspatialindex` (which is a requirement for `Rtree <https://pypi.org/project/Rtree/>`_)::
 
-Installing GDAL with `Conda`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $ apt install libspatialindex-c4v5
+
+Installing `GDAL` with `Conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See `conda-forge examples <https://anaconda.org/conda-forge/gdal>`_.
 
-Install GeoWombat
------------------
+Installing `libspatialindex` with `Conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See `conda-forge examples <https://anaconda.org/conda-forge/libspatialindex>`_.
+
+Install the `GDAL` Python bindings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. To install Python GDAL manually, use pip::
+
+    $ # match the GDAL binaries
+    $ pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
+    $ # which is the same as the following if the GDAL binary version is 2.4.x
+    $ # pip install GDAL==2.4
+
+3. Install `GeoWombat`
+----------------------
 
 Install the most recent stable version from GitHub.com::
 
-    $ pip install https://github.com/jgrss/geowombat/archive/1.2.0.tar.gz
+    $ pip install https://github.com/jgrss/geowombat/archive/1.2.4.tar.gz
 
 Or, install the latest development version from GitHub.com::
 
     $ pip install git+https://github.com/jgrss/geowombat
 
-Install optional libraries::
+Install GeoWombat with libraries for co-registration::
 
-    $ pip install arosics earthpy pyfftw bottleneck
+    $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 
-Testing the installation
-------------------------
+4. Testing the installation
+---------------------------
 
 If GeoWombat installed correctly, you should be able to run the following command::
 
