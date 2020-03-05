@@ -19,3 +19,4 @@ scikit-learn
 dateparser
 deprecated
 rtree
+zarr
