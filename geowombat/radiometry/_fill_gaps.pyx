@@ -12,7 +12,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
-from libc.stdlib cimport malloc, free
+# from libc.stdlib cimport malloc, free
 
 from cython.parallel import prange
 from cython.parallel import parallel
@@ -80,7 +80,7 @@ cdef void _calc_wlr(vector[double] xdata,
                     vector[double] weights,
                     double wsum,
                     unsigned int count,
-                    double* results) nogil:
+                    double[::1] results) nogil:
 
     """
     Calculates the weighted least squares slope and intercept
@@ -170,10 +170,12 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
                           unsigned int hw,
                           double nodata,
                           unsigned int min_thresh,
-                          double center_avg) nogil:
+                          double center_avg,
+                          double[::1] stdv,
+                          double[::1] results_zeros) nogil:
 
     cdef:
-        Py_ssize_t m, n, d, start_dim
+        Py_ssize_t m, n, d
         unsigned int offset = hw - <int>(wi / 2.0)
         double xvalue, yvalue
         vector[double] xdata, ydata
@@ -181,7 +183,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
 
         double xavg = 0.0
         double yavg = 0.0
-        double *stdv = <double *>malloc(4 * sizeof(double))
+        # double *stdv = <double *>malloc(4 * sizeof(double))
         double estimate
 
         vector[double] weights
@@ -189,10 +191,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
         double wsum = 0.0
         double alpha = 0.0001
 
-    if d - 5 < 0:
-        start_dim = 0
-    else:
-        start_dim = d - 5
+    stdv[...] = results_zeros
 
     # Iterate over the window
     for m in range(0, wi):
@@ -249,7 +248,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
                           center_avg,
                           count)
 
-        free(stdv)
+        # free(stdv)
 
         return estimate
 
@@ -271,6 +270,9 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] indata,
         unsigned int hw = <int>(wmax / 2.0)
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
+
+        double[::1] stdv_results = np.zeros(4, dtype='float64')
+        double[::1] results_zeros = np.zeros(4, dtype='float64')
 
         double tar_center, center_avg
         Py_ssize_t wi
@@ -304,13 +306,17 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] indata,
                         for wi from wmin <= wi < wmax by 2:
 
                             fill_value = _estimate_gap(indata,
-                                                       b, i, j,
+                                                       b,
+                                                       i,
+                                                       j,
                                                        dims,
                                                        wi,
                                                        hw,
                                                        nodata,
                                                        min_thresh,
-                                                       center_avg)
+                                                       center_avg,
+                                                       stdv_results,
+                                                       results_zeros)
 
                             if fill_value != -999.0:
                                 output[b, i+hw, j+hw] = fill_value
