@@ -123,8 +123,6 @@ cdef void _calc_wlr(vector[double] xdata,
     # alpha (bias)
     results[3] = intercept
 
-    return results
-
 
 cdef double _get_center_mean(double[:, :, :, ::] indata,
                              Py_ssize_t b,
