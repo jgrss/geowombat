@@ -73,13 +73,14 @@ cdef double _apply(double xavg,
         return estimate
 
 
-cdef double* _calc_wlr(vector[double] xdata,
-                       vector[double] ydata,
-                       double xavg,
-                       double yavg,
-                       vector[double] weights,
-                       double wsum,
-                       unsigned int count) nogil:
+cdef void _calc_wlr(vector[double] xdata,
+                    vector[double] ydata,
+                    double xavg,
+                    double yavg,
+                    vector[double] weights,
+                    double wsum,
+                    unsigned int count,
+                    double* results) nogil:
 
     """
     Calculates the weighted least squares slope and intercept
@@ -88,7 +89,7 @@ cdef double* _calc_wlr(vector[double] xdata,
     cdef:
         Py_ssize_t s
         double xdev, ydev
-        double *results = <double *>malloc(4 * sizeof(double))
+        # double *results = <double *>malloc(4 * sizeof(double))
         double wxvar = 0.0   # x weighted variance
         double xvar = 0.0   # x variance
         double yvar = 0.0   # y variance
@@ -182,7 +183,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
 
         double xavg = 0.0
         double yavg = 0.0
-        double *stdv
+        double *stdv = <double *>malloc(4 * sizeof(double))
         double estimate
 
         vector[double] weights
@@ -231,13 +232,14 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
         yavg /= <double>count
 
         # Std. dev. of [x, y], slope, intercept
-        stdv = _calc_wlr(xdata,
-                         ydata,
-                         xavg,
-                         yavg,
-                         weights,
-                         wsum,
-                         count)
+        _calc_wlr(xdata,
+                  ydata,
+                  xavg,
+                  yavg,
+                  weights,
+                  wsum,
+                  count,
+                  stdv)
 
         # Calculate the least squares solution
         estimate = _apply(xavg,
