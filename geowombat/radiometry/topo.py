@@ -136,7 +136,7 @@ class Topo(object):
 
         return slope_m, intercept_b
 
-    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
+    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust):
 
         r"""
         Normalizes terrain using the Empirical Rotation method
@@ -146,6 +146,7 @@ class Topo(object):
             il (Dask Array): The solar illumination.
             cos_z (Dask Array): The cosine of the solar zenith angle.
             nodata_samps (Dask Array): Samples where 1='no data' and 0='valid data'.
+            min_samples (Optional[int]): The minimum number of samples required to fit a regression.
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
                 ``TheilSenRegressor.fit``.
             robust (Optional[bool]): Whether to fit a robust regression.
@@ -160,6 +161,9 @@ class Topo(object):
 
         nodata = nodata_samps.compute().flatten()
         idx = np.where(nodata == 0)[0]
+
+        if idx.shape[0] < min_samples:
+            return sr
 
         X = il.compute().flatten()[idx][:, np.newaxis]
         y = sr.compute().flatten()[idx]
@@ -196,7 +200,7 @@ class Topo(object):
 
         return da.where(nodata_samps == 1, sr, sr_a).clip(0, 1)
 
-    def _method_c(self, sr, il, cos_z, nodata_samps, n_jobs=1, robust=False):
+    def _method_c(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust):
 
         r"""
         Normalizes terrain using the C-correction method
@@ -206,6 +210,7 @@ class Topo(object):
             il (Dask Array): The solar illumination.
             cos_z (Dask Array): The cosine of the solar zenith angle.
             nodata_samps (Dask Array): Samples where 1='no data' and 0='valid data'.
+            min_samples (Optional[int]): The minimum number of samples required to fit a regression.
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
                 ``TheilSenRegressor.fit``.
             robust (Optional[bool]): Whether to fit a robust regression.
@@ -220,6 +225,9 @@ class Topo(object):
 
         nodata = nodata_samps.compute().flatten()
         idx = np.where(nodata == 0)[0]
+
+        if idx.shape[0] < min_samples:
+            return sr
 
         X = il.compute().flatten()[idx][:, np.newaxis]
         y = sr.compute().flatten()[idx]
@@ -252,6 +260,7 @@ class Topo(object):
                   angle_scale=0.01,
                   n_jobs=1,
                   robust=False,
+                  min_samples=100,
                   slope_kwargs=None,
                   aspect_kwargs=None):
 
@@ -274,6 +283,7 @@ class Topo(object):
             angle_scale (Optional[float]): The angle scale factor.
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit``.
             robust (Optional[bool]): Whether to fit a robust regression.
+            min_samples (Optional[int]): The minimum number of samples required to fit a regression.
             slope_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``
                 to calculate the slope.
             aspect_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``
@@ -390,8 +400,9 @@ class Topo(object):
                                              il,
                                              cos_z,
                                              nodata_samps,
-                                             n_jobs=n_jobs,
-                                             robust=robust))
+                                             min_samples,
+                                             n_jobs,
+                                             robust))
 
             else:
 
@@ -399,8 +410,9 @@ class Topo(object):
                                                               il,
                                                               cos_z,
                                                               nodata_samps,
-                                                              n_jobs=n_jobs,
-                                                              robust=robust))
+                                                              min_samples,
+                                                              n_jobs,
+                                                              robust))
 
         adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
                                                                      data.gw.nrows,
