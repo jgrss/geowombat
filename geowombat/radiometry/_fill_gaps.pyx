@@ -145,9 +145,9 @@ cdef double _get_center_mean(double[:, :, :, ::] indata,
         double yvalue
         Py_ssize_t count = 0
 
-    for d in range(1, dims):
-        for m in range(0, ci):
-            for n in range(0, ci):
+    for m in range(0, ci):
+        for n in range(0, ci):
+            for d in range(1, dims):
 
                 yvalue = indata[d, b, i+m+offset, j+n+offset]
 
@@ -174,7 +174,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
                           double center_avg) nogil:
 
     cdef:
-        Py_ssize_t m, n, d
+        Py_ssize_t m, n, d, start_dim
         unsigned int offset = hw - <int>(wi / 2.0)
         double xvalue, yvalue
         vector[double] xdata, ydata
@@ -190,14 +190,20 @@ cdef double _estimate_gap(double[:, :, :, ::1] indata,
         double wsum = 0.0
         double alpha = 0.0001
 
-    # Iterate over each reference file to fill the window
-    for d in range(1, dims):
+    if d - 5 < 0:
+        start_dim = 0
+    else:
+        start_dim = d - 5
 
-        # Iterate over the window
-        for m in range(0, wi):
-            for n in range(0, wi):
+    # Iterate over the window
+    for m in range(0, wi):
+        for n in range(0, wi):
 
-                yvalue = indata[0, b, i+m+offset, j+n+offset]
+            yvalue = indata[0, b, i+m+offset, j+n+offset]
+
+            # Iterate over each reference file to fill the window
+            for d in range(1, dims):
+
                 xvalue = indata[d, b, i+m+offset, j+n+offset]
 
                 if (xvalue != nodata) and (yvalue != nodata):
@@ -321,7 +327,7 @@ def fill_gaps(np.ndarray indata not None,
 
     """
     Args:
-        indata (4d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
+        indata (3d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
             are the references. The reference layers should be sorted from the date closest to the target to the
             date furthest from the target date.
         wmax (Optional[int]): The maximum window size.
