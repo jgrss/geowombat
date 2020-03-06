@@ -12,18 +12,22 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
-from libcpp.vector cimport vector as cvector
 from libc.stdlib cimport malloc, free
 
 from cython.parallel import prange
 from cython.parallel import parallel
 
-DTYPE_float64 = np.float64
-ctypedef np.float64_t DTYPE_float64_t
+
+cdef extern from "<vector>" namespace "std":
+    cdef cppclass vector[T]:
+        void push_back(T&) nogil
+        size_t size() nogil
+        T& operator[](size_t) nogil
+        void clear() nogil
 
 
-cdef extern from 'math.h':
-   double abs(double val) nogil
+cdef extern from 'stdlib.h' nogil:
+    double fabs(double val)
 
 
 cdef extern from 'math.h':
@@ -69,11 +73,11 @@ cdef double _apply(double xavg,
         return estimate
 
 
-cdef double* _calc_wlr(cvector[double] xdata,
-                       cvector[double] ydata,
+cdef double* _calc_wlr(vector[double] xdata,
+                       vector[double] ydata,
                        double xavg,
                        double yavg,
-                       cvector[double] weights,
+                       vector[double] weights,
                        double wsum,
                        unsigned int count) nogil:
 
@@ -121,7 +125,7 @@ cdef double* _calc_wlr(cvector[double] xdata,
     return results
 
 
-cdef double _get_center_mean(double[:, :, :, ::] input,
+cdef double _get_center_mean(double[:, :, :, ::] indata,
                              Py_ssize_t b,
                              Py_ssize_t i,
                              Py_ssize_t j,
@@ -145,7 +149,7 @@ cdef double _get_center_mean(double[:, :, :, ::] input,
         for m in range(0, ci):
             for n in range(0, ci):
 
-                yvalue = input[d, b, i+m+offset, j+n+offset]
+                yvalue = indata[d, b, i+m+offset, j+n+offset]
 
                 if yvalue != nodata:
 
@@ -158,7 +162,7 @@ cdef double _get_center_mean(double[:, :, :, ::] input,
     return center_avg / <double>count
 
 
-cdef double _estimate_gap(double[:, :, :, ::1] input,
+cdef double _estimate_gap(double[:, :, :, ::1] indata,
                           Py_ssize_t b,
                           Py_ssize_t i,
                           Py_ssize_t j,
@@ -173,7 +177,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] input,
         Py_ssize_t m, n, d
         unsigned int offset = hw - <int>(wi / 2.0)
         double xvalue, yvalue
-        cvector[double] xdata, ydata
+        vector[double] xdata, ydata
         Py_ssize_t count = 0
 
         double xavg = 0.0
@@ -181,7 +185,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] input,
         double *stdv
         double estimate
 
-        cvector[double] weights
+        vector[double] weights
         double w
         double wsum = 0.0
         double alpha = 0.0001
@@ -193,12 +197,12 @@ cdef double _estimate_gap(double[:, :, :, ::1] input,
         for m in range(0, wi):
             for n in range(0, wi):
 
-                yvalue = input[0, b, i+m+offset, j+n+offset]
-                xvalue = input[d, b, i+m+offset, j+n+offset]
+                yvalue = indata[0, b, i+m+offset, j+n+offset]
+                xvalue = indata[d, b, i+m+offset, j+n+offset]
 
                 if (xvalue != nodata) and (yvalue != nodata):
 
-                    w = abs(yvalue - xvalue + alpha) * _edist(<double>n, <double>m, <double>hw)
+                    w = fabs(yvalue - xvalue + alpha) * _edist(<double>n, <double>m, <double>hw)
 
                     weights.push_back(w)
 
@@ -244,7 +248,7 @@ cdef double _estimate_gap(double[:, :, :, ::1] input,
         return estimate
 
 
-cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
+cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] indata,
                                   double[:, :, ::1] output,
                                   unsigned int wmax,
                                   unsigned int wmin,
@@ -254,10 +258,10 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
 
     cdef:
         Py_ssize_t b, i, j, ci
-        unsigned int dims = input.shape[0]
-        unsigned int bands = input.shape[1]
-        unsigned int rows = input.shape[2]
-        unsigned int cols = input.shape[3]
+        unsigned int dims = indata.shape[0]
+        unsigned int bands = indata.shape[1]
+        unsigned int rows = indata.shape[2]
+        unsigned int cols = indata.shape[3]
         unsigned int hw = <int>(wmax / 2.0)
         unsigned int row_dims = rows - <int>(hw*2.0)
         unsigned int col_dims = cols - <int>(hw*2.0)
@@ -270,12 +274,12 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
 
     with nogil, parallel(num_threads=n_jobs):
 
-        for b in prange(0, bands, schedule='static'):
-            for i in range(0, row_dims):
-                for j in range(0, col_dims):
+        for i in prange(0, row_dims, schedule='static'):
+            for j in range(0, col_dims):
+                for b in range(0, bands):
 
                     # Center target sample
-                    tar_center = input[0, b, i+hw, j+hw]
+                    tar_center = indata[0, b, i+hw, j+hw]
 
                     if tar_center != nodata:
                         continue
@@ -283,7 +287,7 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
                     # Get an average of the center value
                     for ci from 3 <= ci < 7 by 2:
 
-                        center_avg = _get_center_mean(input, b, i, j, dims, ci, hw, nodata)
+                        center_avg = _get_center_mean(indata, b, i, j, dims, ci, hw, nodata)
 
                         if center_avg > 0:
                             break
@@ -293,7 +297,7 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
                         # Search for data over varying-sized windows
                         for wi from wmin <= wi < wmax by 2:
 
-                            fill_value = _estimate_gap(input,
+                            fill_value = _estimate_gap(indata,
                                                        b, i, j,
                                                        dims,
                                                        wi,
@@ -308,7 +312,7 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] input,
     return output
 
 
-def fill_gaps(np.ndarray input not None,
+def fill_gaps(np.ndarray indata not None,
               wmax=25,
               wmin=9,
               nodata=0,
@@ -317,7 +321,7 @@ def fill_gaps(np.ndarray input not None,
 
     """
     Args:
-        input (4d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
+        indata (4d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
             are the references. The reference layers should be sorted from the date closest to the target to the
             date furthest from the target date.
         wmax (Optional[int]): The maximum window size.
@@ -331,6 +335,6 @@ def fill_gaps(np.ndarray input not None,
     """
 
     cdef:
-        double[:, :, ::1] output = input[0].copy()
+        double[:, :, ::1] output = indata[0].copy()
 
-    return np.float64(_fill_gaps(input, output, wmax, wmin, nodata, min_prop, n_jobs))
+    return np.float64(_fill_gaps(indata, output, wmax, wmin, nodata, min_prop, n_jobs))
