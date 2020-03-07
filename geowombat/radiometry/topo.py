@@ -136,7 +136,7 @@ class Topo(object):
 
         return slope_m, intercept_b
 
-    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust):
+    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust, band_coeffs, band):
 
         r"""
         Normalizes terrain using the Empirical Rotation method
@@ -150,6 +150,8 @@ class Topo(object):
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
                 ``TheilSenRegressor.fit``.
             robust (Optional[bool]): Whether to fit a robust regression.
+            band_coeffs (dict): Slope and intercept coefficients for each band.
+            band (int | str): The band.
 
         References:
 
@@ -166,9 +168,14 @@ class Topo(object):
             return sr
 
         X = il.compute().flatten()[idx][:, np.newaxis]
-        y = sr.compute().flatten()[idx]
 
-        slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
+        if band_coeffs:
+            slope_m, intercept_b = band_coeffs[band]
+        else:
+
+            y = sr.compute().flatten()[idx]
+
+            slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
 
         # https://reader.elsevier.com/reader/sd/pii/S0034425713001673?token=6C93FB2E69ABF5729CE9ECBBDFD9C2D985613156753C822A3D160102D46135E01457EE33500DB4648C6AF636F39D8B62
         # Improved forest change detection with terrain illumination corrected Landsat images
@@ -200,7 +207,7 @@ class Topo(object):
 
         return da.where(nodata_samps == 1, sr, sr_a).clip(0, 1)
 
-    def _method_c(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust):
+    def _method_c(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust, band_coeffs, band):
 
         r"""
         Normalizes terrain using the C-correction method
@@ -214,6 +221,8 @@ class Topo(object):
             n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or
                 ``TheilSenRegressor.fit``.
             robust (Optional[bool]): Whether to fit a robust regression.
+            band_coeffs (dict): Slope and intercept coefficients for each band.
+            band (int | str): The band.
 
         References:
 
@@ -230,9 +239,14 @@ class Topo(object):
             return sr
 
         X = il.compute().flatten()[idx][:, np.newaxis]
-        y = sr.compute().flatten()[idx]
 
-        slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
+        if band_coeffs:
+            slope_m, intercept_b = band_coeffs[band]
+        else:
+
+            y = sr.compute().flatten()[idx]
+
+            slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
 
         c = intercept_b / slope_m
 
@@ -262,7 +276,8 @@ class Topo(object):
                   robust=False,
                   min_samples=100,
                   slope_kwargs=None,
-                  aspect_kwargs=None):
+                  aspect_kwargs=None,
+                  band_coeffs=None):
 
         """
         Applies topographic normalization
@@ -288,6 +303,7 @@ class Topo(object):
                 to calculate the slope.
             aspect_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``
                 to calculate the aspect.
+            band_coeffs (Optional[dict]): Slope and intercept coefficients for each band.
 
         References:
 
@@ -402,7 +418,9 @@ class Topo(object):
                                              nodata_samps,
                                              min_samples,
                                              n_jobs,
-                                             robust))
+                                             robust,
+                                             band_coeffs,
+                                             band))
 
             else:
 
@@ -412,7 +430,9 @@ class Topo(object):
                                                               nodata_samps,
                                                               min_samples,
                                                               n_jobs,
-                                                              robust))
+                                                              robust,
+                                                              band_coeffs,
+                                                              band))
 
         adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
                                                                      data.gw.nrows,
