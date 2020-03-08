@@ -17,6 +17,9 @@ cimport numpy as np
 from cython.parallel import prange
 from cython.parallel import parallel
 
+DTYPE_float64 = np.float64
+ctypedef np.float64_t DTYPE_float64_t
+
 
 cdef extern from "<vector>" namespace "std":
     cdef cppclass vector[T]:
