@@ -324,7 +324,7 @@ cdef double[:, :, ::1] _fill_gaps(double[:, :, :, ::1] indata,
     return output
 
 
-def fill_gaps(np.ndarray indata not None,
+def fill_gaps(np.ndarray[DTYPE_float64_t, ndim=4] indata not None,
               wmax=25,
               wmin=9,
               nodata=0,
@@ -332,8 +332,10 @@ def fill_gaps(np.ndarray indata not None,
               n_jobs=1):
 
     """
+    Fills data gaps using spatial-temporal weighted least squares linear regression
+
     Args:
-        indata (3d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
+        indata (4d array): Layers x bands x rows x columns. The first layer is the target and the remaining layers
             are the references. The reference layers should be sorted from the date closest to the target to the
             date furthest from the target date.
         wmax (Optional[int]): The maximum window size.
@@ -343,7 +345,7 @@ def fill_gaps(np.ndarray indata not None,
         n_jobs (Optional[int]): The number of bands to process in parallel.
 
     Returns:
-        3d ``numpy.ndarray``
+        3d ``numpy.ndarray`` (bands x rows x columns)
     """
 
     cdef:
