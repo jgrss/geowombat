@@ -213,6 +213,8 @@ class CloudShadowMasker(object):
             mask = xr.where(cloud_mask.sel(band=1) == 1, 4,
                             xr.where(shadow_mask.sel(band=1) == 1, 2, 0)).expand_dims(dim='band').astype('uint8')
 
+            mask = mask.assign_coords(coords={'band': ['mask']})
+
             new_attrs['nodatavals'] = (255)
             new_attrs['scales'] = (1.0)
             new_attrs['offsets'] = (0.0)
