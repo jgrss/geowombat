@@ -77,7 +77,7 @@ def estimate_shadows(data,
 
     shadows = xr.where((potential_shadows.sel(band=1) >= 1) &
                        (cloud_mask.sel(band=1) != 1) &
-                       (dark_pixels.sel(band='norm-diff') > 0.25), 1, 0)
+                       (dark_pixels.sel(band='norm-diff') >= -0.25), 1, 0)
 
     shadows = shadows.expand_dims(dim='band')
     shadows = shadows.assign_coords(coords={'band': [1]})
@@ -129,10 +129,27 @@ class CloudShadowMasker(object):
             >>>         s2_mask = mask_s2(src, sza, saa)
         """
 
+        # from ..radiometry.mask import CloudShadowMasker
+        # mask_s2 = CloudShadowMasker().mask_s2
+        #
+        # mask = mask_s2(data,
+        #                sza,
+        #                saa,
+        #                scale_factor=0.0001,
+        #                nodata=0,
+        #                num_workers=num_threads)
+        #
+        # fnmask = Path(load_bands_names[0]).name.split('.')[0]
+        # mask.gw.to_raster(f'/media/jcgr/data/projects/global_fields/data/grids/ms/test/000960/{fnmask}_mask.tif',
+        #                   n_workers=1, n_threads=1)
+        #
+        # if bands_out:
+        #     data = _assign_attrs(data, attrs, bands_out)
+
         new_attrs = data.attrs.copy()
 
         if not cloud_heights:
-            cloud_heights = list(range(500, 4500, 500))
+            cloud_heights = list(range(500, 2000, 500))
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             nodata = data.gw.nodata
@@ -168,8 +185,6 @@ class CloudShadowMasker(object):
                 data_cloudless = xr.where(data_cloudless != nodata, data_cloudless * scale_factor, nodata).clip(0, 1).astype('float64')
             else:
                 data_cloudless = (data_cloudless * scale_factor).clip(0, 1).astype('float64')
-
-            print(data_cloudless)
 
             # Reshape for predictions ..
             #   from [bands x rows x columns]
@@ -211,7 +226,8 @@ class CloudShadowMasker(object):
 
             # Recode for final output
             mask = xr.where(cloud_mask.sel(band=1) == 1, 4,
-                            xr.where(shadow_mask.sel(band=1) == 1, 2, 0)).expand_dims(dim='band').astype('uint8')
+                            xr.where(shadow_mask.sel(band=1) == 1, 2,
+                                     xr.where(data.max(dim='band') == nodata, 255, 0))).expand_dims(dim='band').astype('uint8')
 
             mask = mask.assign_coords(coords={'band': ['mask']})
 
@@ -223,6 +239,7 @@ class CloudShadowMasker(object):
             new_attrs['clearval'] = (0)
             new_attrs['shadowval'] = (2)
             new_attrs['cloudval'] = (4)
+            new_attrs['fillval'] = (255)
 
             mask = mask.assign_attrs(**new_attrs)
 
