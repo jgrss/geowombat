@@ -181,7 +181,7 @@ def reproject_grid(grid, src_crs, dst_crs):
     """
 
     dfs = gpd.GeoDataFrame([0],
-                           geometry=[grid.geometry],
+                           geometry=[grid.geometry.values[0]],
                            crs=src_crs)
 
     return dfs.to_crs(dst_crs)
@@ -260,95 +260,85 @@ def download_data(args):
     wgs84_proj4 = PROJ_DICT['wgs84']['proj4']
     equal_earth_proj4 = PROJ_DICT['equal_earth']['proj4']
 
+    args.grid_file = True
+
     if args.grid_file:
 
-        df = gpd.read_file(args.grid_file)
+        # df = gpd.read_file(args.grid_file)
+        # df.crs = PROJ_DICT['equal_earth']['proj4']
 
-        df.crs = PROJ_DICT['equal_earth']['proj4']
+        # for row in df.itertuples():
 
-        for row in df.itertuples():
+        # if grid_ids:
+        #
+        #     if int(row.UNQ) not in grid_ids:
+        #         continue
 
-            if grid_ids:
+        # Project from Equal Earth to lat/lon
+        # df_grid = reproject_grid(row, equal_earth_proj4, wgs84_proj4)
 
-                if int(row.UNQ) not in grid_ids:
-                    continue
+        # Get the bounds in lat/lon (used to query the download location)
+        # bounds = df_to_bounds(df_grid)
 
-            # Project from Equal Earth to lat/lon
-            df_grid = reproject_grid(row, equal_earth_proj4, wgs84_proj4)
+        bounds = (150.80854216, -26.90342243, 151.14423467, -26.80458256)
+        centroid = (150.94252653, -26.82467801)
 
-            # Get the bounds in lat/lon (used to query the download location)
-            bounds = df_to_bounds(df_grid)
+        geom = Polygon([(bounds[0], bounds[1]),
+                 (bounds[0], bounds[3]),
+                 (bounds[2], bounds[3]),
+                 (bounds[2], bounds[1]),
+                 (bounds[0], bounds[1])])
 
-            # Get the lon/lat coordinate
-            centroid = (df_grid.geometry.values[0].centroid.x,
-                        df_grid.geometry.values[0].centroid.y)
+        row = gpd.GeoDataFrame([0],
+                               geometry=[geom],
+                               columns=['UNQ'],
+                               crs='epsg:4326')
 
-            # Set the UTM EPSG code for the output grid
-            utm_epsg = latlon_to_utm(centroid[0], centroid[1])[-1]
+        # Get the lon/lat coordinate
+        # centroid = (df_grid.geometry.values[0].centroid.x,
+        #             df_grid.geometry.values[0].centroid.y)
 
-            # Get the centroid in UTM coordinates
-            df_grid_utm_centroid = reproject_grid(row, equal_earth_proj4, 'epsg:{:d}'.format(utm_epsg)).centroid
-            gridx = df_grid_utm_centroid.values[0].x
-            gridy = df_grid_utm_centroid.values[0].y
+        # Set the UTM EPSG code for the output grid
+        utm_epsg = latlon_to_utm(centroid[0], centroid[1])[-1]
 
-            # Set the output grid bounds
-            out_bounds = centroid_to_bounds((gridx, gridy), 'epsg:{:d}'.format(utm_epsg), args.grid_size / 2.0)
+        # Get the centroid in UTM coordinates
+        df_grid_utm_centroid = reproject_grid(row, 'epsg:4326', 'epsg:{:d}'.format(utm_epsg)).centroid
 
-            outdir = Path(args.outdir).joinpath('{:06d}'.format(int(row.UNQ)))
+        gridx = df_grid_utm_centroid.values[0].x
+        gridy = df_grid_utm_centroid.values[0].y
 
-            outdir.mkdir(parents=True, exist_ok=True)
+        # Set the output grid bounds
+        out_bounds = centroid_to_bounds((gridx, gridy), 'epsg:{:d}'.format(utm_epsg), args.grid_size / 2.0)
 
-            # Cleanup previous sessions
-            # for wildcard in ['L*.TIF', 'L*.txt', 'L*.xml', '*.tif', 'L*.jp2', '*.gstmp']:
-            #
-            #     for fn in outdir.glob(wildcard):
-            #
-            #         if fn.is_file():
-            #             fn.unlink()
-            #
-            # for fn in outdir.joinpath('brdf').glob('*temp*'):
-            #
-            #     if fn.is_file():
-            #         fn.unlink()
-            #
-            # for root, dirs, files in os.walk(outdir.as_posix()):
-            #
-            #     if dirs:
-            #
-            #         for subdir in dirs:
-            #
-            #             if subdir.startswith('angles'):
-            #                 _rmdir(outdir.joinpath(subdir))
+        outdir = Path(args.outdir).joinpath('{:06d}'.format(int(row.UNQ)))
 
-            gdl.download_cube(args.sensors,
-                              args.dates,
-                              bounds,
-                              args.wavelengths,
-                              bands_out=args.wavelengths_out,
-                              l57_angles_path=args.l7_bin,
-                              l8_angles_path=args.l8_bin,
-                              mask_qa=args.mask_qa,
-                              chunks=args.chunks,
-                              num_threads=args.num_threads,
-                              write_angle_files=True,
-                              outdir=outdir.as_posix(),
-                              crs=utm_epsg,
-                              out_bounds=out_bounds,
-                              ref_res=args.ref_res,
-                              verbose=1,
-                              separate=False,
-                              n_workers=args.n_workers,
-                              n_threads=args.n_threads,
-                              n_chunks=500,
-                              overwrite=True,
-                              compress='lzw',
-                              nodata=65535)
+        outdir.mkdir(parents=True, exist_ok=True)
 
-    else:
+        # Cleanup previous sessions
+        # for wildcard in ['L*.TIF', 'L*.txt', 'L*.xml', '*.tif', 'L*.jp2', '*.gstmp']:
+        #
+        #     for fn in outdir.glob(wildcard):
+        #
+        #         if fn.is_file():
+        #             fn.unlink()
+        #
+        # for fn in outdir.joinpath('brdf').glob('*temp*'):
+        #
+        #     if fn.is_file():
+        #         fn.unlink()
+        #
+        # for root, dirs, files in os.walk(outdir.as_posix()):
+        #
+        #     if dirs:
+        #
+        #         for subdir in dirs:
+        #
+        #             if subdir.startswith('angles'):
+        #                 _rmdir(outdir.joinpath(subdir))
 
-        bounds = xy_to_bounds(args.coords, args.grid_size)
-
-        utm_epsg = latlon_to_utm(args.coords[1], args.coords[0])[-1]
+        print(args.sensors)
+        print(args.dates)
+        print(bounds)
 
         gdl.download_cube(args.sensors,
                           args.dates,
@@ -361,14 +351,17 @@ def download_data(args):
                           chunks=args.chunks,
                           num_threads=args.num_threads,
                           write_angle_files=True,
-                          outdir=args.outdir,
+                          outdir=outdir.as_posix(),
                           crs=utm_epsg,
+                          out_bounds=out_bounds,
+                          ref_res=args.ref_res,
                           verbose=1,
                           separate=False,
                           n_workers=args.n_workers,
                           n_threads=args.n_threads,
                           n_chunks=500,
                           overwrite=True,
+                          compress='lzw',
                           nodata=65535)
 
 
