@@ -3,8 +3,13 @@
 Change Log
 ==========
 
+1.2.6 (15 March 2020)
+---------------------
+
+- Fixed missing `gw.filename` attribute in :func:`geowombat.to_vrt`.
+
 1.2.5 (4 March 2020)
-------------------------
+--------------------
 
 - Added attribute updating for band math.
 
