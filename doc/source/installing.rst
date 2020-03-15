@@ -124,8 +124,8 @@ GeoWombat will attempt to install the GDAL Python package if the GDAL binaries a
 
     $ # match the GDAL binaries
     $ pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
-    $ # which is the same as the following if the GDAL binary version is 2.4.x
-    $ # pip install GDAL==2.4
+    $ # which is the same as the following if the GDAL binary version is 2.4.0
+    $ # pip install GDAL==2.4.0 --no-binary=gdal
 
 3. Install `GeoWombat`
 ----------------------
