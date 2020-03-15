@@ -363,7 +363,7 @@ def to_vrt(data,
         resampling = Resampling.nearest
 
     # Open the input file on disk
-    with rio.open(data.filename) as src:
+    with rio.open(data) as src:
 
         with WarpedVRT(src,
                        src_crs=src.crs,                         # the original CRS
