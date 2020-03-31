@@ -3,14 +3,24 @@
 Change Log
 ==========
 
+1.2.8 (1 April 2020)
+--------------------
+
+- Modified sample iteration overhead in :func:`geowombat.moving.moving_window`.
+
+New
+~~~
+
+- Added `weights` option in :func:`geowombat.moving.moving_window`.
+
 1.2.7 (31 March 2020)
 ---------------------
 
 New
 ~~~
 
-- Added window weights for moving mean
-- Changed :func:`geowombat.moving.moving_window` parallelism from raster rows to raster samples
+- Added window weights for moving mean.
+- Changed :func:`geowombat.moving.moving_window` parallelism from raster rows to raster samples.
 
 1.2.6 (15 March 2020)
 ---------------------
