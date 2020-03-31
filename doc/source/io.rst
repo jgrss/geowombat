@@ -156,15 +156,9 @@ When multiple images have matching dates, the arrays are merged into one layer.
 
 Use search wildcards to open a list of images.
 
-.. ipython:: python
+.. code:: python
 
-    import os
-    search = os.path.join(os.path.dirname(rgbn), '*sub*.tif')
-
-.. ipython:: python
-
-    with gw.open(search,
-                 band_names=['blue', 'green', 'red', 'nir']) as ds:
+    with gw.open('*sub*.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
         print(ds)
 
 Image mosaicking

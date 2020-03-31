@@ -256,7 +256,7 @@ class Converters(object):
 
         Args:
             data (DataArray): The DataArray with attribute information.
-            numpy_data (Dask Array): The Dask array to convert.
+            numpy_data (ndarray): The ndarray to convert.
             band_names (1d array-like): The output band names.
 
         Returns:
