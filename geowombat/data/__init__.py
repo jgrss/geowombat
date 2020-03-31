@@ -13,4 +13,4 @@ rgbn_20170203 = str(p / 'rgbn_20170203.tif')
 
 rgbn_time_list = [rgbn_20160101, rgbn_20160401, rgbn_20160517, rgbn_20170203]
 
-oli = str(p / 'oli_2016_1213.tif')
+oli_2016_1213 = str(p / 'oli_2016_1213.tif')
