@@ -1,4 +1,3 @@
-# distutils: language=c++
 # cython: language_level=3
 # cython: profile=False
 # cython: cdivision=True
@@ -6,7 +5,7 @@
 # cython: wraparound=False
 # cython: nonecheck=False
 
-from libc.stdlib cimport malloc, free, qsort
+from libc.stdlib cimport malloc, realloc, free, qsort
 
 
 cdef inline int _cmp(const void * pa, const void * pb) nogil:
@@ -26,7 +25,7 @@ cdef inline int _cmp(const void * pa, const void * pb) nogil:
 cdef inline double get_perc2d(double[:, ::1] input_view,
                               Py_ssize_t i,
                               Py_ssize_t j,
-                              unsigned int w,
+                              int w,
                               double nodata,
                               double perc) nogil:
 
@@ -38,7 +37,7 @@ cdef inline double get_perc2d(double[:, ::1] input_view,
     cdef:
         Py_ssize_t a, b, bidx, nvalid
         int perc_index
-        double* perc_buffer
+        double *perc_buffer = <double *> malloc(1 * sizeof(double))
         double perc_result
 
     nvalid = 0
@@ -48,7 +47,9 @@ cdef inline double get_perc2d(double[:, ::1] input_view,
             if input_view[i+a, j+b] != nodata:
                 nvalid += 1
 
-    perc_buffer = <double *>malloc(nvalid * sizeof(double))
+    # Resize the buffer
+    perc_buffer_re = <double *> realloc(perc_buffer, nvalid * sizeof(double))
+    perc_buffer = perc_buffer_re
 
     bidx = 0
     for a in range(0, w):
