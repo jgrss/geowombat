@@ -112,10 +112,6 @@ def get_extensions():
                       extra_compile_args=['-fopenmp'],
                       extra_link_args=['-fopenmp']),
             Extension('*',
-                      sources=['geowombat/radiometry/_fill_gaps.pyx'],
-                      extra_compile_args=['-fopenmp'],
-                      extra_link_args=['-fopenmp']),
-            Extension('*',
                       sources=['geowombat/models/_crf.pyx'],
                       language='c++')]
 
