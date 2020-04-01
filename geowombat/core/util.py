@@ -309,8 +309,9 @@ class MapProcesses(object):
                band_names=None,
                stat='mean',
                perc=50,
-               w=3,
                nodata=None,
+               w=3,
+               weights=False,
                n_jobs=1):
 
         """
@@ -321,8 +322,9 @@ class MapProcesses(object):
             band_names (int or str or list): The output band name(s).
             stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
             perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
-            nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
+            nodata (Optional[int or float]): A 'no data' value to ignore.
+            weights (Optional[bool]): Whether to weight values by distance from window center.
             n_jobs (Optional[int]): The number of rows to process in parallel.
 
         Returns:
@@ -373,6 +375,7 @@ class MapProcesses(object):
                                      w=w,
                                      perc=perc,
                                      nodata=nodata,
+                                     weights=weights,
                                      n_jobs=n_jobs)
 
         results = list()
