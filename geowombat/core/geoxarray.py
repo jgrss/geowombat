@@ -879,6 +879,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                perc=50,
                nodata=None,
                w=3,
+               weights=False,
                n_jobs=1):
 
         """
@@ -890,6 +891,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
             nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
+            weights (Optional[bool]): Whether to weight values by distance from window center.
             n_jobs (Optional[int]): The number of rows to process in parallel.
 
         Returns:
@@ -913,6 +915,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       nodata=nodata,
                       w=w,
                       stat=stat,
+                      weights=weights,
                       n_jobs=n_jobs)
 
     def norm_diff(self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0):
