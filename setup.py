@@ -113,7 +113,7 @@ def get_extensions():
                             extra_compile_args=['-fopenmp'],
                             extra_link_args=['-fopenmp'])]
 
-    if Path('geowombat/moving/_moving.pyx').is_file():
+    if Path('geowombat/models/_crf.pyx').is_file():
 
         extensions += [Extension('*',
                                  sources=['geowombat/models/_crf.pyx'],
