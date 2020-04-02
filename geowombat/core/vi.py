@@ -96,8 +96,8 @@ class BandMath(object):
         new_attrs = data.attrs.copy()
 
         new_attrs['nodatavals'] = (nodata)
-        new_attrs['scales'] = (1.0)
-        new_attrs['offsets'] = (0.0)
+        new_attrs['scales'] = (1.0,)
+        new_attrs['offsets'] = (0.0,)
         new_attrs['pre-scaling'] = scale_factor
         new_attrs['sensor'] = sensor
         new_attrs['vi'] = new_name

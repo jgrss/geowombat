@@ -179,6 +179,7 @@ class GeoDownloads(object):
                       l8_angles_path=None,
                       write_angle_files=False,
                       mask_qa=False,
+                      lqa_mask_items=None,
                       chunks=512,
                       num_threads=1,
                       **kwargs):
@@ -211,6 +212,7 @@ class GeoDownloads(object):
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
+            lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
@@ -247,6 +249,14 @@ class GeoDownloads(object):
         #               n_threads=8,
         #               n_chunks=100,
         #               overwrite=False)
+
+        if not lqa_mask_items:
+
+            lqa_mask_items = ['fill',
+                              'saturated',
+                              'cloudconf',
+                              'shadowconf',
+                              'cirrusconf']
 
         angle_kwargs = kwargs.copy()
         angle_kwargs['nodata'] = -32768
@@ -697,11 +707,7 @@ class GeoDownloads(object):
 
                                                 mask = QAMasker(qa,
                                                                 qa_sensor,
-                                                                mask_items=['fill',
-                                                                            'saturated',
-                                                                            'cloudconf',
-                                                                            'shadowconf',
-                                                                            'cirrusconf'],
+                                                                mask_items=lqa_mask_items,
                                                                 confidence_level='maybe').to_mask()
 
                                                 # Mask non-clear pixels

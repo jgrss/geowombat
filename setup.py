@@ -59,7 +59,7 @@ except:
     gdal_version = None
 
 if gdal_version:
-    required_packages.append(f'GDAL=={gdal_version}\n')
+    required_packages.append('GDAL=={GDAL_VERSION}\n'.format(gdal_version))
 
 
 def get_extra_requires(path, add_all=True):
@@ -114,14 +114,6 @@ def get_extensions():
             Extension('*',
                       sources=['geowombat/models/_crf.pyx'],
                       language='c++')]
-
-    # return [Extension('*',
-    #                   sources=['geowombat/moving/_moving.pyx'],
-    #                   extra_compile_args=['-fopenmp'],
-    #                   extra_link_args=['-fopenmp']),
-    #         Extension('*',
-    #                   sources=['geowombat/models/_crf.pyx'],
-    #                   language='c++')]
 
 
 def setup_package():
