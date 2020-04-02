@@ -3,6 +3,12 @@
 Change Log
 ==========
 
+1.2.9 (1 April 2020)
+--------------------
+
+- Removed f-string requirement in setup.py script.
+- Added keyword argument in :func:`download_cube` function.
+
 1.2.8 (1 April 2020)
 --------------------
 

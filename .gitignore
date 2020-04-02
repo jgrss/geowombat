@@ -33,6 +33,8 @@ geowombat/moving/*.pyd
 geowombat/util/starfm*
 geowombat/radiometry/_fill_gaps.pyx
 geowombat/radiometry/impute.py
+geowombat/examples/concurrent_processing.ipynb
+geowombat/examples/transforms.ipynb
 logo/
 bin/ESPA/
 
