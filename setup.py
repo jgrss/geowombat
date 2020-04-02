@@ -1,4 +1,5 @@
 import setuptools
+from pathlib import Path
 from distutils.core import setup
 from distutils.extension import Extension
 import re
@@ -15,15 +16,12 @@ try:
 except:
     raise ImportError('NumPy must be installed to build GeoWombat.')
 
-
 # Parse the version from the module.
 # Source: https://github.com/mapbox/rasterio/blob/master/setup.py
 with open('geowombat/version.py') as f:
-
     for line in f:
 
         if line.find("__version__") >= 0:
-
             version = line.split("=")[1].strip()
             version = version.strip('"')
             version = version.strip("'")
@@ -48,7 +46,6 @@ with open('LICENSE.txt') as f:
 with open('requirements.txt') as f:
     required_packages = f.readlines()
 
-
 # Attempt to get the GDAL binary version
 try:
 
@@ -59,7 +56,7 @@ except:
     gdal_version = None
 
 if gdal_version:
-    required_packages.append('GDAL=={GDAL_VERSION}\n'.format(gdal_version))
+    required_packages.append('GDAL=={GDAL_VERSION}\n'.format(GDAL_VERSION=gdal_version))
 
 
 def get_extra_requires(path, add_all=True):
@@ -107,17 +104,19 @@ def get_package_data():
 
 def get_extensions():
 
-    return [Extension('*',
-                      sources=['geowombat/moving/_moving.pyx'],
-                      extra_compile_args=['-fopenmp'],
-                      extra_link_args=['-fopenmp']),
-            Extension('*',
-                      sources=['geowombat/models/_crf.pyx'],
-                      language='c++')]
+    extensions = [Extension('*',
+                            sources=['geowombat/moving/_moving.pyx'],
+                            extra_compile_args=['-fopenmp'],
+                            extra_link_args=['-fopenmp'])]
+
+    if Path('geowombat/moving/_moving.pyx').is_file():
+        extensions += [Extension('*',
+                                 sources=['geowombat/models/_crf.pyx'],
+                                 language='c++')]
 
 
 def setup_package():
-
+    
     include_dirs = [np.get_include()]
 
     metadata = dict(name=pkg_name,
@@ -141,9 +140,9 @@ def setup_package():
                                  'License :: MIT',
                                  'Topic :: Scientific :: Remote Sensing',
                                  'Programming Language :: Cython',
-                                 'Programming Language :: Python :: 3.5',
                                  'Programming Language :: Python :: 3.6',
-                                 'Programming Language :: Python :: 3.7'])
+                                 'Programming Language :: Python :: 3.7',
+                                 'Programming Language :: Python :: 3.8'])
 
     setup(**metadata)
 
