@@ -1,4 +1,5 @@
 import setuptools
+from pathlib import Path
 from distutils.core import setup
 from distutils.extension import Extension
 import re
@@ -107,18 +108,16 @@ def get_package_data():
 
 def get_extensions():
 
-    return [Extension('*',
-                      sources=['geowombat/moving/_moving.pyx'],
-                      extra_compile_args=['-fopenmp'],
-                      extra_link_args=['-fopenmp'])]
+    extensions = [Extension('*',
+                            sources=['geowombat/moving/_moving.pyx'],
+                            extra_compile_args=['-fopenmp'],
+                            extra_link_args=['-fopenmp'])]
 
-    # return [Extension('*',
-    #                   sources=['geowombat/moving/_moving.pyx'],
-    #                   extra_compile_args=['-fopenmp'],
-    #                   extra_link_args=['-fopenmp']),
-    #         Extension('*',
-    #                   sources=['geowombat/models/_crf.pyx'],
-    #                   language='c++')]
+    if Path('geowombat/moving/_moving.pyx').is_file():
+
+        extensions += [Extension('*',
+                                 sources=['geowombat/models/_crf.pyx'],
+                                 language='c++')]
 
 
 def setup_package():
