@@ -119,6 +119,8 @@ def get_extensions():
                                  sources=['geowombat/models/_crf.pyx'],
                                  language='c++')]
 
+    return extensions
+
 
 def setup_package():
 
