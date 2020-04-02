@@ -59,7 +59,7 @@ except:
     gdal_version = None
 
 if gdal_version:
-    required_packages.append(f'GDAL=={gdal_version}\n')
+    required_packages.append('GDAL=={GDAL_VERSION}\n'.format(GDAL_VERSION=gdal_version))
 
 
 def get_extra_requires(path, add_all=True):
