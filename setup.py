@@ -146,9 +146,9 @@ def setup_package():
                                  'License :: MIT',
                                  'Topic :: Scientific :: Remote Sensing',
                                  'Programming Language :: Cython',
-                                 'Programming Language :: Python :: 3.5',
                                  'Programming Language :: Python :: 3.6',
-                                 'Programming Language :: Python :: 3.7'])
+                                 'Programming Language :: Python :: 3.7',
+                                 'Programming Language :: Python :: 3.8'])
 
     setup(**metadata)
 
