@@ -355,6 +355,10 @@ class Converters(object):
                 logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
                 raise TypeError
 
+        if not id_column in df.columns:
+            df[id_column] = df.index.values
+        
+                
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
 
