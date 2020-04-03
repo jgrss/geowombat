@@ -412,6 +412,9 @@ class SpatialOperations(_PropertyMixin):
 
             if shape_len > 2:
                 bands_idx = slice(0, None)
+                
+        if not id_column in data.columns:
+            data['id_column'] = data.index.values
 
         df = converters.prepare_points(data,
                                        aoi,
