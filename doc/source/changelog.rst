@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.10 (27 April 2020)
+----------------------
+
+New
+~~~
+
+- Added support for :func:`rasterio.windows.Window` and :func:`rasterio.coords.BoundingBox` objects in the :func:`geowombat.config.update` manager.
+
 1.2.9 (1 April 2020)
 --------------------
 
