@@ -287,6 +287,90 @@ def check_crs(crs):
     return dst_crs
 
 
+def unpack_bounding_box(bounds):
+
+    """
+    Unpacks a BoundBox() string
+
+    Args:
+        bounds (object)
+
+    Returns:
+        ``tuple``
+    """
+
+    bounds_str = bounds.replace('BoundingBox(', '').split(',')
+
+    for str_ in bounds_str:
+
+        if str_.strip().startswith('left='):
+            left_coord = float(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('bottom='):
+            bottom_coord = float(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('right='):
+            right_coord = float(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('top='):
+            top_coord = float(str_.strip().split('=')[1].replace(')', ''))
+
+    return left_coord, bottom_coord, right_coord, top_coord
+
+
+def unpack_window(bounds):
+
+    """
+    Unpacks a Window() string
+
+    Args:
+        bounds (object)
+
+    Returns:
+        ``object``
+    """
+
+    bounds_str = bounds.replace('Window(', '').split(',')
+
+    for str_ in bounds_str:
+
+        if str_.strip().startswith('col_off='):
+            col_off = int(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('row_off='):
+            row_off = int(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('height='):
+            height = int(str_.strip().split('=')[1].replace(')', ''))
+        elif str_.strip().startswith('width='):
+            width = int(str_.strip().split('=')[1].replace(')', ''))
+
+    return Window(col_off=col_off, row_off=row_off, width=width, height=height)
+
+
+def window_to_bounds(filenames, w):
+
+    """
+    Transforms a rasterio Window() object to image bounds
+
+    Args:
+        filenames (str or str list)
+        w (object)
+
+    Returns:
+        ``tuple``
+    """
+
+    if isinstance(filenames, str):
+        src = rio.open(filenames)
+    else:
+        src = rio.open(filenames[0])
+
+    left, top = src.transform * (w.col_off, w.row_off)
+
+    right = left + w.width * abs(src.res[0])
+    bottom = top - w.height * abs(src.res[1])
+
+    src.close()
+
+    return left, bottom, right, top
+
+
 def align_bounds(minx, miny, maxx, maxy, res):
 
     """
@@ -542,27 +626,14 @@ def warp(filename,
             if isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
-
-                    bounds_str = bounds.replace('BoundingBox(', '').split(',')
-
-                    for str_ in bounds_str:
-
-                        if str_.strip().startswith('left='):
-                            left_coord = float(str_.strip().split('=')[1].replace(')', ''))
-                        elif str_.strip().startswith('bottom='):
-                            bottom_coord = float(str_.strip().split('=')[1].replace(')', ''))
-                        elif str_.strip().startswith('right='):
-                            right_coord = float(str_.strip().split('=')[1].replace(')', ''))
-                        elif str_.strip().startswith('top='):
-                            top_coord = float(str_.strip().split('=')[1].replace(')', ''))
-
-                    dst_bounds = BoundingBox(left=left_coord,
-                                             bottom=bottom_coord,
-                                             right=right_coord,
-                                             top=top_coord)
-
+                    left_coord, bottom_coord, right_coord, top_coord = unpack_bounding_box(bounds)
                 else:
                     logger.exception('  The bounds were not accepted.')
+
+                dst_bounds = BoundingBox(left=left_coord,
+                                         bottom=bottom_coord,
+                                         right=right_coord,
+                                         top=top_coord)
 
             else:
 
