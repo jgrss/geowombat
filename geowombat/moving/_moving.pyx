@@ -399,7 +399,7 @@ def moving_window(np.ndarray indata not None,
                   nodata=1e9,
                   weights=False,
                   n_jobs=1):
-
+    
     """
     Applies a moving window function over a NumPy array
 
