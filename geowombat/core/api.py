@@ -38,7 +38,9 @@ IO_DICT = dict(rasterio=['.tif',
                          '.jp2',
                          '.JP2',
                          '.hgt',
-                         '.HGT'],
+                         '.HGT',
+                         '.hdf',
+                         '.HDF'],
                xarray=['.nc'])
 
 
