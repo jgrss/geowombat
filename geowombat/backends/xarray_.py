@@ -4,10 +4,12 @@ from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..errors import logger
 from ..config import config
-from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds
+from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, window_to_bounds, unpack_bounding_box, unpack_window
 from .rasterio_ import transform_crs as rio_transform_crs
 
 import numpy as np
+from rasterio.windows import Window
+from rasterio.coords import BoundingBox
 import dask.array as da
 import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
@@ -82,7 +84,25 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
     else:
 
         if config['ref_bounds']:
-            ref_kwargs = _update_kwarg(config['ref_bounds'], ref_kwargs, 'bounds')
+
+            if isinstance(config['ref_bounds'], str) and config['ref_bounds'].startswith('Window'):
+                ref_bounds_ = window_to_bounds(filenames, unpack_window(config['ref_bounds']))
+            elif isinstance(config['ref_bounds'], str) and config['ref_bounds'].startswith('BoundingBox'):
+                ref_bounds_ = unpack_bounding_box(config['ref_bounds'])
+            elif isinstance(config['ref_bounds'], Window):
+                ref_bounds_ = window_to_bounds(filenames, config['ref_bounds'])
+            elif isinstance(config['ref_bounds'], BoundingBox):
+
+                ref_bounds_ = (config['ref_bounds'].left,
+                               config['ref_bounds'].bottom,
+                               config['ref_bounds'].right,
+                               config['ref_bounds'].top)
+
+            else:
+                ref_bounds_ = config['ref_bounds']
+
+            ref_kwargs = _update_kwarg(ref_bounds_, ref_kwargs, 'bounds')
+
         else:
 
             if isinstance(filenames, str):
