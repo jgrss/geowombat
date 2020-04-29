@@ -592,21 +592,21 @@ class GeoDownloads(object):
 
                                 with gw.open(angle_info.sza,
                                              chunks=chunks,
-                                             resampling='cubic') as sza, \
+                                             resampling='bilinear') as sza, \
                                         gw.open(angle_info.vza,
                                                 chunks=chunks,
-                                                resampling='cubic') as vza, \
+                                                resampling='bilinear') as vza, \
                                         gw.open(angle_info.saa,
                                                 chunks=chunks,
-                                                resampling='cubic') as saa, \
+                                                resampling='bilinear') as saa, \
                                         gw.open(angle_info.vaa,
                                                 chunks=chunks,
-                                                resampling='cubic') as vaa, \
+                                                resampling='bilinear') as vaa, \
                                         gw.open(load_bands_names,
                                                 band_names=bands,
                                                 stack_dim='band',
                                                 chunks=chunks,
-                                                resampling='cubic',
+                                                resampling='bilinear',
                                                 num_threads=num_threads) as data:
 
                                     attrs = data.attrs.copy()
@@ -658,13 +658,12 @@ class GeoDownloads(object):
                                                          meta=meta)
 
                                     # BRDF normalization
-                                    sr_brdf = sr
-                                    # sr_brdf = br.norm_brdf(sr,
-                                    #                        sza, saa, vza, vaa,
-                                    #                        sensor=rad_sensor,
-                                    #                        wavelengths=data.band.values.tolist(),
-                                    #                        out_range=10000.0,
-                                    #                        nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                    sr_brdf = br.norm_brdf(sr,
+                                                           sza, saa, vza, vaa,
+                                                           sensor=rad_sensor,
+                                                           wavelengths=data.band.values.tolist(),
+                                                           out_range=10000.0,
+                                                           nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
 
