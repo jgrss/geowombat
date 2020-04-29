@@ -658,13 +658,12 @@ class GeoDownloads(object):
                                                          meta=meta)
 
                                     # BRDF normalization
-                                    sr_brdf = (sr * 10000.0).astype('float64')
-                                    # sr_brdf = br.norm_brdf(sr,
-                                    #                        sza, saa, vza, vaa,
-                                    #                        sensor=rad_sensor,
-                                    #                        wavelengths=data.band.values.tolist(),
-                                    #                        out_range=10000.0,
-                                    #                        nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                    sr_brdf = br.norm_brdf(sr,
+                                                           sza, saa, vza, vaa,
+                                                           sensor=rad_sensor,
+                                                           wavelengths=data.band.values.tolist(),
+                                                           out_range=10000.0,
+                                                           nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
 
