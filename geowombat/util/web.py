@@ -174,6 +174,7 @@ class GeoDownloads(object):
                       crs=None,
                       out_bounds=None,
                       outdir='.',
+                      resampling='bilinear',
                       ref_res=None,
                       l57_angles_path=None,
                       l8_angles_path=None,
@@ -208,6 +209,7 @@ class GeoDownloads(object):
                 taken from ``bounds``.
             outdir (Optional[str]): The output directory.
             ref_res (Optional[tuple]): A reference cell resolution.
+            resampling (Optional[str]): The resampling method.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
@@ -592,21 +594,21 @@ class GeoDownloads(object):
 
                                 with gw.open(angle_info.sza,
                                              chunks=chunks,
-                                             resampling='bilinear') as sza, \
+                                             resampling=resampling) as sza, \
                                         gw.open(angle_info.vza,
                                                 chunks=chunks,
-                                                resampling='bilinear') as vza, \
+                                                resampling=resampling) as vza, \
                                         gw.open(angle_info.saa,
                                                 chunks=chunks,
-                                                resampling='bilinear') as saa, \
+                                                resampling=resampling) as saa, \
                                         gw.open(angle_info.vaa,
                                                 chunks=chunks,
-                                                resampling='bilinear') as vaa, \
+                                                resampling=resampling) as vaa, \
                                         gw.open(load_bands_names,
                                                 band_names=bands,
                                                 stack_dim='band',
                                                 chunks=chunks,
-                                                resampling='bilinear',
+                                                resampling=resampling,
                                                 num_threads=num_threads) as data:
 
                                     attrs = data.attrs.copy()
