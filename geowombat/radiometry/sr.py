@@ -514,7 +514,8 @@ class RadTransforms(MetaData):
                    sensor_za,
                    sensor_az,
                    sensor,
-                   nodata=-32768):
+                   nodata=-32768,
+                   method='srem'):
 
         """
         Converts top-of-atmosphere reflectance to surface reflectance
@@ -527,10 +528,14 @@ class RadTransforms(MetaData):
             sensor_az (DataArray): The sensor azimuth angle.
             sensor (str): The satellite sensor.
             nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
+            method (Optional[str]): The method to use. Currently, only 'srem' is supported and ``method`` is not used.
+
+                Choices:
+                    'srem': A Simplified and Robust Surface Reflectance Estimation Method (SREM)
 
         References:
 
-            See :cite:`bilal_etal_2019`
+            See :cite:`bilal_etal_2019` for the SREM method
 
         Returns:
 

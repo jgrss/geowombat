@@ -84,10 +84,13 @@ def relative_azimuth(saa, vaa):
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
     raa_minus = xr.where(raa < 0, 1, 0)
 
-    raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
-    raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
+    # raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
+    # raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
 
-    return xr.ufuncs.rad2deg(raa)
+    raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
+    raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
+
+    return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
 
 
 def get_sentinel_sensor(metadata):
