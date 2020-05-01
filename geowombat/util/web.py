@@ -365,7 +365,7 @@ class GeoDownloads(object):
 
         months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-        if month >= dt2.month:
+        if month <= dt2.month:
             month_range = months[months.index(month):months.index(dt2.month) + 1]
         else:
             month_range = months[months.index(month):] + months[:months.index(dt2.month) + 1]
