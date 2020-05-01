@@ -127,7 +127,7 @@ class GeoDownloads(object):
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
 
         self.landsat_parts = ['lt05', 'le07', 'lc08']
-        self.sentinel_parts = ['s2a']
+        self.sentinel_parts = ['s2a', 's2b']
 
         s2_dict = dict(coastal=1,
                        blue=2,
@@ -164,6 +164,7 @@ class GeoDownloads(object):
                                          tirs2=11),
                                  s2=s2_dict,
                                  s2a=s2_dict,
+                                 s2b=s2_dict,
                                  s2c=s2_dict)
 
         self.search_dict = dict()
@@ -337,7 +338,7 @@ class GeoDownloads(object):
 
             shp_dict['wrs'] = df_wrs
 
-        if ('s2a' in sensors) or ('s2c' in sensors):
+        if ('s2a' in sensors) or ('s2b' in sensors) or ('s2c' in sensors):
 
             path_tar = Path(data_dir).joinpath('mgrs.tar.gz')
             path_shp = Path(data_dir).joinpath('sentinel2_grid.shp')
@@ -805,6 +806,7 @@ class GeoDownloads(object):
                         l8='LC08/01',
                         s2='tiles',
                         s2a='tiles',
+                        s2b='tiles',
                         s2c='tiles')
 
         if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2b', 's2c']:
