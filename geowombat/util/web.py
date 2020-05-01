@@ -1,5 +1,4 @@
 import os
-import shutil
 import fnmatch
 import tarfile
 import subprocess
@@ -34,6 +33,10 @@ except:
 
 
 shapely.speedups.enable()
+
+RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
+                       cubic=gdal.GRA_Cubic,
+                       nearest=gdal.GRA_NearestNeighbour)
 
 
 def _rmdir(pathdir):
@@ -512,19 +515,19 @@ class GeoDownloads(object):
                                                                    verbose=1)
 
                                 if ' '.join(bands) == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2':
-                                    rad_sensor = 's2f'
+                                    rad_sensor = 's2af' if angle_info.sensor == 's2a' else 's2bf'
                                 elif ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
-                                    rad_sensor = 's2cloudless'
+                                    rad_sensor = 's2acloudless' if angle_info.sensor == 's2a' else 's2bcloudless'
                                 elif ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
-                                    rad_sensor = 's2'
+                                    rad_sensor = angle_info.sensor
                                 elif ' '.join(bands) == 'blue green red nir swir1 swir2':
-                                    rad_sensor = 's2l7'
+                                    rad_sensor = 's2al7' if angle_info.sensor == 's2a' else 's2bl7'
                                 elif ' '.join(bands) == 'nir1 nir2 nir3 rededge swir1 swir2':
-                                    rad_sensor = 's220'
+                                    rad_sensor = 's2a20' if angle_info.sensor == 's2a' else 's2b20'
                                 elif ' '.join(bands) == 'blue green red nir':
-                                    rad_sensor = 's210'
+                                    rad_sensor = 's2a10' if angle_info.sensor == 's2a' else 's2b10'
                                 else:
-                                    rad_sensor = 's2'
+                                    rad_sensor = angle_info.sensor
 
                                 bandpass_sensor = angle_info.sensor
 
@@ -574,7 +577,7 @@ class GeoDownloads(object):
                                              outputBounds=out_bounds,
                                              xRes=ref_res[0],
                                              yRes=ref_res[1],
-                                             resampleAlg=gdal.GRA_Cubic,
+                                             resampleAlg=RESAMPLING_DICT[resampling],
                                              creationOptions=['TILED=YES',
                                                               'COMPRESS=LZW',
                                                               'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
@@ -594,16 +597,16 @@ class GeoDownloads(object):
 
                                 with gw.open(angle_info.sza,
                                              chunks=chunks,
-                                             resampling=resampling) as sza, \
+                                             resampling='cubic') as sza, \
                                         gw.open(angle_info.vza,
                                                 chunks=chunks,
-                                                resampling=resampling) as vza, \
+                                                resampling='cubic') as vza, \
                                         gw.open(angle_info.saa,
                                                 chunks=chunks,
-                                                resampling=resampling) as saa, \
+                                                resampling='cubic') as saa, \
                                         gw.open(angle_info.vaa,
                                                 chunks=chunks,
-                                                resampling=resampling) as vaa, \
+                                                resampling='cubic') as vaa, \
                                         gw.open(load_bands_names,
                                                 band_names=bands,
                                                 stack_dim='band',
@@ -668,9 +671,6 @@ class GeoDownloads(object):
                                                            nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                     if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
-
-                                        if bandpass_sensor.lower() in ['s2', 's2b', 's2c']:
-                                            bandpass_sensor = 's2a'
 
                                         # Linearly adjust to Landsat 8
                                         sr_brdf = la.bandpass(sr_brdf,

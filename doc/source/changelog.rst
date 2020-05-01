@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.11 (1 May 2020)
+-------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added micrometer values for Sentinel-2 2A and 2B sensors.
+
 1.2.10 (27 April 2020)
 ----------------------
 
