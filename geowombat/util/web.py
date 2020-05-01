@@ -194,7 +194,7 @@ class GeoDownloads(object):
 
         Args:
             sensors (str or list): The sensors, or sensor, to download.
-            date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
+            date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm.
             bounds (GeoDataFrame, list, or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent
                 to download. If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
                 If given as a ``tuple`` or a ``list``, the order should be (left, bottom, right, top).
@@ -357,25 +357,38 @@ class GeoDownloads(object):
 
             shp_dict['mgrs'] = df_mgrs
 
-        dt1 = datetime.strptime(date_range[0], '%Y-%m-%d')
-        dt2 = datetime.strptime(date_range[1], '%Y-%m-%d')
+        dt1 = datetime.strptime(date_range[0], '%Y-%m')
+        dt2 = datetime.strptime(date_range[1], '%Y-%m')
+
+        months = list(range(1, 13))
+        year_months = dict()
+
+        if dt1.month <= dt2.month:
+            month_range = months[months.index(dt1.month):months.index(dt2.month) + 1]
+        else:
+            month_range = months[months.index(dt1.month):] + months[:months.index(dt2.month) + 1]
+
+        if dt1.year == dt2.year:
+            year_months[dt1.year] = month_range
+        else:
+
+            for y in range(dt1.year, dt2.year+1):
+
+                if y == dt1.year:
+                    year_months[y] = list(range(dt1.month, 13))
+                elif y == dt2.year:
+                    year_months[y] = list(range(1, dt2.month+1))
+                else:
+                    year_months[y] = months
 
         year = dt1.year
-        month = dt1.month
-
-        months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-        if month <= dt2.month:
-            month_range = months[months.index(month):months.index(dt2.month) + 1]
-        else:
-            month_range = months[months.index(month):] + months[:months.index(dt2.month) + 1]
 
         while True:
 
             if year > dt2.year:
                 break
 
-            for m in month_range:
+            for m in year_months[year]:
 
                 yearmonth_query = '{:d}{:02d}'.format(year, m)
 
@@ -642,7 +655,7 @@ class GeoDownloads(object):
                                                 if S2CLOUDLESS_INSTALLED:
 
                                                     cloud_detector = S2PixelCloudDetector(threshold=0.4,
-                                                                                          average_over=4,
+                                                                                          average_over=1,
                                                                                           dilation_size=5,
                                                                                           all_bands=False)
 
