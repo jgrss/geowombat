@@ -652,7 +652,8 @@ class GeoDownloads(object):
                                                     X = (data_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                     # Predict clouds
-                                                    # clear=0, clouds=1, shadow=2, show=3, cirrus=4, water=5
+                                                    # Potential classes? Currently, only clear and clouds are returned.
+                                                    # clear=0, clouds=1, shadow=2, snow=3, cirrus=4, water=5
                                                     mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
 
                                                     if bands_out:
