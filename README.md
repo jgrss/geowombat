@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![](https://img.shields.io/badge/version-1.2.11-blue.svg?cacheSeconds=2592000)
+![](https://img.shields.io/badge/version-1.2.12-blue.svg?cacheSeconds=2592000)
 
 ### *GeoWombat* is a Python package for geo-utilities applied to air- and space-borne imagery
 
