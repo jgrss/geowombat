@@ -109,6 +109,8 @@ def estimate_cloud_shadows(data,
         For the shadow test, see :cite:`sun_etal_2018`.
     """
 
+    attrs = data.attrs.copy()
+
     if not heights:
         heights = list(range(200, 1400, 200))
 
@@ -129,8 +131,14 @@ def estimate_cloud_shadows(data,
         else:
             shadows = xr.where(((data.sel(band='nir') < 0.25) & (data.sel(band='swir1') < 0.11) & (potential_shadows.sel(band='mask') == 1)) | shadows.sel(band='mask') == 1, 1, 0)
 
+        shadows = shadows.expand_dims(dim='band')
+
     # Add the shadows to the cloud mask
-    return xr.where(clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0))
+    data = xr.where(clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0))
+    data = data.expand_dims(dim='band')
+    data.attrs = attrs
+
+    return data
 
 
 def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
