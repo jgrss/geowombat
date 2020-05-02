@@ -673,15 +673,6 @@ class GeoDownloads(object):
                                                                              cloud_detector.get_cloud_masks(X),
                                                                              ['mask'])
 
-                                                    # Estimate the cloud shadows
-                                                    mask = estimate_cloud_shadows((data.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
-                                                                                  mask,
-                                                                                  sza,
-                                                                                  saa,
-                                                                                  vza,
-                                                                                  vaa,
-                                                                                  num_workers=num_threads)
-
                                                     if bands_out:
                                                         data = _assign_attrs(data, attrs, bands_out)
 
@@ -728,6 +719,15 @@ class GeoDownloads(object):
                                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                                 if S2CLOUDLESS_INSTALLED:
+
+                                                    # Estimate the cloud shadows
+                                                    mask = estimate_cloud_shadows((sr_brdf.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
+                                                                                  mask,
+                                                                                  sza,
+                                                                                  saa,
+                                                                                  vza,
+                                                                                  vaa,
+                                                                                  num_workers=num_threads)
 
                                                     sr_brdf = xr.where(mask.sel(band='mask') == 0,
                                                                        sr_brdf.clip(0, 10000),
