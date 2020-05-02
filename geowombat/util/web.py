@@ -10,6 +10,7 @@ import string
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
+from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
 from ..backends.gdal_ import warp
 
@@ -668,7 +669,18 @@ class GeoDownloads(object):
                                                     # Predict clouds
                                                     # Potential classes? Currently, only clear and clouds are returned.
                                                     # clear=0, clouds=1, shadow=2, snow=3, cirrus=4, water=5
-                                                    mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
+                                                    mask = ndarray_to_xarray(data,
+                                                                             cloud_detector.get_cloud_masks(X),
+                                                                             ['mask'])
+
+                                                    # Estimate the cloud shadows
+                                                    mask = estimate_cloud_shadows((data.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
+                                                                                  mask,
+                                                                                  sza,
+                                                                                  saa,
+                                                                                  vza,
+                                                                                  vaa,
+                                                                                  num_workers=num_threads)
 
                                                     if bands_out:
                                                         data = _assign_attrs(data, attrs, bands_out)
