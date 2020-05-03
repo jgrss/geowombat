@@ -3,6 +3,19 @@
 Change Log
 ==========
 
+1.2.12 (3 May 2020)
+-------------------
+
+New
+~~~
+
+- Added :func:`geowombat.radiometry.angles.estimate_cloud_shadows` to estimate cloud shadows from a cloud mask.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed month range parsing in :func:`geowombat.util.web.download_cube`.
+
 1.2.11 (1 May 2020)
 -------------------
 
