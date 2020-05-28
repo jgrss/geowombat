@@ -1,5 +1,4 @@
 import os
-import shutil
 import fnmatch
 import tarfile
 import subprocess
@@ -11,6 +10,7 @@ import string
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
+from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
 from ..backends.gdal_ import warp
 
@@ -34,6 +34,10 @@ except:
 
 
 shapely.speedups.enable()
+
+RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
+                       cubic=gdal.GRA_Cubic,
+                       nearest=gdal.GRA_NearestNeighbour)
 
 
 def _rmdir(pathdir):
@@ -124,7 +128,7 @@ class GeoDownloads(object):
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
 
         self.landsat_parts = ['lt05', 'le07', 'lc08']
-        self.sentinel_parts = ['s2a']
+        self.sentinel_parts = ['s2a', 's2b']
 
         s2_dict = dict(coastal=1,
                        blue=2,
@@ -161,6 +165,7 @@ class GeoDownloads(object):
                                          tirs2=11),
                                  s2=s2_dict,
                                  s2a=s2_dict,
+                                 s2b=s2_dict,
                                  s2c=s2_dict)
 
         self.search_dict = dict()
@@ -190,7 +195,7 @@ class GeoDownloads(object):
 
         Args:
             sensors (str or list): The sensors, or sensor, to download.
-            date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm-dd.
+            date_range (list): The date range, given as [date1, date2], where the date format is yyyy-mm.
             bounds (GeoDataFrame, list, or tuple): The geometry bounds (in WGS84 lat/lon) that define the cube extent
                 to download. If given as a ``GeoDataFrame``, only the first ``DataFrame`` record will be used.
                 If given as a ``tuple`` or a ``list``, the order should be (left, bottom, right, top).
@@ -334,7 +339,7 @@ class GeoDownloads(object):
 
             shp_dict['wrs'] = df_wrs
 
-        if ('s2a' in sensors) or ('s2c' in sensors):
+        if ('s2a' in sensors) or ('s2b' in sensors) or ('s2c' in sensors):
 
             path_tar = Path(data_dir).joinpath('mgrs.tar.gz')
             path_shp = Path(data_dir).joinpath('sentinel2_grid.shp')
@@ -353,25 +358,38 @@ class GeoDownloads(object):
 
             shp_dict['mgrs'] = df_mgrs
 
-        dt1 = datetime.strptime(date_range[0], '%Y-%m-%d')
-        dt2 = datetime.strptime(date_range[1], '%Y-%m-%d')
+        dt1 = datetime.strptime(date_range[0], '%Y-%m')
+        dt2 = datetime.strptime(date_range[1], '%Y-%m')
+
+        months = list(range(1, 13))
+        year_months = dict()
+
+        if dt1.month <= dt2.month:
+            month_range = months[months.index(dt1.month):months.index(dt2.month) + 1]
+        else:
+            month_range = months[months.index(dt1.month):] + months[:months.index(dt2.month) + 1]
+
+        if dt1.year == dt2.year:
+            year_months[dt1.year] = month_range
+        else:
+
+            for y in range(dt1.year, dt2.year+1):
+
+                if y == dt1.year:
+                    year_months[y] = list(range(dt1.month, 13))
+                elif y == dt2.year:
+                    year_months[y] = list(range(1, dt2.month+1))
+                else:
+                    year_months[y] = months
 
         year = dt1.year
-        month = dt1.month
-
-        months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-        if month < dt2.month:
-            month_range = months[months.index(month):months.index(dt2.month) + 1]
-        else:
-            month_range = months[months.index(month):] + months[:months.index(dt2.month) + 1]
 
         while True:
 
             if year > dt2.year:
                 break
 
-            for m in month_range:
+            for m in year_months[year]:
 
                 yearmonth_query = '{:d}{:02d}'.format(year, m)
 
@@ -396,8 +414,8 @@ class GeoDownloads(object):
 
                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                            query = '{LOCATION}/{LEVEL}*{YM}*.SAFE/GRANULE/*'.format(LEVEL=sensor.upper(),
-                                                                                     LOCATION=location,
+                            query = '{LOCATION}/{LEVEL}*{YM}*.SAFE/GRANULE/*'.format(LOCATION=location,
+                                                                                     LEVEL=sensor.upper(),
                                                                                      YM=yearmonth_query)
 
                         else:
@@ -512,19 +530,19 @@ class GeoDownloads(object):
                                                                    verbose=1)
 
                                 if ' '.join(bands) == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2':
-                                    rad_sensor = 's2f'
+                                    rad_sensor = 's2af' if angle_info.sensor == 's2a' else 's2bf'
                                 elif ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
-                                    rad_sensor = 's2cloudless'
+                                    rad_sensor = 's2acloudless' if angle_info.sensor == 's2a' else 's2bcloudless'
                                 elif ' '.join(bands) == 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2':
-                                    rad_sensor = 's2'
+                                    rad_sensor = angle_info.sensor
                                 elif ' '.join(bands) == 'blue green red nir swir1 swir2':
-                                    rad_sensor = 's2l7'
+                                    rad_sensor = 's2al7' if angle_info.sensor == 's2a' else 's2bl7'
                                 elif ' '.join(bands) == 'nir1 nir2 nir3 rededge swir1 swir2':
-                                    rad_sensor = 's220'
+                                    rad_sensor = 's2a20' if angle_info.sensor == 's2a' else 's2b20'
                                 elif ' '.join(bands) == 'blue green red nir':
-                                    rad_sensor = 's210'
+                                    rad_sensor = 's2a10' if angle_info.sensor == 's2a' else 's2b10'
                                 else:
-                                    rad_sensor = 's2'
+                                    rad_sensor = angle_info.sensor
 
                                 bandpass_sensor = angle_info.sensor
 
@@ -574,7 +592,7 @@ class GeoDownloads(object):
                                              outputBounds=out_bounds,
                                              xRes=ref_res[0],
                                              yRes=ref_res[1],
-                                             resampleAlg=gdal.GRA_Cubic,
+                                             resampleAlg=RESAMPLING_DICT[resampling],
                                              creationOptions=['TILED=YES',
                                                               'COMPRESS=LZW',
                                                               'BLOCKXSIZE={CHUNKS:d}'.format(CHUNKS=chunks),
@@ -592,145 +610,172 @@ class GeoDownloads(object):
                                                   ref_crs=crs,
                                                   ref_res=ref_res if ref_res else load_bands_names[-1]):
 
-                                with gw.open(angle_info.sza,
+                                valid_data = True
+
+                                # Ensure there is data
+                                with gw.open(load_bands_names[0],
+                                             band_names=[1],
                                              chunks=chunks,
-                                             resampling=resampling) as sza, \
-                                        gw.open(angle_info.vza,
-                                                chunks=chunks,
-                                                resampling=resampling) as vza, \
-                                        gw.open(angle_info.saa,
-                                                chunks=chunks,
-                                                resampling=resampling) as saa, \
-                                        gw.open(angle_info.vaa,
-                                                chunks=chunks,
-                                                resampling=resampling) as vaa, \
-                                        gw.open(load_bands_names,
-                                                band_names=bands,
-                                                stack_dim='band',
-                                                chunks=chunks,
-                                                resampling=resampling,
-                                                num_threads=num_threads) as data:
+                                             num_threads=num_threads) as data:
 
-                                    attrs = data.attrs.copy()
+                                    if data.sel(band=1).min().data.compute(num_threads=num_threads) > 10000:
+                                        valid_data = False
 
-                                    if mask_qa:
+                                    if valid_data:
 
-                                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+                                        if data.sel(band=1).max().data.compute(num_threads=num_threads) == 0:
+                                            valid_data = False
 
-                                            if S2CLOUDLESS_INSTALLED:
+                                if valid_data:
 
-                                                cloud_detector = S2PixelCloudDetector(threshold=0.4,
-                                                                                      average_over=4,
-                                                                                      dilation_size=5,
-                                                                                      all_bands=False)
+                                    with gw.open(angle_info.sza,
+                                                 chunks=chunks,
+                                                 resampling='cubic') as sza, \
+                                            gw.open(angle_info.vza,
+                                                    chunks=chunks,
+                                                    resampling='cubic') as vza, \
+                                            gw.open(angle_info.saa,
+                                                    chunks=chunks,
+                                                    resampling='cubic') as saa, \
+                                            gw.open(angle_info.vaa,
+                                                    chunks=chunks,
+                                                    resampling='cubic') as vaa, \
+                                            gw.open(load_bands_names,
+                                                    band_names=bands,
+                                                    stack_dim='band',
+                                                    chunks=chunks,
+                                                    resampling=resampling,
+                                                    num_threads=num_threads) as data:
 
-                                                # Get the S2Cloudless bands
-                                                data_cloudless = data.sel(band=['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2'])
+                                        attrs = data.attrs.copy()
 
-                                                # Scale from 0-10000 to 0-1 and reshape
-                                                X = (data_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
+                                        if mask_qa:
 
-                                                # Predict clouds
-                                                # clear=0, clouds=1, shadow=2, show=3, cirrus=4, water=5
-                                                mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), ['mask'])
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                                if bands_out:
-                                                    data = _assign_attrs(data, attrs, bands_out)
+                                                if S2CLOUDLESS_INSTALLED:
 
-                                            else:
-                                                logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
+                                                    cloud_detector = S2PixelCloudDetector(threshold=0.4,
+                                                                                          average_over=1,
+                                                                                          dilation_size=5,
+                                                                                          all_bands=False)
 
-                                    if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+                                                    # Get the S2Cloudless bands
+                                                    data_cloudless = data.sel(band=['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2'])
 
-                                        # The S-2 data are in TOAR (0-10000)
-                                        toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
-                                        toar_scaled.attrs = attrs
+                                                    # Scale from 0-10000 to 0-1 and reshape
+                                                    X = (data_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
 
-                                        # Convert TOAR to surface reflectance
-                                        sr = rt.toar_to_sr(toar_scaled,
-                                                           sza, saa, vza, vaa,
-                                                           rad_sensor)
+                                                    # Predict clouds
+                                                    # Potential classes? Currently, only clear and clouds are returned.
+                                                    # clear=0, clouds=1, shadow=2, snow=3, cirrus=4, water=5
+                                                    mask = ndarray_to_xarray(data,
+                                                                             cloud_detector.get_cloud_masks(X),
+                                                                             ['mask'])
 
-                                    else:
+                                                    if bands_out:
+                                                        data = _assign_attrs(data, attrs, bands_out)
 
-                                        # Convert DN to surface reflectance
-                                        sr = rt.dn_to_sr(data,
-                                                         sza, saa, vza, vaa,
-                                                         sensor=rad_sensor,
-                                                         meta=meta)
-
-                                    # BRDF normalization
-                                    sr_brdf = br.norm_brdf(sr,
-                                                           sza, saa, vza, vaa,
-                                                           sensor=rad_sensor,
-                                                           wavelengths=data.band.values.tolist(),
-                                                           out_range=10000.0,
-                                                           nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
-
-                                    if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
-
-                                        if bandpass_sensor.lower() in ['s2', 's2b', 's2c']:
-                                            bandpass_sensor = 's2a'
-
-                                        # Linearly adjust to Landsat 8
-                                        sr_brdf = la.bandpass(sr_brdf,
-                                                              bandpass_sensor.lower(),
-                                                              to='l8',
-                                                              scale_factor=0.0001)
-
-                                    if mask_qa:
+                                                else:
+                                                    logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
 
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                            if S2CLOUDLESS_INSTALLED:
+                                            # The S-2 data are in TOAR (0-10000)
+                                            toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
+                                            toar_scaled.attrs = attrs
 
-                                                sr_brdf = xr.where(mask.sel(band='mask') == 0,
-                                                                   sr_brdf.clip(0, 10000),
-                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
-
-                                            else:
-
-                                                sr_brdf = xr.where(sr_brdf != 0,
-                                                                   sr_brdf.clip(0, 10000),
-                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
-    
-                                            sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                            # Convert TOAR to surface reflectance
+                                            sr = rt.toar_to_sr(toar_scaled,
+                                                               sza, saa, vza, vaa,
+                                                               rad_sensor)
 
                                         else:
 
-                                            with gw.open(finfo_dict['qa'].name,
-                                                         band_names=['qa']) as qa:
+                                            # Convert DN to surface reflectance
+                                            sr = rt.dn_to_sr(data,
+                                                             sza, saa, vza, vaa,
+                                                             sensor=rad_sensor,
+                                                             meta=meta)
 
-                                                if sensor.lower() == 'l8':
-                                                    qa_sensor = 'l8-c1'
+                                        # BRDF normalization
+                                        sr_brdf = br.norm_brdf(sr,
+                                                               sza, saa, vza, vaa,
+                                                               sensor=rad_sensor,
+                                                               wavelengths=data.band.values.tolist(),
+                                                               out_range=10000.0,
+                                                               nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+
+                                        if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
+
+                                            # Linearly adjust to Landsat 8
+                                            sr_brdf = la.bandpass(sr_brdf,
+                                                                  bandpass_sensor.lower(),
+                                                                  to='l8',
+                                                                  scale_factor=0.0001)
+
+                                        if mask_qa:
+
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+
+                                                if S2CLOUDLESS_INSTALLED:
+
+                                                    # Estimate the cloud shadows
+                                                    mask = estimate_cloud_shadows((sr_brdf.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
+                                                                                  mask,
+                                                                                  sza,
+                                                                                  saa,
+                                                                                  vza,
+                                                                                  vaa,
+                                                                                  num_workers=num_threads)
+
+                                                    sr_brdf = xr.where(mask.sel(band='mask') == 0,
+                                                                       sr_brdf.clip(0, 10000),
+                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+
                                                 else:
-                                                    qa_sensor = 'l-c1'
 
-                                                mask = QAMasker(qa,
-                                                                qa_sensor,
-                                                                mask_items=lqa_mask_items,
-                                                                confidence_level='maybe').to_mask()
-
-                                                # Mask non-clear pixels
-                                                sr_brdf = xr.where(mask.sel(band='mask') < 2,
-                                                                   sr_brdf.clip(0, 10000),
-                                                                   kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+                                                    sr_brdf = xr.where(sr_brdf != 0,
+                                                                       sr_brdf.clip(0, 10000),
+                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                                 sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
-                                    else:
+                                            else:
 
-                                        sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
-                                        sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                        sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                                with gw.open(finfo_dict['qa'].name,
+                                                             band_names=['qa']) as qa:
 
-                                    if write_angle_files:
+                                                    if sensor.lower() == 'l8':
+                                                        qa_sensor = 'l8-c1'
+                                                    else:
+                                                        qa_sensor = 'l-c1'
 
-                                        angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
-                                        angle_stack.attrs = sza.attrs.copy()
-                                        angle_stack.gw.to_raster(out_angles, **angle_kwargs)
+                                                    mask = QAMasker(qa,
+                                                                    qa_sensor,
+                                                                    mask_items=lqa_mask_items,
+                                                                    confidence_level='maybe').to_mask()
+
+                                                    # Mask non-clear pixels
+                                                    sr_brdf = xr.where(mask.sel(band='mask') < 2,
+                                                                       sr_brdf.clip(0, 10000),
+                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+
+                                                    sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
+                                                    sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                                        else:
+
+                                            sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
+                                            sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
+                                            sr_brdf.gw.to_raster(out_brdf, **kwargs)
+
+                                        if write_angle_files:
+
+                                            angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
+                                            angle_stack.attrs = sza.attrs.copy()
+                                            angle_stack.gw.to_raster(out_angles, **angle_kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
@@ -786,6 +831,7 @@ class GeoDownloads(object):
                         l8='LC08/01',
                         s2='tiles',
                         s2a='tiles',
+                        s2b='tiles',
                         s2c='tiles')
 
         if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2b', 's2c']:

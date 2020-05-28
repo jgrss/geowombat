@@ -21,6 +21,126 @@ import xml.etree.ElementTree as ET
 # from pysolar.solar import get_altitude_fast, get_azimuth_fast
 
 
+def shift_objects(data,
+                  solar_za,
+                  solar_az,
+                  sensor_za,
+                  sensor_az,
+                  h,
+                  num_workers):
+
+    """
+    Shifts objects along x and y dimensions
+
+    Args:
+        data (DataArray): The data to shift.
+        solar_za (DataArray): The solar zenith angle.
+        solar_az (DataArray): The solar azimuth angle.
+        sensor_za (DataArray): The sensor, or view, zenith angle.
+        sensor_az (DataArray): The sensor, or view, azimuth angle.
+        h (float): The object height.
+        num_workers (Optional[int]): The number of dask workers.
+
+    Returns:
+        ``xarray.DataArray``
+    """
+
+    # Scale the angles to degrees
+    sza = solar_za * 0.01
+    sza.coords['band'] = [1]
+
+    saa = solar_az * 0.01
+    saa.coords['band'] = [1]
+
+    vza = sensor_za * 0.01
+    vza.coords['band'] = [1]
+
+    vaa = sensor_az * 0.01
+    vaa.coords['band'] = [1]
+
+    # Convert to radians
+    rad_sza = xr.ufuncs.deg2rad(sza)
+    rad_saa = xr.ufuncs.deg2rad(saa)
+    rad_vza = xr.ufuncs.deg2rad(vza)
+    rad_vaa = xr.ufuncs.deg2rad(vaa)
+
+    apparent_solar_az = np.pi + xr.ufuncs.arctan((xr.ufuncs.sin(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.sin(rad_vaa) * xr.ufuncs.tan(rad_vza)) /
+                                                 (xr.ufuncs.cos(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.cos(rad_vaa) * xr.ufuncs.tan(rad_vza)))
+
+    # Maximum horizontal distance
+    d = (h**2 * ((xr.ufuncs.sin(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.sin(rad_vaa) * xr.ufuncs.tan(rad_vza))**2 +
+                 (xr.ufuncs.cos(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.cos(rad_vaa) * xr.ufuncs.tan(rad_vza))**2))**0.5
+
+    # Convert the polar angle to cartesian offsets
+    x = int((xr.ufuncs.cos(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
+    y = int((xr.ufuncs.sin(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
+
+    return data.shift(shifts={'x': x, 'y': y}, fill_value=0)
+
+
+def estimate_cloud_shadows(data,
+                           clouds,
+                           solar_za,
+                           solar_az,
+                           sensor_za,
+                           sensor_az,
+                           heights=None,
+                           num_workers=1):
+
+    """
+    Estimates shadows from a cloud mask and adds to the existing mask
+
+    Args:
+        data (DataArray): The wavelengths, scaled 0-1.
+        clouds (DataArray): The cloud mask, where clouds=1 and clear sky=0.
+        solar_za (DataArray): The solar zenith angle.
+        solar_az (DataArray): The solar azimuth angle.
+        sensor_za (DataArray): The sensor, or view, zenith angle.
+        sensor_az (DataArray): The sensor, or view, azimuth angle.
+        heights (Optional[list]): The cloud heights, in kilometers.
+        num_workers (Optional[int]): The number of dask workers.
+
+    Returns:
+        ``xarray.DataArray``
+
+    References:
+
+        For the angle offset calculations, see :cite:`fisher_2014`.
+        For the shadow test, see :cite:`sun_etal_2018`.
+    """
+
+    attrs = data.attrs.copy()
+
+    if not heights:
+        heights = list(range(200, 1400, 200))
+
+    shadows = None
+
+    for h in heights:
+
+        potential_shadows = shift_objects(clouds,
+                                          solar_za,
+                                          solar_az,
+                                          sensor_za,
+                                          sensor_az,
+                                          h,
+                                          num_workers)
+
+        if not isinstance(shadows, xr.DataArray):
+            shadows = xr.where((data.sel(band='nir') < 0.25) & (data.sel(band='swir1') < 0.11) & (potential_shadows.sel(band='mask') == 1), 1, 0)
+        else:
+            shadows = xr.where(((data.sel(band='nir') < 0.25) & (data.sel(band='swir1') < 0.11) & (potential_shadows.sel(band='mask') == 1)) | shadows.sel(band='mask') == 1, 1, 0)
+
+        shadows = shadows.expand_dims(dim='band')
+
+    # Add the shadows to the cloud mask
+    data = xr.where(clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0))
+    data = data.expand_dims(dim='band')
+    data.attrs = attrs
+
+    return data
+
+
 def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
 
     """
@@ -84,10 +204,13 @@ def relative_azimuth(saa, vaa):
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
     raa_minus = xr.where(raa < 0, 1, 0)
 
-    raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
-    raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
+    # raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
+    # raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
 
-    return xr.ufuncs.rad2deg(raa)
+    raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
+    raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
+
+    return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
 
 
 def get_sentinel_sensor(metadata):
