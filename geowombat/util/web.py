@@ -187,6 +187,7 @@ class GeoDownloads(object):
                       mask_qa=False,
                       lqa_mask_items=None,
                       chunks=512,
+                      cloud_heights=None,
                       num_threads=1,
                       **kwargs):
 
@@ -221,6 +222,7 @@ class GeoDownloads(object):
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
+            cloud_heights (Optional[list]): The cloud heights, in kilometers.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
@@ -727,6 +729,7 @@ class GeoDownloads(object):
                                                                                   saa,
                                                                                   vza,
                                                                                   vaa,
+                                                                                  heights=cloud_heights,
                                                                                   num_workers=num_threads)
 
                                                     sr_brdf = xr.where(mask.sel(band='mask') == 0,
