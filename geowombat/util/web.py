@@ -676,12 +676,14 @@ class GeoDownloads(object):
                                                                              ['mask'])
 
                                                 else:
+
+                                                    if bands_out:
+                                                        
+                                                        # If there are extra bands, remove them because they
+                                                        # are not supported in the BRDF kernels.
+                                                        data = _assign_attrs(data, attrs, bands_out)
+
                                                     logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
-
-                                        else:
-
-                                            if bands_out:
-                                                data = _assign_attrs(data, attrs, bands_out)
 
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
