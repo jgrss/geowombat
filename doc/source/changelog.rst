@@ -3,6 +3,23 @@
 Change Log
 ==========
 
+1.2.14 (5 June 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+-
+
+1.2.13 (2 June 2020)
+--------------------
+
+New
+~~~
+
+- Added `cloud_height` option in :func:`download_cube`.
+- Added first attempt at supporting HDF reads.
+
 1.2.12 (3 May 2020)
 -------------------
 
