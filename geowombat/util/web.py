@@ -675,11 +675,13 @@ class GeoDownloads(object):
                                                                              cloud_detector.get_cloud_masks(X),
                                                                              ['mask'])
 
-                                                    if bands_out:
-                                                        data = _assign_attrs(data, attrs, bands_out)
-
                                                 else:
                                                     logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
+
+                                        else:
+
+                                            if bands_out:
+                                                data = _assign_attrs(data, attrs, bands_out)
 
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
