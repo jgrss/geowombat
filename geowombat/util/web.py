@@ -9,7 +9,7 @@ import random
 import string
 
 from ..errors import logger
-from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
+from ..radiometry import BRDF, Haze, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
 from ..backends.gdal_ import warp
