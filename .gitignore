@@ -40,4 +40,5 @@ logo/
 bin/ESPA/
 geowombat/tasks
 geowombat/radiometry/sharpen.py
+geowombat/radiometry/haze.py
 
