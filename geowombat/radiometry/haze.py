@@ -13,7 +13,10 @@ class Haze(object):
     def remove_haze(self,
                     data,
                     method='hot',
+                    red_perc=10,
                     thresh=0.01,
+                    min_samples=100,
+                    n_iters=40,
                     n_jobs=-1):
 
         """
@@ -22,18 +25,24 @@ class Haze(object):
         Args:
             data (2d or 3d DataArray): The data to normalize, in the range 0-1.
             method (Optional[str])
+            red_perc (Optional[int])
             thresh (Optional[float])
+            min_samples (Optional[int])
+            n_iters (Optional[int])
             n_jobs (Optional[int])
 
         Returns:
             ``xarray.DataArray``
         """
 
-        yhat = self.fit(data, thresh, n_jobs)
+        yhat, haze_found = self.fit(data, red_perc, thresh, min_samples, n_iters, n_jobs)
 
-        return self.predict(data, yhat)
+        if haze_found:
+            return self.transform(data, yhat)
+        else:
+            return data
 
-    def fit(self, data, thresh, n_jobs):
+    def fit(self, data, red_perc, thresh, min_samples, n_iters, n_jobs):
 
         lin = LinearRegression(n_jobs=n_jobs)
 
@@ -43,9 +52,9 @@ class Haze(object):
         red = data.sel(band='red').data.compute().flatten()
         blue = data.sel(band='blue').data.compute().flatten()
 
-        red_10p = np.percentile(red, 10)
+        red_p = np.percentile(red, red_perc)
 
-        for i in range(0, 40):
+        for i in range(0, n_iters):
 
             lin.fit(red[:, np.newaxis], blue)
 
@@ -59,9 +68,9 @@ class Haze(object):
 
             yhat = lin.predict(red[:, np.newaxis])
 
-            idx = np.where(((blue - yhat) < 0) | (red < red_10p))[0]
+            idx = np.where(((blue - yhat) < 0) | (red < red_p))[0]
 
-            if idx.shape[0] < 100:
+            if idx.shape[0] < min_samples:
                 break
 
             blue = blue[idx]
@@ -69,17 +78,25 @@ class Haze(object):
 
         params['clear'] = [lin.coef_[0], lin.intercept_]
 
-        return np.array([0, 1]) * params['clear'][0] + params['clear'][1]
+        if abs(params['haze'][0] - params['clear'][0]) < thresh:
+            haze_found = False
+        else:
+            haze_found = True
 
-    def predict(self, data, yhat):
+        return np.array([0, 1]) * params['clear'][0] + params['clear'][1], haze_found
+
+    def transform(self, data, yhat):
 
         attrs = data.attrs.copy()
 
+        # Get the HOT
         src_hot = self.get_hot(data.sel(band='blue'),
                                data.sel(band='red'),
                                np.tan(yhat[1]))
 
+        # Apply the HOT
         src_adj = (data + src_hot).clip(0, 1)
+
         src_adj.attrs = attrs
 
         return src_adj

@@ -4,6 +4,7 @@ from datetime import datetime as dtime
 import datetime
 
 from .angles import relative_azimuth
+from . import Haze
 
 import numpy as np
 import pandas as pd
@@ -331,7 +332,8 @@ class RadTransforms(MetaData):
                  sensor=None,
                  method='srem',
                  angle_factor=0.01,
-                 meta=None):
+                 meta=None,
+                 remove_haze=False):
 
         """
         Converts digital numbers to surface reflectance
@@ -347,6 +349,7 @@ class RadTransforms(MetaData):
             method (Optional[str]): The method to use. Only 'srem' is supported.
             angle_factor (Optional[float]): The scale factor for angles.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
+            remove_haze (Optional[bool]): Whether to remove haze before adjusting to surface reflectance.
 
         References:
             https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product
@@ -407,6 +410,11 @@ class RadTransforms(MetaData):
             radiance = self.dn_to_radiance(dn, None, None)
 
             toar = self.radiance_to_toar(radiance, solar_za, global_args)
+
+        if remove_haze:
+
+            hz = Haze()
+            toar = hz.remove_haze(toar)
 
         sr_data = self.toar_to_sr(toar,
                                   solar_za,

@@ -188,6 +188,7 @@ class GeoDownloads(object):
                       lqa_mask_items=None,
                       chunks=512,
                       cloud_heights=None,
+                      remove_haze=False,
                       num_threads=1,
                       **kwargs):
 
@@ -223,6 +224,7 @@ class GeoDownloads(object):
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
+            remove_haze (Optional[bool]): Whether to remove haze.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
@@ -275,6 +277,7 @@ class GeoDownloads(object):
         rt = RadTransforms()
         br = BRDF()
         la = LinearAdjustments()
+        hz = Haze()
 
         main_path = Path(outdir)
         outdir_brdf = main_path.joinpath('brdf')
@@ -691,6 +694,9 @@ class GeoDownloads(object):
                                             toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
                                             toar_scaled.attrs = attrs
 
+                                            if remove_haze:
+                                                toar_scaled = hz.remove_haze(toar_scaled)
+
                                             # Convert TOAR to surface reflectance
                                             sr = rt.toar_to_sr(toar_scaled,
                                                                sza, saa, vza, vaa,
@@ -702,7 +708,8 @@ class GeoDownloads(object):
                                             sr = rt.dn_to_sr(data,
                                                              sza, saa, vza, vaa,
                                                              sensor=rad_sensor,
-                                                             meta=meta)
+                                                             meta=meta,
+                                                             remove_haze=remove_haze)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
