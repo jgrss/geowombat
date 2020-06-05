@@ -10,8 +10,8 @@ class Haze(object):
         """Haze Optimized Transform"""
         return xr.ufuncs.sin(slope_theta) * blue - xr.ufuncs.cos(slope_theta) * red
 
-    @staticmethod
-    def remove_haze(data,
+    def remove_haze(self,
+                    data,
                     method='hot',
                     thresh=0.01,
                     n_jobs=-1):
@@ -28,6 +28,12 @@ class Haze(object):
         Returns:
             ``xarray.DataArray``
         """
+
+        yhat = self.fit(data, thresh, n_jobs)
+
+        return self.predict(data, yhat)
+
+    def fit(self, data, thresh, n_jobs):
 
         lin = LinearRegression(n_jobs=n_jobs)
 
@@ -61,15 +67,19 @@ class Haze(object):
             blue = blue[idx]
             red = red[idx]
 
-            alpha -= 0.05
-
-            if alpha < 0.1:
-                alpha = 0.1
-
         params['clear'] = [lin.coef_[0], lin.intercept_]
 
-        yhat = np.array([0, 1]) * params['haze'][0] + params['haze'][1]
+        return np.array([0, 1]) * params['clear'][0] + params['clear'][1]
 
-        yhat = np.array([0, 1]) * params['clear'][0] + params['clear'][1]
+    def predict(self, data, yhat):
 
+        attrs = data.attrs.copy()
 
+        src_hot = self.get_hot(data.sel(band='blue'),
+                               data.sel(band='red'),
+                               np.tan(yhat[1]))
+
+        src_adj = (data + src_hot).clip(0, 1)
+        src_adj.attrs = attrs
+
+        return src_adj
