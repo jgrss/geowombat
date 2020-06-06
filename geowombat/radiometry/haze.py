@@ -14,7 +14,8 @@ class Haze(object):
                     data,
                     method='hot',
                     red_perc=10,
-                    thresh=0.01,
+                    thresh1=0.01,
+                    thresh2=0.1,
                     min_samples=100,
                     n_iters=40,
                     n_jobs=-1):
@@ -26,7 +27,8 @@ class Haze(object):
             data (2d or 3d DataArray): The data to normalize, in the range 0-1.
             method (Optional[str])
             red_perc (Optional[int])
-            thresh (Optional[float])
+            thresh1 (Optional[float])
+            thresh2 (Optional[float])
             min_samples (Optional[int])
             n_iters (Optional[int])
             n_jobs (Optional[int])
@@ -35,14 +37,14 @@ class Haze(object):
             ``xarray.DataArray``
         """
 
-        yhat, haze_found = self.fit(data, red_perc, thresh, min_samples, n_iters, n_jobs)
+        yhat, haze_found = self.fit(data, red_perc, thresh1, thresh2, min_samples, n_iters, n_jobs)
 
         if haze_found:
             return self.transform(data, yhat)
         else:
             return data
 
-    def fit(self, data, red_perc, thresh, min_samples, n_iters, n_jobs):
+    def fit(self, data, red_perc, thresh1, thresh2, min_samples, n_iters, n_jobs):
 
         lin = LinearRegression(n_jobs=n_jobs)
 
@@ -61,7 +63,7 @@ class Haze(object):
             if i == 0:
                 params['haze'] = [lin.coef_[0], lin.intercept_]
 
-            if abs(lin.coef_[0] - last_slope) < thresh:
+            if abs(lin.coef_[0] - last_slope) < thresh1:
                 break
 
             last_slope = lin.coef_[0]
@@ -78,7 +80,7 @@ class Haze(object):
 
         params['clear'] = [lin.coef_[0], lin.intercept_]
 
-        if abs(params['haze'][0] - params['clear'][0]) < thresh:
+        if abs(params['haze'][0] - params['clear'][0]) < thresh2:
             haze_found = False
         else:
             haze_found = True
