@@ -6,10 +6,10 @@ Change Log
 1.2.14 (5 June 2020)
 --------------------
 
-Bug fixes
-~~~~~~~~~
+New
+~~~
 
--
+- Added `file_list` to :fun:`geowombat.core.sort_images_by_date`.
 
 1.2.13 (2 June 2020)
 --------------------
