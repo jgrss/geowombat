@@ -119,12 +119,12 @@ def sort_images_by_date(image_path,
         ``collections.OrderedDict``
 
     Example:
-        >>> from geowombat.core import sort_images
+        >>> from geowombat.core import sort_images_by_date
         >>>
         >>> # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif
         >>> image_path = '/path/to/images'
         >>>
-        >>> image_dict = sort_images(image_path, '*.tif', 3, 0, 8)
+        >>> image_dict = sort_images_by_date(image_path, '*.tif', 3, 0, 8)
         >>> image_names = list(image_dict.keys())
         >>> time_names = list(image_dict.values())
     """
