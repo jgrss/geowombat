@@ -336,21 +336,33 @@ def mosaic(filenames,
                 if overlap == 'min':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
-                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, xr_mininum(ds, dsb))
+
+                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
+                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
+                                               xr_mininum(ds, dsb)))
+
                     else:
                         ds = xr_mininum(ds, dsb)
 
                 elif overlap == 'max':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
-                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, xr_maximum(ds, dsb))
+
+                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
+                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
+                                               xr_maximum(ds, dsb)))
+
                     else:
                         ds = xr_maximum(ds, dsb)
 
                 elif overlap == 'mean':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
-                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, (ds + dsb) / 2.0)
+
+                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
+                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
+                                               (ds + dsb) / 2.0))
+
                     else:
                         ds = (ds + dsb) / 2.0
 
