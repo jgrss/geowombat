@@ -172,6 +172,7 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
 def warp_open(filename,
               band_names=None,
+              nodata=None,
               resampling='nearest',
               dtype=None,
               return_windows=False,
@@ -186,6 +187,7 @@ def warp_open(filename,
     Args:
         filename (str): The file to open.
         band_names (Optional[int, str, or list]): The band names.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
         resampling (Optional[str]): The resampling method.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
@@ -202,6 +204,7 @@ def warp_open(filename,
     ref_kwargs = {'bounds': None,
                   'crs': None,
                   'res': None,
+                  'nodata': nodata,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
                   'tap': tap,
@@ -380,6 +383,7 @@ def concat(filenames,
            resampling='nearest',
            time_names=None,
            band_names=None,
+           nodata=None,
            dtype=None,
            overlap='max',
            warp_mem_limit=512,
@@ -402,6 +406,7 @@ def concat(filenames,
         resampling (Optional[str]): The resampling method.
         time_names (Optional[1d array-like]): A list of names to give the time dimension.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
@@ -421,6 +426,7 @@ def concat(filenames,
     ref_kwargs = {'bounds': None,
                   'crs': None,
                   'res': None,
+                  'nodata': nodata,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
                   'tap': tap,
@@ -457,6 +463,7 @@ def concat(filenames,
                                               bounds_by=bounds_by,
                                               resampling=resampling,
                                               band_names=band_names,
+                                              nodata=nodata,
                                               warp_mem_limit=warp_mem_limit,
                                               num_threads=num_threads,
                                               **kwargs))
@@ -471,6 +478,7 @@ def concat(filenames,
                 concat_list.append(warp_open(filenames[tidx],
                                              resampling=resampling,
                                              band_names=band_names,
+                                             nodata=nodata,
                                              warp_mem_limit=warp_mem_limit,
                                              num_threads=num_threads,
                                              **kwargs))
