@@ -234,6 +234,7 @@ def open(filename,
          resampling='nearest',
          mosaic=False,
          overlap='max',
+         nodata=None,
          dtype=None,
          num_workers=1,
          **kwargs):
@@ -264,6 +265,7 @@ def open(filename,
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
+        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
@@ -405,6 +407,7 @@ def open(filename,
                                  resampling=resampling,
                                  time_names=time_names,
                                  band_names=band_names,
+                                 nodata=nodata,
                                  overlap=overlap,
                                  dtype=dtype,
                                  **kwargs)

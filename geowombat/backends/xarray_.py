@@ -270,6 +270,7 @@ def mosaic(filenames,
            bounds_by='reference',
            resampling='nearest',
            band_names=None,
+           nodata=None,
            dtype=None,
            warp_mem_limit=512,
            num_threads=1,
@@ -290,6 +291,7 @@ def mosaic(filenames,
 
         resampling (Optional[str]): The resampling method.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
@@ -306,6 +308,7 @@ def mosaic(filenames,
     ref_kwargs = {'bounds': None,
                   'crs': None,
                   'res': None,
+                  'nodata': nodata,
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
                   'tac': None}
