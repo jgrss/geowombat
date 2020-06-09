@@ -9,7 +9,8 @@ Change Log
 New
 ~~~
 
-- Added `file_list` to :fun:`geowombat.core.sort_images_by_date`.
+- Added `file_list` to :func:`geowombat.core.sort_images_by_date`.
+- Added `nodata` keyword argument to :func:`geowombat.open`.
 
 1.2.13 (2 June 2020)
 --------------------
