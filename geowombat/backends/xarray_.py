@@ -334,11 +334,25 @@ def mosaic(filenames,
             with xr.open_rasterio(fn, **kwargs) as dsb:
 
                 if overlap == 'min':
-                    ds = xr_mininum(ds, dsb)
+
+                    if isinstance(nodata, float) or isinstance(nodata, int):
+                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, xr_mininum(ds, dsb))
+                    else:
+                        ds = xr_mininum(ds, dsb)
+
                 elif overlap == 'max':
-                    ds = xr_maximum(ds, dsb)
+
+                    if isinstance(nodata, float) or isinstance(nodata, int):
+                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, xr_maximum(ds, dsb))
+                    else:
+                        ds = xr_maximum(ds, dsb)
+
                 elif overlap == 'mean':
-                    ds = (ds + dsb) / 2.0
+
+                    if isinstance(nodata, float) or isinstance(nodata, int):
+                        ds = xr.where((ds == nodata) | (dsb == nodata), nodata, (ds + dsb) / 2.0)
+                    else:
+                        ds = (ds + dsb) / 2.0
 
                 # ds = ds.combine_first(dsb)
 
