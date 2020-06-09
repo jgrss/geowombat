@@ -395,6 +395,7 @@ def open(filename,
                                  bounds_by=bounds_by,
                                  resampling=resampling,
                                  band_names=band_names,
+                                 nodata=nodata,
                                  dtype=dtype,
                                  **kwargs)
 
