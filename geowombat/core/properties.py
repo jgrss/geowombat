@@ -1,6 +1,7 @@
 from pathlib import Path
 from collections import namedtuple
 
+import pandas as pd
 import geopandas as gpd
 from rasterio.coords import BoundingBox
 from affine import Affine
@@ -683,6 +684,11 @@ class DataProperties(object):
     def cellxh(self):
         """Get the half width of the cell size in the x direction"""
         return self.cellx / 2.0
+
+    @property
+    def pydatetime(self):
+        """Get Python datetime objects from the time dimension"""
+        return pd.to_datetime(self._obj.time.values).to_pydatetime()
 
     @property
     def geometry(self):
