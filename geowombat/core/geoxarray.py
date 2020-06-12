@@ -873,7 +873,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        verbose=verbose,
                        **kwargs)
 
-    def set_nodata(self, src_nodata, dst_nodata, clip_range, dtype):
+    def set_nodata(self, src_nodata, dst_nodata, clip_range, dtype, scale_factor=None):
 
         """
         Sets 'no data' values in the DataArray
@@ -883,6 +883,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             dst_nodata (int | float): The 'no data' value to set.
             clip_range (tuple): The output clip range.
             dtype (str): The output data type.
+            scale_factor (float): A scale factor to apply.
 
         Returns:
             ``xarray.DataArray``
@@ -894,6 +895,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     src = src.gw.set_nodata(0, 65535, (0, 10000), 'uint16')
         """
 
+        if not isinstance(scale_factor, float):
+            scale_factor = 1.0
+
         attrs = self._obj.attrs.copy()
 
         # Create a 'no data' mask
@@ -902,7 +906,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         # Mask the data
         data = xr.where(mask < self._obj.gw.nbands,
                         dst_nodata,
-                        self._obj.clip(clip_range[0], clip_range[1]))\
+                        (self._obj*scale_factor).clip(clip_range[0], clip_range[1]))\
             .transpose('band', 'y', 'x').astype(dtype)
 
         attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
