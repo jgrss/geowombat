@@ -906,8 +906,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             .transpose('band', 'y', 'x').astype(dtype)
 
         data.attrs = attrs
-        data.nodatavals = tuple([dst_nodata] * self._obj.gw.nbands)
-        
+        data.attrs.nodatavals = tuple([dst_nodata] * self._obj.gw.nbands)
+
         return data
 
     def moving(self,
