@@ -873,6 +873,37 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        verbose=verbose,
                        **kwargs)
 
+    def set_nodata(self, src_nodata, dst_nodata, clip_range, dtype):
+
+        """
+        Sets 'no data' values in the DataArray
+
+        Args:
+            src_noata (int | float): The 'no data' values to replace.
+            dst_nodata (int | float): The 'no data' value to set.
+            clip_range (tuple): The output clip range.
+            dtype (str): The output data type.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     src = src.gw.set_nodata(0, 65535, (0, 10000), 'uint16')
+        """
+
+        # Create a 'no data' mask
+        mask = self._obj.where(self._obj != src_nodata)\
+            .count(dim='band').astype('uint8')
+
+        # Mask the data
+        return xr.where(mask < self._obj.gw.nbands,
+                        dst_nodata,
+                        self._obj.clip(clip_range[0], clip_range[1]))\
+            .transpose('band', 'y', 'x').astype(dtype)
+
     def moving(self,
                band_coords='band',
                stat='mean',
