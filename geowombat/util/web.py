@@ -694,7 +694,8 @@ class GeoDownloads(object):
                                             # Convert TOAR to surface reflectance
                                             sr = rt.toar_to_sr(toar_scaled,
                                                                sza, saa, vza, vaa,
-                                                               rad_sensor)
+                                                               rad_sensor,
+                                                               nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                         else:
 
@@ -702,7 +703,8 @@ class GeoDownloads(object):
                                             sr = rt.dn_to_sr(data,
                                                              sza, saa, vza, vaa,
                                                              sensor=rad_sensor,
-                                                             meta=meta)
+                                                             meta=meta,
+                                                             nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
@@ -718,7 +720,8 @@ class GeoDownloads(object):
                                             sr_brdf = la.bandpass(sr_brdf,
                                                                   bandpass_sensor.lower(),
                                                                   to='l8',
-                                                                  scale_factor=0.0001)
+                                                                  scale_factor=0.0001,
+                                                                  nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
 
                                         if mask_qa:
 
@@ -774,10 +777,10 @@ class GeoDownloads(object):
 
                                         else:
 
-                                            nodataval = kwargs['nodata'] if 'nodata' in kwargs else 65535
+                                            # nodataval = kwargs['nodata'] if 'nodata' in kwargs else 65535
 
                                             # Set 'no data' values
-                                            sr_brdf = sr_brdf.gw.set_nodata(0, nodataval, (0, 10000), 'uint16')
+                                            # sr_brdf = sr_brdf.gw.set_nodata(0, nodataval, (0, 10000), 'uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
