@@ -1384,6 +1384,9 @@ class BRDF(RossLiKernels):
         if not nodata:
             nodata = data.gw.nodata
 
+        # Set 'no data' as nans
+        data = data.where(data != nodata)
+
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
@@ -1458,7 +1461,7 @@ class BRDF(RossLiKernels):
                             coords={'band': data.band.values,
                                     'y': data.y,
                                     'x': data.x},
-                            attrs=data.attrs)
+                            attrs=data.attrs).fillna(nodata)
 
         if isinstance(out_range, float) or isinstance(out_range, int):
 
@@ -1471,7 +1474,7 @@ class BRDF(RossLiKernels):
 
             drange = (0, out_range)
 
-            data = (data * out_range).clip(0, out_range)
+            data = xr.where(data == nodata, nodata, (data * out_range).clip(0, out_range))
 
         else:
 
@@ -1480,9 +1483,9 @@ class BRDF(RossLiKernels):
 
         # Mask data
         if isinstance(mask, xr.DataArray):
-            data = xr.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768*0.01), data, nodata)
+            data = xr.where((mask.sel(band=1) == 1) | (solar_za.sel(band=1) == -32768*0.01) | (data == nodata), nodata, data)
         else:
-            data = xr.where(solar_za.sel(band=1) != -32768*0.01, data, nodata)
+            data = xr.where((solar_za.sel(band=1) == -32768*0.01) | (data == nodata), nodata, data)
 
         data = data.transpose('band', 'y', 'x').astype(dtype)
 

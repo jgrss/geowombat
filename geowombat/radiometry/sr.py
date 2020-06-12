@@ -232,7 +232,8 @@ class LinearAdjustments(object):
                  sensor=None,
                  to='l8',
                  band_names=None,
-                 scale_factor=1):
+                 scale_factor=1,
+                 nodata=0):
 
         """
         Applies a bandpass adjustment by applying a linear function to surface reflectance values
@@ -243,6 +244,7 @@ class LinearAdjustments(object):
             to (Optional[str]): The sensor to adjust to.
             band_names (Optional[list]): The bands to adjust. If not given, all bands are adjusted.
             scale_factor (Optional[float]): A scale factor to apply to the input data.
+            nodata (Optional[float])
 
         Reference:
 
@@ -272,6 +274,9 @@ class LinearAdjustments(object):
         """
 
         attrs = data.attrs.copy()
+
+        # Set 'no data' as nans
+        data = data.where(data != nodata)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -305,6 +310,8 @@ class LinearAdjustments(object):
 
         if scale_factor != 1:
             data = data / scale_factor
+
+        data = data.fillna(nodata)
 
         data.attrs['adjustment'] = '{} to {}'.format(sensor, to)
         data.attrs['alphas'] = alphas.data.tolist()
@@ -416,8 +423,6 @@ class RadTransforms(MetaData):
                                   sensor,
                                   nodata=nodata)
 
-        sr_data = sr_data.where(sr_data != nodata)
-
         attrs['sensor'] = sensor
         attrs['nodata'] = nodata
         attrs['calibration'] = 'surface reflectance'
@@ -527,7 +532,7 @@ class RadTransforms(MetaData):
             sensor_za (DataArray): The sensor zenith angle.
             sensor_az (DataArray): The sensor azimuth angle.
             sensor (str): The satellite sensor.
-            nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
+            nodata (Optional[int or float]): The output 'no data' value.
             method (Optional[str]): The method to use. Currently, only 'srem' is supported and ``method`` is not used.
 
                 Choices:
@@ -618,7 +623,16 @@ class RadTransforms(MetaData):
         # Atmospheric backscattering ratio
         ab_ratio = s_atm(r)
 
-        sr_data = (toar_diff / (toar_diff * ab_ratio + transmission)).fillna(nodata).clip(0, 1).astype('float64')
+        sr_data = (toar_diff / (toar_diff * ab_ratio + transmission)).fillna(nodata)
+
+        # Create a 'no data' mask
+        mask = sr_data.where((sr_data != nodata) & (sr_data > 0)).count(dim='band').astype('uint8')
+
+        # Mask 'no data' values
+        sr_data = xr.where(mask < sr_data.gw.nbands,
+                           nodata,
+                           sr_data.clip(0, 1))\
+            .transpose('band', 'y', 'x').astype('float64')
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'surface reflectance'
