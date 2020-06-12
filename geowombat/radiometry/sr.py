@@ -233,7 +233,8 @@ class LinearAdjustments(object):
                  to='l8',
                  band_names=None,
                  scale_factor=1,
-                 nodata=0):
+                 src_nodata=0,
+                 dst_nodata=0):
 
         """
         Applies a bandpass adjustment by applying a linear function to surface reflectance values
@@ -244,7 +245,8 @@ class LinearAdjustments(object):
             to (Optional[str]): The sensor to adjust to.
             band_names (Optional[list]): The bands to adjust. If not given, all bands are adjusted.
             scale_factor (Optional[float]): A scale factor to apply to the input data.
-            nodata (Optional[float])
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
 
         Reference:
 
@@ -276,7 +278,7 @@ class LinearAdjustments(object):
         attrs = data.attrs.copy()
 
         # Set 'no data' as nans
-        data = data.where(data != nodata)
+        data = data.where(data != src_nodata)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -311,7 +313,7 @@ class LinearAdjustments(object):
         if scale_factor != 1:
             data = data / scale_factor
 
-        data = data.fillna(nodata)
+        data = data.fillna(dst_nodata)
 
         data.attrs['adjustment'] = '{} to {}'.format(sensor, to)
         data.attrs['alphas'] = alphas.data.tolist()
@@ -334,7 +336,8 @@ class RadTransforms(MetaData):
                  solar_az,
                  sensor_za,
                  sensor_az,
-                 nodata=-32768,
+                 src_nodata=-32768,
+                 dst_nodata=-32768,
                  sensor=None,
                  method='srem',
                  angle_factor=0.01,
@@ -349,7 +352,8 @@ class RadTransforms(MetaData):
             solar_az (DataArray): The solar azimuth angle.
             sensor_za (DataArray): The sensor, or view, zenith angle.
             sensor_az (DataArray): The sensor, or view, azimuth angle.
-            nodata (Optional[int or float]): The 'no data' value from the pixel angle data.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
             sensor (Optional[str]): The data's sensor.
             method (Optional[str]): The method to use. Only 'srem' is supported.
             angle_factor (Optional[float]): The scale factor for angles.
@@ -421,10 +425,11 @@ class RadTransforms(MetaData):
                                   sensor_za,
                                   sensor_az,
                                   sensor,
-                                  nodata=nodata)
+                                  src_nodata=src_nodata,
+                                  dst_nodata=dst_nodata)
 
         attrs['sensor'] = sensor
-        attrs['nodata'] = nodata
+        attrs['nodata'] = dst_nodata
         attrs['calibration'] = 'surface reflectance'
         attrs['method'] = method
         attrs['drange'] = (0, 1)
@@ -519,7 +524,8 @@ class RadTransforms(MetaData):
                    sensor_za,
                    sensor_az,
                    sensor,
-                   nodata=-32768,
+                   src_nodata=-32768,
+                   dst_nodata=-32768,
                    method='srem'):
 
         """
@@ -532,7 +538,8 @@ class RadTransforms(MetaData):
             sensor_za (DataArray): The sensor zenith angle.
             sensor_az (DataArray): The sensor azimuth angle.
             sensor (str): The satellite sensor.
-            nodata (Optional[int or float]): The output 'no data' value.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
             method (Optional[str]): The method to use. Currently, only 'srem' is supported and ``method`` is not used.
 
                 Choices:
@@ -550,6 +557,9 @@ class RadTransforms(MetaData):
         """
 
         attrs = toar.attrs.copy()
+
+        # Set 'no data' as nans
+        toar = toar.where(toar != src_nodata)
 
         central_um = toar.gw.central_um[sensor]
         band_names = list(toar.gw.wavelengths[sensor]._fields)
@@ -623,20 +633,20 @@ class RadTransforms(MetaData):
         # Atmospheric backscattering ratio
         ab_ratio = s_atm(r)
 
-        sr_data = (toar_diff / (toar_diff * ab_ratio + transmission)).fillna(nodata)
+        sr_data = (toar_diff / (toar_diff * ab_ratio + transmission)).fillna(src_nodata)
 
         # Create a 'no data' mask
-        mask = sr_data.where((sr_data != nodata) & (sr_data > 0)).count(dim='band').astype('uint8')
+        mask = sr_data.where((sr_data != src_nodata) & (sr_data > 0)).count(dim='band').astype('uint8')
 
         # Mask 'no data' values
         sr_data = xr.where(mask < sr_data.gw.nbands,
-                           nodata,
+                           dst_nodata,
                            sr_data.clip(0, 1))\
             .transpose('band', 'y', 'x').astype('float64')
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'surface reflectance'
-        attrs['nodata'] = nodata
+        attrs['nodata'] = dst_nodata
         attrs['drange'] = (0, 1)
 
         sr_data.attrs = attrs
