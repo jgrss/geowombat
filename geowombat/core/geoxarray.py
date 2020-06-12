@@ -894,15 +894,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     src = src.gw.set_nodata(0, 65535, (0, 10000), 'uint16')
         """
 
+        attrs = self._obj.attrs.copy()
+
         # Create a 'no data' mask
-        mask = self._obj.where(self._obj != src_nodata)\
-            .count(dim='band').astype('uint8')
+        mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
 
         # Mask the data
-        return xr.where(mask < self._obj.gw.nbands,
+        data = xr.where(mask < self._obj.gw.nbands,
                         dst_nodata,
                         self._obj.clip(clip_range[0], clip_range[1]))\
             .transpose('band', 'y', 'x').astype(dtype)
+
+        data.attrs = attrs
+        
+        return data
 
     def moving(self,
                band_coords='band',
