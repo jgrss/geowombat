@@ -780,7 +780,7 @@ class GeoDownloads(object):
                                             mask = sr_brdf.where(sr_brdf != 0) \
                                                 .count(dim='band').astype('uint8') \
                                                 .expand_dims(dim='band') \
-                                                .assign_coords({'band': ['mask']})
+                                                .assign_coords({'band': 'mask'})
 
                                             # Mask the data
                                             sr_brdf = xr.where(mask.sel(band='mask') < sr_brdf.gw.nbands, nodataval, sr_brdf.clip(0, 10000))\
