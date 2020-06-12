@@ -776,15 +776,8 @@ class GeoDownloads(object):
 
                                             nodataval = kwargs['nodata'] if 'nodata' in kwargs else 65535
 
-                                            # Create a 'no data' mask
-                                            mask = sr_brdf.where(sr_brdf != 0) \
-                                                .count(dim='band').astype('uint8') \
-                                                .expand_dims(dim='band') \
-                                                .assign_coords({'band': 'mask'})
-
-                                            # Mask the data
-                                            sr_brdf = xr.where(mask.sel(band='mask') < sr_brdf.gw.nbands, nodataval, sr_brdf.clip(0, 10000))\
-                                                .transpose('band', 'y', 'x').astype('uint16')
+                                            # Set 'no data' values
+                                            sr_brdf = sr_brdf.gw.set_nodata(0, nodataval, (0, 10000), 'uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
