@@ -3,8 +3,13 @@
 Change Log
 ==========
 
-1.2.14 (5 June 2020)
---------------------
+1.2.14 (12 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed 'no data' clipping error in :func:`geowombat.util.GeoDownloads.download_cube`.
 
 New
 ~~~
