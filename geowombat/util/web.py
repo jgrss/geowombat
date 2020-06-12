@@ -774,7 +774,11 @@ class GeoDownloads(object):
 
                                         else:
 
-                                            sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
+                                            sr_brdf = xr.where(sr_brdf.sel(band=bands_out) != 0,
+                                                               sr_brdf.clip(0, 10000),
+                                                               kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+
+                                            # sr_brdf = sr_brdf.clip(0, 10000).astype('uint16')
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
