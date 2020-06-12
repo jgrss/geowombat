@@ -27,11 +27,11 @@ from shapely.geometry import Polygon
 try:
 
     from s2cloudless import S2PixelCloudDetector
+
     S2CLOUDLESS_INSTALLED = True
 
 except:
     S2CLOUDLESS_INSTALLED = False
-
 
 shapely.speedups.enable()
 
@@ -41,7 +41,6 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
 
 
 def _rmdir(pathdir):
-
     for child in pathdir.iterdir():
 
         if child.is_file():
@@ -58,7 +57,6 @@ def _rmdir(pathdir):
 
 
 def _assign_attrs(data, attrs, bands_out):
-
     if bands_out:
         data = data.sel(band=bands_out)
 
@@ -69,7 +67,6 @@ def _assign_attrs(data, attrs, bands_out):
 
 
 def _random_id(string_length):
-
     """
     Generates a random string of letters and digits
     """
@@ -80,7 +77,6 @@ def _random_id(string_length):
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
-
     FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
 
     file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
@@ -90,7 +86,6 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
-
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -260,7 +255,6 @@ class GeoDownloads(object):
         #               overwrite=False)
 
         if not lqa_mask_items:
-
             lqa_mask_items = ['fill',
                               'saturated',
                               'cloudconf',
@@ -291,17 +285,15 @@ class GeoDownloads(object):
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
-
             with open(status.as_posix(), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
-
-            bounds = Polygon([(bounds[0], bounds[3]),   # upper left
-                              (bounds[2], bounds[3]),   # upper right
-                              (bounds[2], bounds[1]),   # lower right
-                              (bounds[0], bounds[1]),   # lower left
+            bounds = Polygon([(bounds[0], bounds[3]),  # upper left
+                              (bounds[2], bounds[3]),  # upper right
+                              (bounds[2], bounds[1]),  # lower right
+                              (bounds[0], bounds[1]),  # lower left
                               (bounds[0], bounds[3])])  # upper left
 
             bounds = gpd.GeoDataFrame([0],
@@ -311,7 +303,6 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
-
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -375,12 +366,12 @@ class GeoDownloads(object):
             year_months[dt1.year] = month_range
         else:
 
-            for y in range(dt1.year, dt2.year+1):
+            for y in range(dt1.year, dt2.year + 1):
 
                 if y == dt1.year:
                     year_months[y] = list(range(dt1.month, 13))
                 elif y == dt2.year:
-                    year_months[y] = list(range(1, dt2.month+1))
+                    year_months[y] = list(range(1, dt2.month + 1))
                 else:
                     year_months[y] = months
 
@@ -430,7 +421,6 @@ class GeoDownloads(object):
                         self.list_gcp(sensor, query)
 
                         if not self.search_dict:
-
                             logger.warning(
                                 '  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(
                                     SENSOR=sensor,
@@ -443,7 +433,9 @@ class GeoDownloads(object):
                         # Download data
                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                            load_bands = ['B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(band_associations[bd]) for bd in bands]
+                            load_bands = [
+                                'B{:02d}'.format(band_associations[bd]) if bd != 'rededge' else 'B{:01d}A'.format(
+                                    band_associations[bd]) for bd in bands]
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -514,9 +506,11 @@ class GeoDownloads(object):
                                 lines = tx.readlines()
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath(
+                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
@@ -531,7 +525,8 @@ class GeoDownloads(object):
                                                                    overwrite=False,
                                                                    verbose=1)
 
-                                if ' '.join(bands) == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2':
+                                if ' '.join(
+                                        bands) == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2':
                                     rad_sensor = 's2af' if angle_info.sensor == 's2a' else 's2bf'
                                 elif ' '.join(bands) == 'coastal blue red nir1 nir rededge water cirrus swir1 swir2':
                                     rad_sensor = 's2acloudless' if angle_info.sensor == 's2a' else 's2bcloudless'
@@ -584,7 +579,6 @@ class GeoDownloads(object):
 
                                     # Check if the file exists to avoid duplicate GCP filenames`
                                     if Path(finfo_dict[bd].name).is_file():
-
                                         warp(finfo_dict[bd].name,
                                              finfo_dict[bd].name.replace('.jp2', '.tif'),
                                              overwrite=True,
@@ -663,10 +657,13 @@ class GeoDownloads(object):
                                                                                           all_bands=False)
 
                                                     # Get the S2Cloudless bands
-                                                    data_cloudless = data.sel(band=['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2'])
+                                                    data_cloudless = data.sel(
+                                                        band=['coastal', 'blue', 'red', 'nir1', 'nir', 'rededge',
+                                                              'water', 'cirrus', 'swir1', 'swir2'])
 
                                                     # Scale from 0-10000 to 0-1 and reshape
-                                                    X = (data_cloudless * 0.0001).clip(0, 1).data.compute(num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
+                                                    X = (data_cloudless * 0.0001).clip(0, 1).data.compute(
+                                                        num_workers=num_threads).transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                     # Predict clouds
                                                     # Potential classes? Currently, only clear and clouds are returned.
@@ -678,12 +675,12 @@ class GeoDownloads(object):
                                                 else:
 
                                                     if bands_out:
-                                                        
                                                         # If there are extra bands, remove them because they
                                                         # are not supported in the BRDF kernels.
                                                         data = _assign_attrs(data, attrs, bands_out)
 
-                                                    logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
+                                                    logger.warning(
+                                                        '  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
 
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
@@ -695,7 +692,8 @@ class GeoDownloads(object):
                                             sr = rt.toar_to_sr(toar_scaled,
                                                                sza, saa, vza, vaa,
                                                                rad_sensor,
-                                                               dst_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                                               dst_nodata=kwargs[
+                                                                   'nodata'] if 'nodata' in kwargs else 65535)
 
                                         else:
 
@@ -704,8 +702,10 @@ class GeoDownloads(object):
                                                              sza, saa, vza, vaa,
                                                              sensor=rad_sensor,
                                                              meta=meta,
-                                                             src_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535,
-                                                             dst_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                                             src_nodata=kwargs[
+                                                                 'nodata'] if 'nodata' in kwargs else 65535,
+                                                             dst_nodata=kwargs[
+                                                                 'nodata'] if 'nodata' in kwargs else 65535)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
@@ -713,18 +713,22 @@ class GeoDownloads(object):
                                                                sensor=rad_sensor,
                                                                wavelengths=data.band.values.tolist(),
                                                                out_range=10000.0,
-                                                               src_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535,
-                                                               dst_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                                               src_nodata=kwargs[
+                                                                   'nodata'] if 'nodata' in kwargs else 65535,
+                                                               dst_nodata=kwargs[
+                                                                   'nodata'] if 'nodata' in kwargs else 65535)
 
                                         if bandpass_sensor.lower() in ['l5', 'l7', 's2', 's2a', 's2b', 's2c']:
-
+                                            
                                             # Linearly adjust to Landsat 8
                                             sr_brdf = la.bandpass(sr_brdf,
                                                                   bandpass_sensor.lower(),
                                                                   to='l8',
                                                                   scale_factor=0.0001,
-                                                                  src_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535,
-                                                                  dst_nodata=kwargs['nodata'] if 'nodata' in kwargs else 65535)
+                                                                  src_nodata=kwargs[
+                                                                      'nodata'] if 'nodata' in kwargs else 65535,
+                                                                  dst_nodata=kwargs[
+                                                                      'nodata'] if 'nodata' in kwargs else 65535)
 
                                         if mask_qa:
 
@@ -733,24 +737,30 @@ class GeoDownloads(object):
                                                 if S2CLOUDLESS_INSTALLED:
 
                                                     # Estimate the cloud shadows
-                                                    mask = estimate_cloud_shadows((sr_brdf.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
-                                                                                  mask,
-                                                                                  sza,
-                                                                                  saa,
-                                                                                  vza,
-                                                                                  vaa,
-                                                                                  heights=cloud_heights,
-                                                                                  num_workers=num_threads)
+                                                    mask = estimate_cloud_shadows(
+                                                        (sr_brdf.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype(
+                                                            'float64'),
+                                                        mask,
+                                                        sza,
+                                                        saa,
+                                                        vza,
+                                                        vaa,
+                                                        heights=cloud_heights,
+                                                        num_workers=num_threads)
 
                                                     sr_brdf = xr.where(mask.sel(band='mask') == 0,
                                                                        sr_brdf.clip(0, 10000),
-                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+                                                                       kwargs[
+                                                                           'nodata'] if 'nodata' in kwargs else 65535).astype(
+                                                        'uint16')
 
                                                 else:
 
                                                     sr_brdf = xr.where(sr_brdf != 0,
                                                                        sr_brdf.clip(0, 10000),
-                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+                                                                       kwargs[
+                                                                           'nodata'] if 'nodata' in kwargs else 65535).astype(
+                                                        'uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                                 sr_brdf.gw.to_raster(out_brdf, **kwargs)
@@ -773,7 +783,9 @@ class GeoDownloads(object):
                                                     # Mask non-clear pixels
                                                     sr_brdf = xr.where(mask.sel(band='mask') < 2,
                                                                        sr_brdf.clip(0, 10000),
-                                                                       kwargs['nodata'] if 'nodata' in kwargs else 65535).astype('uint16')
+                                                                       kwargs[
+                                                                           'nodata'] if 'nodata' in kwargs else 65535).astype(
+                                                        'uint16')
 
                                                     sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                                     sr_brdf.gw.to_raster(out_brdf, **kwargs)
@@ -789,7 +801,6 @@ class GeoDownloads(object):
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
 
                                         if write_angle_files:
-
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(out_angles, **angle_kwargs)
@@ -949,7 +960,8 @@ class GeoDownloads(object):
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception(
+                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -1040,7 +1052,6 @@ class GeoDownloads(object):
                         lines = tx.readlines()
 
                     if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
-
                         null_items.append(fbase)
                         continue_download = False
 
