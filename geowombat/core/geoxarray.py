@@ -903,13 +903,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         # Create a 'no data' mask
         mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
 
-
+        if self._obj.gw.has_time_coord:
+            mask = mask.transpose('time', 'band', 'y', 'x')
+        else:
+            mask = mask.transpose('band', 'y', 'x')
 
         # Mask the data
         data = xr.where(mask < self._obj.gw.nbands,
                         dst_nodata,
-                        (self._obj*scale_factor).clip(clip_range[0], clip_range[1]))\
-            .transpose('band', 'y', 'x').astype(dtype)
+                        (self._obj*scale_factor).clip(clip_range[0], clip_range[1]))
+        
+        if self._obj.gw.has_time_coord:
+            data = data.transpose('time', 'band', 'y', 'x').astype(dtype)
+        else:
+            data = data.transpose('band', 'y', 'x').astype(dtype)
 
         attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
 
