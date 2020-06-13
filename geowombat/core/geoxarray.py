@@ -905,8 +905,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         if self._obj.gw.has_time_coord:
             mask = mask.transpose('time', 'y', 'x')
-        else:
-            mask = mask.transpose('band', 'y', 'x')
 
         # Mask the data
         data = xr.where(mask < self._obj.gw.nbands,
