@@ -904,7 +904,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
 
         if self._obj.gw.has_time_coord:
-            mask = mask.transpose('time', 'band', 'y', 'x')
+            mask = mask.transpose('time', 'y', 'x')
         else:
             mask = mask.transpose('band', 'y', 'x')
 
