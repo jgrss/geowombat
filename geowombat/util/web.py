@@ -730,8 +730,13 @@ class GeoDownloads(object):
 
                                                 if S2CLOUDLESS_INSTALLED:
 
+                                                    wavel_sub = sr_brdf.gw.set_nodata(nodataval,
+                                                                                      nodataval,
+                                                                                      (0, 1),
+                                                                                      'float64')
+
                                                     # Estimate the cloud shadows
-                                                    mask = estimate_cloud_shadows((sr_brdf.sel(band=['nir', 'swir1']) * 0.0001).clip(0, 1).astype('float64'),
+                                                    mask = estimate_cloud_shadows(wavel_sub,
                                                                                   mask,
                                                                                   sza,
                                                                                   saa,
@@ -740,13 +745,9 @@ class GeoDownloads(object):
                                                                                   heights=cloud_heights,
                                                                                   num_workers=num_threads)
 
-                                                    sr_brdf = xr.where(mask.sel(band='mask') == 0,
-                                                                       sr_brdf.clip(0, 10000),
-                                                                       nodataval).astype('uint16')
-
-                                                else:
-
-                                                    sr_brdf = xr.where(sr_brdf != 0,
+                                                    # Update the bands with the mask
+                                                    sr_brdf = xr.where((mask.sel(band='mask') == 0) &
+                                                                       (sr_brdf != nodataval),
                                                                        sr_brdf.clip(0, 10000),
                                                                        nodataval).astype('uint16')
 
@@ -779,7 +780,10 @@ class GeoDownloads(object):
                                         else:
 
                                             # Set 'no data' values
-                                            sr_brdf = sr_brdf.gw.set_nodata(nodataval, nodataval, (0, 10000), 'uint16')
+                                            sr_brdf = sr_brdf.gw.set_nodata(nodataval,
+                                                                            nodataval,
+                                                                            (0, 10000),
+                                                                            'uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(out_brdf, **kwargs)
