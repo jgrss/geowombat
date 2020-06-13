@@ -704,6 +704,30 @@ class DataProperties(object):
                         (self.left, self.bottom)])
 
     @property
+    def has_band_coord(self):
+        return True if 'band' in self._obj.coords else False
+
+    @property
+    def has_band_dim(self):
+        return True if self.ndims == 3 else False
+
+    @property
+    def has_band(self):
+        return True if ('band' in self._obj.coords) and (self.ndims == 3) else False
+
+    @property
+    def has_time_coord(self):
+        return True if 'time' in self._obj.coords else False
+
+    @property
+    def has_time_dim(self):
+        return True if self.ndims == 4 else False
+
+    @property
+    def has_time(self):
+        return True if ('time' in self._obj.coords) and (self.ndims == 4) else False
+
+    @property
     def geodataframe(self):
 
         """
