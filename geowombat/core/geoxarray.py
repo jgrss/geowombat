@@ -903,6 +903,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         # Create a 'no data' mask
         mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
 
+
+
         # Mask the data
         data = xr.where(mask < self._obj.gw.nbands,
                         dst_nodata,
