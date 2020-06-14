@@ -20,6 +20,7 @@ from ..radiometry import BRDF as _BRDF
 import numpy as np
 import xarray as xr
 import joblib
+from shapely.geometry import Polygon
 
 
 class _UpdateConfig(object):
@@ -235,6 +236,29 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self.config = config
 
         self._update_attrs()
+
+    def check_geometry(self, bounds, binary='intersects'):
+
+        """
+        Returns True if the boundary or interior of the object intersect in any way with those of the other.
+
+        Args:
+            bounds (tuple or BoundingBox)
+            binary (Optional[str])
+
+        Returns:
+            ``bool``
+        """
+
+        left, bottom, right, top = bounds
+
+        poly = Polygon([(left, bottom),
+                        (left, top),
+                        (right, top),
+                        (right, bottom),
+                        (left, bottom)])
+
+        return getattr(self._obj.gw.geometry, binary)(poly)
 
     def imshow(self,
                mask=False,
