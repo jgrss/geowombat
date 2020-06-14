@@ -237,28 +237,48 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         self._update_attrs()
 
-    def check_geometry(self, bounds, binary='intersects'):
+    def bounds_overlay(self, bounds, how='intersects'):
 
         """
-        Returns True if the boundary or interior of the object intersect in any way with those of the other.
+        Checks whether the bounds overlay the image bounds
 
         Args:
-            bounds (tuple or BoundingBox)
-            binary (Optional[str])
+            bounds (tuple | rasterio.coords.BoundingBox | shapely.geometry): The bounds to check. If given as a tuple,
+                the order should be (left, bottom, right, top).
+            how (Optional[str]): Choices are any ``shapely.geometry`` binary predicates.
 
         Returns:
-            ``bool``
+            ``bool``pip
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> bounds = (left, bottom, right, top)
+            >>>
+            >>> with gw.open('image.tif') as src
+            >>>     intersects = src.gw.bounds_overlay(bounds)
+            >>>
+            >>> from rasterio.coords import BoundingBox
+            >>>
+            >>> bounds = BoundingBox(left, bottom, right, top)
+            >>>
+            >>> with gw.open('image.tif') as src
+            >>>     contains = src.gw.bounds_overlay(bounds, how='contains')
         """
 
-        left, bottom, right, top = bounds
+        if isinstance(bounds, Polygon):
+            return getattr(self._obj.gw.geometry, how)(bounds)
+        else:
 
-        poly = Polygon([(left, bottom),
-                        (left, top),
-                        (right, top),
-                        (right, bottom),
-                        (left, bottom)])
+            left, bottom, right, top = bounds
 
-        return getattr(self._obj.gw.geometry, binary)(poly)
+            poly = Polygon([(left, bottom),
+                            (left, top),
+                            (right, top),
+                            (right, bottom),
+                            (left, bottom)])
+
+            return getattr(self._obj.gw.geometry, how)(poly)
 
     def imshow(self,
                mask=False,

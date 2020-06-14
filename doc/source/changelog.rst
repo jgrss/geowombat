@@ -3,13 +3,14 @@
 Change Log
 ==========
 
-1.2.15 ()
----------
+1.2.15 (15 June 2020)
+---------------------
 
 New
 ~~~
 
 - Added :func:`set_nodata` function for `DataArrays`.
+- Added :func:`bounds_overlay` function for `DataArrays`.
 
 1.2.14 (12 June 2020)
 ---------------------
