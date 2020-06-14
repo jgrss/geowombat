@@ -243,22 +243,26 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns True if the boundary or interior of the object intersect in any way with those of the other.
 
         Args:
-            bounds (tuple or BoundingBox)
-            binary (Optional[str])
+            bounds (tuple | rasterio.coords.BoundingBox | shapely.geometry): The bounds to check.
+            binary (Optional[str]): Choices are any ``shapely.geometry`` binary predicates.
 
         Returns:
             ``bool``
         """
 
-        left, bottom, right, top = bounds
+        if isinstance(bounds, Polygon):
+            return getattr(self._obj.gw.geometry, binary)(bounds)
+        else:
 
-        poly = Polygon([(left, bottom),
-                        (left, top),
-                        (right, top),
-                        (right, bottom),
-                        (left, bottom)])
+            left, bottom, right, top = bounds
 
-        return getattr(self._obj.gw.geometry, binary)(poly)
+            poly = Polygon([(left, bottom),
+                            (left, top),
+                            (right, top),
+                            (right, bottom),
+                            (left, bottom)])
+
+            return getattr(self._obj.gw.geometry, binary)(poly)
 
     def imshow(self,
                mask=False,
