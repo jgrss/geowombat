@@ -28,14 +28,14 @@ def _create_nodata_array(data, nodata, band_name, var_name):
 class BandMath(object):
 
     @staticmethod
-    def scale_and_assign(data, band_variable, scale_factor, names, new_names):
+    def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
 
         attrs = data.attrs
 
         if band_variable == 'wavelength':
-            band_data = data.sel(wavelength=names) * scale_factor
+            band_data = data.where(data != nodata).sel(wavelength=names) * scale_factor
         else:
-            band_data = data.sel(band=names) * scale_factor
+            band_data = data.where(data != nodata).sel(band=names) * scale_factor
 
         band_data = band_data.assign_coords(coords={band_variable: new_names})
         band_data = band_data.assign_attrs(**attrs)
@@ -147,7 +147,7 @@ class BandMath(object):
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
-        band_data = self.scale_and_assign(data, band_variable, scale_factor, [b1, b2], [b1, b2])
+        band_data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [b1, b2], [b1, b2])
 
         if band_variable == 'wavelength':
 
@@ -179,7 +179,7 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, band_variable, scale_factor, [red, nir], ['red', 'nir'])
+        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [red, nir], ['red', 'nir'])
 
         if band_variable == 'wavelength':
 
@@ -218,7 +218,7 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
-        data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
+        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
 
         if band_variable == 'wavelength':
 
@@ -250,7 +250,7 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, band_variable, scale_factor, [nir, red], ['nir', 'red'])
+        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, red], ['nir', 'red'])
 
         if band_variable == 'wavelength':
 
@@ -322,7 +322,7 @@ class BandMath(object):
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
+        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
 
         if band_variable == 'wavelength':
             result = data.sel(wavelength='swir1') + data.sel(wavelength='red')
@@ -492,7 +492,11 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
 
         tc_coefficients = self.get_coefficients(data.gw.wavelengths, sensor)
 
-        tcap = ((data * scale_factor) * tc_coefficients).sum(dim='band').fillna(nodata).transpose('coeff', 'y', 'x').rename({'coeff': 'band'})
+        tcap = ((data.where(data != nodata) * scale_factor) * tc_coefficients)\
+            .sum(dim='band')\
+            .fillna(nodata)\
+            .transpose('coeff', 'y', 'x')\
+            .rename({'coeff': 'band'})
 
         tcap.attrs = data.attrs
 
