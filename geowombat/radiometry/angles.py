@@ -12,12 +12,10 @@ from ..errors import logger
 import numpy as np
 import cv2
 import xarray as xr
-# import dask.array as da
 import rasterio as rio
 from rasterio.warp import reproject
 from affine import Affine
 import xml.etree.ElementTree as ET
-# import numba as nb
 # from pysolar.solar import get_altitude_fast, get_azimuth_fast
 
 

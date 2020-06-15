@@ -3,6 +3,38 @@
 Change Log
 ==========
 
+1.2.15 (15 June 2020)
+---------------------
+
+New
+~~~
+
+- Added :func:`set_nodata` function for `DataArrays`.
+- Added :func:`bounds_overlay` function for `DataArrays`.
+
+1.2.14 (12 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed 'no data' clipping error in :func:`geowombat.util.GeoDownloads.download_cube`.
+
+New
+~~~
+
+- Added `file_list` to :func:`geowombat.core.sort_images_by_date`.
+- Added `nodata` keyword argument to :func:`geowombat.open`.
+
+1.2.13 (2 June 2020)
+--------------------
+
+New
+~~~
+
+- Added `cloud_height` option in :func:`download_cube`.
+- Added first attempt at supporting HDF reads.
+
 1.2.12 (3 May 2020)
 -------------------
 

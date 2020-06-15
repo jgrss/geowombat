@@ -7,6 +7,7 @@ import dask.array as da
 import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.cluster import KMeans
 
 try:
     from lightgbm import LGBMRegressor
@@ -77,7 +78,7 @@ def predict(datax, datay, bands, model_dict, ordinal, num_workers):
     return xr.concat(predictions, dim='band')
 
 
-def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kwargs):
+def regress(datax, datay, bands, frac, num_workers, nodata, scale_factor, robust, method, **kwargs):
 
     """
     Fits and applies a regressor
@@ -89,6 +90,7 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
         frac (float)
         num_workers (int)
         nodata (float | int)
+        scale_factor (float)
         robust (bool)
         method (str)
         kwargs (dict)
@@ -102,27 +104,49 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
 
     predictions = []
 
-    X = datax.squeeze().data.compute(num_workers=num_workers)
+    X = datax.squeeze().data.compute(num_workers=num_workers).flatten()
 
     for band in bands:
 
         # Get the data for the current band
-        y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers)
+        y = datay.sel(band=band).squeeze().data.compute(num_workers=num_workers).flatten()
+
+        kclu = KMeans(n_clusters=3).fit(y[:, np.newaxis])
+
+        X_ = np.array([], dtype='float64')
+        y_ = np.array([], dtype='float64')
+
+        # Sample `frac` from each cluster
+        for cluster in np.unique(kclu.labels_).tolist():
+
+            idx0 = np.where((kclu.labels_ == cluster) &
+                            (X != nodata*scale_factor) &
+                            (y != nodata*scale_factor))[0]
+
+            if idx0.shape[0] > 0:
+
+                # Get a fraction of the samples
+                idx1 = np.random.choice(idx0,
+                                        size=int(idx0.shape[0] * frac),
+                                        replace=False)
+
+                X_ = np.concatenate((X_, X[idx1]))
+                y_ = np.concatenate((y_, y[idx1]))
 
         # Get indices of valid samples
-        idx0 = np.where((X != nodata) & (y != nodata))
+        # idx2 = np.where((X != nodata*scale_factor) & (y != nodata*scale_factor))
 
-        X_ = X[idx0].flatten()
-        y_ = y[idx0].flatten()
+        # X_ = X[idx2]
+        # y_ = y[idx2]
 
         if y_.shape[0] > 0:
 
             # Get a fraction of the samples
-            idx1 = np.random.choice(range(0, y_.shape[0]),
-                                    size=int(y_.shape[0] * frac),
-                                    replace=False)
+            # idx1 = np.random.choice(range(0, y_.shape[0]),
+            #                         size=int(y_.shape[0] * frac),
+            #                         replace=False)
 
-            X_ = X_[idx1]
+            # X_ = X_[idx1]
 
             def prepare_x(xdata, index_y=True):
 
@@ -137,12 +161,12 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
                 #
                 #     weights.append(xdata / ((y0*0.1 + xdata) / 1.1))
 
-                return np.c_[xdata, xdata ** 2, xdata ** 3, xdata ** 0.5]
+                return np.c_[xdata, xdata ** 2, xdata ** 3, xdata ** 0.5, np.exp(xdata)]
 
             X_ = prepare_x(X_)
 
             # X_ = X_[idx][:, np.newaxis]
-            y_ = y_[idx1]
+            # y_ = y_[idx1]
 
             if method.lower() == 'linear':
 
@@ -175,6 +199,11 @@ def regress(datax, datay, bands, frac, num_workers, nodata, robust, method, **kw
                 lr = RandomForestRegressor(n_jobs=num_workers, **kwargs)
 
             lr.fit(X_, y_)
+
+            # from sklearn import metrics
+            # yhat = lr.predict(X_)
+            # logger.info(metrics.mean_squared_error(y_, yhat))
+            # logger.info(metrics.r2_score(y_, yhat))
 
             # Predict on the full array
             yhat = lr.predict(prepare_x(X.flatten(), index_y=False)).reshape(datay.gw.nrows, datay.gw.ncols)
@@ -347,7 +376,7 @@ def pan_sharpen(data,
             data_sharp = data.sel(band=bands) * dnf
 
         else:
-            data_sharp = regress(pan, data, bands, frac, num_workers, nodata, robust, method, **kwargs)
+            data_sharp = regress(pan, data, bands, frac, num_workers, nodata, scale_factor, robust, method, **kwargs)
 
     data_sharp = data_sharp.assign_coords(coords={'band': bands})
 

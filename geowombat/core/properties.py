@@ -1,6 +1,7 @@
 from pathlib import Path
 from collections import namedtuple
 
+import pandas as pd
 import geopandas as gpd
 from rasterio.coords import BoundingBox
 from affine import Affine
@@ -685,6 +686,11 @@ class DataProperties(object):
         return self.cellx / 2.0
 
     @property
+    def pydatetime(self):
+        """Get Python datetime objects from the time dimension"""
+        return pd.to_datetime(self._obj.time.values).to_pydatetime()
+
+    @property
     def geometry(self):
 
         """
@@ -696,6 +702,30 @@ class DataProperties(object):
                         (self.right, self.top),
                         (self.right, self.bottom),
                         (self.left, self.bottom)])
+
+    @property
+    def has_band_coord(self):
+        return True if 'band' in self._obj.coords else False
+
+    @property
+    def has_band_dim(self):
+        return True if self.ndims == 3 else False
+
+    @property
+    def has_band(self):
+        return True if ('band' in self._obj.coords) and (self.ndims == 3) else False
+
+    @property
+    def has_time_coord(self):
+        return True if 'time' in self._obj.coords else False
+
+    @property
+    def has_time_dim(self):
+        return True if self.ndims == 4 else False
+
+    @property
+    def has_time(self):
+        return True if ('time' in self._obj.coords) and (self.ndims == 4) else False
 
     @property
     def geodataframe(self):

@@ -20,6 +20,7 @@ from ..radiometry import BRDF as _BRDF
 import numpy as np
 import xarray as xr
 import joblib
+from shapely.geometry import Polygon
 
 
 class _UpdateConfig(object):
@@ -235,6 +236,49 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self.config = config
 
         self._update_attrs()
+
+    def bounds_overlay(self, bounds, how='intersects'):
+
+        """
+        Checks whether the bounds overlay the image bounds
+
+        Args:
+            bounds (tuple | rasterio.coords.BoundingBox | shapely.geometry): The bounds to check. If given as a tuple,
+                the order should be (left, bottom, right, top).
+            how (Optional[str]): Choices are any ``shapely.geometry`` binary predicates.
+
+        Returns:
+            ``bool``pip
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> bounds = (left, bottom, right, top)
+            >>>
+            >>> with gw.open('image.tif') as src
+            >>>     intersects = src.gw.bounds_overlay(bounds)
+            >>>
+            >>> from rasterio.coords import BoundingBox
+            >>>
+            >>> bounds = BoundingBox(left, bottom, right, top)
+            >>>
+            >>> with gw.open('image.tif') as src
+            >>>     contains = src.gw.bounds_overlay(bounds, how='contains')
+        """
+
+        if isinstance(bounds, Polygon):
+            return getattr(self._obj.gw.geometry, how)(bounds)
+        else:
+
+            left, bottom, right, top = bounds
+
+            poly = Polygon([(left, bottom),
+                            (left, top),
+                            (right, top),
+                            (right, bottom),
+                            (left, bottom)])
+
+            return getattr(self._obj.gw.geometry, how)(poly)
 
     def imshow(self,
                mask=False,
@@ -872,6 +916,53 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        n_jobs=n_jobs,
                        verbose=verbose,
                        **kwargs)
+
+    def set_nodata(self, src_nodata, dst_nodata, clip_range, dtype, scale_factor=None):
+
+        """
+        Sets 'no data' values in the DataArray
+
+        Args:
+            src_noata (int | float): The 'no data' values to replace.
+            dst_nodata (int | float): The 'no data' value to set.
+            clip_range (tuple): The output clip range.
+            dtype (str): The output data type.
+            scale_factor (float): A scale factor to apply.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     src = src.gw.set_nodata(0, 65535, (0, 10000), 'uint16')
+        """
+
+        if not isinstance(scale_factor, float):
+            scale_factor = 1.0
+
+        attrs = self._obj.attrs.copy()
+
+        # Create a 'no data' mask
+        mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
+
+        if self._obj.gw.has_time_coord:
+            mask = mask.transpose('time', 'y', 'x')
+
+        # Mask the data
+        data = xr.where(mask < self._obj.gw.nbands,
+                        dst_nodata,
+                        (self._obj*scale_factor).clip(clip_range[0], clip_range[1]))
+        
+        if self._obj.gw.has_time_coord:
+            data = data.transpose('time', 'band', 'y', 'x').astype(dtype)
+        else:
+            data = data.transpose('band', 'y', 'x').astype(dtype)
+
+        attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
+
+        return data.assign_attrs(**attrs)
 
     def moving(self,
                band_coords='band',

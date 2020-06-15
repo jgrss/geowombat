@@ -2,6 +2,7 @@ import os
 import fnmatch
 from collections import namedtuple, OrderedDict
 from datetime import datetime
+from pathlib import Path
 
 from ..errors import logger
 from ..moving import moving_window
@@ -101,7 +102,8 @@ def sort_images_by_date(image_path,
                         date_start,
                         date_end,
                         split_by='_',
-                        date_format='%Y%m%d'):
+                        date_format='%Y%m%d',
+                        file_list=None):
 
     """
     Sorts images by date
@@ -114,23 +116,27 @@ def sort_images_by_date(image_path,
         date_end (int): The date ending position in the split.
         split_by (Optional[str]): How to split the file name.
         date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
+        file_list (Optional[list of Paths]): A file list of names to sort. Overrides ``image_path``.
 
     Returns:
         ``collections.OrderedDict``
 
     Example:
-        >>> from geowombat.core import sort_images
+        >>> from geowombat.core import sort_images_by_date
         >>>
         >>> # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif
         >>> image_path = '/path/to/images'
         >>>
-        >>> image_dict = sort_images(image_path, '*.tif', 3, 0, 8)
+        >>> image_dict = sort_images_by_date(image_path, '*.tif', 3, 0, 8)
         >>> image_names = list(image_dict.keys())
         >>> time_names = list(image_dict.values())
     """
 
-    fl = fnmatch.filter(os.listdir(image_path.as_posix()), image_wildcard)
-    fl = [image_path.joinpath(fn) for fn in fl]
+    if file_list:
+        fl = file_list
+    else:
+        fl = list(image_path.glob(image_wildcard))
+
     dates = [datetime.strptime(fn.name.split(split_by)[date_pos][date_start:date_end], date_format) for fn in fl]
 
     return OrderedDict(sorted(dict(zip([fn.as_posix() for fn in fl], dates)).items(), key=lambda x_: x_[1]))

@@ -1282,7 +1282,8 @@ class BRDF(RossLiKernels):
                   central_latitude=None,
                   sensor=None,
                   wavelengths=None,
-                  nodata=0,
+                  src_nodata=-32768,
+                  dst_nodata=-32768,
                   mask=None,
                   scale_factor=1.0,
                   out_range=None,
@@ -1301,7 +1302,8 @@ class BRDF(RossLiKernels):
             central_latitude (Optional[float or 2d DataArray]): The central latitude.
             sensor (Optional[str]): The satellite sensor.
             wavelengths (str list): The wavelength(s) to normalize.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
             mask (Optional[DataArray]): A data mask, where clear values are 0.
             scale_factor (Optional[float]): A scale factor to apply to the input data.
             out_range (Optional[float]): The out data range. If not given, the output data are return in a 0-1 range.
@@ -1329,7 +1331,7 @@ class BRDF(RossLiKernels):
             >>> brdf = BRDF()
             >>>
             >>> # Example where pixel angles are stored in separate GeoTiff files
-            >>> with gw.config.update(sensor='l7', scale_factor=0.0001, nodata=0):
+            >>> with gw.config.update(sensor='l7', scale_factor=0.0001):
             >>>
             >>>     with gw.open('solarz.tif') as solarz,
             >>>         gw.open('solara.tif') as solara,
@@ -1354,8 +1356,8 @@ class BRDF(RossLiKernels):
         if not wavelengths:
             logger.exception('  The sensor or wavelength must be supplied.')
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if not isinstance(dst_nodata, int) and not isinstance(dst_nodata, float):
+            dst_nodata = data.gw.nodata
 
         # ne.set_num_threads(num_threads)
 
@@ -1381,8 +1383,8 @@ class BRDF(RossLiKernels):
 
         attrs = data.attrs.copy()
 
-        if not nodata:
-            nodata = data.gw.nodata
+        # Set 'no data' as nans
+        data = data.where(data != src_nodata)
 
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
@@ -1458,7 +1460,7 @@ class BRDF(RossLiKernels):
                             coords={'band': data.band.values,
                                     'y': data.y,
                                     'x': data.x},
-                            attrs=data.attrs)
+                            attrs=data.attrs).fillna(src_nodata)
 
         if isinstance(out_range, float) or isinstance(out_range, int):
 
@@ -1471,7 +1473,7 @@ class BRDF(RossLiKernels):
 
             drange = (0, out_range)
 
-            data = (data * out_range).clip(0, out_range)
+            data = xr.where(data == src_nodata, src_nodata, (data * out_range).clip(0, out_range))
 
         else:
 
@@ -1480,15 +1482,15 @@ class BRDF(RossLiKernels):
 
         # Mask data
         if isinstance(mask, xr.DataArray):
-            data = xr.where((mask.sel(band=1) == 0) & (solar_za.sel(band=1) != -32768*0.01), data, nodata)
+            data = xr.where((mask.sel(band=1) == 1) | (solar_za.sel(band=1) == -32768*0.01) | (data == src_nodata), dst_nodata, data)
         else:
-            data = xr.where(solar_za.sel(band=1) != -32768*0.01, data, nodata)
+            data = xr.where((solar_za.sel(band=1) == -32768*0.01) | (data == src_nodata), dst_nodata, data)
 
         data = data.transpose('band', 'y', 'x').astype(dtype)
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'BRDF-adjusted surface reflectance'
-        attrs['nodata'] = nodata
+        attrs['nodata'] = dst_nodata
         attrs['drange'] = drange
 
         data.attrs = attrs
