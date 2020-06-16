@@ -12,13 +12,14 @@ from . import tasseled_cap as gw_tasseled_cap
 from . import to_crs as _to_crs
 from . import transform_crs as _transform_crs
 from .properties import DataProperties as _DataProperties
-from .util import project_coords
+from .util import project_coords, n_rows_cols
 from ..backends import Cluster as _Cluster
 from ..util import imshow as gw_imshow
 from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
+from rasterio.windows import Window
 import joblib
 from shapely.geometry import Polygon
 
@@ -285,6 +286,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                             (left, bottom)])
 
             return getattr(self._obj.gw.geometry, how)(poly)
+
+    def windows(self):
+
+        for row_off in range(0, self._obj.gw.nrows, self._obj.gw.row_chunks):
+
+            height = n_rows_cols(row_off, self._obj.gw.row_chunks, self._obj.gw.nrows)
+
+            for col_off in range(0, self._obj.gw.ncols, self._obj.gw.col_chunks):
+
+                width = n_rows_cols(col_off, self._obj.gw.col_chunks, self._obj.gw.ncols)
+
+                yield Window(row_off=row_off,
+                             col_off=col_off,
+                             height=height,
+                             width=width)
 
     def imshow(self,
                mask=False,
