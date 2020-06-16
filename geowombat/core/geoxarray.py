@@ -22,6 +22,12 @@ import xarray as xr
 import joblib
 from shapely.geometry import Polygon
 
+try:
+    from shapely import speedups
+    speedups.enable()
+except:
+    pass
+
 
 class _UpdateConfig(object):
 
