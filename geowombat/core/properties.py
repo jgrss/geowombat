@@ -8,7 +8,11 @@ from affine import Affine
 import shapely
 from shapely.geometry import Polygon
 
-shapely.speedups.enable()
+try:
+    from shapely import speedups
+    speedups.enable()
+except:
+    pass
 
 
 WavelengthsPan = namedtuple('WavelengthsPan', 'pan')
