@@ -99,49 +99,49 @@ def _client_dummy(**kwargs):
     yield None
 
 
-def _compressor(*args):
+# def _compressor(*args):
+#
+#     w_, b_, f_, o_ = list(itertools.chain(*args))
+#
+#     with rio.open(f_, mode='r+', sharing=False) as dst_:
+#
+#         dst_.write(np.squeeze(b_),
+#                    window=w_,
+#                    indexes=o_)
 
-    w_, b_, f_, o_ = list(itertools.chain(*args))
 
-    with rio.open(f_, mode='r+', sharing=False) as dst_:
-
-        dst_.write(np.squeeze(b_),
-                   window=w_,
-                   indexes=o_)
-
-
-def _block_write_func(*args):
-
-    ofn_, fn_, g_, t_ = list(itertools.chain(*args))
-
-    if t_ == 'zarr':
-
-        group_node = zarr.open(fn_, mode='r')[g_]
-
-        w_ = Window(row_off=group_node.attrs['row_off'],
-                    col_off=group_node.attrs['col_off'],
-                    height=group_node.attrs['height'],
-                    width=group_node.attrs['width'])
-
-        out_data_ = np.squeeze(group_node['data'][:])
-
-    else:
-
-        w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
-                    col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
-                    height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
-                    width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
-
-        with rio.open(fn_) as src_:
-            out_data_ = np.squeeze(src_.read(window=w_))
-
-    out_indexes_ = 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1))
-
-    with rio.open(ofn_, mode='r+', sharing=False) as dst_:
-
-        dst_.write(out_data_,
-                   window=w_,
-                   indexes=out_indexes_)
+# def _block_write_func(*args):
+#
+#     ofn_, fn_, g_, t_ = list(itertools.chain(*args))
+#
+#     if t_ == 'zarr':
+#
+#         group_node = zarr.open(fn_, mode='r')[g_]
+#
+#         w_ = Window(row_off=group_node.attrs['row_off'],
+#                     col_off=group_node.attrs['col_off'],
+#                     height=group_node.attrs['height'],
+#                     width=group_node.attrs['width'])
+#
+#         out_data_ = np.squeeze(group_node['data'][:])
+#
+#     else:
+#
+#         w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
+#                     col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
+#                     height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
+#                     width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
+#
+#         with rio.open(fn_) as src_:
+#             out_data_ = np.squeeze(src_.read(window=w_))
+#
+#     out_indexes_ = 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1))
+#
+#     with rio.open(ofn_, mode='r+', sharing=False) as dst_:
+#
+#         dst_.write(out_data_,
+#                    window=w_,
+#                    indexes=out_indexes_)
 
 
 def _block_read_func(fn_, g_, t_):
@@ -323,7 +323,7 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, tags = list(itertools.chain(*args))
 
     output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads)
 
@@ -336,6 +336,9 @@ def _write_xarray(*args):
             with rio.open(filename,
                           mode='r+') as dst_:
 
+                if tags:
+                    dst_.update_tags(**tags)
+
                 dst_.write(output,
                            window=block_window,
                            indexes=out_indexes)
@@ -347,6 +350,9 @@ def _write_xarray(*args):
                 with rio.open(filename,
                               mode='r+',
                               sharing=False) as dst_:
+
+                    if tags:
+                        dst_.update_tags(**tags)
 
                     dst_.write(output,
                                window=block_window,
@@ -429,6 +435,7 @@ def to_raster(data,
               address=None,
               total_memory=48,
               padding=None,
+              tags=None,
               **kwargs):
 
     """
@@ -469,6 +476,7 @@ def to_raster(data,
             of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
             a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
             and w2 contains the padded window offsets.
+        tags (Optional[dict]): Image tags to write to file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
@@ -663,34 +671,34 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
 
@@ -849,6 +857,9 @@ def to_raster(data,
                             for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
 
                                 out_window, out_indexes, out_block = f.result()
+
+                                if tags:
+                                    dst_.update_tags(**tags)
 
                                 dst_.write(out_block,
                                            window=out_window,
