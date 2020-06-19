@@ -606,7 +606,9 @@ def to_raster(data,
             logger.info('  Creating the file ...\n')
 
         with rio.open(filename, mode='w', **kwargs) as rio_dst:
-            pass
+
+            if tags:
+                rio_dst.update_tags(**tags)
 
     if verbose > 0:
         logger.info('  Writing data to file ...\n')
