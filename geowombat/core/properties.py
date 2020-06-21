@@ -743,9 +743,6 @@ class DataProperties(object):
     @footprint_grid.setter
     def footprint_grid(self, geometries):
 
-        import pdb
-        pdb.set_trace()
-
         self._footprint_grid = gpd.GeoDataFrame(data=[fn for fn in self._obj.filename],
                                                 columns=['footprint'],
                                                 geometry=geometries,

@@ -278,7 +278,6 @@ def mosaic(filenames,
            dtype=None,
            warp_mem_limit=512,
            num_threads=1,
-           return_footprints=False,
            **kwargs):
 
     """
@@ -301,7 +300,6 @@ def mosaic(filenames,
             from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
-        return_footprints (Optional[bool]): Whether to return image footprint geometry.
         kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
 
     Returns:
@@ -334,15 +332,13 @@ def mosaic(filenames,
 
         attrs = darray.attrs.copy()
 
-        if return_footprints:
-            footprints.append(darray.gw.geometry)
+        footprints.append(darray.gw.geometry)
 
         for fn in warped_objects[1:]:
 
             with xr.open_rasterio(fn, **kwargs) as darrayb:
 
-                if return_footprints:
-                    footprints.append(darrayb.gw.geometry)
+                footprints.append(darrayb.gw.geometry)
 
                 if overlap == 'min':
 
