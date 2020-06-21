@@ -716,7 +716,7 @@ class DataProperties(object):
             for j in range(0, self.ncols, self.col_chunks):
 
                 j_csize = n_rows_cols(j, self.col_chunks, self.ncols)
-                right = right + (j_csize * abs(self.cellx))
+                right = left + (j_csize * abs(self.cellx))
 
                 geom = Polygon([(left, bottom),
                                 (left, top),
