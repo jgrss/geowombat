@@ -406,7 +406,7 @@ def mosaic(filenames,
         darray.attrs['filename'] = [Path(fn).name for fn in filenames]
         darray.attrs['resampling'] = resampling
 
-        darrayb.footprint_grid = footprints
+        darray.gw.footprint_grid = footprints
 
         if dtype:
 
