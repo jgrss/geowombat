@@ -726,9 +726,8 @@ class DataProperties(object):
 
                 geometries.append(geom)
 
-                left += j_csize
-
-            top -= i_csize
+                left += self.col_chunks
+            top -= self.row_chunks
 
         return gpd.GeoDataFrame(data=list(range(1, len(geometries)+1)),
                                 columns=['chunk'],
