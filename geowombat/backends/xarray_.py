@@ -406,21 +406,15 @@ def mosaic(filenames,
         darray.attrs['filename'] = [Path(fn).name for fn in filenames]
         darray.attrs['resampling'] = resampling
 
+        darrayb.footprint_grid = footprints
+
         if dtype:
 
             attrs = darray.attrs.copy()
-
-            if return_footprints:
-                return darray.astype(dtype).assign_attrs(**attrs), footprints
-            else:
-                return darray.astype(dtype).assign_attrs(**attrs)
+            return darray.astype(dtype).assign_attrs(**attrs)
 
         else:
-
-            if return_footprints:
-                return darray, footprints
-            else:
-                return darray
+            return darray
 
 
 def concat(filenames,
