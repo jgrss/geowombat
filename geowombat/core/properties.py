@@ -1,6 +1,8 @@
 from pathlib import Path
 from collections import namedtuple
 
+from .util import n_rows_cols
+
 import pandas as pd
 import geopandas as gpd
 from rasterio.coords import BoundingBox
@@ -32,6 +34,9 @@ WavelengthsS2Cloudless = namedtuple('WavelengthsS2Cloudless', 'coastal blue red 
 
 
 class DataProperties(object):
+
+    def __init__(self):
+        self._footprint_grid = None
 
     @property
     def avail_sensors(self):
@@ -693,6 +698,55 @@ class DataProperties(object):
     def pydatetime(self):
         """Get Python datetime objects from the time dimension"""
         return pd.to_datetime(self._obj.time.values).to_pydatetime()
+
+    @property
+    def chunk_grid(self):
+
+        """Get the image chunk grid"""
+
+        geometries = []
+
+        top = self.top
+        for i in range(0, self.nrows, self.row_chunks):
+
+            i_csize = n_rows_cols(i, self.row_chunks, self.nrows)
+            bottom = top - (i_csize * abs(self.celly))
+            left = self.left
+
+            for j in range(0, self.ncols, self.col_chunks):
+
+                j_csize = n_rows_cols(j, self.col_chunks, self.ncols)
+                right = right + (j_csize * abs(self.cellx))
+
+                geom = Polygon([(left, bottom),
+                                (left, top),
+                                (right, top),
+                                (right, bottom),
+                                (left, bottom)])
+
+                geometries.append(geom)
+
+                left += j_csize
+
+            top -= i_csize
+
+        return gpd.GeoDataFrame(data=list(range(1, len(geometries)+1)),
+                                columns=['chunk'],
+                                geometry=geometries,
+                                crs=self._obj.crs)
+
+    @property
+    def footprint_grid(self):
+        """Get the image footprint grid"""
+        return self._footprint_grid
+
+    @footprint_grid.setter
+    def footprint_grid(self, geometries):
+
+        self._footprint_grid = gpd.GeoDataFrame(data=[fn for fn in self._obj.filename],
+                                                columns=['footprint'],
+                                                geometry=geometries,
+                                                crs=self._obj.crs)
 
     @property
     def geometry(self):
