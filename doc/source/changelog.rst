@@ -10,6 +10,7 @@ New
 ~~~
 
 - Added metadata tags keyword argument to :func:`geowombat.to_raster`.
+- Added chunk and footprint geometry properties.
 
 1.2.15 (15 June 2020)
 ---------------------
