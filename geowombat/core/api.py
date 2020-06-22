@@ -370,12 +370,12 @@ class open(object):
                 del kwargs['chunks']
 
             self.data = read(filename,
-                        band_names=band_names,
-                        time_names=time_names,
-                        bounds=bounds,
-                        chunks=chunks,
-                        num_workers=num_workers,
-                        **kwargs)
+                             band_names=band_names,
+                             time_names=time_names,
+                             bounds=bounds,
+                             chunks=chunks,
+                             num_workers=num_workers,
+                             **kwargs)
 
         else:
 
@@ -396,27 +396,27 @@ class open(object):
 
                     # Mosaic images over space
                     self.data = gw_mosaic(filename,
-                                     overlap=overlap,
-                                     bounds_by=bounds_by,
-                                     resampling=resampling,
-                                     band_names=band_names,
-                                     nodata=nodata,
-                                     dtype=dtype,
-                                     **kwargs)
+                                          overlap=overlap,
+                                          bounds_by=bounds_by,
+                                          resampling=resampling,
+                                          band_names=band_names,
+                                          nodata=nodata,
+                                          dtype=dtype,
+                                          **kwargs)
 
                 else:
 
                     # Stack images along the 'time' axis
                     self.data = gw_concat(filename,
-                                     stack_dim=stack_dim,
-                                     bounds_by=bounds_by,
-                                     resampling=resampling,
-                                     time_names=time_names,
-                                     band_names=band_names,
-                                     nodata=nodata,
-                                     overlap=overlap,
-                                     dtype=dtype,
-                                     **kwargs)
+                                          stack_dim=stack_dim,
+                                          bounds_by=bounds_by,
+                                          resampling=resampling,
+                                          time_names=time_names,
+                                          band_names=band_names,
+                                          nodata=nodata,
+                                          overlap=overlap,
+                                          dtype=dtype,
+                                          **kwargs)
 
             else:
 
@@ -435,10 +435,10 @@ class open(object):
                             kwargs['chunks'] = (1, w.height, w.width)
 
                     self.data = warp_open(filename,
-                                     band_names=band_names,
-                                     resampling=resampling,
-                                     dtype=dtype,
-                                     **kwargs)
+                                          band_names=band_names,
+                                          resampling=resampling,
+                                          dtype=dtype,
+                                          **kwargs)
 
                 else:
 
