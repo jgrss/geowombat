@@ -453,6 +453,7 @@ class open(object):
         return self.data
 
     def __exit__(self, *args, **kwargs):
+        print(config)
         _set_defaults(config)
         self.close()
         d = self.data
