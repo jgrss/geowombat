@@ -3,6 +3,7 @@ import netCDF4
 import h5netcdf
 
 import warnings
+from pathlib import Path
 
 from . import geoxarray
 from ..config import config, _set_defaults
@@ -223,22 +224,24 @@ def read(filename,
 
 data_ = None
 
+
 class open(object):
 
-    def __init__(self, filename,
-         return_as='array',
-         band_names=None,
-         time_names=None,
-         stack_dim='time',
-         bounds=None,
-         bounds_by='reference',
-         resampling='nearest',
-         mosaic=False,
-         overlap='max',
-         nodata=None,
-         dtype=None,
-         num_workers=1,
-         **kwargs):
+    def __init__(self,
+                 filename,
+                 return_as='array',
+                 band_names=None,
+                 time_names=None,
+                 stack_dim='time',
+                 bounds=None,
+                 bounds_by='reference',
+                 resampling='nearest',
+                 mosaic=False,
+                 overlap='max',
+                 nodata=None,
+                 dtype=None,
+                 num_workers=1,
+                 **kwargs):
 
         """
         Opens a raster file
@@ -336,6 +339,9 @@ class open(object):
             >>>
             >>>     print(ds)
         """
+
+        if isinstance(filename, Path):
+            filename = str(filename)
 
         self.data = data_
         self.__is_context_manager = False

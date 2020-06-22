@@ -16,7 +16,7 @@ cython                    # via -r requirements.in (line 1)
 dask[array,dataframe]>=2.11.0  # via -r requirements.in (line 10), -r requirements.in (line 9), distributed
 dateparser>=0.7.2         # via -r requirements.in (line 19)
 deprecated>=1.2.7         # via -r requirements.in (line 20)
-descarte>=1.1.0           # for geopandas plotting
+descartes>=1.1.0          # for geopandas plotting
 distributed>=2.11.0       # via -r requirements.in (line 11)
 fiona>=1.8.*              # via geopandas
 fsspec>=0.6.2             # via dask
