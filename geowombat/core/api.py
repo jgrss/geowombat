@@ -3,10 +3,10 @@ import netCDF4
 import h5netcdf
 
 import warnings
-
 from contextlib import contextmanager
 
 from . import geoxarray
+from ..config import config, _set_defaults
 from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
@@ -23,7 +23,6 @@ import dask.array as da
 
 
 warnings.filterwarnings('ignore')
-
 
 ch = Chunks()
 
@@ -223,8 +222,11 @@ def read(filename,
     return data
 
 
-@contextmanager
-def open(filename,
+data_ = None
+
+class open(object):
+
+    def __init__(self, filename,
          return_as='array',
          band_names=None,
          time_names=None,
@@ -239,216 +241,236 @@ def open(filename,
          num_workers=1,
          **kwargs):
 
-    """
-    Opens a raster file
+        """
+        Opens a raster file
 
-    Args:
-        filename (str or list): The file name, search string, or a list of files to open.
-        return_as (Optional[str]): The Xarray data type to return.
-            Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
-        band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
-            is given or ``window`` is given. Default is None.
-        time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
-            Default is None.
-        stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
-        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
-            Default is None.
-        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
-            Choices are ['intersection', 'union', 'reference'].
+        Args:
+            filename (str or list): The file name, search string, or a list of files to open.
+            return_as (Optional[str]): The Xarray data type to return.
+                Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
+            band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
+                is given or ``window`` is given. Default is None.
+            time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
+                Default is None.
+            stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
+            bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
+                Default is None.
+            bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
+                Choices are ['intersection', 'union', 'reference'].
 
-            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
-            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
-            * union: Use the union (i.e., maximum extent) of all the image bounds
+                * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
+                * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+                * union: Use the union (i.e., maximum extent) of all the image bounds
 
-        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
-            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-        mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
-        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
-            Choices are ['min', 'max', 'mean'].
-        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
-        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
-            from the file.
-        num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
-            is given or ``window`` is given. Default is 1.
-        kwargs (Optional[dict]): Keyword arguments passed to the file opener.
+            resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+            mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
+            overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
+                Choices are ['min', 'max', 'mean'].
+            nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+            dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+                from the file.
+            num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
+                is given or ``window`` is given. Default is 1.
+            kwargs (Optional[dict]): Keyword arguments passed to the file opener.
 
-    Returns:
-        ``xarray.DataArray`` or ``xarray.Dataset``
+        Returns:
+            ``xarray.DataArray`` or ``xarray.Dataset``
 
-    Examples:
-        >>> import geowombat as gw
-        >>>
-        >>> # Open an image
-        >>> with gw.open('image.tif') as ds:
-        >>>     print(ds)
-        >>>
-        >>> # Open a list of images, stacking along the 'time' dimension
-        >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
-        >>>     print(ds)
-        >>>
-        >>> # Open all GeoTiffs in a directory, stack along the 'time' dimension
-        >>> with gw.open('*.tif') as ds:
-        >>>     print(ds)
-        >>>
-        >>> # Use a context manager to handle images of difference sizes and projections
-        >>> with gw.config.update(ref_image='image1.tif'):
-        >>>
-        >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
-        >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
-        >>>
-        >>>         # The first two images were acquired on the same date
-        >>>         #   and will be merged into a single time layer
-        >>>         time_names=['date1', 'date1', 'date2']) as ds:
-        >>>
-        >>>         print(ds)
-        >>>
-        >>> # Mosaic images across space using a reference
-        >>> #   image for the CRS and cell resolution
-        >>> with gw.config.update(ref_image='image1.tif'):
-        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as ds:
-        >>>         print(ds)
-        >>>
-        >>> # Mix configuration keywords
-        >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
-        >>>
-        >>>     # The ``bounds_by`` keyword overrides the extent bounds
-        >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
-        >>>         print(ds)
-        >>>
-        >>> # Resample an image to 10m x 10m cell size
-        >>> with gw.config.update(ref_crs=(10, 10)):
-        >>>
-        >>>     with gw.open('image.tif', resampling='cubic') as ds:
-        >>>         print(ds)
-        >>>
-        >>> # Open a list of images at a window slice
-        >>> from rasterio.windows import Window
-        >>> w = Window(row_off=0, col_off=0, height=100, width=100)
-        >>>
-        >>> # Stack two images, opening band 3
-        >>> with gw.open(['image1.tif', 'image2.tif'],
-        >>>     band_names=['date1', 'date2'],
-        >>>     num_workers=8,
-        >>>     indexes=3,
-        >>>     window=w,
-        >>>     out_dtype='float32') as ds:
-        >>>
-        >>>     print(ds)
-    """
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Open an image
+            >>> with gw.open('image.tif') as ds:
+            >>>     print(ds)
+            >>>
+            >>> # Open a list of images, stacking along the 'time' dimension
+            >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
+            >>>     print(ds)
+            >>>
+            >>> # Open all GeoTiffs in a directory, stack along the 'time' dimension
+            >>> with gw.open('*.tif') as ds:
+            >>>     print(ds)
+            >>>
+            >>> # Use a context manager to handle images of difference sizes and projections
+            >>> with gw.config.update(ref_image='image1.tif'):
+            >>>
+            >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
+            >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
+            >>>
+            >>>         # The first two images were acquired on the same date
+            >>>         #   and will be merged into a single time layer
+            >>>         time_names=['date1', 'date1', 'date2']) as ds:
+            >>>
+            >>>         print(ds)
+            >>>
+            >>> # Mosaic images across space using a reference
+            >>> #   image for the CRS and cell resolution
+            >>> with gw.config.update(ref_image='image1.tif'):
+            >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as ds:
+            >>>         print(ds)
+            >>>
+            >>> # Mix configuration keywords
+            >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
+            >>>
+            >>>     # The ``bounds_by`` keyword overrides the extent bounds
+            >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
+            >>>         print(ds)
+            >>>
+            >>> # Resample an image to 10m x 10m cell size
+            >>> with gw.config.update(ref_crs=(10, 10)):
+            >>>
+            >>>     with gw.open('image.tif', resampling='cubic') as ds:
+            >>>         print(ds)
+            >>>
+            >>> # Open a list of images at a window slice
+            >>> from rasterio.windows import Window
+            >>> w = Window(row_off=0, col_off=0, height=100, width=100)
+            >>>
+            >>> # Stack two images, opening band 3
+            >>> with gw.open(['image1.tif', 'image2.tif'],
+            >>>     band_names=['date1', 'date2'],
+            >>>     num_workers=8,
+            >>>     indexes=3,
+            >>>     window=w,
+            >>>     out_dtype='float32') as ds:
+            >>>
+            >>>     print(ds)
+        """
 
-    if return_as not in ['array', 'dataset']:
-        logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
+        self.data = data_
+        self.__is_context_manager = False
 
-    if 'chunks' in kwargs:
-        ch.check_chunktype(kwargs['chunks'], output='3d')
+        if return_as not in ['array', 'dataset']:
+            logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
 
-    if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
+        if 'chunks' in kwargs:
+            ch.check_chunktype(kwargs['chunks'], output='3d')
 
-        if 'chunks' not in kwargs:
-
-            if isinstance(filename, list):
-
-                with rio.open(filename[0]) as src_:
-
-                    w = src_.block_window(1, 0, 0)
-                    chunks = (1, w.height, w.width)
-
-            else:
-
-                with rio.open(filename) as src_:
-
-                    w = src_.block_window(1, 0, 0)
-                    chunks = (1, w.height, w.width)
-
-        else:
-            chunks = kwargs['chunks']
-            del kwargs['chunks']
-
-        data = read(filename,
-                    band_names=band_names,
-                    time_names=time_names,
-                    bounds=bounds,
-                    chunks=chunks,
-                    num_workers=num_workers,
-                    **kwargs)
-
-    else:
-
-        if (isinstance(filename, str) and '*' in filename) or isinstance(filename, list):
-
-            # Build the filename list
-            if isinstance(filename, str):
-                filename = parse_wildcard(filename)
+        if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
 
             if 'chunks' not in kwargs:
 
-                with rio.open(filename[0]) as src:
+                if isinstance(filename, list):
 
-                    w = src.block_window(1, 0, 0)
-                    kwargs['chunks'] = (1, w.height, w.width)
+                    with rio.open(filename[0]) as src_:
 
-            if mosaic:
+                        w = src_.block_window(1, 0, 0)
+                        chunks = (1, w.height, w.width)
 
-                # Mosaic images over space
-                data = gw_mosaic(filename,
-                                 overlap=overlap,
-                                 bounds_by=bounds_by,
-                                 resampling=resampling,
-                                 band_names=band_names,
-                                 nodata=nodata,
-                                 dtype=dtype,
-                                 **kwargs)
+                else:
+
+                    with rio.open(filename) as src_:
+
+                        w = src_.block_window(1, 0, 0)
+                        chunks = (1, w.height, w.width)
 
             else:
+                chunks = kwargs['chunks']
+                del kwargs['chunks']
 
-                # Stack images along the 'time' axis
-                data = gw_concat(filename,
-                                 stack_dim=stack_dim,
-                                 bounds_by=bounds_by,
-                                 resampling=resampling,
-                                 time_names=time_names,
-                                 band_names=band_names,
-                                 nodata=nodata,
-                                 overlap=overlap,
-                                 dtype=dtype,
-                                 **kwargs)
+            self.data = read(filename,
+                        band_names=band_names,
+                        time_names=time_names,
+                        bounds=bounds,
+                        chunks=chunks,
+                        num_workers=num_workers,
+                        **kwargs)
 
         else:
 
-            file_names = get_file_extension(filename)
+            if (isinstance(filename, str) and '*' in filename) or isinstance(filename, list):
 
-            if file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']:
-                logger.exception('  The file format is not recognized.')
-
-            if file_names.f_ext.lower() in IO_DICT['rasterio']:
+                # Build the filename list
+                if isinstance(filename, str):
+                    filename = parse_wildcard(filename)
 
                 if 'chunks' not in kwargs:
 
-                    with rio.open(filename) as src:
+                    with rio.open(filename[0]) as src:
 
                         w = src.block_window(1, 0, 0)
                         kwargs['chunks'] = (1, w.height, w.width)
 
-                data = warp_open(filename,
-                                 band_names=band_names,
-                                 resampling=resampling,
-                                 dtype=dtype,
-                                 **kwargs)
+                if mosaic:
+
+                    # Mosaic images over space
+                    self.data = gw_mosaic(filename,
+                                     overlap=overlap,
+                                     bounds_by=bounds_by,
+                                     resampling=resampling,
+                                     band_names=band_names,
+                                     nodata=nodata,
+                                     dtype=dtype,
+                                     **kwargs)
+
+                else:
+
+                    # Stack images along the 'time' axis
+                    self.data = gw_concat(filename,
+                                     stack_dim=stack_dim,
+                                     bounds_by=bounds_by,
+                                     resampling=resampling,
+                                     time_names=time_names,
+                                     band_names=band_names,
+                                     nodata=nodata,
+                                     overlap=overlap,
+                                     dtype=dtype,
+                                     **kwargs)
 
             else:
 
-                if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
-                    logger.exception('  The chunks should be a dictionary.')
+                file_names = get_file_extension(filename)
 
-                with xr.open_dataset(filename, **kwargs) as src:
-                    data = src
+                if file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']:
+                    logger.exception('  The file format is not recognized.')
 
-    try:
-        yield data
-    finally:
+                if file_names.f_ext.lower() in IO_DICT['rasterio']:
 
-        if hasattr(data.gw, '_obj'):
-            data.gw._obj = None
+                    if 'chunks' not in kwargs:
 
-        data.close()
-        data = None
+                        with rio.open(filename) as src:
+
+                            w = src.block_window(1, 0, 0)
+                            kwargs['chunks'] = (1, w.height, w.width)
+
+                    self.data = warp_open(filename,
+                                     band_names=band_names,
+                                     resampling=resampling,
+                                     dtype=dtype,
+                                     **kwargs)
+
+                else:
+
+                    if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
+                        logger.exception('  The chunks should be a dictionary.')
+
+                    with xr.open_dataset(filename, **kwargs) as src:
+                        self.data = src
+
+    def __enter__(self):
+        self.__is_context_manager = True
+        return self.data
+
+    def __exit__(self, *args, **kwargs):
+        _set_defaults(config)
+        self.close()
+        d = self.data
+        self._reset(d)
+
+    @staticmethod
+    def _reset(d):
+        d = None
+
+    def close(self):
+
+        if hasattr(self, 'data'):
+
+            if hasattr(self.data, 'gw'):
+                if hasattr(self.data.gw, '_obj'):
+                    self.data.gw._obj = None
+
+            if hasattr(self.data, 'close'):
+                self.data.close()
+
+        self.data = None

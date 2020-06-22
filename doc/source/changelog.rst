@@ -3,8 +3,13 @@
 Change Log
 ==========
 
-1.2.16 ()
----------
+1.2.16 (22 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed an issue with lingering configuration reference bounds.
 
 New
 ~~~

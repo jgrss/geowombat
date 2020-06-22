@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Use named coordinates for band math &#8212; GeoWombat 1.2.5 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use named coordinates for band math &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -13,7 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Use GeoWombat for a machine learning pipeline" href="machine-learning.html" />
@@ -131,7 +132,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-e194155378a971542a3de39056a59a3a&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-a8dbd8bb42d6a078c6510d574af612fe&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -146,7 +147,7 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 403, x: 515)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 403, 515), dtype=float64, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
@@ -160,11 +161,11 @@
 <span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     None</span>
-<span class="go">    scales:         1.0</span>
-<span class="go">    offsets:        0.0</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
@@ -190,12 +191,12 @@
 <span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     None</span>
-<span class="go">    scales:         1.0</span>
-<span class="go">    offsets:        0.0</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    vi:             evi</span>
@@ -241,12 +242,12 @@
 <span class="go">    res:            (5.0, 5.0)</span>
 <span class="go">    is_tiled:       1</span>
 <span class="go">    nodatavals:     None</span>
-<span class="go">    scales:         1.0</span>
-<span class="go">    offsets:        0.0</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    1.0</span>
 <span class="go">    vi:             norm-diff</span>
@@ -278,7 +279,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         Quickbird with 4 (visible + NIR) bands</span>
-<span class="go">    filename:       /export/home/graesserj/code/python/envs/ts3/lib/python3.6...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -293,10 +294,10 @@
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2019, GeoWombat.
+      &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

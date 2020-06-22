@@ -20,7 +20,7 @@ import geowombat as gw
 # -- Project information -----------------------------------------------------
 
 project = 'GeoWombat'
-copyright = '2019, GeoWombat'
+copyright = '2020, GeoWombat'
 author = ''
 
 # The full version, including alpha/beta/rc tags
@@ -84,6 +84,7 @@ html_theme_options = {'page_width': '80%',
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+ipython_savefig_dir = '_static'
 
 # -- Options for LaTeX output ---------------------------------------------
 

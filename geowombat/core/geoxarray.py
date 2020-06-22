@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
