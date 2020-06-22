@@ -383,7 +383,7 @@ def mosaic(filenames,
         darray = darray.assign_attrs(**attrs)
 
         if band_names:
-            darray.coordarray['band'] = band_names
+            darray.coords['band'] = band_names
         else:
 
             if darray.gw.sensor:
