@@ -3,10 +3,9 @@ import netCDF4
 import h5netcdf
 
 import warnings
-from contextlib import contextmanager
 
 from . import geoxarray
-from ..config import config, _set_defaults
+from ..config import config, _config_under_context, _set_defaults
 from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
@@ -453,8 +452,9 @@ class open(object):
         return self.data
 
     def __exit__(self, *args, **kwargs):
-        print(config)
-        _set_defaults(config)
+
+        if not _config_under_context:
+            _set_defaults(config)
         self.close()
         d = self.data
         self._reset(d)
