@@ -430,7 +430,7 @@ def get_file_bounds(filenames,
             dst_res = src.res
 
         # Transform the extent to the reference CRS
-        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
+        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(check_src_crs(src),
                                                                                 dst_crs,
                                                                                 src.bounds.left,
                                                                                 src.bounds.bottom,
@@ -619,6 +619,9 @@ def warp(filename,
             dst_crs = check_crs(crs)
         else:
             dst_crs = check_src_crs(src)
+
+        import pdb
+        pdb.set_trace()
 
         # Check if the data need to be subset
         if bounds and (bounds != src.bounds):
