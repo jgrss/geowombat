@@ -42,6 +42,12 @@ def _update_config(config_parser, config_dict):
 config = _update_config(config_parser, config)
 
 
+def _set_defaults(d):
+
+    config_parser.read(config_file)
+    d = _update_config(config_parser, d)
+
+
 class update(object):
 
     """
@@ -54,7 +60,7 @@ class update(object):
     def __init__(self, config=config, **kwargs):
 
         self.config = config
-        self._set_defaults(config)
+        self.__set_defaults(config)
 
         if kwargs:
             self._assign(config, **kwargs)
@@ -64,13 +70,11 @@ class update(object):
 
     def __exit__(self, type, value, traceback):
         d = self.config
-        self._set_defaults(d)
+        self.__set_defaults(d)
 
     @staticmethod
-    def _set_defaults(d):
-
-        config_parser.read(config_file)
-        d = _update_config(config_parser, d)
+    def __set_defaults(d):
+        _set_defaults(d)
 
     @staticmethod
     def _assign(d, **kwargs):
