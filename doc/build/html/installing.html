@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Installation &#8212; GeoWombat 1.2.5 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -13,7 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Issues" href="issues.html" />
@@ -185,17 +186,19 @@ $ # pip install pip-tools
 </pre></div>
 </div>
 <p>Install the GDAL binaries:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # 1) Add GDAL and update Ubuntu
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Add GDAL and update Ubuntu
 $ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
+$
 $ # Optional--add the latest unstable version (for GDAL 3.0)
 $ # sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 $
-$ # 2) Install the GDAL binaries
+$ # Install the GDAL binaries
 $ sudo apt install gdal-bin
 $ sudo apt install libgdal-dev
-$
-$ # 3) Update environment paths
-$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
+</pre></div>
+</div>
+<p>Update environment paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
 $ export C_INCLUDE_PATH=/usr/include/gdal
 $ export LD_LIBRARY_PATH=/usr/local/lib
 $
@@ -203,16 +206,25 @@ $ # Optional, add permanently to a .profile file
 $ # echo &#39;export CPLUS_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
 $ # echo &#39;export C_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
 $ # echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/.profile
-$
-$ # 4) Check the installed GDAL version
-$ gdalinfo --version
 </pre></div>
+</div>
+<p>Check the installed GDAL version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gdalinfo --version
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you install GDAL 3.x on Ubuntu, when importing rasterio you may receive an error saying</p>
+<ul class="simple">
+<li><p><cite>CPLE_OpenFailedError: Unable to open EPSG support file gcs.csv</cite>.</p></li>
+</ul>
+<p>This error is documented on rasterio’s <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/faq.html">ReadTheDocs page</a> and <a class="reference external" href="https://github.com/mapbox/rasterio/issues/1787">GitHub page</a>. If the suggested solutions do not fix the issue, you can try setting the <cite>GDAL_DATA</cite> environment variable to point to Fiona (which will be installed automatically when installing GeoWombat). For example, if you have setup a virtual environment, the <cite>GDAL_DATA</cite> variable can point to <cite>/path/to/myenv/lib/python3.7/site-packages/fiona/gdal_data</cite>, where <cite>/path/to/myenv</cite> is the name of your virtual environment path directory. Change 3.7 if using a different Python version.</p>
 </div>
 </div>
 <div class="section" id="installing-libspatialindex-on-ubuntu">
 <h3>Installing <cite>libspatialindex</cite> on Ubuntu<a class="headerlink" href="#installing-libspatialindex-on-ubuntu" title="Permalink to this headline">¶</a></h3>
 <p>Install <cite>libspatialindex</cite> (which is a requirement for <a class="reference external" href="https://pypi.org/project/Rtree/">Rtree</a>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ apt install libspatialindex-c4v5
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install libspatialindex-c4v5
 </pre></div>
 </div>
 </div>
@@ -228,9 +240,9 @@ $ gdalinfo --version
 <h3>Install the <cite>GDAL</cite> Python bindings<a class="headerlink" href="#install-the-gdal-python-bindings" title="Permalink to this headline">¶</a></h3>
 <p>GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. To install Python GDAL manually, use pip:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # match the GDAL binaries
-$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;)
-$ # which is the same as the following if the GDAL binary version is 2.4.x
-$ # pip install GDAL==2.4
+$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;) --no-binary=gdal
+$ # which is the same as the following if the GDAL binary version is 2.4.0
+$ # pip install GDAL==2.4.0 --no-binary=gdal
 </pre></div>
 </div>
 </div>
@@ -260,7 +272,7 @@ $ # pip install GDAL==2.4
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="k">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-<span class="go">1.2.5</span>
+<span class="go">1.2.16</span>
 </pre></div>
 </div>
 </div>
@@ -274,10 +286,10 @@ $ # pip install GDAL==2.4
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2019, GeoWombat.
+      &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

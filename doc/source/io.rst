@@ -10,17 +10,23 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     # Import GeoWombat
     import geowombat as gw
 
-.. ipython:: python
-
     # Load a 4-band test image
     from geowombat.data import rgbn
-
-.. ipython:: python
 
     # Load two images that partially overlap
     from geowombat.data import rgbn_suba, rgbn_subb
 
-To open individual images, GeoWombat wraps the :func:`xarray.open_rasterio` and :func:`xarray.open_dataset` functions.
+    import matplotlib.pyplot as plt
+
+To open individual images, GeoWombat uses :func:`xarray.open_rasterio`.
+
+.. ipython:: python
+
+    fig, ax = plt.subplots(dpi=200)
+    with gw.open(rgbn) as src:
+        src.where(src != 0).sel(band=[4, 3, 2]).plot.imshow(robust=True, ax=ax)
+    @savefig rgbn_plot.png
+    plt.tight_layout(pad=1)
 
 Open a raster as a DataArray.
 
@@ -33,7 +39,7 @@ Force the output data type.
 
 .. ipython:: python
 
-    with gw.open(rgbn, dtype='float32') as src:
+    with gw.open(rgbn, dtype='float64') as src:
         print(src.dtype)
 
 Specify band names.
@@ -71,7 +77,7 @@ Open a list of files as a DataArray.
     with gw.open([rgbn, rgbn],
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2']) as src:
-        print()
+        print(src)
 
 If `time_names` is not provided, GeoWombat will attempt to parse date strings using `dateparser.search.search_dates <https://dateparser.readthedocs.io/en/latest/>`_.
 
@@ -149,9 +155,9 @@ When multiple images have matching dates, the arrays are merged into one layer.
 .. ipython:: python
 
     concat_list = [rgbn_suba, rgbn_subb, rgbn_suba]
-    with gw.open(concat_list,
-                 band_names=['blue', 'green', 'red', 'nir'],
-                 time_names=['t1', 't1', 't2']) as src:
+    band_names = ['blue', 'green', 'red', 'nir']
+    time_names = ['t1', 't1', 't2']
+    with gw.open(concat_list, band_names=band_names, time_names=time_names) as src:
         print(src)
 
 Use search wildcards to open a list of images.
@@ -190,53 +196,43 @@ If the images in the mosaic list have different CRSs, use a context manager to w
                      chunks=512) as src:
             print(src)
 
-Mosaicking by the intersection of images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Setup a plot function
+~~~~~~~~~~~~~~~~~~~~~
 
 .. ipython:: python
 
-    import matplotlib.pyplot as plt
+    def plot(bounds_by):
+        fig, ax = plt.subplots(dpi=200)
+        with gw.open([rgbn_suba, rgbn_subb],
+                     chunks=64,
+                     mosaic=True,
+                     bounds_by=bounds_by) as srca:
+            # Plot NIR, red, green
+            srca.where(srca != 0).sel(band=[4, 3, 2]).plot.imshow(robust=True, ax=ax)
+            # Plot the image chunks
+            srca.gw.chunk_grid.plot(color='none', edgecolor='k', ls='-', lw=0.5, ax=ax)
+            # Plot the image footprints
+            srca.gw.footprint_grid.plot(color='none', edgecolor='orange', lw=2, ax=ax)
+            ax.set_ylim(srca.gw.footprint_grid.total_bounds[1]-10, srca.gw.footprint_grid.total_bounds[3]+10)
+            ax.set_xlim(srca.gw.footprint_grid.total_bounds[0]-10, srca.gw.footprint_grid.total_bounds[2]+10)
+        ax.set_title(f'Image {bounds_by}', size=12)
+        plt.tight_layout(pad=1)
 
-    fig, ax = plt.subplots(dpi=200)
+Mosaic by the union of images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    with gw.open([rgbn_suba, rgbn_subb],
-                 chunks=64,
-                 mosaic=True,
-                 bounds_by='intersection') as src:
-
-        src.sel(band=[4, 3, 2]).plot.imshow(ax=ax)
-        src.gw.chunk_grid.plot(color='none', edgecolor='white', ls='-', lw=0.5, ax=ax)
-        src.gw.footprint_grid.plot(color='none', edgecolor='r', ax=ax)
-
-        ax.set_ylim(src.gw.footprint_grid.total_bounds[1]-10, src.gw.footprint_grid.total_bounds[3]+10)
-        ax.set_xlim(src.gw.footprint_grid.total_bounds[0]-10, src.gw.footprint_grid.total_bounds[2]+10)
-
-    ax.set_title('Image union', size=12)
-    plt.tight_layout(pad=1)
-
-Mosaicking by the union of images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
+footprints while the black grids illustrate the ``DataArray`` chunks.
 
 .. ipython:: python
 
-    import matplotlib.pyplot as plt
+    @savefig union_example.png
+    plot('union')
 
-    fig, ax = plt.subplots(dpi=200)
+.. ipython:: python
 
-    with gw.open([rgbn_suba, rgbn_subb],
-                 chunks=64,
-                 mosaic=True,
-                 bounds_by='union') as src:
-
-        src.sel(band=[4, 3, 2]).plot.imshow(ax=ax)
-        src.gw.chunk_grid.plot(color='none', edgecolor='white', ls='-', lw=0.5, ax=ax)
-        src.gw.footprint_grid.plot(color='none', edgecolor='r', ax=ax)
-
-        ax.set_ylim(src.gw.footprint_grid.total_bounds[1]-10, src.gw.footprint_grid.total_bounds[3]+10)
-        ax.set_xlim(src.gw.footprint_grid.total_bounds[0]-10, src.gw.footprint_grid.total_bounds[2]+10)
-
-    ax.set_title('Image union', size=12)
-    plt.tight_layout(pad=1)
+    @savefig intersection_example.png
+    plot('intersection')
 
 Writing DataArrays to file
 --------------------------

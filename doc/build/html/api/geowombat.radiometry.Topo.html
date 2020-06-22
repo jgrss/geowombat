@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Topo &#8212; GeoWombat 1.2.5 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topo &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -13,7 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="LinearAdjustments" href="geowombat.radiometry.LinearAdjustments.html" />
@@ -119,7 +120,7 @@
             
   <div class="section" id="topo">
 <h1>Topo<a class="headerlink" href="#topo" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="geowombat.radiometry.Topo">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">Topo</code><a class="headerlink" href="#geowombat.radiometry.Topo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -137,9 +138,9 @@
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
-<dl class="method">
+<dl class="py method">
 <dt id="geowombat.radiometry.Topo.norm_topo">
-<code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">elev</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">slope=None</em>, <em class="sig-param">aspect=None</em>, <em class="sig-param">method='empirical-rotation'</em>, <em class="sig-param">slope_thresh=2</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">elev_nodata=-32768</em>, <em class="sig-param">scale_factor=1</em>, <em class="sig-param">angle_scale=0.01</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">robust=False</em>, <em class="sig-param">slope_kwargs=None</em>, <em class="sig-param">aspect_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_topo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">elev</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">slope</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aspect</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'empirical-rotation'</span></em>, <em class="sig-param"><span class="n">slope_thresh</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">elev_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">angle_scale</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">robust</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">min_samples</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">slope_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aspect_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_coeffs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.Topo.norm_topo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies topographic normalization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -159,10 +160,12 @@ values &lt; <code class="docutils literal notranslate"><span class="pre">slope_t
 <li><p><strong>angle_scale</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The angle scale factor.</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">LinearRegression.fit</span></code>.</p></li>
 <li><p><strong>robust</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to fit a robust regression.</p></li>
+<li><p><strong>min_samples</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The minimum number of samples required to fit a regression.</p></li>
 <li><p><strong>slope_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>
 to calculate the slope.</p></li>
 <li><p><strong>aspect_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">gdal.DEMProcessingOptions</span></code>
 to calculate the aspect.</p></li>
+<li><p><strong>band_coeffs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Slope and intercept coefficients for each band.</p></li>
 </ul>
 </dd>
 </dl>
@@ -214,10 +217,10 @@ See <a class="bibtex reference internal" href="#tan-etal-2010" id="id2">[TWM+10]
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2019, GeoWombat.
+      &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

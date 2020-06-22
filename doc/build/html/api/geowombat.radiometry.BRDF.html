@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>BRDF &#8212; GeoWombat 1.2.5 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRDF &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -13,7 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Topo" href="geowombat.radiometry.Topo.html" />
@@ -119,7 +120,7 @@
             
   <div class="section" id="brdf">
 <h1>BRDF<a class="headerlink" href="#brdf" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="geowombat.radiometry.BRDF">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">BRDF</code><a class="headerlink" href="#geowombat.radiometry.BRDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.RossLiKernels</span></code></p>
@@ -140,9 +141,9 @@
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
-<dl class="method">
+<dl class="py method">
 <dt id="geowombat.radiometry.BRDF.get_mean_sza">
-<em class="property">static </em><code class="sig-name descname">get_mean_sza</code><span class="sig-paren">(</span><em class="sig-param">central_latitude</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.get_mean_sza" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">get_mean_sza</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">central_latitude</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.get_mean_sza" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the mean solar zenith angle (SZA) as a function of the central latitude</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -160,9 +161,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="geowombat.radiometry.BRDF.norm_brdf">
-<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">data</em>, <em class="sig-param">solar_za</em>, <em class="sig-param">solar_az</em>, <em class="sig-param">sensor_za</em>, <em class="sig-param">sensor_az</em>, <em class="sig-param">central_latitude=None</em>, <em class="sig-param">sensor=None</em>, <em class="sig-param">wavelengths=None</em>, <em class="sig-param">nodata=0</em>, <em class="sig-param">mask=None</em>, <em class="sig-param">scale_factor=1.0</em>, <em class="sig-param">out_range=None</em>, <em class="sig-param">scale_angles=True</em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">central_latitude</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wavelengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">out_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_angles</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
 using the global c-factor method</p>
 <dl class="field-list simple">
@@ -176,7 +177,8 @@ using the global c-factor method</p>
 <li><p><strong>central_latitude</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>2d DataArray</em><em>]</em>) – The central latitude.</p></li>
 <li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The satellite sensor.</p></li>
 <li><p><strong>wavelengths</strong> (<em>str list</em>) – The wavelength(s) to normalize.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
+<li><p><strong>src_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The input ‘no data’ value.</p></li>
+<li><p><strong>dst_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The output ‘no data’ value.</p></li>
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – A data mask, where clear values are 0.</p></li>
 <li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the input data.</p></li>
 <li><p><strong>out_range</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The out data range. If not given, the output data are return in a 0-1 range.</p></li>
@@ -204,7 +206,7 @@ using the global c-factor method</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example where pixel angles are stored in separate GeoTiff files</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solarz.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solarz</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;solara.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">solara</span><span class="p">,</span>
@@ -247,10 +249,10 @@ using the global c-factor method</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2019, GeoWombat.
+      &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

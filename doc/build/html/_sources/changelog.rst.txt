@@ -3,8 +3,108 @@
 Change Log
 ==========
 
+1.2.16 ()
+---------
+
+New
+~~~
+
+- Added metadata tags keyword argument to :func:`geowombat.to_raster`.
+- Added `chunk_grid` and `footprint_grid` `DataArray` properties.
+
+1.2.15 (15 June 2020)
+---------------------
+
+New
+~~~
+
+- Added :func:`set_nodata` function for `DataArrays`.
+- Added :func:`bounds_overlay` function for `DataArrays`.
+
+1.2.14 (12 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed 'no data' clipping error in :func:`geowombat.util.GeoDownloads.download_cube`.
+
+New
+~~~
+
+- Added `file_list` to :func:`geowombat.core.sort_images_by_date`.
+- Added `nodata` keyword argument to :func:`geowombat.open`.
+
+1.2.13 (2 June 2020)
+--------------------
+
+New
+~~~
+
+- Added `cloud_height` option in :func:`download_cube`.
+- Added first attempt at supporting HDF reads.
+
+1.2.12 (3 May 2020)
+-------------------
+
+New
+~~~
+
+- Added :func:`geowombat.radiometry.angles.estimate_cloud_shadows` to estimate cloud shadows from a cloud mask.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed month range parsing in :func:`geowombat.util.web.download_cube`.
+
+1.2.11 (1 May 2020)
+-------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added micrometer values for Sentinel-2 2A and 2B sensors.
+
+1.2.10 (27 April 2020)
+----------------------
+
+New
+~~~
+
+- Added support for :func:`rasterio.windows.Window` and :func:`rasterio.coords.BoundingBox` objects in the :func:`geowombat.config.update` manager.
+
+1.2.9 (1 April 2020)
+--------------------
+
+- Removed f-string requirement in setup.py script.
+- Added keyword argument in :func:`download_cube` function.
+
+1.2.8 (1 April 2020)
+--------------------
+
+- Modified sample iteration overhead in :func:`geowombat.moving.moving_window`.
+
+New
+~~~
+
+- Added `weights` option in :func:`geowombat.moving.moving_window`.
+
+1.2.7 (31 March 2020)
+---------------------
+
+New
+~~~
+
+- Added window weights for moving mean.
+- Changed :func:`geowombat.moving.moving_window` parallelism from raster rows to raster samples.
+
+1.2.6 (15 March 2020)
+---------------------
+
+- Fixed missing `gw.filename` attribute in :func:`geowombat.to_vrt`.
+
 1.2.5 (4 March 2020)
-------------------------
+--------------------
 
 - Added attribute updating for band math.
 
