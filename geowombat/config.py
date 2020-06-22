@@ -4,12 +4,9 @@ import configparser
 
 
 config = {}
-_config_under_context = False
 
 config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
-
 config_parser = configparser.ConfigParser()
-
 config_parser.read(config_file)
 
 ASSOCIATIONS = {}
@@ -49,6 +46,10 @@ def _set_defaults(d):
     d = _update_config(config_parser, d)
 
 
+def _set_bool(d):
+    d['with_config'] = True
+
+
 class update(object):
 
     """
@@ -61,19 +62,17 @@ class update(object):
     def __init__(self, config=config, **kwargs):
 
         self.config = config
-        self._config_under_context = _config_under_context
         self.__set_defaults(config)
 
         if kwargs:
             self._assign(config, **kwargs)
 
     def __enter__(self):
-        self._config_under_context = True
+        _set_bool(self.config)
         return self.config
 
     def __exit__(self, type, value, traceback):
         d = self.config
-        self._config_under_context = False
         self.__set_defaults(d)
 
     @staticmethod

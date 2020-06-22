@@ -5,7 +5,7 @@ import h5netcdf
 import warnings
 
 from . import geoxarray
-from ..config import config, _config_under_context, _set_defaults
+from ..config import config, _set_defaults
 from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
@@ -453,8 +453,9 @@ class open(object):
 
     def __exit__(self, *args, **kwargs):
 
-        if not _config_under_context:
+        if not self.data.gw.config['with_config']:
             _set_defaults(config)
+
         self.close()
         d = self.data
         self._reset(d)
