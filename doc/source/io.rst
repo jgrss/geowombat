@@ -26,30 +26,30 @@ Open a raster as a DataArray.
 
 .. ipython:: python
 
-    with gw.open(rgbn) as ds:
-        print(ds)
+    with gw.open(rgbn) as src:
+        print(src)
 
 Force the output data type.
 
 .. ipython:: python
 
-    with gw.open(rgbn, dtype='float32') as ds:
-        print(ds)
+    with gw.open(rgbn, dtype='float32') as src:
+        print(src.dtype)
 
 Specify band names.
 
 .. ipython:: python
 
-    with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as ds:
-        print(ds)
+    with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as src:
+        print(src.band)
 
 Use the sensor name to set band names.
 
 .. ipython:: python
 
     with gw.config.update(sensor='qb'):
-        with gw.open(rgbn) as ds:
-            print(ds)
+        with gw.open(rgbn) as src:
+            print(src.band)
 
 To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``.
 
@@ -59,8 +59,8 @@ Open a list of files as a DataArray, with all bands stacked.
 
     with gw.open([rgbn, rgbn],
                  band_names=['b1', 'g1', 'r1', 'n1', 'b2', 'g2', 'r2', 'n2'],
-                 stack_dim='band') as ds:
-        print(ds)
+                 stack_dim='band') as src:
+        print(src)
 
 To open multiple images as a time stack, change the input to a list of files.
 
@@ -70,10 +70,10 @@ Open a list of files as a DataArray.
 
     with gw.open([rgbn, rgbn],
                  band_names=['blue', 'green', 'red', 'nir'],
-                 time_names=['t1', 't2']) as ds:
-        print(ds)
+                 time_names=['t1', 't2']) as src:
+        print()
 
-If `time_names` is not provided, GeoWombat will attempt to parse date strings using :func:`dateparser.search.search_dates`.
+If `time_names` is not provided, GeoWombat will attempt to parse date strings using `dateparser.search.search_dates <https://dateparser.readthedocs.io/en/latest/>`_.
 
 .. ipython:: python
 
@@ -83,8 +83,8 @@ If `time_names` is not provided, GeoWombat will attempt to parse date strings us
     print('\n', ', '.join([os.path.basename(fn) for fn in rgbn_time_list]))
 
     with gw.config.update(sensor='rgbn'):
-        with gw.open(rgbn_time_list) as ds:
-            print(ds)
+        with gw.open(rgbn_time_list) as src:
+            print(src.time)
 
 .. note::
 
@@ -106,8 +106,8 @@ In the example below, we specify a reference image using GeoWombat's configurati
     with gw.config.update(ref_image=rgbn):
         with gw.open(concat_list,
                      band_names=['blue', 'green', 'red', 'nir'],
-                     time_names=['t1', 't2']) as ds:
-            print(ds)
+                     time_names=['t1', 't2']) as src:
+            print(src)
 
 Stack the intersection of all images.
 
@@ -117,8 +117,8 @@ Stack the intersection of all images.
     with gw.open(concat_list,
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2', 't3'],
-                 bounds_by='intersection') as ds:
-        print(ds)
+                 bounds_by='intersection') as src:
+        print(src)
 
 Stack the union of all images.
 
@@ -128,8 +128,8 @@ Stack the union of all images.
     with gw.open(concat_list,
                  band_names=['blue', 'green', 'red', 'nir'],
                  time_names=['t1', 't2', 't3'],
-                 bounds_by='union') as ds:
-        print(ds)
+                 bounds_by='union') as src:
+        print(src)
 
 Keyword arguments always overwrite config settings. In this example, the reference image 'rgbn' is used to set the
 CRS, bounds, and cell size. Using ``bounds_by='intersection'`` overrides the reference image bounds.
@@ -141,8 +141,8 @@ CRS, bounds, and cell size. Using ``bounds_by='intersection'`` overrides the ref
         with gw.open(concat_list,
                      band_names=['blue', 'green', 'red', 'nir'],
                      time_names=['t1', 't2', 't3'],
-                     bounds_by='intersection') as ds:
-            print(ds)
+                     bounds_by='intersection') as src:
+            print(src)
 
 When multiple images have matching dates, the arrays are merged into one layer.
 
@@ -151,15 +151,15 @@ When multiple images have matching dates, the arrays are merged into one layer.
     concat_list = [rgbn_suba, rgbn_subb, rgbn_suba]
     with gw.open(concat_list,
                  band_names=['blue', 'green', 'red', 'nir'],
-                 time_names=['t1', 't1', 't2']) as ds:
-        print(ds)
+                 time_names=['t1', 't1', 't2']) as src:
+        print(src)
 
 Use search wildcards to open a list of images.
 
 .. code:: python
 
-    with gw.open('*sub*.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
-        print(ds)
+    with gw.open('*sub*.tif', band_names=['blue', 'green', 'red', 'nir']) as src:
+        print(src)
 
 Image mosaicking
 ----------------
@@ -171,8 +171,8 @@ is needed.
 
     with gw.open([rgbn_suba, rgbn_subb],
                  band_names=['b', 'g', 'r', 'n'],
-                 mosaic=True) as ds:
-        print(ds)
+                 mosaic=True) as src:
+        print(src)
 
 If the images in the mosaic list have different CRSs, use a context manager to warp to a common grid.
 
@@ -187,15 +187,15 @@ If the images in the mosaic list have different CRSs, use a context manager to w
         with gw.open([rgbn_suba, rgbn_subb],
                      band_names=['b', 'g', 'r', 'n'],
                      mosaic=True,
-                     chunks=512) as ds:
-            print(ds)
+                     chunks=512) as src:
+            print(src)
 
 Writing DataArrays to file
 --------------------------
 
 GeoWombat's I/O can be accessed through the :func:`to_vrt` and :func:`to_raster` functions. These functions use
 Rasterio's :func:`write` and Dask.array :func:`store` functions as I/O backends. In the examples below,
-``ds`` is an ``xarray.DataArray`` with the necessary transform information to write to an image file.
+``src`` is an ``xarray.DataArray`` with the necessary transform information to write to an image file.
 
 Write to a VRT file.
 
@@ -206,10 +206,10 @@ Write to a VRT file.
     # Transform the data to lat/lon
     with gw.config.update(ref_crs=4326):
 
-        with gw.open(rgbn, chunks=1024) as ds:
+        with gw.open(rgbn, chunks=1024) as src:
 
             # Write the data to a VRT
-            ds.gw.to_vrt('lat_lon_file.vrt')
+            src.gw.to_vrt('lat_lon_file.vrt')
 
 Write to a raster file.
 
@@ -217,19 +217,19 @@ Write to a raster file.
 
     import geowombat as gw
 
-    with gw.open(rgbn, chunks=1024) as ds:
+    with gw.open(rgbn, chunks=1024) as src:
 
         # Xarray drops attributes
-        attrs = ds.attrs.copy()
+        attrs = src.attrs.copy()
 
         # Apply operations on the DataArray
-        ds = ds * 10.0
+        src = src * 10.0
 
-        ds.attrs = attrs
+        src.attrs = attrs
 
         # Write the data to a GeoTiff
-        ds.gw.to_raster('output.tif',
-                        verbose=1,
-                        n_workers=4,    # number of process workers sent to ``concurrent.futures``
-                        n_threads=2,    # number of thread workers sent to ``dask.compute``
-                        n_chunks=200)   # number of window chunks to send as concurrent futures
+        src.gw.to_raster('output.tif',
+                         verbose=1,
+                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
+                         n_threads=2,    # number of thread workers sent to ``dask.compute``
+                         n_chunks=200)   # number of window chunks to send as concurrent futures

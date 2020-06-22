@@ -332,13 +332,18 @@ def mosaic(filenames,
 
         attrs = darray.attrs.copy()
 
-        footprints.append(darray.gw.geometry)
+        # Get the original bounds, unsampled
+        with xr.open_rasterio(filenames[0], **kwargs) as src_:
+            footprints.append(src_.gw.geometry)
+        src_ = None
 
-        for fn in warped_objects[1:]:
+        for fidx, fn in enumerate(warped_objects[1:]):
 
             with xr.open_rasterio(fn, **kwargs) as darrayb:
 
-                footprints.append(darrayb.gw.geometry)
+                with xr.open_rasterio(filenames[fidx+1], **kwargs) as src_:
+                    footprints.append(src_.gw.geometry)
+                src_ = None
 
                 if overlap == 'min':
 
