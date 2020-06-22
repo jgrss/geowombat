@@ -620,9 +620,6 @@ def warp(filename,
         else:
             dst_crs = check_src_crs(src)
 
-        import pdb
-        pdb.set_trace()
-
         # Check if the data need to be subset
         if bounds and (bounds != src.bounds):
 
