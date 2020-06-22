@@ -190,6 +190,54 @@ If the images in the mosaic list have different CRSs, use a context manager to w
                      chunks=512) as src:
             print(src)
 
+Mosaicking by the intersection of images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. ipython:: python
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(dpi=200)
+
+    with gw.open([rgbn_suba, rgbn_subb],
+                 chunks=64,
+                 mosaic=True,
+                 bounds_by='intersection') as src:
+
+        src.sel(band=[4, 3, 2]).plot.imshow(ax=ax)
+        src.gw.chunk_grid.plot(color='none', edgecolor='white', ls='-', lw=0.5, ax=ax)
+        src.gw.footprint_grid.plot(color='none', edgecolor='r', ax=ax)
+
+        ax.set_ylim(src.gw.footprint_grid.total_bounds[1]-10, src.gw.footprint_grid.total_bounds[3]+10)
+        ax.set_xlim(src.gw.footprint_grid.total_bounds[0]-10, src.gw.footprint_grid.total_bounds[2]+10)
+
+    ax.set_title('Image union', size=12)
+    plt.tight_layout(pad=1)
+
+Mosaicking by the union of images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. ipython:: python
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(dpi=200)
+
+    with gw.open([rgbn_suba, rgbn_subb],
+                 chunks=64,
+                 mosaic=True,
+                 bounds_by='union') as src:
+
+        src.sel(band=[4, 3, 2]).plot.imshow(ax=ax)
+        src.gw.chunk_grid.plot(color='none', edgecolor='white', ls='-', lw=0.5, ax=ax)
+        src.gw.footprint_grid.plot(color='none', edgecolor='r', ax=ax)
+
+        ax.set_ylim(src.gw.footprint_grid.total_bounds[1]-10, src.gw.footprint_grid.total_bounds[3]+10)
+        ax.set_xlim(src.gw.footprint_grid.total_bounds[0]-10, src.gw.footprint_grid.total_bounds[2]+10)
+
+    ax.set_title('Image union', size=12)
+    plt.tight_layout(pad=1)
+
 Writing DataArrays to file
 --------------------------
 
