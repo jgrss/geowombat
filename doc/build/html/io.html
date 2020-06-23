@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reading and writing files &#8212; GeoWombat 1.2.16 documentation</title>
+    <title>Raster I/O &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Accessing raster attributes" href="attributes.html" />
+    <link rel="next" title="Distributed processing" href="io-distributed.html" />
     <link rel="prev" title="Quick overview" href="quick-overview.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -60,15 +60,16 @@
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Reading and writing files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Raster I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -86,7 +87,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="quick-overview.html" title="previous chapter">Quick overview</a></li>
-      <li>Next: <a href="attributes.html" title="next chapter">Accessing raster attributes</a></li>
+      <li>Next: <a href="io-distributed.html" title="next chapter">Distributed processing</a></li>
   </ul></li>
 </ul>
 </div>
@@ -116,8 +117,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="reading-and-writing-files">
-<span id="io"></span><h1>Reading and writing files<a class="headerlink" href="#reading-and-writing-files" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="raster-i-o">
+<span id="io"></span><h1>Raster I/O<a class="headerlink" href="#raster-i-o" title="Permalink to this headline">¶</a></h1>
 <p>File opening with GeoWombat uses the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function to open raster files.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Import GeoWombat</span>
 <span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
@@ -230,9 +231,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
-<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -271,9 +272,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1515, x: 2006)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1515, 2006), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
 <span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
-<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:   (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
@@ -295,9 +296,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
-<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -357,9 +358,9 @@
 <span class="go">&lt;xarray.DataArray (time: 1, band: 1, y: 1515, x: 2006)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1, 1515, 2006), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U4 &#39;blue&#39;</span>
 <span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
 <span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
-<span class="go">  * band     (band) &lt;U4 &#39;blue&#39;</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
@@ -526,6 +527,7 @@ Rasterio’s <code class="xref py py-func docutils literal notranslate"><span cl
                      <span class="n">n_chunks</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>   <span class="c1"># number of window chunks to send as concurrent futures</span>
 </pre></div>
 </div>
+<p>See <a class="reference internal" href="io-distributed.html#io-distributed"><span class="std std-ref">Distributed processing</span></a> for more examples describing concurrent file writing with GeoWombat.</p>
 </div>
 </div>
 

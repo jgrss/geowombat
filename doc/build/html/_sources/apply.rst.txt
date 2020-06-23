@@ -1,7 +1,7 @@
 .. _apply:
 
-Applying custom user functions
-==============================
+User functions
+==============
 
 With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.
 ---------------------------------------------------------------------------------------------------------------------------------------

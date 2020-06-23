@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Use named coordinates for band math &#8212; GeoWombat 1.2.16 documentation</title>
+    <title>Band math &#8212; GeoWombat 1.2.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Use GeoWombat for a machine learning pipeline" href="machine-learning.html" />
+    <link rel="next" title="Machine learning" href="machine-learning.html" />
     <link rel="prev" title="Data extraction" href="extraction.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -60,15 +60,16 @@
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Use named coordinates for band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -86,7 +87,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="extraction.html" title="previous chapter">Data extraction</a></li>
-      <li>Next: <a href="machine-learning.html" title="next chapter">Use GeoWombat for a machine learning pipeline</a></li>
+      <li>Next: <a href="machine-learning.html" title="next chapter">Machine learning</a></li>
   </ul></li>
 </ul>
 </div>
@@ -116,8 +117,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="use-named-coordinates-for-band-math">
-<span id="band-math"></span><h1>Use named coordinates for band math<a class="headerlink" href="#use-named-coordinates-for-band-math" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="band-math">
+<span id="id1"></span><h1>Band math<a class="headerlink" href="#band-math" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="vegetation-indices">
 <h2>Vegetation indices<a class="headerlink" href="#vegetation-indices" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>

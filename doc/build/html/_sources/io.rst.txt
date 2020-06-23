@@ -1,7 +1,7 @@
 .. _io:
 
-Reading and writing files
-=========================
+Raster I/O
+==========
 
 File opening with GeoWombat uses the :func:`geowombat.open` function to open raster files.
 
@@ -281,3 +281,5 @@ Write to a raster file.
                          n_workers=4,    # number of process workers sent to ``concurrent.futures``
                          n_threads=2,    # number of thread workers sent to ``dask.compute``
                          n_chunks=200)   # number of window chunks to send as concurrent futures
+
+See :ref:`io-distributed` for more examples describing concurrent file writing with GeoWombat.
