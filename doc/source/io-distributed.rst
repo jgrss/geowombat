@@ -219,7 +219,7 @@ The code block below is a simple example that would use 8 threads within 1 proce
             # results = task.data.compute(num_workers=8)
 
             # Use geowombat to write the task to file where
-            #   chunks are processed in concurrently.
+            #   chunks are processed concurrently.
             task.gw.to_raster('results.tif', n_workers=1, n_threads=8, compress='lzw')
 
 The same task might be executed on a distributed system in the following way.
@@ -242,7 +242,7 @@ The same task might be executed on a distributed system in the following way.
             # results = task.data.compute(num_workers=8)
 
             # Use geowombat to write the task to file where
-            #   chunks are processed in concurrently.
+            #   chunks are processed concurrently.
             #
             # The results will be written under a distributed cluster environment.
             task.gw.to_raster('results.tif', use_client=True, n_workers=1, n_threads=8, compress='lzw')
