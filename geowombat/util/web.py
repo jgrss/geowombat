@@ -7,6 +7,7 @@ from datetime import datetime
 from collections import namedtuple
 import random
 import string
+import requests
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
@@ -77,6 +78,7 @@ def _random_id(string_length):
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
+
     FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
 
     file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
@@ -121,6 +123,7 @@ class GeoDownloads(object):
     def __init__(self):
 
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
+        self.aws_l8_public = 'https://landsat-pds.s3.amazonaws.com/c1/L8'
 
         self.landsat_parts = ['lt05', 'le07', 'lc08']
         self.sentinel_parts = ['s2a', 's2b']
@@ -1068,6 +1071,62 @@ class GeoDownloads(object):
 
         return downloaded
 
+    def download_aws(self,
+                     landsat_id,
+                     band_list,
+                     outdir='.'):
+
+        """
+        Downloads Landsat 8 data from Amazon AWS
+
+        Args:
+            landsat_id (str): The Landsat id to download.
+            band_list (list): The Landsat bands to download.
+            outdir (Optional[str]): The output directory.
+
+        Examples:
+            >>> from geowombat.util import GeoDownloads
+            >>>
+            >>> dl = GeoDownloads()
+            >>> dl.download_aws('LC08_L1TP_224077_20200518_20200518_01_RT', ['b2', 'b3', 'b4'])
+        """
+
+        if not isinstance(outdir, Path):
+            outdir = Path(outdir)
+
+        parts = landsat_id.split('_')
+
+        path_row = parts[2]
+        path = int(path_row[:3])
+        row = int(path_row[3:])
+
+        def _download_file(in_file, out_file):
+
+            response = requests.get(in_file)
+
+            with open(out_file, 'wb') as f:
+                f.write(response.content)
+
+        mtl_id = f'{landsat_id}_MTL.txt'
+        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'
+        mtl_out = outdir / mtl_id
+
+        _download_file(url, str(mtl_out))
+
+        angle_id = f'{landsat_id}_ANG.txt'
+        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'
+        angle_out = outdir / angle_id
+
+        _download_file(url, str(angle_out))
+
+        for band in band_list:
+
+            band_id = f'{landsat_id}_{band.upper()}.TIF'
+            url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'
+            band_out = outdir / band_id
+
+            _download_file(url, str(band_out))
+
     def download_landsat_range(self, sensors, bands, path_range, row_range, date_range, **kwargs):
 
         """
@@ -1082,9 +1141,10 @@ class GeoDownloads(object):
             kwargs (Optional[dict]): Keyword arguments to pass to ``download``.
 
         Examples:
-            >>> from geowombat.util import download_landsat_range
+            >>> from geowombat.util import GeoDownloads
             >>>
-            >>> download_landsat_range(['lc08'], ['b4'], [42], [34], ['20170616', '20170620'])
+            >>> dl = GeoDownloads()
+            >>> dl.download_landsat_range(['lc08'], ['b4'], [42], [34], ['20170616', '20170620'])
         """
 
         if (len(date_range) == 2) and not isinstance(date_range[0], datetime):

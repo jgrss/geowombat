@@ -430,7 +430,7 @@ def get_file_bounds(filenames,
             dst_res = src.res
 
         # Transform the extent to the reference CRS
-        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src.crs,
+        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(check_src_crs(src),
                                                                                 dst_crs,
                                                                                 src.bounds.left,
                                                                                 src.bounds.bottom,

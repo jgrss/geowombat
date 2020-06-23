@@ -3,13 +3,19 @@
 Change Log
 ==========
 
-1.2.16 ()
----------
+1.2.16 (22 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed an issue with lingering configuration reference bounds.
 
 New
 ~~~
 
 - Added metadata tags keyword argument to :func:`geowombat.to_raster`.
+- Added `chunk_grid` and `footprint_grid` `DataArray` properties.
 
 1.2.15 (15 June 2020)
 ---------------------

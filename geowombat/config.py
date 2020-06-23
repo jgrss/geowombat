@@ -6,9 +6,7 @@ import configparser
 config = {}
 
 config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
-
 config_parser = configparser.ConfigParser()
-
 config_parser.read(config_file)
 
 ASSOCIATIONS = {}
@@ -42,6 +40,16 @@ def _update_config(config_parser, config_dict):
 config = _update_config(config_parser, config)
 
 
+def _set_defaults(d):
+
+    config_parser.read(config_file)
+    d = _update_config(config_parser, d)
+
+
+def _set_bool(d):
+    d['with_config'] = True
+
+
 class update(object):
 
     """
@@ -54,23 +62,22 @@ class update(object):
     def __init__(self, config=config, **kwargs):
 
         self.config = config
-        self._set_defaults(config)
+        self.__set_defaults(config)
 
         if kwargs:
             self._assign(config, **kwargs)
 
     def __enter__(self):
+        _set_bool(self.config)
         return self.config
 
     def __exit__(self, type, value, traceback):
         d = self.config
-        self._set_defaults(d)
+        self.__set_defaults(d)
 
     @staticmethod
-    def _set_defaults(d):
-
-        config_parser.read(config_file)
-        d = _update_config(config_parser, d)
+    def __set_defaults(d):
+        _set_defaults(d)
 
     @staticmethod
     def _assign(d, **kwargs):

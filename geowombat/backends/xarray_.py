@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
@@ -324,83 +325,97 @@ def mosaic(filenames,
                                  resampling=resampling,
                                  **ref_kwargs)
 
+    footprints = []
+
     # Combine the data
-    with xr.open_rasterio(warped_objects[0], **kwargs) as ds:
+    with xr.open_rasterio(warped_objects[0], **kwargs) as darray:
 
-        attrs = ds.attrs.copy()
+        attrs = darray.attrs.copy()
 
-        for fn in warped_objects[1:]:
+        # Get the original bounds, unsampled
+        with xr.open_rasterio(filenames[0], **kwargs) as src_:
+            footprints.append(src_.gw.geometry)
+        src_ = None
 
-            with xr.open_rasterio(fn, **kwargs) as dsb:
+        for fidx, fn in enumerate(warped_objects[1:]):
+
+            with xr.open_rasterio(fn, **kwargs) as darrayb:
+
+                with xr.open_rasterio(filenames[fidx+1], **kwargs) as src_:
+                    footprints.append(src_.gw.geometry)
+                src_ = None
 
                 if overlap == 'min':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
 
-                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
-                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
-                                               xr_mininum(ds, dsb)))
+                        darray = xr.where((darray.mean(dim='band') == nodata) & (darrayb.mean(dim='band') != nodata), darrayb,
+                                      xr.where((darray.mean(dim='band') != nodata) & (darrayb.mean(dim='band') == nodata), darray,
+                                               xr_mininum(darray, darrayb)))
 
                     else:
-                        ds = xr_mininum(ds, dsb)
+                        darray = xr_mininum(darray, darrayb)
 
                 elif overlap == 'max':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
 
-                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
-                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
-                                               xr_maximum(ds, dsb)))
+                        darray = xr.where((darray.mean(dim='band') == nodata) & (darrayb.mean(dim='band') != nodata), darrayb,
+                                      xr.where((darray.mean(dim='band') != nodata) & (darrayb.mean(dim='band') == nodata), darray,
+                                               xr_maximum(darray, darrayb)))
 
                     else:
-                        ds = xr_maximum(ds, dsb)
+                        darray = xr_maximum(darray, darrayb)
 
                 elif overlap == 'mean':
 
                     if isinstance(nodata, float) or isinstance(nodata, int):
 
-                        ds = xr.where((ds.mean(dim='band') == nodata) & (dsb.mean(dim='band') != nodata), dsb,
-                                      xr.where((ds.mean(dim='band') != nodata) & (dsb.mean(dim='band') == nodata), ds,
-                                               (ds + dsb) / 2.0))
+                        darray = xr.where((darray.mean(dim='band') == nodata) & (darrayb.mean(dim='band') != nodata), darrayb,
+                                      xr.where((darray.mean(dim='band') != nodata) & (darrayb.mean(dim='band') == nodata), darray,
+                                               (darray + darrayb) / 2.0))
 
                     else:
-                        ds = (ds + dsb) / 2.0
+                        darray = (darray + darrayb) / 2.0
 
-                # ds = ds.combine_first(dsb)
+                # darray = darray.combine_first(darrayb)
 
-        ds = ds.assign_attrs(**attrs)
+        darray = darray.assign_attrs(**attrs)
 
         if band_names:
-            ds.coords['band'] = band_names
+            darray.coords['band'] = band_names
         else:
 
-            if ds.gw.sensor:
+            if darray.gw.sensor:
 
-                if ds.gw.sensor not in ds.gw.avail_sensors:
+                if darray.gw.sensor not in darray.gw.avail_sensors:
 
-                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(ds.gw.sensor,
-                                                                                                           ', '.join(ds.gw.avail_sensors)))
+                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(darray.gw.sensor,
+                                                                                                           ', '.join(darray.gw.avail_sensors)))
 
                 else:
 
-                    new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
+                    new_band_names = list(darray.gw.wavelengths[darray.gw.sensor]._fields)
 
-                    if len(new_band_names) != len(ds.band.values.tolist()):
+                    if len(new_band_names) != len(darray.band.values.tolist()):
                         logger.warning('  The band list length does not match the sensor bands.')
                     else:
 
-                        ds.coords['band'] = new_band_names
-                        ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
+                        darray.coords['band'] = new_band_names
+                        darray.attrs['sensor'] = darray.gw.sensor_names[darray.gw.sensor]
 
-        ds.attrs['resampling'] = resampling
+        darray.attrs['filename'] = [Path(fn).name for fn in filenames]
+        darray.attrs['resampling'] = resampling
+
+        darray.gw.footprint_grid = footprints
 
         if dtype:
 
-            attrs = ds.attrs.copy()
-            return ds.astype(dtype).assign_attrs(**attrs)
+            attrs = darray.attrs.copy()
+            return darray.astype(dtype).assign_attrs(**attrs)
 
         else:
-            return ds
+            return darray
 
 
 def concat(filenames,
