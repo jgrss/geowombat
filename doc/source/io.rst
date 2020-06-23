@@ -10,51 +10,51 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     # Import GeoWombat
     import geowombat as gw
 
-    # Load a 4-band test image
-    from geowombat.data import rgbn
+    # Load image names
+    from geowombat.data import l8_224077_20200518_B2, l8_224077_20200518_B3, l8_224077_20200518_B4
+    from geowombat.data import l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4, l8_224078_20200518
 
-    # Load two images that partially overlap
-    from geowombat.data import rgbn_suba, rgbn_subb
-
+    from pathlib import Path
     import matplotlib.pyplot as plt
+    import matplotlib.patheffects as pe
 
-To open individual images, GeoWombat uses :func:`xarray.open_rasterio`.
+To open individual images, GeoWombat uses :func:`xarray.open_rasterio` and :func:`rasterio.vrt.WarpedVRT`.
 
 .. ipython:: python
 
     fig, ax = plt.subplots(dpi=200)
-    with gw.open(rgbn) as src:
-        src.where(src != 0).sel(band=[4, 3, 2]).plot.imshow(robust=True, ax=ax)
-    @savefig rgbn_plot.png
+    with gw.open(l8_224078_20200518) as src:
+        src.where(src != 0).sel(band=[3, 2, 1]).plot.imshow(robust=True, ax=ax)
+    @savefig rgb_plot.png
     plt.tight_layout(pad=1)
 
 Open a raster as a DataArray.
 
 .. ipython:: python
 
-    with gw.open(rgbn) as src:
+    with gw.open(l8_224078_20200518) as src:
         print(src)
 
 Force the output data type.
 
 .. ipython:: python
 
-    with gw.open(rgbn, dtype='float64') as src:
+    with gw.open(l8_224078_20200518, dtype='float64') as src:
         print(src.dtype)
 
 Specify band names.
 
 .. ipython:: python
 
-    with gw.open(rgbn, band_names=['blue', 'green', 'red', 'nir']) as src:
+    with gw.open(l8_224078_20200518, band_names=['blue', 'green', 'red']) as src:
         print(src.band)
 
 Use the sensor name to set band names.
 
 .. ipython:: python
 
-    with gw.config.update(sensor='qb'):
-        with gw.open(rgbn) as src:
+    with gw.config.update(sensor='bgr'):
+        with gw.open(l8_224078_20200518) as src:
             print(src.band)
 
 To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``.
@@ -63,8 +63,8 @@ Open a list of files as a DataArray, with all bands stacked.
 
 .. ipython:: python
 
-    with gw.open([rgbn, rgbn],
-                 band_names=['b1', 'g1', 'r1', 'n1', 'b2', 'g2', 'r2', 'n2'],
+    with gw.open([l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4],
+                 band_names=['b', 'g', 'r'],
                  stack_dim='band') as src:
         print(src)
 
@@ -74,23 +74,10 @@ Open a list of files as a DataArray.
 
 .. ipython:: python
 
-    with gw.open([rgbn, rgbn],
-                 band_names=['blue', 'green', 'red', 'nir'],
+    with gw.open([l8_224078_20200518, l8_224078_20200518],
+                 band_names=['blue', 'green', 'red'],
                  time_names=['t1', 't2']) as src:
         print(src)
-
-If `time_names` is not provided, GeoWombat will attempt to parse date strings using `dateparser.search.search_dates <https://dateparser.readthedocs.io/en/latest/>`_.
-
-.. ipython:: python
-
-    import os
-    from geowombat.data import rgbn_time_list
-
-    print('\n', ', '.join([os.path.basename(fn) for fn in rgbn_time_list]))
-
-    with gw.config.update(sensor='rgbn'):
-        with gw.open(rgbn_time_list) as src:
-            print(src.time)
 
 .. note::
 
@@ -108,10 +95,16 @@ In the example below, we specify a reference image using GeoWombat's configurati
     #
     # Within the configuration context, every image
     # in concat_list will conform to the reference grid.
-    concat_list = [rgbn, rgbn]
-    with gw.config.update(ref_image=rgbn):
-        with gw.open(concat_list,
-                     band_names=['blue', 'green', 'red', 'nir'],
+    filenames = [l8_224078_20200518, l8_224078_20200518]
+    with gw.config.update(ref_image=l8_224077_20200518_B2):
+        with gw.open(filenames,
+                     band_names=['blue', 'green', 'red'],
+                     time_names=['t1', 't2']) as src:
+            print(src)
+
+    with gw.config.update(ref_image=l8_224078_20200518_B2):
+        with gw.open(filenames,
+                     band_names=['blue', 'green', 'red'],
                      time_names=['t1', 't2']) as src:
             print(src)
 
@@ -119,52 +112,38 @@ Stack the intersection of all images.
 
 .. ipython:: python
 
-    concat_list = [rgbn, rgbn_subb, rgbn_suba]
-    with gw.open(concat_list,
-                 band_names=['blue', 'green', 'red', 'nir'],
-                 time_names=['t1', 't2', 't3'],
+    fig, ax = plt.subplots(dpi=200)
+    filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+    with gw.open(filenames,
+                 band_names=['blue'],
+                 mosaic=True,
                  bounds_by='intersection') as src:
-        print(src)
+        src.where(src != 0).sel(band='blue').plot.imshow(robust=True, ax=ax)
+    @savefig blue_intersection_plot.png
+    plt.tight_layout(pad=1)
 
 Stack the union of all images.
 
 .. ipython:: python
 
-    concat_list = [rgbn, rgbn_subb, rgbn_suba]
-    with gw.open(concat_list,
-                 band_names=['blue', 'green', 'red', 'nir'],
-                 time_names=['t1', 't2', 't3'],
+    fig, ax = plt.subplots(dpi=200)
+    filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+    with gw.open(filenames,
+                 band_names=['blue'],
+                 mosaic=True,
                  bounds_by='union') as src:
-        print(src)
-
-Keyword arguments always overwrite config settings. In this example, the reference image 'rgbn' is used to set the
-CRS, bounds, and cell size. Using ``bounds_by='intersection'`` overrides the reference image bounds.
-
-.. ipython:: python
-
-    concat_list = [rgbn, rgbn_subb, rgbn_suba]
-    with gw.config.update(ref_image=rgbn):
-        with gw.open(concat_list,
-                     band_names=['blue', 'green', 'red', 'nir'],
-                     time_names=['t1', 't2', 't3'],
-                     bounds_by='intersection') as src:
-            print(src)
+        src.where(src != 0).sel(band='blue').plot.imshow(robust=True, ax=ax)
+    @savefig blue_union_plot.png
+    plt.tight_layout(pad=1)
 
 When multiple images have matching dates, the arrays are merged into one layer.
 
 .. ipython:: python
 
-    concat_list = [rgbn_suba, rgbn_subb, rgbn_suba]
-    band_names = ['blue', 'green', 'red', 'nir']
-    time_names = ['t1', 't1', 't2']
-    with gw.open(concat_list, band_names=band_names, time_names=time_names) as src:
-        print(src)
-
-Use search wildcards to open a list of images.
-
-.. code:: python
-
-    with gw.open('*sub*.tif', band_names=['blue', 'green', 'red', 'nir']) as src:
+    filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+    band_names = ['blue']
+    time_names = ['t1', 't1']
+    with gw.open(filenames, band_names=band_names, time_names=time_names) as src:
         print(src)
 
 Image mosaicking
@@ -175,8 +154,8 @@ is needed.
 
 .. ipython:: python
 
-    with gw.open([rgbn_suba, rgbn_subb],
-                 band_names=['b', 'g', 'r', 'n'],
+    with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
+                 band_names=['b'],
                  mosaic=True) as src:
         print(src)
 
@@ -189,11 +168,10 @@ If the images in the mosaic list have different CRSs, use a context manager to w
 .. ipython:: python
 
     # Use a reference CRS
-    with gw.config.update(ref_image=rgbn):
-        with gw.open([rgbn_suba, rgbn_subb],
-                     band_names=['b', 'g', 'r', 'n'],
-                     mosaic=True,
-                     chunks=512) as src:
+    with gw.config.update(ref_image=l8_224077_20200518_B2):
+        with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
+                     band_names=['b'],
+                     mosaic=True) as src:
             print(src)
 
 Setup a plot function
@@ -201,21 +179,37 @@ Setup a plot function
 
 .. ipython:: python
 
-    def plot(bounds_by):
+    def plot(bounds_by, ref_image=None, cmap='viridis'):
         fig, ax = plt.subplots(dpi=200)
-        with gw.open([rgbn_suba, rgbn_subb],
-                     chunks=64,
-                     mosaic=True,
-                     bounds_by=bounds_by) as srca:
-            # Plot NIR, red, green
-            srca.where(srca != 0).sel(band=[4, 3, 2]).plot.imshow(robust=True, ax=ax)
-            # Plot the image chunks
-            srca.gw.chunk_grid.plot(color='none', edgecolor='k', ls='-', lw=0.5, ax=ax)
-            # Plot the image footprints
-            srca.gw.footprint_grid.plot(color='none', edgecolor='orange', lw=2, ax=ax)
-            ax.set_ylim(srca.gw.footprint_grid.total_bounds[1]-10, srca.gw.footprint_grid.total_bounds[3]+10)
-            ax.set_xlim(srca.gw.footprint_grid.total_bounds[0]-10, srca.gw.footprint_grid.total_bounds[2]+10)
-        ax.set_title(f'Image {bounds_by}', size=12)
+        with gw.config.update(ref_image=ref_image):
+            with gw.open([l8_224077_20200518_B4, l8_224078_20200518_B4],
+                         band_names=['nir'],
+                         chunks=256,
+                         mosaic=True,
+                         bounds_by=bounds_by) as srca:
+                # Plot the NIR band
+                srca.where(srca != 0).sel(band='nir').plot.imshow(robust=True, cbar_kwargs={'label': 'DN'}, ax=ax)
+                # Plot the image chunks
+                srca.gw.chunk_grid.plot(color='none', edgecolor='k', ls='-', lw=0.5, ax=ax)
+                # Plot the image footprints
+                srca.gw.footprint_grid.plot(color='none', edgecolor='orange', lw=2, ax=ax)
+                # Label the image footprints
+                for row in srca.gw.footprint_grid.itertuples(index=False):
+                    ax.scatter(row.geometry.centroid.x, row.geometry.centroid.y,
+                               s=50, color='red', edgecolor='white', lw=1)
+                    ax.annotate(row.footprint.replace('.TIF', ''),
+                                (row.geometry.centroid.x, row.geometry.centroid.y),
+                                color='black',
+                                size=8,
+                                ha='center',
+                                va='center',
+                                path_effects=[pe.withStroke(linewidth=1, foreground='white')])
+                # Set the display bounds
+                ax.set_ylim(srca.gw.footprint_grid.total_bounds[1]-10, srca.gw.footprint_grid.total_bounds[3]+10)
+                ax.set_xlim(srca.gw.footprint_grid.total_bounds[0]-10, srca.gw.footprint_grid.total_bounds[2]+10)
+        title = f'Image {bounds_by}' if bounds_by else str(Path(ref_image).name.split('.')[0]) + ' as reference'
+        size = 12 if bounds_by else 8
+        ax.set_title(title, size=size)
         plt.tight_layout(pad=1)
 
 Mosaic by the union of images
@@ -234,6 +228,16 @@ footprints while the black grids illustrate the ``DataArray`` chunks.
     @savefig intersection_example.png
     plot('intersection')
 
+.. ipython:: python
+
+    @savefig ref1_example.png
+    plot(None, l8_224077_20200518_B4)
+
+.. ipython:: python
+
+    @savefig ref2_example.png
+    plot(None, l8_224078_20200518_B4)
+
 Writing DataArrays to file
 --------------------------
 
@@ -250,7 +254,7 @@ Write to a VRT file.
     # Transform the data to lat/lon
     with gw.config.update(ref_crs=4326):
 
-        with gw.open(rgbn, chunks=1024) as src:
+        with gw.open(l8_224077_20200518_B4, chunks=1024) as src:
 
             # Write the data to a VRT
             src.gw.to_vrt('lat_lon_file.vrt')
@@ -261,7 +265,7 @@ Write to a raster file.
 
     import geowombat as gw
 
-    with gw.open(rgbn, chunks=1024) as src:
+    with gw.open(l8_224077_20200518_B4, chunks=1024) as src:
 
         # Xarray drops attributes
         attrs = src.attrs.copy()
