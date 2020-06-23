@@ -18,3 +18,5 @@ numcodecs:              zarr
 dask-ml:                ml
 lightgbm:               ml
 ipython:                view
+bokeh:                  view
+graphviz:               view
