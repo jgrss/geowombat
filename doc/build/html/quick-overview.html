@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Reading and writing files" href="io.html" />
+    <link rel="next" title="Raster I/O" href="io.html" />
     <link rel="prev" title="Issues" href="issues.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -60,15 +60,16 @@
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -86,7 +87,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="issues.html" title="previous chapter">Issues</a></li>
-      <li>Next: <a href="io.html" title="next chapter">Reading and writing files</a></li>
+      <li>Next: <a href="io.html" title="next chapter">Raster I/O</a></li>
   </ul></li>
 </ul>
 </div>
@@ -137,20 +138,20 @@
 
 <span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
-<span class="go">array([[ 0.48649148, -1.736793  ,  1.04703464],</span>
-<span class="go">       [ 2.51064385,  0.32652859,  1.58611473]])</span>
+<span class="go">array([[ 0.15373553, -2.04148604, -1.31509178],</span>
+<span class="go">       [-0.34933833, -0.52180578, -0.54151846]])</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) int64 10 20</span>
 <span class="go">Dimensions without coordinates: y</span>
 
 <span class="gp">In [6]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f9b93c1d8d0&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f8a9f1dc6d8&gt;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="file-opening-with-geowombat">
 <h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> has its own file opening API (<a class="reference internal" href="io.html#io"><span class="std std-ref">Reading and writing files</span></a>):</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> has its own file opening API (<a class="reference internal" href="io.html#io"><span class="std std-ref">Raster I/O</span></a>):</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 
 <span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -175,7 +176,7 @@
 <span class="go">    DataType:       Generic</span>
 <span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f9b94842b00&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f8a367f6f60&gt;</span>
 </pre></div>
 </div>
 </div>

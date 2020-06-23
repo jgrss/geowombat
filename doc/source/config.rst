@@ -1,7 +1,7 @@
 .. _config:
 
-GeoWombat configuration
-=======================
+Configuration
+=============
 
 GeoWombat has a context manager (:class:`geowombat.config`) to assist in configurations
 ---------------------------------------------------------------------------------------

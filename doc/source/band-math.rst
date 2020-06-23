@@ -1,7 +1,7 @@
 .. _band_math:
 
-Use named coordinates for band math
-===================================
+Band math
+=========
 
 Vegetation indices
 ------------------

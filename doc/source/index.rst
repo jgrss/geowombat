@@ -32,6 +32,7 @@ Documentation
 **User Guide**
 
 * :doc:`io`
+* :doc:`io-distributed`
 * :doc:`attributes`
 * :doc:`config`
 * :doc:`crs`
@@ -49,6 +50,7 @@ Documentation
    :caption: User Guide
 
    io
+   io-distributed
    attributes
    config
    crs
