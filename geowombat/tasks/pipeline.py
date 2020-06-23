@@ -166,7 +166,7 @@ class BaseGeoTask(ABC):
         task_output = self.outputs[task_id]
         when = datetime.now().strftime('%A, %d-%m-%Y at %H:%M:%S')
 
-        task_log = f'{when} | {task_output} | {task_id-random_id}'
+        task_log = f"{when} | {task_output} | task_id-{random_id}"
 
         return f'{task_log} ok\n' if self._check_task(task_id) else f'{task_log} failed\n'
 
@@ -178,7 +178,11 @@ class BaseGeoTask(ABC):
                 lines = f.readlines()
 
         else:
+
             lines = []
+
+            with open(self.log_file, mode='w') as f:
+                f.writelines(lines)
 
         with open(self.log_file, mode='r+') as f:
 
@@ -215,7 +219,20 @@ class GraphBuilder(object):
                 self.g.node(task_id, label=f'Task {task_id}: {task.__name__}', **PROC_NODE_ATTRS)
 
             if task_id != list(self.tasks)[0][0]:
-                self.g.edge(list(self.tasks)[counter - 1][0], task_id, **PROC_EDGE_ATTRS)
+
+                if isinstance(self.inputs[task_id], str):
+                    self.g.edge(list(self.tasks)[counter-1][0], task_id, **PROC_EDGE_ATTRS)
+                else:
+
+                    task_list_ = list(list(zip(*self.tasks))[0])
+
+                    for ctask in self.inputs[task_id]:
+                        if ctask in task_list_:
+                            cidx = task_list_.index(ctask)
+                        else:
+                            cidx = counter-1
+
+                        self.g.edge(list(self.tasks)[cidx][0], task_id, **PROC_EDGE_ATTRS)
 
             for config_key, config_setting in self.config_args.items():
 
@@ -257,18 +274,22 @@ class GraphBuilder(object):
 
             for out_key, out_setting in self.out_args.items():
 
-                with self.g.subgraph(name='cluster_1') as c:
+                if not output_.startswith('mem|'):
 
-                    c.attr(style='filled', color='#a6d5ab')
-                    c.node(out_key, label=f'{out_key}: {out_setting}', **OUT_NODE_ATTRS)
-                    c.attr(label='geowombat.to_raster() args')
+                    with self.g.subgraph(name='cluster_1') as c:
 
-                self.g.edge(out_key, f'{task_id} {self.outputs[task_id]}', **OUT_EDGE_ATTRS)
+                        c.attr(style='filled', color='#a6d5ab')
+                        c.node(out_key, label=f'{out_key}: {out_setting}', **OUT_NODE_ATTRS)
+                        c.attr(label='geowombat.to_raster() args')
+
+                    self.g.edge(out_key, f'{task_id} {self.outputs[task_id]}', **OUT_EDGE_ATTRS)
 
             if counter > 0:
 
                 task_id_ = list(self.outputs.keys())[counter-1]
-                self.g.edge(f'{task_id_} {self.outputs[task_id_]}', task_id, weight='200', **edge_attrs)
+
+                if not self.outputs[task_id_].startswith('mem|'):
+                    self.g.edge(f'{task_id_} {self.outputs[task_id_]}', task_id, weight='200', **edge_attrs)
 
             counter += 1
 
@@ -296,32 +317,41 @@ class GraphBuilder(object):
 
         for input_ in input_list:
 
-            if input_ in self.outputs_seen:
-                task_id_b = None
+            if isinstance(input_, tuple) or isinstance(input_, list):
+                gen = input_
             else:
+                gen = (input_,)
 
-                if input_ not in self.inputs_seen:
+            for gen_item in gen:
 
-                    self.inputs_seen.add(input_)
-
-                    if input_ not in self.outputs:
-                        self.g.node(f'{task_id} {input_}', label=input_, **INPUT_NODE_ATTRS)
-
-                    task_id_b = task_id
-
+                if gen_item in self.outputs_seen:
+                    task_id_b = None
                 else:
-                    task_id_b = list(self.tasks)[counter-1][0]
 
-            if task_id_b:
+                    if gen_item not in self.inputs_seen:
 
-                if input_ not in self.outputs:
+                        self.inputs_seen.add(gen_item)
 
-                    for itask, iinputs in self.inputs.items():
-                        if input_ in iinputs:
-                            task_id_b = itask
-                            break
+                        gen_label = Path(gen_item).name if Path(gen_item).is_file() else gen_item
 
-                    self.g.edge(f'{task_id_b} {input_}', task_id, weight='200', **INPUT_EDGE_ATTRS)
+                        if gen_item not in self.outputs:
+                            self.g.node(f'{task_id} {gen_item}', label=gen_label, **INPUT_NODE_ATTRS)
+
+                        task_id_b = task_id
+
+                    else:
+                        task_id_b = list(self.tasks)[counter-1][0]
+
+                if task_id_b:
+
+                    if gen_item not in self.outputs:
+
+                        for itask, iinputs in self.inputs.items():
+                            if gen_item in iinputs:
+                                task_id_b = itask
+                                break
+
+                        self.g.edge(f'{task_id_b} {gen_item}', task_id, weight='200', **INPUT_EDGE_ATTRS)
 
 
 class GeoTask(BaseGeoTask, GraphBuilder):
@@ -342,34 +372,42 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
     Example:
         >>> import geowombat as gw
+        >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_B3, l8_224078_20200518_B4
         >>> from geowombat.tasks import GeoTask
         >>>
-        >>> from geowombat.radiometry import RadTransforms
-        >>> rt = RadTransforms()
+        >>> # Tasks a and take an image as input
+        >>> # Task c takes two images as input
+        >>> # Task d takes the result of tasks a, b, and c
+        >>> inputs = {'a': l8_224078_20200518, 'b': l8_224078_20200518, 'c': (l8_224078_20200518_B3, l8_224078_20200518_B4), 'd': ('a', 'b', 'c')}
         >>>
-        >>> tasks = (('A', rt.dn_to_sr), ('B', gw.ndvi))
-        >>> clean = {'A': 'task'}
+        >>> # The output task names
+        >>> # Tasks a, b, c, and d generate in-memory arrays
+        >>> outputs = {'a': 'mem|r1', 'b': 'mem|r2', 'c': 'mem|r3', 'd': 'mem|stack'}
         >>>
-        >>> inputs = {'A': ('input.tif', 'sza.tif', 'saa.tif', 'vza.tif', 'vaa.tif'),
-        >>>           'B': 'A'}
+        >>> # Task a and b execute the `norm_diff`
+        >>> # Task c computes the mean of c
+        >>> # Task d concatenates a, b, and c
+        >>> tasks = (('a', gw.norm_diff), ('b', gw.norm_diff), ('c', xr.DataArray.mean), ('d', xr.concat))
         >>>
-        >>> outputs = {'A': 'sr.tif',
-        >>>            'B': 'ndvi.tif'}
+        >>> # No intermediate outputs to cleanup
+        >>> clean = {}
         >>>
-        >>> func_args = {'A': {'meta': 'meta.mtl'}}
+        >>> # Task a and b require the bands to ratio
+        >>> # Task c and d require the dimension to reduce
+        >>> func_args = {'a': {'b1': 'green', 'b2': 'red'}, 'b': {'b1': 'blue', 'b2': 'green'}, 'c': {'dim': 'band'}, 'd': {'dim': 'band'}}
         >>>
         >>> open_args = {'chunks': 512}
-        >>> config_args = {'sensor': 'l7', 'scale_factor': 0.0001}
+        >>> config_args = {'sensor': 'bgr', 'nodata': 0, 'scale_factor': 0.0001}
         >>> out_args = {'compress': 'lzw', 'overwrite': True}
         >>>
-        >>> task = GeoTask(inputs, outputs, tasks, clean, config_args, open_args, func_args, out_args)
+        >>> # Setup the task
+        >>> task_mean = GeoTask(inputs, outputs, tasks, clean=clean, config_args=config_args, open_args=open_args, func_args=func_args, out_args=out_args)
         >>>
-        >>> task.visualize()
-        >>> task.submit()
+        >>> # Visualize the task
+        >>> task_mean.visualize()
         >>>
-        >>> # Add pipelines
-        >>> task_sum = GeoTask(...)
-        >>> task = task + task_sum
+        >>> # Submit the task
+        >>> task_mean.submit()
     """
 
     def __init__(self,
@@ -393,7 +431,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
                          out_args=out_args,
                          log_file=log_file)
 
-    def execute(self, task_id, task, src, **kwargs):
+    def execute(self, task_id, task, src, task_results, attrs, **kwargs):
 
         """
         Executes an individual task
@@ -402,24 +440,37 @@ class GeoTask(BaseGeoTask, GraphBuilder):
             task_id (str)
             task (object)
             src (DataArray | list)
+            task_results (dict)
+            attrs (dict)
             kwargs (Optional[dict])
         """
 
         # Execute the task
-        if isinstance(src, list):
-            res = task(*src, **kwargs)
+        if isinstance(src, tuple):
+            res = task((task_results[i] for i in src), **kwargs)
         else:
             res = task(src, **kwargs)
 
+        if not hasattr(res, 'band'):
+            res = res.expand_dims(dim='band').assign_coords({'band': ['res']})
+
         # Write to file
         if task_id in self.outputs:
-            res.gw.to_raster(self.outputs[task_id], **self.out_args)
+            if self.outputs[task_id].lower().endswith('.tif'):
+                if not hasattr(res, 'crs'):
+                    res.attrs = attrs
+                res.gw.to_raster(self.outputs[task_id], **self.out_args)
+
+        return res
 
     def submit(self):
 
         """
         Submits a pipeline task
         """
+
+        task_results = {}
+        attrs = None
 
         with gw.config.update(**self.config_args):
 
@@ -431,33 +482,37 @@ class GeoTask(BaseGeoTask, GraphBuilder):
                 kwargs = self.func_args[task_id] if task_id in self.func_args else {}
 
                 # Check task input(s)
-                if isinstance(self.inputs[task_id], str) and not Path(self.inputs[task_id]).is_file():
-
-                    with gw.open(self.outputs[self.inputs[task_id]]) as src:
-                        self.execute(task_id, task, src, **kwargs)
-
-                if isinstance(self.inputs[task_id], str) and Path(self.inputs[task_id]).is_file():
-
-                    with gw.open(self.inputs[task_id], **self.open_args) as src:
-                        self.execute(task_id, task, src, **kwargs)
-
-                else:
+                if isinstance(self.inputs[task_id], tuple) or isinstance(self.inputs[task_id], list):
 
                     with ExitStack() as stack:
 
                         # Open input files for the task
-                        src = [stack.enter_context(gw.open(fn, **self.open_args)) for fn in self.inputs[task_id]]
-                        self.execute(task_id, task, src, **kwargs)
+                        src = (stack.enter_context(gw.open(fn, **self.open_args)) if Path(fn).is_file()
+                               else task_results[fn] for fn in self.inputs[task_id])
+
+                        res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
+
+                    # res = self.execute(task_id, task, self.inputs[task_id], task_results, attrs, **kwargs)
+
+                elif isinstance(self.inputs[task_id], str) and not Path(self.inputs[task_id]).is_file():
+                    res = self.execute(task_id, task, task_results[self.inputs[task_id]], task_results, attrs, **kwargs)
+                elif isinstance(self.inputs[task_id], str) and Path(self.inputs[task_id]).is_file():
+
+                    with gw.open(self.inputs[task_id], **self.open_args) as src:
+                        attrs = src.attrs.copy()
+                        res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
+
+                task_results[task_id] = res
 
                 self._log_task(task_id)
 
-                if counter > 0:
-                    self._cleanup('task', self.tasks[counter-1][[0]])
+                # if counter > 0:
+                #     self._cleanup('task', self.tasks[counter-1][[0]])
 
                 counter += 1
 
-        for task_id, __ in self.tasks:
-            self._cleanup('pipeline', task_id)
+        # for task_id, __ in self.tasks:
+        #     self._cleanup('pipeline', task_id)
 
 
 # class LandsatBRDFPipeline(GeoPipeline):
