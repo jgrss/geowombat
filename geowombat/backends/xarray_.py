@@ -9,6 +9,7 @@ from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, w
 from .rasterio_ import transform_crs as rio_transform_crs
 
 import numpy as np
+from rasterio import open as rio_open
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 import dask.array as da
@@ -213,6 +214,9 @@ def warp_open(filename,
 
     ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
 
+    with rio_open(filename) as src:
+        tags = src.tags()
+
     with xr.open_rasterio(warp(filename,
                                resampling=resampling,
                                **ref_kwargs),
@@ -261,6 +265,11 @@ def warp_open(filename,
 
         src.attrs['filename'] = filename
         src.attrs['resampling'] = resampling
+
+        if tags:
+            attrs = src.attrs.copy()
+            attrs.update(tags)
+            src = src.assign_attrs(**attrs)
 
         if dtype:
 
@@ -329,6 +338,9 @@ def mosaic(filenames,
 
     footprints = []
 
+    with rio_open(filenames[0]) as src_:
+        tags = src_.tags()
+
     # Combine the data
     with xr.open_rasterio(warped_objects[0], **kwargs) as darray:
 
@@ -337,7 +349,6 @@ def mosaic(filenames,
         # Get the original bounds, unsampled
         with xr.open_rasterio(filenames[0], **kwargs) as src_:
             footprints.append(src_.gw.geometry)
-        src_ = None
 
         for fidx, fn in enumerate(warped_objects[1:]):
 
@@ -409,6 +420,11 @@ def mosaic(filenames,
         darray.attrs['filename'] = [Path(fn).name for fn in filenames]
         darray.attrs['resampling'] = resampling
 
+        if tags:
+            attrs = darray.attrs.copy()
+            attrs.update(tags)
+            darray = darray.assign_attrs(**attrs)
+
         darray.gw.footprint_grid = footprints
 
         if dtype:
@@ -477,6 +493,9 @@ def concat(filenames,
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
 
+    with rio_open(filenames[0]) as src_:
+        tags = src_.tags()
+
     # Keep a copy of the transformed attributes.
     with xr.open_rasterio(warp(filenames[0],
                                resampling=resampling,
@@ -540,6 +559,10 @@ def concat(filenames,
                                                resampling=resampling,
                                                **ref_kwargs), **kwargs)
                          for fn in filenames], dim=stack_dim.lower())
+
+    if tags:
+        attrs = src.attrs.copy()
+        attrs.update(tags)
 
     src = src.assign_attrs(**attrs)
 
