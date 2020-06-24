@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.18 ()
+---------
+
+New
+~~~
+
+- Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
+
 1.2.17 (25 June 2020)
 ---------------------
 
@@ -47,7 +55,7 @@ New
 ~~~
 
 - Added `file_list` to :func:`geowombat.core.sort_images_by_date`.
-- Added `nodata` keyword argument to :func:`geowombat.open`.
+- Added `nodata` keyword argument to :class:`geowombat.open`.
 
 1.2.13 (2 June 2020)
 --------------------
@@ -316,7 +324,7 @@ Bug fixes
 New
 ~~~
 
-- Added user argument `dtype` in :func:`geowombat.open` function.
+- Added user argument `dtype` in :class:`geowombat.open`.
 
 Bug fixes
 ~~~~~~~~~
@@ -385,7 +393,7 @@ Changes
 New
 ~~~
 
-- Added support for band stacking (in addition to time stacking) in :func:`geowombat.open`. The new keyword argument is `stack_dim` and can be used like:
+- Added support for band stacking (in addition to time stacking) in :class:`geowombat.open`. The new keyword argument is `stack_dim` and can be used like:
 
 .. code:: python
 
