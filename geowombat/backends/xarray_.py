@@ -236,8 +236,10 @@ def warp_open(filename,
                     # Avoid nested opens within a `config` context
                     if len(new_band_names) != len(src.band.values.tolist()):
 
-                        logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
-                                                                                                        src.band.values.tolist()))
+                        if not src.gw.config['ignore_warnings']:
+
+                            logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
+                                                                                                            src.band.values.tolist()))
 
                     else:
 
@@ -478,9 +480,9 @@ def concat(filenames,
     # Keep a copy of the transformed attributes.
     with xr.open_rasterio(warp(filenames[0],
                                resampling=resampling,
-                               **ref_kwargs), **kwargs) as ds_:
+                               **ref_kwargs), **kwargs) as src_:
 
-        attrs = ds_.attrs.copy()
+        attrs = src_.attrs.copy()
 
     if time_names:
 
@@ -528,54 +530,56 @@ def concat(filenames,
         output = xr.concat(concat_list, dim=stack_dim.lower())
 
         # Assign the new time band names
-        ds = output.assign_coords(time=new_time_names)
+        src = output.assign_coords(time=new_time_names)
 
     else:
 
         # Warp all images and concatenate along
         #   the 'time' axis into a DataArray.
-        ds = xr.concat([xr.open_rasterio(warp(fn,
-                                              resampling=resampling,
-                                              **ref_kwargs), **kwargs)
-                        for fn in filenames], dim=stack_dim.lower())
+        src = xr.concat([xr.open_rasterio(warp(fn,
+                                               resampling=resampling,
+                                               **ref_kwargs), **kwargs)
+                         for fn in filenames], dim=stack_dim.lower())
 
-    ds = ds.assign_attrs(**attrs)
+    src = src.assign_attrs(**attrs)
 
     if not time_names and (stack_dim == 'time'):
-        ds.coords['time'] = parse_filename_dates(filenames)
+        src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
-        ds.coords['band'] = band_names
+        src.coords['band'] = band_names
     else:
 
-        if ds.gw.sensor:
+        if src.gw.sensor:
 
-            if ds.gw.sensor not in ds.gw.avail_sensors:
+            if src.gw.sensor not in src.gw.avail_sensors:
 
-                logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(ds.gw.sensor,
-                                                                                                       ', '.join(ds.gw.avail_sensors)))
+                logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
+                                                                                                       ', '.join(src.gw.avail_sensors)))
 
             else:
 
-                new_band_names = list(ds.gw.wavelengths[ds.gw.sensor]._fields)
+                new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
 
-                if len(new_band_names) != len(ds.band.values.tolist()):
+                if len(new_band_names) != len(src.band.values.tolist()):
 
-                    logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
-                                                                                                    ds.band.values.tolist()))
+                    if not src.gw.config['ignore_warnings']:
+
+                        logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
+                                                                                                        src.band.values.tolist()))
 
                 else:
 
-                    ds.coords['band'] = new_band_names
-                    ds.attrs['sensor'] = ds.gw.sensor_names[ds.gw.sensor]
+                    src.coords['band'] = new_band_names
+                    src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
 
     if dtype:
         
-        attrs = ds.attrs.copy()
-        return ds.astype(dtype).assign_attrs(**attrs)
+        attrs = src.attrs.copy()
+        return src.astype(dtype).assign_attrs(**attrs)
 
     else:
-        return ds
+        return src
 
 
 def transform_crs(data_src,
