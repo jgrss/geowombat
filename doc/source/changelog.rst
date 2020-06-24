@@ -3,6 +3,15 @@
 Change Log
 ==========
 
+1.2.17 (25 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added missing tag update in file compression stage.
+- Fixed issue with compression being triggered with ``compress=None`` or ``compress=False``.
+
 1.2.16 (22 June 2020)
 ---------------------
 
