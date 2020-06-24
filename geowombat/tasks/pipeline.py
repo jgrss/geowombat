@@ -9,7 +9,8 @@ from datetime import datetime
 # from inspect import signature
 
 from ..errors import logger
-import geowombat as gw
+from .. import config as gw_config
+from .. import open as gw_open
 
 import xarray as xr
 import graphviz
@@ -476,7 +477,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
         attrs = None
         res = None
 
-        with gw.config.update(**self.config_args):
+        with gw_config.update(**self.config_args):
 
             counter = 0
 
@@ -491,7 +492,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
                     with ExitStack() as stack:
 
                         # Open input files for the task
-                        src = (stack.enter_context(gw.open(fn, **self.open_args)) if Path(fn).is_file()
+                        src = (stack.enter_context(gw_open(fn, **self.open_args)) if Path(fn).is_file()
                                else task_results[fn] for fn in self.inputs[task_id])
 
                         res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
@@ -502,7 +503,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
                     res = self.execute(task_id, task, task_results[self.inputs[task_id]], task_results, attrs, **kwargs)
                 elif isinstance(self.inputs[task_id], str) and Path(self.inputs[task_id]).is_file():
 
-                    with gw.open(self.inputs[task_id], **self.open_args) as src:
+                    with gw_open(self.inputs[task_id], **self.open_args) as src:
                         attrs = src.attrs.copy()
                         res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
 
@@ -521,10 +522,10 @@ class GeoTask(BaseGeoTask, GraphBuilder):
         return res
 
 
-# class LandsatBRDFPipeline(GeoPipeline):
+# class IndicesStack(object):
 #
 #     """
-#     A pipeline class for Landsat BRDF
+#     A class for stacking spectral indices
 #
 #     Args:
 #         processes (tuple): The spectral indices to process.
@@ -534,140 +535,38 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 #
 #     Example:
 #         >>> import geowombat as gw
-#         >>> from geowombat.core import pipeline
-#         >>> from geowombat.radiometry import RadTransforms
+#         >>> from geowombat.tasks import IndicesStack
 #         >>>
-#         >>> rt = RadTransforms()
-#         >>> meta = rt.get_landsat_coefficients('file.MTL')
+#         >>> task = IndicesStack(('avi', 'evi2', 'evi', 'nbr', 'ndvi', 'tasseled_cap'))
 #         >>>
-#         >>> task = pipeline.LandsatBRDFPipeline(('dn_to_sr', 'norm_brdf', 'bandpass'))
-#         >>>
-#         >>> with gw.open('image.tif') as src, \
-#         >>>     gw.open('sza.tif') as sza, \
-#         >>>         gw.open('saa.tif') as saa, \
-#         >>>             gw.open('vza.tif') as vza, \
-#         >>>                 gw.open('vaa.tif') as vaa:
-#         >>>
-#         >>>     res = task.submit(src, sza, saa, vza, vaa, sensor=meta.sensor, meta=meta)
+#         >>> with gw.open('image.tif') as src:
+#         >>>     res = task.submit(src, scale_factor=0.0001)
 #     """
 #
 #     def __init__(self, processes):
 #
-#         super().__init__(processes)
-#         self._validate_methods([rt, br, la])
+#         self.processes = processes
+#         self._validate_methods()
+#
+#     def _validate_methods(self):
+#
+#         args = [gw] * len(self.processes)
+#
+#         for object_, proc_ in zip(*args, self.processes):
+#
+#             if not hasattr(object_, proc_):
+#                 raise NameError(f'The {proc_} process is not supported.')
 #
 #     def submit(self, data, *args, **kwargs):
 #
-#         for i, func_ in enumerate(self.processes):
+#         attrs = data.attrs.copy()
+#         results = []
 #
-#             if func_ == 'dn_to_sr':
+#         for vi in self.processes:
 #
-#                 func = getattr(rt, func_)
+#             vi_func = getattr(gw, vi)
+#             results.append(vi_func(data, *args, **kwargs))
 #
-#                 if i == 0:
+#         results = xr.concat(results, dim='band').astype('float64')
 #
-#                     res = func(data,
-#                                *args,
-#                                sensor=kwargs['sensor'],
-#                                meta=kwargs['meta'])
-#
-#                 else:
-#
-#                     res = func(res,
-#                                *args,
-#                                sensor=kwargs['sensor'],
-#                                meta=kwargs['meta'])
-#
-#             elif func_ == 'norm_brdf':
-#
-#                 func = getattr(br, func_)
-#
-#                 if i == 0:
-#
-#                     res = func(data,
-#                                *args,
-#                                sensor=kwargs['sensor'],
-#                                wavelengths=data.band.values.tolist(),
-#                                out_range=10000.0,
-#                                nodata=65535)
-#
-#                 else:
-#
-#                     res = func(res,
-#                                *args,
-#                                sensor=kwargs['sensor'],
-#                                wavelengths=data.band.values.tolist(),
-#                                out_range=10000.0,
-#                                nodata=65535)
-#
-#             elif func_ == 'bandpass':
-#
-#                 func = getattr(la, func_)
-#
-#                 if i == 0:
-#
-#                     if kwargs['sensor'].lower() in ['l5', 'l7']:
-#
-#                         res = func(data,
-#                                    kwargs['sensor'].lower(),
-#                                    to='l8',
-#                                    scale_factor=0.0001)
-#
-#                     else:
-#
-#                         res = func(res,
-#                                    kwargs['sensor'].lower(),
-#                                    to='l8',
-#                                    scale_factor=0.0001)
-#
-#         return res
-
-
-class IndicesStack(object):
-
-    """
-    A class for stacking spectral indices
-
-    Args:
-        processes (tuple): The spectral indices to process.
-
-    Returns:
-        ``xarray.DataArray``
-
-    Example:
-        >>> import geowombat as gw
-        >>> from geowombat.tasks import IndicesStack
-        >>>
-        >>> task = IndicesStack(('avi', 'evi2', 'evi', 'nbr', 'ndvi', 'tasseled_cap'))
-        >>>
-        >>> with gw.open('image.tif') as src:
-        >>>     res = task.submit(src, scale_factor=0.0001)
-    """
-
-    def __init__(self, processes):
-
-        self.processes = processes
-        self._validate_methods()
-
-    def _validate_methods(self):
-
-        args = [gw] * len(self.processes)
-
-        for object_, proc_ in zip(*args, self.processes):
-
-            if not hasattr(object_, proc_):
-                raise NameError(f'The {proc_} process is not supported.')
-
-    def submit(self, data, *args, **kwargs):
-
-        attrs = data.attrs.copy()
-        results = []
-
-        for vi in self.processes:
-
-            vi_func = getattr(gw, vi)
-            results.append(vi_func(data, *args, **kwargs))
-
-        results = xr.concat(results, dim='band').astype('float64')
-
-        return results.assign_attrs(**attrs)
+#         return results.assign_attrs(**attrs)
