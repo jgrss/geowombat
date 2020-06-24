@@ -63,7 +63,7 @@ class BaseGeoTask(ABC):
                  inputs,
                  outputs,
                  tasks,
-                 clean,
+                 clean=None,
                  config_args=None,
                  open_args=None,
                  func_args=None,
@@ -73,7 +73,7 @@ class BaseGeoTask(ABC):
         self.inputs = inputs
         self.outputs = outputs
         self.tasks = tasks
-        self.clean = clean
+        self.clean = clean if clean else {}
         self.config_args = config_args if inputs else {}
         self.open_args = open_args if inputs else {}
         self.func_args = func_args if inputs else {}
@@ -131,7 +131,7 @@ class BaseGeoTask(ABC):
                        out_args=self_out_args_copy)
 
     @abstractmethod
-    def execute(self, task_id, task, src, **kwargs):
+    def execute(self, task_id, task, src, task_results, attrs, **kwargs):
         """Execute a task"""
         pass
 
@@ -200,7 +200,10 @@ class GraphBuilder(object):
         https://github.com/benbovy/xarray-simlab/blob/master/xsimlab/dot.py
     """
 
-    def visualize(self):
+    def visualize(self, **kwargs):
+
+        if not kwargs:
+            kwargs = {'rankdir': 'LR'}
 
         self.seen = set()
         self.inputs_seen = set()
@@ -209,7 +212,7 @@ class GraphBuilder(object):
         counter = 0
 
         self.g = graphviz.Digraph()
-        self.g.subgraph(graph_attr={'rankdir': 'LR'})
+        self.g.subgraph(graph_attr=kwargs)
 
         for task_id, task in self.tasks:
 
@@ -424,7 +427,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
         super().__init__(inputs,
                          outputs,
                          tasks,
-                         clean,
+                         clean=clean,
                          config_args=config_args,
                          open_args=open_args,
                          func_args=func_args,
@@ -438,7 +441,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
         Args:
             task_id (str)
-            task (object)
+            task (func)
             src (DataArray | list)
             task_results (dict)
             attrs (dict)
@@ -471,6 +474,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
         task_results = {}
         attrs = None
+        res = None
 
         with gw.config.update(**self.config_args):
 
@@ -513,6 +517,8 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
         # for task_id, __ in self.tasks:
         #     self._cleanup('pipeline', task_id)
+
+        return res
 
 
 # class LandsatBRDFPipeline(GeoPipeline):
