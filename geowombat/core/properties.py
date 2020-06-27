@@ -36,6 +36,9 @@ WavelengthsS2Cloudless = namedtuple('WavelengthsS2Cloudless', 'coastal blue red 
 class DataProperties(object):
 
     def __init__(self):
+        
+        self._filenames = None
+        self._data_bool = False
         self._footprint_grid = None
 
     @property
@@ -735,19 +738,19 @@ class DataProperties(object):
                                 crs=self._obj.crs)
 
     @property
-    def __filenames(self):
+    def filenames(self):
         return self._filenames
 
-    @__filenames.setter
-    def __filenames(self, file_list):
+    @filenames.setter
+    def filenames(self, file_list):
         self._filenames = file_list
 
     @property
-    def __data_are_separate(self):
+    def data_are_separate(self):
         return self._data_bool
 
-    @__data_are_separate.setter
-    def __data_are_separate(self, data_bool):
+    @data_are_separate.setter
+    def data_are_separate(self, data_bool):
         self._data_bool = data_bool
 
     @property
