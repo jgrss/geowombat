@@ -38,7 +38,7 @@ class DataProperties(object):
     def __init__(self):
         
         self._filenames = None
-        self._data_bool = False
+        self._data_bool = None
         self._footprint_grid = None
 
     @property

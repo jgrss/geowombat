@@ -419,6 +419,7 @@ def mosaic(filenames,
 
         darray.attrs['filename'] = [Path(fn).name for fn in filenames]
         darray.gw.filenames = [str(fn) for fn in filenames]
+        darray.gw.data_are_separate = False
         darray.attrs['resampling'] = resampling
 
         if tags:
