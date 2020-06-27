@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import shutil
 import itertools
-import fnmatch
 import ctypes
 import concurrent.futures
 from contextlib import contextmanager
@@ -17,11 +16,13 @@ from .windows import get_window_offsets
 
 try:
     from ..backends.zarr_ import to_zarr
+    import zarr
     ZARR_INSTALLED = True
 except:
     ZARR_INSTALLED = False
 
 import numpy as np
+from osgeo import gdal
 
 import dask.array as da
 from dask import is_dask_collection
@@ -35,8 +36,6 @@ from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
 
 from affine import Affine
-
-import zarr
 from tqdm import tqdm
 
 try:
@@ -388,21 +387,35 @@ def to_vrt(data,
     if not resampling:
         resampling = Resampling.nearest
 
-    # Open the input file on disk
-    with rio.open(data.gw.filename) as src:
+    if isinstance(data.attrs['filename'], str) or isinstance(data.attrs['filename'], Path):
 
-        with WarpedVRT(src,
-                       src_crs=src.crs,                         # the original CRS
-                       crs=data.crs,                            # the transformed CRS
-                       src_transform=src.transform,             # the original transform
-                       transform=data.transform,                # the new transform
-                       dtype=data.gw.dtype,
-                       resampling=resampling,
-                       nodata=nodata,
-                       init_dest_nodata=init_dest_nodata,
-                       warp_mem_limit=warp_mem_limit) as vrt:
+        # Open the input file on disk
+        with rio.open(data.attrs['filename']) as src:
 
-            rio_shutil.copy(vrt, filename, driver='VRT')
+            with WarpedVRT(src,
+                           src_crs=src.crs,                         # the original CRS
+                           crs=data.crs,                            # the transformed CRS
+                           src_transform=src.transform,             # the original transform
+                           transform=data.transform,                # the new transform
+                           dtype=data.gw.dtype,
+                           resampling=resampling,
+                           nodata=nodata,
+                           init_dest_nodata=init_dest_nodata,
+                           warp_mem_limit=warp_mem_limit) as vrt:
+
+                rio_shutil.copy(vrt, filename, driver='VRT')
+
+    else:
+
+        separate = True if data.gw.__data_are_separate else False
+
+        vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
+                                           xRes=data.gw.cellx,
+                                           yRes=data.gw.celly,
+                                           separate=separate,
+                                           outputSRS=data.crs.to_wkt())
+
+        gdal.BuildVRT(filename, data.gw.__filenames, **vrt_options)
 
 
 def to_raster(data,

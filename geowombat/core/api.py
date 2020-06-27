@@ -423,6 +423,8 @@ class open(object):
                                           dtype=dtype,
                                           **kwargs)
 
+                    self.data.gw.__data_are_separate = True
+
             else:
 
                 file_names = get_file_extension(filename)

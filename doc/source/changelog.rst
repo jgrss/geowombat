@@ -10,6 +10,7 @@ New
 ~~~
 
 - Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
+- Added support for VRT creation from multiple files.
 
 1.2.17 (25 June 2020)
 ---------------------
