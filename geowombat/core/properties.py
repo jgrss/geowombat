@@ -735,6 +735,22 @@ class DataProperties(object):
                                 crs=self._obj.crs)
 
     @property
+    def __filenames(self):
+        return self._filenames
+
+    @__filenames.setter
+    def __filenames(self, file_list):
+        self._filenames = file_list
+
+    @property
+    def __data_are_separate(self):
+        return self._data_bool
+
+    @__data_are_separate.setter
+    def __data_are_separate(self, data_bool):
+        self._data_bool = data_bool
+
+    @property
     def footprint_grid(self):
         """Get the image footprint grid"""
         return self._footprint_grid
