@@ -240,8 +240,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def __init__(self, xarray_obj):
 
         self._obj = xarray_obj
-        self._obj.__data_are_separate = False
-        self._obj.__filenames = None
         self.config = config
 
         self._update_attrs()
