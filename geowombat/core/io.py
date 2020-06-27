@@ -379,7 +379,7 @@ def to_vrt(data,
 
     else:
 
-        separate = True if data.gw.__data_are_separate else False
+        separate = True if data.gw.data_are_separate else False
 
         vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
                                            xRes=data.gw.cellx,
@@ -387,7 +387,7 @@ def to_vrt(data,
                                            separate=separate,
                                            outputSRS=data.crs.to_wkt())
 
-        gdal.BuildVRT(filename, data.gw.__filenames, **vrt_options)
+        gdal.BuildVRT(filename, data.gw.filenames, **vrt_options)
 
 
 def to_raster(data,
