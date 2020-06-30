@@ -93,7 +93,8 @@ class SpatialOperations(_PropertyMixin):
     def calc_area(data,
                   values,
                   units='km2',
-                  num_workers=1):
+                  num_workers=1,
+                  **kwargs):
 
         """
         Calculates the area of data values
@@ -103,6 +104,7 @@ class SpatialOperations(_PropertyMixin):
             values (list): A list of values.
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
+            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
 
         Returns:
             ``pandas.DataFrame``
@@ -114,7 +116,7 @@ class SpatialOperations(_PropertyMixin):
 
         window_len = int((data.gw.nrows / data.gw.row_chunks) * (data.gw.ncols / data.gw.col_chunks))
 
-        for w in tqdm(data.gw.windows(), total=window_len):
+        for w in tqdm(data.gw.windows(**kwargs), total=window_len):
 
             data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
 
