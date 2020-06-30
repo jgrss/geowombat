@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
@@ -819,6 +819,25 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       center=center,
                       mask_corners=mask_corners)
 
+    def calc_area(self,
+                  values,
+                  units='km2'):
+
+        """
+        Calculates the area of data values
+
+        Args:
+            values (list): A list of values.
+            units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+
+        Returns:
+            ``pandas.DataFrame``
+        """
+
+        return calc_area(self._obj,
+                         values,
+                         units=units)
+
     def sample(self,
                method='random',
                band=None,
@@ -876,15 +895,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     df = ds.gw.sample(band=1, n=100, min_dist=1000, strata=strata)
         """
 
-        return extract(self._obj,
-                       method=method,
-                       band=band,
-                       n=n,
-                       strata=strata,
-                       spacing=spacing,
-                       min_dist=min_dist,
-                       max_attempts=max_attempts,
-                       **kwargs)
+        return sample(self._obj,
+                      method=method,
+                      band=band,
+                      n=n,
+                      strata=strata,
+                      spacing=spacing,
+                      min_dist=min_dist,
+                      max_attempts=max_attempts,
+                      **kwargs)
 
     def extract(self,
                 aoi,
