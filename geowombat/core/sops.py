@@ -114,7 +114,10 @@ class SpatialOperations(_PropertyMixin):
 
         sqm = abs(data.gw.celly) * abs(data.gw.cellx)
 
-        window_len = int((data.gw.nrows / data.gw.row_chunks) * (data.gw.ncols / data.gw.col_chunks))
+        rchunks = kwargs['row_chunks'] if 'row_chunks' in kwargs else data.gw.row_chunks
+        cchunks = kwargs['col_chunks'] if 'col_chunks' in kwargs else data.gw.col_chunks
+
+        window_len = int((data.gw.nrows / rchunks) * (data.gw.ncols / cchunks))
 
         for w in tqdm(data.gw.windows(**kwargs), total=window_len):
 
