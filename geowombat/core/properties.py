@@ -37,8 +37,8 @@ class DataProperties(object):
 
     def __init__(self):
         
-        self._filenames = None
-        self._data_bool = None
+        self._filenames = []
+        self._stack_dim = 'none'
         self._footprint_grid = None
 
     @property
@@ -742,18 +742,10 @@ class DataProperties(object):
         """Get the data filenames"""
         return self._filenames
 
-    @filenames.setter
-    def filenames(self, file_list):
-        self._filenames = file_list
-
     @property
     def data_are_separate(self):
         """Check whether the data are loaded separately"""
-        return self._data_bool
-
-    @data_are_separate.setter
-    def data_are_separate(self, data_bool):
-        self._data_bool = data_bool
+        return True if self._stack_dim in ['band', 'time'] else False
 
     @property
     def footprint_grid(self):
