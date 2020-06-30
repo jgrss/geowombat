@@ -821,7 +821,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def calc_area(self,
                   values,
-                  units='km2'):
+                  units='km2',
+                  num_workers=1):
 
         """
         Calculates the area of data values
@@ -829,6 +830,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             values (list): A list of values.
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
 
         Returns:
             ``pandas.DataFrame``
@@ -836,7 +838,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         return calc_area(self._obj,
                          values,
-                         units=units)
+                         units=units,
+                         num_workers=num_workers)
 
     def sample(self,
                method='random',
