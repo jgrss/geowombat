@@ -287,15 +287,26 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
-    def windows(self):
+    def windows(self, row_chunks=None, col_chunks=None):
 
-        for row_off in range(0, self._obj.gw.nrows, self._obj.gw.row_chunks):
+        """
+        Generates windows
 
-            height = n_rows_cols(row_off, self._obj.gw.row_chunks, self._obj.gw.nrows)
+        Args:
+            row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
+            col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+        """
 
-            for col_off in range(0, self._obj.gw.ncols, self._obj.gw.col_chunks):
+        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
+        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
 
-                width = n_rows_cols(col_off, self._obj.gw.col_chunks, self._obj.gw.ncols)
+        for row_off in range(0, self._obj.gw.nrows, rchunks):
+
+            height = n_rows_cols(row_off, rchunks, self._obj.gw.nrows)
+
+            for col_off in range(0, self._obj.gw.ncols, cchunks):
+
+                width = n_rows_cols(col_off, cchunks, self._obj.gw.ncols)
 
                 yield Window(row_off=row_off,
                              col_off=col_off,
