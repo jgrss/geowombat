@@ -6,11 +6,17 @@ Change Log
 1.2.18 ()
 ---------
 
+Bug fixes
+~~~~~~~~~
+
+- Fixed call to :func:`geowombat.sample` from ``DataArray`` method.
+
 New
 ~~~
 
 - Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
 - Added support for VRT creation from multiple files.
+- Created :func:`geowombat.calc_area`.
 
 1.2.17 (25 June 2020)
 ---------------------
