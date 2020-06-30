@@ -92,6 +92,7 @@ class SpatialOperations(_PropertyMixin):
     @staticmethod
     def calc_area(data,
                   values,
+                  op='eq',
                   units='km2',
                   num_workers=1,
                   **kwargs):
@@ -102,6 +103,7 @@ class SpatialOperations(_PropertyMixin):
         Args:
             data (DataArray): The ``xarray.DataArray`` to calculate area.
             values (list): A list of values.
+            op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
             kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
@@ -137,7 +139,7 @@ class SpatialOperations(_PropertyMixin):
 
             for value in values:
 
-                chunk_value_total = data_chunk.where(data_chunk == value).sum(skipna=True).data.compute(num_workers=num_workers)
+                chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(num_workers=num_workers)
 
                 if units == 'km2':
                     chunk_value_total = (chunk_value_total * sqm) * 1e-6
