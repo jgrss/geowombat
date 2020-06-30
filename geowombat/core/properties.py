@@ -36,9 +36,6 @@ WavelengthsS2Cloudless = namedtuple('WavelengthsS2Cloudless', 'coastal blue red 
 class DataProperties(object):
 
     def __init__(self):
-        
-        self._filenames = []
-        self._stack_dim = 'none'
         self._footprint_grid = None
 
     @property
@@ -736,16 +733,6 @@ class DataProperties(object):
                                 columns=['chunk'],
                                 geometry=geometries,
                                 crs=self._obj.crs)
-
-    @property
-    def filenames(self):
-        """Get the data filenames"""
-        return self._filenames
-
-    @property
-    def data_are_separate(self):
-        """Check whether the data are loaded separately"""
-        return True if self._stack_dim in ['band', 'time'] else False
 
     @property
     def footprint_grid(self):

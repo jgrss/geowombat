@@ -248,7 +248,28 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self._obj = xarray_obj
         self.config = config
 
+        self._filenames = []
+        self._stack_dim = 'none'
+
         self._update_attrs()
+
+    @property
+    def filenames(self):
+        """Get the data filenames"""
+        return self._filenames
+
+    @filenames.setter
+    def filenames(self, file_list):
+        self._filenames = file_list
+
+    @property
+    def data_are_separate(self):
+        """Check whether the data are loaded separately"""
+        return True if self._stack_dim in ['band', 'time'] else False
+
+    @data_are_separate.setter
+    def data_are_separate(self, dim):
+        self._stack_dim = dim
 
     def match_data(self, data, band_names):
 
