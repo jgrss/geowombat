@@ -92,7 +92,8 @@ class SpatialOperations(_PropertyMixin):
     @staticmethod
     def calc_area(data,
                   values,
-                  units='km2'):
+                  units='km2',
+                  num_workers=1):
 
         """
         Calculates the area of data values
@@ -101,6 +102,7 @@ class SpatialOperations(_PropertyMixin):
             data (DataArray): The ``xarray.DataArray`` to calculate area.
             values (list): A list of values.
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
 
         Returns:
             ``pandas.DataFrame``
@@ -118,7 +120,7 @@ class SpatialOperations(_PropertyMixin):
 
             for value in values:
 
-                chunk_value_total = data_chunk.where(data_chunk == value).sum(skipna=True).data.compute(num_workers=1)
+                chunk_value_total = data_chunk.where(data_chunk == value).sum(skipna=True).data.compute(num_workers=num_workers)
 
                 if units == 'km2':
                     chunk_value_total = (chunk_value_total * sqm) * 1e-6
