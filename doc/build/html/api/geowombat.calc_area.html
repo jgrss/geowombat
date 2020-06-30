@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ndvi &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>calc_area &#8212; GeoWombat 1.2.18 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -17,8 +17,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="wi" href="geowombat.wi.html" />
-    <link rel="prev" title="nbr" href="geowombat.nbr.html" />
+    <link rel="next" title="subset" href="geowombat.subset.html" />
+    <link rel="prev" title="sample" href="geowombat.sample.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -87,8 +87,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.nbr.html" title="previous chapter">nbr</a></li>
-      <li>Next: <a href="geowombat.wi.html" title="next chapter">wi</a></li>
+      <li>Previous: <a href="geowombat.sample.html" title="previous chapter">sample</a></li>
+      <li>Next: <a href="geowombat.subset.html" title="next chapter">subset</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -119,36 +119,40 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="ndvi">
-<h1>ndvi<a class="headerlink" href="#ndvi" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="calc-area">
+<h1>calc_area<a class="headerlink" href="#calc-area" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="geowombat.ndvi">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">ndvi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.ndvi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the normalized difference vegetation index</p>
+<dt id="geowombat.calc_area">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">calc_area</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">op</span><span class="o">=</span><span class="default_value">'eq'</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'km2'</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.calc_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the area of data values</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
-<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
-<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
-<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to calculate area.</p></li>
+<li><p><strong>values</strong> (<em>list</em>) – A list of values.</p></li>
+<li><p><strong>op</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The value sign. Choices are [‘gt’, ‘ge’, ‘lt’, ‘le’, ‘eq’].</p></li>
+<li><p><strong>units</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The units to return. Choices are [‘km2’, ‘ha’].</p></li>
+<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">dask.compute()</span></code>.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">DataArray.gw.windows()</span></code>.</p></li>
 </ul>
 </dd>
-</dl>
-<p>Equation:</p>
-<blockquote>
-<div><div class="math notranslate nohighlight">
-\[NDVI = \frac{NIR - red}{NIR + red}\]</div>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Data range: -1 to 1</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Read a land cover image with 512x512 chunks</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;land_cover.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">calc_area</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>        <span class="c1"># calculate the area of classes 1, 2, and 5</span>
+<span class="gp">&gt;&gt;&gt; </span>                      <span class="n">units</span><span class="o">=</span><span class="s1">&#39;km2&#39;</span><span class="p">,</span>      <span class="c1"># return area in kilometers squared</span>
+<span class="gp">&gt;&gt;&gt; </span>                      <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>    <span class="c1"># dask.compute() with 4 workers</span>
+<span class="gp">&gt;&gt;&gt; </span>                      <span class="n">row_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>  <span class="c1"># iterate over larger chunks to use 512 chunks in parallel</span>
+<span class="gp">&gt;&gt;&gt; </span>                      <span class="n">col_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -168,7 +172,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.ndvi.rst.txt"
+      <a href="../_sources/api/geowombat.calc_area.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
