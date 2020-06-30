@@ -110,7 +110,7 @@ class SpatialOperations(_PropertyMixin):
 
         sqm = abs(data.gw.celly) * abs(data.gw.cellx)
 
-        window_len = int(data.gw.row_chunks * data.gw.col_chunks)
+        window_len = int((data.gw.nrows / data.gw.row_chunks) * (data.gw.ncols / data.gw.col_chunks))
 
         for w in tqdm(data.gw.windows(), total=window_len):
 
