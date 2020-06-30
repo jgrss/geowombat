@@ -739,6 +739,7 @@ class DataProperties(object):
 
     @property
     def filenames(self):
+        """Get the data filenames"""
         return self._filenames
 
     @filenames.setter
@@ -747,6 +748,7 @@ class DataProperties(object):
 
     @property
     def data_are_separate(self):
+        """Check whether the data are loaded separately"""
         return self._data_bool
 
     @data_are_separate.setter
@@ -781,26 +783,32 @@ class DataProperties(object):
 
     @property
     def has_band_coord(self):
+        """Check whether the DataArray has a band coordinate"""
         return True if 'band' in self._obj.coords else False
 
     @property
     def has_band_dim(self):
+        """Check whether the DataArray has a band dimension"""
         return True if self.ndims == 3 else False
 
     @property
     def has_band(self):
+        """Check whether the DataArray has a band attribute"""
         return True if ('band' in self._obj.coords) and (self.ndims == 3) else False
 
     @property
     def has_time_coord(self):
+        """Check whether the DataArray has a time coordinate"""
         return True if 'time' in self._obj.coords else False
 
     @property
     def has_time_dim(self):
+        """Check whether the DataArray has a time dimension"""
         return True if self.ndims == 4 else False
 
     @property
     def has_time(self):
+        """Check whether the DataArray has a time attribute"""
         return True if ('time' in self._obj.coords) and (self.ndims == 4) else False
 
     @property

@@ -236,7 +236,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     """
-    Xarray IO class
+    A method to access an ``xarray.DataArray``. This class is typically not accessed directly, but rather
+    through a call to ``geowombat.open``.
+
+    - A DataArray object will have a ``gw`` method.
+    - To access GeoWombat methods, use ``xarray.DataArray.gw``.
     """
 
     def __init__(self, xarray_obj):
@@ -319,7 +323,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             how (Optional[str]): Choices are any ``shapely.geometry`` binary predicates.
 
         Returns:
-            ``bool``pip
+            ``bool``
 
         Example:
             >>> import geowombat as gw
