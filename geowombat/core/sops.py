@@ -19,6 +19,7 @@ import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
+from tqdm import tqdm
 
 try:
     import arosics
@@ -109,7 +110,9 @@ class SpatialOperations(_PropertyMixin):
 
         sqm = abs(data.gw.celly) * abs(data.gw.cellx)
 
-        for w in data.gw.windows():
+        window_len = int(data.gw.row_chunks * data.gw.col_chunks)
+
+        for w in tqdm(data.gw.windows(), total=window_len):
 
             data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
 
