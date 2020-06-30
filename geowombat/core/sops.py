@@ -108,6 +108,18 @@ class SpatialOperations(_PropertyMixin):
 
         Returns:
             ``pandas.DataFrame``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Read a land cover image with 512x512 chunks
+            >>> with gw.open('land_cover.tif', chunks=512) as src:
+            >>>
+            >>>     df = gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>                       units='km2',      # return area in kilometers squared
+            >>>                       num_workers=4,    # dask.compute() with 4 workers
+            >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>                       col_chunks=1024)
         """
 
         data_totals = {}
@@ -117,7 +129,7 @@ class SpatialOperations(_PropertyMixin):
         rchunks = kwargs['row_chunks'] if 'row_chunks' in kwargs else data.gw.row_chunks
         cchunks = kwargs['col_chunks'] if 'col_chunks' in kwargs else data.gw.col_chunks
 
-        window_len = int((data.gw.nrows / rchunks) * (data.gw.ncols / cchunks))
+        window_len = int(np.ceil(data.gw.nrows / rchunks) * np.ceil(data.gw.ncols / cchunks))
 
         for w in tqdm(data.gw.windows(**kwargs), total=window_len):
 
