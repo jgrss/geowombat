@@ -2,6 +2,7 @@ from . import config
 from .core.api import open
 from .core import extract
 from .core import sample
+from .core import calc_area
 from .core import subset
 from .core import clip
 from .core import mask
@@ -36,6 +37,7 @@ __all__ = ['config',
            'open',
            'extract',
            'sample',
+           'calc_area',
            'subset',
            'clip',
            'mask',

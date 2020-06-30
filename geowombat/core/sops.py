@@ -88,6 +88,47 @@ def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cel
 
 class SpatialOperations(_PropertyMixin):
 
+    @staticmethod
+    def calc_area(data,
+                  values,
+                  units='km2'):
+
+        """
+        Calculates the area of data values
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to calculate area.
+            values (list): A list of values.
+            units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+
+        Returns:
+            ``pandas.DataFrame``
+        """
+
+        data_totals = {}
+
+        sqm = abs(data.gw.celly) * abs(data.gw.cellx)
+
+        for w in data.gw.windows():
+
+            data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
+
+            for value in values:
+
+                chunk_value_total = data_chunk.where(data_chunk == value).sum(skipna=True).data.compute(num_workers=1)
+
+                if units == 'km2':
+                    chunk_value_total = (chunk_value_total * sqm) * 1e-6
+                else:
+                    chunk_value_total = (chunk_value_total * sqm) * 0.0001
+
+                if value in data_totals:
+                    data_totals[value] += chunk_value_total
+                else:
+                    data_totals[value] = chunk_value_total
+
+        return pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+
     def sample(self,
                data,
                method='random',
