@@ -244,6 +244,35 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         self._update_attrs()
 
+    def compare(self, op, b):
+
+        """
+        Comparison operation
+
+        Args:
+            op (str): The comparison operation.
+            b (int | float): The value to compare to.
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        if op not in ['lt', 'le', 'gt', 'ge', 'eq', 'ne']:
+            raise NameError('The comparison operation is not supported.')
+
+        if op == 'lt':
+            return self._obj.where(self._obj < b)
+        elif op == 'le':
+            return self._obj.where(self._obj <= b)
+        elif op == 'gt':
+            return self._obj.where(self._obj > b)
+        elif op == 'ge':
+            return self._obj.where(self._obj >= b)
+        elif op == 'eq':
+            return self._obj.where(self._obj == b)
+        elif op == 'ne':
+            return self._obj.where(self._obj != b)
+
     def bounds_overlay(self, bounds, how='intersects'):
 
         """
@@ -832,6 +861,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def calc_area(self,
                   values,
+                  op='eq',
                   units='km2',
                   num_workers=1,
                   **kwargs):
@@ -841,6 +871,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             values (list): A list of values.
+            op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
             kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
@@ -863,6 +894,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         return calc_area(self._obj,
                          values,
+                         op=op,
                          units=units,
                          num_workers=num_workers,
                          **kwargs)
