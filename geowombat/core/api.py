@@ -227,6 +227,103 @@ data_ = None
 
 class open(object):
 
+    """
+    Opens a raster file
+
+    Args:
+        filename (str or list): The file name, search string, or a list of files to open.
+        return_as (Optional[str]): The Xarray data type to return.
+            Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
+        band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
+            is given or ``window`` is given. Default is None.
+        time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
+            Default is None.
+        stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
+        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
+            Default is None.
+        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
+            Choices are ['intersection', 'union', 'reference'].
+
+            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
+            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+            * union: Use the union (i.e., maximum extent) of all the image bounds
+
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
+        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
+            Choices are ['min', 'max', 'mean'].
+        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
+            from the file.
+        num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
+            is given or ``window`` is given. Default is 1.
+        kwargs (Optional[dict]): Keyword arguments passed to the file opener.
+
+    Returns:
+        ``xarray.DataArray`` or ``xarray.Dataset``
+
+    Examples:
+        >>> import geowombat as gw
+        >>>
+        >>> # Open an image
+        >>> with gw.open('image.tif') as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Open a list of images, stacking along the 'time' dimension
+        >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Open all GeoTiffs in a directory, stack along the 'time' dimension
+        >>> with gw.open('*.tif') as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Use a context manager to handle images of difference sizes and projections
+        >>> with gw.config.update(ref_image='image1.tif'):
+        >>>
+        >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
+        >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
+        >>>
+        >>>         # The first two images were acquired on the same date
+        >>>         #   and will be merged into a single time layer
+        >>>         time_names=['date1', 'date1', 'date2']) as ds:
+        >>>
+        >>>         print(ds)
+        >>>
+        >>> # Mosaic images across space using a reference
+        >>> #   image for the CRS and cell resolution
+        >>> with gw.config.update(ref_image='image1.tif'):
+        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Mix configuration keywords
+        >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
+        >>>
+        >>>     # The ``bounds_by`` keyword overrides the extent bounds
+        >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Resample an image to 10m x 10m cell size
+        >>> with gw.config.update(ref_crs=(10, 10)):
+        >>>
+        >>>     with gw.open('image.tif', resampling='cubic') as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Open a list of images at a window slice
+        >>> from rasterio.windows import Window
+        >>> w = Window(row_off=0, col_off=0, height=100, width=100)
+        >>>
+        >>> # Stack two images, opening band 3
+        >>> with gw.open(['image1.tif', 'image2.tif'],
+        >>>     band_names=['date1', 'date2'],
+        >>>     num_workers=8,
+        >>>     indexes=3,
+        >>>     window=w,
+        >>>     out_dtype='float32') as ds:
+        >>>
+        >>>     print(ds)
+    """
+
     def __init__(self,
                  filename,
                  return_as='array',
@@ -242,103 +339,6 @@ class open(object):
                  dtype=None,
                  num_workers=1,
                  **kwargs):
-
-        """
-        Opens a raster file
-
-        Args:
-            filename (str or list): The file name, search string, or a list of files to open.
-            return_as (Optional[str]): The Xarray data type to return.
-                Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
-            band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
-                is given or ``window`` is given. Default is None.
-            time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
-                Default is None.
-            stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
-            bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
-                Default is None.
-            bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
-                Choices are ['intersection', 'union', 'reference'].
-
-                * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
-                * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
-                * union: Use the union (i.e., maximum extent) of all the image bounds
-
-            resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
-                Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-            mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
-            overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
-                Choices are ['min', 'max', 'mean'].
-            nodata (Optional[float | int]): A 'no data' value to set. Default is None.
-            dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
-                from the file.
-            num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
-                is given or ``window`` is given. Default is 1.
-            kwargs (Optional[dict]): Keyword arguments passed to the file opener.
-
-        Returns:
-            ``xarray.DataArray`` or ``xarray.Dataset``
-
-        Examples:
-            >>> import geowombat as gw
-            >>>
-            >>> # Open an image
-            >>> with gw.open('image.tif') as ds:
-            >>>     print(ds)
-            >>>
-            >>> # Open a list of images, stacking along the 'time' dimension
-            >>> with gw.open(['image1.tif', 'image2.tif']) as ds:
-            >>>     print(ds)
-            >>>
-            >>> # Open all GeoTiffs in a directory, stack along the 'time' dimension
-            >>> with gw.open('*.tif') as ds:
-            >>>     print(ds)
-            >>>
-            >>> # Use a context manager to handle images of difference sizes and projections
-            >>> with gw.config.update(ref_image='image1.tif'):
-            >>>
-            >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
-            >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
-            >>>
-            >>>         # The first two images were acquired on the same date
-            >>>         #   and will be merged into a single time layer
-            >>>         time_names=['date1', 'date1', 'date2']) as ds:
-            >>>
-            >>>         print(ds)
-            >>>
-            >>> # Mosaic images across space using a reference
-            >>> #   image for the CRS and cell resolution
-            >>> with gw.config.update(ref_image='image1.tif'):
-            >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as ds:
-            >>>         print(ds)
-            >>>
-            >>> # Mix configuration keywords
-            >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
-            >>>
-            >>>     # The ``bounds_by`` keyword overrides the extent bounds
-            >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
-            >>>         print(ds)
-            >>>
-            >>> # Resample an image to 10m x 10m cell size
-            >>> with gw.config.update(ref_crs=(10, 10)):
-            >>>
-            >>>     with gw.open('image.tif', resampling='cubic') as ds:
-            >>>         print(ds)
-            >>>
-            >>> # Open a list of images at a window slice
-            >>> from rasterio.windows import Window
-            >>> w = Window(row_off=0, col_off=0, height=100, width=100)
-            >>>
-            >>> # Stack two images, opening band 3
-            >>> with gw.open(['image1.tif', 'image2.tif'],
-            >>>     band_names=['date1', 'date2'],
-            >>>     num_workers=8,
-            >>>     indexes=3,
-            >>>     window=w,
-            >>>     out_dtype='float32') as ds:
-            >>>
-            >>>     print(ds)
-        """
 
         if isinstance(filename, Path):
             filename = str(filename)

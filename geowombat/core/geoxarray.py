@@ -1,6 +1,7 @@
 from ..config import config
 
 from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask
+from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
@@ -19,9 +20,10 @@ from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
-from rasterio.windows import Window
+import dask.array as da
+from rasterio.windows import Window as _Window
+from shapely.geometry import Polygon as _Polygon
 import joblib
-from shapely.geometry import Polygon
 
 try:
     from shapely import speedups
@@ -244,6 +246,39 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         self._update_attrs()
 
+    def match_data(self, data, band_names):
+
+        """
+        Coerces the DataArray to match another GeoWombat DataArray
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to match to.
+            band_names (1d array-like): The output band names.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>> import xarray as xr
+            >>>
+            >>> other_array = xr.DataArray()
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     new_array = other_array.gw.match_data(src, ['bd1'])
+        """
+
+        if isinstance(self._obj.data, da.array):
+
+            if len(self._obj.shape) == 2:
+                new_chunks = (data.gw.row_chunks, data.gw.col_chunks)
+            else:
+                new_chunks = (1, data.gw.row_chunks, data.gw.col_chunks)
+
+            return dask_to_xarray(data, self._obj.data.rechunk(new_chunks), band_names)
+        else:
+            return ndarray_to_xarray(data, self._obj.data, band_names)
+
     def compare(self, op, b):
 
         """
@@ -302,17 +337,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     contains = src.gw.bounds_overlay(bounds, how='contains')
         """
 
-        if isinstance(bounds, Polygon):
+        if isinstance(bounds, _Polygon):
             return getattr(self._obj.gw.geometry, how)(bounds)
         else:
 
             left, bottom, right, top = bounds
 
-            poly = Polygon([(left, bottom),
-                            (left, top),
-                            (right, top),
-                            (right, bottom),
-                            (left, bottom)])
+            poly = _Polygon([(left, bottom),
+                             (left, top),
+                             (right, top),
+                             (right, bottom),
+                             (left, bottom)])
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
@@ -337,10 +372,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 width = n_rows_cols(col_off, cchunks, self._obj.gw.ncols)
 
-                yield Window(row_off=row_off,
-                             col_off=col_off,
-                             height=height,
-                             width=width)
+                yield _Window(row_off=row_off,
+                              col_off=col_off,
+                              height=height,
+                              width=width)
 
     def imshow(self,
                mask=False,
