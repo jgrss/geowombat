@@ -691,7 +691,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Writes a file to a VRT file
 
         Args:
-            data (DataArray): The ``xarray.DataArray`` to write.
             filename (str): The output file name to write to.
             resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
             nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
