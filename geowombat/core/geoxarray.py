@@ -722,13 +722,18 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>> from rasterio.enums import Resampling
             >>>
+            >>> # Transform a CRS and save to VRT
             >>> with gw.config.update(ref_crs=102033):
+            >>>     with gw.open('image.tif') as src:
+            >>>         src.gw.to_vrt('output.vrt',
+            >>>                       resampling=Resampling.cubic,
+            >>>                       warp_mem_limit=256)
             >>>
-            >>>     with gw.open('image.tif') as ds:
-            >>>
-            >>>         ds.gw.to_vrt('image.vrt',
-            >>>                      resampling=Resampling.cubic,
-            >>>                      warp_mem_limit=256)
+            >>> # Load multiple files set to a common geographic extent
+            >>> bounds = (left, bottom, right, top)
+            >>> with gw.config.update(ref_bounds=bounds):
+            >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+            >>>         src.gw.to_vrt('output.vrt')
         """
 
         to_vrt(self._obj,

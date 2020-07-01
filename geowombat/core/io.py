@@ -374,14 +374,19 @@ def to_vrt(data,
         >>> import geowombat as gw
         >>> from rasterio.enums import Resampling
         >>>
+        >>> # Transform a CRS and save to VRT
         >>> with gw.config.update(ref_crs=102033):
-        >>>
-        >>>     with gw.open('image.tif') as ds:
-        >>>
-        >>>         gw.to_vrt(ds,
-        >>>                   'image.vrt',
+        >>>     with gw.open('image.tif') as src:
+        >>>         gw.to_vrt(src,
+        >>>                   'output.vrt',
         >>>                   resampling=Resampling.cubic,
         >>>                   warp_mem_limit=256)
+        >>>
+        >>> # Load multiple files set to a common geographic extent
+        >>> bounds = (left, bottom, right, top)
+        >>> with gw.config.update(ref_bounds=bounds):
+        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+        >>>         gw.to_vrt(src, 'output.vrt')
     """
 
     if not resampling:
@@ -415,7 +420,9 @@ def to_vrt(data,
                                            separate=separate,
                                            outputSRS=data.crs)
 
-        gdal.BuildVRT(filename, data.gw.filenames, **vrt_options)
+        ds = gdal.BuildVRT(filename, data.gw.filenames, options=vrt_options)
+
+        ds = None
 
 
 def to_raster(data,
