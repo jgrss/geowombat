@@ -116,7 +116,7 @@ Installing `libspatialindex` on Ubuntu
 
 Install `libspatialindex` (which is a requirement for `Rtree <https://pypi.org/project/Rtree/>`_)::
 
-    $ sudo apt install libspatialindex-c4v5
+    $ sudo apt install libspatialindex-dev
 
 Installing `GDAL` with `Conda`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,3 +166,16 @@ or in Python:
 
     import geowombat as gw
     print(gw.__version__)
+    
+A. Example full installation on Ubuntu with Conda
+-------------------------------------------------
+The following installs a working anaconda environment including gdal::
+
+    $ pip install pip-tools
+    $ conda create -n geowombat python=3.7  cython scipy numpy zarr requests -c conda-forge
+    $ conda activate geowombat
+    $ sudo apt install libspatialindex-dev libgdal-dev
+    $ conda install -c conda-forge libspatialindex zarr requests
+    $ pip install git+https://github.com/jgrss/geowombat
+    $ python -c "import geowombat as gw;print(gw.__version__)"
+
