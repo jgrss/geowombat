@@ -16,11 +16,12 @@ from .util import project_coords
 from ..backends import Cluster as _Cluster
 from ..util import imshow as gw_imshow
 from ..radiometry import BRDF as _BRDF
+from .conversion import ndarray_to_xarray
 
 import numpy as np
 import xarray as xr
 import joblib
-
+import dask.array as da
 
 class _UpdateConfig(object):
 
@@ -56,6 +57,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self.config = config
 
         self._update_attrs()
+
 
     def imshow(self,
                variable='bands',
@@ -1167,3 +1169,39 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                  mask=mask,
                                  scale_factor=scale_factor,
                                  scale_angles=scale_angles)
+
+
+
+    def match_data(self, data, band_names):
+    
+        """
+        Coerces the DataArray to match another GeoWombat DataArray
+    
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to match to.
+            band_names (1d array-like): The output band names.
+    
+        Returns:
+            ``xarray.DataArray``
+    
+        Examples:
+            >>> import geowombat as gw
+            >>> import xarray as xr
+            >>>
+            >>> other_array = xr.DataArray()
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     new_array = other_array.gw.match_data(src, ['bd1'])
+        """
+    
+        if isinstance(self._obj.data, da.Array):
+    
+            if len(self._obj.shape) == 2:
+                new_chunks = (data.gw.row_chunks, data.gw.col_chunks)
+            else:
+                new_chunks = (1, data.gw.row_chunks, data.gw.col_chunks)
+            
+            return dask_to_xarray(data, self._obj.data.rechunk(new_chunks), band_names)
+        else:
+            return ndarray_to_xarray(data, self._obj.data, band_names)
+
