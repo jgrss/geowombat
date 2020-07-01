@@ -345,6 +345,8 @@ class open(object):
 
         self.data = data_
         self.__is_context_manager = False
+        self.__data_are_separate = 'none'
+        self.__filenames = []
 
         if return_as not in ['array', 'dataset']:
             logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
@@ -381,6 +383,8 @@ class open(object):
                              chunks=chunks,
                              num_workers=num_workers,
                              **kwargs)
+
+            self.__filenames = [filename]
 
         else:
 
@@ -423,7 +427,12 @@ class open(object):
                                           dtype=dtype,
                                           **kwargs)
 
+                self.__data_are_separate = stack_dim
+                self.__filenames = [str(fn) for fn in filename]
+
             else:
+
+                self.__filenames = [filename]
 
                 file_names = get_file_extension(filename)
 
@@ -455,6 +464,8 @@ class open(object):
 
     def __enter__(self):
         self.__is_context_manager = True
+        self.data.gw.filenames = self.__filenames
+        self.data.gw.data_are_separate = self.__data_are_separate
         return self.data
 
     def __exit__(self, *args, **kwargs):
