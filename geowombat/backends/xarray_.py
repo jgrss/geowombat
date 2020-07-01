@@ -418,8 +418,8 @@ def mosaic(filenames,
                         darray.attrs['sensor'] = darray.gw.sensor_names[darray.gw.sensor]
 
         darray.attrs['filename'] = [Path(fn).name for fn in filenames]
-        darray.gw._filenames = [str(fn) for fn in filenames]
-        darray.gw._stack_dim = 'band'
+        darray.gw.filenames = [str(fn) for fn in filenames]
+        darray.gw.stack_dim = 'band'
         darray.attrs['resampling'] = resampling
 
         if tags:
@@ -563,8 +563,8 @@ def concat(filenames,
                          for fn in filenames], dim=stack_dim.lower())
 
     src.attrs['filename'] = [Path(fn).name for fn in filenames]
-    src.gw._filenames = [str(fn) for fn in filenames]
-    src.gw._stack_dim = 'time'
+    src.gw.filenames = [str(fn) for fn in filenames]
+    src.gw.stack_dim = 'time'
 
     if tags:
         attrs = src.attrs.copy()
