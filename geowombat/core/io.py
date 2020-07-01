@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import shutil
 import itertools
-import fnmatch
 import ctypes
 import concurrent.futures
 from contextlib import contextmanager
@@ -17,13 +16,13 @@ from .windows import get_window_offsets
 
 try:
     from ..backends.zarr_ import to_zarr
+    import zarr
     ZARR_INSTALLED = True
 except:
     ZARR_INSTALLED = False
 
 import numpy as np
-import geopandas as gpd
-import xarray as xr
+from osgeo import gdal
 
 import dask.array as da
 from dask import is_dask_collection
@@ -37,8 +36,6 @@ from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
 
 from affine import Affine
-
-import zarr
 from tqdm import tqdm
 
 try:
@@ -336,9 +333,6 @@ def _write_xarray(*args):
             with rio.open(filename,
                           mode='r+') as dst_:
 
-                if tags:
-                    dst_.update_tags(**tags)
-
                 dst_.write(output,
                            window=block_window,
                            indexes=out_indexes)
@@ -350,9 +344,6 @@ def _write_xarray(*args):
                 with rio.open(filename,
                               mode='r+',
                               sharing=False) as dst_:
-
-                    if tags:
-                        dst_.update_tags(**tags)
 
                     dst_.write(output,
                                window=block_window,
@@ -383,34 +374,55 @@ def to_vrt(data,
         >>> import geowombat as gw
         >>> from rasterio.enums import Resampling
         >>>
+        >>> # Transform a CRS and save to VRT
         >>> with gw.config.update(ref_crs=102033):
-        >>>
-        >>>     with gw.open('image.tif') as ds:
-        >>>
-        >>>         gw.to_vrt(ds,
-        >>>                   'image.vrt',
+        >>>     with gw.open('image.tif') as src:
+        >>>         gw.to_vrt(src,
+        >>>                   'output.vrt',
         >>>                   resampling=Resampling.cubic,
         >>>                   warp_mem_limit=256)
+        >>>
+        >>> # Load multiple files set to a common geographic extent
+        >>> bounds = (left, bottom, right, top)
+        >>> with gw.config.update(ref_bounds=bounds):
+        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+        >>>         gw.to_vrt(src, 'output.vrt')
     """
 
     if not resampling:
         resampling = Resampling.nearest
 
-    # Open the input file on disk
-    with rio.open(data.gw.filename) as src:
+    if isinstance(data.attrs['filename'], str) or isinstance(data.attrs['filename'], Path):
 
-        with WarpedVRT(src,
-                       src_crs=src.crs,                         # the original CRS
-                       crs=data.crs,                            # the transformed CRS
-                       src_transform=src.transform,             # the original transform
-                       transform=data.transform,                # the new transform
-                       dtype=data.gw.dtype,
-                       resampling=resampling,
-                       nodata=nodata,
-                       init_dest_nodata=init_dest_nodata,
-                       warp_mem_limit=warp_mem_limit) as vrt:
+        # Open the input file on disk
+        with rio.open(data.attrs['filename']) as src:
 
-            rio_shutil.copy(vrt, filename, driver='VRT')
+            with WarpedVRT(src,
+                           src_crs=src.crs,                         # the original CRS
+                           crs=data.crs,                            # the transformed CRS
+                           src_transform=src.transform,             # the original transform
+                           transform=data.transform,                # the new transform
+                           dtype=data.gw.dtype,
+                           resampling=resampling,
+                           nodata=nodata,
+                           init_dest_nodata=init_dest_nodata,
+                           warp_mem_limit=warp_mem_limit) as vrt:
+
+                rio_shutil.copy(vrt, filename, driver='VRT')
+
+    else:
+
+        separate = True if data.gw.data_are_separate else False
+
+        vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
+                                           xRes=data.gw.cellx,
+                                           yRes=data.gw.celly,
+                                           separate=separate,
+                                           outputSRS=data.crs)
+
+        ds = gdal.BuildVRT(filename, data.gw.filenames, options=vrt_options)
+
+        ds = None
 
 
 def to_raster(data,
@@ -570,13 +582,23 @@ def to_raster(data,
 
     if 'compress' in kwargs:
 
-        # Store the compression type because
-        #   it is removed in concurrent writing
-        compress = True
-        compress_type = kwargs['compress']
-        del kwargs['compress']
+        # boolean True or '<>'
+        if kwargs['compress']:
 
-    elif isinstance(data.gw.compress, str) and data.gw.compress.lower() in ['lzw', 'deflate']:
+            if isinstance(kwargs['compress'], str) and kwargs['compress'].lower() == 'none':
+                compress = False
+            else:
+
+                # Store the compression type because
+                #   it is removed in concurrent writing
+                compress = True
+                compress_type = kwargs['compress']
+                del kwargs['compress']
+
+        else:
+            compress = False
+
+    elif isinstance(data.gw.compress, str) and (data.gw.compress.lower() in ['lzw', 'deflate']):
 
         compress = True
         compress_type = data.gw.compress
@@ -800,12 +822,6 @@ def to_raster(data,
                 if out_block_type.lower() == 'zarr':
                     # root = zarr.open(zarr_file, mode='r')
                     open_file = zarr_file
-                else:
-
-                    outfiles = sorted(fnmatch.filter(os.listdir(sub_dir), '*.tif'))
-                    outfiles = [os.path.join(sub_dir, fn) for fn in outfiles]
-
-                    # data_gen = ((fn, None, 'gtiff') for fn in outfiles)
 
                 kwargs['compress'] = compress_type
 
@@ -813,6 +829,9 @@ def to_raster(data,
 
                 # Compress into one file
                 with rio.open(filename, mode='w', **kwargs) as dst_:
+
+                    if tags:
+                        dst_.update_tags(**tags)
 
                     # Iterate over the windows in chunks
                     for wchunk in range(0, n_groups, n_chunks):
@@ -860,9 +879,6 @@ def to_raster(data,
 
                                 out_window, out_indexes, out_block = f.result()
 
-                                if tags:
-                                    dst_.update_tags(**tags)
-
                                 dst_.write(out_block,
                                            window=out_window,
                                            indexes=out_indexes)
@@ -882,13 +898,14 @@ def to_raster(data,
                 ld = string.ascii_letters + string.digits
                 rstr = ''.join(random.choice(ld) for i in range(0, 9))
 
-                temp_file = d_name.joinpath('{}_temp_{}{}'.format(f_base, rstr, f_ext))
+                temp_file = d_name.joinpath(f'{f_base}_temp_{rstr}{f_ext}')
 
                 compress_raster(filename,
-                                temp_file.as_posix(),
+                                str(temp_file),
                                 n_jobs=n_jobs,
                                 gdal_cache=gdal_cache,
-                                compress=compress_type)
+                                compress=compress_type,
+                                tags=tags)
 
                 temp_file.rename(filename)
 
@@ -913,6 +930,7 @@ def apply(infile,
           gdal_cache=512,
           n_jobs=4,
           overwrite=False,
+          tags=None,
           **kwargs):
 
     """
@@ -930,6 +948,7 @@ def apply(infile,
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
         n_jobs (Optional[int]): The number of blocks to process in parallel.
         overwrite (Optional[bool]): Whether to overwrite an existing output file.
+        tags (Optional[dict]): Image tags to write to file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.open``.
 
     Returns:
@@ -1001,7 +1020,10 @@ def apply(infile,
 
             with rio.open(outfile, io_mode, **profile) as dst:
 
-                # Materialize a list of destination block windows
+                if tags:
+                    dst.update_tags(**tags)
+
+                # Materialize a list of destination block windowsmode == 'w'
                 # that we will use in several statements below.
                 # windows = get_window_offsets(src.height,
                 #                              src.width,
@@ -1063,7 +1085,7 @@ def _compress_dummy(w, block, dummy):
     return w, block
 
 
-def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
+def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw', tags=None):
 
     """
     Compresses a raster file
@@ -1074,6 +1096,7 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
         n_jobs (Optional[int]): The number of concurrent blocks to write.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
         compress (Optional[str]): The compression method.
+        tags (Optional[dict]): Image tags to write to file.
 
     Returns:
         None
@@ -1092,6 +1115,7 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw'):
               args=(None,),
               gdal_cache=gdal_cache,
               n_jobs=n_jobs,
+              tags=tags,
               count=src.count,
               dtype=src.profile['dtype'],
               nodata=src.profile['nodata'],

@@ -1,6 +1,7 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask
+from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
@@ -19,9 +20,10 @@ from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
-from rasterio.windows import Window
+import dask.array as da
+from rasterio.windows import Window as _Window
+from shapely.geometry import Polygon as _Polygon
 import joblib
-from shapely.geometry import Polygon
 
 try:
     from shapely import speedups
@@ -234,7 +236,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     """
-    Xarray IO class
+    A method to access an ``xarray.DataArray``. This class is typically not accessed directly, but rather
+    through a call to ``geowombat.open``.
+
+    - A DataArray object will have a ``gw`` method.
+    - To access GeoWombat methods, use ``xarray.DataArray.gw``.
     """
 
     def __init__(self, xarray_obj):
@@ -243,6 +249,86 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self.config = config
 
         self._update_attrs()
+
+    @property
+    def filenames(self):
+        """Get the data filenames"""
+        return self._filenames if hasattr(self, '_filenames') else []
+
+    @filenames.setter
+    def filenames(self, file_list):
+        self._filenames = file_list
+
+    @property
+    def data_are_separate(self):
+        """Check whether the data are loaded separately"""
+        return True if hasattr(self, '_stack_dim') and (self._stack_dim in ['band', 'time']) else 'none'
+
+    @data_are_separate.setter
+    def data_are_separate(self, dim):
+        self._stack_dim = dim
+
+    def match_data(self, data, band_names):
+
+        """
+        Coerces the DataArray to match another GeoWombat DataArray
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to match to.
+            band_names (1d array-like): The output band names.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>> import xarray as xr
+            >>>
+            >>> other_array = xr.DataArray()
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     new_array = other_array.gw.match_data(src, ['bd1'])
+        """
+
+        if isinstance(self._obj.data, da.array):
+
+            if len(self._obj.shape) == 2:
+                new_chunks = (data.gw.row_chunks, data.gw.col_chunks)
+            else:
+                new_chunks = (1, data.gw.row_chunks, data.gw.col_chunks)
+
+            return dask_to_xarray(data, self._obj.data.rechunk(new_chunks), band_names)
+        else:
+            return ndarray_to_xarray(data, self._obj.data, band_names)
+
+    def compare(self, op, b):
+
+        """
+        Comparison operation
+
+        Args:
+            op (str): The comparison operation.
+            b (int | float): The value to compare to.
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        if op not in ['lt', 'le', 'gt', 'ge', 'eq', 'ne']:
+            raise NameError('The comparison operation is not supported.')
+
+        if op == 'lt':
+            return self._obj.where(self._obj < b)
+        elif op == 'le':
+            return self._obj.where(self._obj <= b)
+        elif op == 'gt':
+            return self._obj.where(self._obj > b)
+        elif op == 'ge':
+            return self._obj.where(self._obj >= b)
+        elif op == 'eq':
+            return self._obj.where(self._obj == b)
+        elif op == 'ne':
+            return self._obj.where(self._obj != b)
 
     def bounds_overlay(self, bounds, how='intersects'):
 
@@ -255,7 +341,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             how (Optional[str]): Choices are any ``shapely.geometry`` binary predicates.
 
         Returns:
-            ``bool``pip
+            ``bool``
 
         Example:
             >>> import geowombat as gw
@@ -273,34 +359,45 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     contains = src.gw.bounds_overlay(bounds, how='contains')
         """
 
-        if isinstance(bounds, Polygon):
+        if isinstance(bounds, _Polygon):
             return getattr(self._obj.gw.geometry, how)(bounds)
         else:
 
             left, bottom, right, top = bounds
 
-            poly = Polygon([(left, bottom),
-                            (left, top),
-                            (right, top),
-                            (right, bottom),
-                            (left, bottom)])
+            poly = _Polygon([(left, bottom),
+                             (left, top),
+                             (right, top),
+                             (right, bottom),
+                             (left, bottom)])
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
-    def windows(self):
+    def windows(self, row_chunks=None, col_chunks=None):
 
-        for row_off in range(0, self._obj.gw.nrows, self._obj.gw.row_chunks):
+        """
+        Generates windows
 
-            height = n_rows_cols(row_off, self._obj.gw.row_chunks, self._obj.gw.nrows)
+        Args:
+            row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
+            col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+        """
 
-            for col_off in range(0, self._obj.gw.ncols, self._obj.gw.col_chunks):
+        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
+        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
 
-                width = n_rows_cols(col_off, self._obj.gw.col_chunks, self._obj.gw.ncols)
+        for row_off in range(0, self._obj.gw.nrows, rchunks):
 
-                yield Window(row_off=row_off,
-                             col_off=col_off,
-                             height=height,
-                             width=width)
+            height = n_rows_cols(row_off, rchunks, self._obj.gw.nrows)
+
+            for col_off in range(0, self._obj.gw.ncols, cchunks):
+
+                width = n_rows_cols(col_off, cchunks, self._obj.gw.ncols)
+
+                yield _Window(row_off=row_off,
+                              col_off=col_off,
+                              height=height,
+                              width=width)
 
     def imshow(self,
                mask=False,
@@ -612,7 +709,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Writes a file to a VRT file
 
         Args:
-            data (DataArray): The ``xarray.DataArray`` to write.
             filename (str): The output file name to write to.
             resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
             nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
@@ -623,13 +719,18 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>> from rasterio.enums import Resampling
             >>>
+            >>> # Transform a CRS and save to VRT
             >>> with gw.config.update(ref_crs=102033):
+            >>>     with gw.open('image.tif') as src:
+            >>>         src.gw.to_vrt('output.vrt',
+            >>>                       resampling=Resampling.cubic,
+            >>>                       warp_mem_limit=256)
             >>>
-            >>>     with gw.open('image.tif') as ds:
-            >>>
-            >>>         ds.gw.to_vrt('image.vrt',
-            >>>                      resampling=Resampling.cubic,
-            >>>                      warp_mem_limit=256)
+            >>> # Load multiple files set to a common geographic extent
+            >>> bounds = (left, bottom, right, top)
+            >>> with gw.config.update(ref_bounds=bounds):
+            >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+            >>>         src.gw.to_vrt('output.vrt')
         """
 
         to_vrt(self._obj,
@@ -819,6 +920,46 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       center=center,
                       mask_corners=mask_corners)
 
+    def calc_area(self,
+                  values,
+                  op='eq',
+                  units='km2',
+                  num_workers=1,
+                  **kwargs):
+
+        """
+        Calculates the area of data values
+
+        Args:
+            values (list): A list of values.
+            op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
+            units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
+            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+
+        Returns:
+            ``pandas.DataFrame``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Read a land cover image with 512x512 chunks
+            >>> with gw.open('land_cover.tif', chunks=512) as src:
+            >>>
+            >>>     df = src.gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>                           units='km2',      # return area in kilometers squared
+            >>>                           num_workers=4,    # dask.compute() with 4 workers
+            >>>                           row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>                           col_chunks=1024)
+        """
+
+        return calc_area(self._obj,
+                         values,
+                         op=op,
+                         units=units,
+                         num_workers=num_workers,
+                         **kwargs)
+
     def sample(self,
                method='random',
                band=None,
@@ -876,15 +1017,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     df = ds.gw.sample(band=1, n=100, min_dist=1000, strata=strata)
         """
 
-        return extract(self._obj,
-                       method=method,
-                       band=band,
-                       n=n,
-                       strata=strata,
-                       spacing=spacing,
-                       min_dist=min_dist,
-                       max_attempts=max_attempts,
-                       **kwargs)
+        return sample(self._obj,
+                      method=method,
+                      band=band,
+                      n=n,
+                      strata=strata,
+                      spacing=spacing,
+                      min_dist=min_dist,
+                      max_attempts=max_attempts,
+                      **kwargs)
 
     def extract(self,
                 aoi,

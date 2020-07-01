@@ -3,6 +3,31 @@
 Change Log
 ==========
 
+1.2.18 (1 July 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed call to :func:`geowombat.sample` from ``DataArray`` method.
+
+New
+~~~
+
+- Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
+- Added support for VRT creation from multiple files.
+- Created :func:`geowombat.calc_area` function.
+- Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.match_data` function.
+
+1.2.17 (25 June 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added missing tag update in file compression stage.
+- Fixed issue with compression being triggered with ``compress=None`` or ``compress=False``.
+
 1.2.16 (22 June 2020)
 ---------------------
 
@@ -38,7 +63,7 @@ New
 ~~~
 
 - Added `file_list` to :func:`geowombat.core.sort_images_by_date`.
-- Added `nodata` keyword argument to :func:`geowombat.open`.
+- Added `nodata` keyword argument to :class:`geowombat.open`.
 
 1.2.13 (2 June 2020)
 --------------------
@@ -307,7 +332,7 @@ Bug fixes
 New
 ~~~
 
-- Added user argument `dtype` in :func:`geowombat.open` function.
+- Added user argument `dtype` in :class:`geowombat.open`.
 
 Bug fixes
 ~~~~~~~~~
@@ -376,7 +401,7 @@ Changes
 New
 ~~~
 
-- Added support for band stacking (in addition to time stacking) in :func:`geowombat.open`. The new keyword argument is `stack_dim` and can be used like:
+- Added support for band stacking (in addition to time stacking) in :class:`geowombat.open`. The new keyword argument is `stack_dim` and can be used like:
 
 .. code:: python
 

@@ -1,7 +1,7 @@
 .. _attributes:
 
-Accessing raster attributes
-===========================
+Raster attributes
+=================
 
 GeoWombat has additional raster attributes on top of Xarray/Rasterio attributes
 -------------------------------------------------------------------------------

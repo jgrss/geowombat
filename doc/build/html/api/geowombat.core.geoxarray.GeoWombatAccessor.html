@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoWombatAccessor &#8212; GeoWombat 1.2.16 documentation</title>
+    <title>GeoWombat DataArray (DataArray.gw) &#8212; GeoWombat 1.2.18 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -60,15 +60,16 @@
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../io.html">Reading and writing files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Accessing raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">Raster I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../crs.html">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Use named coordinates for band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Machine learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apply.html">User functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../moving.html">Moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
 </ul>
@@ -118,13 +119,17 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="geowombataccessor">
-<h1>GeoWombatAccessor<a class="headerlink" href="#geowombataccessor" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="geowombat-dataarray-dataarray-gw">
+<h1>GeoWombat DataArray (DataArray.gw)<a class="headerlink" href="#geowombat-dataarray-dataarray-gw" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor">
 <em class="property">class </em><code class="sig-prename descclassname">geowombat.core.geoxarray.</code><code class="sig-name descname">GeoWombatAccessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xarray_obj</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.geoxarray._UpdateConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.properties.DataProperties</span></code></p>
-<p>Xarray IO class</p>
+<dd><p>A method to access an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>. This class is typically not accessed directly, but rather
+through a call to <code class="docutils literal notranslate"><span class="pre">geowombat.open</span></code>.</p>
+<ul class="simple">
+<li><p>A DataArray object will have a <code class="docutils literal notranslate"><span class="pre">gw</span></code> method.</p></li>
+<li><p>To access GeoWombat methods, use <code class="docutils literal notranslate"><span class="pre">xarray.DataArray.gw</span></code>.</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -154,18 +159,28 @@
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">col_chunks</span></code></dt><dd><p>Get the column chunk size</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_are_separate</span></code></dt><dd><p>Check whether the data are loaded separately</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">filenames</span></code></dt><dd><p>Get the data filenames</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">footprint_grid</span></code></dt><dd><p>Get the image footprint grid</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">geodataframe</span></code></dt><dd><p>Get a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> of the array bounds</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry</span></code></dt><dd><p>Get the polygon geometry of the array bounding box</p>
 </dd>
-<dt><strong>has_band</strong></dt><dd></dd>
-<dt><strong>has_band_coord</strong></dt><dd></dd>
-<dt><strong>has_band_dim</strong></dt><dd></dd>
-<dt><strong>has_time</strong></dt><dd></dd>
-<dt><strong>has_time_coord</strong></dt><dd></dd>
-<dt><strong>has_time_dim</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_band</span></code></dt><dd><p>Check whether the DataArray has a band attribute</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_band_coord</span></code></dt><dd><p>Check whether the DataArray has a band coordinate</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_band_dim</span></code></dt><dd><p>Check whether the DataArray has a band dimension</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_time</span></code></dt><dd><p>Check whether the DataArray has a time attribute</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_time_coord</span></code></dt><dd><p>Check whether the DataArray has a time coordinate</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_time_dim</span></code></dt><dd><p>Check whether the DataArray has a time dimension</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">left</span></code></dt><dd><p>Get the array bounding box left coordinate</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></dt><dd><p>Get the array metadata</p>
@@ -209,14 +224,20 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.apply" title="geowombat.core.geoxarray.GeoWombatAccessor.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a>(self, filename, user_func[, n_jobs])</p></td>
 <td><p>Applies a user function to an Xarray Dataset or DataArray and writes to file</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">avi</span></code>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.avi" title="geowombat.core.geoxarray.GeoWombatAccessor.avi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the advanced vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_overlay</span></code>(self, bounds[, how])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay" title="geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_overlay</span></code></a>(self, bounds[, how])</p></td>
 <td><p>Checks whether the bounds overlay the image bounds</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.clip" title="geowombat.core.geoxarray.GeoWombatAccessor.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(self, df[, query, mask_data])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.calc_area" title="geowombat.core.geoxarray.GeoWombatAccessor.calc_area"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_area</span></code></a>(self, values[, op, units, num_workers])</p></td>
+<td><p>Calculates the area of data values</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.clip" title="geowombat.core.geoxarray.GeoWombatAccessor.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(self, df[, query, mask_data])</p></td>
 <td><p>Clips a DataArray</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="geowombat.core.geoxarray.GeoWombatAccessor.compare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare</span></code></a>(self, op, b)</p></td>
+<td><p>Comparison operation</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.evi" title="geowombat.core.geoxarray.GeoWombatAccessor.evi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the enhanced vegetation index</p></td>
@@ -233,71 +254,96 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.mask" title="geowombat.core.geoxarray.GeoWombatAccessor.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a>(self, df[, query, keep])</p></td>
 <td><p>Masks a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(self[, band_coords, stat, perc, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.match_data" title="geowombat.core.geoxarray.GeoWombatAccessor.match_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_data</span></code></a>(self, data, band_names)</p></td>
+<td><p>Coerces the DataArray to match another GeoWombat DataArray</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(self[, band_coords, stat, perc, …])</p></td>
 <td><p>Applies a moving window function to the DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.nbr" title="geowombat.core.geoxarray.GeoWombatAccessor.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.nbr" title="geowombat.core.geoxarray.GeoWombatAccessor.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized burn ratio</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.ndvi" title="geowombat.core.geoxarray.GeoWombatAccessor.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.ndvi" title="geowombat.core.geoxarray.GeoWombatAccessor.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized difference vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, solar_za, solar_az, …[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, solar_za, solar_az, …[, …])</p></td>
 <td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_diff" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(self, b1, b2[, nodata, mask, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_diff" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(self, b1, b2[, nodata, mask, …])</p></td>
 <td><p>Calculates the normalized difference band ratio</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="geowombat.core.geoxarray.GeoWombatAccessor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(self, clf[, outname, chunksize, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code>(self, clf[, outname, chunksize, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.sample" title="geowombat.core.geoxarray.GeoWombatAccessor.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>(self[, method, band, n, strata, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.sample" title="geowombat.core.geoxarray.GeoWombatAccessor.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>(self[, method, band, n, strata, …])</p></td>
 <td><p>Generates samples from a raster</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nodata</span></code>(self, src_nodata, dst_nodata, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="geowombat.core.geoxarray.GeoWombatAccessor.set_nodata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nodata</span></code></a>(self, src_nodata, dst_nodata, …)</p></td>
 <td><p>Sets ‘no data’ values in the DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self[, left, top, right, bottom, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(self[, nodata, sensor, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(self[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_crs</span></code>(self[, dst_crs, dst_res, dst_width, …])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_crs</span></code>(self[, dst_crs, dst_res, dst_width, …])</p></td>
 <td><p>Transforms a DataArray to a new coordinate reference system</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_polygon</span></code>(self[, mask, connectivity])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_polygon" title="geowombat.core.geoxarray.GeoWombatAccessor.to_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_polygon</span></code></a>(self[, mask, connectivity])</p></td>
 <td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_raster" title="geowombat.core.geoxarray.GeoWombatAccessor.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(self, filename[, readxsize, …])</p></td>
 <td><p>Writes an Xarray DataArray to a raster file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vector" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code></a>(self, filename[, mask, connectivity])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vector" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code></a>(self, filename[, mask, connectivity])</p></td>
 <td><p>Writes an Xarray DataArray to a vector file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(self, filename[, resampling, nodata, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(self, filename[, resampling, nodata, …])</p></td>
 <td><p>Writes a file to a VRT file</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_crs</span></code>(self[, dst_crs, dst_res, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.transform_crs" title="geowombat.core.geoxarray.GeoWombatAccessor.transform_crs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_crs</span></code></a>(self[, dst_crs, dst_res, …])</p></td>
 <td><p>Transforms a DataArray to a new coordinate reference system</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.wi" title="geowombat.core.geoxarray.GeoWombatAccessor.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.wi" title="geowombat.core.geoxarray.GeoWombatAccessor.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(self[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the woody vegetation index</p></td>
 </tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 52%" />
-<col style="width: 48%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><strong>windows</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.windows" title="geowombat.core.geoxarray.GeoWombatAccessor.windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">windows</span></code></a>(self[, row_chunks, col_chunks])</p></td>
+<td><p>Generates windows</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Methods Documentation</p>
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.avi">
+<code class="sig-name descname">avi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.avi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the advanced vegetation index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to fill NAs with.</p></li>
+<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask the results.</p></li>
+<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Equation:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[AVI = {(NIR \times (1.0 - red) \times (NIR - red))}^{0.3334}\]</div>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Data range: 0 to 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.apply">
 <code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">user_func</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.apply" title="Permalink to this definition">¶</a></dt>
@@ -326,6 +372,73 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay">
+<code class="sig-name descname">bounds_overlay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">how</span><span class="o">=</span><span class="default_value">'intersects'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the bounds overlay the image bounds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounds</strong> (<em>tuple | rasterio.coords.BoundingBox | shapely.geometry</em>) – The bounds to check. If given as a tuple,
+the order should be (left, bottom, right, top).</p></li>
+<li><p><strong>how</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Choices are any <code class="docutils literal notranslate"><span class="pre">shapely.geometry</span></code> binary predicates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">intersects</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds_overlay</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.coords</span> <span class="k">import</span> <span class="n">BoundingBox</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">BoundingBox</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">contains</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds_overlay</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;contains&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.calc_area">
+<code class="sig-name descname">calc_area</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">op</span><span class="o">=</span><span class="default_value">'eq'</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'km2'</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.calc_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the area of data values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>list</em>) – A list of values.</p></li>
+<li><p><strong>op</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The value sign. Choices are [‘gt’, ‘ge’, ‘lt’, ‘le’, ‘eq’].</p></li>
+<li><p><strong>units</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The units to return. Choices are [‘km2’, ‘ha’].</p></li>
+<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">dask.compute()</span></code>.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">DataArray.gw.windows()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Read a land cover image with 512x512 chunks</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;land_cover.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">calc_area</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>        <span class="c1"># calculate the area of classes 1, 2, and 5</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">units</span><span class="o">=</span><span class="s1">&#39;km2&#39;</span><span class="p">,</span>      <span class="c1"># return area in kilometers squared</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>    <span class="c1"># dask.compute() with 4 workers</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">row_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>  <span class="c1"># iterate over larger chunks to use 512 chunks in parallel</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">col_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.clip">
 <code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">query</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask_data</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.clip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clips a DataArray</p>
@@ -335,6 +448,23 @@
 <li><p><strong>df</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to clip to.</p></li>
 <li><p><strong>query</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A query to apply to <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
 <li><p><strong>mask_data</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to mask values outside of the <code class="docutils literal notranslate"><span class="pre">df</span></code> geometry envelope.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.compare">
+<code class="sig-name descname">compare</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">op</span></em>, <em class="sig-param"><span class="n">b</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Comparison operation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op</strong> (<em>str</em>) – The comparison operation.</p></li>
+<li><p><strong>b</strong> (<em>int | float</em>) – The value to compare to.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -480,6 +610,33 @@ Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep<
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.match_data">
+<code class="sig-name descname">match_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">band_names</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.match_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coerces the DataArray to match another GeoWombat DataArray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to match to.</p></li>
+<li><p><strong>band_names</strong> (<em>1d array-like</em>) – The output band names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">other_array</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">new_array</span> <span class="o">=</span> <span class="n">other_array</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">match_data</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;bd1&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -649,47 +806,6 @@ Otherwise, if <code class="docutils literal notranslate"><span class="pre">keep<
 </dd></dl>
 
 <dl class="py method">
-<dt id="geowombat.core.geoxarray.GeoWombatAccessor.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">clf</span></em>, <em class="sig-param"><span class="n">outname</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">chunksize</span><span class="o">=</span><span class="default_value">'same'</span></em>, <em class="sig-param"><span class="n">x_chunks</span><span class="o">=</span><span class="default_value">5000, 1</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_as</span><span class="o">=</span><span class="default_value">'array'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">backend</span><span class="o">=</span><span class="default_value">'dask'</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em>, <em class="sig-param"><span class="n">gdal_cache</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predicts an image using a pre-fit model</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>clf</strong> (<em>object</em>) – A fitted classifier <code class="docutils literal notranslate"><span class="pre">geowombat.model.Model</span></code> instance with a <code class="docutils literal notranslate"><span class="pre">predict</span></code> method.</p></li>
-<li><p><strong>outname</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – An file name for the predictions.</p></li>
-<li><p><strong>chunksize</strong> (<em>Optional</em><em>[</em><em>str</em><em> or </em><em>tuple</em><em>]</em>) – The chunk size for I/O. Default is ‘same’, or use the input chunk size.</p></li>
-<li><p><strong>x_chunks</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – The chunk size for the X predictors (or <code class="docutils literal notranslate"><span class="pre">data</span></code>).</p></li>
-<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing file.</p></li>
-<li><p><strong>return_as</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Whether to return the predictions as a <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>.
-Only relevant if <code class="docutils literal notranslate"><span class="pre">outname</span></code> is not given.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The ‘no data’ value in the predictors.</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel jobs (chunks) for writing.</p></li>
-<li><p><strong>backend</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">joblib</span></code> backend scheduler.</p></li>
-<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
-<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output data type passed to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
-<li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The GDAL cache (in MB) passed to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.
-The <code class="docutils literal notranslate"><span class="pre">blockxsize</span></code> and <code class="docutils literal notranslate"><span class="pre">blockysize</span></code> should be excluded because they are taken from <code class="docutils literal notranslate"><span class="pre">chunksize</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">ensemble</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestClassifier</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pred</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.sample">
 <code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'random'</span></em>, <em class="sig-param"><span class="n">band</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">strata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">spacing</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_dist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_attempts</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates samples from a raster</p>
@@ -738,6 +854,33 @@ The <code class="docutils literal notranslate"><span class="pre">blockxsize</spa
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Specify a per-stratum minimum allowed point distance of 1,000 meters</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">strata</span><span class="o">=</span><span class="n">strata</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.set_nodata">
+<code class="sig-name descname">set_nodata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">src_nodata</span></em>, <em class="sig-param"><span class="n">dst_nodata</span></em>, <em class="sig-param"><span class="n">clip_range</span></em>, <em class="sig-param"><span class="n">dtype</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets ‘no data’ values in the DataArray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_noata</strong> (<em>int | float</em>) – The ‘no data’ values to replace.</p></li>
+<li><p><strong>dst_nodata</strong> (<em>int | float</em>) – The ‘no data’ value to set.</p></li>
+<li><p><strong>clip_range</strong> (<em>tuple</em>) – The output clip range.</p></li>
+<li><p><strong>dtype</strong> (<em>str</em>) – The output data type.</p></li>
+<li><p><strong>scale_factor</strong> (<em>float</em>) – A scale factor to apply.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="s1">&#39;uint16&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -795,6 +938,36 @@ The <code class="docutils literal notranslate"><span class="pre">blockxsize</spa
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">tcap</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">tasseled_cap</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.to_polygon">
+<code class="sig-name descname">to_polygon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">connectivity</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>numpy ndarray</em><em> or </em><em>rasterio Band object</em><em>]</em>) – Must evaluate to bool (<a href="#id1"><span class="problematic" id="id2">rasterio.bool_</span></a> or rasterio.uint8).
+Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
+Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
+and mask is None, the source’s mask will be inverted and used in place of mask.</p></li>
+<li><p><strong>connectivity</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Use 4 or 8 pixel connectivity for grouping pixels into features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Convert the input image to a GeoDataFrame</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_geodataframe</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -866,7 +1039,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
-<li><p><strong>mask</strong> (<em>numpy ndarray</em><em> or </em><em>rasterio Band object</em><em>, </em><em>optional</em>) – Must evaluate to bool (<a href="#id1"><span class="problematic" id="id2">rasterio.bool_</span></a> or rasterio.uint8).
+<li><p><strong>mask</strong> (<em>numpy ndarray</em><em> or </em><em>rasterio Band object</em><em>, </em><em>optional</em>) – Must evaluate to bool (<a href="#id3"><span class="problematic" id="id4">rasterio.bool_</span></a> or rasterio.uint8).
 Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
 Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
 and mask is None, the source’s mask will be inverted and used in place of mask.</p></li>
@@ -911,6 +1084,38 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 </dd></dl>
 
 <dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.transform_crs">
+<code class="sig-name descname">transform_crs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">dst_crs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_width</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">'nearest'</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">num_threads</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.transform_crs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms a DataArray to a new coordinate reference system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dst_crs</strong> (<em>Optional</em><em>[</em><em>CRS | int | dict | str</em><em>]</em>) – The destination CRS.</p></li>
+<li><p><strong>dst_res</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – The destination resolution.</p></li>
+<li><p><strong>dst_width</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The destination width. Cannot be used with <code class="docutils literal notranslate"><span class="pre">dst_res</span></code>.</p></li>
+<li><p><strong>dst_height</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The destination height. Cannot be used with <code class="docutils literal notranslate"><span class="pre">dst_res</span></code>.</p></li>
+<li><p><strong>dst_bounds</strong> (<em>Optional</em><em>[</em><em>BoundingBox | tuple</em><em>]</em>) – The destination bounds, as a <code class="docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox</span></code>
+or as a tuple of (left, bottom, right, top).</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
+Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
+<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The warp memory limit.</p></li>
+<li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel threads.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dst</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform_crs</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.wi">
 <code class="sig-name descname">wi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.wi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the woody vegetation index</p>
@@ -942,6 +1147,20 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="geowombat.core.geoxarray.GeoWombatAccessor.windows">
+<code class="sig-name descname">windows</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates windows</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The row chunk size. If not given, defaults to opened DataArray chunks.</p></li>
+<li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The column chunk size. If not given, defaults to opened DataArray chunks.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

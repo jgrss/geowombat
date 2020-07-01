@@ -19,6 +19,7 @@ import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
+from tqdm import tqdm
 
 try:
     import arosics
@@ -87,6 +88,70 @@ def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cel
 
 
 class SpatialOperations(_PropertyMixin):
+
+    @staticmethod
+    def calc_area(data,
+                  values,
+                  op='eq',
+                  units='km2',
+                  num_workers=1,
+                  **kwargs):
+
+        """
+        Calculates the area of data values
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to calculate area.
+            values (list): A list of values.
+            op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
+            units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
+            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+
+        Returns:
+            ``pandas.DataFrame``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> # Read a land cover image with 512x512 chunks
+            >>> with gw.open('land_cover.tif', chunks=512) as src:
+            >>>
+            >>>     df = gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>                       units='km2',      # return area in kilometers squared
+            >>>                       num_workers=4,    # dask.compute() with 4 workers
+            >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>                       col_chunks=1024)
+        """
+
+        data_totals = {}
+
+        sqm = abs(data.gw.celly) * abs(data.gw.cellx)
+
+        rchunks = kwargs['row_chunks'] if 'row_chunks' in kwargs else data.gw.row_chunks
+        cchunks = kwargs['col_chunks'] if 'col_chunks' in kwargs else data.gw.col_chunks
+
+        window_len = int(np.ceil(data.gw.nrows / rchunks) * np.ceil(data.gw.ncols / cchunks))
+
+        for w in tqdm(data.gw.windows(**kwargs), total=window_len):
+
+            data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
+
+            for value in values:
+
+                chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(num_workers=num_workers)
+
+                if units == 'km2':
+                    chunk_value_total = (chunk_value_total * sqm) * 1e-6
+                else:
+                    chunk_value_total = (chunk_value_total * sqm) * 0.0001
+
+                if value in data_totals:
+                    data_totals[value] += chunk_value_total
+                else:
+                    data_totals[value] = chunk_value_total
+
+        return pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
 
     def sample(self,
                data,

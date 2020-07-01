@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coordinate Reference Systems &#8212; GeoWombat 1.2.16 documentation</title>
+    <title>Coordinate Reference Systems &#8212; GeoWombat 1.2.18 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Data extraction" href="extraction.html" />
-    <link rel="prev" title="GeoWombat configuration" href="config.html" />
+    <link rel="prev" title="Configuration" href="config.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -60,15 +60,16 @@
 </ul>
 <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="io.html">Reading and writing files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Accessing raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">GeoWombat configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Coordinate Reference Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Use named coordinates for band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Use GeoWombat for a machine learning pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">Applying custom user functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Two-dimensional moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
 </ul>
@@ -85,7 +86,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="config.html" title="previous chapter">GeoWombat configuration</a></li>
+      <li>Previous: <a href="config.html" title="previous chapter">Configuration</a></li>
       <li>Next: <a href="extraction.html" title="next chapter">Data extraction</a></li>
   </ul></li>
 </ul>
@@ -118,7 +119,7 @@
             
   <div class="section" id="coordinate-reference-systems">
 <span id="crs"></span><h1>Coordinate Reference Systems<a class="headerlink" href="#coordinate-reference-systems" title="Permalink to this headline">¶</a></h1>
-<p>Image projections can be transformed in <cite>geowombat</cite> using the configuration manager (see <a class="reference internal" href="config.html#config"><span class="std std-ref">GeoWombat configuration</span></a>). With the configuration manager, the CRS is transformed using <cite>rasterio</cite> <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/api/rasterio.crs.html">CRS</a> and <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html">virtual warping</a>. For references, see <a class="reference external" href="https://spatialreference.org/">Spatial Reference</a> and <a class="reference external" href="http://epsg.io/">epsg.io</a>.</p>
+<p>Image projections can be transformed in <cite>geowombat</cite> using the configuration manager (see <a class="reference internal" href="config.html#config"><span class="std std-ref">Configuration</span></a>). With the configuration manager, the CRS is transformed using <cite>rasterio</cite> <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/api/rasterio.crs.html">CRS</a> and <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html">virtual warping</a>. For references, see <a class="reference external" href="https://spatialreference.org/">Spatial Reference</a> and <a class="reference external" href="http://epsg.io/">epsg.io</a>.</p>
 <p>The CRS can be accessed from the <a class="reference external" href="http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html">xarray.DataArray</a> attributes.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 

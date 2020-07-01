@@ -15,6 +15,7 @@ from .util import sort_images_by_date
 # Imports intended for package level
 extract = SpatialOperations().extract
 sample = SpatialOperations().sample
+calc_area = SpatialOperations().calc_area
 subset = SpatialOperations().subset
 clip = SpatialOperations().clip
 mask = SpatialOperations().mask
@@ -49,6 +50,7 @@ __all__ = ['apply',
            'geodataframe_to_array',
            'extract',
            'sample',
+           'calc_area',
            'subset',
            'clip',
            'mask',

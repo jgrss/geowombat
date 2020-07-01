@@ -1,7 +1,7 @@
 .. _moving:
 
-Two-dimensional moving windows
-==============================
+Moving windows
+==============
 
 Examine the :func:`geowombat.moving` help.
 
