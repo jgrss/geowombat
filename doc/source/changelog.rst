@@ -3,8 +3,8 @@
 Change Log
 ==========
 
-1.2.18 ()
----------
+1.2.18 (1 July 2020)
+--------------------
 
 Bug fixes
 ~~~~~~~~~
@@ -16,7 +16,8 @@ New
 
 - Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
 - Added support for VRT creation from multiple files.
-- Created :func:`geowombat.calc_area`.
+- Created :func:`geowombat.calc_area` function.
+- Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.match_data` function.
 
 1.2.17 (25 June 2020)
 ---------------------
