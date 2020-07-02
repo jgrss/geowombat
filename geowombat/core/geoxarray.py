@@ -318,17 +318,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             raise NameError('The comparison operation is not supported.')
 
         if op == 'lt':
-            return self._obj.where(self._obj < b)
+            out = self._obj.where(self._obj < b)
         elif op == 'le':
-            return self._obj.where(self._obj <= b)
+            out = self._obj.where(self._obj <= b)
         elif op == 'gt':
-            return self._obj.where(self._obj > b)
+            out = self._obj.where(self._obj > b)
         elif op == 'ge':
-            return self._obj.where(self._obj >= b)
+            out = self._obj.where(self._obj >= b)
         elif op == 'eq':
-            return self._obj.where(self._obj == b)
+            out = self._obj.where(self._obj == b)
         elif op == 'ne':
-            return self._obj.where(self._obj != b)
+            out = self._obj.where(self._obj != b)
+
+        out.attrs = self._obj.attrs.copy()
+
+        return out
 
     def bounds_overlay(self, bounds, how='intersects'):
 
