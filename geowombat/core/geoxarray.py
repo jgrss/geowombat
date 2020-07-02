@@ -290,7 +290,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     new_array = other_array.gw.match_data(src, ['bd1'])
         """
 
-        if isinstance(self._obj.data, da.array):
+        if isinstance(self._obj.data, da.Array):
 
             if len(self._obj.shape) == 2:
                 new_chunks = (data.gw.row_chunks, data.gw.col_chunks)

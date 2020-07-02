@@ -376,42 +376,51 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
     Example:
         >>> import geowombat as gw
-        >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_B3, l8_224078_20200518_B4
+        >>> from geowombat.data import l8_224078_20200518_B3, l8_224078_20200518_B4, l8_224078_20200518
         >>> from geowombat.tasks import GeoTask
         >>>
-        >>> # Tasks a and take an image as input
-        >>> # Task c takes two images as input
-        >>> # Task d takes the result of tasks a, b, and c
-        >>> inputs = {'a': l8_224078_20200518, 'b': l8_224078_20200518, 'c': (l8_224078_20200518_B3, l8_224078_20200518_B4), 'd': ('a', 'b', 'c')}
+        >>> # Task a and b take 1 input file
+        >>> # Task c takes 2 input files
+        >>> # Task d takes the output of task c
+        >>> # Task e takes the outputs of a, b, and d
+        >>> inputs = {'a': l8_224078_20200518, 'b': l8_224078_20200518, 'c': (l8_224078_20200518_B3, l8_224078_20200518_B4), 'd': 'c', 'e': ('a', 'b', 'd')}
         >>>
         >>> # The output task names
-        >>> # Tasks a, b, c, and d generate in-memory arrays
-        >>> outputs = {'a': 'mem|r1', 'b': 'mem|r2', 'c': 'mem|r3', 'd': 'mem|stack'}
+        >>> # All tasks are in-memory DataArrays
+        >>> outputs = {'a': 'mem|r1', 'b': 'mem|r2', 'c': 'mem|r3', 'd': 'mem|mean', 'e': 'mem|stack'}
         >>>
-        >>> # Task a and b execute the `norm_diff`
-        >>> # Task c computes the mean of c
-        >>> # Task d concatenates a, b, and c
-        >>> tasks = (('a', gw.norm_diff), ('b', gw.norm_diff), ('c', xr.DataArray.mean), ('d', xr.concat))
+        >>> # Task a and b compute the `norm_diff`
+        >>> # Task c concatenates two images
+        >>> # Task d takes the mean of c
+        >>> # Task e concatenates a, b, and d
+        >>> tasks = (('a', gw.norm_diff), ('b', gw.norm_diff), ('c', xr.concat), ('d', xr.DataArray.mean), ('e', xr.concat))
         >>>
-        >>> # No intermediate outputs to cleanup
-        >>> clean = {}
-        >>>
-        >>> # Task a and b require the bands to ratio
-        >>> # Task c and d require the dimension to reduce
-        >>> func_args = {'a': {'b1': 'green', 'b2': 'red'}, 'b': {'b1': 'blue', 'b2': 'green'}, 'c': {'dim': 'band'}, 'd': {'dim': 'band'}}
-        >>>
+        >>> # Task a and b take band name arguments
+        >>> # Tasks c, d, and e take the coordinate dimension name as an argument
+        >>> func_args = {'a': {'b1': 'green', 'b2': 'red'}, 'b': {'b1': 'blue', 'b2': 'green'}, 'c': {'dim': 'band'}, 'd': {'dim': 'band'}, 'e': {'dim': 'band'}}
         >>> open_args = {'chunks': 512}
         >>> config_args = {'sensor': 'bgr', 'nodata': 0, 'scale_factor': 0.0001}
-        >>> out_args = {'compress': 'lzw', 'overwrite': True}
         >>>
-        >>> # Setup the task
-        >>> task_mean = GeoTask(inputs, outputs, tasks, clean=clean, config_args=config_args, open_args=open_args, func_args=func_args, out_args=out_args)
+        >>> # Setup a task
+        >>> task_mean = GeoTask(inputs, outputs, tasks, config_args=config_args, open_args=open_args, func_args=func_args)
         >>>
         >>> # Visualize the task
         >>> task_mean.visualize()
         >>>
-        >>> # Submit the task
-        >>> task_mean.submit()
+        >>> # Create a task that takes the output of task e and writes the mean to file
+        >>> task_write = GeoTask({'f': 'e'}, {'f': 'mean.tif'}, (('f', xr.DataArray.mean),),
+        >>>                      config_args=config_args,
+        >>>                      func_args={'f': {'dim': 'band'}},
+        >>>                      open_args=open_args,
+        >>>                      out_args={'compress': 'lzw', 'overwrite': True})
+        >>>
+        >>> # Add the new task
+        >>> new_task = task_mean + task_write
+        >>>
+        >>> new_task.visualize()
+        >>>
+        >>> # Write the task pipeline to file
+        >>> new_task.submit()
     """
 
     def __init__(self,
