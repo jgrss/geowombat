@@ -43,4 +43,5 @@ geowombat/radiometry/haze.py
 
 # Notebooks
 notebooks/*hls*
+notebooks/plotting.ipynb
 
