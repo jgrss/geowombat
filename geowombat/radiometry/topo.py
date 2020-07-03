@@ -2,11 +2,16 @@ from ..errors import logger
 
 import numpy as np
 from osgeo import gdal, gdal_array
-import cv2
 import dask
 import dask.array as da
 import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
+
+try:
+    import cv2
+    OPENCV_INSTALLED = True
+except:
+    OPENCV_INSTALLED = False
 
 
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):
@@ -23,6 +28,9 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
     Returns:
         ``numpy.ndarray``
     """
+
+    if not OPENCV_INSTALLED:
+        logger.exception('OpenCV must be installed.')
 
     if proc_dims:
 
@@ -72,6 +80,9 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
     Returns:
         ``numpy.ndarray``
     """
+
+    if not OPENCV_INSTALLED:
+        logger.exception('OpenCV must be installed.')
 
     if proc_dims:
 

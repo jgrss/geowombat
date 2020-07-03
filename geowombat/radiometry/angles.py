@@ -4,19 +4,22 @@ import fnmatch
 import subprocess
 from collections import namedtuple
 import tarfile
-# import datetime
-# from datetime import datetime as dtime
 
 from ..errors import logger
 
 import numpy as np
-import cv2
 import xarray as xr
 import rasterio as rio
 from rasterio.warp import reproject
 from affine import Affine
 import xml.etree.ElementTree as ET
 # from pysolar.solar import get_altitude_fast, get_azimuth_fast
+
+try:
+    import cv2
+    OPENCV_INSTALLED = True
+except:
+    OPENCV_INSTALLED = False
 
 
 def shift_objects(data,
@@ -348,6 +351,9 @@ def sentinel_pixel_angles(metadata,
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
+
+    if not OPENCV_INSTALLED:
+        logger.exception('OpenCV must be installed.')
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
 
