@@ -330,6 +330,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         elif op == 'ne':
             out = self._obj.where(self._obj != b)
 
+        out = out.astype(self._obj.dtype)
         out.attrs = self._obj.attrs.copy()
 
         return out
