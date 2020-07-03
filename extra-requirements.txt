@@ -17,6 +17,11 @@ zarr:                   zarr
 numcodecs:              zarr
 dask-ml:                ml
 lightgbm:               ml
+rtree:                  perf
+pygeos:                 perf
+opencv-python:          perf
+dateparser:             time
 ipython:                view
 bokeh:                  view
+descartes:              view
 graphviz:               view
