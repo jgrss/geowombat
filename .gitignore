@@ -26,7 +26,6 @@ old/
 envs/
 doc/*.log
 doc/source/*.log
-notebooks/
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
@@ -37,4 +36,9 @@ geowombat/examples/concurrent_processing.ipynb
 geowombat/examples/transforms.ipynb
 logo/
 bin/ESPA/
+
+# Notebooks
+notebooks/*hls*
+notebooks/plotting.ipynb
+notebooks/land_cover_strata.ipynb
 

@@ -19,6 +19,8 @@ calc_area = SpatialOperations().calc_area
 subset = SpatialOperations().subset
 clip = SpatialOperations().clip
 mask = SpatialOperations().mask
+replace = SpatialOperations().replace
+recode = SpatialOperations().recode
 coregister = SpatialOperations().coregister
 lonlat_to_xy = Converters().lonlat_to_xy
 xy_to_lonlat = Converters().xy_to_lonlat
@@ -54,6 +56,8 @@ __all__ = ['apply',
            'subset',
            'clip',
            'mask',
+           'replace',
+           'recode',
            'coregister',
            'lonlat_to_xy',
            'xy_to_lonlat',

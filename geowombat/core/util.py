@@ -19,7 +19,12 @@ from rasterio.transform import from_bounds
 
 import shapely
 from affine import Affine
-from dateparser.search import search_dates
+
+try:
+    from dateparser.search import search_dates
+    DATEPARSER_INSTALLED = True
+except:
+    DATEPARSER_INSTALLED = False
 
 shapely.speedups.enable()
 
@@ -48,15 +53,19 @@ def parse_filename_dates(filenames):
         d_name, f_name = os.path.split(fn)
         f_base, f_ext = os.path.splitext(f_name)
 
-        try:
+        dt = None
 
-            s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
-                                           settings={'DATE_ORDER': 'YMD',
-                                                     'STRICT_PARSING': False,
-                                                     'PREFER_LANGUAGE_DATE_ORDER': False})))
+        if DATEPARSER_INSTALLED:
 
-        except:
-            return list(range(1, len(filenames) + 1))
+            try:
+
+                s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
+                                               settings={'DATE_ORDER': 'YMD',
+                                                         'STRICT_PARSING': False,
+                                                         'PREFER_LANGUAGE_DATE_ORDER': False})))
+
+            except:
+                return list(range(1, len(filenames) + 1))
 
         if not dt:
             return list(range(1, len(filenames) + 1))

@@ -24,6 +24,8 @@ GeoWombat DataArray (DataArray.gw)
    .. automethod:: ndvi
    .. automethod:: norm_brdf
    .. automethod:: norm_diff
+   .. automethod:: recode
+   .. automethod:: replace
    .. automethod:: sample
    .. automethod:: set_nodata
    .. automethod:: subset

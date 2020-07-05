@@ -10,6 +10,7 @@ from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
 
 import numpy as np
+from scipy.stats import mode as sci_mode
 from scipy.spatial import cKDTree
 import pandas as pd
 import geopandas as gpd
@@ -712,6 +713,91 @@ class SpatialOperations(_PropertyMixin):
             return data.where(mask != 1)
         else:
             return data.where(mask == 1)
+
+    def replace(self,
+                data,
+                to_replace):
+
+        """
+        Replace values given in to_replace with value.
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to recode.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        attrs = data.attrs.copy()
+        dtype = data.dtype.name
+
+        if not isinstance(to_replace, dict):
+            raise TypeError('The replace values must be a dictionary of {from: to} mappings.')
+
+        data = data.astype('int64')
+
+        for k, v in to_replace.items():
+            data = xr.where(data == k, v+100000, data)
+
+        for v in to_replace.values():
+            data = xr.where(data == v+100000, data-100000, data)
+
+        return data.assign_attrs(**attrs).astype(dtype)
+
+    @lazy_wombat
+    def recode(self,
+               data,
+               polygon,
+               to_replace,
+               num_workers=1):
+
+        """
+        Recodes a DataArray with polygon mappings
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to recode.
+            polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+            num_workers (Optional[int]): The number of parallel Dask workers (only used if ``to_replace``
+                has a 'mode' mapping).
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        dtype = data.dtype.name
+        attrs = data.attrs.copy()
+
+        converters = Converters()
+
+        poly_array = converters.polygon_to_array(polygon, data=data)
+
+        for k, v in to_replace.items():
+
+            if isinstance(v, str) and (v.lower() == 'mode'):
+
+                data_array_np = data.squeeze().where(poly_array.squeeze() == 1).data.compute(num_workers=num_workers)
+
+                to_replace[k] = int(sci_mode(data_array_np,
+                                             axis=None,
+                                             nan_policy='omit').mode.flatten())
+
+        return xr.where(poly_array == 1, self.replace(data, to_replace), data).assign_attrs(**attrs).astype(dtype)
 
     @staticmethod
     def subset(data,

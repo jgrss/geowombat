@@ -7,7 +7,6 @@ from datetime import datetime
 from collections import namedtuple
 import random
 import string
-import requests
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
@@ -24,6 +23,13 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+
+try:
+    import requests
+
+    REQUESTS_INSTALLED = True
+except:
+    REQUESTS_INSTALLED = False
 
 try:
 
@@ -865,9 +871,14 @@ class GeoDownloads(object):
 
         gsutil_str = gcp_str + "/" + gcp_dict[sensor] + "/" + query
 
-        proc = subprocess.run(gsutil_str.split(' '),
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+        try:
+
+            proc = subprocess.run(gsutil_str.split(' '),
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+
+        except:
+            logger.exception('gsutil must be installed.')
 
         output = proc.stdout
 
@@ -1090,6 +1101,9 @@ class GeoDownloads(object):
             >>> dl = GeoDownloads()
             >>> dl.download_aws('LC08_L1TP_224077_20200518_20200518_01_RT', ['b2', 'b3', 'b4'])
         """
+
+        if not REQUESTS_INSTALLED:
+            logger.exception('Requests must be installed.')
 
         if not isinstance(outdir, Path):
             outdir = Path(outdir)

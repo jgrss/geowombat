@@ -3,6 +3,22 @@
 Change Log
 ==========
 
+1.2.19 (6 July 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added source attributes to return object in :func:`geowombat.core.geoxarray.GeoWombatAccessor.compare`.
+
+New
+~~~
+
+- Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.replace` function.
+- Created :func:`geowombat.replace` function.
+- Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.recode` function.
+- Created :func:`geowombat.recode` function.
+
 1.2.18 (1 July 2020)
 --------------------
 
@@ -17,6 +33,7 @@ New
 - Added image metadata tags to ``DataArray`` attributes in :class:`geowombat.open`.
 - Added support for VRT creation from multiple files.
 - Created :func:`geowombat.calc_area` function.
+- Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.compare` function.
 - Created :func:`geowombat.core.geoxarray.GeoWombatAccessor.match_data` function.
 
 1.2.17 (25 June 2020)
