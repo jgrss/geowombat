@@ -44,4 +44,5 @@ geowombat/radiometry/haze.py
 # Notebooks
 notebooks/*hls*
 notebooks/plotting.ipynb
+notebooks/land_cover_strata.ipynb
 
