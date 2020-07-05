@@ -6,6 +6,8 @@ from .core import calc_area
 from .core import subset
 from .core import clip
 from .core import mask
+from .core import replace
+from .core import recode
 from .core import coregister
 from .core import polygons_to_points
 from .core import apply
@@ -41,6 +43,8 @@ __all__ = ['config',
            'subset',
            'clip',
            'mask',
+           'replace',
+           'recode',
            'coregister',
            'polygons_to_points',
            'apply',

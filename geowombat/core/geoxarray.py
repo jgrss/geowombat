@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
@@ -334,6 +334,58 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         out.attrs = self._obj.attrs.copy()
 
         return out
+
+    def replace(self, to_replace):
+
+        """
+        Replace values given in to_replace with value.
+
+        Args:
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return replace(self._obj,
+                       to_replace)
+
+    def recode(self,
+               polygon,
+               to_replace,
+               num_workers=1):
+
+        """
+        Recodes a DataArray with polygon mappings
+
+        Args:
+            polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+            num_workers (Optional[int]): The number of parallel Dask workers (only used if ``to_replace``
+                has a 'mode' mapping).
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return recode(self._obj,
+                      polygon,
+                      to_replace,
+                      num_workers=num_workers)
 
     def bounds_overlay(self, bounds, how='intersects'):
 
@@ -673,6 +725,25 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                      blockysize=blockysize,
                                      **kwargs)
 
+        # Keywords for rasterio profile
+        if 'crs' not in kwargs:
+            kwargs['crs'] = self._obj.crs
+
+        if 'transform' not in kwargs:
+            kwargs['transform'] = self._obj.transform
+
+        if 'width' not in kwargs:
+            kwargs['width'] = self._obj.gw.ncols
+
+        if 'height' not in kwargs:
+            kwargs['height'] = self._obj.gw.nrows
+
+        if 'count' not in kwargs:
+            kwargs['count'] = self._obj.gw.nbands
+
+        if 'dtype' not in kwargs:
+            kwargs['dtype'] = self._obj.data.dtype.name
+
         to_raster(self._obj,
                   filename,
                   readxsize=readxsize,
@@ -694,12 +765,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   use_client=use_client,
                   address=address,
                   total_memory=total_memory,
-                  crs=self._obj.crs,
-                  transform=self._obj.transform,
-                  width=self._obj.gw.ncols,
-                  height=self._obj.gw.nrows,
-                  count=self._obj.gw.nbands,
-                  dtype=self._obj.data.dtype.name,
                   tags=tags,
                   **kwargs)
 

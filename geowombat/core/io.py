@@ -174,7 +174,56 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
+def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_):
+
+    # Check if the data were read at larger
+    # extents than the write bounds.
+
+    obottom = otop - (orows * abs(block.gw.celly))
+    oright = oleft + (ocols * abs(block.gw.cellx))
+
+    bottom_ = top_ - (window_.height * abs(block.gw.celly))
+    right_ = left_ - (window_.width * abs(block.gw.cellx))
+
+    left_diff = 0
+    right_diff = 0
+    top_diff = 0
+    bottom_diff = 0
+
+    if left_ < oleft:
+        left_diff = int(abs(oleft - left_) / abs(block.gw.cellx))
+        right_diff = out_data_.shape[-1]
+    elif right_ > oright:
+        left_diff = 0
+        right_diff = int(abs(oright - right_) / abs(block.gw.cellx))
+
+    if bottom_ < obottom:
+        bottom_diff = int(abs(obottom - bottom_) / abs(block.gw.celly))
+        top_diff = 0
+    elif top_ > otop:
+        bottom_diff = out_data_.shape[-2]
+        top_diff = int(abs(otop - top_) / abs(block.gw.celly))
+
+    if (left_diff != 0) or (top_diff != 0) or (bottom_diff != 0) or (right_diff != 0):
+
+        dshape = out_data_.shape
+
+        if len(dshape) == 2:
+            out_data_ = out_data_[top_diff:bottom_diff, left_diff:right_diff]
+        elif len(dshape) == 3:
+            out_data_ = out_data_[:, top_diff:bottom_diff, left_diff:right_diff]
+        elif len(dshape) == 4:
+            out_data_ = out_data_[:, :, top_diff:bottom_diff, left_diff:right_diff]
+
+        window_ = Window(col_off=window_.col_off,
+                         row_off=window_.row_off,
+                         width=out_data_.shape[-1],
+                         height=out_data_.shape[-2])
+
+    return out_data_, window_
+
+
+def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, oleft, otop, ocols, orows):
 
     """
     Computes a DataArray window block of data
@@ -186,15 +235,19 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
         padded_window_ (namedtuple): A padded window ``rasterio.windows.Window`` object.
         n_workers (int): The number of parallel workers for chunks.
         num_workers (int): The number of parallel workers for ``dask.compute``.
+        oleft (float): The output image left coordinate.
+        otop (float): The output image top coordinate.
+        ocols (int): The output image columns.
+        orows (int): The output image rows.
 
     Returns:
         ``numpy.ndarray``, ``rasterio.windows.Window``, ``int`` | ``list``
     """
 
-    if 'apply' in block.attrs:
+    # The geo-transform is needed on the block
+    left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
 
-        # The geo-transform is needed on the block
-        left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
+    if 'apply' in block.attrs:
 
         attrs = block.attrs.copy()
 
@@ -262,6 +315,8 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
         elif len(dshape) == 4:
             out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
 
+    # out_data_, window_ = _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_)
+
     dshape = out_data_.shape
 
     if len(dshape) > 2:
@@ -272,7 +327,7 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
     else:
         indexes_ = 1 if dshape[0] == 1 else list(range(1, dshape[0]+1))
 
-    return out_data_, indexes_
+    return out_data_, indexes_, window_
 
 
 def _write_xarray(*args):
@@ -292,9 +347,9 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, tags = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, tags, oleft, otop, ocols, orows = list(itertools.chain(*args))
 
-    output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads)
+    output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
 
     if separate:
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
@@ -648,6 +703,9 @@ def to_raster(data,
 
             n_windows = len(windows)
 
+            oleft, otop = kwargs['transform'][2], kwargs['transform'][5]
+            ocols, orows = kwargs['width'], kwargs['height']
+
             # Iterate over the windows in chunks
             for wchunk in range(0, n_windows, n_chunks):
 
@@ -667,34 +725,34 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
 
