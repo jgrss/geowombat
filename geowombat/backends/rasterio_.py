@@ -16,8 +16,14 @@ from rasterio.coords import BoundingBox
 
 import pyproj
 from affine import Affine
-import zarr
-import numcodecs
+
+try:
+    import zarr
+    import numcodecs
+
+    ZARR_INSTALLED = True
+except:
+    ZARR_INSTALLED = False
 
 
 class WriteDaskArray(object):
@@ -51,6 +57,10 @@ class WriteDaskArray(object):
                  keep_blocks=False,
                  gdal_cache=512,
                  **kwargs):
+
+        if out_block_type == 'zarr':
+            if not ZARR_INSTALLED:
+                logger.exception('Zarr and numcodecs must be installed.')
 
         self.filename = filename
         self.overwrite = overwrite
