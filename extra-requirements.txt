@@ -25,3 +25,5 @@ ipython:                view
 bokeh:                  view
 descartes:              view
 graphviz:               view
+gsutil:                 web
+requests:               web
