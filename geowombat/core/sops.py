@@ -306,8 +306,8 @@ class SpatialOperations(_PropertyMixin):
                         break
 
                         # Sample directly from the coordinates
-                    y_coords = np.random.choice(data.y.values, size=sample_size if sample_size < data.y.values.shape[0] else data.y.values.shape[0], replace=False)
-                    x_coords = np.random.choice(data.x.values, size=sample_size if sample_size < data.x.values.shape[0] else data.x.values.shape[0], replace=False)
+                    y_coords = np.random.choice(data.y.values, size=sample_size if sample_size < data.y.values.shape[0] else data.y.values.shape[0]-1, replace=False)
+                    x_coords = np.random.choice(data.x.values, size=sample_size if sample_size < data.x.values.shape[0] else data.x.values.shape[0]-1, replace=False)
 
                     if isinstance(dfs, gpd.GeoDataFrame):
 
@@ -362,7 +362,7 @@ class SpatialOperations(_PropertyMixin):
 
                 while True:
 
-                    if attempts >= 50:
+                    if attempts >= max_attempts:
 
                         if verbose > 0:
                             logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
@@ -397,7 +397,7 @@ class SpatialOperations(_PropertyMixin):
 
                     if y_samples.shape[0] > 0:
 
-                        ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]
+                        ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]-1
 
                         # Get indices within the stratum
                         idx = np.random.choice(range(0, y_samples.shape[0]), size=ssize, replace=False)
@@ -501,7 +501,6 @@ class SpatialOperations(_PropertyMixin):
         """
 
         sensor = self.check_sensor(data, return_error=False)
-
         band_names = self.check_sensor_band_names(data, sensor, band_names)
 
         converters = Converters()
@@ -534,7 +533,7 @@ class SpatialOperations(_PropertyMixin):
         # Convert the map coordinates to indices
         x, y = converters.coords_to_indices(df.geometry.x.values,
                                             df.geometry.y.values,
-                                            data.transform)
+                                            data.gw.transform)
 
         vidx = (y.tolist(), x.tolist())
 
@@ -737,7 +736,7 @@ class SpatialOperations(_PropertyMixin):
         # Rasterize the geometry and store as a DataArray
         mask = xr.DataArray(data=da.from_array(features.rasterize(list(dataframe.geometry.values),
                                                                   out_shape=(data.gw.nrows, data.gw.ncols),
-                                                                  transform=data.transform,
+                                                                  transform=data.gw.transform,
                                                                   fill=0,
                                                                   out=None,
                                                                   all_touched=True,
@@ -924,7 +923,7 @@ class SpatialOperations(_PropertyMixin):
                 logger.warning('  Cannot mask corners without Pymorph.')
 
         # Update the left and top coordinates
-        transform = list(data.transform)
+        transform = list(data.gw.transform)
 
         transform[2] = x_idx[0]
         transform[5] = y_idx[0]

@@ -797,7 +797,7 @@ def transform_crs(data_src,
 
         data_dst, dst_transform = reproject(data_src[band, :, :].data.compute(num_workers=num_threads),
                                             destination,
-                                            src_transform=data_src.transform,
+                                            src_transform=data_src.gw.transform,
                                             src_crs=data_src.crs,
                                             dst_transform=dst_transform,
                                             dst_crs=dst_crs,

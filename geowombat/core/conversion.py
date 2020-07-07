@@ -126,7 +126,7 @@ class Converters(object):
             if isinstance(transform, tuple):
                 transform = Affine(*transform)
             elif isinstance(transform, xr.DataArray):
-                transform = transform.gw.meta.affine
+                transform = transform.gw.affine
             else:
                 logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
                 raise TypeError
@@ -163,7 +163,7 @@ class Converters(object):
             if isinstance(transform, tuple):
                 transform = Affine(*transform)
             elif isinstance(transform, xr.DataArray):
-                transform = transform.gw.meta.affine
+                transform = transform.gw.affine
             else:
                 logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
                 raise TypeError
@@ -380,14 +380,14 @@ class Converters(object):
 
             df = gpd.overlay(df,
                              gpd.GeoDataFrame(data=[0],
-                                              geometry=[data.gw.meta.geometry],
+                                              geometry=[data.gw.geometry],
                                               crs=df_crs),
                              how='intersection')
 
         else:
 
             # Clip points to the image bounds
-            df = df[df.geometry.intersects(data.gw.unary_union)]
+            df = df[df.geometry.intersects(data.gw.geometry)]
 
         if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
 
@@ -513,7 +513,7 @@ class Converters(object):
             >>>                              num_workers=8)
         """
 
-        if not hasattr(data, 'transform'):
+        if not hasattr(data.gw, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
             raise AttributeError
 
@@ -529,7 +529,7 @@ class Converters(object):
         poly_objects = shapes(data.data.compute(num_workers=num_workers),
                               mask=mask,
                               connectivity=connectivity,
-                              transform=data.transform)
+                              transform=data.gw.transform)
 
         poly_geom = [Polygon(p[0]['coordinates'][0]) for p in poly_objects]
 
@@ -571,7 +571,7 @@ class Converters(object):
             >>>                             num_workers=8)
         """
 
-        if not hasattr(data, 'transform'):
+        if not hasattr(data.gw, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
             raise AttributeError
 
@@ -587,7 +587,7 @@ class Converters(object):
         poly_objects = shapes(data.data.compute(num_workers=num_workers),
                               mask=mask,
                               connectivity=connectivity,
-                              transform=data.transform)
+                              transform=data.gw.transform)
 
         poly_geom = [Polygon(p[0]['coordinates'][0]) for p in poly_objects]
 
@@ -703,7 +703,7 @@ class Converters(object):
             dst_height = data.gw.nrows
             dst_width = data.gw.ncols
 
-            dst_transform = data.transform
+            dst_transform = data.gw.transform
 
         else:
 
@@ -857,7 +857,7 @@ class Converters(object):
             dst_height = data.gw.nrows
             dst_width = data.gw.ncols
 
-            dst_transform = data.transform
+            dst_transform = data.gw.transform
 
         else:
 
