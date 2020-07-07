@@ -301,7 +301,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             return ndarray_to_xarray(data, self._obj.data, band_names)
 
-    def compare(self, op, b):
+    def compare(self, op, b, return_binary=False):
 
         """
         Comparison operation
@@ -309,9 +309,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             op (str): The comparison operation.
             b (int | float): The value to compare to.
+            return_binary (Optional[bool]): Whether to return a binary (1 or 0) array.
 
         Returns:
-            ``xarray.DataArray``
+            ``xarray.DataArray``:
+                Valid data where ``op`` meets criteria ``b``, otherwise nans
         """
 
         if op not in ['lt', 'le', 'gt', 'ge', 'eq', 'ne']:
@@ -330,10 +332,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         elif op == 'ne':
             out = self._obj.where(self._obj != b)
 
-        out = out.astype(self._obj.dtype)
-        out.attrs = self._obj.attrs.copy()
+        if return_binary:
+            out = xr.where(out > 0, 1, np.nan)
 
-        return out
+        return out.astype(self._obj.dtype).assign_attrs(**self._obj.attrs.copy())
 
     def replace(self, to_replace):
 
