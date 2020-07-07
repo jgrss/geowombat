@@ -193,6 +193,7 @@ class SpatialOperations(_PropertyMixin):
                min_dist=None,
                max_attempts=10,
                num_workers=1,
+               verbose=1,
                **kwargs):
 
         """
@@ -217,6 +218,7 @@ class SpatialOperations(_PropertyMixin):
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
+            verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -298,7 +300,9 @@ class SpatialOperations(_PropertyMixin):
 
                     if attempts >= max_attempts:
 
-                        logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+
                         break
 
                         # Sample directly from the coordinates
@@ -360,7 +364,8 @@ class SpatialOperations(_PropertyMixin):
 
                     if attempts >= 50:
 
-                        logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
 
                         if not isinstance(df, gpd.GeoDataFrame):
                             df = dfs.copy()
