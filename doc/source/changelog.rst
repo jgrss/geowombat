@@ -3,8 +3,18 @@
 Change Log
 ==========
 
-1.2.20 ()
----------
+1.2.20 (7 July 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed conditional value replacement in :func:`geowombat.calc_area`.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `return_binary` argument to :func:`geowombat.core.geoxarray.GeoWombatAccessor.compare`.
 
 New
 ~~~

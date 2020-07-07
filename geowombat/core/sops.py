@@ -3,7 +3,6 @@ import math
 import itertools
 from datetime import datetime
 from collections import defaultdict
-import threading
 
 from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
@@ -143,30 +142,23 @@ class SpatialOperations(_PropertyMixin):
 
         def area_func(*args):
 
-            data_chunk, uvalues, n_threads = list(itertools.chain(*args))
+            data_chunk, uvalues, area_units, n_threads = list(itertools.chain(*args))
 
             sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
+            area_conversion = 1e-6 if area_units == 'km2' else 0.0001
 
-            data_totals_ = {}
+            data_totals_ = defaultdict(float)
 
             for value in uvalues:
 
-                with threading.Lock():
+                chunk_value_total = data_chunk.gw.compare(op, value, return_binary=True) \
+                                                            .sum(skipna=True) \
+                                                            .data.compute(scheduler='threads',
+                                                                          num_workers=n_threads)
 
-                    chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(scheduler='threads',
-                                                                                                       num_workers=n_threads)
+                data_totals_[value] += (chunk_value_total * sqm) * area_conversion
 
-                if units == 'km2':
-                    chunk_value_total = (chunk_value_total * sqm) * 1e-6
-                else:
-                    chunk_value_total = (chunk_value_total * sqm) * 0.0001
-
-                if value in data_totals_:
-                    data_totals_[value] += chunk_value_total
-                else:
-                    data_totals_[value] = chunk_value_total
-
-            return data_totals_
+            return dict(data_totals_)
 
         pt = ParallelTask(data,
                           row_chunks=row_chunks,
@@ -175,7 +167,7 @@ class SpatialOperations(_PropertyMixin):
                           n_workers=n_workers,
                           n_chunks=n_chunks)
 
-        futures = pt.map(area_func, values, n_threads)
+        futures = pt.map(area_func, values, units, n_threads)
 
         # Combine the results
         data_totals = defaultdict(float)
