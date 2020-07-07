@@ -897,7 +897,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     return ds_.max(axis=0)
             >>>
             >>> with xr.open_rasterio('image.tif', chunks=(1, 512, 512)) as ds:
-            >>>     ds.io.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
+            >>>     ds.gw.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 
         cluster = _Cluster(n_workers=n_jobs,
@@ -911,7 +911,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             ds_sub = user_func(self._obj)
             ds_sub.attrs = self._obj.attrs
-            ds_sub.io.to_raster(filename, n_jobs=n_jobs, **kwargs)
+            ds_sub.gw.to_raster(filename, n_jobs=n_jobs, **kwargs)
 
         cluster.stop()
 
