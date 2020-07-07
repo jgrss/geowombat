@@ -306,8 +306,8 @@ class SpatialOperations(_PropertyMixin):
                         break
 
                         # Sample directly from the coordinates
-                    y_coords = np.random.choice(data.y.values, size=sample_size, replace=False)
-                    x_coords = np.random.choice(data.x.values, size=sample_size, replace=False)
+                    y_coords = np.random.choice(data.y.values, size=sample_size if sample_size < data.y.values.shape[0] else data.y.values.shape[0], replace=False)
+                    x_coords = np.random.choice(data.x.values, size=sample_size if sample_size < data.x.values.shape[0] else data.x.values.shape[0], replace=False)
 
                     if isinstance(dfs, gpd.GeoDataFrame):
 
@@ -397,8 +397,10 @@ class SpatialOperations(_PropertyMixin):
 
                     if y_samples.shape[0] > 0:
 
+                        ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]
+
                         # Get indices within the stratum
-                        idx = np.random.choice(range(0, y_samples.shape[0]), size=sample_size, replace=False)
+                        idx = np.random.choice(range(0, y_samples.shape[0]), size=ssize, replace=False)
 
                         y_samples = y_samples[idx]
                         x_samples = x_samples[idx]
