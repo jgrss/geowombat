@@ -3,6 +3,19 @@
 Change Log
 ==========
 
+1.2.21 (8 July 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for None row/column chunks in :class:`geowombat.core.parallel.ParallelTask`.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `affine` and `transform` properties.
+
 1.2.20 (7 July 2020)
 --------------------
 

@@ -799,13 +799,23 @@ class DataProperties(object):
 
         return gpd.GeoDataFrame(data=[Path(self._obj.filename).name if hasattr(self._obj, 'filename') else 1],
                                 columns=['grid'],
-                                geometry=[self._obj.gw.geometry],
+                                geometry=[self.geometry],
                                 crs=self._obj.crs)
 
     @property
     def unary_union(self):
         """Get a representation of the union of the image bounds"""
         return shapely.ops.unary_union(self.geometry)
+
+    @property
+    def transform(self):
+        """Get the data transform (cell x, 0, left, 0, cell y, top)"""
+        return self.cellx, 0.0, self.left, 0.0, -self.celly, self.top
+
+    @property
+    def affine(self):
+        """Get the affine transform object"""
+        return Affine(*self.transform)
 
     @property
     def meta(self):
@@ -821,5 +831,5 @@ class DataProperties(object):
                     top=self.top,
                     bottom=self.bottom,
                     bounds=self.bounds,
-                    affine=Affine(*self._obj.transform),
+                    affine=self.affine,
                     geometry=self.geometry)

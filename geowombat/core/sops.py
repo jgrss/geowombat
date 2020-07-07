@@ -192,6 +192,8 @@ class SpatialOperations(_PropertyMixin):
                spacing=None,
                min_dist=None,
                max_attempts=10,
+               num_workers=1,
+               verbose=1,
                **kwargs):
 
         """
@@ -215,6 +217,8 @@ class SpatialOperations(_PropertyMixin):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
+            verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -296,12 +300,14 @@ class SpatialOperations(_PropertyMixin):
 
                     if attempts >= max_attempts:
 
-                        logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+
                         break
 
                         # Sample directly from the coordinates
-                    y_coords = np.random.choice(data.y.values, size=sample_size, replace=False)
-                    x_coords = np.random.choice(data.x.values, size=sample_size, replace=False)
+                    y_coords = np.random.choice(data.y.values, size=sample_size if sample_size < data.y.values.shape[0] else data.y.values.shape[0]-1, replace=False)
+                    x_coords = np.random.choice(data.x.values, size=sample_size if sample_size < data.x.values.shape[0] else data.x.values.shape[0]-1, replace=False)
 
                     if isinstance(dfs, gpd.GeoDataFrame):
 
@@ -356,9 +362,10 @@ class SpatialOperations(_PropertyMixin):
 
                 while True:
 
-                    if attempts >= 50:
+                    if attempts >= max_attempts:
 
-                        logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
 
                         if not isinstance(df, gpd.GeoDataFrame):
                             df = dfs.copy()
@@ -381,15 +388,19 @@ class SpatialOperations(_PropertyMixin):
                         logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
                         raise NameError
 
-                    valid_samples = dask.compute(valid_samples)[0]
+                    valid_samples = dask.compute(valid_samples,
+                                                 num_workers=num_workers,
+                                                 scheduler='threads')[0]
 
                     y_samples = valid_samples[0]
                     x_samples = valid_samples[1]
 
                     if y_samples.shape[0] > 0:
 
+                        ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]-1
+
                         # Get indices within the stratum
-                        idx = np.random.choice(range(0, y_samples.shape[0]), size=sample_size, replace=False)
+                        idx = np.random.choice(range(0, y_samples.shape[0]), size=ssize, replace=False)
 
                         y_samples = y_samples[idx]
                         x_samples = x_samples[idx]
@@ -490,7 +501,6 @@ class SpatialOperations(_PropertyMixin):
         """
 
         sensor = self.check_sensor(data, return_error=False)
-
         band_names = self.check_sensor_band_names(data, sensor, band_names)
 
         converters = Converters()
@@ -523,7 +533,7 @@ class SpatialOperations(_PropertyMixin):
         # Convert the map coordinates to indices
         x, y = converters.coords_to_indices(df.geometry.x.values,
                                             df.geometry.y.values,
-                                            data.transform)
+                                            data.gw.transform)
 
         vidx = (y.tolist(), x.tolist())
 
@@ -726,7 +736,7 @@ class SpatialOperations(_PropertyMixin):
         # Rasterize the geometry and store as a DataArray
         mask = xr.DataArray(data=da.from_array(features.rasterize(list(dataframe.geometry.values),
                                                                   out_shape=(data.gw.nrows, data.gw.ncols),
-                                                                  transform=data.transform,
+                                                                  transform=data.gw.transform,
                                                                   fill=0,
                                                                   out=None,
                                                                   all_touched=True,
@@ -913,7 +923,7 @@ class SpatialOperations(_PropertyMixin):
                 logger.warning('  Cannot mask corners without Pymorph.')
 
         # Update the left and top coordinates
-        transform = list(data.transform)
+        transform = list(data.gw.transform)
 
         transform[2] = x_idx[0]
         transform[5] = y_idx[0]

@@ -76,10 +76,13 @@ class ParallelTask(object):
 
     def _setup(self, row_chunks, col_chunks):
 
+        rchunksize = row_chunks if isinstance(row_chunks, int) else self.data.gw.row_chunks
+        cchunksize = col_chunks if isinstance(col_chunks, int) else self.data.gw.col_chunks
+
         self.windows = get_window_offsets(self.data.gw.nrows,
                                           self.data.gw.ncols,
-                                          row_chunks,
-                                          col_chunks,
+                                          rchunksize,
+                                          cchunksize,
                                           return_as='list',
                                           padding=self.padding)
 

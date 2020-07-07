@@ -455,8 +455,8 @@ def to_vrt(data,
             with WarpedVRT(src,
                            src_crs=src.crs,                         # the original CRS
                            crs=data.crs,                            # the transformed CRS
-                           src_transform=src.transform,             # the original transform
-                           transform=data.transform,                # the new transform
+                           src_transform=src.gw.transform,             # the original transform
+                           transform=data.gw.transform,                # the new transform
                            dtype=data.gw.dtype,
                            resampling=resampling,
                            nodata=nodata,
@@ -691,7 +691,7 @@ def to_raster(data,
         kwargs['crs'] = data.crs
 
     if 'transform' not in kwargs:
-        kwargs['transform'] = data.transform
+        kwargs['transform'] = data.gw.transform
 
     if separate:
 
