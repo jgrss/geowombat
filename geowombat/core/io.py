@@ -495,7 +495,7 @@ def to_raster(data,
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-        scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+        scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
 
             mpool: process pool of workers using ``multiprocessing.Pool``
             processes: process pool of workers using ``concurrent.futures``
