@@ -994,8 +994,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   values,
                   op='eq',
                   units='km2',
-                  num_workers=1,
-                  **kwargs):
+                  row_chunks=None,
+                  col_chunks=None,
+                  n_workers=1,
+                  n_threads=1,
+                  scheduler='threads',
+                  n_chunks=100):
 
         """
         Calculates the area of data values
@@ -1004,8 +1008,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             values (list): A list of values.
             op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+            row_chunks (Optional[int]): The row chunk size to process in parallel.
+            col_chunks (Optional[int]): The column chunk size to process in parallel.
+            n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
+            n_threads (Optional[int]): The number of parallel threads for ``dask.compute()``.
+            scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+
+                mpool: process pool of workers using ``multiprocessing.Pool``
+                processes: process pool of workers using ``concurrent.futures``
+                threads: thread pool of workers using ``concurrent.futures``
+
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
         Returns:
             ``pandas.DataFrame``
@@ -1018,7 +1031,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>>     df = src.gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
             >>>                           units='km2',      # return area in kilometers squared
-            >>>                           num_workers=4,    # dask.compute() with 4 workers
+            >>>                           n_workers=4,
             >>>                           row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
             >>>                           col_chunks=1024)
         """
@@ -1027,8 +1040,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                          values,
                          op=op,
                          units=units,
-                         num_workers=num_workers,
-                         **kwargs)
+                         row_chunks=row_chunks,
+                         col_chunks=col_chunks,
+                         n_workers=n_workers,
+                         n_threads=n_threads,
+                         scheduler=scheduler,
+                         n_chunks=n_chunks)
 
     def sample(self,
                method='random',
