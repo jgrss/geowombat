@@ -3,8 +3,6 @@ import fnmatch
 from collections import namedtuple, OrderedDict
 from datetime import datetime
 from pathlib import Path
-import concurrent.futures
-import itertools
 
 from ..errors import logger
 from ..moving import moving_window
@@ -19,7 +17,7 @@ from rasterio.crs import CRS
 from rasterio.warp import reproject, transform_bounds
 from rasterio.transform import from_bounds
 
-import shapely
+from shapely import speedups
 from affine import Affine
 
 try:
@@ -28,47 +26,12 @@ try:
 except:
     DATEPARSER_INSTALLED = False
 
-shapely.speedups.enable()
+speedups.enable()
 
 
 def lazy_wombat(func):
     func.wombat_func_ = True
     return func
-
-
-_EXEC_DICT = {'processes': concurrent.futures.ProcessPoolExecutor,
-              'threads': concurrent.futures.ThreadPoolExecutor}
-
-
-class Concurrency(object):
-
-    def __init__(self, func, tasks, executor='processes', max_workers=1, chunk_size=100):
-
-        self.func = func
-        self.tasks = tasks
-        self.executor = _EXEC_DICT[executor]
-        self.max_workers = max_workers
-        self.chunk_size = chunk_size
-
-    def exec(self):
-
-        results = []
-
-        with self.executor(max_workers=self.max_workers) as executor:
-
-            futures = {executor.submit(self.func, *taskargs) for taskargs in itertools.islice(self.tasks, self.chunk_size)}
-
-            while futures:
-
-                done, futures = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
-
-                for f in done:
-                    results.append(f.result())
-
-                for taskargs in itertools.islice(self.tasks, len(done)):
-                    futures.add(executor.submit(self.func, *taskargs))
-
-        return results
 
 
 def parse_filename_dates(filenames):
