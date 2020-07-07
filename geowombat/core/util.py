@@ -17,7 +17,7 @@ from rasterio.crs import CRS
 from rasterio.warp import reproject, transform_bounds
 from rasterio.transform import from_bounds
 
-import shapely
+from shapely import speedups
 from affine import Affine
 
 try:
@@ -26,7 +26,7 @@ try:
 except:
     DATEPARSER_INSTALLED = False
 
-shapely.speedups.enable()
+speedups.enable()
 
 
 def lazy_wombat(func):

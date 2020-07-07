@@ -2,12 +2,15 @@ import os
 import math
 import itertools
 from datetime import datetime
+from collections import defaultdict
+import threading
 
 from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
+from .parallel import ParallelTask
 
 import numpy as np
 from scipy.stats import mode as sci_mode
@@ -20,7 +23,6 @@ import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
-from tqdm import tqdm
 
 try:
     import arosics
@@ -95,8 +97,12 @@ class SpatialOperations(_PropertyMixin):
                   values,
                   op='eq',
                   units='km2',
-                  num_workers=1,
-                  **kwargs):
+                  row_chunks=None,
+                  col_chunks=None,
+                  n_workers=1,
+                  n_threads=1,
+                  scheduler='threads',
+                  n_chunks=100):
 
         """
         Calculates the area of data values
@@ -106,8 +112,17 @@ class SpatialOperations(_PropertyMixin):
             values (list): A list of values.
             op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+            row_chunks (Optional[int]): The row chunk size to process in parallel.
+            col_chunks (Optional[int]): The column chunk size to process in parallel.
+            n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
+            n_threads (Optional[int]): The number of parallel threads for ``dask.compute()``.
+            scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+
+                mpool: process pool of workers using ``multiprocessing.Pool``
+                processes: process pool of workers using ``concurrent.futures``
+                threads: thread pool of workers using ``concurrent.futures``
+
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
         Returns:
             ``pandas.DataFrame``
@@ -118,41 +133,63 @@ class SpatialOperations(_PropertyMixin):
             >>> # Read a land cover image with 512x512 chunks
             >>> with gw.open('land_cover.tif', chunks=512) as src:
             >>>
-            >>>     df = gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>     df = gw.calc_area(src,
+            >>>                       [1, 2, 5],        # calculate the area of classes 1, 2, and 5
             >>>                       units='km2',      # return area in kilometers squared
-            >>>                       num_workers=4,    # dask.compute() with 4 workers
+            >>>                       n_workers=4,
             >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
             >>>                       col_chunks=1024)
         """
 
-        data_totals = {}
+        def area_func(*args):
 
-        sqm = abs(data.gw.celly) * abs(data.gw.cellx)
+            data_chunk, uvalues, n_threads = list(itertools.chain(*args))
 
-        rchunks = kwargs['row_chunks'] if 'row_chunks' in kwargs else data.gw.row_chunks
-        cchunks = kwargs['col_chunks'] if 'col_chunks' in kwargs else data.gw.col_chunks
+            sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
 
-        window_len = int(np.ceil(data.gw.nrows / rchunks) * np.ceil(data.gw.ncols / cchunks))
+            data_totals_ = {}
 
-        for w in tqdm(data.gw.windows(**kwargs), total=window_len):
+            for value in uvalues:
 
-            data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
+                with threading.Lock():
 
-            for value in values:
-
-                chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(num_workers=num_workers)
+                    chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(scheduler='threads',
+                                                                                                       num_workers=n_threads)
 
                 if units == 'km2':
                     chunk_value_total = (chunk_value_total * sqm) * 1e-6
                 else:
                     chunk_value_total = (chunk_value_total * sqm) * 0.0001
 
-                if value in data_totals:
-                    data_totals[value] += chunk_value_total
+                if value in data_totals_:
+                    data_totals_[value] += chunk_value_total
                 else:
-                    data_totals[value] = chunk_value_total
+                    data_totals_[value] = chunk_value_total
 
-        return pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+            return data_totals_
+
+        pt = ParallelTask(data,
+                          row_chunks=row_chunks,
+                          col_chunks=col_chunks,
+                          scheduler=scheduler,
+                          n_workers=n_workers,
+                          n_chunks=n_chunks)
+
+        futures = pt.map(area_func, values, n_threads)
+
+        # Combine the results
+        data_totals = defaultdict(float)
+        for future in futures:
+            for k, v in future.items():
+                data_totals[k] += v
+
+        data_totals = dict(data_totals)
+        data_totals = dict(sorted(data_totals.items()))
+
+        df = pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+        df['area_value'] = df.index
+
+        return df
 
     def sample(self,
                data,
