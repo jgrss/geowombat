@@ -192,6 +192,7 @@ class SpatialOperations(_PropertyMixin):
                spacing=None,
                min_dist=None,
                max_attempts=10,
+               num_workers=1,
                **kwargs):
 
         """
@@ -215,6 +216,7 @@ class SpatialOperations(_PropertyMixin):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -381,7 +383,9 @@ class SpatialOperations(_PropertyMixin):
                         logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
                         raise NameError
 
-                    valid_samples = dask.compute(valid_samples)[0]
+                    valid_samples = dask.compute(valid_samples,
+                                                 num_workers=num_workers,
+                                                 scheduler='threads')[0]
 
                     y_samples = valid_samples[0]
                     x_samples = valid_samples[1]
