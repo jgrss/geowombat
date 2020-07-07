@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.20 ()
+---------
+
+New
+~~~
+
+- Created :class:`geowombat.core.parallel.ParallelTask`.
+
 1.2.19 (6 July 2020)
 --------------------
 
