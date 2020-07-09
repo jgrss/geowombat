@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>moving &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>moving &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -26,8 +26,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="moving">
+<h1>moving<a class="headerlink" href="#moving" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.moving">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">moving</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">band_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stat</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">perc</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.moving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a moving window function over Dask array blocks</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
+<li><p><strong>band_names</strong> (<em>int</em><em> or </em><em>str</em><em> or </em><em>list</em>) – The output band name(s).</p></li>
+<li><p><strong>stat</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The statistic to compute. Choices are [‘mean’, ‘std’, ‘var’, ‘min’, ‘max’, ‘perc’].</p></li>
+<li><p><strong>perc</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The percentile to return if <code class="docutils literal notranslate"><span class="pre">stat</span></code> = ‘perc’.</p></li>
+<li><p><strong>w</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The moving window size (in pixels).</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to ignore.</p></li>
+<li><p><strong>weights</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to weight values by distance from window center.</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of rows to process in parallel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate the mean within a 5x5 window</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">res</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mf">32767.0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate the 90th percentile within a 15x15 window</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">res</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;perc&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">perc</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mf">32767.0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -113,58 +164,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="moving">
-<h1>moving<a class="headerlink" href="#moving" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.moving">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">moving</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">band_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stat</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">perc</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.moving" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a moving window function over Dask array blocks</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to process.</p></li>
-<li><p><strong>band_names</strong> (<em>int</em><em> or </em><em>str</em><em> or </em><em>list</em>) – The output band name(s).</p></li>
-<li><p><strong>stat</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The statistic to compute. Choices are [‘mean’, ‘std’, ‘var’, ‘min’, ‘max’, ‘perc’].</p></li>
-<li><p><strong>perc</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The percentile to return if <code class="docutils literal notranslate"><span class="pre">stat</span></code> = ‘perc’.</p></li>
-<li><p><strong>w</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The moving window size (in pixels).</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – A ‘no data’ value to ignore.</p></li>
-<li><p><strong>weights</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to weight values by distance from window center.</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of rows to process in parallel.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate the mean within a 5x5 window</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">res</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mf">32767.0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate the 90th percentile within a 15x15 window</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">res</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">moving</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;perc&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">perc</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mf">32767.0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       

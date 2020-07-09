@@ -68,8 +68,16 @@ html_theme = 'alabaster'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'page_width': '80%',
-                      'fixed_sidebar': True,
+html_theme_options = {'page_width': '60%',
+                      'sidebar_width': '20%',
+                      'head_font_family': 'Helvetica',
+                      'font_size': '1.1em',
+                      'font_family': 'Helvetica',
+                      'code_font_family': 'Noto Mono',
+                      'code_font_size': '0.8em',
+                      'note_bg': '#cccccc',
+                      'note_border': '#c0c3e2',
+                      'fixed_sidebar': False,
                       'logo': 'logo.png',
                       'logo_name': False,
                       'github_banner': True,

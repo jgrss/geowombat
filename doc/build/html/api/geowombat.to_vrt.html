@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>to_vrt &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>to_vrt &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -26,8 +26,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="to-vrt">
+<h1>to_vrt<a class="headerlink" href="#to-vrt" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.to_vrt">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_dest_nodata</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_vrt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a file to a VRT file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – The resampling algorithm for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>. Default is ‘nearest’.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+<li><p><strong>init_dest_nodata</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether or not to initialize output to <code class="docutils literal notranslate"><span class="pre">nodata</span></code> for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The GDAL memory limit for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.enums</span> <span class="k">import</span> <span class="n">Resampling</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Transform a CRS and save to VRT</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102033</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="s1">&#39;output.vrt&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">cubic</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">warp_mem_limit</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load multiple files set to a common geographic extent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">],</span> <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;output.vrt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -113,55 +166,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="to-vrt">
-<h1>to_vrt<a class="headerlink" href="#to-vrt" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.to_vrt">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_dest_nodata</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_vrt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a file to a VRT file</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
-<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – The resampling algorithm for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>. Default is ‘nearest’.</p></li>
-<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
-<li><p><strong>init_dest_nodata</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether or not to initialize output to <code class="docutils literal notranslate"><span class="pre">nodata</span></code> for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
-<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The GDAL memory limit for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rasterio.enums</span> <span class="k">import</span> <span class="n">Resampling</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102033</span><span class="p">):</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                  <span class="s1">&#39;image.vrt&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">cubic</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">warp_mem_limit</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       

@@ -191,9 +191,9 @@ are the :func:`geowombat.open` size of ``chunks`` and the :func:`to_raster` numb
 .. note::
 
     When do I use workers versus threads? This probably depends on the problem being executed. If the computation task
-    is mainly performing many reads at the chunk level and the chunk-level process is relatively simple (i.e., the worker
-    is not spending much time on each chunk), more ``n_workers`` might be more efficient. If the chunk-level computation is
-    complex and is the main bottleneck, more ``n_threads`` might be more efficient. See `Dask single-machine <https://docs.dask.org/en/latest/setup/single-machine.html>`_ for more details about threads vs. processes.
+    is mainly performing many reads at the chunk level (i.e., I/O bound) and the chunk-level process is relatively simple (i.e., the worker
+    is not spending much time on each chunk) or the process can release the GIL, more ``n_threads`` might be more efficient. If the chunk-level computation is
+    complex (i.e., CPU bound) and is the main bottleneck, more ``n_workers`` might be more efficient. See `Dask single-machine <https://docs.dask.org/en/latest/setup/single-machine.html>`_ for more details about threads vs. processes.
 
 Writing results to file in a parallel environment can be performed on a laptop or a distributed compute system. With the
 former, a call to :func:`geowombat.to_raster` is all that is needed. On a distributed compute system, one might instead use

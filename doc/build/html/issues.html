@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issues &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>Issues &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -26,8 +26,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="issues">
+<span id="id1"></span><h1>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="gdal-3-0-and-gdal-data">
+<h2>GDAL 3.0 and GDAL_DATA<a class="headerlink" href="#gdal-3-0-and-gdal-data" title="Permalink to this headline">¶</a></h2>
+<p>First, see <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/faq.html">here</a> for issues with the GDAL data path.</p>
+<p>If the GDAL_DATA directory is missing the gcs.csv file, point the GDAL_DATA environment variable to the Fiona path.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ GDAL_DATA=/envs/ts3.7/lib/python3.7/site-packages/fiona/gdal_data
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -111,32 +136,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="issues">
-<span id="id1"></span><h1>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="gdal-3-0-and-gdal-data">
-<h2>GDAL 3.0 and GDAL_DATA<a class="headerlink" href="#gdal-3-0-and-gdal-data" title="Permalink to this headline">¶</a></h2>
-<p>First, see <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/faq.html">here</a> for issues with the GDAL data path.</p>
-<p>If the GDAL_DATA directory is missing the gcs.csv file, point the GDAL_DATA environment variable to the Fiona path.</p>
-<p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ GDAL_DATA=/envs/ts3.7/lib/python3.7/site-packages/fiona/gdal_data
-</pre></div>
-</div>
-</div>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       

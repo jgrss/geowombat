@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radiometry &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>Radiometry &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -26,8 +26,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="radiometry">
+<span id="id1"></span><h1>Radiometry<a class="headerlink" href="#radiometry" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data">
+<h2><cite>GeoWombat</cite> uses the global c-factor method to apply BRDF normalization on surface reflectance data<a class="headerlink" href="#geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data" title="Permalink to this headline">¶</a></h2>
+<p>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
+<span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
+
+<span class="c1"># Pixel angle images</span>
+<span class="n">solar_za</span> <span class="o">=</span> <span class="s1">&#39;solar_za.tif&#39;</span>
+<span class="n">solar_az</span> <span class="o">=</span> <span class="s1">&#39;solar_az.tif&#39;</span>
+<span class="n">sensor_za</span> <span class="o">=</span> <span class="s1">&#39;sensor_za.tif&#39;</span>
+<span class="n">sensor_az</span> <span class="o">=</span> <span class="s1">&#39;sensor_az.tif&#39;</span>
+
+<span class="c1"># Metadata file</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_MTL.txt&#39;</span>
+
+<span class="n">sr</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
+<span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
+
+<span class="c1"># Set global parameters</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">):</span>
+
+    <span class="c1"># Open the surface reflectance files</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B4.TIF&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B5.TIF&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B6.TIF&#39;</span><span class="p">],</span>
+                  <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span>
+                  <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">dn</span><span class="p">:</span>
+
+        <span class="c1"># Open the pixel angle files</span>
+        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">sza</span><span class="p">,</span>
+            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">saz</span><span class="p">,</span>
+                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vza</span><span class="p">,</span>
+                    <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vaz</span><span class="p">:</span>
+
+            <span class="c1"># DN --&gt; surface reflectance</span>
+            <span class="n">sr_data</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">dn_to_sr</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+
+            <span class="c1"># Normalize the surface reflectance</span>
+            <span class="n">brdf_data</span> <span class="o">=</span> <span class="n">brdf</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">sr_data</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">saz</span><span class="p">,</span> <span class="n">vza</span><span class="p">,</span> <span class="n">vaz</span><span class="p">,</span> <span class="n">wavelengths</span><span class="o">=</span><span class="n">dn</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+            <span class="c1"># Save the results to file</span>
+            <span class="n">brdf_data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;l8_sr_brdf.tif&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -111,69 +173,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="radiometry">
-<span id="id1"></span><h1>Radiometry<a class="headerlink" href="#radiometry" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data">
-<h2><cite>GeoWombat</cite> uses the global c-factor method to apply BRDF normalization on surface reflectance data<a class="headerlink" href="#geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data" title="Permalink to this headline">¶</a></h2>
-<p>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
-<span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
-<span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
-
-<span class="c1"># Pixel angle images</span>
-<span class="n">solar_za</span> <span class="o">=</span> <span class="s1">&#39;solar_za.tif&#39;</span>
-<span class="n">solar_az</span> <span class="o">=</span> <span class="s1">&#39;solar_az.tif&#39;</span>
-<span class="n">sensor_za</span> <span class="o">=</span> <span class="s1">&#39;sensor_za.tif&#39;</span>
-<span class="n">sensor_az</span> <span class="o">=</span> <span class="s1">&#39;sensor_az.tif&#39;</span>
-
-<span class="c1"># Metadata file</span>
-<span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_MTL.txt&#39;</span>
-
-<span class="n">sr</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
-<span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
-
-<span class="c1"># Set global parameters</span>
-<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">):</span>
-
-    <span class="c1"># Open the surface reflectance files</span>
-    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B4.TIF&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B5.TIF&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B6.TIF&#39;</span><span class="p">],</span>
-                  <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span>
-                  <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">dn</span><span class="p">:</span>
-
-        <span class="c1"># Open the pixel angle files</span>
-        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">sza</span><span class="p">,</span>
-            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">saz</span><span class="p">,</span>
-                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vza</span><span class="p">,</span>
-                    <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vaz</span><span class="p">:</span>
-
-            <span class="c1"># DN --&gt; surface reflectance</span>
-            <span class="n">sr_data</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">dn_to_sr</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
-
-            <span class="c1"># Normalize the surface reflectance</span>
-            <span class="n">brdf_data</span> <span class="o">=</span> <span class="n">brdf</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">sr_data</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">saz</span><span class="p">,</span> <span class="n">vza</span><span class="p">,</span> <span class="n">vaz</span><span class="p">,</span> <span class="n">wavelengths</span><span class="o">=</span><span class="n">dn</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-            <span class="c1"># Save the results to file</span>
-            <span class="n">brdf_data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;l8_sr_brdf.tif&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
