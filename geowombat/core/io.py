@@ -928,7 +928,9 @@ def to_raster(data,
                 ld = string.ascii_letters + string.digits
                 rstr = ''.join(random.choice(ld) for i in range(0, 9))
 
-                temp_file = d_name.joinpath(f'{f_base}_temp_{rstr}{f_ext}')
+                temp_file = d_name.joinpath('{f_base}_temp_{rstr}{f_ext}'.format(f_base=f_base,
+                                                                                 rstr=rstr,
+                                                                                 f_ext=f_ext))
 
                 compress_raster(filename,
                                 str(temp_file),
