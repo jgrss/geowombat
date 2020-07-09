@@ -1121,22 +1121,40 @@ class GeoDownloads(object):
             with open(out_file, 'wb') as f:
                 f.write(response.content)
 
-        mtl_id = f'{landsat_id}_MTL.txt'
-        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'
+        mtl_id = '{landsat_id}_MTL.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                  path=path,
+                                                                                  row=row,
+                                                                                  landsat_id=landsat_id,
+                                                                                  mtl_id=mtl_id)
+
         mtl_out = outdir / mtl_id
 
         _download_file(url, str(mtl_out))
 
-        angle_id = f'{landsat_id}_ANG.txt'
-        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'
+        angle_id = '{landsat_id}_ANG.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                    path=path,
+                                                                                    row=row,
+                                                                                    landsat_id=landsat_id,
+                                                                                    angle_id=angle_id)
+
         angle_out = outdir / angle_id
 
         _download_file(url, str(angle_out))
 
         for band in band_list:
 
-            band_id = f'{landsat_id}_{band.upper()}.TIF'
-            url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'
+            band_id = '{landsat_id}_{band}.TIF'.format(landsat_id=landsat_id,
+                                                       band=band.upper())
+
+            url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                       path=path,
+                                                                                       row=row,
+                                                                                       landsat_id=landsat_id,
+                                                                                       band_id=band_id)
             band_out = outdir / band_id
 
             _download_file(url, str(band_out))
