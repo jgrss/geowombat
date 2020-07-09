@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>coregister &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>coregister &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="polygons_to_points" href="geowombat.polygons_to_points.html" />
-    <link rel="prev" title="mask" href="geowombat.mask.html" />
+    <link rel="prev" title="recode" href="geowombat.recode.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -26,8 +26,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="coregister">
+<h1>coregister<a class="headerlink" href="#coregister" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.coregister">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">coregister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">reference</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.coregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Co-registers an image, or images, using AROSICS.</p>
+<p>While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
+Therefore, memory usage is constrained to the size of the input data. Dask is not used for any of the
+computation in this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>DataArray</em><em> or </em><em>str</em>) – The target <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or file name to co-register to <code class="docutils literal notranslate"><span class="pre">reference</span></code>.</p></li>
+<li><p><strong>reference</strong> (<em>DataArray</em><em> or </em><em>str</em>) – The reference <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or file name used to co-register <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">arosics</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Reference:</dt><dd><p><a class="reference external" href="https://pypi.org/project/arosics">https://pypi.org/project/arosics</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Co-register a single image to a reference image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;target.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;reference.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ref</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">coregister</span><span class="p">(</span><span class="n">tar</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">max_shift</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">CPUs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">coregister</span><span class="p">(</span><span class="s1">&#39;target.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;reference.tif&#39;</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">max_shift</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">CPUs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -87,7 +142,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.mask.html" title="previous chapter">mask</a></li>
+      <li>Previous: <a href="geowombat.recode.html" title="previous chapter">recode</a></li>
       <li>Next: <a href="geowombat.polygons_to_points.html" title="next chapter">polygons_to_points</a></li>
   </ul></li>
   </ul></li>
@@ -113,62 +168,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="coregister">
-<h1>coregister<a class="headerlink" href="#coregister" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.coregister">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">coregister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">reference</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.coregister" title="Permalink to this definition">¶</a></dt>
-<dd><p>Co-registers an image, or images, using AROSICS.</p>
-<p>While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
-Therefore, memory usage is constrained to the size of the input data. Dask is not used for any of the
-computation in this function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>target</strong> (<em>DataArray</em><em> or </em><em>str</em>) – The target <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or file name to co-register to <code class="docutils literal notranslate"><span class="pre">reference</span></code>.</p></li>
-<li><p><strong>reference</strong> (<em>DataArray</em><em> or </em><em>str</em>) – The reference <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or file name used to co-register <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">arosics</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="simple">
-<dt>Reference:</dt><dd><p><a class="reference external" href="https://pypi.org/project/arosics">https://pypi.org/project/arosics</a></p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Co-register a single image to a reference image</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;target.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;reference.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ref</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">coregister</span><span class="p">(</span><span class="n">tar</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">max_shift</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">CPUs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">coregister</span><span class="p">(</span><span class="s1">&#39;target.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;reference.tif&#39;</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">max_shift</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">CPUs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       

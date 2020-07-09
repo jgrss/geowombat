@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>extract &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>extract &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -26,8 +26,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="extract">
+<h1>extract<a class="headerlink" href="#extract" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.extract">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">extract</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">aoi</span></em>, <em class="sig-param"><span class="n">bands</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frac</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">id_column</span><span class="o">=</span><span class="default_value">'id'</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts data within an area or points of interest. Projections do not need to match,
+as they are handled ‘on-the-fly’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to extract data from.</p></li>
+<li><p><strong>aoi</strong> (<em>str</em><em> or </em><em>GeoDataFrame</em>) – A file or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to extract data frame.</p></li>
+<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>1d array-like</em><em>]</em>) – A band or list of bands to extract.
+If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).</p></li>
+<li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of band names. Length should be the same as <cite>bands</cite>.</p></li>
+<li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of time names.</p></li>
+<li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each polygon feature.</p></li>
+<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> argument is passed to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>id_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The id column name.</p></li>
+<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>GeoDataFrame</em><em> or </em><em>Shapely Polygon</em><em>]</em>) – A <code class="docutils literal notranslate"><span class="pre">shapely.geometry.Polygon</span></code> mask to subset to.</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of features to rasterize in parallel.</p></li>
+<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -113,59 +165,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="extract">
-<h1>extract<a class="headerlink" href="#extract" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.extract">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">extract</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">aoi</span></em>, <em class="sig-param"><span class="n">bands</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frac</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">id_column</span><span class="o">=</span><span class="default_value">'id'</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.extract" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts data within an area or points of interest. Projections do not need to match,
-as they are handled ‘on-the-fly’.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to extract data from.</p></li>
-<li><p><strong>aoi</strong> (<em>str</em><em> or </em><em>GeoDataFrame</em>) – A file or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to extract data frame.</p></li>
-<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>1d array-like</em><em>]</em>) – A band or list of bands to extract.
-If not given, all bands are used. Bands should be GDAL-indexed (i.e., the first band is 1, not 0).</p></li>
-<li><p><strong>band_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of band names. Length should be the same as <cite>bands</cite>.</p></li>
-<li><p><strong>time_names</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – A list of time names.</p></li>
-<li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each polygon feature.</p></li>
-<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> argument is passed to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
-<li><p><strong>id_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The id column name.</p></li>
-<li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>GeoDataFrame</em><em> or </em><em>Shapely Polygon</em><em>]</em>) – A <code class="docutils literal notranslate"><span class="pre">shapely.geometry.Polygon</span></code> mask to subset to.</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of features to rasterize in parallel.</p></li>
-<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;poly.gpkg&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       

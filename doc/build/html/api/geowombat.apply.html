@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>apply &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>apply &#8212; GeoWombat 1.2.21 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -26,8 +26,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="apply">
+<h1>apply<a class="headerlink" href="#apply" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.apply">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span></em>, <em class="sig-param"><span class="n">outfile</span></em>, <em class="sig-param"><span class="n">block_func</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">count</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">scheduler</span><span class="o">=</span><span class="default_value">'processes'</span></em>, <em class="sig-param"><span class="n">gdal_cache</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tags</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a function and writes results to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>infile</strong> (<em>str</em>) – The input file to process.</p></li>
+<li><p><strong>outfile</strong> (<em>str</em>) – The output file.</p></li>
+<li><p><strong>block_func</strong> (<em>func</em>) – The user function to apply to each block. The function should always return the window,
+the data, and at least one argument. The block data inside the function will be a 2d array if the
+input image has 1 band, otherwise a 3d array.</p></li>
+<li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Additional arguments to pass to <code class="docutils literal notranslate"><span class="pre">block_func</span></code>.</p></li>
+<li><p><strong>count</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The band count for the output file.</p></li>
+<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> scheduler to use. Choices are [‘threads’, ‘processes’].</p></li>
+<li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of blocks to process in parallel.</p></li>
+<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing output file.</p></li>
+<li><p><strong>tags</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Image tags to write to file.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.open</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with no arguments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func0</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with 1 argument</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func1</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func1</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -113,74 +180,8 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="apply">
-<h1>apply<a class="headerlink" href="#apply" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.apply">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span></em>, <em class="sig-param"><span class="n">outfile</span></em>, <em class="sig-param"><span class="n">block_func</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">count</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">scheduler</span><span class="o">=</span><span class="default_value">'processes'</span></em>, <em class="sig-param"><span class="n">gdal_cache</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tags</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.apply" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a function and writes results to file</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>infile</strong> (<em>str</em>) – The input file to process.</p></li>
-<li><p><strong>outfile</strong> (<em>str</em>) – The output file.</p></li>
-<li><p><strong>block_func</strong> (<em>func</em>) – The user function to apply to each block. The function should always return the window,
-the data, and at least one argument. The block data inside the function will be a 2d array if the
-input image has 1 band, otherwise a 3d array.</p></li>
-<li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Additional arguments to pass to <code class="docutils literal notranslate"><span class="pre">block_func</span></code>.</p></li>
-<li><p><strong>count</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The band count for the output file.</p></li>
-<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> scheduler to use. Choices are [‘threads’, ‘processes’].</p></li>
-<li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
-<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of blocks to process in parallel.</p></li>
-<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing output file.</p></li>
-<li><p><strong>tags</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Image tags to write to file.</p></li>
-<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.open</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with no arguments</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func0</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func0</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a function with 1 argument</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_func1</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>         <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">my_func1</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span>
-<span class="gp">&gt;&gt;&gt; </span>          <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
