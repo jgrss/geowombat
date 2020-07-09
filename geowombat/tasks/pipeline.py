@@ -154,7 +154,7 @@ class BaseGeoTask(ABC):
                 try:
                     fn.unlink()
                 except:
-                    logger.warning(f'  Could not remove task {task_id} output.')
+                    logger.warning('  Could not remove task {task_id} output.'.format(task_id=task_id))
 
     def _check_task(self, task_id):
         return True if Path(self.outputs[task_id]).is_file() else False
@@ -169,7 +169,7 @@ class BaseGeoTask(ABC):
 
         task_log = f"{when} | {task_output} | task_id-{random_id}"
 
-        return f'{task_log} ok\n' if self._check_task(task_id) else f'{task_log} failed\n'
+        return '{task_log} ok\n'.format(task_log=task_log) if self._check_task(task_id) else '{task_log} failed\n'.format(task_log=task_log)
 
     def _log_task(self, task_id):
 
@@ -220,7 +220,9 @@ class GraphBuilder(object):
             if task_id not in self.seen:
 
                 self.seen.add(task_id)
-                self.g.node(task_id, label=f'Task {task_id}: {task.__name__}', **PROC_NODE_ATTRS)
+                self.g.node(task_id, label='Task {task_id}: {task_name}'.format(task_id=task_id,
+                                                                                task_name=task.__name__),
+                            **PROC_NODE_ATTRS)
 
             if task_id != list(self.tasks)[0][0]:
 
@@ -243,7 +245,9 @@ class GraphBuilder(object):
                 with self.g.subgraph(name='cluster_0') as c:
 
                     c.attr(style='filled', color='lightgrey')
-                    c.node(config_key, label=f'{config_key}: {config_setting}', **CONFIG_NODE_ATTRS)
+                    c.node(config_key, label='{config_key}: {config_setting}'.format(config_key=config_key,
+                                                                                     config_setting=config_setting),
+                           **CONFIG_NODE_ATTRS)
                     c.attr(label='geowombat.config.update() args')
 
                 self.g.edge(config_key, list(self.tasks)[counter-1][0], **CONFIG_EDGE_ATTRS)
@@ -273,8 +277,13 @@ class GraphBuilder(object):
             node_attrs['style'] = 'dashed'
             edge_attrs['style'] = 'dashed'
 
-            self.g.node(f'{task_id} {self.outputs[task_id]}', label=self.outputs[task_id], **node_attrs)
-            self.g.edge(task_id, f'{task_id} {self.outputs[task_id]}', weight='200', **edge_attrs)
+            self.g.node('{task_id} {task_output}'.format(task_id=task_id,
+                                                         task_output=self.outputs[task_id]),
+                        label=self.outputs[task_id], **node_attrs)
+
+            self.g.edge(task_id, '{task_id} {task_output}'.format(task_id=task_id,
+                                                                  task_output=self.outputs[task_id]),
+                        weight='200', **edge_attrs)
 
             for out_key, out_setting in self.out_args.items():
 
@@ -283,17 +292,25 @@ class GraphBuilder(object):
                     with self.g.subgraph(name='cluster_1') as c:
 
                         c.attr(style='filled', color='#a6d5ab')
-                        c.node(out_key, label=f'{out_key}: {out_setting}', **OUT_NODE_ATTRS)
+                        c.node(out_key, label='{out_key}: {out_setting}'.format(out_key=out_key,
+                                                                                out_setting=out_setting),
+                               **OUT_NODE_ATTRS)
+
                         c.attr(label='geowombat.to_raster() args')
 
-                    self.g.edge(out_key, f'{task_id} {self.outputs[task_id]}', **OUT_EDGE_ATTRS)
+                    self.g.edge(out_key, '{task_id} {task_output}'.format(task_id=task_id,
+                                                                          task_output=self.outputs[task_id]),
+                                **OUT_EDGE_ATTRS)
 
             if counter > 0:
 
                 task_id_ = list(self.outputs.keys())[counter-1]
 
                 if not self.outputs[task_id_].startswith('mem|'):
-                    self.g.edge(f'{task_id_} {self.outputs[task_id_]}', task_id, weight='200', **edge_attrs)
+
+                    self.g.edge('{task_id_} {task_output}'.format(task_id_=task_id_,
+                                                                  task_output=self.outputs[task_id_]),
+                                task_id, weight='200', **edge_attrs)
 
             counter += 1
 
@@ -312,8 +329,8 @@ class GraphBuilder(object):
 
             for k, param in params.items():
 
-                self.g.node(f'{task_id} {k}', label=f'{k}: {param}', **VAR_NODE_ATTRS)
-                self.g.edge(f'{task_id} {k}', task_id, weight='200', **VAR_EDGE_ATTRS)
+                self.g.node('{task_id} {k}'.format(task_id=task_id, k=k), label='{k}: {param}'.format(k=k, param=param), **VAR_NODE_ATTRS)
+                self.g.edge('{task_id} {k}'.format(task_id=task_id, k=k), task_id, weight='200', **VAR_EDGE_ATTRS)
 
         return self.g
 
@@ -339,7 +356,9 @@ class GraphBuilder(object):
                         gen_label = Path(gen_item).name if Path(gen_item).is_file() else gen_item
 
                         if gen_item not in self.outputs:
-                            self.g.node(f'{task_id} {gen_item}', label=gen_label, **INPUT_NODE_ATTRS)
+
+                            self.g.node('{task_id} {gen_item}'.format(task_id=task_id, gen_item=gen_item),
+                                        label=gen_label, **INPUT_NODE_ATTRS)
 
                         task_id_b = task_id
 
@@ -355,7 +374,9 @@ class GraphBuilder(object):
                                 task_id_b = itask
                                 break
 
-                        self.g.edge(f'{task_id_b} {gen_item}', task_id, weight='200', **INPUT_EDGE_ATTRS)
+                        self.g.edge('{task_id_b} {gen_item}'.format(task_id_b=task_id_b,
+                                                                    gen_item=gen_item),
+                                    task_id, weight='200', **INPUT_EDGE_ATTRS)
 
 
 class GeoTask(BaseGeoTask, GraphBuilder):
