@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.22 ()
+---------
+
+Bug fixes
+~~~~~~~~~
+
+- Added missing 'l5' download flag.
+
 1.2.21 (8 July 2020)
 --------------------
 

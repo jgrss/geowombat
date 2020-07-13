@@ -148,7 +148,15 @@ class GeoDownloads(object):
                        swir1=11,
                        swir2=12)
 
-        self.associations = dict(l7=dict(blue=1,
+        self.associations = dict(l5=dict(blue=1,
+                                         green=2,
+                                         red=3,
+                                         nir=4,
+                                         swir1=5,
+                                         thermal=6,
+                                         swir2=7,
+                                         pan=8),
+                                 l7=dict(blue=1,
                                          green=2,
                                          red=3,
                                          nir=4,
@@ -324,7 +332,7 @@ class GeoDownloads(object):
 
         shp_dict = dict()
 
-        if ('l7' in sensors) or ('l8' in sensors):
+        if ('l5' in sensors) or ('l7' in sensors) or ('l8' in sensors):
 
             path_tar = Path(data_dir).joinpath('wrs2.tar.gz')
             path_shp = Path(data_dir).joinpath('wrs2_descending.shp')
