@@ -118,18 +118,18 @@ cdef void _fit(double[:, ::1] band_weights,
 
 
 cdef double _transform(double[:, ::1] band_weights,
-                          double[:, ::1] hres_k,
-                          double[:, ::1] mres_k,
-                          double[:, ::1] mres_0,
-                          double[:, ::1] dist_window,
-                          Py_ssize_t i,
-                          Py_ssize_t j,
-                          int w,
-                          int hw,
-                          double max_s,
-                          double max_t,
-                          double param_a,
-                          double param_b) nogil:
+                       double[:, ::1] hres_k,
+                       double[:, ::1] mres_k,
+                       double[:, ::1] mres_0,
+                       double[:, ::1] dist_window,
+                       Py_ssize_t i,
+                       Py_ssize_t j,
+                       int w,
+                       int hw,
+                       double max_s,
+                       double max_t,
+                       double param_a,
+                       double param_b) nogil:
 
     cdef:
         Py_ssize_t m2, n2
