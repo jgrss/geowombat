@@ -116,6 +116,13 @@ def get_extensions():
                                  sources=['geowombat/models/_crf.pyx'],
                                  language='c++')]
 
+    if Path('geowombat/radiometry/_starfm.pyx').is_file():
+
+        extensions += [Extension('*',
+                                 sources=['geowombat/radiometry/_starfm.pyx'],
+                                 extra_compile_args=['-fopenmp'],
+                                 extra_link_args=['-fopenmp'])]
+
     return extensions
 
 
