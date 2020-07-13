@@ -4,6 +4,7 @@ from .topo import Topo
 from .sr import LinearAdjustments, RadTransforms
 from .qa import QAMasker
 from .sharpen import pan_sharpen
+from ._starfm import StarFM
 
 __all__ = ['landsat_pixel_angles',
            'sentinel_pixel_angles',
@@ -12,4 +13,5 @@ __all__ = ['landsat_pixel_angles',
            'LinearAdjustments',
            'RadTransforms',
            'QAMasker',
-           'pan_sharpen']
+           'pan_sharpen',
+           'StarFM']
