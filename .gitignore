@@ -39,6 +39,7 @@ logo/
 bin/ESPA/
 geowombat/tasks
 geowombat/radiometry/sharpen.py
+geowombat/radiometry/*starfm*
 geowombat/radiometry/haze.py
 
 # Notebooks
