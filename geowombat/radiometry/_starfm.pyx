@@ -16,6 +16,10 @@ from cython.parallel import parallel
 
 
 cdef extern from 'math.h':
+   double exp(double val) nogil
+
+
+cdef extern from 'math.h':
    double log(double val) nogil
 
 
@@ -47,6 +51,91 @@ cdef inline int _get_cindex(int col_dims, Py_ssize_t index, int row_index) nogil
     return <int>(index - <double>col_dims * row_index)
 
 
+cdef inline double _logistic_scaler(double x, double xmin, double xmax) nogil:
+    return 1.0 - (1.0 / (1.0 + exp(25.0 * ((x - xmin) / (xmax - xmin)) - 7.5)))
+
+
+cdef void _std(double[:, ::1] data1,
+               double[:, ::1] data2,
+               double[:, :, ::1] res_std,
+               double[:, ::1] dist_window,
+               Py_ssize_t i,
+               Py_ssize_t j,
+               unsigned int w,
+               int hw,
+               unsigned int nrows) nogil:
+
+    """
+    Calculates the local window standard deviation
+    """
+
+    cdef:
+        Py_ssize_t i0, j0
+        double v1, v2, data_std1, data_std2
+        double data_mean1 = 0.0
+        double data_mean2 = 0.0
+        double data_var1 = 0.0
+        double data_var2 = 0.0
+        unsigned int data_n1 = 0
+        unsigned int data_n2 = 0
+
+    for i0 in range(0, w):
+        for j0 in range(0, w):
+
+            if dist_window[i0, j0] != -1:
+
+                v1 = data1[i+i0, j+j0]
+                v2 = data2[i+i0, j+j0]
+
+                if v1 != 0:
+                    data_mean1 += v1
+                    data_n1 += 1
+
+                if v2 != 0:
+                    data_mean2 += v2
+                    data_n2 += 1
+
+    data_mean1 /= <double>data_n1
+    data_mean2 /= <double>data_n2
+
+    for i0 in range(0, w):
+        for j0 in range(0, w):
+
+            if dist_window[i0, j0] != -1:
+
+                v1 = data1[i+i0, j+j0]
+                v2 = data2[i+i0, j+j0]
+
+                if v1 != 0:
+                    data_var1 += (v1 - data_mean1)**2
+
+                if v2 != 0:
+                    data_var2 += (v2 - data_mean2)**2
+
+    data_var1 /= <double>data_n1
+    data_var2 /= <double>data_n2
+
+    data_std1 = sqrt(data_var1)
+    data_std2 = sqrt(data_var2)
+
+    res_std[0, i+hw, j+hw] = data_std1
+    res_std[1, i+hw, j+hw] = data_std2
+
+    # Minimum
+    if data_std1 < res_std[0, nrows, 0]:
+        res_std[0, nrows, 0] = data_std1
+
+    if data_std2 < res_std[1, nrows, 0]:
+        res_std[1, nrows, 0] = data_std2
+
+    # Maximum
+    if data_std1 > res_std[0, nrows, 1]:
+        res_std[0, nrows, 1] = data_std1
+
+    if data_std2 > res_std[1, nrows, 1]:
+        res_std[1, nrows, 1] = data_std2
+
+
 cdef void _fit(double[:, ::1] band_weights,
                double[:, ::1] hres_k,
                double[:, ::1] mres_k,
@@ -56,8 +145,8 @@ cdef void _fit(double[:, ::1] band_weights,
                Py_ssize_t j,
                int w,
                int hw,
-               double max_s,
-               double max_t,
+               double sensor_uncert,
+               double temp_uncert,
                double param_a,
                double param_b) nogil:
 
@@ -65,6 +154,10 @@ cdef void _fit(double[:, ::1] band_weights,
         Py_ssize_t m1, n1, m2, n2
         double sp_dist, tp_dist, sw_dist, weight, comb_score
         double comb_sum = 0.0
+        double max_s, max_t
+
+    max_s = fabs(hres_k[i+hw, j+hw] - mres_k[i+hw, j+hw]) + sensor_uncert + 1.0
+    max_t = fabs(mres_k[i+hw, j+hw] - mres_0[i+hw, j+hw]) + temp_uncert + 1.0
 
     for m1 in range(0, w):
         for n1 in range(0, w):
@@ -126,8 +219,8 @@ cdef double _transform(double[:, ::1] band_weights,
                        Py_ssize_t j,
                        int w,
                        int hw,
-                       double max_s,
-                       double max_t,
+                       double sensor_uncert,
+                       double temp_uncert,
                        double param_a,
                        double param_b) nogil:
 
@@ -135,6 +228,10 @@ cdef double _transform(double[:, ::1] band_weights,
         Py_ssize_t m2, n2
         double sp_dist, tp_dist, weight
         double pred = 0.0
+        double max_s, max_t
+
+    max_s = fabs(hres_k[i+hw, j+hw] - mres_k[i+hw, j+hw]) + sensor_uncert + 1.0
+    max_t = fabs(mres_k[i+hw, j+hw] - mres_0[i+hw, j+hw]) + temp_uncert + 1.0
 
     for m2 in range(0, w):
         for n2 in range(0, w):
@@ -159,73 +256,136 @@ cdef double _transform(double[:, ::1] band_weights,
 cdef double _fit_transform(double[:, ::1] hres_k,
                            double[:, ::1] mres_k,
                            double[:, ::1] mres_0,
+                           double[:, ::1] hres_k_sim,
+                           double[:, ::1] mres_k_sim,
                            double[:, ::1] dist_window,
+                           double[:, :, ::1] std_stack,
+                           double[::1] abs_dev_k,
+                           double[::1] abs_dev_0,
                            Py_ssize_t i,
                            Py_ssize_t j,
-                           int w,
+                           unsigned int nrows,
+                           unsigned int w,
                            int hw,
-                           double max_s,
-                           double max_t,
+                           double sensor_uncert,
+                           double temp_uncert,
                            double param_a,
-                           double param_b) nogil:
+                           double param_b,
+                           int param_n) nogil:
 
     cdef:
         Py_ssize_t m1, n1, m2, n2
-        double sp_dist, tp_dist, sw_dist, weight, comb_score
+        double sp_dist, tp_dist, sw_dist, weight, fweight
         double comb_sum = 0.0
         double pred = 0.0
+        double mres_k_std_dist, mres_0_std_dist
+        double hres_sim
+
+        double hres_k_sim_thresh = 2.0 * std_stack[0, i+hw, j+hw] / <double>param_n
 
     for m1 in range(0, w):
         for n1 in range(0, w):
 
-            if (hres_k[i+m1, j+n1] > 0) and (mres_k[i+m1, j+n1] > 0) and (mres_0[i+m1, j+n1] > 0):
+            # Stay within the circle
+            if dist_window[m1, n1] != -1:
 
-                # Spectral distance
-                sp_dist = fabs(hres_k[i+m1, j+n1] - mres_k[i+m1, j+n1]) + 1.0
+                if (hres_k[i+m1, j+n1] > 0) and (mres_k[i+m1, j+n1] > 0) and (mres_0[i+m1, j+n1] > 0):
 
-                # Temporal distance
-                tp_dist = fabs(mres_0[i+m1, j+n1] - mres_k[i+m1, j+n1]) + 1.0
+                    # Spectral distance
+                    sp_dist = fabs(hres_k[i+m1, j+n1] - mres_k[i+m1, j+n1])
+                    # sp_dist = _logistic_scaler(fabs(hres_k[i+m1, j+n1] - mres_k[i+m1, j+n1]), abs_dev_k[0], abs_dev_k[1])
 
-                if (sp_dist < max_s) and (tp_dist < max_t):
+                    # Temporal distance
+                    tp_dist = fabs(mres_0[i+m1, j+n1] - mres_k[i+m1, j+n1])
+                    # tp_dist = _logistic_scaler(fabs(mres_0[i+m1, j+n1] - mres_k[i+m1, j+n1]), abs_dev_0[0], abs_dev_0[1])
 
-                    # Spatial distance
-                    sw_dist = 1.0 + dist_window[m1, n1] / param_a
-                    # sw_dist = dist_window[m1, n1]
+                    # Similarity test (|current value - center value|)
+                    hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
 
-                    # Combine weights
-                    # TODO: add log option
-                    # comb_sum += (1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist))
-                    comb_sum += (1.0 / (sp_dist * tp_dist * sw_dist))
+                    # Weight for local heterogeneity (high=1)
+                    mres_k_std_dist = _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1]) + 0.01
+                    mres_0_std_dist = _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1]) + 0.01
+
+                    if hres_sim <= hres_k_sim_thresh:
+
+                        # Spatial distance
+                        sw_dist = 1.0 + dist_window[m1, n1] / param_a
+                        # sw_dist = _logistic_scaler(dist_window[m1, n1], 0.0, <double>hw) / param_a
+
+                        weight = sp_dist * tp_dist * sw_dist * mres_k_std_dist * mres_0_std_dist
+
+                        # Combine weights
+                        # TODO: add log option
+                        # comb_sum += (1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist))
+                        if weight == 0:
+                            comb_sum += 1.0
+                        else:
+                            comb_sum += (1.0 / weight)
+                        # comb_sum += (1.0 / (1.0 - weight))
 
     if comb_sum > 0:
 
         for m2 in range(0, w):
             for n2 in range(0, w):
 
-                if (hres_k[i+m2, j+n2] > 0) and (mres_k[i+m2, j+n2] > 0) and (mres_0[i+m2, j+n2] > 0):
+                if dist_window[m2, n2] != -1:
 
-                    # Spectral distance
-                    sp_dist = fabs(hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]) + 1.0
+                    if (hres_k[i+m2, j+n2] > 0) and (mres_k[i+m2, j+n2] > 0) and (mres_0[i+m2, j+n2] > 0):
 
-                    # Temporal distance
-                    tp_dist = fabs(mres_0[i+m2, j+n2] - mres_k[i+m2, j+n2]) + 1.0
+                        # Spectral distance
+                        sp_dist = fabs(hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2])
+                        # sp_dist = _logistic_scaler(fabs(hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]), abs_dev_k[0], abs_dev_k[1])
 
-                    if (sp_dist < max_s) and (tp_dist < max_t):
+                        # Temporal distance
+                        tp_dist = fabs(mres_0[i+m2, j+n2] - mres_k[i+m2, j+n2])
+                        # tp_dist = _logistic_scaler(fabs(mres_0[i+m2, j+n2] - mres_k[i+m2, j+n2]), abs_dev_0[0], abs_dev_0[1])
 
-                        # Spatial distance
-                        sw_dist = 1.0 + dist_window[m2, n2] / param_a
-                        # sw_dist = dist_window[m1, n1]
+                        # Similarity test (|current value - center value|)
+                        hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
 
-                        # Combine weights
-                        # TODO: add log option
-                        # comb_score = 1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist)
-                        comb_score = 1.0 / (sp_dist * tp_dist * sw_dist)
+                        # Weight for local heterogeneity (high=1)
+                        mres_k_std_dist = _logistic_scaler(std_stack[0, i+m2, j+n2], std_stack[0, nrows, 0], std_stack[0, nrows, 1]) + 0.01
+                        mres_0_std_dist = _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1]) + 0.01
 
-                        weight = comb_score / comb_sum
+                        if hres_sim <= hres_k_sim_thresh:
 
-                        pred += (weight * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+                            # Spatial distance
+                            sw_dist = 1.0 + dist_window[m2, n2] / param_a
+                            # sw_dist = _logistic_scaler(dist_window[m2, n2], 0.0, <double>hw) / param_a
+
+                            weight = sp_dist * tp_dist * sw_dist * mres_k_std_dist * mres_0_std_dist
+
+                            # Combine weights
+                            # TODO: add log option
+                            # comb_score = 1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist)
+                            if weight == 0:
+                                comb_score = 1.0
+                            else:
+                                comb_score = 1.0 / weight
+
+                            fweight = comb_score / comb_sum
+
+                            pred += (fweight * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
 
     return pred
+
+
+cdef void _create_dist_window(double[:, ::1] dist_window_,
+                              unsigned int window_size,
+                              unsigned int hw) nogil:
+
+    cdef:
+        Py_ssize_t m0, n0
+
+    for m0 in range(0, window_size):
+        for n0 in range(0, window_size):
+            dist_window_[m0, n0] = sqrt((<double>m0 - <double>hw)**2 + (<double>n0 - <double>hw)**2)
+
+    # Create circular window (-1 are outside the radius)
+    for m0 in range(0, window_size):
+        for n0 in range(0, window_size):
+            if dist_window_[m0, n0] > hw:
+                dist_window_[m0, n0] = -1
 
 
 cdef class StarFM(object):
@@ -236,6 +396,7 @@ cdef class StarFM(object):
         double mres_uncert_
         double param_a_
         double param_b_
+        int param_n_
         unsigned int n_jobs_
 
     def __init__(self, 
@@ -244,6 +405,7 @@ cdef class StarFM(object):
                  double mres_uncert=0.003,
                  double param_a=1.0,
                  double param_b=1.0,
+                 int param_n=2,
                  unsigned int n_jobs=1):
 
         self.window_size_ = window_size
@@ -251,6 +413,7 @@ cdef class StarFM(object):
         self.mres_uncert_ = mres_uncert
         self.param_a_ = param_a
         self.param_b_ = param_b
+        self.param_n_ = param_n
         self.n_jobs_ = n_jobs
     
     def fit(self,
@@ -277,7 +440,7 @@ cdef class StarFM(object):
             unsigned int nsamples = <int>(row_dims * col_dims)
             double[:, ::1] dist_window = np.zeros((window_size, window_size), dtype='float64')
             double[:, ::1] output = np.zeros((int(rows*window_size), int(cols*window_size)), dtype='float64')
-            double sensor_uncert, temp_uncert, max_s, max_t
+            double sensor_uncert, temp_uncert
 
         with nogil:
     
@@ -287,10 +450,7 @@ cdef class StarFM(object):
             for m0 in range(0, window_size):
                 for n0 in range(0, window_size):
                     dist_window[m0, n0] = sqrt((<double>m0 - <double>hw)**2 + (<double>n0 - <double>hw)**2)
-    
-        max_s = (np.abs(np.float64(hres_k) - np.float64(mres_k)) + sensor_uncert).max() + 1.0
-        max_t = (np.fabs(np.float64(mres_k) - np.float64(mres_0)) + temp_uncert).max() + 1.0
-    
+
         with nogil, parallel(num_threads=n_jobs):
     
             for f in prange(0, nsamples, schedule='static'):
@@ -307,8 +467,8 @@ cdef class StarFM(object):
                      j,
                      window_size,
                      hw,
-                     max_s,
-                     max_t,
+                     sensor_uncert,
+                     temp_uncert,
                      param_a,
                      param_b)
     
@@ -339,7 +499,7 @@ cdef class StarFM(object):
             unsigned int nsamples = <int>(row_dims * col_dims)
             double[:, ::1] dist_window = np.zeros((window_size, window_size), dtype='float64')
             double[:, ::1] output = np.zeros((rows, cols), dtype='float64')
-            double sensor_uncert, temp_uncert, max_s, max_t
+            double sensor_uncert, temp_uncert
 
         with nogil:
 
@@ -349,9 +509,6 @@ cdef class StarFM(object):
             for m0 in range(0, window_size):
                 for n0 in range(0, window_size):
                     dist_window[m0, n0] = sqrt((<double>m0 - <double>hw)**2 + (<double>n0 - <double>hw)**2)
-
-        max_s = (np.abs(np.float64(hres_k) - np.float64(mres_k)) + sensor_uncert).max() + 1.0
-        max_t = (np.fabs(np.float64(mres_k) - np.float64(mres_0)) + temp_uncert).max() + 1.0
 
         with nogil, parallel(num_threads=n_jobs):
 
@@ -369,8 +526,8 @@ cdef class StarFM(object):
                                                 j,
                                                 window_size,
                                                 hw,
-                                                max_s,
-                                                max_t,
+                                                sensor_uncert,
+                                                temp_uncert,
                                                 param_a,
                                                 param_b)
 
@@ -379,7 +536,9 @@ cdef class StarFM(object):
     def fit_transform(self,
                       double[:, ::1] hres_k not None,
                       double[:, ::1] mres_k not None,
-                      double[:, ::1] mres_0 not None):
+                      double[:, ::1] mres_0 not None,
+                      double[:, ::1] hres_k_sim not None,
+                      double[:, ::1] mres_k_sim not None):
 
         cdef:
 
@@ -388,6 +547,7 @@ cdef class StarFM(object):
             double mres_uncert = self.mres_uncert_
             double param_a = self.param_a_
             double param_b = self.param_b_
+            int param_n = self.param_n_
             unsigned int n_jobs = self.n_jobs_
 
             Py_ssize_t f, m0, n0
@@ -400,20 +560,48 @@ cdef class StarFM(object):
             unsigned int nsamples = <int>(row_dims * col_dims)
             double[:, ::1] dist_window = np.zeros((window_size, window_size), dtype='float64')
             double[:, ::1] output = np.zeros((rows, cols), dtype='float64')
-            double sensor_uncert, temp_uncert, max_s, max_t
+            double sensor_uncert, temp_uncert
 
+            double[::1] abs_dev_k = np.zeros(2, dtype='float64')
+            double[::1] abs_dev_0 = np.zeros(2, dtype='float64')
+
+            double[:, :, ::1] std_stack = np.zeros((2, rows+1, cols), dtype='float64')
+
+        # Calculate the similarity threshold
+        # hres_k_sim_thresh = 2.0 * (np.array(hres_k_sim).std() / param_n)
+        # mres_k_sim_thresh = 2.0 * (np.array(mres_k_sim).std() / param_n)
+
+        # Calculate the maximum deviations
+        abs_dev_k[0] = np.abs(np.array(hres_k) - np.array(mres_k)).min()
+        abs_dev_k[1] = np.abs(np.array(hres_k) - np.array(mres_k)).max()
+        abs_dev_0[0] = np.abs(np.array(mres_0) - np.array(mres_k)).min()
+        abs_dev_0[1] = np.abs(np.array(mres_0) - np.array(mres_k)).max()
+
+        # Create the distance window
         with nogil:
 
-            sensor_uncert = sqrt(hres_uncert ** 2 + mres_uncert ** 2)
-            temp_uncert = sqrt(2.0 * mres_uncert ** 2)
+            sensor_uncert = sqrt(hres_uncert**2 + mres_uncert**2)
+            temp_uncert = sqrt(2.0 * mres_uncert**2)
 
-            for m0 in range(0, window_size):
-                for n0 in range(0, window_size):
-                    dist_window[m0, n0] = sqrt((<double>m0 - <double>hw)**2 + (<double>n0 - <double>hw)**2)
+            _create_dist_window(dist_window,
+                                window_size,
+                                hw)
 
-        max_s = (np.abs(np.float64(hres_k) - np.float64(mres_k)) + sensor_uncert).max() + 1.0
-        max_t = (np.fabs(np.float64(mres_k) - np.float64(mres_0)) + temp_uncert).max() + 1.0
+        # Set the minimum
+        std_stack[0, rows, 0] = 1e9
+        std_stack[1, rows, 0] = 1e9
 
+        # Standard deviation
+        with nogil, parallel(num_threads=n_jobs):
+
+            for f in prange(0, nsamples, schedule='static'):
+
+                i = _get_rindex(col_dims, f)
+                j = _get_cindex(col_dims, f, i)
+
+                _std(mres_k, mres_0, std_stack, dist_window, i, j, window_size, hw, rows)
+
+        # StarFM
         with nogil, parallel(num_threads=n_jobs):
 
             for f in prange(0, nsamples, schedule='static'):
@@ -424,14 +612,21 @@ cdef class StarFM(object):
                 output[i+hw, j+hw] = _fit_transform(hres_k,
                                                     mres_k,
                                                     mres_0,
+                                                    hres_k_sim,
+                                                    mres_k_sim,
                                                     dist_window,
+                                                    std_stack,
+                                                    abs_dev_k,
+                                                    abs_dev_0,
                                                     i,
                                                     j,
+                                                    rows,
                                                     window_size,
                                                     hw,
-                                                    max_s,
-                                                    max_t,
+                                                    sensor_uncert,
+                                                    temp_uncert,
                                                     param_a,
-                                                    param_b)
+                                                    param_b,
+                                                    param_n)
 
-        return np.float64(output)
+        return np.float64(output), np.float64(std_stack[0, :rows, :])
