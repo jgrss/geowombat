@@ -1,4 +1,5 @@
 import os
+import shutil
 import fnmatch
 import tarfile
 import subprocess
@@ -48,6 +49,7 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
 
 
 def _rmdir(pathdir):
+
     for child in pathdir.iterdir():
 
         if child.is_file():
@@ -60,10 +62,15 @@ def _rmdir(pathdir):
     try:
         pathdir.rmdir()
     except:
-        pass
+
+        try:
+            shutil.rmtree(str(pathdir))
+        except:
+            pass
 
 
 def _assign_attrs(data, attrs, bands_out):
+
     if bands_out:
         data = data.sel(band=bands_out)
 
@@ -74,6 +81,7 @@ def _assign_attrs(data, attrs, bands_out):
 
 
 def _random_id(string_length):
+
     """
     Generates a random string of letters and digits
     """
@@ -272,6 +280,7 @@ class GeoDownloads(object):
         #               overwrite=False)
 
         if not lqa_mask_items:
+
             lqa_mask_items = ['fill',
                               'saturated',
                               'cloudconf',
@@ -283,7 +292,7 @@ class GeoDownloads(object):
 
         nodataval = kwargs['nodata'] if 'nodata' in kwargs else 65535
 
-        angle_infos = dict()
+        angle_infos = {}
 
         rt = RadTransforms()
         br = BRDF()
@@ -292,11 +301,8 @@ class GeoDownloads(object):
         main_path = Path(outdir)
         outdir_brdf = main_path.joinpath('brdf')
 
-        if not main_path.is_dir():
-            main_path.mkdir()
-
-        if not outdir_brdf.is_dir():
-            outdir_brdf.mkdir()
+        main_path.mkdir(parents=True, exist_ok=True)
+        outdir_brdf.mkdir(parents=True, exist_ok=True)
 
         if isinstance(sensors, str):
             sensors = [sensors]
@@ -304,11 +310,13 @@ class GeoDownloads(object):
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
+
             with open(status.as_posix(), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
+
             bounds = Polygon([(bounds[0], bounds[3]),  # upper left
                               (bounds[2], bounds[3]),  # upper right
                               (bounds[2], bounds[1]),  # lower right
@@ -322,6 +330,7 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
+
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -330,7 +339,7 @@ class GeoDownloads(object):
 
         data_dir = Path(data_bin).joinpath('../data')
 
-        shp_dict = dict()
+        shp_dict = {}
 
         if ('l5' in sensors) or ('l7' in sensors) or ('l8' in sensors):
 
@@ -339,6 +348,7 @@ class GeoDownloads(object):
             wrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
+
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -358,6 +368,7 @@ class GeoDownloads(object):
             mgrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
+
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -374,7 +385,7 @@ class GeoDownloads(object):
         dt2 = datetime.strptime(date_range[1], '%Y-%m')
 
         months = list(range(1, 13))
-        year_months = dict()
+        year_months = {}
 
         if dt1.month <= dt2.month:
             month_range = months[months.index(dt1.month):months.index(dt2.month) + 1]
