@@ -73,6 +73,29 @@ def _rmdir(pathdir):
                 pass
 
 
+def _delayed_read(fn):
+
+    attempt = 0
+    max_attempts = 10
+
+    while True:
+
+        if Path(fn).is_file():
+            break
+        else:
+            time.sleep(2)
+
+        attempt += 1
+
+        if attempt >= max_attempts:
+            break
+
+    with open(str(fn), mode='r') as tx:
+        lines = tx.readlines()
+
+    return lines
+
+
 def _update_status_file(fn, log_name):
 
     attempt = 0
@@ -1145,8 +1168,7 @@ class GeoDownloads(object):
 
                     if continue_download:
 
-                        with open(check_file, mode='r') as tx:
-                            lines = tx.readlines()
+                        lines = _delayed_read(check_file)
 
                         if sensor.lower() in ['l5', 'l7', 'l8']:
 
