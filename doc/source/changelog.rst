@@ -11,6 +11,11 @@ Bug fixes
 
 - Added missing 'l5' download flag.
 
+Enhancements
+~~~~~~~~~~~~
+
+- Added 'l5' to :func:`geowombat.radiometry.sr.bandpass`.
+
 1.2.21 (8 July 2020)
 --------------------
 
