@@ -1130,9 +1130,17 @@ class GeoDownloads(object):
                     with open(check_file, mode='r') as tx:
                         lines = tx.readlines()
 
-                    if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
-                        null_items.append(fbase)
-                        continue_download = False
+                    if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                        if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                            null_items.append(fbase)
+                            continue_download = False
+
+                    else:
+
+                        if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
+                            null_items.append(fbase)
+                            continue_download = False
 
                 if continue_download:
 
