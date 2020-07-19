@@ -52,23 +52,25 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
 
 def _rmdir(pathdir):
 
-    for child in pathdir.iterdir():
+    if pathdir.is_dir():
 
-        if child.is_file():
+        for child in pathdir.iterdir():
 
-            try:
-                child.unlink()
-            except:
-                pass
+            if child.is_file():
 
-    try:
-        pathdir.rmdir()
-    except:
+                try:
+                    child.unlink()
+                except:
+                    pass
 
         try:
-            shutil.rmtree(str(pathdir))
+            pathdir.rmdir()
         except:
-            pass
+
+            try:
+                shutil.rmtree(str(pathdir))
+            except:
+                pass
 
 
 def _update_status_file(fn, log_name):
@@ -110,7 +112,9 @@ def _update_status_file(fn, log_name):
     with open(str(fn), mode='r') as tx:
 
         lines = tx.readlines()
-        lines = list(set(lines))
+
+        if lines:
+            lines = list(set(lines))
 
         if log_name + '\n' not in lines:
             lines.append(log_name + '\n')
@@ -119,6 +123,20 @@ def _update_status_file(fn, log_name):
 
     with open(str(fn), mode='w') as tx:
         tx.writelines(lines)
+
+
+def _clean_and_update(status, outdir_angles, finfo_dict):
+
+    _rmdir(outdir_angles)
+
+    for k, v in finfo_dict.items():
+
+        try:
+            Path(v.name).unlink()
+        except:
+            pass
+
+    _update_status_file(status, finfo_dict['meta'].name)
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -580,19 +598,18 @@ class GeoDownloads(object):
                             out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
                             out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
-                            if out_brdf.is_file():
-                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                                continue
-
-                            # with open(str(status), mode='r') as tx:
-                            #     lines = tx.readlines()
-
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+
+                            if out_brdf.is_file():
+
+                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+
+                                _clean_and_update(status, outdir_angles, finfo_dict)
+
+                                continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
@@ -602,7 +619,7 @@ class GeoDownloads(object):
 
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
-                                                                   outdir_angles.as_posix(),
+                                                                   str(outdir_angles),
                                                                    nodata=-32768,
                                                                    overwrite=False,
                                                                    verbose=1)
@@ -630,7 +647,7 @@ class GeoDownloads(object):
 
                                 angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
                                                                   ref_file,
-                                                                  outdir_angles.as_posix(),
+                                                                  str(outdir_angles),
                                                                   meta.sensor,
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
@@ -876,16 +893,7 @@ class GeoDownloads(object):
 
                             angle_infos[finfo_key] = angle_info
 
-                            _rmdir(outdir_angles)
-
-                            for k, v in finfo_dict.items():
-
-                                try:
-                                    Path(v.name).unlink()
-                                except:
-                                    pass
-
-                            _update_status_file(status, finfo_dict['meta'].name)
+                            _clean_and_update(status, outdir_angles, finfo_dict)
 
             year += 1
 
