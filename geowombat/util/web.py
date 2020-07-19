@@ -125,18 +125,21 @@ def _update_status_file(fn, log_name):
         tx.writelines(lines)
 
 
-def _clean_and_update(status, outdir_angles, finfo_dict):
+def _clean_and_update(status, outdir_angles, finfo_dict, meta_name, check_angles=True, check_downloads=True):
 
-    _rmdir(outdir_angles)
+    if check_angles:
+        _rmdir(outdir_angles)
 
-    for k, v in finfo_dict.items():
+    if check_downloads:
 
-        try:
-            Path(v.name).unlink()
-        except:
-            pass
+        for k, v in finfo_dict.items():
 
-    _update_status_file(status, finfo_dict['meta'].name)
+            try:
+                Path(v.name).unlink()
+            except:
+                pass
+
+    _update_status_file(status, meta_name)
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -339,16 +342,6 @@ class GeoDownloads(object):
             >>>                   n_threads=8)
         """
 
-        # TODO: parameterize
-        # kwargs = dict(readxsize=1024,
-        #               readysize=1024,
-        #               verbose=1,
-        #               separate=False,
-        #               n_workers=1,
-        #               n_threads=8,
-        #               n_chunks=100,
-        #               overwrite=False)
-
         if not lqa_mask_items:
 
             lqa_mask_items = ['fill',
@@ -356,6 +349,9 @@ class GeoDownloads(object):
                               'cloudconf',
                               'shadowconf',
                               'cirrusconf']
+
+        if isinstance(sensors, str):
+            sensors = [sensors]
 
         angle_kwargs = kwargs.copy()
         angle_kwargs['nodata'] = -32768
@@ -374,9 +370,7 @@ class GeoDownloads(object):
         main_path.mkdir(parents=True, exist_ok=True)
         outdir_brdf.mkdir(parents=True, exist_ok=True)
 
-        if isinstance(sensors, str):
-            sensors = [sensors]
-
+        # Logging file
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
@@ -541,6 +535,7 @@ class GeoDownloads(object):
 
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
+                                                          outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
                                                           verbose=1)
@@ -581,6 +576,7 @@ class GeoDownloads(object):
 
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
+                                                          outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
                                                           verbose=1)
@@ -607,7 +603,7 @@ class GeoDownloads(object):
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
 
-                                _clean_and_update(status, outdir_angles, finfo_dict)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
 
                                 continue
 
@@ -893,7 +889,7 @@ class GeoDownloads(object):
 
                             angle_infos[finfo_key] = angle_info
 
-                            _clean_and_update(status, outdir_angles, finfo_dict)
+                            _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
 
             year += 1
 
@@ -1014,6 +1010,7 @@ class GeoDownloads(object):
                      sensor,
                      downloads=None,
                      outdir='.',
+                     outdir_brdf=None,
                      search_wildcards=None,
                      search_dict=None,
                      check_file=None,
@@ -1026,7 +1023,8 @@ class GeoDownloads(object):
             sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2a', 's2c'].
             downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
                 from ``search_dict`` or ``self.search_dict``.
-            outdir (Optional[str]): The output directory.
+            outdir (Optional[str | Path]): The output directory.
+            outdir_brdf (Optional[Path]): The output directory.
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
             check_file (Optional[str]): A status file to check.
@@ -1039,8 +1037,7 @@ class GeoDownloads(object):
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception(
-                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -1127,20 +1124,37 @@ class GeoDownloads(object):
 
                 if continue_download and check_file:
 
-                    with open(check_file, mode='r') as tx:
-                        lines = tx.readlines()
+                    if key == 'meta':
 
-                    if sensor.lower() in ['l5', 'l7', 'l8']:
+                        brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
 
-                        if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                        out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+
+                        if out_brdf.is_file():
+
+                            logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+
+                            _clean_and_update(check_file, None, None, down_file, check_angles=False, check_downloads=False)
+
                             null_items.append(fbase)
                             continue_download = False
 
-                    else:
+                    if continue_download:
 
-                        if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                            null_items.append(fbase)
-                            continue_download = False
+                        with open(check_file, mode='r') as tx:
+                            lines = tx.readlines()
+
+                        if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                            if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                                null_items.append(fbase)
+                                continue_download = False
+
+                        else:
+
+                            if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
+                                null_items.append(fbase)
+                                continue_download = False
 
                 if continue_download:
 
