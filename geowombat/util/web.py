@@ -110,7 +110,10 @@ def _update_status_file(fn, log_name):
     with open(str(fn), mode='r') as tx:
 
         lines = tx.readlines()
-        lines.append(log_name + '\n')
+        lines = list(set(lines))
+
+        if log_name + '\n' not in lines:
+            lines.append(log_name + '\n')
 
     fn.unlink()
 
@@ -574,10 +577,10 @@ class GeoDownloads(object):
 
                             logger.info('  Processing {} ...'.format(brdfp))
 
-                            out_brdf = outdir_brdf.joinpath(brdfp + '.tif').as_posix()
-                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif').as_posix()
+                            out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
-                            if os.path.isfile(out_brdf):
+                            if out_brdf.is_file():
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
                                 continue
 
@@ -829,7 +832,7 @@ class GeoDownloads(object):
                                                                        nodataval).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                             else:
 
@@ -852,7 +855,7 @@ class GeoDownloads(object):
                                                                        nodataval).astype('uint16')
 
                                                     sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                    sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         else:
 
@@ -863,13 +866,13 @@ class GeoDownloads(object):
                                                                             'uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                            sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         if write_angle_files:
                                             
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
-                                            angle_stack.gw.to_raster(out_angles, **angle_kwargs)
+                                            angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
 
                             angle_infos[finfo_key] = angle_info
 
