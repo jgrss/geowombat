@@ -16,3 +16,4 @@ h5netcdf
 netCDF4
 scikit-learn
 deprecated
+psutil
