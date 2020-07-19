@@ -107,10 +107,14 @@ def _update_status_file(fn, log_name):
         if attempt >= max_attempts:
             break
 
-    with open(str(fn), mode='r+') as tx:
+    with open(str(fn), mode='r') as tx:
 
         lines = tx.readlines()
         lines.append(log_name + '\n')
+
+    fn.unlink()
+
+    with open(str(fn), mode='w') as tx:
         tx.writelines(lines)
 
 
