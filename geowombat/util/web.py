@@ -587,6 +587,10 @@ class GeoDownloads(object):
                         # TODO: this can be run in parallel
                         for finfo_key, finfo_dict in file_info.items():
 
+                            # Incomplete dictionary because file was checked, existed, and cleaned
+                            if 'meta' not in finfo_dict:
+                                continue
+
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
 
                             logger.info('  Processing {} ...'.format(brdfp))
