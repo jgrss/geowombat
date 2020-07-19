@@ -8,6 +8,7 @@ from datetime import datetime
 from collections import namedtuple
 import random
 import string
+import time
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
@@ -24,6 +25,7 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+import psutil
 
 try:
     import requests
@@ -67,6 +69,49 @@ def _rmdir(pathdir):
             shutil.rmtree(str(pathdir))
         except:
             pass
+
+
+def _update_status_file(fn, log_name):
+
+    attempt = 0
+    max_attempts = 10
+
+    while True:
+
+        wait_on_file = False
+
+        # Check if the file is open by another process
+        for proc in psutil.process_iter():
+
+            try:
+
+                for item in proc.open_files():
+
+                    if item.path == str(fn):
+                        wait_on_file = True
+                        break
+
+            except Exception:
+                pass
+
+            if wait_on_file:
+                break
+
+        if wait_on_file:
+            time.sleep(2)
+        else:
+            break
+
+        attempt += 1
+
+        if attempt >= max_attempts:
+            break
+
+    with open(str(fn), mode='r+') as tx:
+
+        lines = tx.readlines()
+        lines.append(log_name + '\n')
+        tx.writelines(lines)
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -311,7 +356,7 @@ class GeoDownloads(object):
 
         if not status.is_file():
 
-            with open(status.as_posix(), mode='w') as tx:
+            with open(str(status), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
@@ -472,7 +517,7 @@ class GeoDownloads(object):
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=status.as_posix(),
+                                                          check_file=str(status),
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
@@ -512,7 +557,7 @@ class GeoDownloads(object):
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=status.as_posix(),
+                                                          check_file=str(status),
                                                           verbose=1)
 
                         logger.info('  Finished downloading files')
@@ -532,8 +577,8 @@ class GeoDownloads(object):
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
                                 continue
 
-                            with open(status.as_posix(), mode='r') as tx:
-                                lines = tx.readlines()
+                            # with open(str(status), mode='r') as tx:
+                            #     lines = tx.readlines()
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
                                 outdir_angles = main_path.joinpath(
@@ -833,10 +878,7 @@ class GeoDownloads(object):
                                 except:
                                     pass
 
-                            lines.append(finfo_dict['meta'].name + '\n')
-
-                            with open(status.as_posix(), mode='r+') as tx:
-                                tx.writelines(lines)
+                            _update_status_file(status, finfo_dict['meta'].name)
 
             year += 1
 
