@@ -10,6 +10,7 @@ Bug fixes
 ~~~~~~~~~
 
 - Added missing 'l5' download flag.
+- Fixed block writing error that occurred with `DataArray` attribute keyword 'apply'. The previous version used the `DataArray.transform` property, which was derived from the full raster extent. The latest version of GeoWombat uses a `DataArray.gw.transform`, which is an updated transform property for each raster chunk.
 
 Enhancements
 ~~~~~~~~~~~~
