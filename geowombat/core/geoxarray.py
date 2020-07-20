@@ -641,7 +641,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   readysize=None,
                   separate=False,
                   use_dask_store=False,
-                  out_block_type='zarr',
+                  out_block_type='gtiff',
                   keep_blocks=False,
                   verbose=0,
                   overwrite=False,
