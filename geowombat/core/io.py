@@ -347,14 +347,14 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, out_block_type, tags, oleft, otop, ocols, orows = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs = list(itertools.chain(*args))
 
     output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
 
     if separate and (out_block_type.lower() == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
-        to_gtiff(filename, output, block_window, out_indexes, n_workers, separate)
+        to_gtiff(filename, output, block_window, out_indexes, n_workers, separate, tags, kwargs)
 
     return zarr_file
 
@@ -659,13 +659,15 @@ def to_raster(data,
 
     else:
 
-        if verbose > 0:
-            logger.info('  Creating the file ...\n')
+        if not separate:
 
-        with rio.open(filename, mode='w', **kwargs) as rio_dst:
+            if verbose > 0:
+                logger.info('  Creating the file ...\n')
 
-            if tags:
-                rio_dst.update_tags(**tags)
+            with rio.open(filename, mode='w', **kwargs) as rio_dst:
+
+                if tags:
+                    rio_dst.update_tags(**tags)
 
     if verbose > 0:
         logger.info('  Writing data to file ...\n')
@@ -705,34 +707,34 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
 

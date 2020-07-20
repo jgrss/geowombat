@@ -28,10 +28,10 @@ except:
     ZARR_INSTALLED = False
 
 
-def to_gtiff(filename, data, window, indexes, n_workers, separate):
+def to_gtiff(filename, data, window, indexes, n_workers, separate, tags, kwargs):
 
     """
-    Writes data to a GeoTiff file. Note that this is a helper class and does not create a profiled raster.
+    Writes data to a GeoTiff file.
 
     Args:
         filename (str): The output file name. The file must already exist.
@@ -39,6 +39,8 @@ def to_gtiff(filename, data, window, indexes, n_workers, separate):
         window (namedtuple): A ``rasterio.window.Window`` object.
         indexes (int | 1d array-like): The output ``data`` indices.
         n_workers (int): The number of parallel workers being used.
+        tags (Optional[dict]): Image tags to write to file.
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
         ``None``
@@ -62,10 +64,15 @@ def to_gtiff(filename, data, window, indexes, n_workers, separate):
 
         group_path = str(pout / group_name)
 
+        with rio.open(group_path, mode='w', **kwargs) as dst:
+
+            if tags:
+                dst.update_tags(**tags)
+
     else:
         group_path = str(filename)
 
-    if n_workers == 1:
+    if separate or (n_workers == 1):
 
         with rio.open(group_path,
                       mode='r+') as dst_:
