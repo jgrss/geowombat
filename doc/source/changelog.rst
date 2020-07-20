@@ -15,6 +15,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 - Added 'l5' to :func:`geowombat.radiometry.sr.bandpass`.
+- Modified support for writing GeoTiffs as separate files.
 
 1.2.21 (8 July 2020)
 --------------------
