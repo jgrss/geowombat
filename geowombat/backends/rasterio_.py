@@ -28,7 +28,7 @@ except:
     ZARR_INSTALLED = False
 
 
-def to_gtiff(filename, data, window, indexes, n_workers, separate, tags, kwargs):
+def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, tags, kwargs):
 
     """
     Writes data to a GeoTiff file.
@@ -38,6 +38,7 @@ def to_gtiff(filename, data, window, indexes, n_workers, separate, tags, kwargs)
         data (ndarray): The data to write.
         window (namedtuple): A ``rasterio.window.Window`` object.
         indexes (int | 1d array-like): The output ``data`` indices.
+        transform (tuple): The original raster transform.
         n_workers (int): The number of parallel workers being used.
         tags (Optional[dict]): Image tags to write to file.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
@@ -63,6 +64,12 @@ def to_gtiff(filename, data, window, indexes, n_workers, separate, tags, kwargs)
                                                                       W=window.width)
 
         group_path = str(pout / group_name)
+
+        kwargs_copy = kwargs.copy()
+
+        kwargs_copy['width'] = window.width
+        kwargs_copy['height'] = window.height
+        kwargs_copy['transform'] = Affine(*transform)
 
         with rio.open(group_path, mode='w', **kwargs) as dst:
 

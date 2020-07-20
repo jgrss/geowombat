@@ -245,14 +245,15 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
     """
 
     # The geo-transform is needed on the block
-    left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
+    # left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
 
     if 'apply' in block.attrs:
 
         attrs = block.attrs.copy()
 
         # Update the block transform
-        attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+        # attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+        attrs['transform'] = Affine(*block.gw.transform)
         attrs['window_id'] = wid
 
         block = block.assign_attrs(**attrs)
@@ -354,7 +355,7 @@ def _write_xarray(*args):
     if separate and (out_block_type.lower() == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
-        to_gtiff(filename, output, block_window, out_indexes, n_workers, separate, tags, kwargs)
+        to_gtiff(filename, output, block_window, out_indexes, block.gw.transform, n_workers, separate, tags, kwargs)
 
     return zarr_file
 
