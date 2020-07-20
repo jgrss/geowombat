@@ -71,6 +71,11 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
         kwargs_copy['height'] = window.height
         kwargs_copy['transform'] = Affine(*transform)
 
+        group_window = Window(col_off=0,
+                              row_off=0,
+                              width=window.width,
+                              height=window.height)
+
         for item in ['with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path']:
             if item in kwargs_copy:
                 del kwargs_copy[item]
@@ -81,7 +86,9 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
                 dst.update_tags(**tags)
 
     else:
+
         group_path = str(filename)
+        group_window = window
 
     if separate or (n_workers == 1):
 
@@ -89,7 +96,7 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
                       mode='r+') as dst_:
 
             dst_.write(data,
-                       window=window,
+                       window=group_window,
                        indexes=indexes)
 
     else:
@@ -101,7 +108,7 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
                           sharing=False) as dst_:
 
                 dst_.write(data,
-                           window=window,
+                           window=group_window,
                            indexes=indexes)
 
 
