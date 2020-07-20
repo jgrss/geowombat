@@ -379,7 +379,7 @@ def _write_xarray(*args):
 
     output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
 
-    if separate and (out_block_type == 'zarr'):
+    if separate and (out_block_type.lower() == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
         to_gtiff(filename, output, block_window, out_indexes, n_workers, separate)
@@ -552,7 +552,7 @@ def to_raster(data,
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)
 
-    if separate and not ZARR_INSTALLED and (out_block_type == 'zarr'):
+    if separate and not ZARR_INSTALLED and (out_block_type.lower() == 'zarr'):
         logger.exception('  zarr must be installed to write separate blocks.')
         raise ImportError
 
@@ -675,17 +675,15 @@ def to_raster(data,
 
     root = None
 
-    if separate:
+    if separate and (out_block_type.lower() == 'zarr'):
 
         d_name = pfile.parent
         sub_dir = d_name.joinpath('sub_tmp_')
 
         sub_dir.mkdir(parents=True, exist_ok=True)
 
-        if out_block_type == 'zarr':
-
-            zarr_file = str(sub_dir.joinpath('data.zarr'))
-            root = zarr.open(zarr_file, mode='w')
+        zarr_file = str(sub_dir.joinpath('data.zarr'))
+        root = zarr.open(zarr_file, mode='w')
 
     else:
 
