@@ -1,6 +1,8 @@
 import os
 import shutil
+from pathlib import Path
 from collections import namedtuple
+import threading
 
 from ..errors import logger
 
@@ -24,6 +26,65 @@ try:
     ZARR_INSTALLED = True
 except:
     ZARR_INSTALLED = False
+
+
+def to_gtiff(filename, data, window, indexes, n_workers, separate):
+
+    """
+    Writes data to a GeoTiff file. Note that this is a helper class and does not create a profiled raster.
+
+    Args:
+        filename (str): The output file name. The file must already exist.
+        data (ndarray): The data to write.
+        window (namedtuple): A ``rasterio.window.Window`` object.
+        indexes (int | 1d array-like): The output ``data`` indices.
+        n_workers (int): The number of parallel workers being used.
+
+    Returns:
+        ``None``
+    """
+
+    p = Path(filename)
+
+    # Strip the file ending
+    f_base = p.name.split('.')[0]
+
+    if separate:
+
+        # Create a sub-directory
+        pout = p.parent / f_base
+        pout.mkdir(exist_ok=True, parents=True)
+
+        group_name = 'y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}.tif'.format(Y=window.row_off,
+                                                                      X=window.col_off,
+                                                                      H=window.height,
+                                                                      W=window.width)
+
+        group_path = str(pout / group_name)
+
+    else:
+        group_path = str(filename)
+
+    if n_workers == 1:
+
+        with rio.open(group_path,
+                      mode='r+') as dst_:
+
+            dst_.write(data,
+                       window=window,
+                       indexes=indexes)
+
+    else:
+
+        with threading.Lock():
+
+            with rio.open(group_path,
+                          mode='r+',
+                          sharing=False) as dst_:
+
+                dst_.write(data,
+                           window=window,
+                           indexes=indexes)
 
 
 class WriteDaskArray(object):

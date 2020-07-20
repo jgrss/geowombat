@@ -11,7 +11,7 @@ import random
 import string
 
 from ..errors import logger
-from ..backends.rasterio_ import WriteDaskArray
+from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
 
 try:
@@ -375,34 +375,14 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, tags, oleft, otop, ocols, orows = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, out_block_type, tags, oleft, otop, ocols, orows = list(itertools.chain(*args))
 
     output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
 
-    if separate:
+    if separate and (out_block_type == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
-
-        if n_workers == 1:
-
-            with rio.open(filename,
-                          mode='r+') as dst_:
-
-                dst_.write(output,
-                           window=block_window,
-                           indexes=out_indexes)
-
-        else:
-
-            with threading.Lock():
-
-                with rio.open(filename,
-                              mode='r+',
-                              sharing=False) as dst_:
-
-                    dst_.write(output,
-                               window=block_window,
-                               indexes=out_indexes)
+        to_gtiff(filename, output, block_window, out_indexes, n_workers, separate)
 
     return zarr_file
 
@@ -486,7 +466,7 @@ def to_raster(data,
               readysize=None,
               use_dask_store=False,
               separate=False,
-              out_block_type='zarr',
+              out_block_type='gtiff',
               keep_blocks=False,
               verbose=0,
               overwrite=False,
@@ -569,12 +549,12 @@ def to_raster(data,
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
-    if separate and not ZARR_INSTALLED:
-        logger.exception('  zarr must be installed to write separate blocks.')
-        raise ImportError
-
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)
+
+    if separate and not ZARR_INSTALLED and (out_block_type == 'zarr'):
+        logger.exception('  zarr must be installed to write separate blocks.')
+        raise ImportError
 
     pfile = Path(filename)
 
@@ -693,19 +673,21 @@ def to_raster(data,
     if 'transform' not in kwargs:
         kwargs['transform'] = data.gw.transform
 
+    root = None
+
     if separate:
 
         d_name = pfile.parent
         sub_dir = d_name.joinpath('sub_tmp_')
-        zarr_file = sub_dir.joinpath('data.zarr').as_posix()
 
         sub_dir.mkdir(parents=True, exist_ok=True)
 
-        root = zarr.open(zarr_file, mode='w')
+        if out_block_type == 'zarr':
+
+            zarr_file = str(sub_dir.joinpath('data.zarr'))
+            root = zarr.open(zarr_file, mode='w')
 
     else:
-
-        root = None
 
         if verbose > 0:
             logger.info('  Creating the file ...\n')
@@ -753,38 +735,38 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
 
-                    for zarr_file in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
+                    for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
                         pass
                     
                 else:
@@ -793,12 +775,12 @@ def to_raster(data,
 
                         if scheduler == 'mpool':
 
-                            for zarr_file in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
                                 pass
 
                         else:
 
-                            for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
                                 pass
 
             # if overviews:
@@ -878,7 +860,6 @@ def to_raster(data,
                 n_groups = len(group_keys   )
 
                 if out_block_type.lower() == 'zarr':
-                    # root = zarr.open(zarr_file, mode='r')
                     open_file = zarr_file
 
                 kwargs['compress'] = compress_type
