@@ -71,7 +71,11 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
         kwargs_copy['height'] = window.height
         kwargs_copy['transform'] = Affine(*transform)
 
-        with rio.open(group_path, mode='w', **kwargs) as dst:
+        for item in ['with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path']:
+            if item in kwargs_copy:
+                del kwargs_copy[item]
+
+        with rio.open(group_path, mode='w', **kwargs_copy) as dst:
 
             if tags:
                 dst.update_tags(**tags)
