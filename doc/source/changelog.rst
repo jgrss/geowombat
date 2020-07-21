@@ -3,20 +3,20 @@
 Change Log
 ==========
 
-1.2.22 ()
----------
+1.2.22 (21 July 2020)
+---------------------
 
 Bug fixes
 ~~~~~~~~~
 
-- Added missing 'l5' download flag.
-- Fixed block writing error that occurred with `DataArray` attribute keyword 'apply'. The previous version used the `DataArray.transform` property, which was derived from the full raster extent. The latest version of GeoWombat uses a `DataArray.gw.transform`, which is an updated transform property for each raster chunk.
+- Added missing 'l5' download flag in :func:`geowombat.util.web.download_cube`.
 
 Enhancements
 ~~~~~~~~~~~~
 
 - Added 'l5' to :func:`geowombat.radiometry.sr.bandpass`.
-- Modified support for writing GeoTiffs as separate files.
+- Modified support for writing GeoTiffs as separate files in :func:`geowombat.to_raster`.
+- The previous version used the `DataArray.transform` property, which was derived from the full raster extent. The latest version of GeoWombat uses a `DataArray.gw.transform`, which is an updated transform property for each raster chunk.
 
 1.2.21 (8 July 2020)
 --------------------
