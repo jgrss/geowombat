@@ -277,32 +277,48 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
         else:
 
             if n_workers == 1:
-
                 out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
-
-                if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
-                    out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
-                elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
-                    out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
-                elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
-                    out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
-                else:
-                    out_data_ = block.attrs['apply'](out_data_)
-
             else:
 
                 with threading.Lock():
-
                     out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
-                    if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
-                        out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
-                    elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
-                        out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
-                    elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
-                        out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
-                    else:
-                        out_data_ = block.attrs['apply'](out_data_)
+            if padded_window_:
+
+                # Add extra padding on the image borders
+                rspad = padded_window_.height - window_.height if window_.row_off == 0 else 0
+                cspad = padded_window_.width - window_.width if window_.col_off == 0 else 0
+                repad = padded_window_.height - window_.height if (window_.row_off != 0) and (window_.height < block.gw.row_chunks) else 0
+                cepad = padded_window_.width - window_.width if (window_.col_off != 0) and (window_.width < block.gw.col_chunks) else 0
+
+                dshape = out_data_.shape
+
+                if len(dshape) == 2:
+                    out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
+                elif len(dshape) == 3:
+                    out_data_ = np.pad(out_data_, ((0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+                elif len(dshape) == 4:
+                    out_data_ = np.pad(out_data_, ((0, 0), (0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+
+            if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
+            elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
+            elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+                out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+            else:
+                out_data_ = block.attrs['apply'](out_data_)
+
+            if padded_window_:
+
+                dshape = out_data_.shape
+
+                if len(dshape) == 2:
+                    out_data_ = out_data_[rspad:rspad+window_.height, cspad:cspad+window_.width]
+                elif len(dshape) == 3:
+                    out_data_ = out_data_[:, rspad:rspad+window_.height, cspad:cspad+window_.width]
+                elif len(dshape) == 4:
+                    out_data_ = out_data_[:, :, rspad:rspad+window_.height, cspad:cspad+window_.width]
 
     else:
 
