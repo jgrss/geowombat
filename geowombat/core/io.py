@@ -277,20 +277,32 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
         else:
 
             if n_workers == 1:
+
                 out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+
+                if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+                    out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
+                elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
+                    out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
+                elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+                    out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+                else:
+                    out_data_ = block.attrs['apply'](out_data_)
+
             else:
 
                 with threading.Lock():
+
                     out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
-            if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
-                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
-            elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
-                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
-            elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
-                out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
-            else:
-                out_data_ = block.attrs['apply'](out_data_)
+                    if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+                        out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
+                    elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
+                        out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
+                    elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+                        out_data_ = block.attrs['apply'](out_data_, **block.attrs['apply_kwargs'])
+                    else:
+                        out_data_ = block.attrs['apply'](out_data_)
 
     else:
 
