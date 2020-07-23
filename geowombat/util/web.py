@@ -616,8 +616,6 @@ class GeoDownloads(object):
 
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
 
-                            logger.info('  Processing {} ...'.format(brdfp))
-
                             out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
                             out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
@@ -626,13 +624,18 @@ class GeoDownloads(object):
                             else:
                                 outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
+                            if not Path(finfo_dict['meta'].name).is_file():
+                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+
                             if out_brdf.is_file():
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-
                                 _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
 
                                 continue
+
+                            logger.info('  Processing {} ...'.format(brdfp))
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
@@ -1197,7 +1200,7 @@ class GeoDownloads(object):
                         subprocess.call(com, shell=True)
 
                         if rename:
-                            os.rename(Path(outdir).joinpath(Path(fn).name).as_posix(), down_file)
+                            os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
 
                     downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
