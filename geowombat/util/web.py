@@ -650,11 +650,11 @@ class GeoDownloads(object):
 
                                 continue
 
-                            logger.info('  Processing {} ...'.format(brdfp))
-
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
                             ref_file = finfo_dict[load_bands[0]].name
+
+                            logger.info('  Processing angles for {} ...'.format(brdfp))
 
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
@@ -711,6 +711,8 @@ class GeoDownloads(object):
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
 
+                                logger.info('  Translating jp2 files to gtiff for {} ...'.format(brdfp))
+
                                 load_bands_names = []
 
                                 # Convert to GeoTiffs to avoid CRS issue with jp2 format
@@ -740,6 +742,8 @@ class GeoDownloads(object):
 
                                 # Get band names from user
                                 load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+
+                            logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
