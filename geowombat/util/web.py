@@ -1164,6 +1164,8 @@ class GeoDownloads(object):
 
                             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
 
+                            downloaded_sub[key] = FileInfo(name=down_file, key=key)
+
                             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
 
                             null_items.append(fbase)
