@@ -3,6 +3,14 @@
 Change Log
 ==========
 
+1.2.23 ()
+---------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for existing metadata file in :func:`geowombat.util.web.download_cube`.
+
 1.2.22 (21 July 2020)
 ---------------------
 
