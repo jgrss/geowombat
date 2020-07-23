@@ -148,7 +148,13 @@ def _update_status_file(fn, log_name):
         tx.writelines(lines)
 
 
-def _clean_and_update(status, outdir_angles, finfo_dict, meta_name, check_angles=True, check_downloads=True):
+def _clean_and_update(status,
+                      outdir_angles,
+                      finfo_dict,
+                      meta_name,
+                      check_angles=True,
+                      check_downloads=True,
+                      update_status=True):
 
     if check_angles:
         _rmdir(outdir_angles)
@@ -157,12 +163,18 @@ def _clean_and_update(status, outdir_angles, finfo_dict, meta_name, check_angles
 
         for k, v in finfo_dict.items():
 
-            try:
-                Path(v.name).unlink()
-            except:
-                pass
+            if Path(v.name).is_file():
 
-    _update_status_file(status, meta_name)
+                try:
+                    Path(v.name).unlink()
+                except Warning:
+                    logger.warning('  Could not delete {}.'.format(v.name))
+
+            else:
+                logger.warning('  The {} file does not exist to delete.'.format(v.name))
+
+    if update_status:
+        _update_status_file(status, meta_name)
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -612,6 +624,8 @@ class GeoDownloads(object):
 
                             # Incomplete dictionary because file was checked, existed, and cleaned
                             if 'meta' not in finfo_dict:
+                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                                _clean_and_update(status, None, finfo_dict, None, check_angles=False, update_status=False)
                                 continue
 
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
@@ -627,6 +641,7 @@ class GeoDownloads(object):
                             if not Path(finfo_dict['meta'].name).is_file():
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
                                 _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                                continue
 
                             if out_brdf.is_file():
 
