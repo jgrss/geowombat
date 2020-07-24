@@ -1118,8 +1118,6 @@ class GeoDownloads(object):
 
         for search_key in downloads:
 
-            downloaded_sub = {}
-
             download_list = self.search_dict[search_key]
 
             if search_wildcards:
@@ -1135,142 +1133,188 @@ class GeoDownloads(object):
 
             logger.info('  The download contains {:d} items: {}'.format(len(download_list_names), ','.join(download_list_names)))
 
-            # Move the metadata file to the front of the
-            # list to avoid unnecessary downloads.
-            meta_index = [i for i in range(0, len(download_list)) if download_list[i].endswith('_MTL.txt')]
-            if not meta_index:
-                meta_index = [i for i in range(0, len(download_list)) if download_list[i].endswith('MTD_TL.xml')]
+            # Separate each scene
+            if sensor.lower() in ['l5', 'l7', 'l8']:
 
-            if not meta_index:
-                logger.warning('  No metadata file was found.')
-                continue
+                # list of file ids
+                id_list = ['_'.join(fn.split('_')[:-1]) for fn in download_list_names if fn.endswith('_MTL.txt')]
 
-            meta_index = meta_index[0]
-            download_list.insert(0, download_list.pop(meta_index))
+                # list of lists where each sub-list is unique
+                download_list_unique = [[fn for fn in download_list if sid in Path(fn).name] for sid in id_list]
 
-            download_list_names = [Path(dfn).name for dfn in download_list]
+            else:
 
-            logger.info('  The new sorted item order is: {}'.format(','.join(download_list_names)))
+                id_list = list(set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names]))
+                download_list_unique = download_list
 
-            for fname, fn in zip(download_list_names, download_list):
+            for scene_id, sub_download_list in zip(id_list, download_list_unique):
 
-                rename = False
+                logger.info('  Checking scene {} ...'.format(scene_id))
 
-                down_file = str(poutdir.joinpath(fname))
+                downloaded_sub = {}
 
-                if down_file.endswith('_ANG.txt'):
-                    fbase = fname.replace('_ANG.txt', '')
-                    key = 'angle'
-                elif down_file.endswith('_MTL.txt'):
-                    fbase = fname.replace('_MTL.txt', '')
-                    key = 'meta'
-                elif down_file.endswith('MTD_TL.xml'):
+                if sensor.lower() in ['l5', 'l7', 'l8']:
 
-                    fbase = Path(fn).parent.name
-                    down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
-                    key = 'meta'
-                    rename = True
+                    # Path of BRDF stack
+                    out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
 
-                elif down_file.endswith('_BQA.TIF'):
-                    fbase = fname.replace('_BQA.TIF', '')
-                    key = 'qa'
                 else:
 
-                    if fname.endswith('.jp2'):
+                    fn = sub_download_list[0]
+                    fname = Path(fn).name
+
+                    if fname.lower().endswith('.jp2'):
 
                         fbase = Path(fn).parent.parent.name
                         key = Path(fn).name.split('.')[0].split('_')[-1]
                         down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
-                        rename = True
-
-                    else:
-
-                        fsplit = fname.split('_')
-                        fbase = '_'.join(fsplit[:-1])
-                        key = fsplit[-1].split('.')[0]
-
-                    # TODO: QA60
-
-                continue_download = True
-
-                if fbase in null_items:
-                    continue_download = False
-
-                if continue_download and check_file:
-
-                    ##########################################
-                    # Check if the file stack has been created
-                    ##########################################
-
-                    if key == 'meta':
 
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
                         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
 
-                        if out_brdf.is_file():
+                    else:
+                        out_brdf = None
 
-                            logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                if out_brdf:
 
-                            downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                    if out_brdf.is_file():
 
-                            _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
+                        logger.warning('  The output BRDF file, {}, already exists.'.format(scene_id))
+                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False, update_status=False)
+                        continue
 
-                            null_items.append(fbase)
-                            continue_download = False
-                            downloaded_sub = {}
-                            break
+                # Move the metadata file to the front of the
+                # list to avoid unnecessary downloads.
+                if sensor.lower() in ['l5', 'l7', 'l8']:
+                    meta_index = [i for i in range(0, len(sub_download_list)) if sub_download_list[i].endswith('_MTL.txt')][0]
+                    sub_download_list.insert(0, sub_download_list.pop(meta_index))
+                else:
+                    # The Sentinel 2 metadata files come in their own list
+                    pass
 
-                    # if continue_download:
-                    #
-                    #     lines = _delayed_read(check_file)
-                    #
-                    #     if sensor.lower() in ['l5', 'l7', 'l8']:
-                    #
-                    #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
-                    #             null_items.append(fbase)
-                    #             continue_download = False
-                    #
-                    #     else:
-                    #
-                    #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                    #             null_items.append(fbase)
-                    #             continue_download = False
+                download_list_names = [Path(dfn).name for dfn in sub_download_list]
 
-                if continue_download:
+                for fname, fn in zip(download_list_names, sub_download_list):
 
-                    ###################
-                    # Download the file
-                    ###################
+                    # Renaming Sentinel data
+                    rename = False
 
-                    if not Path(down_file).is_file():
+                    # Full path of GCP local download
+                    down_file = str(poutdir.joinpath(fname))
 
-                        if fn.lower().startswith('gs://gcp-public-data'):
-                            com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                    if down_file.endswith('_ANG.txt'):
+                        fbase = fname.replace('_ANG.txt', '')
+                        key = 'angle'
+                    elif down_file.endswith('_MTL.txt'):
+                        fbase = fname.replace('_MTL.txt', '')
+                        key = 'meta'
+                    elif down_file.endswith('MTD_TL.xml'):
+
+                        fbase = Path(fn).parent.name
+                        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+                        key = 'meta'
+                        rename = True
+
+                    elif down_file.endswith('_BQA.TIF'):
+                        fbase = fname.replace('_BQA.TIF', '')
+                        key = 'qa'
+                    else:
+
+                        if fname.endswith('.jp2'):
+
+                            fbase = Path(fn).parent.parent.name
+                            key = Path(fn).name.split('.')[0].split('_')[-1]
+                            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+                            rename = True
+
                         else:
-                            com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
 
-                        if verbose > 0:
-                            logger.info('  Downloading {} out of {} ...'.format(fname, ','.join(download_list_names)))
+                            fsplit = fname.split('_')
+                            fbase = '_'.join(fsplit[:-1])
+                            key = fsplit[-1].split('.')[0]
 
-                        subprocess.call(com, shell=True)
+                        # TODO: QA60
 
-                        if rename:
-                            os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+                    continue_download = True
 
-                    # Store file information
-                    downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                    if fbase in null_items:
+                        continue_download = False
 
-            if downloaded_sub:
+                    # if continue_download and check_file:
+                    #
+                    #     ##########################################
+                    #     # Check if the file stack has been created
+                    #     ##########################################
+                    #
+                    #     if key == 'meta':
+                    #
+                    #         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
+                    #         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+                    #
+                    #         if out_brdf.is_file():
+                    #
+                    #             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                    #
+                    #             downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                    #
+                    #             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
+                    #
+                    #             null_items.append(fbase)
+                    #             continue_download = False
+                    #             downloaded_sub = {}
+                    #             break
+                    #
+                    #     # if continue_download:
+                    #     #
+                    #     #     lines = _delayed_read(check_file)
+                    #     #
+                    #     #     if sensor.lower() in ['l5', 'l7', 'l8']:
+                    #     #
+                    #     #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                    #     #             null_items.append(fbase)
+                    #     #             continue_download = False
+                    #     #
+                    #     #     else:
+                    #     #
+                    #     #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
+                    #     #             null_items.append(fbase)
+                    #     #             continue_download = False
 
-                if len(downloaded_sub) < len(download_list):
+                    if continue_download:
 
-                    downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
-                    missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
+                        ###################
+                        # Download the file
+                        ###################
 
-                    logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(download_list)))
-                    logger.warning('  {} are missing.'.format(missing_items))
+                        if not Path(down_file).is_file():
 
-                downloaded[search_key] = downloaded_sub
+                            if fn.lower().startswith('gs://gcp-public-data'):
+                                com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                            else:
+                                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+
+                            if verbose > 0:
+                                logger.info('  Downloading {} out of {} ...'.format(fname, ','.join(download_list_names)))
+
+                            subprocess.call(com, shell=True)
+
+                            if rename:
+                                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+
+                        # Store file information
+                        downloaded_sub[key] = FileInfo(name=down_file, key=key)
+
+                if downloaded_sub:
+
+                    if len(downloaded_sub) < len(sub_download_list):
+
+                        downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
+                        missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
+
+                        logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(sub_download_list)))
+                        logger.warning('  {} are missing.'.format(missing_items))
+
+                    downloaded[search_key] = downloaded_sub
 
         return downloaded
 
