@@ -647,7 +647,11 @@ class GeoDownloads(object):
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
                                 _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                                continue
 
+                            if load_bands[0] not in finfo_dict:
+                                logger.warning('  The download for {} was incomplete.'.format(brdfp))
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
                                 continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
