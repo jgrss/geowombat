@@ -1080,7 +1080,8 @@ class GeoDownloads(object):
             verbose (Optional[int]): The verbosity level.
 
         Returns:
-            ``namedtuple`` or ``list``
+            ``dict`` of ``dicts``
+                where sub-dictionaries contain a ``namedtuple`` of the downloaded file and tag
         """
 
         if not search_dict:
@@ -1126,6 +1127,19 @@ class GeoDownloads(object):
 
                 download_list = download_list_
 
+            # Move the metadata file to the front of the
+            # list to avoid unnecessary downloads.
+            meta_index = [i for i in range(0, len(download_list)) if download_list[i].endswith('_MTL.txt')]
+            if not meta_index:
+                meta_index = [i for i in range(0, len(download_list)) if download_list[i].endswith('MTD_TL.xml')]
+
+            if not meta_index:
+                logger.warning('  No metadata file was found.')
+                continue
+
+            meta_index = meta_index[0]
+            download_list.insert(0, download_list.pop(meta_index))
+
             for fn in download_list:
 
                 rename = False
@@ -1142,7 +1156,7 @@ class GeoDownloads(object):
                 elif down_file.endswith('MTD_TL.xml'):
 
                     fbase = Path(fn).parent.name
-                    down_file = poutdir.joinpath(fbase + '_MTD_TL.xml').as_posix()
+                    down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
                     key = 'meta'
                     rename = True
 
@@ -1155,7 +1169,7 @@ class GeoDownloads(object):
 
                         fbase = Path(fn).parent.parent.name
                         key = Path(fn).name.split('.')[0].split('_')[-1]
-                        down_file = poutdir.joinpath(fbase + '_' + key + '.jp2').as_posix()
+                        down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
                         rename = True
 
                     else:
@@ -1173,10 +1187,13 @@ class GeoDownloads(object):
 
                 if continue_download and check_file:
 
+                    ##########################################
+                    # Check if the file stack has been created
+                    ##########################################
+
                     if key == 'meta':
 
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-
                         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
 
                         if out_brdf.is_file():
@@ -1192,23 +1209,27 @@ class GeoDownloads(object):
                             downloaded_sub = {}
                             break
 
-                    if continue_download:
-
-                        lines = _delayed_read(check_file)
-
-                        if sensor.lower() in ['l5', 'l7', 'l8']:
-
-                            if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
-                                null_items.append(fbase)
-                                continue_download = False
-
-                        else:
-
-                            if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                                null_items.append(fbase)
-                                continue_download = False
+                    # if continue_download:
+                    #
+                    #     lines = _delayed_read(check_file)
+                    #
+                    #     if sensor.lower() in ['l5', 'l7', 'l8']:
+                    #
+                    #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                    #             null_items.append(fbase)
+                    #             continue_download = False
+                    #
+                    #     else:
+                    #
+                    #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
+                    #             null_items.append(fbase)
+                    #             continue_download = False
 
                 if continue_download:
+
+                    ###################
+                    # Download the file
+                    ###################
 
                     if not Path(down_file).is_file():
 
@@ -1225,6 +1246,7 @@ class GeoDownloads(object):
                         if rename:
                             os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
 
+                    # Store file information
                     downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
             if downloaded_sub:
