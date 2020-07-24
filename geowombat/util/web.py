@@ -624,12 +624,11 @@ class GeoDownloads(object):
 
                             # Incomplete dictionary because file was checked, existed, and cleaned
                             if 'meta' not in finfo_dict:
-                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                                logger.warning('  The metadata does not exist.')
                                 _clean_and_update(status, None, finfo_dict, None, check_angles=False, update_status=False)
                                 continue
 
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
-
                             out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
                             out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
@@ -639,19 +638,19 @@ class GeoDownloads(object):
                                 outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             if not Path(finfo_dict['meta'].name).is_file():
-                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                                logger.warning('  The metadata does not exist.')
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
                                 continue
 
                             if out_brdf.is_file():
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
                                 continue
 
                             if load_bands[0] not in finfo_dict:
                                 logger.warning('  The download for {} was incomplete.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
                                 continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
@@ -940,6 +939,13 @@ class GeoDownloads(object):
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
 
+                            for loaded_band in load_bands_names:
+                                if Path(loaded_band).is_file:
+                                    try:
+                                        Path(loaded_band).unlink()
+                                    except Warning:
+                                        logger.warning('  Could not delete {}.'.format(loaded_band))
+
                             angle_infos[finfo_key] = angle_info
 
                             _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
@@ -1171,13 +1177,6 @@ class GeoDownloads(object):
 
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
                         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
-
-                        logger.info(fn)
-                        logger.info(fbase)
-                        logger.info(key)
-                        logger.info(down_file)
-                        logger.info(brdfp)
-                        logger.info(out_brdf)
 
                     else:
                         out_brdf = None
