@@ -1145,7 +1145,7 @@ class GeoDownloads(object):
             else:
 
                 id_list = list(set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names]))
-                download_list_unique = download_list
+                download_list_unique = [download_list]
 
             for scene_id, sub_download_list in zip(id_list, download_list_unique):
 
