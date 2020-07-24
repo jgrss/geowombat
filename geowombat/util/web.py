@@ -1172,6 +1172,13 @@ class GeoDownloads(object):
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
                         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
 
+                        logger.info(fn)
+                        logger.info(fbase)
+                        logger.info(key)
+                        logger.info(down_file)
+                        logger.info(brdfp)
+                        logger.info(out_brdf)
+
                     else:
                         out_brdf = None
 
@@ -1294,7 +1301,7 @@ class GeoDownloads(object):
                                 com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
 
                             if verbose > 0:
-                                logger.info('  Downloading {} out of {} ...'.format(fname, ','.join(download_list_names)))
+                                logger.info('  Downloading {} ...'.format(fname))
 
                             subprocess.call(com, shell=True)
 
