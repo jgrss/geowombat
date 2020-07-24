@@ -1176,7 +1176,7 @@ class GeoDownloads(object):
                         down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
 
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-                        out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+                        out_brdf = outdir_brdf.joinpath(brdfp + '_MTD.tif')
 
                     else:
                         out_brdf = None
