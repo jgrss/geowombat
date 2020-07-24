@@ -1131,6 +1131,10 @@ class GeoDownloads(object):
 
                 download_list = download_list_
 
+            download_list_names = [Path(dfn).name for dfn in download_list]
+
+            logger.info('  The download contains {:d} items: {}'.format(len(download_list_names), ','.join(download_list_names)))
+
             # Move the metadata file to the front of the
             # list to avoid unnecessary downloads.
             meta_index = [i for i in range(0, len(download_list)) if download_list[i].endswith('_MTL.txt')]
@@ -1145,6 +1149,8 @@ class GeoDownloads(object):
             download_list.insert(0, download_list.pop(meta_index))
 
             download_list_names = [Path(dfn).name for dfn in download_list]
+
+            logger.info('  The new sorted item order is: {}'.format(','.join(download_list_names)))
 
             for fname, fn in zip(download_list_names, download_list):
 
