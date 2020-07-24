@@ -154,7 +154,8 @@ def _clean_and_update(status,
                       meta_name,
                       check_angles=True,
                       check_downloads=True,
-                      update_status=True):
+                      update_status=True,
+                      load_bands_names=None):
 
     if check_angles:
         _rmdir(outdir_angles)
@@ -175,6 +176,17 @@ def _clean_and_update(status,
 
     if update_status:
         _update_status_file(status, meta_name)
+
+    if load_bands_names:
+
+        for loaded_band in load_bands_names:
+
+            if Path(loaded_band).is_file():
+
+                try:
+                    Path(loaded_band).unlink()
+                except Warning:
+                    logger.warning('  Could not delete {}.'.format(loaded_band))
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -939,16 +951,12 @@ class GeoDownloads(object):
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
 
-                            for loaded_band in load_bands_names:
-                                if Path(loaded_band).is_file:
-                                    try:
-                                        Path(loaded_band).unlink()
-                                    except Warning:
-                                        logger.warning('  Could not delete {}.'.format(loaded_band))
+                                else:
+                                    logger.warning('  Not enough data for {} to store on disk.'.format(str(out_brdf)))
 
                             angle_infos[finfo_key] = angle_info
 
-                            _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name)
+                            _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, load_bands_names=load_bands_names)
 
             year += 1
 
@@ -1159,6 +1167,7 @@ class GeoDownloads(object):
 
                 downloaded_sub = {}
 
+                # Check if the file has been downloaded
                 if sensor.lower() in ['l5', 'l7', 'l8']:
 
                     # Path of BRDF stack
@@ -1185,9 +1194,12 @@ class GeoDownloads(object):
 
                     if out_brdf.is_file():
 
-                        logger.warning('  The output BRDF file, {}, already exists.'.format(scene_id))
+                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
                         _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False, update_status=False)
                         continue
+
+                    else:
+                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
 
                 # Move the metadata file to the front of the
                 # list to avoid unnecessary downloads.
