@@ -154,7 +154,7 @@ def _clean_and_update(status,
                       meta_name,
                       check_angles=True,
                       check_downloads=True,
-                      update_status=True,
+                      update_status=False,
                       load_bands_names=None):
 
     if check_angles:
@@ -637,7 +637,7 @@ class GeoDownloads(object):
                             # Incomplete dictionary because file was checked, existed, and cleaned
                             if 'meta' not in finfo_dict:
                                 logger.warning('  The metadata does not exist.')
-                                _clean_and_update(status, None, finfo_dict, None, check_angles=False, update_status=False)
+                                _clean_and_update(status, None, finfo_dict, None, check_angles=False)
                                 continue
 
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
@@ -651,18 +651,18 @@ class GeoDownloads(object):
 
                             if not Path(finfo_dict['meta'].name).is_file():
                                 logger.warning('  The metadata does not exist.')
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             if out_brdf.is_file():
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             if load_bands[0] not in finfo_dict:
                                 logger.warning('  The download for {} was incomplete.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False, update_status=False)
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
@@ -956,7 +956,11 @@ class GeoDownloads(object):
 
                             angle_infos[finfo_key] = angle_info
 
-                            _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, load_bands_names=load_bands_names)
+                            _clean_and_update(status,
+                                              outdir_angles,
+                                              finfo_dict,
+                                              finfo_dict['meta'].name,
+                                              load_bands_names=load_bands_names)
 
             year += 1
 
@@ -1195,7 +1199,7 @@ class GeoDownloads(object):
                     if out_brdf.is_file():
 
                         logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
-                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False, update_status=False)
+                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
                         continue
 
                     else:
