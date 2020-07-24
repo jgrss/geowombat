@@ -616,7 +616,7 @@ class GeoDownloads(object):
                                                           check_file=str(status),
                                                           verbose=1)
 
-                        logger.info('  Finished downloading files')
+                        logger.info('  Finished downloading files for yyyymm query, {}.'.format(yearmonth_query))
 
                         # Create pixel angle files
                         # TODO: this can be run in parallel
@@ -1140,12 +1140,13 @@ class GeoDownloads(object):
             meta_index = meta_index[0]
             download_list.insert(0, download_list.pop(meta_index))
 
-            for fn in download_list:
+            download_list_names = [Path(dfn).name for dfn in download_list]
+
+            for fname, fn in zip(download_list_names, download_list):
 
                 rename = False
 
-                fname = Path(fn).name
-                down_file = poutdir.joinpath(fname).as_posix()
+                down_file = str(poutdir.joinpath(fname))
 
                 if down_file.endswith('_ANG.txt'):
                     fbase = fname.replace('_ANG.txt', '')
@@ -1239,7 +1240,7 @@ class GeoDownloads(object):
                             com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
 
                         if verbose > 0:
-                            logger.info('  Downloading {} ...'.format(fname))
+                            logger.info('  Downloading {} out of {} ...'.format(fname, ','.join(download_list_names)))
 
                         subprocess.call(com, shell=True)
 
@@ -1250,6 +1251,15 @@ class GeoDownloads(object):
                     downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
             if downloaded_sub:
+
+                if len(downloaded_sub) < len(download_list):
+
+                    downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
+                    missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
+
+                    logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(download_list)))
+                    logger.warning('  {} are missing.'.format(missing_items))
+
                 downloaded[search_key] = downloaded_sub
 
         return downloaded
