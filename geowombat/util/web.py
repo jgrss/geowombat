@@ -952,7 +952,12 @@ class GeoDownloads(object):
                                             angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
 
                                 else:
+
                                     logger.warning('  Not enough data for {} to store on disk.'.format(str(out_brdf)))
+
+                                    # Write an empty file for tracking
+                                    with open(str(out_brdf).replace('.tif', '.nodata'), 'w') as tx:
+                                        tx.writelines([])
 
                             angle_infos[finfo_key] = angle_info
 
@@ -1196,7 +1201,7 @@ class GeoDownloads(object):
 
                 if out_brdf:
 
-                    if out_brdf.is_file():
+                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
 
                         logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
                         _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
