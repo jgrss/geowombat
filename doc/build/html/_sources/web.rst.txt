@@ -3,8 +3,8 @@
 Web
 ===
 
-GeoWombat can be used to download directly from the Google Cloud Platform.
---------------------------------------------------------------------------
+Download data from Google Cloud Platform
+----------------------------------------
 
 Here, a Landsat 7 panchromatic image is downloaded.
 
@@ -31,8 +31,8 @@ Here, a Landsat 7 panchromatic image is downloaded.
                                  search_wildcards=search_wildcards,
                                  verbose=1)
 
-GeoWombat provides a convenience function to download, radiometrically adjust, and cube data.
----------------------------------------------------------------------------------------------
+Download and cube data
+----------------------
 
 In this example, data are downloaded and processed for a given time range and geographic extent.
 
@@ -70,4 +70,4 @@ In the example above, the bounds can also be taken directly from a file, as show
     bounds = gpd.read_file('file.gpkg')
 
     # The CRS should be WGS84 lat/long
-    bounds = bounds.to_crs({'init': 'epsg:4326'})
+    bounds = bounds.to_crs('epsg:4326')

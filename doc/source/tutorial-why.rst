@@ -22,8 +22,8 @@ Why not Xarray?
 
 Xarray's :func:`open_rasterio` is the interface to rasterio. It opens a raster lazily as a Dask array, which means data are not loaded into memory until requested. However, Xarray is intended to be a `general purpose library <http://xarray.pydata.org/en/stable/internals.html#extending-xarray>`_. Therefore, it does not include geo-specific tasks included in GeoWombat, such as radiometric adjustments, vector/raster interaction, and special purpose I/O such as on-the-fly mosaicking.
 
-What about other libraries?
----------------------------
+Related projects
+----------------
 
 The following libraries use Xarray or allow for processing over large datasets in similar ways to GeoWombat.
 

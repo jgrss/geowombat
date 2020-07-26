@@ -37,8 +37,9 @@
             
   <div class="section" id="user-functions">
 <span id="apply"></span><h1>User functions<a class="headerlink" href="#user-functions" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently">
-<h2>With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.<a class="headerlink" href="#with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-apply">
+<h2>User apply<a class="headerlink" href="#user-apply" title="Permalink to this headline">¶</a></h2>
+<p>With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.</p>
 <p>The example below applies a custom function concurrently over an image.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -54,8 +55,8 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="user-functions-as-attributes">
-<h2>User functions as attributes<a class="headerlink" href="#user-functions-as-attributes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-functions-as-dataarray-attributes">
+<h2>User functions as DataArray attributes<a class="headerlink" href="#user-functions-as-dataarray-attributes" title="Permalink to this headline">¶</a></h2>
 <p>User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as <cite>Xarray</cite> attributes. Here is an example that uses one user argument.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
@@ -224,13 +225,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">

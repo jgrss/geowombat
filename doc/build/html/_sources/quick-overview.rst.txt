@@ -35,6 +35,6 @@ File opening with GeoWombat
 
     from geowombat.data import rgbn
 
-    with gw.open(rgbn) as ds:
-        print(ds)
-        print(ds.gw)
+    with gw.open(rgbn) as src:
+        print(src)
+        print(src.gw)
