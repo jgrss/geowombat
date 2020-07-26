@@ -1,8 +1,9 @@
+.. _api:
+
 .. currentmodule:: geowombat
 
-#############
 API reference
-#############
+=============
 
 Top-level functions
 ===================

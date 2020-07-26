@@ -1,6 +1,7 @@
-##############
+.. _quick-overview:
+
 Quick overview
-##############
+==============
 
 Here are some quick examples of what you can do with :py:class:`GeoWombat` objects.
 

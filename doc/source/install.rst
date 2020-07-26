@@ -1,4 +1,4 @@
-.. _installing:
+.. _install:
 
 Installation
 ============
@@ -52,10 +52,6 @@ Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython 
 
 GDAL can be installed via pip or conda, but it requires the GDAL binaries.
 
-<<<<<<< HEAD
-Installing GDAL on Ubuntu
-~~~~~~~~~~~~~~~~~~~~~~~~~
-=======
 Installing non-Python `GeoWombat` prerequisites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

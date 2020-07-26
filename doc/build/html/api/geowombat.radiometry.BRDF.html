@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRDF &#8212; GeoWombat 1.2.21 documentation</title>
+    <title>BRDF &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -52,7 +52,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.get_mean_sza" title="geowombat.radiometry.BRDF.get_mean_sza"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mean_sza</span></code></a>(central_latitude)</p></td>
 <td><p>Returns the mean solar zenith angle (SZA) as a function of the central latitude</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(self, data, solar_za, solar_az, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.BRDF.norm_brdf" title="geowombat.radiometry.BRDF.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(data, solar_za, solar_az, …[, …])</p></td>
 <td><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization using the global c-factor method</p></td>
 </tr>
 </tbody>
@@ -80,7 +80,7 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.BRDF.norm_brdf">
-<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">central_latitude</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wavelengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">out_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_angles</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">norm_brdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">central_latitude</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wavelengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">out_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_angles</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.BRDF.norm_brdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
 using the global c-factor method</p>
 <dl class="field-list simple">
@@ -118,7 +118,7 @@ using the global c-factor method</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">BRDF</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -189,32 +189,20 @@ using the global c-factor method</p>
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
+<p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">
@@ -254,7 +242,7 @@ using the global c-factor method</p>
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
