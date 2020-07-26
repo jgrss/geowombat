@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Band math &#8212; GeoWombat 1.2.21 documentation</title>
+    <title>Band math &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -39,19 +39,19 @@
 <span id="id1"></span><h1>Band math<a class="headerlink" href="#band-math" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="vegetation-indices">
 <h2>Vegetation indices<a class="headerlink" href="#vegetation-indices" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
 <p>Calculate a vegetation index, returning an <cite>Xarray.DataArray</cite>.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 <span class="gp">   ...: </span>    <span class="n">evi</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-a4d9a85e9d379fc36c804f23f591ef58&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-64271b3c67e5e6690a769a735f59d676&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -66,7 +66,7 @@
 <span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 403, x: 515)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 403, 515), dtype=float64, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
@@ -84,7 +84,7 @@
 <span class="go">    offsets:        (0.0,)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    sensor:         rgbn</span>
@@ -96,7 +96,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">evi</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi</span><span class="p">()</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 403, x: 515)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 403, 515), dtype=float64, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
@@ -115,7 +115,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    0.0001</span>
 <span class="go">    vi:             evi</span>
@@ -126,7 +126,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">evi2</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">evi2</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">evi2</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">evi2</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">[[-0.00909502  0.00218778 -0.0011961  ...  0.0077563   0.00412245</span>
 <span class="go">   0.0026655 ]</span>
@@ -147,7 +147,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;rgbn&#39;</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">d</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 403, x: 515)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 403, 515), dtype=float64, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
@@ -166,7 +166,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         rgbn</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
 <span class="go">    resampling:     nearest</span>
 <span class="go">    pre-scaling:    1.0</span>
 <span class="go">    vi:             norm-diff</span>
@@ -179,7 +179,7 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;qb&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="n">tcap</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">tasseled_cap</span><span class="p">()</span>
-<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">tcap</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">tcap</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 403, x: 515)&gt;</span>
 <span class="go">dask.array&lt;transpose, shape=(3, 403, 515), dtype=object, chunksize=(3, 64, 64), chunktype=numpy.ndarray&gt;</span>
@@ -198,7 +198,7 @@
 <span class="go">    AREA_OR_POINT:  Area</span>
 <span class="go">    DataType:       Generic</span>
 <span class="go">    sensor:         Quickbird with 4 (visible + NIR) bands</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -235,41 +235,31 @@
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
-</ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
+<p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="extraction.html" title="previous chapter">Data extraction</a></li>
       <li>Next: <a href="machine-learning.html" title="next chapter">Machine learning</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -299,7 +289,7 @@
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -8,71 +8,46 @@ GeoWombat provides utilities to process geospatial raster data. The package is i
 
 One of the key features of GeoWombat is the on-the-fly handling of multiple files. In particular, GeoWombat leverages Rasterio to transform and align rasters with varying projections and spatial resolutions. In addition to simplifying the process of data alignment, GeoWombat utilizes the `task graphs <https://docs.dask.org/en/latest/graphs.html>`_ of Dask arrays. By default, GeoWombat loads a raster as a DataArray, which points to the raster data on file using a chunked Dask array. This task graph feature simplifies parallel computations of one or more raster files of any size.
 
-*************
-Documentation
-*************
+**Computation scales easily over large datasets with minimal changes to the code**
 
-**Getting Started**
+.. code:: python
 
-* :doc:`installing`
-* :doc:`quick-overview`
+    # Set a reference image to align to
+    with gw.config.update(ref_image='image_a.tif'):
+
+        # Open images as Xarray DataArrays
+        with gw.open('image_a.tif') as srca, \
+            gw.open('image_b.tif') as srcb:
+
+            # The size of srca, srcb, and results are determined by the configuration context
+            results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
+
+            # Initiate computation by writing the results to file.
+            # Mix process and thread workers to execute the task in parallel.
+            results.gw.to_raster('output.tif',
+                                 n_workers=4,
+                                 n_threads=4,
+                                 compress='lzw')
+
+For more details, see the `tutorials <tutorial.html>`_ and `examples <examples.html>`_.
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Getting Started
 
-   installing
-   issues
+   install
    quick-overview
-
-**User Guide**
-
-* :doc:`io`
-* :doc:`io-distributed`
-* :doc:`attributes`
-* :doc:`config`
-* :doc:`crs`
-* :doc:`extraction`
-* :doc:`band-math`
-* :doc:`machine-learning`
-* :doc:`apply`
-* :doc:`moving`
-* :doc:`radiometry`
-* :doc:`web`
+   tutorial
+   examples
 
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: User Guide
-
-   io
-   io-distributed
-   attributes
-   config
-   crs
-   extraction
-   band-math
-   machine-learning
-   apply
-   moving
-   radiometry
-   web
-
-**Change Log**
-
-* :doc:`changelog`
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Change Log
+   :caption: Changes
 
    changelog
-
-**Reference**
-
-* :doc:`api`
+   issues
 
 .. toctree::
    :maxdepth: 1
