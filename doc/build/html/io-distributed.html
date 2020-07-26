@@ -51,8 +51,8 @@ several examples illustrating this process.</p>
 <span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="kn">import</span> <span class="n">visualize</span>
 </pre></div>
 </div>
-<div class="section" id="calculate-a-normalized-difference-index-using-dask">
-<h2>Calculate a normalized difference index using Dask<a class="headerlink" href="#calculate-a-normalized-difference-index-using-dask" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="use-dask-to-compute-with-parallel-workers">
+<h2>Use Dask to compute with parallel workers<a class="headerlink" href="#use-dask-to-compute-with-parallel-workers" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>These examples illustrate the Dask concurrency over a DataArray task. An example showing how to write results
@@ -177,8 +177,8 @@ to file in parallel are shown at the bottom of the page.</p>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * band     (band) &lt;U7 &#39;results&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -200,8 +200,8 @@ to file in parallel are shown at the bottom of the page.</p>
         marginwidth="0" marginheight="0" scrolling="no"
         width="650" height="300" style="border:none"></iframe></div>
 </div>
-<div class="section" id="writing-computation-results-to-file">
-<h2>Writing computation results to file<a class="headerlink" href="#writing-computation-results-to-file" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="use-geowombat-to-write-a-task-to-file">
+<h2>Use GeoWombat to write a task to file<a class="headerlink" href="#use-geowombat-to-write-a-task-to-file" title="Permalink to this headline">¶</a></h2>
 <p>In the previous examples, the call to <code class="docutils literal notranslate"><span class="pre">dask</span></code> <code class="xref py py-func docutils literal notranslate"><span class="pre">compute()</span></code> lets <code class="docutils literal notranslate"><span class="pre">dask</span></code> manage the task distribution. When writing results
 to file with <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, individual chunks are managed in a parallel process using <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a>.
 While there are many argument options to consider when calling <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, some of the key ones
@@ -258,6 +258,61 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
         <span class="c1">#</span>
         <span class="c1"># The results will be written under a distributed cluster environment.</span>
         <span class="n">task</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;results.tif&#39;</span><span class="p">,</span> <span class="n">use_client</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="use-geowombat-to-gather-block-level-results-in-parallel">
+<h2>Use GeoWombat to gather block-level results in parallel<a class="headerlink" href="#use-geowombat-to-gather-block-level-results-in-parallel" title="Permalink to this headline">¶</a></h2>
+<p>With <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, a Xarray/Dask task graph is executed in parallel and written to a raster file. If, however, you wish to retrieve values for each block without writing the entire blocks to file, use <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>. In the example below, a custom function (<cite>user_func</cite>) is processed in parallel over each raster chunk/block.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.core.parallel</span> <span class="kn">import</span> <span class="n">ParallelTask</span>
+
+<span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Block-level function to be executed in parallel. The first argument is the block data, and</span>
+<span class="sd">    the second argument is the number of parallel worker threads for dask.compute().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Gather function arguments</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+
+    <span class="c1"># Send the computation to Dask</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span>
+
+<span class="c1"># Process 8 windows in parallel using threads</span>
+<span class="c1"># Process 1 dask chunks in parallel using threads</span>
+<span class="c1"># 8 total workers are needed</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Each block is a 512x512 dask array</span>
+    <span class="c1"># with chunks of 512x512</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">ParallelTask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+                      <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span>
+                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># There is only 1 chunk per block, so no</span>
+    <span class="c1"># point in using multiple threads here</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">user_func</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the example above, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code> reads row and column chunks of <cite>src.gw.row_chunks</cite> and <cite>src.gw.col_chunks</cite> size (which is set with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>). Let’s say we open a raster with chunks of 512x512. In the above example, the <cite>data.data.sum().compute(scheduler=’threads’, num_workers=num_workers)</cite> dask computation only has 1 chunk to process because the chunk sizes are the same size as the blocks being passed to <cite>user_func</cite>. We can specify a larger block size to read in parallel (the dask chunk size will remain the same) with <strong>row_chunks</strong> and <strong>col_chunks</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Process 8 windows in parallel using threads</span>
+<span class="c1"># Process 4 dask chunks in parallel using threads</span>
+<span class="c1"># 32 total workers are needed</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Each block is a 1024x1024 dask array</span>
+    <span class="c1"># with chunks of 512x512</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">ParallelTask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+                      <span class="n">row_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                      <span class="n">col_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                      <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span>
+                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># Now, each block has 4 chunks, so we can use dask</span>
+    <span class="c1"># to process them in parallel</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">user_func</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
