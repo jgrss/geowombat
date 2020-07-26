@@ -247,41 +247,54 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
     # The geo-transform is needed on the block
     # left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
 
+    out_data_ = None
+
     if 'apply' in block.attrs:
 
         attrs = block.attrs.copy()
 
         # Update the block transform
-        # attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
         attrs['transform'] = Affine(*block.gw.transform)
         attrs['window_id'] = wid
 
         block = block.assign_attrs(**attrs)
 
-        if hasattr(block.attrs['apply'], 'wombat_func_'):
+    if ('apply' in block.attrs) and hasattr(block.attrs['apply'], 'wombat_func_'):
 
-            if block.attrs['apply'].wombat_func_:
+        if padded_window_:
+            logger.warning('  Padding is not supported with lazy functions.')
 
-                # Add the data to the keyword arguments
-                block.attrs['apply_kwargs']['data'] = block
+        if block.attrs['apply'].wombat_func_:
 
-                out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
+            # Add the data to the keyword arguments
+            block.attrs['apply_kwargs']['data'] = block
 
-                if n_workers == 1:
-                    out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
-                else:
-
-                    with threading.Lock():
-                        out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
-
-        else:
+            out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
 
             if n_workers == 1:
-                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
             else:
 
                 with threading.Lock():
-                    out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                    out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
+
+        else:
+            logger.exception('  The lazy wombat function is turned off.')
+
+    else:
+
+        ###############################
+        # Get the data as a NumPy array
+        ###############################
+
+        if n_workers == 1:
+            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+        else:
+
+            with threading.Lock():
+                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+
+        if ('apply' in block.attrs) and not hasattr(block.attrs['apply'], 'wombat_func_'):
 
             if padded_window_:
 
@@ -293,13 +306,16 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
 
                 dshape = out_data_.shape
 
-                if len(dshape) == 2:
-                    out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
-                elif len(dshape) == 3:
-                    out_data_ = np.pad(out_data_, ((0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
-                elif len(dshape) == 4:
-                    out_data_ = np.pad(out_data_, ((0, 0), (0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+                if (rspad > 0) or (cspad > 0) or (repad > 0) or (cepad > 0):
 
+                    if len(dshape) == 2:
+                        out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
+                    elif len(dshape) == 3:
+                        out_data_ = np.pad(out_data_, ((0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+                    elif len(dshape) == 4:
+                        out_data_ = np.pad(out_data_, ((0, 0), (0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+
+            # Apply the user function
             if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
                 out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
             elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
@@ -311,45 +327,46 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
 
             if padded_window_:
 
+                ##########################
+                # Remove the extra padding
+                ##########################
+
                 dshape = out_data_.shape
 
                 if len(dshape) == 2:
-                    out_data_ = out_data_[rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
                 elif len(dshape) == 3:
-                    out_data_ = out_data_[:, rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[:, rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
                 elif len(dshape) == 4:
-                    out_data_ = out_data_[:, :, rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[:, :, rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
 
-    else:
+                dshape = out_data_.shape
 
-        if n_workers == 1:
-            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                ####################
+                # Remove the padding
+                ####################
+
+                # Get the non-padded array slice
+                row_diff = abs(window_.row_off - padded_window_.row_off)
+                col_diff = abs(window_.col_off - padded_window_.col_off)
+
+                if len(dshape) == 2:
+                    out_data_ = out_data_[row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+                elif len(dshape) == 3:
+                    out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+                elif len(dshape) == 4:
+                    out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+
         else:
+            logger.warning('  Padding is only supported with user functions.')
 
-            with threading.Lock():
-                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
-
-    if padded_window_:
-
-        dshape = out_data_.shape
-
-        # Get the non-padded array slice
-        row_diff = abs(window_.row_off - padded_window_.row_off)
-        col_diff = abs(window_.col_off - padded_window_.col_off)
-
-        if len(dshape) == 2:
-            out_data_ = out_data_[row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
-        elif len(dshape) == 3:
-            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
-        elif len(dshape) == 4:
-            out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
-
-    # out_data_, window_ = _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_)
+    if not isinstance(out_data_, np.ndarray):
+        logger.exception('  The data were not computed properly for block {:,d}'.format(wid))
 
     dshape = out_data_.shape
 
     if len(dshape) > 2:
-        out_data_ = np.squeeze(out_data_)
+        out_data_ = out_data_.squeeze()
 
     if len(dshape) == 2:
         indexes_ = 1
