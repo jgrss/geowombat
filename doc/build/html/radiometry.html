@@ -37,9 +37,9 @@
             
   <div class="section" id="radiometry">
 <span id="id1"></span><h1>Radiometry<a class="headerlink" href="#radiometry" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data">
-<h2><cite>GeoWombat</cite> uses the global c-factor method to apply BRDF normalization on surface reflectance data<a class="headerlink" href="#geowombat-uses-the-global-c-factor-method-to-apply-brdf-normalization-on-surface-reflectance-data" title="Permalink to this headline">¶</a></h2>
-<p>In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.</p>
+<div class="section" id="brdf-adjusted-surface-reflectance">
+<h2>BRDF-adjusted surface reflectance<a class="headerlink" href="#brdf-adjusted-surface-reflectance" title="Permalink to this headline">¶</a></h2>
+<p>GeoWombat uses the global c-factor method to apply BRDF normalization on surface reflectance data. In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
@@ -123,13 +123,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">

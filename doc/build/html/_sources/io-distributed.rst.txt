@@ -7,7 +7,6 @@ One of the key features of GeoWombat is the ability to write Dask/Xarray tasks t
 several examples illustrating this process.
 
 Import GeoWombat and Dask
--------------------------
 
 .. ipython:: python
 
@@ -21,8 +20,8 @@ Dask diagnostics
     from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
     from dask.diagnostics import visualize
 
-Calculate a normalized difference index
----------------------------------------
+Calculate a normalized difference index using Dask
+--------------------------------------------------
 
 .. note::
 
@@ -116,8 +115,8 @@ Increase the number of parallel workers
             marginwidth="0" marginheight="0" scrolling="no"
             width="650" height="300" style="border:none"></iframe>
 
-Increase the complexity of the task
------------------------------------
+Increase the complexity of the parallel task
+--------------------------------------------
 
 Open bands as separate files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

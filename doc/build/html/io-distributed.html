@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Raster attributes" href="attributes.html" />
+    <link rel="next" title="Data extraction" href="extraction.html" />
     <link rel="prev" title="Raster I/O" href="io.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -39,8 +39,7 @@
 <span id="io-distributed"></span><h1>Distributed processing<a class="headerlink" href="#distributed-processing" title="Permalink to this headline">¶</a></h1>
 <p>One of the key features of GeoWombat is the ability to write Dask/Xarray tasks to file in a concurrent workflow. Below are
 several examples illustrating this process.</p>
-<div class="section" id="import-geowombat-and-dask">
-<h2>Import GeoWombat and Dask<a class="headerlink" href="#import-geowombat-and-dask" title="Permalink to this headline">¶</a></h2>
+<p>Import GeoWombat and Dask</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span>
@@ -52,9 +51,8 @@ several examples illustrating this process.</p>
 <span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="kn">import</span> <span class="n">visualize</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="calculate-a-normalized-difference-index">
-<h2>Calculate a normalized difference index<a class="headerlink" href="#calculate-a-normalized-difference-index" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="calculate-a-normalized-difference-index-using-dask">
+<h2>Calculate a normalized difference index using Dask<a class="headerlink" href="#calculate-a-normalized-difference-index-using-dask" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>These examples illustrate the Dask concurrency over a DataArray task. An example showing how to write results
@@ -127,8 +125,8 @@ to file in parallel are shown at the bottom of the page.</p>
 <iframe src="_static/profile_chunks256_8workers.html"
         marginwidth="0" marginheight="0" scrolling="no"
         width="650" height="300" style="border:none"></iframe></div>
-<div class="section" id="increase-the-complexity-of-the-task">
-<h2>Increase the complexity of the task<a class="headerlink" href="#increase-the-complexity-of-the-task" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="increase-the-complexity-of-the-parallel-task">
+<h2>Increase the complexity of the parallel task<a class="headerlink" href="#increase-the-complexity-of-the-parallel-task" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="open-bands-as-separate-files">
 <h3>Open bands as separate files<a class="headerlink" href="#open-bands-as-separate-files" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">chunks</span> <span class="o">=</span> <span class="mi">256</span>
@@ -303,13 +301,12 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">
@@ -318,7 +315,7 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="io.html" title="previous chapter">Raster I/O</a></li>
-      <li>Next: <a href="attributes.html" title="next chapter">Raster attributes</a></li>
+      <li>Next: <a href="extraction.html" title="next chapter">Data extraction</a></li>
   </ul></li>
   </ul></li>
 </ul>

@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Change Log" href="changelog.html" />
+    <link rel="next" title="Change log" href="changelog.html" />
     <link rel="prev" title="Radiometry" href="radiometry.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -37,8 +37,8 @@
             
   <div class="section" id="web">
 <span id="id1"></span><h1>Web<a class="headerlink" href="#web" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="geowombat-can-be-used-to-download-directly-from-the-google-cloud-platform">
-<h2>GeoWombat can be used to download directly from the Google Cloud Platform.<a class="headerlink" href="#geowombat-can-be-used-to-download-directly-from-the-google-cloud-platform" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="download-data-from-google-cloud-platform">
+<h2>Download data from Google Cloud Platform<a class="headerlink" href="#download-data-from-google-cloud-platform" title="Permalink to this headline">¶</a></h2>
 <p>Here, a Landsat 7 panchromatic image is downloaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geowombat.web</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
 
@@ -63,8 +63,8 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="geowombat-provides-a-convenience-function-to-download-radiometrically-adjust-and-cube-data">
-<h2>GeoWombat provides a convenience function to download, radiometrically adjust, and cube data.<a class="headerlink" href="#geowombat-provides-a-convenience-function-to-download-radiometrically-adjust-and-cube-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="download-and-cube-data">
+<h2>Download and cube data<a class="headerlink" href="#download-and-cube-data" title="Permalink to this headline">¶</a></h2>
 <p>In this example, data are downloaded and processed for a given time range and geographic extent.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download Landsat 7 data</span>
 <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;l7&#39;</span><span class="p">]</span>
@@ -96,7 +96,7 @@
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;file.gpkg&#39;</span><span class="p">)</span>
 
 <span class="c1"># The CRS should be WGS84 lat/long</span>
-<span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">to_crs</span><span class="p">({</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="s1">&#39;epsg:4326&#39;</span><span class="p">})</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="s1">&#39;epsg:4326&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -140,13 +140,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#top-level-functions">Top-level functions</a></li>
 </ul>
 
 <div class="relations">
@@ -155,7 +154,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="radiometry.html" title="previous chapter">Radiometry</a></li>
-      <li>Next: <a href="changelog.html" title="next chapter">Change Log</a></li>
+      <li>Next: <a href="changelog.html" title="next chapter">Change log</a></li>
   </ul></li>
   </ul></li>
 </ul>

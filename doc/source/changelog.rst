@@ -1,6 +1,6 @@
 .. _changelog:
 
-Change Log
+Change log
 ==========
 
 1.2.23 ()
