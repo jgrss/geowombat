@@ -20,8 +20,8 @@ Dask diagnostics
     from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
     from dask.diagnostics import visualize
 
-Calculate a normalized difference index using Dask
---------------------------------------------------
+Use Dask to compute with parallel workers
+-----------------------------------------
 
 .. note::
 
@@ -179,8 +179,8 @@ Open bands as a stacked array
             marginwidth="0" marginheight="0" scrolling="no"
             width="650" height="300" style="border:none"></iframe>
 
-Writing computation results to file
------------------------------------
+Use GeoWombat to write a task to file
+-------------------------------------
 
 In the previous examples, the call to ``dask`` :func:`compute` lets ``dask`` manage the task distribution. When writing results
 to file with :func:`geowombat.to_raster`, individual chunks are managed in a parallel process using `concurrent.futures <https://docs.python.org/3/library/concurrent.futures.html>`_.
@@ -245,3 +245,62 @@ The same task might be executed on a distributed system in the following way.
             #
             # The results will be written under a distributed cluster environment.
             task.gw.to_raster('results.tif', use_client=True, n_workers=1, n_threads=8, compress='lzw')
+
+Use GeoWombat to gather block-level results in parallel
+-------------------------------------------------------
+
+With :func:`geowombat.to_raster`, a Xarray/Dask task graph is executed in parallel and written to a raster file. If, however, you wish to retrieve values for each block without writing the entire blocks to file, use :class:`geowombat.core.parallel.ParallelTask`. In the example below, a custom function (`user_func`) is processed in parallel over each raster chunk/block.
+
+.. code:: python
+
+    import geowombat as gw
+    from geowombat.core.parallel import ParallelTask
+
+    def user_func(*args):
+
+        """
+        Block-level function to be executed in parallel. The first argument is the block data, and
+        the second argument is the number of parallel worker threads for dask.compute().
+        """
+
+        # Gather function arguments
+        data, num_workers = list(itertools.chain(*args))
+
+        # Send the computation to Dask
+        return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
+
+    # Process 8 windows in parallel using threads
+    # Process 1 dask chunks in parallel using threads
+    # 8 total workers are needed
+    with gw.open('image.tif', chunks=512) as src:
+
+        # Each block is a 512x512 dask array
+        # with chunks of 512x512
+        pt = ParallelTask(src,
+                          scheduler='threads',
+                          n_workers=8)
+
+        # There is only 1 chunk per block, so no
+        # point in using multiple threads here
+        res = pt.map(user_func, 1)
+
+In the example above, :class:`geowombat.core.parallel.ParallelTask` reads row and column chunks of `src.gw.row_chunks` and `src.gw.col_chunks` size (which is set with :func:`geowombat.open`). Let's say we open a raster with chunks of 512x512. In the above example, the `data.data.sum().compute(scheduler='threads', num_workers=num_workers)` dask computation only has 1 chunk to process because the chunk sizes are the same size as the blocks being passed to `user_func`. We can specify a larger block size to read in parallel (the dask chunk size will remain the same) with **row_chunks** and **col_chunks**.
+
+.. code:: python
+
+    # Process 8 windows in parallel using threads
+    # Process 4 dask chunks in parallel using threads
+    # 32 total workers are needed
+    with gw.open('image.tif', chunks=512) as src:
+
+        # Each block is a 1024x1024 dask array
+        # with chunks of 512x512
+        pt = ParallelTask(src,
+                          row_chunks=1024,
+                          col_chunks=1024,
+                          scheduler='threads',
+                          n_workers=8)
+
+        # Now, each block has 4 chunks, so we can use dask
+        # to process them in parallel
+        res = pt.map(user_func, 4)

@@ -98,6 +98,7 @@ def get_package_data():
             'geowombat': ['config.ini',
                           'data/*.tif',
                           'data/*.TIF',
+                          'data/*.gpkg',
                           'data/*.tar.gz',
                           'moving/*.so',
                           'bin/*.tar.gz']}
