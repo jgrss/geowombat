@@ -17,6 +17,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="BRDF" href="geowombat.radiometry.BRDF.html" />
+    <link rel="prev" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -35,6 +37,49 @@
             
   <div class="section" id="pan-sharpen">
 <h1>pan_sharpen<a class="headerlink" href="#pan-sharpen" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.radiometry.pan_sharpen">
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">pan_sharpen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">bands</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pan</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'brovey'</span></em>, <em class="sig-param"><span class="n">blue_weight</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">green_weight</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">red_weight</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">frac</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">65535</span></em>, <em class="sig-param"><span class="n">robust</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">hist_match</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">model_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ordinal</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.pan_sharpen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sharpens wavelengths using the panchromatic band</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The band data.</p></li>
+<li><p><strong>bands</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The bands to sharpen. If not given, ‘blue’, ‘green’, and ‘red’ are used.</p></li>
+<li><p><strong>pan</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – The panchromatic <code class="docutils literal notranslate"><span class="pre">DataArray</span></code>. <code class="docutils literal notranslate"><span class="pre">pan</span></code> is only needed if it is not included
+with <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to use. Choices are [‘brovey’, ‘linear’, ‘rf’, ‘gb’].</p></li>
+<li><p><strong>blue_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The blue band weight.</p></li>
+<li><p><strong>green_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The green band weight.</p></li>
+<li><p><strong>red_weight</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The red band weight.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply to the data.</p></li>
+<li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The sample fraction.</p></li>
+<li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers for <code class="docutils literal notranslate"><span class="pre">sklearn.linear_model.LinearRegression</span></code>.</p></li>
+<li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>int | float</em><em>]</em>) – A ‘no data’ value to ignore.</p></li>
+<li><p><strong>robust</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to fit a robust regression. Only applies when <cite>method</cite> = ‘linear’.</p></li>
+<li><p><strong>hist_match</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to match histograms after sharpening.</p></li>
+<li><p><strong>model_dict</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – A dictionary of pre-trained regressors to apply to each band.</p></li>
+<li><p><strong>ordinal</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – A date ordinal to use for predictions.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments for the regressor. Only applies when <cite>method</cite> != ‘brovey’.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">pan_sharpen</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l7&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">pan_sharpen</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -79,14 +124,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="previous chapter">sentinel_pixel_angles</a></li>
+      <li>Next: <a href="geowombat.radiometry.BRDF.html" title="next chapter">BRDF</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

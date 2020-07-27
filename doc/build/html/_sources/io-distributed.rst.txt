@@ -88,6 +88,13 @@ Chunk sizes of 256x256 reduce the number of file reads.
 
 Increase the number of parallel workers
 
+.. note::
+
+     The appropriate choice of chunk size is challenging and takes some practice. Start by reading `Dask Best Practices <https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size>`_. We find, however, that with some experimentation you can find a good chunk size for common tasks. One simple approach is to choose a chunk size that fills around 75-95% of memory on your system. Accidentally exceeding 100% of memory leads to significant slow-downs.
+
+     If you decide to manually calculate how large chunks should be to utilize all resources, keep in mind that "Dask will often have as many chunks in memory as twice the number of active threads"
+     `Orientation of chunks <https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size>`_ is also critical, especially if dealing with multiple bands or a time series of images. Chunks in this case should have three dimensions ([bands, y, x] or [time, bands, y, x]). So, a five-period image stack with a single band might have a chunk size of [5, 1, 256, 256]. Proper orientation will reduce the need to read the same data more than once.
+
 .. code:: python
 
     with Profiler() as prof, \

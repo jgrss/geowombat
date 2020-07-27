@@ -103,6 +103,12 @@ to file in parallel are shown at the bottom of the page.</p>
 <iframe src="_static/profile_chunks256_4workers.html"
         marginwidth="0" marginheight="0" scrolling="no"
         width="650" height="300" style="border:none"></iframe><p>Increase the number of parallel workers</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The appropriate choice of chunk size is challenging and takes some practice. Start by reading <a class="reference external" href="https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size">Dask Best Practices</a>. We find, however, that with some experimentation you can find a good chunk size for common tasks. One simple approach is to choose a chunk size that fills around 75-95% of memory on your system. Accidentally exceeding 100% of memory leads to significant slow-downs.</p>
+<p>If you decide to manually calculate how large chunks should be to utilize all resources, keep in mind that “Dask will often have as many chunks in memory as twice the number of active threads”
+<a class="reference external" href="https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size">Orientation of chunks</a> is also critical, especially if dealing with multiple bands or a time series of images. Chunks in this case should have three dimensions ([bands, y, x] or [time, bands, y, x]). So, a five-period image stack with a single band might have a chunk size of [5, 1, 256, 256]. Proper orientation will reduce the need to read the same data more than once.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
     <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
         <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
@@ -356,7 +362,7 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
