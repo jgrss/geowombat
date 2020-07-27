@@ -54,3 +54,5 @@ When a list of files are given, GeoWombat will stack the data by default. To mos
     with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
                  mosaic=True) as src:
         print(src)
+
+See :ref:`io` for more examples illustrating file opening.

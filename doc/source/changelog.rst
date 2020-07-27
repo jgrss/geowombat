@@ -1,15 +1,21 @@
 .. _changelog:
 
-Change log
-==========
+Changelog
+=========
 
-1.2.23 ()
----------
+1.2.23 (27 July 2020)
+---------------------
 
 Bug fixes
 ~~~~~~~~~
 
+- fixed padded block writing with user functions in :func:`geowombat.to_raster`.
 - Added check for existing metadata file in :func:`geowombat.util.web.download_cube`.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Reorganized the ReadTheDocs pages.
 
 1.2.22 (21 July 2020)
 ---------------------

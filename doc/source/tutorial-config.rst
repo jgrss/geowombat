@@ -64,7 +64,7 @@ Configuration keywords beginning with **ref** are the most important commands wh
 Reference settings: Cell size
 -----------------------------
 
-Combine multiple configuration keywords. In the example below, the raster CRS is transformed from UTM to Albers Equal Area with a resampled cell size of 100m x 100m.
+It is possible to combine multiple configuration keywords. In the example below, the raster CRS is transformed from UTM to Albers Equal Area with a resampled cell size of 100m x 100m.
 
 .. ipython:: python
 
@@ -130,7 +130,7 @@ To use another image as a reference, just set **ref_image**. Then, the opened fi
 Reference settings: Sensors
 ---------------------------
 
-Because rasters are opened as DataArrays, the band coordinates will be named. By default, the bands will be named by their index position (starting at 1). It might, however, be more intuitive to store the band names as strings, where the names correspond to the sensor wavelengths. In GeoWombat, you can set the band names explicitly upon opening a file by using the :func:`geowombat.open` **band_names** keyword. Alternatively, if the sensor is known (and supported by GeoWombat), then you can set the bands names by specifying the sensor name in the configuration settings.
+Because rasters are opened as DataArrays, the band coordinates will be named. By default, the bands will be named by their index position (starting at 1). It might, however, be more intuitive to store the band names as strings, where the names correspond to the sensor wavelengths. In GeoWombat, you can set the band names explicitly upon opening a file by using the :func:`geowombat.open` **band_names** keyword. Alternatively, if the sensor is known (and supported by GeoWombat), then you can set the band names by specifying the sensor name in the configuration settings.
 
 .. note::
 
@@ -150,7 +150,7 @@ Because rasters are opened as DataArrays, the band coordinates will be named. By
         with gw.open(l8_224078_20200518) as src:
             print(src.band)
 
-To see all available sensors names, use the **avail_sensors** property.
+To see all available sensor names, use the **avail_sensors** property.
 
 .. ipython:: python
 

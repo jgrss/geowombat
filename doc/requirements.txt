@@ -64,4 +64,3 @@ numpydoc
 sphinx
 sphinx-automodapi
 sphinxcontrib-bibtex
-psutil
