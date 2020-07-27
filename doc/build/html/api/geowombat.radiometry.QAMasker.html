@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QAMasker &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>QAMasker &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -25,8 +25,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="qamasker">
+<h1>QAMasker<a class="headerlink" href="#qamasker" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="geowombat.radiometry.QAMasker">
+<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">QAMasker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qa</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">mask_items</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">modis_qa_band</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">modis_quality</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">confidence_level</span><span class="o">=</span><span class="default_value">'yes'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for masking bit-packed quality flags</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qa</strong> (<em>DataArray</em>) – The band quality array.</p></li>
+<li><p><strong>sensor</strong> (<em>str</em>) – The sensor name. Choices are [‘hls’, ‘l8-pre’, ‘l8-c1’, ‘l-c1’, ‘modis’].
+‘l-c1’ refers to Collection 1 L4-5 and L7. ‘l8-c1’ refers to Collection 1 L8.</p></li>
+<li><p><strong>mask_items</strong> (<em>str list</em>) – A list of items to mask.</p></li>
+<li><p><strong>modis_qa_position</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS QA band position. Default is 1.</p></li>
+<li><p><strong>modis_quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS quality level. Default is 2.</p></li>
+<li><p><strong>confidence_level</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The confidence level. Choices are [‘notdet’, ‘no’, ‘maybe’, ‘yes’].</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>Landsat Collection 1:</dt><dd><p><a class="reference external" href="https://landsat.usgs.gov/collectionqualityband">https://landsat.usgs.gov/collectionqualityband</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">QAMasker</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the MODIS cloud mask.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">mask</span> <span class="o">=</span> <span class="n">QAMasker</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="s1">&#39;modis&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># NASA HLS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">mask</span> <span class="o">=</span> <span class="n">QAMasker</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="s1">&#39;hls&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;cloud&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.QAMasker.to_mask" title="geowombat.radiometry.QAMasker.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a>()</p></td>
+<td><p>Converts QA bit-packed data to an integer mask</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Documentation</p>
+<dl class="py method">
+<dt id="geowombat.radiometry.QAMasker.to_mask">
+<code class="sig-name descname">to_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts QA bit-packed data to an integer mask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>0: clear,
+1: water,
+2: shadow,
+3: snow or ice,
+4: cloud,
+5: cirrus cloud,
+6: adjacent cloud,
+7: saturated,
+8: dropped,
+9: terrain occluded,
+255: fill</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -53,28 +144,15 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
@@ -111,103 +189,13 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="qamasker">
-<h1>QAMasker<a class="headerlink" href="#qamasker" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="geowombat.radiometry.QAMasker">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">QAMasker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qa</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">mask_items</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">modis_qa_band</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">modis_quality</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">confidence_level</span><span class="o">=</span><span class="default_value">'yes'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class for masking bit-packed quality flags</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>qa</strong> (<em>DataArray</em>) – The band quality array.</p></li>
-<li><p><strong>sensor</strong> (<em>str</em>) – The sensor name. Choices are [‘hls’, ‘l8-pre’, ‘l8-c1’, ‘l-c1’, ‘modis’].
-‘l-c1’ refers to Collection 1 L4-5 and L7. ‘l8-c1’ refers to Collection 1 L8.</p></li>
-<li><p><strong>mask_items</strong> (<em>str list</em>) – A list of items to mask.</p></li>
-<li><p><strong>modis_qa_position</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS QA band position. Default is 1.</p></li>
-<li><p><strong>modis_quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The MODIS quality level. Default is 2.</p></li>
-<li><p><strong>confidence_level</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The confidence level. Choices are [‘notdet’, ‘no’, ‘maybe’, ‘yes’].</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">References</p>
-<dl class="simple">
-<dt>Landsat Collection 1:</dt><dd><p><a class="reference external" href="https://landsat.usgs.gov/collectionqualityband">https://landsat.usgs.gov/collectionqualityband</a></p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">QAMasker</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the MODIS cloud mask.</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">mask</span> <span class="o">=</span> <span class="n">QAMasker</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="s1">&#39;modis&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># NASA HLS</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">mask</span> <span class="o">=</span> <span class="n">QAMasker</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="s1">&#39;hls&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;cloud&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>
-</pre></div>
-</div>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.QAMasker.to_mask" title="geowombat.radiometry.QAMasker.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a>(self)</p></td>
-<td><p>Converts QA bit-packed data to an integer mask</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="py method">
-<dt id="geowombat.radiometry.QAMasker.to_mask">
-<code class="sig-name descname">to_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts QA bit-packed data to an integer mask</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>0: clear,
-1: water,
-2: shadow,
-3: snow or ice,
-4: cloud,
-5: cirrus cloud,
-6: adjacent cloud,
-7: saturated,
-8: dropped,
-9: terrain occluded,
-255: fill</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

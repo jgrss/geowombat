@@ -6,6 +6,9 @@ Band math
 Vegetation indices
 ------------------
 
+Enhanced Vegetation Index (EVI)
+-------------------------------
+
 .. ipython:: python
 
     import geowombat as gw
@@ -29,14 +32,18 @@ Use the configuration context to set parameters.
             evi = ds.gw.evi()
             print(evi)
 
-Load the data to return a `NumPy` array.
+Two-band Enhanced Vegetation Index (EVI2)
+-----------------------------------------
 
 .. ipython:: python
 
     with gw.config.update(sensor='rgbn', scale_factor=0.0001):
         with gw.open(rgbn) as ds:
-            evi2 = ds.gw.evi2().squeeze().load().data
+            evi2 = ds.gw.evi2()
             print(evi2)
+
+Normalized difference indices
+-----------------------------
 
 Use the generic :func:`norm_diff` function with any two-band combination.
 

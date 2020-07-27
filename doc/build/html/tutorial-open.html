@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening rasters &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration manager" href="tutorial-config.html" />
+    <link rel="prev" title="Why GeoWombat?" href="tutorial-why.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="opening-rasters">
+<span id="tutorial-open"></span><h1>Opening rasters<a class="headerlink" href="#opening-rasters" title="Permalink to this headline">¶</a></h1>
+<p>GeoWombat’s file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with a context manager using the function <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>. GeoWombat uses <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> to load data into an <cite>xarray.DataArray</cite>. In GeoWombat, the data are always chunked, meaning the data are always loaded as Dask arrays. As with <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code>, the opened DataArrays always have at least 1 band.</p>
+<div class="section" id="opening-a-single-image">
+<h2>Opening a single image<a class="headerlink" href="#opening-a-single-image" title="Permalink to this headline">¶</a></h2>
+<p>Opening an image with default settings looks similar to <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.open()</span></code>. <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> expects a file name (<cite>str</cite> or <cite>pathlib.Path</cite>).</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
+
+<span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-878e4a4e7d59c433d55b8048d8ff1744&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) int64 1 2 3</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<p>In the example above, <cite>src</cite> is an <cite>xarray.DataArray</cite>. Thus, printing the object will display the underlying Dask array dimenssions and chunks, the DataArray named coordinates, and the DataArray attributes.</p>
+</div>
+<div class="section" id="opening-multiple-bands-as-a-stack">
+<h2>Opening multiple bands as a stack<a class="headerlink" href="#opening-multiple-bands-as-a-stack" title="Permalink to this headline">¶</a></h2>
+<p>Often, satellite bands will be stored in separate raster files. To open the files as one DataArray, specify a list instead of a file name.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span>
+
+<span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (time: 3, band: 1, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 1, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * band     (band) int64 1</span>
+<span class="go">  * time     (time) datetime64[ns] 2240-07-08 2240-07-08 2240-07-08</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+</pre></div>
+</div>
+<p>By default, GeoWombat will stack multiple files by time. So, to stack multiple bands with the same timestamp, change the <strong>stack_dim</strong> keyword.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span>
+
+<span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span>
+<span class="gp">   ...: </span>             <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * band     (band) int64 1 1 1</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="opening-multiple-bands-as-a-mosaic">
+<h2>Opening multiple bands as a mosaic<a class="headerlink" href="#opening-multiple-bands-as-a-mosaic" title="Permalink to this headline">¶</a></h2>
+<p>When a list of files are given, GeoWombat will stack the data by default. To mosaic multiple files into the same band coordinate, use the <strong>mosaic</strong> keyword.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span>
+
+<span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">],</span>
+<span class="gp">   ...: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1515, x: 2006)&gt;</span>
+<span class="go">dask.array&lt;maximum, shape=(1, 1515, 2006), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) int64 1</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
+<span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="io.html#io"><span class="std std-ref">Raster I/O</span></a> for more examples illustrating file opening.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="tutorial.html">Tutorial</a><ul>
+      <li>Previous: <a href="tutorial-why.html" title="previous chapter">Why GeoWombat?</a></li>
+      <li>Next: <a href="tutorial-config.html" title="next chapter">Configuration manager</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/tutorial-open.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

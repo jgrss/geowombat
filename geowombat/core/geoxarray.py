@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask
+from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
@@ -301,7 +301,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             return ndarray_to_xarray(data, self._obj.data, band_names)
 
-    def compare(self, op, b):
+    def compare(self, op, b, return_binary=False):
 
         """
         Comparison operation
@@ -309,26 +309,85 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             op (str): The comparison operation.
             b (int | float): The value to compare to.
+            return_binary (Optional[bool]): Whether to return a binary (1 or 0) array.
 
         Returns:
-            ``xarray.DataArray``
+            ``xarray.DataArray``:
+                Valid data where ``op`` meets criteria ``b``, otherwise nans
         """
 
         if op not in ['lt', 'le', 'gt', 'ge', 'eq', 'ne']:
             raise NameError('The comparison operation is not supported.')
 
         if op == 'lt':
-            return self._obj.where(self._obj < b)
+            out = self._obj.where(self._obj < b)
         elif op == 'le':
-            return self._obj.where(self._obj <= b)
+            out = self._obj.where(self._obj <= b)
         elif op == 'gt':
-            return self._obj.where(self._obj > b)
+            out = self._obj.where(self._obj > b)
         elif op == 'ge':
-            return self._obj.where(self._obj >= b)
+            out = self._obj.where(self._obj >= b)
         elif op == 'eq':
-            return self._obj.where(self._obj == b)
+            out = self._obj.where(self._obj == b)
         elif op == 'ne':
-            return self._obj.where(self._obj != b)
+            out = self._obj.where(self._obj != b)
+
+        if return_binary:
+            out = xr.where(out > 0, 1, np.nan)
+
+        return out.astype(self._obj.dtype).assign_attrs(**self._obj.attrs.copy())
+
+    def replace(self, to_replace):
+
+        """
+        Replace values given in to_replace with value.
+
+        Args:
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return replace(self._obj,
+                       to_replace)
+
+    def recode(self,
+               polygon,
+               to_replace,
+               num_workers=1):
+
+        """
+        Recodes a DataArray with polygon mappings
+
+        Args:
+            polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+            num_workers (Optional[int]): The number of parallel Dask workers (only used if ``to_replace``
+                has a 'mode' mapping).
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        return recode(self._obj,
+                      polygon,
+                      to_replace,
+                      num_workers=num_workers)
 
     def bounds_overlay(self, bounds, how='intersects'):
 
@@ -582,7 +641,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   readysize=None,
                   separate=False,
                   use_dask_store=False,
-                  out_block_type='zarr',
+                  out_block_type='gtiff',
                   keep_blocks=False,
                   verbose=0,
                   overwrite=False,
@@ -668,6 +727,25 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                                      blockysize=blockysize,
                                      **kwargs)
 
+        # Keywords for rasterio profile
+        if 'crs' not in kwargs:
+            kwargs['crs'] = self._obj.crs
+
+        if 'transform' not in kwargs:
+            kwargs['transform'] = self._obj.transform
+
+        if 'width' not in kwargs:
+            kwargs['width'] = self._obj.gw.ncols
+
+        if 'height' not in kwargs:
+            kwargs['height'] = self._obj.gw.nrows
+
+        if 'count' not in kwargs:
+            kwargs['count'] = self._obj.gw.nbands
+
+        if 'dtype' not in kwargs:
+            kwargs['dtype'] = self._obj.data.dtype.name
+
         to_raster(self._obj,
                   filename,
                   readxsize=readxsize,
@@ -689,12 +767,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   use_client=use_client,
                   address=address,
                   total_memory=total_memory,
-                  crs=self._obj.crs,
-                  transform=self._obj.transform,
-                  width=self._obj.gw.ncols,
-                  height=self._obj.gw.nrows,
-                  count=self._obj.gw.nbands,
-                  dtype=self._obj.data.dtype.name,
                   tags=tags,
                   **kwargs)
 
@@ -825,7 +897,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     return ds_.max(axis=0)
             >>>
             >>> with xr.open_rasterio('image.tif', chunks=(1, 512, 512)) as ds:
-            >>>     ds.io.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
+            >>>     ds.gw.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 
         cluster = _Cluster(n_workers=n_jobs,
@@ -839,7 +911,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             ds_sub = user_func(self._obj)
             ds_sub.attrs = self._obj.attrs
-            ds_sub.io.to_raster(filename, n_jobs=n_jobs, **kwargs)
+            ds_sub.gw.to_raster(filename, n_jobs=n_jobs, **kwargs)
 
         cluster.stop()
 
@@ -924,8 +996,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                   values,
                   op='eq',
                   units='km2',
-                  num_workers=1,
-                  **kwargs):
+                  row_chunks=None,
+                  col_chunks=None,
+                  n_workers=1,
+                  n_threads=1,
+                  scheduler='threads',
+                  n_chunks=100):
 
         """
         Calculates the area of data values
@@ -934,8 +1010,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             values (list): A list of values.
             op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+            row_chunks (Optional[int]): The row chunk size to process in parallel.
+            col_chunks (Optional[int]): The column chunk size to process in parallel.
+            n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
+            n_threads (Optional[int]): The number of parallel threads for ``dask.compute()``.
+            scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+
+                mpool: process pool of workers using ``multiprocessing.Pool``
+                processes: process pool of workers using ``concurrent.futures``
+                threads: thread pool of workers using ``concurrent.futures``
+
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
         Returns:
             ``pandas.DataFrame``
@@ -948,7 +1033,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>>     df = src.gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
             >>>                           units='km2',      # return area in kilometers squared
-            >>>                           num_workers=4,    # dask.compute() with 4 workers
+            >>>                           n_workers=4,
             >>>                           row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
             >>>                           col_chunks=1024)
         """
@@ -957,8 +1042,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                          values,
                          op=op,
                          units=units,
-                         num_workers=num_workers,
-                         **kwargs)
+                         row_chunks=row_chunks,
+                         col_chunks=col_chunks,
+                         n_workers=n_workers,
+                         n_threads=n_threads,
+                         scheduler=scheduler,
+                         n_chunks=n_chunks)
 
     def sample(self,
                method='random',

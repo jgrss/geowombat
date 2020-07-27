@@ -11,7 +11,7 @@ import random
 import string
 
 from ..errors import logger
-from ..backends.rasterio_ import WriteDaskArray
+from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
 
 try:
@@ -174,7 +174,56 @@ def _block_read_func(fn_, g_, t_):
     return w_, out_indexes_, out_data_
 
 
-def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
+def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_):
+
+    # Check if the data were read at larger
+    # extents than the write bounds.
+
+    obottom = otop - (orows * abs(block.gw.celly))
+    oright = oleft + (ocols * abs(block.gw.cellx))
+
+    bottom_ = top_ - (window_.height * abs(block.gw.celly))
+    right_ = left_ - (window_.width * abs(block.gw.cellx))
+
+    left_diff = 0
+    right_diff = 0
+    top_diff = 0
+    bottom_diff = 0
+
+    if left_ < oleft:
+        left_diff = int(abs(oleft - left_) / abs(block.gw.cellx))
+        right_diff = out_data_.shape[-1]
+    elif right_ > oright:
+        left_diff = 0
+        right_diff = int(abs(oright - right_) / abs(block.gw.cellx))
+
+    if bottom_ < obottom:
+        bottom_diff = int(abs(obottom - bottom_) / abs(block.gw.celly))
+        top_diff = 0
+    elif top_ > otop:
+        bottom_diff = out_data_.shape[-2]
+        top_diff = int(abs(otop - top_) / abs(block.gw.celly))
+
+    if (left_diff != 0) or (top_diff != 0) or (bottom_diff != 0) or (right_diff != 0):
+
+        dshape = out_data_.shape
+
+        if len(dshape) == 2:
+            out_data_ = out_data_[top_diff:bottom_diff, left_diff:right_diff]
+        elif len(dshape) == 3:
+            out_data_ = out_data_[:, top_diff:bottom_diff, left_diff:right_diff]
+        elif len(dshape) == 4:
+            out_data_ = out_data_[:, :, top_diff:bottom_diff, left_diff:right_diff]
+
+        window_ = Window(col_off=window_.col_off,
+                         row_off=window_.row_off,
+                         width=out_data_.shape[-1],
+                         height=out_data_.shape[-2])
+
+    return out_data_, window_
+
+
+def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, oleft, otop, ocols, orows):
 
     """
     Computes a DataArray window block of data
@@ -186,48 +235,66 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
         padded_window_ (namedtuple): A padded window ``rasterio.windows.Window`` object.
         n_workers (int): The number of parallel workers for chunks.
         num_workers (int): The number of parallel workers for ``dask.compute``.
+        oleft (float): The output image left coordinate.
+        otop (float): The output image top coordinate.
+        ocols (int): The output image columns.
+        orows (int): The output image rows.
 
     Returns:
         ``numpy.ndarray``, ``rasterio.windows.Window``, ``int`` | ``list``
     """
 
-    if 'apply' in block.attrs:
+    # The geo-transform is needed on the block
+    # left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
 
-        # The geo-transform is needed on the block
-        left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
+    out_data_ = None
+
+    if 'apply' in block.attrs:
 
         attrs = block.attrs.copy()
 
         # Update the block transform
-        attrs['transform'] = Affine(block.gw.cellx, 0.0, left_, 0.0, -block.gw.celly, top_)
+        attrs['transform'] = Affine(*block.gw.transform)
         attrs['window_id'] = wid
 
         block = block.assign_attrs(**attrs)
 
-        if hasattr(block.attrs['apply'], 'wombat_func_'):
+    if ('apply' in block.attrs) and hasattr(block.attrs['apply'], 'wombat_func_'):
 
-            if block.attrs['apply'].wombat_func_:
+        if padded_window_:
+            logger.warning('  Padding is not supported with lazy functions.')
 
-                # Add the data to the keyword arguments
-                block.attrs['apply_kwargs']['data'] = block
+        if block.attrs['apply'].wombat_func_:
 
-                out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
+            # Add the data to the keyword arguments
+            block.attrs['apply_kwargs']['data'] = block
 
-                if n_workers == 1:
-                    out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
-                else:
-
-                    with threading.Lock():
-                        out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
-
-        else:
+            out_data_ = block.attrs['apply'](**block.attrs['apply_kwargs'])
 
             if n_workers == 1:
-                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
             else:
 
                 with threading.Lock():
-                    out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                    out_data_ = out_data_.data.compute(scheduler='threads', num_workers=num_workers)
+
+        else:
+            logger.exception('  The lazy wombat function is turned off.')
+
+    else:
+
+        ###############################
+        # Get the data as a NumPy array
+        ###############################
+
+        if n_workers == 1:
+            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+        else:
+
+            with threading.Lock():
+                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+
+        if ('apply' in block.attrs) and not hasattr(block.attrs['apply'], 'wombat_func_'):
 
             if padded_window_:
 
@@ -239,13 +306,16 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
                 dshape = out_data_.shape
 
-                if len(dshape) == 2:
-                    out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
-                elif len(dshape) == 3:
-                    out_data_ = np.pad(out_data_, ((0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
-                elif len(dshape) == 4:
-                    out_data_ = np.pad(out_data_, ((0, 0), (0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+                if (rspad > 0) or (cspad > 0) or (repad > 0) or (cepad > 0):
 
+                    if len(dshape) == 2:
+                        out_data_ = np.pad(out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect')
+                    elif len(dshape) == 3:
+                        out_data_ = np.pad(out_data_, ((0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+                    elif len(dshape) == 4:
+                        out_data_ = np.pad(out_data_, ((0, 0), (0, 0), (rspad, repad), (cspad, cepad)), mode='reflect')
+
+            # Apply the user function
             if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
                 out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs'])
             elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
@@ -257,50 +327,53 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
             if padded_window_:
 
+                ##########################
+                # Remove the extra padding
+                ##########################
+
                 dshape = out_data_.shape
 
                 if len(dshape) == 2:
-                    out_data_ = out_data_[rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
                 elif len(dshape) == 3:
-                    out_data_ = out_data_[:, rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[:, rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
                 elif len(dshape) == 4:
-                    out_data_ = out_data_[:, :, rspad:rspad+window_.height, cspad:cspad+window_.width]
+                    out_data_ = out_data_[:, :, rspad:rspad+padded_window_.height, cspad:cspad+padded_window_.width]
 
-    else:
+                dshape = out_data_.shape
 
-        if n_workers == 1:
-            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+                ####################
+                # Remove the padding
+                ####################
+
+                # Get the non-padded array slice
+                row_diff = abs(window_.row_off - padded_window_.row_off)
+                col_diff = abs(window_.col_off - padded_window_.col_off)
+
+                if len(dshape) == 2:
+                    out_data_ = out_data_[row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+                elif len(dshape) == 3:
+                    out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+                elif len(dshape) == 4:
+                    out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+
         else:
+            logger.warning('  Padding is only supported with user functions.')
 
-            with threading.Lock():
-                out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
-
-    if padded_window_:
-
-        dshape = out_data_.shape
-
-        # Get the non-padded array slice
-        row_diff = abs(window_.row_off - padded_window_.row_off)
-        col_diff = abs(window_.col_off - padded_window_.col_off)
-
-        if len(dshape) == 2:
-            out_data_ = out_data_[row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
-        elif len(dshape) == 3:
-            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
-        elif len(dshape) == 4:
-            out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+    if not isinstance(out_data_, np.ndarray):
+        logger.exception('  The data were not computed properly for block {:,d}'.format(wid))
 
     dshape = out_data_.shape
 
     if len(dshape) > 2:
-        out_data_ = np.squeeze(out_data_)
+        out_data_ = out_data_.squeeze()
 
     if len(dshape) == 2:
         indexes_ = 1
     else:
         indexes_ = 1 if dshape[0] == 1 else list(range(1, dshape[0]+1))
 
-    return out_data_, indexes_
+    return out_data_, indexes_, window_
 
 
 def _write_xarray(*args):
@@ -320,34 +393,14 @@ def _write_xarray(*args):
 
     zarr_file = None
 
-    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, tags = list(itertools.chain(*args))
+    block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs = list(itertools.chain(*args))
 
-    output, out_indexes = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads)
+    output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
 
-    if separate:
+    if separate and (out_block_type.lower() == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
     else:
-
-        if n_workers == 1:
-
-            with rio.open(filename,
-                          mode='r+') as dst_:
-
-                dst_.write(output,
-                           window=block_window,
-                           indexes=out_indexes)
-
-        else:
-
-            with threading.Lock():
-
-                with rio.open(filename,
-                              mode='r+',
-                              sharing=False) as dst_:
-
-                    dst_.write(output,
-                               window=block_window,
-                               indexes=out_indexes)
+        to_gtiff(filename, output, block_window, out_indexes, block.gw.transform, n_workers, separate, tags, kwargs)
 
     return zarr_file
 
@@ -400,8 +453,8 @@ def to_vrt(data,
             with WarpedVRT(src,
                            src_crs=src.crs,                         # the original CRS
                            crs=data.crs,                            # the transformed CRS
-                           src_transform=src.transform,             # the original transform
-                           transform=data.transform,                # the new transform
+                           src_transform=src.gw.transform,             # the original transform
+                           transform=data.gw.transform,                # the new transform
                            dtype=data.gw.dtype,
                            resampling=resampling,
                            nodata=nodata,
@@ -431,7 +484,7 @@ def to_raster(data,
               readysize=None,
               use_dask_store=False,
               separate=False,
-              out_block_type='zarr',
+              out_block_type='gtiff',
               keep_blocks=False,
               verbose=0,
               overwrite=False,
@@ -468,7 +521,7 @@ def to_raster(data,
         verbose (Optional[int]): The verbosity level.
         overwrite (Optional[bool]): Whether to overwrite an existing file.
         gdal_cache (Optional[int]): The ``GDAL`` cache size (in MB).
-        scheduler (Optional[str]): The ``concurrent.futures`` scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+        scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
 
             mpool: process pool of workers using ``multiprocessing.Pool``
             processes: process pool of workers using ``concurrent.futures``
@@ -514,12 +567,12 @@ def to_raster(data,
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
 
-    if separate and not ZARR_INSTALLED:
-        logger.exception('  zarr must be installed to write separate blocks.')
-        raise ImportError
-
     if MKL_LIB:
         __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)
+
+    if separate and not ZARR_INSTALLED and (out_block_type.lower() == 'zarr'):
+        logger.exception('  zarr must be installed to write separate blocks.')
+        raise ImportError
 
     pfile = Path(filename)
 
@@ -636,29 +689,31 @@ def to_raster(data,
         kwargs['crs'] = data.crs
 
     if 'transform' not in kwargs:
-        kwargs['transform'] = data.transform
+        kwargs['transform'] = data.gw.transform
 
-    if separate:
+    root = None
+
+    if separate and (out_block_type.lower() == 'zarr'):
 
         d_name = pfile.parent
         sub_dir = d_name.joinpath('sub_tmp_')
-        zarr_file = sub_dir.joinpath('data.zarr').as_posix()
 
         sub_dir.mkdir(parents=True, exist_ok=True)
 
+        zarr_file = str(sub_dir.joinpath('data.zarr'))
         root = zarr.open(zarr_file, mode='w')
 
     else:
 
-        root = None
+        if not separate:
 
-        if verbose > 0:
-            logger.info('  Creating the file ...\n')
+            if verbose > 0:
+                logger.info('  Creating the file ...\n')
 
-        with rio.open(filename, mode='w', **kwargs) as rio_dst:
+            with rio.open(filename, mode='w', **kwargs) as rio_dst:
 
-            if tags:
-                rio_dst.update_tags(**tags)
+                if tags:
+                    rio_dst.update_tags(**tags)
 
     if verbose > 0:
         logger.info('  Writing data to file ...\n')
@@ -675,6 +730,9 @@ def to_raster(data,
                                          padding=padding)
 
             n_windows = len(windows)
+
+            oleft, otop = kwargs['transform'][2], kwargs['transform'][5]
+            ocols, orows = kwargs['width'], kwargs['height']
 
             # Iterate over the windows in chunks
             for wchunk in range(0, n_windows, n_chunks):
@@ -695,38 +753,38 @@ def to_raster(data,
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 else:
 
                     if len(data.shape) == 2:
 
                         data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     elif len(data.shape) == 3:
 
                         data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                     else:
 
                         data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, tags) for widx, w in enumerate(window_slice))
+                                     filename, widx, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
 
-                    for zarr_file in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
+                    for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
                         pass
                     
                 else:
@@ -735,12 +793,12 @@ def to_raster(data,
 
                         if scheduler == 'mpool':
 
-                            for zarr_file in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
                                 pass
 
                         else:
 
-                            for zarr_file in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
                                 pass
 
             # if overviews:
@@ -820,7 +878,6 @@ def to_raster(data,
                 n_groups = len(group_keys   )
 
                 if out_block_type.lower() == 'zarr':
-                    # root = zarr.open(zarr_file, mode='r')
                     open_file = zarr_file
 
                 kwargs['compress'] = compress_type
@@ -898,7 +955,9 @@ def to_raster(data,
                 ld = string.ascii_letters + string.digits
                 rstr = ''.join(random.choice(ld) for i in range(0, 9))
 
-                temp_file = d_name.joinpath(f'{f_base}_temp_{rstr}{f_ext}')
+                temp_file = d_name.joinpath('{f_base}_temp_{rstr}{f_ext}'.format(f_base=f_base,
+                                                                                 rstr=rstr,
+                                                                                 f_ext=f_ext))
 
                 compress_raster(filename,
                                 str(temp_file),

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RadTransforms &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>RadTransforms &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -26,93 +26,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
-    
-  </a>
-</p>
+  
 
-
-
-
-
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
-</ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.LinearAdjustments.html" title="previous chapter">LinearAdjustments</a></li>
-      <li>Next: <a href="geowombat.radiometry.QAMasker.html" title="next chapter">QAMasker</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
+    <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -136,7 +52,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="geowombat.radiometry.RadTransforms.dn_to_radiance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code></a>(dn, gain, bias)</p></td>
 <td><p>Converts digital numbers to radiance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="geowombat.radiometry.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(self, dn, solar_za, solar_az, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="geowombat.radiometry.RadTransforms.dn_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code></a>(dn, solar_za, solar_az, sensor_za, …)</p></td>
 <td><p>Converts digital numbers to surface reflectance</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="geowombat.radiometry.RadTransforms.dn_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code></a>(dn, gain, bias)</p></td>
@@ -174,7 +90,7 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.dn_to_sr">
-<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">dn</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'srem'</span></em>, <em class="sig-param"><span class="n">angle_factor</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">meta</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dn</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'srem'</span></em>, <em class="sig-param"><span class="n">angle_factor</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">meta</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -204,7 +120,7 @@
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">RadTransforms</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sr</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">meta</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">get_landsat_coefficients</span><span class="p">(</span><span class="s1">&#39;file.MTL&#39;</span><span class="p">)</span>
@@ -303,13 +219,85 @@
           
         </div>
       </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.LinearAdjustments.html" title="previous chapter">LinearAdjustments</a></li>
+      <li>Next: <a href="geowombat.radiometry.QAMasker.html" title="next chapter">QAMasker</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

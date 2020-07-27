@@ -2,13 +2,11 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![](https://img.shields.io/badge/version-1.2.18-blue.svg?cacheSeconds=2592000)
+![](https://img.shields.io/badge/version-1.2.23-blue.svg?cacheSeconds=2592000)
 
-### *GeoWombat* is a Python package for geo-utilities applied to air- and space-borne imagery
+### GeoWombat: Utilities for geospatial data
 
-Like a wombat, [`GeoWombat`](https://github.com/jgrss/geowombat) has a simple interface with a strong backend. GeoWombat uses
-[`Rasterio`](https://github.com/mapbox/rasterio), [`Xarray`](http://xarray.pydata.org/en/stable/) and [`Dask`](https://dask.org/) 
-for I/O and distributed computing with named coordinates.
+Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
 
 ## Basic usage
 

@@ -98,6 +98,7 @@ def get_package_data():
             'geowombat': ['config.ini',
                           'data/*.tif',
                           'data/*.TIF',
+                          'data/*.gpkg',
                           'data/*.tar.gz',
                           'moving/*.so',
                           'bin/*.tar.gz']}
@@ -110,11 +111,12 @@ def get_extensions():
                             extra_compile_args=['-fopenmp'],
                             extra_link_args=['-fopenmp'])]
 
-    if Path('geowombat/models/_crf.pyx').is_file():
+    if Path('geowombat/radiometry/_starfm.pyx').is_file():
 
         extensions += [Extension('*',
-                                 sources=['geowombat/models/_crf.pyx'],
-                                 language='c++')]
+                                 sources=['geowombat/radiometry/_starfm.pyx'],
+                                 extra_compile_args=['-fopenmp'],
+                                 extra_link_args=['-fopenmp'])]
 
     return extensions
 

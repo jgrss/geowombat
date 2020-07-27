@@ -1,6 +1,8 @@
 import os
 import shutil
+from pathlib import Path
 from collections import namedtuple
+import threading
 
 from ..errors import logger
 
@@ -16,8 +18,98 @@ from rasterio.coords import BoundingBox
 
 import pyproj
 from affine import Affine
-import zarr
-import numcodecs
+
+try:
+    import zarr
+    import numcodecs
+
+    ZARR_INSTALLED = True
+except:
+    ZARR_INSTALLED = False
+
+
+def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, tags, kwargs):
+
+    """
+    Writes data to a GeoTiff file.
+
+    Args:
+        filename (str): The output file name. The file must already exist.
+        data (ndarray): The data to write.
+        window (namedtuple): A ``rasterio.window.Window`` object.
+        indexes (int | 1d array-like): The output ``data`` indices.
+        transform (tuple): The original raster transform.
+        n_workers (int): The number of parallel workers being used.
+        tags (Optional[dict]): Image tags to write to file.
+        kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
+
+    Returns:
+        ``None``
+    """
+
+    p = Path(filename)
+
+    # Strip the file ending
+    f_base = p.name.split('.')[0]
+
+    if separate:
+
+        # Create a sub-directory
+        pout = p.parent / f_base
+        pout.mkdir(exist_ok=True, parents=True)
+
+        group_name = 'y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}.tif'.format(Y=window.row_off,
+                                                                      X=window.col_off,
+                                                                      H=window.height,
+                                                                      W=window.width)
+
+        group_path = str(pout / group_name)
+
+        kwargs_copy = kwargs.copy()
+
+        kwargs_copy['width'] = window.width
+        kwargs_copy['height'] = window.height
+        kwargs_copy['transform'] = Affine(*transform)
+
+        group_window = Window(col_off=0,
+                              row_off=0,
+                              width=window.width,
+                              height=window.height)
+
+        for item in ['with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path']:
+            if item in kwargs_copy:
+                del kwargs_copy[item]
+
+        with rio.open(group_path, mode='w', **kwargs_copy) as dst:
+
+            if tags:
+                dst.update_tags(**tags)
+
+    else:
+
+        group_path = str(filename)
+        group_window = window
+
+    if separate or (n_workers == 1):
+
+        with rio.open(group_path,
+                      mode='r+') as dst_:
+
+            dst_.write(data,
+                       window=group_window,
+                       indexes=indexes)
+
+    else:
+
+        with threading.Lock():
+
+            with rio.open(group_path,
+                          mode='r+',
+                          sharing=False) as dst_:
+
+                dst_.write(data,
+                           window=group_window,
+                           indexes=indexes)
 
 
 class WriteDaskArray(object):
@@ -51,6 +143,10 @@ class WriteDaskArray(object):
                  keep_blocks=False,
                  gdal_cache=512,
                  **kwargs):
+
+        if out_block_type == 'zarr':
+            if not ZARR_INSTALLED:
+                logger.exception('Zarr and numcodecs must be installed.')
 
         self.filename = filename
         self.overwrite = overwrite
@@ -787,7 +883,7 @@ def transform_crs(data_src,
 
         data_dst, dst_transform = reproject(data_src[band, :, :].data.compute(num_workers=num_threads),
                                             destination,
-                                            src_transform=data_src.transform,
+                                            src_transform=data_src.gw.transform,
                                             src_crs=data_src.crs,
                                             dst_transform=dst_transform,
                                             dst_crs=dst_crs,

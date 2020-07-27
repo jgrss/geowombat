@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick overview &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>Quick overview &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,8 +17,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Raster I/O" href="io.html" />
-    <link rel="prev" title="Issues" href="issues.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Installation" href="install.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -26,8 +26,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="quick-overview">
+<span id="id1"></span><h1>Quick overview<a class="headerlink" href="#quick-overview" title="Permalink to this headline">¶</a></h1>
+<p>Here are some quick examples of what you can do with <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> objects.</p>
+<p>To begin, import <cite>GeoWombat</cite> and <cite>Xarray</cite>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="gp">In [3]: </span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+</pre></div>
+</div>
+<div class="section" id="open-a-dataarray-with-a-geowombat-accessor">
+<h2>Open a DataArray with a GeoWombat accessor<a class="headerlink" href="#open-a-dataarray-with-a-geowombat-accessor" title="Permalink to this headline">¶</a></h2>
+<p>Any DataArray or Dataset will have the GeoWombat accessors appended:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">   ...: </span>                    <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">),</span>
+<span class="gp">   ...: </span>                    <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">   ...: </span>
+
+<span class="gp">In [5]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
+<span class="go">array([[-0.63909731, -0.11893847,  1.1745158 ],</span>
+<span class="go">       [-0.81131793,  0.32168922,  0.87370557]])</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) int64 10 20</span>
+<span class="go">Dimensions without coordinates: y</span>
+
+<span class="gp">In [6]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f7266374410&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="file-opening-with-geowombat">
+<h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> has its own file opening API (<a class="reference internal" href="io.html#io"><span class="std std-ref">Raster I/O</span></a>):</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
+
+<span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-b427a631921c08953ceddcf198d9a102&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) int64 1 2 3 4</span>
+<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
+<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
+<span class="go">    crs:            +init=epsg:32618</span>
+<span class="go">    res:            (5.0, 5.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    DataType:       Generic</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
+<span class="go">    resampling:     nearest</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7f71f29cf110&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -54,28 +131,15 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -86,8 +150,8 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="issues.html" title="previous chapter">Issues</a></li>
-      <li>Next: <a href="io.html" title="next chapter">Raster I/O</a></li>
+      <li>Previous: <a href="install.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="tutorial.html" title="next chapter">Tutorial</a></li>
   </ul></li>
 </ul>
 </div>
@@ -111,89 +175,13 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="quick-overview">
-<h1>Quick overview<a class="headerlink" href="#quick-overview" title="Permalink to this headline">¶</a></h1>
-<p>Here are some quick examples of what you can do with <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> objects.</p>
-<p>To begin, import <cite>GeoWombat</cite> and <cite>Xarray</cite>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
-
-<span class="gp">In [2]: </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-
-<span class="gp">In [3]: </span><span class="kn">import</span> <span class="nn">xarray</span> <span class="kn">as</span> <span class="nn">xr</span>
-</pre></div>
-</div>
-<div class="section" id="open-a-dataarray-with-a-geowombat-accessor">
-<h2>Open a DataArray with a GeoWombat accessor<a class="headerlink" href="#open-a-dataarray-with-a-geowombat-accessor" title="Permalink to this headline">¶</a></h2>
-<p>Any DataArray or Dataset will have the GeoWombat accessors appended:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-<span class="gp">   ...: </span>                    <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">),</span>
-<span class="gp">   ...: </span>                    <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
-<span class="gp">   ...: </span>
-
-<span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
-<span class="go">array([[ 0.20553317, -1.45907334,  0.02613325],</span>
-<span class="go">       [ 0.77384437, -1.95278077,  1.44195337]])</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * x        (x) int64 10 20</span>
-<span class="go">Dimensions without coordinates: y</span>
-
-<span class="gp">In [6]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fea1c1352e8&gt;</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="file-opening-with-geowombat">
-<h2>File opening with GeoWombat<a class="headerlink" href="#file-opening-with-geowombat" title="Permalink to this headline">¶</a></h2>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombat</span></code> has its own file opening API (<a class="reference internal" href="io.html#io"><span class="std std-ref">Raster I/O</span></a>):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
-
-<span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-654dbd4df4401948997f0e021b0a710e&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
-<span class="go">Coordinates:</span>
-<span class="go">  * band     (band) int64 1 2 3 4</span>
-<span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
-<span class="go">  * x        (x) float64 7.93e+05 7.93e+05 7.93e+05 ... 7.956e+05 7.956e+05</span>
-<span class="go">Attributes:</span>
-<span class="go">    transform:      (5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
-<span class="go">    crs:            +init=epsg:32618</span>
-<span class="go">    res:            (5.0, 5.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan, nan, nan, nan)</span>
-<span class="go">    scales:         (1.0, 1.0, 1.0, 1.0)</span>
-<span class="go">    offsets:        (0.0, 0.0, 0.0, 0.0)</span>
-<span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    DataType:       Generic</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
-<span class="go">    resampling:     nearest</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7fea5b7a1ac8&gt;</span>
-</pre></div>
-</div>
-</div>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

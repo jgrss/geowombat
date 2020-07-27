@@ -11,11 +11,9 @@ dask[array,dataframe]
 distributed
 xarray
 joblib
-opencv-python
 tqdm
 h5netcdf
 netCDF4
 scikit-learn
-dateparser
 deprecated
-rtree
+psutil

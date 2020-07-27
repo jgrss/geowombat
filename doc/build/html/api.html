@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API reference &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>API reference &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="GeoWombat DataArray (DataArray.gw)" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html" />
-    <link rel="prev" title="Change Log" href="changelog.html" />
+    <link rel="prev" title="Issues" href="issues.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -26,91 +26,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
-    
-  </a>
-</p>
+  
 
-
-
-
-
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
-</ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="changelog.html" title="previous chapter">Change Log</a></li>
-      <li>Next: <a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html" title="next chapter">GeoWombat DataArray (DataArray.gw)</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
+    <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -118,13 +36,11 @@
           <div class="body" role="main">
             
   <div class="section" id="api-reference">
-<h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="top-level-functions">
-<h2>Top-level functions<a class="headerlink" href="#top-level-functions" title="Permalink to this headline">¶</a></h2>
+<span id="api"></span><h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-geowombat.core.geoxarray">
-<span id="geowombat-core-geoxarray-module"></span><h3>geowombat.core.geoxarray Module<a class="headerlink" href="#module-geowombat.core.geoxarray" title="Permalink to this headline">¶</a></h3>
+<span id="geowombat-core-geoxarray-module"></span><h2>geowombat.core.geoxarray Module<a class="headerlink" href="#module-geowombat.core.geoxarray" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="classes">
-<h4>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h4>
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -139,9 +55,9 @@
 </div>
 </div>
 <div class="section" id="module-geowombat">
-<span id="geowombat-package"></span><h3>geowombat Package<a class="headerlink" href="#module-geowombat" title="Permalink to this headline">¶</a></h3>
+<span id="geowombat-package"></span><h2>geowombat Package<a class="headerlink" href="#module-geowombat" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="functions">
-<h4>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h4>
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -154,7 +70,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.sample.html#geowombat.sample" title="geowombat.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>(data[, method, band, n, strata, …])</p></td>
 <td><p>Generates samples from a raster</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.calc_area.html#geowombat.calc_area" title="geowombat.calc_area"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_area</span></code></a>(data, values[, op, units, num_workers])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.calc_area.html#geowombat.calc_area" title="geowombat.calc_area"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_area</span></code></a>(data, values[, op, units, …])</p></td>
 <td><p>Calculates the area of data values</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.subset.html#geowombat.subset" title="geowombat.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(data[, left, top, right, bottom, …])</p></td>
@@ -165,6 +81,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.mask.html#geowombat.mask" title="geowombat.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a>(data, dataframe[, query, keep])</p></td>
 <td><p>Masks a DataArray by vector polygon geometry</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.replace.html#geowombat.replace" title="geowombat.replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">replace</span></code></a>(data, to_replace)</p></td>
+<td><p>Replace values given in to_replace with value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.recode.html#geowombat.recode" title="geowombat.recode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recode</span></code></a>(data, polygon, to_replace[, num_workers])</p></td>
+<td><p>Recodes a DataArray with polygon mappings</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.coregister.html#geowombat.coregister" title="geowombat.coregister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coregister</span></code></a>(target, reference, **kwargs)</p></td>
 <td><p>Co-registers an image, or images, using AROSICS.</p></td>
@@ -251,7 +173,7 @@
 </table>
 </div>
 <div class="section" id="id1">
-<h4>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -266,9 +188,9 @@
 </div>
 </div>
 <div class="section" id="module-geowombat.radiometry">
-<span id="geowombat-radiometry-package"></span><h3>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h3>
+<span id="geowombat-radiometry-package"></span><h2>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
-<h4>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -285,7 +207,7 @@
 </table>
 </div>
 <div class="section" id="id3">
-<h4>Classes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<h3>Classes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -312,20 +234,89 @@
 </div>
 </div>
 </div>
-</div>
 
 
           </div>
           
         </div>
       </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="issues.html" title="previous chapter">Issues</a></li>
+      <li>Next: <a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html" title="next chapter">GeoWombat DataArray (DataArray.gw)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

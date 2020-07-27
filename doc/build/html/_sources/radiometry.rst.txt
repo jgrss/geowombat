@@ -3,10 +3,10 @@
 Radiometry
 ==========
 
-`GeoWombat` uses the global c-factor method to apply BRDF normalization on surface reflectance data
----------------------------------------------------------------------------------------------------
+BRDF-adjusted surface reflectance
+---------------------------------
 
-In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface reflectance image.
+GeoWombat uses the global c-factor method to apply BRDF normalization on surface reflectance data. In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface reflectance image.
 
 .. code:: python
 

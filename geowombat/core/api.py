@@ -58,7 +58,7 @@ def get_attrs(src, **kwargs):
 
     attrs = dict()
 
-    attrs['transform'] = tuple(src.transform)[:6]
+    attrs['transform'] = src.gw.transform
 
     if hasattr(src, 'crs'):
 
@@ -159,7 +159,7 @@ def read(filename,
         with rio.open(filename) as src:
 
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src.transform)
+                kwargs['window'] = from_bounds(*bounds, transform=src.gw.transform)
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
@@ -187,7 +187,7 @@ def read(filename,
         with rio.open(filename[0]) as src:
 
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src.transform)
+                kwargs['window'] = from_bounds(*bounds, transform=src.gw.transform)
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 

@@ -2,14 +2,17 @@ import os
 import math
 import itertools
 from datetime import datetime
+from collections import defaultdict
 
 from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
+from .parallel import ParallelTask
 
 import numpy as np
+from scipy.stats import mode as sci_mode
 from scipy.spatial import cKDTree
 import pandas as pd
 import geopandas as gpd
@@ -19,7 +22,6 @@ import dask.array as da
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
-from tqdm import tqdm
 
 try:
     import arosics
@@ -94,8 +96,12 @@ class SpatialOperations(_PropertyMixin):
                   values,
                   op='eq',
                   units='km2',
-                  num_workers=1,
-                  **kwargs):
+                  row_chunks=None,
+                  col_chunks=None,
+                  n_workers=1,
+                  n_threads=1,
+                  scheduler='threads',
+                  n_chunks=100):
 
         """
         Calculates the area of data values
@@ -105,8 +111,17 @@ class SpatialOperations(_PropertyMixin):
             values (list): A list of values.
             op (Optional[str]): The value sign. Choices are ['gt', 'ge', 'lt', 'le', 'eq'].
             units (Optional[str]): The units to return. Choices are ['km2', 'ha'].
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute()``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``DataArray.gw.windows()``.
+            row_chunks (Optional[int]): The row chunk size to process in parallel.
+            col_chunks (Optional[int]): The column chunk size to process in parallel.
+            n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
+            n_threads (Optional[int]): The number of parallel threads for ``dask.compute()``.
+            scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
+
+                mpool: process pool of workers using ``multiprocessing.Pool``
+                processes: process pool of workers using ``concurrent.futures``
+                threads: thread pool of workers using ``concurrent.futures``
+
+            n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
         Returns:
             ``pandas.DataFrame``
@@ -117,41 +132,56 @@ class SpatialOperations(_PropertyMixin):
             >>> # Read a land cover image with 512x512 chunks
             >>> with gw.open('land_cover.tif', chunks=512) as src:
             >>>
-            >>>     df = gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>     df = gw.calc_area(src,
+            >>>                       [1, 2, 5],        # calculate the area of classes 1, 2, and 5
             >>>                       units='km2',      # return area in kilometers squared
-            >>>                       num_workers=4,    # dask.compute() with 4 workers
+            >>>                       n_workers=4,
             >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
             >>>                       col_chunks=1024)
         """
 
-        data_totals = {}
+        def area_func(*args):
 
-        sqm = abs(data.gw.celly) * abs(data.gw.cellx)
+            data_chunk, uvalues, area_units, n_threads = list(itertools.chain(*args))
 
-        rchunks = kwargs['row_chunks'] if 'row_chunks' in kwargs else data.gw.row_chunks
-        cchunks = kwargs['col_chunks'] if 'col_chunks' in kwargs else data.gw.col_chunks
+            sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
+            area_conversion = 1e-6 if area_units == 'km2' else 0.0001
 
-        window_len = int(np.ceil(data.gw.nrows / rchunks) * np.ceil(data.gw.ncols / cchunks))
+            data_totals_ = defaultdict(float)
 
-        for w in tqdm(data.gw.windows(**kwargs), total=window_len):
+            for value in uvalues:
 
-            data_chunk = data[:, w.row_off:w.row_off+w.height, w.col_off:w.col_off+w.width]
+                chunk_value_total = data_chunk.gw.compare(op, value, return_binary=True) \
+                                                            .sum(skipna=True) \
+                                                            .data.compute(scheduler='threads',
+                                                                          num_workers=n_threads)
 
-            for value in values:
+                data_totals_[value] += (chunk_value_total * sqm) * area_conversion
 
-                chunk_value_total = data_chunk.gw.compare(op, value).sum(skipna=True).data.compute(num_workers=num_workers)
+            return dict(data_totals_)
 
-                if units == 'km2':
-                    chunk_value_total = (chunk_value_total * sqm) * 1e-6
-                else:
-                    chunk_value_total = (chunk_value_total * sqm) * 0.0001
+        pt = ParallelTask(data,
+                          row_chunks=row_chunks,
+                          col_chunks=col_chunks,
+                          scheduler=scheduler,
+                          n_workers=n_workers,
+                          n_chunks=n_chunks)
 
-                if value in data_totals:
-                    data_totals[value] += chunk_value_total
-                else:
-                    data_totals[value] = chunk_value_total
+        futures = pt.map(area_func, values, units, n_threads)
 
-        return pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+        # Combine the results
+        data_totals = defaultdict(float)
+        for future in futures:
+            for k, v in future.items():
+                data_totals[k] += v
+
+        data_totals = dict(data_totals)
+        data_totals = dict(sorted(data_totals.items()))
+
+        df = pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+        df['area_value'] = df.index
+
+        return df
 
     def sample(self,
                data,
@@ -162,6 +192,8 @@ class SpatialOperations(_PropertyMixin):
                spacing=None,
                min_dist=None,
                max_attempts=10,
+               num_workers=1,
+               verbose=1,
                **kwargs):
 
         """
@@ -185,6 +217,8 @@ class SpatialOperations(_PropertyMixin):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
+            verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -266,12 +300,14 @@ class SpatialOperations(_PropertyMixin):
 
                     if attempts >= max_attempts:
 
-                        logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
+
                         break
 
                         # Sample directly from the coordinates
-                    y_coords = np.random.choice(data.y.values, size=sample_size, replace=False)
-                    x_coords = np.random.choice(data.x.values, size=sample_size, replace=False)
+                    y_coords = np.random.choice(data.y.values, size=sample_size if sample_size < data.y.values.shape[0] else data.y.values.shape[0]-1, replace=False)
+                    x_coords = np.random.choice(data.x.values, size=sample_size if sample_size < data.x.values.shape[0] else data.x.values.shape[0]-1, replace=False)
 
                     if isinstance(dfs, gpd.GeoDataFrame):
 
@@ -326,9 +362,10 @@ class SpatialOperations(_PropertyMixin):
 
                 while True:
 
-                    if attempts >= 50:
+                    if attempts >= max_attempts:
 
-                        logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
+                        if verbose > 0:
+                            logger.warning('  Max attempts reached for value {:f}. Try relaxing the distance threshold.'.format(value))
 
                         if not isinstance(df, gpd.GeoDataFrame):
                             df = dfs.copy()
@@ -351,15 +388,19 @@ class SpatialOperations(_PropertyMixin):
                         logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
                         raise NameError
 
-                    valid_samples = dask.compute(valid_samples)[0]
+                    valid_samples = dask.compute(valid_samples,
+                                                 num_workers=num_workers,
+                                                 scheduler='threads')[0]
 
                     y_samples = valid_samples[0]
                     x_samples = valid_samples[1]
 
                     if y_samples.shape[0] > 0:
 
+                        ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]-1
+
                         # Get indices within the stratum
-                        idx = np.random.choice(range(0, y_samples.shape[0]), size=sample_size, replace=False)
+                        idx = np.random.choice(range(0, y_samples.shape[0]), size=ssize, replace=False)
 
                         y_samples = y_samples[idx]
                         x_samples = x_samples[idx]
@@ -460,7 +501,6 @@ class SpatialOperations(_PropertyMixin):
         """
 
         sensor = self.check_sensor(data, return_error=False)
-
         band_names = self.check_sensor_band_names(data, sensor, band_names)
 
         converters = Converters()
@@ -493,7 +533,7 @@ class SpatialOperations(_PropertyMixin):
         # Convert the map coordinates to indices
         x, y = converters.coords_to_indices(df.geometry.x.values,
                                             df.geometry.y.values,
-                                            data.transform)
+                                            data.gw.transform)
 
         vidx = (y.tolist(), x.tolist())
 
@@ -696,7 +736,7 @@ class SpatialOperations(_PropertyMixin):
         # Rasterize the geometry and store as a DataArray
         mask = xr.DataArray(data=da.from_array(features.rasterize(list(dataframe.geometry.values),
                                                                   out_shape=(data.gw.nrows, data.gw.ncols),
-                                                                  transform=data.transform,
+                                                                  transform=data.gw.transform,
                                                                   fill=0,
                                                                   out=None,
                                                                   all_touched=True,
@@ -712,6 +752,91 @@ class SpatialOperations(_PropertyMixin):
             return data.where(mask != 1)
         else:
             return data.where(mask == 1)
+
+    def replace(self,
+                data,
+                to_replace):
+
+        """
+        Replace values given in to_replace with value.
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to recode.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        attrs = data.attrs.copy()
+        dtype = data.dtype.name
+
+        if not isinstance(to_replace, dict):
+            raise TypeError('The replace values must be a dictionary of {from: to} mappings.')
+
+        data = data.astype('int64')
+
+        for k, v in to_replace.items():
+            data = xr.where(data == k, v+100000, data)
+
+        for v in to_replace.values():
+            data = xr.where(data == v+100000, data-100000, data)
+
+        return data.assign_attrs(**attrs).astype(dtype)
+
+    @lazy_wombat
+    def recode(self,
+               data,
+               polygon,
+               to_replace,
+               num_workers=1):
+
+        """
+        Recodes a DataArray with polygon mappings
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to recode.
+            polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            to_replace (dict): How to find the values to replace. Dictionary mappings should be given
+                as {from: to} pairs. If ``to_replace`` is an integer/string mapping, the to string should be 'mode'.
+
+                {1: 5}:
+                    recode values of 1 to 5
+
+                {1: 'mode'}:
+                    recode values of 1 to the polygon mode
+            num_workers (Optional[int]): The number of parallel Dask workers (only used if ``to_replace``
+                has a 'mode' mapping).
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        dtype = data.dtype.name
+        attrs = data.attrs.copy()
+
+        converters = Converters()
+
+        poly_array = converters.polygon_to_array(polygon, data=data)
+
+        for k, v in to_replace.items():
+
+            if isinstance(v, str) and (v.lower() == 'mode'):
+
+                data_array_np = data.squeeze().where(poly_array.squeeze() == 1).data.compute(num_workers=num_workers)
+
+                to_replace[k] = int(sci_mode(data_array_np,
+                                             axis=None,
+                                             nan_policy='omit').mode.flatten())
+
+        return xr.where(poly_array == 1, self.replace(data, to_replace), data).assign_attrs(**attrs).astype(dtype)
 
     @staticmethod
     def subset(data,
@@ -798,7 +923,7 @@ class SpatialOperations(_PropertyMixin):
                 logger.warning('  Cannot mask corners without Pymorph.')
 
         # Update the left and top coordinates
-        transform = list(data.transform)
+        transform = list(data.gw.transform)
 
         transform[2] = x_idx[0]
         transform[5] = y_idx[0]

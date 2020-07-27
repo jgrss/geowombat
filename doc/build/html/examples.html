@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examples &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>Examples &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,6 +17,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Raster I/O" href="io.html" />
+    <link rel="prev" title="Plotting raster data" href="tutorial-plot.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -24,8 +26,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="examples">
+<span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io.html#image-mosaicking">Image mosaicking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#writing-dataarrays-to-file">Writing DataArrays to file</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html#use-dask-to-compute-with-parallel-workers">Use Dask to compute with parallel workers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html#increase-the-complexity-of-the-parallel-task">Increase the complexity of the parallel task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html#use-geowombat-to-write-a-task-to-file">Use GeoWombat to write a task to file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html#use-geowombat-to-gather-block-level-results-in-parallel">Use GeoWombat to gather block-level results in parallel</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html#subsetting-rasters">Subsetting rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html#extracting-data-with-coordinates">Extracting data with coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html#extracting-data-with-point-geometry">Extracting data with point geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html#extracting-data-with-polygon-geometry">Extracting data with polygon geometry</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html#vegetation-indices">Vegetation indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html#enhanced-vegetation-index-evi">Enhanced Vegetation Index (EVI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html#two-band-enhanced-vegetation-index-evi2">Two-band Enhanced Vegetation Index (EVI2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html#normalized-difference-indices">Normalized difference indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html#tasseled-cap-transformations">Tasseled cap transformations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="machine-learning.html#use-a-scikit-learn-classifier">Use a Scikit-learn classifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="machine-learning.html#use-geowombat-and-dask-to-fit-a-classifier">Use GeoWombat and Dask to fit a classifier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apply.html#user-apply">User apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apply.html#user-functions-as-dataarray-attributes">User functions as DataArray attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apply.html#applying-in-memory-geowombat-functions-lazily">Applying in-memory GeoWombat functions lazily</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="radiometry.html#brdf-adjusted-surface-reflectance">BRDF-adjusted surface reflectance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web.html#download-data-from-google-cloud-platform">Download data from Google Cloud Platform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web.html#download-and-cube-data">Download and cube data</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
@@ -51,29 +121,16 @@
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -84,6 +141,8 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial-plot.html" title="previous chapter">Plotting raster data</a></li>
+      <li>Next: <a href="io.html" title="next chapter">Raster I/O</a></li>
   </ul></li>
 </ul>
 </div>
@@ -107,30 +166,13 @@
 
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-</div>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

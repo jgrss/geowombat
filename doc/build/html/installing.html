@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installation &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>Installation &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -17,8 +17,6 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Issues" href="issues.html" />
-    <link rel="prev" title="GeoWombat: geo-utilities for overhead air- and space-borne imagery" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -26,91 +24,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
-    
-  </a>
-</p>
+  
 
-
-
-
-
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
-</ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">GeoWombat: geo-utilities for overhead air- and space-borne imagery</a></li>
-      <li>Next: <a href="issues.html" title="next chapter">Issues</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
+    <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -225,7 +141,7 @@ $ # echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/
 <div class="section" id="installing-libspatialindex-on-ubuntu">
 <h3>Installing <cite>libspatialindex</cite> on Ubuntu<a class="headerlink" href="#installing-libspatialindex-on-ubuntu" title="Permalink to this headline">¶</a></h3>
 <p>Install <cite>libspatialindex</cite> (which is a requirement for <a class="reference external" href="https://pypi.org/project/Rtree/">Rtree</a>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install libspatialindex-c4v5
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install libspatialindex-dev
 </pre></div>
 </div>
 </div>
@@ -250,30 +166,50 @@ $ # pip install GDAL==2.4.0 --no-binary=gdal
 </div>
 <div class="section" id="install-geowombat">
 <h2>3. Install <cite>GeoWombat</cite><a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h2>
-<p>Install the most recent stable version from GitHub.com:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install https://github.com/jgrss/geowombat/archive/1.2.4.tar.gz
-</pre></div>
-</div>
-<p>Or, install the latest development version from GitHub.com:</p>
+<p>Install the latest version from GitHub.com:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
 </pre></div>
 </div>
+</div>
+<div class="section" id="install-optional-extras">
+<h2>4. Install optional extras<a class="headerlink" href="#install-optional-extras" title="Permalink to this headline">¶</a></h2>
 <p>Install GeoWombat with libraries for co-registration:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 </pre></div>
 </div>
+<p>Install GeoWombat with libraries for co-registration and geo-performance enhancements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+</pre></div>
+</div>
+<p>Install GeoWombat with all extra libraries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+</pre></div>
+</div>
 </div>
 <div class="section" id="testing-the-installation">
-<h2>4. Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
+<h2>5. Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
 <p>If GeoWombat installed correctly, you should be able to run the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
 </pre></div>
 </div>
 <p>or in Python:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
-<span class="gp">In [2]: </span><span class="k">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-<span class="go">1.2.18</span>
+<span class="gp">In [2]: </span><span class="nb">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="go">1.2.23</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-example-of-a-full-installation-on-ubuntu-with-conda">
+<h2>A. Example of a full installation on Ubuntu with Conda<a class="headerlink" href="#a-example-of-a-full-installation-on-ubuntu-with-conda" title="Permalink to this headline">¶</a></h2>
+<p>The following installs a working anaconda environment including gdal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
+$ conda create -n geowombat python=3.7  cython scipy numpy zarr requests -c conda-forge
+$ conda activate geowombat
+$ sudo apt install libspatialindex-dev libgdal-dev
+$ conda install -c conda-forge libspatialindex zarr requests
+$ pip install git+https://github.com/jgrss/geowombat
+$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
 </pre></div>
 </div>
 </div>
@@ -284,13 +220,83 @@ $ # pip install GDAL==2.4.0 --no-binary=gdal
           
         </div>
       </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">User Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

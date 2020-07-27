@@ -1,4 +1,4 @@
-.. _installing:
+.. _install:
 
 Installation
 ============
@@ -52,10 +52,6 @@ Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython 
 
 GDAL can be installed via pip or conda, but it requires the GDAL binaries.
 
-<<<<<<< HEAD
-Installing GDAL on Ubuntu
-~~~~~~~~~~~~~~~~~~~~~~~~~
-=======
 Installing non-Python `GeoWombat` prerequisites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -145,19 +141,26 @@ GeoWombat will attempt to install the GDAL Python package if the GDAL binaries a
 3. Install `GeoWombat`
 ----------------------
 
-Install the most recent stable version from GitHub.com::
-
-    $ pip install https://github.com/jgrss/geowombat/archive/1.2.4.tar.gz
-
-Or, install the latest development version from GitHub.com::
+Install the latest version from GitHub.com::
 
     $ pip install git+https://github.com/jgrss/geowombat
+
+4. Install optional extras
+--------------------------
 
 Install GeoWombat with libraries for co-registration::
 
     $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
 
-4. Testing the installation
+Install GeoWombat with libraries for co-registration and geo-performance enhancements::
+
+    $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+
+Install GeoWombat with all extra libraries::
+
+    $ pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+
+5. Testing the installation
 ---------------------------
 
 If GeoWombat installed correctly, you should be able to run the following command::
@@ -171,8 +174,8 @@ or in Python:
     import geowombat as gw
     print(gw.__version__)
     
-A. Example full installation on Ubuntu with Conda
--------------------------------------------------
+A. Example of a full installation on Ubuntu with Conda
+------------------------------------------------------
 The following installs a working anaconda environment including gdal::
 
     $ pip install pip-tools

@@ -44,7 +44,7 @@ Slice a subset using a tuple of bounded coordinates.
                  out_dtype='float32') as src:
         print(src)
 
-The configuration manager provides an alternative method to subset rasters.
+The configuration manager provides an alternative method to subset rasters. See :ref:`tutorial-config` for more details.
 
 .. code:: python
 
@@ -53,7 +53,7 @@ The configuration manager provides an alternative method to subset rasters.
         with gw.open(rgbn) as src:
             print(src)
 
-By default, the subset will be returned by the upper left coordinates of the bounds, potentially shifting cell alignment with the reference raster. To subset a raster and align it to the same grid, use the `ref_tar` keyword.
+By default, the subset will be returned by the upper left coordinates of the bounds, potentially shifting cell alignment with the reference raster. To subset a raster and align it to the same grid, use the **ref_tar** keyword.
 
 .. code:: python
 
@@ -62,30 +62,110 @@ By default, the subset will be returned by the upper left coordinates of the bou
         with gw.open(rgbn) as src:
             print(src)
 
-Extracting data at coordinates
-------------------------------
+Extracting data with coordinates
+--------------------------------
 
-Extract values at point locations.
+To extract values at a coordinate pair, translate the coordinates into array indices.
 
-.. code:: python
+.. ipython:: python
 
-    with gw.open(rgbn) as src:
-        df = src.gw.extract('point.shp')
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518
 
-Extract values within polygons.
+    # Coordinates in map projection units
+    y, x = -2823031.15, 761592.60
 
-.. code:: python
+    with gw.open(l8_224078_20200518) as src:
+        # Transform the map coordinates to data indices
+        j, i = gw.coords_to_indices(x, y, src)
+        data = src[:, i, j].data.compute()
 
+    print(data.flatten())
+
+A latitude/longitude pair can be extracted after converting to the map projection.
+
+.. ipython:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518
+
+    # Coordinates in latitude/longitude
+    lat, lon = -25.50142964, -54.39756038
+
+    with gw.open(l8_224078_20200518) as src:
+        # Transform the coordinates to map units
+        x, y = gw.lonlat_to_xy(lon, lat, src)
+        # Transform the map coordinates to data indices
+        j, i = gw.coords_to_indices(x, y, src)
+        data = src[:, i, j].data.compute()
+
+    print(data.flatten())
+
+Extracting data with point geometry
+-----------------------------------
+
+In the example below, 'l8_224078_20200518_points' is a `GeoPackage <https://www.geopackage.org/>`_ of point locations, and the output `df` is a `GeoPandas GeoDataFrame <https://geopandas.org/reference/geopandas.GeoDataFrame.html>`_. To extract the raster values at the point locations, use :func:`geowombat.extract`.
+
+.. ipython:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_points
+
+    with gw.open(l8_224078_20200518) as src:
+        df = src.gw.extract(l8_224078_20200518_points)
+
+    print(df)
+
+.. note::
+
+    The line **df = src.gw.extract(l8_224078_20200518_points)** could also have been written as **df = gw.extract(src, l8_224078_20200518_points)**.
+
+In the previous example, the point vector had a CRS that matched the raster (i.e., EPSG=32621, or UTM zone 21N). If the CRS had not matched, the :func:`geowombat.extract` function would have transformed the CRS on-the-fly.
+
+.. ipython:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_points
     import geopandas as gpd
 
-    df = gpd.read_file('poly.gpkg')
+    point_df = gpd.read_file(l8_224078_20200518_points)
+    print(point_df.crs)
 
-    with gw.open(rgbn) as src:
+    # Transform the CRS to WGS84 lat/lon
+    point_df = point_df.to_crs('epsg:4326')
+    print(point_df.crs)
 
-        df = src.gw.extract(df,
-                            bands=3,
-                            band_names=['red'],
-                            frac=0.1,
-                            n_jobs=8,
-                            num_workers=8,
-                            verbose=1)
+    with gw.open(l8_224078_20200518) as src:
+        df = src.gw.extract(point_df)
+
+    print(df)
+
+Set the data band names.
+
+.. ipython:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_points
+
+    with gw.config.update(sensor='bgr'):
+        with gw.open(l8_224078_20200518) as src:
+            df = src.gw.extract(l8_224078_20200518_points,
+                                band_names=src.band.values.tolist())
+
+    print(df)
+
+Extracting data with polygon geometry
+-------------------------------------
+
+To extract values within polygons, use the same :func:`geowombat.extract` function.
+
+.. ipython:: python
+
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
+
+    with gw.config.update(sensor='bgr'):
+        with gw.open(l8_224078_20200518) as src:
+            df = src.gw.extract(l8_224078_20200518_polygons,
+                                band_names=src.band.values.tolist())
+
+    print(df)

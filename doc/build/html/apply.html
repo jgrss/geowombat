@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User functions &#8212; GeoWombat 1.2.18 documentation</title>
+    <title>User functions &#8212; GeoWombat 1.2.23 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -26,91 +26,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  <div class="document">
-    
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
-    
-  </a>
-</p>
+  
 
-
-
-
-
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
-</ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="io.html">Raster I/O</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Raster attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crs.html">Coordinate Reference Systems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extraction.html">Data extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="band-math.html">Band math</a></li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">User functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web.html">Web</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Change Log</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="machine-learning.html" title="previous chapter">Machine learning</a></li>
-      <li>Next: <a href="moving.html" title="next chapter">Moving windows</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
+    <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -119,8 +37,9 @@
             
   <div class="section" id="user-functions">
 <span id="apply"></span><h1>User functions<a class="headerlink" href="#user-functions" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently">
-<h2>With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.<a class="headerlink" href="#with-functions-that-release-the-gil-e-g-many-numpy-functions-cython-one-can-bypass-xarray-and-use-rasterio-to-write-concurrently" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-apply">
+<h2>User apply<a class="headerlink" href="#user-apply" title="Permalink to this headline">¶</a></h2>
+<p>With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.</p>
 <p>The example below applies a custom function concurrently over an image.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -130,16 +49,16 @@
     <span class="k">return</span> <span class="n">block</span> <span class="o">*</span> <span class="n">arg</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="n">gw</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">my_func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,),</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="user-functions-as-attributes">
-<h2>User functions as attributes<a class="headerlink" href="#user-functions-as-attributes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-functions-as-dataarray-attributes">
+<h2>User functions as DataArray attributes<a class="headerlink" href="#user-functions-as-dataarray-attributes" title="Permalink to this headline">¶</a></h2>
 <p>User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as <cite>Xarray</cite> attributes. Here is an example that uses one user argument.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="c1"># Function with one argument</span>
 <span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -156,8 +75,8 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -182,8 +101,8 @@
     <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="n">separate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">separate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -191,11 +110,11 @@
 <div class="section" id="applying-in-memory-geowombat-functions-lazily">
 <h2>Applying in-memory GeoWombat functions lazily<a class="headerlink" href="#applying-in-memory-geowombat-functions-lazily" title="Permalink to this headline">¶</a></h2>
 <p>Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework. In the example below, <a class="reference internal" href="api/geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.polygon_to_array()</span></code></a> is applied at the raster block level.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 
 <span class="c1"># Confirm that the GeoWombat function is supported for block-level lazy processing</span>
-<span class="k">print</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span><span class="p">,</span> <span class="s1">&#39;wombat_func_&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span><span class="p">,</span> <span class="s1">&#39;wombat_func_&#39;</span><span class="p">))</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 
@@ -209,7 +128,7 @@
     <span class="c1"># All arguments must be passed as keyword arguments</span>
     <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply_kwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;polygon&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
                                  <span class="s1">&#39;sindex&#39;</span><span class="p">:</span> <span class="n">sindex</span><span class="p">,</span>
-                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
     <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
@@ -218,11 +137,11 @@
 </pre></div>
 </div>
 <p>By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.core.util</span> <span class="kn">import</span> <span class="n">lazy_wombat</span>
 
 <span class="nd">@lazy_wombat</span>
-<span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">polygon</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sindex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">polygon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sindex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts a polygon to an array and then masks the array&quot;&quot;&quot;</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">polygon_to_array</span><span class="p">(</span><span class="n">polygon</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">sindex</span><span class="o">=</span><span class="n">sindex</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="n">all_touched</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
@@ -237,7 +156,7 @@
     <span class="c1"># All arguments must be passed as keyword arguments</span>
     <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;apply_kwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;polygon&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
                                  <span class="s1">&#39;sindex&#39;</span><span class="p">:</span> <span class="n">sindex</span><span class="p">,</span>
-                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+                                 <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
     <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
@@ -246,7 +165,7 @@
 </pre></div>
 </div>
 <p>The above example is similar to the following with the <a class="reference internal" href="api/geowombat.mask.html#geowombat.mask" title="geowombat.mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.mask()</span></code></a> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 
@@ -273,13 +192,85 @@
           
         </div>
       </div>
-    <div class="clearer"></div>
-  </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="machine-learning.html" title="previous chapter">Machine learning</a></li>
+      <li>Next: <a href="moving.html" title="next chapter">Moving windows</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
     <div class="footer">
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -1,4 +1,5 @@
 import os
+import shutil
 import fnmatch
 import tarfile
 import subprocess
@@ -7,7 +8,7 @@ from datetime import datetime
 from collections import namedtuple
 import random
 import string
-import requests
+import time
 
 from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
@@ -24,6 +25,14 @@ import geopandas as gpd
 import xarray as xr
 import shapely
 from shapely.geometry import Polygon
+import psutil
+
+try:
+    import requests
+
+    REQUESTS_INSTALLED = True
+except:
+    REQUESTS_INSTALLED = False
 
 try:
 
@@ -42,22 +51,146 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
 
 
 def _rmdir(pathdir):
-    for child in pathdir.iterdir():
 
-        if child.is_file():
+    if pathdir.is_dir():
+
+        for child in pathdir.iterdir():
+
+            if child.is_file():
+
+                try:
+                    child.unlink()
+                except:
+                    pass
+
+        try:
+            pathdir.rmdir()
+        except:
 
             try:
-                child.unlink()
+                shutil.rmtree(str(pathdir))
             except:
                 pass
 
-    try:
-        pathdir.rmdir()
-    except:
-        pass
+
+def _delayed_read(fn):
+
+    attempt = 0
+    max_attempts = 10
+
+    while True:
+
+        if Path(fn).is_file():
+            break
+        else:
+            time.sleep(2)
+
+        attempt += 1
+
+        if attempt >= max_attempts:
+            break
+
+    with open(str(fn), mode='r') as tx:
+        lines = tx.readlines()
+
+    return lines
+
+
+def _update_status_file(fn, log_name):
+
+    attempt = 0
+    max_attempts = 10
+
+    while True:
+
+        wait_on_file = False
+
+        # Check if the file is open by another process
+        for proc in psutil.process_iter():
+
+            try:
+
+                for item in proc.open_files():
+
+                    if item.path == str(fn):
+                        wait_on_file = True
+                        break
+
+            except Exception:
+                pass
+
+            if wait_on_file:
+                break
+
+        if wait_on_file:
+            time.sleep(2)
+        else:
+            break
+
+        attempt += 1
+
+        if attempt >= max_attempts:
+            break
+
+    with open(str(fn), mode='r') as tx:
+
+        lines = tx.readlines()
+
+        if lines:
+            lines = list(set(lines))
+
+        if log_name + '\n' not in lines:
+            lines.append(log_name + '\n')
+
+    fn.unlink()
+
+    with open(str(fn), mode='w') as tx:
+        tx.writelines(lines)
+
+
+def _clean_and_update(status,
+                      outdir_angles,
+                      finfo_dict,
+                      meta_name,
+                      check_angles=True,
+                      check_downloads=True,
+                      update_status=False,
+                      load_bands_names=None):
+
+    if check_angles:
+        _rmdir(outdir_angles)
+
+    if check_downloads:
+
+        for k, v in finfo_dict.items():
+
+            if Path(v.name).is_file():
+
+                try:
+                    Path(v.name).unlink()
+                except Warning:
+                    logger.warning('  Could not delete {}.'.format(v.name))
+
+            else:
+                logger.warning('  The {} file does not exist to delete.'.format(v.name))
+
+    if update_status:
+        _update_status_file(status, meta_name)
+
+    if load_bands_names:
+
+        for loaded_band in load_bands_names:
+
+            if Path(loaded_band).is_file():
+
+                try:
+                    Path(loaded_band).unlink()
+                except Warning:
+                    logger.warning('  Could not delete {}.'.format(loaded_band))
 
 
 def _assign_attrs(data, attrs, bands_out):
+
     if bands_out:
         data = data.sel(band=bands_out)
 
@@ -68,6 +201,7 @@ def _assign_attrs(data, attrs, bands_out):
 
 
 def _random_id(string_length):
+
     """
     Generates a random string of letters and digits
     """
@@ -142,7 +276,15 @@ class GeoDownloads(object):
                        swir1=11,
                        swir2=12)
 
-        self.associations = dict(l7=dict(blue=1,
+        self.associations = dict(l5=dict(blue=1,
+                                         green=2,
+                                         red=3,
+                                         nir=4,
+                                         swir1=5,
+                                         thermal=6,
+                                         swir2=7,
+                                         pan=8),
+                                 l7=dict(blue=1,
                                          green=2,
                                          red=3,
                                          nir=4,
@@ -247,29 +389,23 @@ class GeoDownloads(object):
             >>>                   n_threads=8)
         """
 
-        # TODO: parameterize
-        # kwargs = dict(readxsize=1024,
-        #               readysize=1024,
-        #               verbose=1,
-        #               separate=False,
-        #               n_workers=1,
-        #               n_threads=8,
-        #               n_chunks=100,
-        #               overwrite=False)
-
         if not lqa_mask_items:
+
             lqa_mask_items = ['fill',
                               'saturated',
                               'cloudconf',
                               'shadowconf',
                               'cirrusconf']
 
+        if isinstance(sensors, str):
+            sensors = [sensors]
+
         angle_kwargs = kwargs.copy()
         angle_kwargs['nodata'] = -32768
 
         nodataval = kwargs['nodata'] if 'nodata' in kwargs else 65535
 
-        angle_infos = dict()
+        angle_infos = {}
 
         rt = RadTransforms()
         br = BRDF()
@@ -278,23 +414,20 @@ class GeoDownloads(object):
         main_path = Path(outdir)
         outdir_brdf = main_path.joinpath('brdf')
 
-        if not main_path.is_dir():
-            main_path.mkdir()
+        main_path.mkdir(parents=True, exist_ok=True)
+        outdir_brdf.mkdir(parents=True, exist_ok=True)
 
-        if not outdir_brdf.is_dir():
-            outdir_brdf.mkdir()
-
-        if isinstance(sensors, str):
-            sensors = [sensors]
-
+        # Logging file
         status = Path(outdir).joinpath('status.txt')
 
         if not status.is_file():
-            with open(status.as_posix(), mode='w') as tx:
+
+            with open(str(status), mode='w') as tx:
                 pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
+
             bounds = Polygon([(bounds[0], bounds[3]),  # upper left
                               (bounds[2], bounds[3]),  # upper right
                               (bounds[2], bounds[1]),  # lower right
@@ -308,6 +441,7 @@ class GeoDownloads(object):
         bounds_object = bounds.geometry.values[0]
 
         if not out_bounds:
+
             # Project the bounds
             out_bounds = bounds.to_crs(crs).bounds.values[0].tolist()
 
@@ -316,15 +450,16 @@ class GeoDownloads(object):
 
         data_dir = Path(data_bin).joinpath('../data')
 
-        shp_dict = dict()
+        shp_dict = {}
 
-        if ('l7' in sensors) or ('l8' in sensors):
+        if ('l5' in sensors) or ('l7' in sensors) or ('l8' in sensors):
 
             path_tar = Path(data_dir).joinpath('wrs2.tar.gz')
             path_shp = Path(data_dir).joinpath('wrs2_descending.shp')
             wrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
+
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -344,6 +479,7 @@ class GeoDownloads(object):
             mgrs = os.path.realpath(path_shp.as_posix())
 
             if not path_shp.is_file():
+
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
                     tf.extractall(data_dir.as_posix())
 
@@ -360,7 +496,7 @@ class GeoDownloads(object):
         dt2 = datetime.strptime(date_range[1], '%Y-%m')
 
         months = list(range(1, 13))
-        year_months = dict()
+        year_months = {}
 
         if dt1.month <= dt2.month:
             month_range = months[months.index(dt1.month):months.index(dt2.month) + 1]
@@ -446,8 +582,9 @@ class GeoDownloads(object):
 
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
+                                                          outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=status.as_posix(),
+                                                          check_file=str(status),
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
@@ -486,46 +623,59 @@ class GeoDownloads(object):
 
                             file_info = self.download_gcp(sensor,
                                                           outdir=outdir,
+                                                          outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=status.as_posix(),
+                                                          check_file=str(status),
                                                           verbose=1)
 
-                        logger.info('  Finished downloading files')
+                        logger.info('  Finished downloading files for yyyymm query, {}.'.format(yearmonth_query))
 
                         # Create pixel angle files
                         # TODO: this can be run in parallel
                         for finfo_key, finfo_dict in file_info.items():
 
-                            brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
-
-                            logger.info('  Processing {} ...'.format(brdfp))
-
-                            out_brdf = outdir_brdf.joinpath(brdfp + '.tif').as_posix()
-                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif').as_posix()
-
-                            if os.path.isfile(out_brdf):
-                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                            # Incomplete dictionary because file was checked, existed, and cleaned
+                            if 'meta' not in finfo_dict:
+                                logger.warning('  The metadata does not exist.')
+                                _clean_and_update(status, None, finfo_dict, None, check_angles=False)
                                 continue
 
-                            with open(status.as_posix(), mode='r') as tx:
-                                lines = tx.readlines()
+                            brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
+                            out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath(
-                                    'angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+
+                            if not Path(finfo_dict['meta'].name).is_file():
+                                logger.warning('  The metadata does not exist.')
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                continue
+
+                            if out_brdf.is_file():
+
+                                logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                continue
+
+                            if load_bands[0] not in finfo_dict:
+                                logger.warning('  The download for {} was incomplete.'.format(brdfp))
+                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
 
                             ref_file = finfo_dict[load_bands[0]].name
 
+                            logger.info('  Processing angles for {} ...'.format(brdfp))
+
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
-                                                                   outdir_angles.as_posix(),
+                                                                   str(outdir_angles),
                                                                    nodata=-32768,
                                                                    overwrite=False,
                                                                    verbose=1)
@@ -553,7 +703,7 @@ class GeoDownloads(object):
 
                                 angle_info = landsat_pixel_angles(finfo_dict['angle'].name,
                                                                   ref_file,
-                                                                  outdir_angles.as_posix(),
+                                                                  str(outdir_angles),
                                                                   meta.sensor,
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
@@ -575,6 +725,8 @@ class GeoDownloads(object):
                                 bandpass_sensor = sensor
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
+
+                                logger.info('  Translating jp2 files to gtiff for {} ...'.format(brdfp))
 
                                 load_bands_names = []
 
@@ -605,6 +757,8 @@ class GeoDownloads(object):
 
                                 # Get band names from user
                                 load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+
+                            logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
@@ -755,7 +909,7 @@ class GeoDownloads(object):
                                                                        nodataval).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                             else:
 
@@ -778,7 +932,7 @@ class GeoDownloads(object):
                                                                        nodataval).astype('uint16')
 
                                                     sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                    sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         else:
 
@@ -789,29 +943,29 @@ class GeoDownloads(object):
                                                                             'uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            sr_brdf.gw.to_raster(out_brdf, **kwargs)
+                                            sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         if write_angle_files:
                                             
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
-                                            angle_stack.gw.to_raster(out_angles, **angle_kwargs)
+                                            angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
+
+                                else:
+
+                                    logger.warning('  Not enough data for {} to store on disk.'.format(str(out_brdf)))
+
+                                    # Write an empty file for tracking
+                                    with open(str(out_brdf).replace('.tif', '.nodata'), 'w') as tx:
+                                        tx.writelines([])
 
                             angle_infos[finfo_key] = angle_info
 
-                            _rmdir(outdir_angles)
-
-                            for k, v in finfo_dict.items():
-
-                                try:
-                                    Path(v.name).unlink()
-                                except:
-                                    pass
-
-                            lines.append(finfo_dict['meta'].name + '\n')
-
-                            with open(status.as_posix(), mode='r+') as tx:
-                                tx.writelines(lines)
+                            _clean_and_update(status,
+                                              outdir_angles,
+                                              finfo_dict,
+                                              finfo_dict['meta'].name,
+                                              load_bands_names=load_bands_names)
 
             year += 1
 
@@ -865,9 +1019,14 @@ class GeoDownloads(object):
 
         gsutil_str = gcp_str + "/" + gcp_dict[sensor] + "/" + query
 
-        proc = subprocess.run(gsutil_str.split(' '),
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+        try:
+
+            proc = subprocess.run(gsutil_str.split(' '),
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+
+        except:
+            logger.exception('gsutil must be installed.')
 
         output = proc.stdout
 
@@ -927,6 +1086,7 @@ class GeoDownloads(object):
                      sensor,
                      downloads=None,
                      outdir='.',
+                     outdir_brdf=None,
                      search_wildcards=None,
                      search_dict=None,
                      check_file=None,
@@ -939,21 +1099,22 @@ class GeoDownloads(object):
             sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2a', 's2c'].
             downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
                 from ``search_dict`` or ``self.search_dict``.
-            outdir (Optional[str]): The output directory.
+            outdir (Optional[str | Path]): The output directory.
+            outdir_brdf (Optional[Path]): The output directory.
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
             check_file (Optional[str]): A status file to check.
             verbose (Optional[int]): The verbosity level.
 
         Returns:
-            ``namedtuple`` or ``list``
+            ``dict`` of ``dicts``
+                where sub-dictionaries contain a ``namedtuple`` of the downloaded file and tag
         """
 
         if not search_dict:
 
             if not self.search_dict:
-                logger.exception(
-                    '  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
             else:
                 search_dict = self.search_dict
 
@@ -975,99 +1136,212 @@ class GeoDownloads(object):
 
         FileInfo = namedtuple('FileInfo', 'name key')
 
-        downloaded = dict()
-        null_items = list()
+        downloaded = {}
+        null_items = []
 
         for search_key in downloads:
-
-            downloaded_sub = dict()
 
             download_list = self.search_dict[search_key]
 
             if search_wildcards:
 
-                download_list_ = list()
+                download_list_ = []
 
                 for swild in search_wildcards:
                     download_list_ += fnmatch.filter(download_list, '*{}'.format(swild))
 
                 download_list = download_list_
 
-            for fn in download_list:
+            download_list_names = [Path(dfn).name for dfn in download_list]
 
-                rename = False
+            logger.info('  The download contains {:d} items: {}'.format(len(download_list_names), ','.join(download_list_names)))
 
-                fname = Path(fn).name
-                down_file = poutdir.joinpath(fname).as_posix()
+            # Separate each scene
+            if sensor.lower() in ['l5', 'l7', 'l8']:
 
-                if down_file.endswith('_ANG.txt'):
-                    fbase = fname.replace('_ANG.txt', '')
-                    key = 'angle'
-                elif down_file.endswith('_MTL.txt'):
-                    fbase = fname.replace('_MTL.txt', '')
-                    key = 'meta'
-                elif down_file.endswith('MTD_TL.xml'):
+                # list of file ids
+                id_list = ['_'.join(fn.split('_')[:-1]) for fn in download_list_names if fn.endswith('_MTL.txt')]
 
-                    fbase = Path(fn).parent.name
-                    down_file = poutdir.joinpath(fbase + '_MTD_TL.xml').as_posix()
-                    key = 'meta'
-                    rename = True
+                # list of lists where each sub-list is unique
+                download_list_unique = [[fn for fn in download_list if sid in Path(fn).name] for sid in id_list]
 
-                elif down_file.endswith('_BQA.TIF'):
-                    fbase = fname.replace('_BQA.TIF', '')
-                    key = 'qa'
+            else:
+
+                id_list = list(set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names]))
+                download_list_unique = [download_list]
+
+            for scene_id, sub_download_list in zip(id_list, download_list_unique):
+
+                logger.info('  Checking scene {} ...'.format(scene_id))
+
+                downloaded_sub = {}
+
+                # Check if the file has been downloaded
+                if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                    # Path of BRDF stack
+                    out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
+
                 else:
 
-                    if fname.endswith('.jp2'):
+                    fn = sub_download_list[0]
+                    fname = Path(fn).name
+
+                    if fname.lower().endswith('.jp2'):
 
                         fbase = Path(fn).parent.parent.name
                         key = Path(fn).name.split('.')[0].split('_')[-1]
-                        down_file = poutdir.joinpath(fbase + '_' + key + '.jp2').as_posix()
-                        rename = True
+                        down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+
+                        brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
+                        out_brdf = outdir_brdf.joinpath(brdfp + '_MTD.tif')
 
                     else:
+                        out_brdf = None
 
-                        fsplit = fname.split('_')
-                        fbase = '_'.join(fsplit[:-1])
-                        key = fsplit[-1].split('.')[0]
+                if out_brdf:
 
-                    # TODO: QA60
+                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
 
-                continue_download = True
+                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
+                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
+                        continue
 
-                if fbase in null_items:
-                    continue_download = False
+                    else:
+                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
 
-                if continue_download and check_file:
+                # Move the metadata file to the front of the
+                # list to avoid unnecessary downloads.
+                if sensor.lower() in ['l5', 'l7', 'l8']:
+                    meta_index = [i for i in range(0, len(sub_download_list)) if sub_download_list[i].endswith('_MTL.txt')][0]
+                    sub_download_list.insert(0, sub_download_list.pop(meta_index))
+                else:
+                    # The Sentinel 2 metadata files come in their own list
+                    pass
 
-                    with open(check_file, mode='r') as tx:
-                        lines = tx.readlines()
+                download_list_names = [Path(dfn).name for dfn in sub_download_list]
 
-                    if Path(down_file).parent.joinpath(fbase + '_MTL.txt').as_posix() + '\n' in lines:
-                        null_items.append(fbase)
+                for fname, fn in zip(download_list_names, sub_download_list):
+
+                    # Renaming Sentinel data
+                    rename = False
+
+                    # Full path of GCP local download
+                    down_file = str(poutdir.joinpath(fname))
+
+                    if down_file.endswith('_ANG.txt'):
+                        fbase = fname.replace('_ANG.txt', '')
+                        key = 'angle'
+                    elif down_file.endswith('_MTL.txt'):
+                        fbase = fname.replace('_MTL.txt', '')
+                        key = 'meta'
+                    elif down_file.endswith('MTD_TL.xml'):
+
+                        fbase = Path(fn).parent.name
+                        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+                        key = 'meta'
+                        rename = True
+
+                    elif down_file.endswith('_BQA.TIF'):
+                        fbase = fname.replace('_BQA.TIF', '')
+                        key = 'qa'
+                    else:
+
+                        if fname.endswith('.jp2'):
+
+                            fbase = Path(fn).parent.parent.name
+                            key = Path(fn).name.split('.')[0].split('_')[-1]
+                            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+                            rename = True
+
+                        else:
+
+                            fsplit = fname.split('_')
+                            fbase = '_'.join(fsplit[:-1])
+                            key = fsplit[-1].split('.')[0]
+
+                        # TODO: QA60
+
+                    continue_download = True
+
+                    if fbase in null_items:
                         continue_download = False
 
-                if continue_download:
+                    # if continue_download and check_file:
+                    #
+                    #     ##########################################
+                    #     # Check if the file stack has been created
+                    #     ##########################################
+                    #
+                    #     if key == 'meta':
+                    #
+                    #         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
+                    #         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
+                    #
+                    #         if out_brdf.is_file():
+                    #
+                    #             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
+                    #
+                    #             downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                    #
+                    #             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
+                    #
+                    #             null_items.append(fbase)
+                    #             continue_download = False
+                    #             downloaded_sub = {}
+                    #             break
+                    #
+                    #     # if continue_download:
+                    #     #
+                    #     #     lines = _delayed_read(check_file)
+                    #     #
+                    #     #     if sensor.lower() in ['l5', 'l7', 'l8']:
+                    #     #
+                    #     #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
+                    #     #             null_items.append(fbase)
+                    #     #             continue_download = False
+                    #     #
+                    #     #     else:
+                    #     #
+                    #     #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
+                    #     #             null_items.append(fbase)
+                    #     #             continue_download = False
 
-                    if not Path(down_file).is_file():
+                    if continue_download:
 
-                        if fn.lower().startswith('gs://gcp-public-data'):
-                            com = 'gsutil cp -r {} {}'.format(fn, outdir)
-                        else:
-                            com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+                        ###################
+                        # Download the file
+                        ###################
 
-                        if verbose > 0:
-                            logger.info('  Downloading {} ...'.format(fname))
+                        if not Path(down_file).is_file():
 
-                        subprocess.call(com, shell=True)
+                            if fn.lower().startswith('gs://gcp-public-data'):
+                                com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                            else:
+                                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
 
-                        if rename:
-                            os.rename(Path(outdir).joinpath(Path(fn).name).as_posix(), down_file)
+                            if verbose > 0:
+                                logger.info('  Downloading {} ...'.format(fname))
 
-                    downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                            subprocess.call(com, shell=True)
 
-            if downloaded_sub:
-                downloaded[search_key] = downloaded_sub
+                            if rename:
+                                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+
+                        # Store file information
+                        downloaded_sub[key] = FileInfo(name=down_file, key=key)
+
+                if downloaded_sub:
+
+                    if len(downloaded_sub) < len(sub_download_list):
+
+                        downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
+                        missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
+
+                        logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(sub_download_list)))
+                        logger.warning('  {} are missing.'.format(missing_items))
+
+                    downloaded[search_key] = downloaded_sub
 
         return downloaded
 
@@ -1091,6 +1365,9 @@ class GeoDownloads(object):
             >>> dl.download_aws('LC08_L1TP_224077_20200518_20200518_01_RT', ['b2', 'b3', 'b4'])
         """
 
+        if not REQUESTS_INSTALLED:
+            logger.exception('Requests must be installed.')
+
         if not isinstance(outdir, Path):
             outdir = Path(outdir)
 
@@ -1107,22 +1384,40 @@ class GeoDownloads(object):
             with open(out_file, 'wb') as f:
                 f.write(response.content)
 
-        mtl_id = f'{landsat_id}_MTL.txt'
-        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'
+        mtl_id = '{landsat_id}_MTL.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                  path=path,
+                                                                                  row=row,
+                                                                                  landsat_id=landsat_id,
+                                                                                  mtl_id=mtl_id)
+
         mtl_out = outdir / mtl_id
 
         _download_file(url, str(mtl_out))
 
-        angle_id = f'{landsat_id}_ANG.txt'
-        url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'
+        angle_id = '{landsat_id}_ANG.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                    path=path,
+                                                                                    row=row,
+                                                                                    landsat_id=landsat_id,
+                                                                                    angle_id=angle_id)
+
         angle_out = outdir / angle_id
 
         _download_file(url, str(angle_out))
 
         for band in band_list:
 
-            band_id = f'{landsat_id}_{band.upper()}.TIF'
-            url = f'{self.aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'
+            band_id = '{landsat_id}_{band}.TIF'.format(landsat_id=landsat_id,
+                                                       band=band.upper())
+
+            url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                       path=path,
+                                                                                       row=row,
+                                                                                       landsat_id=landsat_id,
+                                                                                       band_id=band_id)
             band_out = outdir / band_id
 
             _download_file(url, str(band_out))

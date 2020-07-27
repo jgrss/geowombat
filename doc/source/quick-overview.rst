@@ -1,6 +1,7 @@
-##############
+.. _quick-overview:
+
 Quick overview
-##############
+==============
 
 Here are some quick examples of what you can do with :py:class:`GeoWombat` objects.
 
@@ -34,6 +35,6 @@ File opening with GeoWombat
 
     from geowombat.data import rgbn
 
-    with gw.open(rgbn) as ds:
-        print(ds)
-        print(ds.gw)
+    with gw.open(rgbn) as src:
+        print(src)
+        print(src.gw)
