@@ -358,7 +358,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
                     out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
 
         else:
-            logger.warning('  Padding is only supported with user functions.')
+
+            if padded_window_:
+                logger.warning('  Padding is only supported with user functions.')
 
     if not isinstance(out_data_, np.ndarray):
         logger.exception('  The data were not computed properly for block {:,d}'.format(wid))
