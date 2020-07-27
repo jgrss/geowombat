@@ -13,16 +13,14 @@ Subsetting rasters
 
 Either a `rasterio.window.Window` object or tuple can be used with :func:`geowombat.open`.
 
+Slice a subset using a `rasterio.window.Window`.
+
 .. code:: python
 
     from rasterio.windows import Window
     w = Window(row_off=0, col_off=0, height=100, width=100)
 
     bounds = (793475.76, 2049033.03, 794222.03, 2049527.24)
-
-Slice a subset using a `rasterio.window.Window`.
-
-.. code:: python
 
     with gw.open(rgbn,
                  band_names=['blue', 'green', 'red'],
