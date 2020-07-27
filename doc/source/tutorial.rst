@@ -8,6 +8,7 @@ Tutorial
 
    tutorial-why
    tutorial-open
+   tutorial-edit
    tutorial-config
    tutorial-gw
    tutorial-crs
