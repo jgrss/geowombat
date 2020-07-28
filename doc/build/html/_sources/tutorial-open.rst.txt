@@ -18,7 +18,7 @@ Opening an image with default settings looks similar to :func:`xarray.open_raste
     with gw.open(l8_224078_20200518) as src:
         print(src)
 
-In the example above, `src` is an `xarray.DataArray`. Thus, printing the object will display the underlying Dask array dimenssions and chunks, the DataArray named coordinates, and the DataArray attributes.
+In the example above, `src` is an `xarray.DataArray`. Thus, printing the object will display the underlying Dask array dimensions and chunks, the DataArray named coordinates, and the DataArray attributes.
 
 Opening multiple bands as a stack
 ---------------------------------
