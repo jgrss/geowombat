@@ -37,27 +37,26 @@
             
   <div class="section" id="data-extraction">
 <span id="extraction"></span><h1>Data extraction<a class="headerlink" href="#data-extraction" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 </pre></div>
 </div>
 <div class="section" id="subsetting-rasters">
 <h2>Subsetting rasters<a class="headerlink" href="#subsetting-rasters" title="Permalink to this headline">¶</a></h2>
 <p>Either a <cite>rasterio.window.Window</cite> object or tuple can be used with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>.</p>
+<p>Slice a subset using a <cite>rasterio.window.Window</cite>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rasterio.windows</span> <span class="kn">import</span> <span class="n">Window</span>
 <span class="n">w</span> <span class="o">=</span> <span class="n">Window</span><span class="p">(</span><span class="n">row_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_off</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">793475.76</span><span class="p">,</span> <span class="mf">2049033.03</span><span class="p">,</span> <span class="mf">794222.03</span><span class="p">,</span> <span class="mf">2049527.24</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Slice a subset using a <cite>rasterio.window.Window</cite>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span>
              <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
              <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
              <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
              <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
              <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Slice a subset using a tuple of bounded coordinates.</p>
@@ -67,28 +66,28 @@
              <span class="n">indexes</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
              <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
              <span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The configuration manager provides an alternative method to subset rasters. See <a class="reference internal" href="tutorial-config.html#tutorial-config"><span class="std std-ref">Configuration manager</span></a> for more details.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">):</span>
 
     <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>By default, the subset will be returned by the upper left coordinates of the bounds, potentially shifting cell alignment with the reference raster. To subset a raster and align it to the same grid, use the <strong>ref_tar</strong> keyword.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">ref_tar</span><span class="o">=</span><span class="n">rgbn</span><span class="p">):</span>
 
     <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="extracting-data-with-coordinates">
 <h2>Extracting data with coordinates<a class="headerlink" href="#extracting-data-with-coordinates" title="Permalink to this headline">¶</a></h2>
 <p>To extract values at a coordinate pair, translate the coordinates into array indices.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
@@ -100,12 +99,12 @@
 <span class="gp">   ...: </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">src</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span>
 
-<span class="gp">In [5]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+<span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 <span class="go">[7448 6882 6090]</span>
 </pre></div>
 </div>
 <p>A latitude/longitude pair can be extracted after converting to the map projection.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
@@ -118,7 +117,7 @@
 <span class="gp">   ...: </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">src</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span>
 
-<span class="gp">In [10]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+<span class="gp">In [10]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 <span class="go">[7448 6882 6090]</span>
 </pre></div>
 </div>
@@ -126,7 +125,7 @@
 <div class="section" id="extracting-data-with-point-geometry">
 <h2>Extracting data with point geometry<a class="headerlink" href="#extracting-data-with-point-geometry" title="Permalink to this headline">¶</a></h2>
 <p>In the example below, ‘l8_224078_20200518_points’ is a <a class="reference external" href="https://www.geopackage.org/">GeoPackage</a> of point locations, and the output <cite>df</cite> is a <a class="reference external" href="https://geopandas.org/reference/geopandas.GeoDataFrame.html">GeoPandas GeoDataFrame</a>. To extract the raster values at the point locations, use <a class="reference internal" href="api/geowombat.extract.html#geowombat.extract" title="geowombat.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.extract()</span></code></a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [12]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_points</span>
 
@@ -134,7 +133,7 @@
 <span class="gp">   ....: </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">l8_224078_20200518_points</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [14]: </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">In [14]: </span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 <span class="go">        name                         geometry  id     1     2     3</span>
 <span class="go">0      water  POINT (741522.314 -2811204.698)   0  7966  7326  6254</span>
 <span class="go">1       crop  POINT (736140.845 -2806478.364)   1  8030  7490  8080</span>
@@ -149,28 +148,28 @@
 <p>The line <strong>df = src.gw.extract(l8_224078_20200518_points)</strong> could also have been written as <strong>df = gw.extract(src, l8_224078_20200518_points)</strong>.</p>
 </div>
 <p>In the previous example, the point vector had a CRS that matched the raster (i.e., EPSG=32621, or UTM zone 21N). If the CRS had not matched, the <a class="reference internal" href="api/geowombat.extract.html#geowombat.extract" title="geowombat.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.extract()</span></code></a> function would have transformed the CRS on-the-fly.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [15]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [15]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [16]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_points</span>
 
-<span class="gp">In [17]: </span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="gp">In [17]: </span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
 
 <span class="gp">In [18]: </span><span class="n">point_df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_points</span><span class="p">)</span>
 
-<span class="gp">In [19]: </span><span class="nb">print</span><span class="p">(</span><span class="n">point_df</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">In [19]: </span><span class="k">print</span><span class="p">(</span><span class="n">point_df</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 <span class="go">epsg:32621</span>
 
 <span class="go"># Transform the CRS to WGS84 lat/lon</span>
 <span class="gp">In [20]: </span><span class="n">point_df</span> <span class="o">=</span> <span class="n">point_df</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="s1">&#39;epsg:4326&#39;</span><span class="p">)</span>
 
-<span class="gp">In [21]: </span><span class="nb">print</span><span class="p">(</span><span class="n">point_df</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">In [21]: </span><span class="k">print</span><span class="p">(</span><span class="n">point_df</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 <span class="go">epsg:4326</span>
 
 <span class="gp">In [22]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">point_df</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [23]: </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">In [23]: </span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 <span class="go">        name                         geometry  id     1     2     3</span>
 <span class="go">0      water  POINT (741522.314 -2811204.698)   0  7966  7326  6254</span>
 <span class="go">1       crop  POINT (736140.845 -2806478.364)   1  8030  7490  8080</span>
@@ -181,7 +180,7 @@
 </pre></div>
 </div>
 <p>Set the data band names.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [24]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [24]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [25]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_points</span>
 
@@ -191,7 +190,7 @@
 <span class="gp">   ....: </span>                            <span class="n">band_names</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [27]: </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">In [27]: </span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 <span class="go">        name                         geometry  id  blue  green   red</span>
 <span class="go">0      water  POINT (741522.314 -2811204.698)   0  7966   7326  6254</span>
 <span class="go">1       crop  POINT (736140.845 -2806478.364)   1  8030   7490  8080</span>
@@ -213,7 +212,7 @@
 <span class="gp">   ....: </span>                            <span class="n">band_names</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [30]: </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">In [30]: </span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 <span class="go">     poly  point                         geometry   blue  green    red</span>
 <span class="go">0       0      0  POINT (737535.000 -2795205.000)   8017   7435   6283</span>
 <span class="go">1       0      1  POINT (737565.000 -2795205.000)   8016   7439   6294</span>
@@ -271,7 +270,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
@@ -316,7 +315,7 @@
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

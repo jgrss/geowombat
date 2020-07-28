@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Change log" href="changelog.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Radiometry" href="radiometry.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -40,7 +40,7 @@
 <div class="section" id="download-data-from-google-cloud-platform">
 <h2>Download data from Google Cloud Platform<a class="headerlink" href="#download-data-from-google-cloud-platform" title="Permalink to this headline">¶</a></h2>
 <p>Here, a Landsat 7 panchromatic image is downloaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geowombat.web</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geowombat.util.web</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
 
 <span class="n">gdl</span> <span class="o">=</span> <span class="n">GeoDownloads</span><span class="p">()</span>
 
@@ -52,7 +52,7 @@
     <span class="k">del</span> <span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="p">[</span><span class="n">dk</span><span class="p">]</span>
 
 <span class="c1"># Results are saved as a dictionary</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">search_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
 <span class="n">search_wildcards</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANG.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;MTL.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;B8.TIF&#39;</span><span class="p">]</span>
 
@@ -91,7 +91,7 @@
 </pre></div>
 </div>
 <p>In the example above, the bounds can also be taken directly from a file, as shown below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;file.gpkg&#39;</span><span class="p">)</span>
 
@@ -140,7 +140,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
@@ -154,7 +154,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="radiometry.html" title="previous chapter">Radiometry</a></li>
-      <li>Next: <a href="changelog.html" title="next chapter">Change log</a></li>
+      <li>Next: <a href="changelog.html" title="next chapter">Changelog</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -185,7 +185,7 @@
       &copy;2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

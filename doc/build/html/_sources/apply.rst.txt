@@ -72,7 +72,7 @@ In this example, a keyword argument is also used.
 
         # Function keyword arguments are given as 'apply_kwargs'
         # *Note that keyword arguments should always be a dictionary
-        ds.attrs['apply_kwargs'] = {'divide': 2.3}
+        ds.attrs['apply_kwargs'] = {'divider': 2.3}
 
         ds.gw.to_raster('output.tif',
                         n_workers=4,
