@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Why GeoWombat?" href="tutorial-why.html" />
+    <link rel="prev" title="Quick overview" href="quick-overview.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="tutorial">
+<span id="id1"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-why.html">Why GeoWombat?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html#why-not-rasterio">Why not Rasterio?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html#why-not-xarray">Why not Xarray?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html#related-projects">Related projects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-open.html">Opening rasters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html#opening-a-single-image">Opening a single image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html#opening-multiple-bands-as-a-stack">Opening multiple bands as a stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html#opening-multiple-bands-as-a-mosaic">Opening multiple bands as a mosaic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-edit.html">Editing rasters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html#setting-no-data-values">Setting ‘no data’ values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html#setting-no-data-values-with-scaling">Setting ‘no data’ values with scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html#replace-values">Replace values</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-config.html">Configuration manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#what-is-a-context-manager">What is a context manager?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#what-is-the-purpose-of-geowombat-s-context-manager">What is the purpose of GeoWombat’s context manager?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#how-do-i-use-it">How do I use it?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#reference-settings-crs">Reference settings: CRS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#reference-settings-cell-size">Reference settings: Cell size</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#reference-settings-bounds">Reference settings: Bounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#reference-settings-image">Reference settings: Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html#reference-settings-sensors">Reference settings: Sensors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-gw.html">GeoWombat DataArray accessor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-gw.html#dataarray-geowombat-attributes">DataArray GeoWombat attributes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-crs.html">Coordinate Reference Systems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-crs.html#transforming-a-crs-on-the-fly">Transforming a CRS on-the-fly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-crs.html#resampling-the-cell-size">Resampling the cell size</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial-plot.html">Plotting raster data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html#plot-the-entire-array">Plot the entire array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html#plot-the-intersection-of-two-arrays">Plot the intersection of two arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html#plot-the-union-of-two-arrays">Plot the union of two arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html#mosaic-by-the-union-of-images">Mosaic by the union of images</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="quick-overview.html" title="previous chapter">Quick overview</a></li>
+      <li>Next: <a href="tutorial-why.html" title="next chapter">Why GeoWombat?</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/tutorial.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

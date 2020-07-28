@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geodataframe_to_array &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="array_to_polygon" href="geowombat.array_to_polygon.html" />
+    <link rel="prev" title="to_geodataframe" href="geowombat.to_geodataframe.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="geodataframe-to-array">
+<h1>geodataframe_to_array<a class="headerlink" href="#geodataframe-to-array" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.geodataframe_to_array">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">geodataframe_to_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataframe</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cellx</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">celly</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">src_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.geodataframe_to_array" title="Permalink to this definition">¶</a></dt>
+<dd><div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 1.2.0: </span>Use <a class="reference internal" href="geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.polygon_to_array()</span></code></a> instead.</p>
+</div>
+<p>Converts a polygon <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataframe</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.DataFrame</span></code> or file with polygon geometries.</p></li>
+<li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to use as a reference.</p></li>
+<li><p><strong>cellx</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell x size.</p></li>
+<li><p><strong>celly</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell y size.</p></li>
+<li><p><strong>band_name</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> band name.</p></li>
+<li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> row chunk size.</p></li>
+<li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> column chunk size.</p></li>
+<li><p><strong>(</strong><strong>Optional</strong><strong>[</strong><strong>tuple</strong><strong>]</strong> (<em>src_res</em>) – A source resolution to align to.</p></li>
+<li><p><strong>fill</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output fill value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>default_value</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output default value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output data type for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;polygons.gpkg&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 100x100 cell size</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">geodataframe_to_array</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Align to an existing image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">geodataframe_to_array</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">cellx</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">celly</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">row_chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">row_chunks</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">col_chunks</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">col_chunks</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                    <span class="n">src_res</span><span class="o">=</span><span class="n">src_res</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.to_geodataframe.html" title="previous chapter">to_geodataframe</a></li>
+      <li>Next: <a href="geowombat.array_to_polygon.html" title="next chapter">array_to_polygon</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.geodataframe_to_array.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

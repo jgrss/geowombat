@@ -1,0 +1,553 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raster I/O &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Distributed processing" href="io-distributed.html" />
+    <link rel="prev" title="Examples" href="examples.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="raster-i-o">
+<span id="io"></span><h1>Raster I/O<a class="headerlink" href="#raster-i-o" title="Permalink to this headline">¶</a></h1>
+<p>File opening with GeoWombat uses the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function to open raster files.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Import GeoWombat</span>
+<span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="go"># Load image names</span>
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224077_20200518_B3</span><span class="p">,</span> <span class="n">l8_224077_20200518_B4</span>
+
+<span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">,</span> <span class="n">l8_224078_20200518</span>
+
+<span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="gp">In [5]: </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="gp">In [6]: </span><span class="kn">import</span> <span class="nn">matplotlib.patheffects</span> <span class="kn">as</span> <span class="nn">pe</span>
+</pre></div>
+</div>
+<p>To open individual images, GeoWombat uses <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT()</span></code>.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="n">src</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">src</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+
+<span class="gp">In [9]: </span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/rgb_plot.png" src="_images/rgb_plot.png" />
+<p>Open a raster as a DataArray.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-9c1125b9630615e93ab3a994905a87a8&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) int64 1 2 3</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<p>Force the output data type.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">float64</span>
+</pre></div>
+</div>
+<p>Specify band names.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray &#39;band&#39; (band: 3)&gt;</span>
+<span class="go">array([&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;], dtype=&#39;&lt;U5&#39;)</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
+</pre></div>
+</div>
+<p>Use the sensor name to set band names.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [13]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray &#39;band&#39; (band: 3)&gt;</span>
+<span class="go">array([&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;], dtype=&#39;&lt;U5&#39;)</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
+</pre></div>
+</div>
+<p>To open multiple images stacked by bands, use a list of files with <code class="docutils literal notranslate"><span class="pre">stack_dim='band'</span></code>.</p>
+<p>Open a list of files as a DataArray, with all bands stacked.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [14]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+</pre></div>
+</div>
+<p>To open multiple images as a time stack, change the input to a list of files.</p>
+<p>Open a list of files as a DataArray.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [15]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT.TIF&#39;, &#39;LC08_L1...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Xarray will handle alignment of images of varying sizes as long as the the resolutions are “target aligned”. If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and a reference image to handle image alignment.</p>
+</div>
+<p>In the example below, we specify a reference image using GeoWombat’s configuration manager.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The two images in this example are identical. The point here is just to illustrate the use of the configuration manager.</p>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Use an image as a reference for grid alignment and CRS-handling</span>
+<span class="go">#</span>
+<span class="go"># Within the configuration context, every image</span>
+<span class="go"># in concat_list will conform to the reference grid.</span>
+<span class="gp">In [16]: </span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">]</span>
+
+<span class="gp">In [17]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">l8_224077_20200518_B2</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span>
+<span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1515, x: 2006)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 3, 1515, 2006), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT.TIF&#39;, &#39;LC08_L1...</span>
+<span class="go">    resampling:     nearest</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+
+<span class="gp">In [18]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">l8_224078_20200518_B2</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span>
+<span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">time_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan, nan, nan)</span>
+<span class="go">    scales:         (1.0, 1.0, 1.0)</span>
+<span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
+<span class="go">    AREA_OR_POINT:  Area</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT.TIF&#39;, &#39;LC08_L1...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<p>Stack the intersection of all images.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [19]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="gp">In [20]: </span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">]</span>
+
+<span class="gp">In [21]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">src</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">src</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+
+<span class="gp">In [22]: </span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/blue_intersection_plot.png" src="_images/blue_intersection_plot.png" />
+<p>Stack the union of all images.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [23]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="gp">In [24]: </span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">]</span>
+
+<span class="gp">In [25]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="gp">   ....: </span>             <span class="n">bounds_by</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">src</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">src</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+
+<span class="gp">In [26]: </span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/blue_union_plot.png" src="_images/blue_union_plot.png" />
+<p>When multiple images have matching dates, the arrays are merged into one layer.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">]</span>
+
+<span class="gp">In [28]: </span><span class="n">band_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">]</span>
+
+<span class="gp">In [29]: </span><span class="n">time_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">]</span>
+
+<span class="gp">In [30]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span> <span class="n">time_names</span><span class="o">=</span><span class="n">time_names</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (time: 1, band: 1, y: 1515, x: 2006)&gt;</span>
+<span class="go">dask.array&lt;broadcast_to, shape=(1, 1, 1515, 2006), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
+<span class="go">  * band     (band) &lt;U4 &#39;blue&#39;</span>
+<span class="go">  * time     (time) &lt;U2 &#39;t1&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<div class="section" id="image-mosaicking">
+<h2>Image mosaicking<a class="headerlink" href="#image-mosaicking" title="Permalink to this headline">¶</a></h2>
+<p>Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
+is needed.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [31]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1515, x: 2006)&gt;</span>
+<span class="go">dask.array&lt;maximum, shape=(1, 1515, 2006), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U1 &#39;b&#39;</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
+<span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<p>If the images in the mosaic list have different CRSs, use a context manager to warp to a common grid.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The two images in this example have the same CRS. The point here is just to illustrate the use of the configuration manager.</p>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go"># Use a reference CRS</span>
+<span class="gp">In [32]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">l8_224077_20200518_B2</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                 <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1515, x: 2006)&gt;</span>
+<span class="go">dask.array&lt;maximum, shape=(1, 1515, 2006), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * band     (band) &lt;U1 &#39;b&#39;</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
+<span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+<span class="go">    resampling:     nearest</span>
+</pre></div>
+</div>
+<div class="section" id="setup-a-plot-function">
+<h3>Setup a plot function<a class="headerlink" href="#setup-a-plot-function" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [33]: </span><span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">bounds_by</span><span class="p">,</span> <span class="n">ref_image</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">):</span>
+<span class="gp">   ....: </span>    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">ref_image</span><span class="p">):</span>
+<span class="gp">   ....: </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224077_20200518_B4</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span>
+<span class="gp">   ....: </span>                     <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+<span class="gp">   ....: </span>                     <span class="n">chunks</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+<span class="gp">   ....: </span>                     <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="gp">   ....: </span>                     <span class="n">bounds_by</span><span class="o">=</span><span class="n">bounds_by</span><span class="p">)</span> <span class="k">as</span> <span class="n">srca</span><span class="p">:</span>
+<span class="gp">   ....: </span>            <span class="n">srca</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">srca</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cbar_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;DN&#39;</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ....: </span>            <span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">chunk_grid</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ....: </span>            <span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="gp">   ....: </span>            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="gp">   ....: </span>                <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+<span class="gp">   ....: </span>                           <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">   ....: </span>                <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">footprint</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.TIF&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+<span class="gp">   ....: </span>                            <span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+<span class="gp">   ....: </span>                            <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+<span class="gp">   ....: </span>                            <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="gp">   ....: </span>                            <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+<span class="gp">   ....: </span>                            <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+<span class="gp">   ....: </span>                            <span class="n">path_effects</span><span class="o">=</span><span class="p">[</span><span class="n">pe</span><span class="o">.</span><span class="n">withStroke</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">foreground</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">)])</span>
+<span class="gp">   ....: </span>            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">+</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">   ....: </span>            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">srca</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">footprint_grid</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="n">title</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;Image {bounds_by}&#39;</span> <span class="k">if</span> <span class="n">bounds_by</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">ref_image</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39; as reference&#39;</span>
+<span class="gp">   ....: </span>    <span class="n">size</span> <span class="o">=</span> <span class="mi">12</span> <span class="k">if</span> <span class="n">bounds_by</span> <span class="k">else</span> <span class="mi">8</span>
+<span class="gp">   ....: </span>    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mosaic-by-the-union-of-images">
+<h3>Mosaic by the union of images<a class="headerlink" href="#mosaic-by-the-union-of-images" title="Permalink to this headline">¶</a></h3>
+<p>The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
+footprints while the black grids illustrate the <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> chunks.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [34]: </span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;union&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/union_example.png" src="_images/union_example.png" />
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [35]: </span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/intersection_example.png" src="_images/intersection_example.png" />
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [36]: </span><span class="n">plot</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">l8_224077_20200518_B4</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/ref1_example.png" src="_images/ref1_example.png" />
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [37]: </span><span class="n">plot</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/ref2_example.png" src="_images/ref2_example.png" />
+</div>
+</div>
+<div class="section" id="writing-dataarrays-to-file">
+<h2>Writing DataArrays to file<a class="headerlink" href="#writing-dataarrays-to-file" title="Permalink to this headline">¶</a></h2>
+<p>GeoWombat’s I/O can be accessed through the <code class="xref py py-func docutils literal notranslate"><span class="pre">to_vrt()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">to_raster()</span></code> functions. These functions use
+Rasterio’s <code class="xref py py-func docutils literal notranslate"><span class="pre">write()</span></code> and Dask.array <code class="xref py py-func docutils literal notranslate"><span class="pre">store()</span></code> functions as I/O backends. In the examples below,
+<code class="docutils literal notranslate"><span class="pre">src</span></code> is an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> with the necessary transform information to write to an image file.</p>
+<p>Write to a VRT file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="c1"># Transform the data to lat/lon</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224077_20200518_B4</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+        <span class="c1"># Write the data to a VRT</span>
+        <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_vrt</span><span class="p">(</span><span class="s1">&#39;lat_lon_file.vrt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Write to a raster file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224077_20200518_B4</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Xarray drops attributes</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Apply operations on the DataArray</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span> <span class="o">*</span> <span class="mf">10.0</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+    <span class="c1"># Write the data to a GeoTiff</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span>
+                     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>    <span class="c1"># number of process workers sent to ``concurrent.futures``</span>
+                     <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>    <span class="c1"># number of thread workers sent to ``dask.compute``</span>
+                     <span class="n">n_chunks</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>   <span class="c1"># number of window chunks to send as concurrent futures</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="io-distributed.html#io-distributed"><span class="std std-ref">Distributed processing</span></a> for more examples describing concurrent file writing with GeoWombat.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="examples.html" title="previous chapter">Examples</a></li>
+      <li>Next: <a href="io-distributed.html" title="next chapter">Distributed processing</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/io.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

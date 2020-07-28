@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>to_raster &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="to_vrt" href="geowombat.to_vrt.html" />
+    <link rel="prev" title="transform_crs" href="geowombat.transform_crs.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="to-raster">
+<h1>to_raster<a class="headerlink" href="#to-raster" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.to_raster">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_raster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">readxsize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">readysize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_dask_store</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">separate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">out_block_type</span><span class="o">=</span><span class="default_value">'gtiff'</span></em>, <em class="sig-param"><span class="n">keep_blocks</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">gdal_cache</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">scheduler</span><span class="o">=</span><span class="default_value">'mpool'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_threads</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_chunks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">overviews</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">'nearest'</span></em>, <em class="sig-param"><span class="n">use_client</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">total_memory</span><span class="o">=</span><span class="default_value">48</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tags</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a raster file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to write.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
+<li><p><strong>readxsize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The size of column chunks to read. If not given, <code class="docutils literal notranslate"><span class="pre">readxsize</span></code> defaults to Dask
+chunk size.</p></li>
+<li><p><strong>readysize</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The size of row chunks to read. If not given, <code class="docutils literal notranslate"><span class="pre">readysize</span></code> defaults to Dask
+chunk size.</p></li>
+<li><p><strong>separate</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to write blocks as separate files. Otherwise, write to a single file.</p></li>
+<li><p><strong>use_dask_store</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use <code class="docutils literal notranslate"><span class="pre">dask.array.store</span></code> to save with Dask task graphs.</p></li>
+<li><p><strong>out_block_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output block type. Choices are [‘gtiff’, ‘zarr’].
+Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>keep_blocks</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to keep the blocks stored on disk. Only used if <code class="docutils literal notranslate"><span class="pre">separate</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
+<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing file.</p></li>
+<li><p><strong>gdal_cache</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">GDAL</span></code> cache size (in MB).</p></li>
+<li><p><strong>scheduler</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>The parallel task scheduler to use. Choices are [‘processes’, ‘threads’, ‘mpool’].</p>
+<p>mpool: process pool of workers using <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code>
+processes: process pool of workers using <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code>
+threads: thread pool of workers using <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code></p>
+</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total number of parallel jobs.</p></li>
+<li><p><strong>n_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of processes.</p></li>
+<li><p><strong>n_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads.</p></li>
+<li><p><strong>n_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The chunk size of windows. If not given, equal to <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> x 50.</p></li>
+<li><p><strong>overviews</strong> (<em>Optional</em><em>[</em><em>bool</em><em> or </em><em>list</em><em>]</em>) – Whether to build overview layers.</p></li>
+<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method for overviews when <code class="docutils literal notranslate"><span class="pre">overviews</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> or a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
+Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
+<li><p><strong>use_client</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to use a <code class="docutils literal notranslate"><span class="pre">dask</span></code> client.</p></li>
+<li><p><strong>address</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A cluster address to pass to client. Only used when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>total_memory</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The total memory (in GB) required when <code class="docutils literal notranslate"><span class="pre">use_client</span></code> = <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>padding</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – Padding for each window. <code class="docutils literal notranslate"><span class="pre">padding</span></code> should be given as a tuple
+of (left pad, bottom pad, right pad, top pad). If <code class="docutils literal notranslate"><span class="pre">padding</span></code> is given, the returned list will contain
+a tuple of <code class="docutils literal notranslate"><span class="pre">rasterio.windows.Window</span></code> objects as (w1, w2), where w1 contains the normal window offsets
+and w2 contains the padded window offsets.</p></li>
+<li><p><strong>tags</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Image tags to write to file.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Additional keyword arguments to pass to <code class="docutils literal notranslate"><span class="pre">rasterio.write</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">dask.delayed</span></code> object</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use 8 parallel workers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use 4 process workers and 2 thread workers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Control the window chunks passed to concurrent.futures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_chunks</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compress the output and build overviews</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;input.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">overviews</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.transform_crs.html" title="previous chapter">transform_crs</a></li>
+      <li>Next: <a href="geowombat.to_vrt.html" title="next chapter">to_vrt</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.to_raster.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

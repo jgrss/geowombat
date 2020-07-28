@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed processing &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Data extraction" href="extraction.html" />
+    <link rel="prev" title="Raster I/O" href="io.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="distributed-processing">
+<span id="io-distributed"></span><h1>Distributed processing<a class="headerlink" href="#distributed-processing" title="Permalink to this headline">¶</a></h1>
+<p>One of the key features of GeoWombat is the ability to write Dask/Xarray tasks to file in a concurrent workflow. Below are
+several examples illustrating this process.</p>
+<p>Import GeoWombat and Dask</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span>
+</pre></div>
+</div>
+<p>Dask diagnostics</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="kn">import</span> <span class="n">Profiler</span><span class="p">,</span> <span class="n">ResourceProfiler</span><span class="p">,</span> <span class="n">CacheProfiler</span>
+
+<span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="kn">import</span> <span class="n">visualize</span>
+</pre></div>
+</div>
+<div class="section" id="use-dask-to-compute-with-parallel-workers">
+<h2>Use Dask to compute with parallel workers<a class="headerlink" href="#use-dask-to-compute-with-parallel-workers" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These examples illustrate the Dask concurrency over a DataArray task. An example showing how to write results
+to file in parallel are shown at the bottom of the page.</p>
+</div>
+<p>Chunk sizes of 64x64 require many reads for a simple calculation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
+    <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
+        <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
+
+    <span class="c1"># Set the sensor name</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+
+        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+            <span class="c1"># Normalized difference index</span>
+            <span class="n">ndi</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+            <span class="c1"># Send the task to dask</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<iframe src="_static/profile_chunks64_4workers.html"
+        marginwidth="0" marginheight="0" scrolling="no"
+        width="650" height="300" style="border:none"></iframe><p>Chunk sizes of 256x256 reduce the number of file reads.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
+    <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
+        <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
+
+    <span class="c1"># Set the sensor name</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+
+        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+            <span class="c1"># Normalized difference index</span>
+            <span class="n">ndi</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+            <span class="c1"># Send the task to dask</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<iframe src="_static/profile_chunks256_4workers.html"
+        marginwidth="0" marginheight="0" scrolling="no"
+        width="650" height="300" style="border:none"></iframe><p>Increase the number of parallel workers</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The appropriate choice of chunk size is challenging and takes some practice. Start by reading <a class="reference external" href="https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size">Dask Best Practices</a>. We find, however, that with some experimentation you can find a good chunk size for common tasks. One simple approach is to choose a chunk size that fills around 75-95% of memory on your system. Accidentally exceeding 100% of memory leads to significant slow-downs.</p>
+<p>If you decide to manually calculate how large chunks should be to utilize all resources, keep in mind that “Dask will often have as many chunks in memory as twice the number of active threads”
+<a class="reference external" href="https://docs.dask.org/en/latest/array-best-practices.html#select-a-good-chunk-size">Orientation of chunks</a> is also critical, especially if dealing with multiple bands or a time series of images. Chunks in this case should have three dimensions ([bands, y, x] or [time, bands, y, x]). So, a five-period image stack with a single band might have a chunk size of [5, 1, 256, 256]. Proper orientation will reduce the need to read the same data more than once.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
+    <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
+        <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
+
+    <span class="c1"># Set the sensor name</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+
+        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+            <span class="c1"># Normalized difference index</span>
+            <span class="n">ndi</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+            <span class="c1"># Send the task to dask</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<iframe src="_static/profile_chunks256_8workers.html"
+        marginwidth="0" marginheight="0" scrolling="no"
+        width="650" height="300" style="border:none"></iframe></div>
+<div class="section" id="increase-the-complexity-of-the-parallel-task">
+<h2>Increase the complexity of the parallel task<a class="headerlink" href="#increase-the-complexity-of-the-parallel-task" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="open-bands-as-separate-files">
+<h3>Open bands as separate files<a class="headerlink" href="#open-bands-as-separate-files" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">chunks</span> <span class="o">=</span> <span class="mi">256</span>
+
+<span class="gp">In [6]: </span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
+<span class="gp">   ...: </span>    <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
+<span class="gp">   ...: </span>        <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">],</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_b2</span><span class="p">,</span> \
+<span class="gp">   ...: </span>        <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">],</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_b3</span><span class="p">,</span> \
+<span class="gp">   ...: </span>            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518_B4</span><span class="p">,</span> <span class="n">band_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_b4</span><span class="p">:</span>
+<span class="gp">   ...: </span>        <span class="n">t2</span> <span class="o">=</span> <span class="n">src_b2</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="n">t3</span> <span class="o">=</span> <span class="n">src_b3</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="n">t4</span> <span class="o">=</span> <span class="n">src_b4</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="n">task</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t3</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t4</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]})</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="n">results</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * band     (band) &lt;U7 &#39;results&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<iframe src="_static/multi-band_task.html"
+        marginwidth="0" marginheight="0" scrolling="no"
+        width="650" height="300" style="border:none"></iframe></div>
+<div class="section" id="open-bands-as-a-stacked-array">
+<h3>Open bands as a stacked array<a class="headerlink" href="#open-bands-as-a-stacked-array" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">chunks</span> <span class="o">=</span> <span class="mi">256</span>
+
+<span class="gp">In [8]: </span><span class="k">with</span> <span class="n">Profiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">,</span> \
+<span class="gp">   ...: </span>    <span class="n">ResourceProfiler</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span> <span class="k">as</span> <span class="n">rprof</span><span class="p">,</span> \
+<span class="gp">   ...: </span>        <span class="n">CacheProfiler</span><span class="p">()</span> <span class="k">as</span> <span class="n">cprof</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+<span class="gp">   ...: </span>        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span> <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>            <span class="n">attrs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">   ...: </span>            <span class="n">t</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+<span class="gp">   ...: </span>            <span class="n">task</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]})</span>
+<span class="gp">   ...: </span>            <span class="n">task</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+<span class="gp">   ...: </span>            <span class="k">print</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<span class="gp">   ...: </span>            <span class="n">results</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">   ...: </span>
+<span class="go">&lt;xarray.DataArray (band: 1, y: 1860, x: 2041)&gt;</span>
+<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">Coordinates:</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * band     (band) &lt;U7 &#39;results&#39;</span>
+<span class="go">Attributes:</span>
+<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:            +init=epsg:32621</span>
+<span class="go">    res:            (30.0, 30.0)</span>
+<span class="go">    is_tiled:       1</span>
+<span class="go">    nodatavals:     (nan,)</span>
+<span class="go">    scales:         (1.0,)</span>
+<span class="go">    offsets:        (0.0,)</span>
+<span class="go">    AREA_OR_POINT:  Point</span>
+<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
+<span class="go">    sensor:         blue, green, and red</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<iframe src="_static/multi-band_stack_task.html"
+        marginwidth="0" marginheight="0" scrolling="no"
+        width="650" height="300" style="border:none"></iframe></div>
+</div>
+<div class="section" id="use-geowombat-to-write-a-task-to-file">
+<h2>Use GeoWombat to write a task to file<a class="headerlink" href="#use-geowombat-to-write-a-task-to-file" title="Permalink to this headline">¶</a></h2>
+<p>In the previous examples, the call to <code class="docutils literal notranslate"><span class="pre">dask</span></code> <code class="xref py py-func docutils literal notranslate"><span class="pre">compute()</span></code> lets <code class="docutils literal notranslate"><span class="pre">dask</span></code> manage the task distribution. When writing results
+to file with <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, individual chunks are managed in a parallel process using <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a>.
+While there are many argument options to consider when calling <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, some of the key ones
+are the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> size of <code class="docutils literal notranslate"><span class="pre">chunks</span></code> and the <code class="xref py py-func docutils literal notranslate"><span class="pre">to_raster()</span></code> number of parallel <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> and <code class="docutils literal notranslate"><span class="pre">n_threads</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When do I use workers versus threads? This probably depends on the problem being executed. If the computation task
+is mainly performing many reads at the chunk level (i.e., I/O bound) and the chunk-level process is relatively simple (i.e., the worker
+is not spending much time on each chunk) or the process can release the GIL, more <code class="docutils literal notranslate"><span class="pre">n_threads</span></code> might be more efficient. If the chunk-level computation is
+complex (i.e., CPU bound) and is the main bottleneck, more <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> might be more efficient. See <a class="reference external" href="https://docs.dask.org/en/latest/setup/single-machine.html">Dask single-machine</a> for more details about threads vs. processes.</p>
+</div>
+<p>Writing results to file in a parallel environment can be performed on a laptop or a distributed compute system. With the
+former, a call to <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a> is all that is needed. On a distributed compute system, one might instead use
+a <a class="reference external" href="https://distributed.dask.org/en/latest/client.html">distributed client</a> to manage the task concurrency.</p>
+<p>The code block below is a simple example that would use 8 threads within 1 process to write the task to a GeoTiff.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span> <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Mask &#39;no data&#39; values and scale the data</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]})</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+        <span class="c1"># The previous example using dask compute returns</span>
+        <span class="c1">#   the results as a numpy array.</span>
+        <span class="c1"># results = task.data.compute(num_workers=8)</span>
+
+        <span class="c1"># Use geowombat to write the task to file where</span>
+        <span class="c1">#   chunks are processed concurrently.</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;results.tif&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The same task might be executed on a distributed system in the following way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span> <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Mask &#39;no data&#39; values and scale the data</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;float64&#39;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]})</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+        <span class="c1"># The previous example using dask compute returns</span>
+        <span class="c1">#   the results as a numpy array.</span>
+        <span class="c1"># results = task.data.compute(num_workers=8)</span>
+
+        <span class="c1"># Use geowombat to write the task to file where</span>
+        <span class="c1">#   chunks are processed concurrently.</span>
+        <span class="c1">#</span>
+        <span class="c1"># The results will be written under a distributed cluster environment.</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;results.tif&#39;</span><span class="p">,</span> <span class="n">use_client</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="use-geowombat-to-gather-block-level-results-in-parallel">
+<h2>Use GeoWombat to gather block-level results in parallel<a class="headerlink" href="#use-geowombat-to-gather-block-level-results-in-parallel" title="Permalink to this headline">¶</a></h2>
+<p>With <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, a Xarray/Dask task graph is executed in parallel and written to a raster file. If, however, you wish to retrieve values for each block without writing the entire blocks to file, use <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>. In the example below, a custom function (<cite>user_func</cite>) is processed in parallel over each raster chunk/block.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.core.parallel</span> <span class="kn">import</span> <span class="n">ParallelTask</span>
+
+<span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Block-level function to be executed in parallel. The first argument is the block data, and</span>
+<span class="sd">    the second argument is the number of parallel worker threads for dask.compute().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Gather function arguments</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+
+    <span class="c1"># Send the computation to Dask</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span>
+
+<span class="c1"># Process 8 windows in parallel using threads</span>
+<span class="c1"># Process 1 dask chunks in parallel using threads</span>
+<span class="c1"># 8 total workers are needed</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Each block is a 512x512 dask array</span>
+    <span class="c1"># with chunks of 512x512</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">ParallelTask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+                      <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span>
+                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># There is only 1 chunk per block, so no</span>
+    <span class="c1"># point in using multiple threads here</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">user_func</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the example above, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code> reads row and column chunks of <cite>src.gw.row_chunks</cite> and <cite>src.gw.col_chunks</cite> size (which is set with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>). Let’s say we open a raster with chunks of 512x512. In the above example, the <cite>data.data.sum().compute(scheduler=’threads’, num_workers=num_workers)</cite> dask computation only has 1 chunk to process because the chunk sizes are the same size as the blocks being passed to <cite>user_func</cite>. We can specify a larger block size to read in parallel (the dask chunk size will remain the same) with <strong>row_chunks</strong> and <strong>col_chunks</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Process 8 windows in parallel using threads</span>
+<span class="c1"># Process 4 dask chunks in parallel using threads</span>
+<span class="c1"># 32 total workers are needed</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Each block is a 1024x1024 dask array</span>
+    <span class="c1"># with chunks of 512x512</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">ParallelTask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+                      <span class="n">row_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                      <span class="n">col_chunks</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                      <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span>
+                      <span class="n">n_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># Now, each block has 4 chunks, so we can use dask</span>
+    <span class="c1"># to process them in parallel</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">user_func</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="io.html" title="previous chapter">Raster I/O</a></li>
+      <li>Next: <a href="extraction.html" title="next chapter">Data extraction</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/io-distributed.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

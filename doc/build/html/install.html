@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation &#8212; GeoWombat 1.2.23 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick overview" href="quick-overview.html" />
+    <link rel="prev" title="GeoWombat: Utilities for geospatial data" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="virtual-environments">
+<h2>1. Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
+<p>We recommend using virtual environments, but this section can be skipped.</p>
+<div class="section" id="virtual-environments-with-virtualenv">
+<h3>Virtual environments with <cite>virtualenv</cite><a class="headerlink" href="#virtual-environments-with-virtualenv" title="Permalink to this headline">¶</a></h3>
+<p>Install the <cite>virtualenv</cite> Python package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install virtualenv
+</pre></div>
+</div>
+<p>Create a virtual environment with a specific Python version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ virtualenv -p python3.7 gwenv
+</pre></div>
+</div>
+<p>Activate the virtual environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source gwenv/bin/activate
+</pre></div>
+</div>
+</div>
+<div class="section" id="virtual-environments-with-conda">
+<h3>Virtual environments with <cite>Conda</cite><a class="headerlink" href="#virtual-environments-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>Install Conda following the <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">online instructions</a>.</p>
+<p>Create a virtual Conda environment with a specific Python version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda create --name gwenv python=3.7 cython numpy
+</pre></div>
+</div>
+<p>Activate the virtual environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda activate gwenv
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-the-virtual-environment">
+<h3>Using the virtual environment<a class="headerlink" href="#using-the-virtual-environment" title="Permalink to this headline">¶</a></h3>
+<p>With an environment activated, the command line should look something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(gwenv) $
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="geowombat-requirements">
+<h2>2. <cite>GeoWombat</cite> requirements<a class="headerlink" href="#geowombat-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython and NumPy can be installed via pip (note that the conda example above installs Cython and NumPy):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install cython numpy
+</pre></div>
+</div>
+<p>GDAL can be installed via pip or conda, but it requires the GDAL binaries.</p>
+<div class="section" id="installing-non-python-geowombat-prerequisites">
+<h3>Installing non-Python <cite>GeoWombat</cite> prerequisites<a class="headerlink" href="#installing-non-python-geowombat-prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>GeoWombat requires <a class="reference external" href="https://gdal.org/">GDAL</a> and <a class="reference external" href="https://libspatialindex.org/">libspatialindex</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This GDAL requirement is a prerequisite itself for the <a class="reference external" href="https://pypi.org/project/GDAL/">Python GDAL bindings</a>.</p>
+</div>
+</div>
+<div class="section" id="installing-gdal-on-ubuntu">
+<h3>Installing <cite>GDAL</cite> on Ubuntu<a class="headerlink" href="#installing-gdal-on-ubuntu" title="Permalink to this headline">¶</a></h3>
+<p>Install Python 3 (if not installed):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Ubuntu&gt;=16.10
+$ sudo apt install python3
+</pre></div>
+</div>
+<p>If Python 3 is already installed, but pip is not, install pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ apt install python3-pip
+$
+$ # or
+$ # pip install pip-tools
+</pre></div>
+</div>
+<p>Install the GDAL binaries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Add GDAL and update Ubuntu
+$ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
+$
+$ # Optional--add the latest unstable version (for GDAL 3.0)
+$ # sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+$
+$ # Install the GDAL binaries
+$ sudo apt install gdal-bin
+$ sudo apt install libgdal-dev
+</pre></div>
+</div>
+<p>Update environment paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
+$ export C_INCLUDE_PATH=/usr/include/gdal
+$ export LD_LIBRARY_PATH=/usr/local/lib
+$
+$ # Optional, add permanently to a .profile file
+$ # echo &#39;export CPLUS_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
+$ # echo &#39;export C_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
+$ # echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/.profile
+</pre></div>
+</div>
+<p>Check the installed GDAL version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gdalinfo --version
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you install GDAL 3.x on Ubuntu, when importing rasterio you may receive an error saying</p>
+<ul class="simple">
+<li><p><cite>CPLE_OpenFailedError: Unable to open EPSG support file gcs.csv</cite>.</p></li>
+</ul>
+<p>This error is documented on rasterio’s <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/faq.html">ReadTheDocs page</a> and <a class="reference external" href="https://github.com/mapbox/rasterio/issues/1787">GitHub page</a>. If the suggested solutions do not fix the issue, you can try setting the <cite>GDAL_DATA</cite> environment variable to point to Fiona (which will be installed automatically when installing GeoWombat). For example, if you have setup a virtual environment, the <cite>GDAL_DATA</cite> variable can point to <cite>/path/to/myenv/lib/python3.7/site-packages/fiona/gdal_data</cite>, where <cite>/path/to/myenv</cite> is the name of your virtual environment path directory. Change 3.7 if using a different Python version.</p>
+</div>
+</div>
+<div class="section" id="installing-libspatialindex-on-ubuntu">
+<h3>Installing <cite>libspatialindex</cite> on Ubuntu<a class="headerlink" href="#installing-libspatialindex-on-ubuntu" title="Permalink to this headline">¶</a></h3>
+<p>Install <cite>libspatialindex</cite> (which is a requirement for <a class="reference external" href="https://pypi.org/project/Rtree/">Rtree</a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install libspatialindex-dev
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-gdal-with-conda">
+<h3>Installing <cite>GDAL</cite> with <cite>Conda</cite><a class="headerlink" href="#installing-gdal-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference external" href="https://anaconda.org/conda-forge/gdal">conda-forge examples</a>.</p>
+</div>
+<div class="section" id="installing-libspatialindex-with-conda">
+<h3>Installing <cite>libspatialindex</cite> with <cite>Conda</cite><a class="headerlink" href="#installing-libspatialindex-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference external" href="https://anaconda.org/conda-forge/libspatialindex">conda-forge examples</a>.</p>
+</div>
+<div class="section" id="install-the-gdal-python-bindings">
+<h3>Install the <cite>GDAL</cite> Python bindings<a class="headerlink" href="#install-the-gdal-python-bindings" title="Permalink to this headline">¶</a></h3>
+<p>GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. To install Python GDAL manually, use pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # match the GDAL binaries
+$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;) --no-binary=gdal
+$ # which is the same as the following if the GDAL binary version is 2.4.0
+$ # pip install GDAL==2.4.0 --no-binary=gdal
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="install-geowombat">
+<h2>3. Install <cite>GeoWombat</cite><a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h2>
+<p>Install the latest version from GitHub.com:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-optional-extras">
+<h2>4. Install optional extras<a class="headerlink" href="#install-optional-extras" title="Permalink to this headline">¶</a></h2>
+<p>Install GeoWombat with libraries for co-registration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
+</pre></div>
+</div>
+<p>Install GeoWombat with libraries for co-registration and geo-performance enhancements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+</pre></div>
+</div>
+<p>Install GeoWombat with all extra libraries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing-the-installation">
+<h2>5. Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
+<p>If GeoWombat installed correctly, you should be able to run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
+</pre></div>
+</div>
+<p>or in Python:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+
+<span class="gp">In [2]: </span><span class="k">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="go">1.2.23</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-example-of-a-full-installation-on-ubuntu-with-conda">
+<h2>A. Example of a full installation on Ubuntu with Conda<a class="headerlink" href="#a-example-of-a-full-installation-on-ubuntu-with-conda" title="Permalink to this headline">¶</a></h2>
+<p>The following installs a working anaconda environment including gdal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
+$ conda create -n geowombat python=3.7  cython scipy numpy zarr requests -c conda-forge
+$ conda activate geowombat
+$ sudo apt install libspatialindex-dev libgdal-dev
+$ conda install -c conda-forge libspatialindex zarr requests
+$ pip install git+https://github.com/jgrss/geowombat
+$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">GeoWombat: Utilities for geospatial data</a></li>
+      <li>Next: <a href="quick-overview.html" title="next chapter">Quick overview</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/install.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
