@@ -49,7 +49,7 @@
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-06e35cb56f73a4a6cd17047913dda43e&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-baf3b15292dc54e2b2946f7222377668&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -67,7 +67,7 @@
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
-<p>In the example above, <cite>src</cite> is an <cite>xarray.DataArray</cite>. Thus, printing the object will display the underlying Dask array dimenssions and chunks, the DataArray named coordinates, and the DataArray attributes.</p>
+<p>In the example above, <cite>src</cite> is an <cite>xarray.DataArray</cite>. Thus, printing the object will display the underlying Dask array dimensions and chunks, the DataArray named coordinates, and the DataArray attributes.</p>
 </div>
 <div class="section" id="opening-multiple-bands-as-a-stack">
 <h2>Opening multiple bands as a stack<a class="headerlink" href="#opening-multiple-bands-as-a-stack" title="Permalink to this headline">¶</a></h2>
@@ -81,8 +81,8 @@
 <span class="go">dask.array&lt;concatenate, shape=(3, 1, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * time     (time) datetime64[ns] 2240-07-08 2240-07-08 2240-07-08</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -106,8 +106,8 @@
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * band     (band) int64 1 1 1</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
