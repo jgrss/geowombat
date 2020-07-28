@@ -11,8 +11,6 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
-from ..util cimport percentiles
-
 from cython.parallel import prange
 from cython.parallel import parallel
 
@@ -177,133 +175,6 @@ cdef double _get_std(double[:, ::1] input_view,
             return res
 
 
-cdef double _get_mean(double[:, ::1] input_view,
-                      Py_ssize_t i,
-                      Py_ssize_t j,
-                      int w,
-                      double w_samples,
-                      double nodata,
-                      double[:, ::1] window_weights) nogil:
-
-    cdef:
-        Py_ssize_t m, n
-        double window_mean = 0.0
-        double center_value, weight_value
-        double wsum = 0.0
-        double res
-
-    for m in range(0, w):
-        for n in range(0, w):
-
-            center_value = input_view[i+m, j+n]
-            weight_value = window_weights[m, n]
-
-            if nodata == 1e9:
-
-                window_mean += (input_view[i+m, j+n] * weight_value)
-                wsum += weight_value
-
-            else:
-
-                if center_value != nodata:
-
-                    window_mean += (input_view[i+m, j+n] * weight_value)
-                    wsum += weight_value
-
-    res = window_mean / wsum
-
-    if nodata == 1e9:
-        return res
-    else:
-
-        if npy_isnan(res):
-            return nodata
-        else:
-            return res
-
-
-cdef double _get_min(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
-
-    cdef:
-        Py_ssize_t m, n
-        double window_min = 1e9
-        double center_value, weight_value
-
-    for m in range(0, w):
-        for n in range(0, w):
-
-            weight_value = window_weights[m, n]
-
-            if weight_value < 0.33:
-                center_value = 1e9
-            else:
-                center_value = input_view[i+m, j+n]
-
-            if nodata == 1e9:
-
-                if center_value < window_min:
-                    window_min = center_value
-
-            else:
-
-                if (center_value < window_min) and (center_value != nodata):
-                    window_min = center_value
-
-    if nodata == 1e9:
-        return window_min
-    else:
-
-        if npy_isnan(window_min):
-            return nodata
-        else:
-            return window_min
-
-
-cdef double _get_max(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
-
-    cdef:
-        Py_ssize_t m, n
-        double window_max = -1e9
-        double center_value, weight_value
-
-    for m in range(0, w):
-        for n in range(0, w):
-
-            weight_value = window_weights[m, n]
-            center_value = input_view[i+m, j+n] * weight_value
-
-            if nodata == 1e9:
-
-                if center_value > window_max:
-                    window_max = center_value
-
-            else:
-
-                if (center_value > window_max) and (center_value != nodata):
-                    window_max = center_value
-
-    if nodata == 1e9:
-        return window_max
-    else:
-
-        if npy_isnan(window_max):
-            return nodata
-        else:
-            return window_max
-
-
 cdef double[:, ::1] _moving_window(double[:, ::1] indata,
                                    double[:, ::1] output,
                                    int window_size,
@@ -321,7 +192,6 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
         int hw = <int>(window_size / 2.0)
         unsigned int row_dims = rows - window_size
         unsigned int col_dims = cols - window_size
-        double percf = <double>perc
 
         unsigned int nsamples = <int>(row_dims * col_dims)
 
@@ -351,7 +221,7 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
         with nogil:
 
             for i in range(0, row_dims):
-                for j in range(0, cols_dims):
+                for j in range(0, col_dims):
 
                     output[i+hw, j+hw] = _get_std(indata,
                                                   i, j,
@@ -369,7 +239,7 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
         with nogil:
 
             for i in range(0, row_dims):
-                for j in range(0, cols_dims):
+                for j in range(0, col_dims):
 
                     output[i+hw, j+hw] = window_function(indata,
                                                          i, j,
@@ -386,16 +256,17 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
 
         with nogil:
 
-            for f in prange(0, nsamples, schedule='static'):
+            for f in range(0, nsamples):
+
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
 
-                output[i + hw, j + hw] = window_function(indata,
-                                                         i, j,
-                                                         window_size,
-                                                         w_samples,
-                                                         nodata,
-                                                         window_weights)
+                output[i+hw, j+hw] = window_function(indata,
+                                                     i, j,
+                                                     window_size,
+                                                     w_samples,
+                                                     nodata,
+                                                     window_weights)
 
     elif method == 4:
 
