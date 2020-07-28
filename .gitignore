@@ -29,8 +29,8 @@ doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
+geowombat/moving/_test.*
 geowombat/models/
->>>>>>> master
 geowombat/radiometry/_fill_gaps.pyx
 geowombat/radiometry/impute.py
 geowombat/examples/concurrent_processing.ipynb
