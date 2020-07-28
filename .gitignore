@@ -30,7 +30,6 @@ geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
 geowombat/models/
-geowombat/util/starfm*
 geowombat/radiometry/_fill_gaps.pyx
 geowombat/radiometry/impute.py
 geowombat/examples/concurrent_processing.ipynb
@@ -39,7 +38,7 @@ logo/
 bin/ESPA/
 geowombat/tasks
 geowombat/radiometry/sharpen.py
-geowombat/radiometry/*starfm*
+geowombat/radiometry/_starfm.*
 geowombat/radiometry/haze.py
 
 # Notebooks
