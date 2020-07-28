@@ -111,6 +111,13 @@ def get_extensions():
                             extra_compile_args=['-fopenmp'],
                             extra_link_args=['-fopenmp'])]
 
+    if Path('geowombat/moving/_test.pyx').is_file():
+
+        extensions += [Extension('*',
+                                 sources=['geowombat/moving/_test.pyx'],
+                                 extra_compile_args=['-fopenmp'],
+                                 extra_link_args=['-fopenmp'])]
+
     if Path('geowombat/radiometry/_starfm.pyx').is_file():
 
         extensions += [Extension('*',
