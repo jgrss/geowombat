@@ -310,103 +310,103 @@ cdef double _fit_transform(double[:, ::1] hres_k,
         # Maximum possible weight
         double max_weight = 1.0 + 1.0 + (1.0 + dist_window[0, hw] / param_a) + 1.0 + 1.0 + 1.0
 
-    if mres_0[i+hw, j+hw] == mres_k[i+hw, j+hw]:
-        return hres_k[i+hw, j+hw]
-    elif hres_k[i+hw, j+hw] == mres_k[i+hw, j+hw]:
-        return mres_0[i+hw, j+hw]
-    else:
+    # if mres_0[i+hw, j+hw] == mres_k[i+hw, j+hw]:
+    #     return hres_k[i+hw, j+hw]
+    # elif hres_k[i+hw, j+hw] == mres_k[i+hw, j+hw]:
+    #     return mres_0[i+hw, j+hw]
+    # else:
 
-        for m1 in range(0, w):
-            for n1 in range(0, w):
+    for m1 in range(0, w):
+        for n1 in range(0, w):
 
-                # Stay within the circle
-                if dist_window[m1, n1] != -1:
+            # Stay within the circle
+            if dist_window[m1, n1] != -1:
 
-                    if (hres_k[i+m1, j+n1] > 0) and (mres_k[i+m1, j+n1] > 0) and (mres_0[i+m1, j+n1] > 0):
+                if (hres_k[i+m1, j+n1] > 0) and (mres_k[i+m1, j+n1] > 0) and (mres_0[i+m1, j+n1] > 0):
+
+                    # Spectral distance
+                    sp_dist = fabs(hres_k[i+m1, j+n1] - mres_k[i+m1, j+n1])
+
+                    # max_sp_dist = sp_diff + sensor_uncert + 1.0
+                    # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
+
+                    # Temporal distance
+                    tp_dist = fabs(mres_0[i+m1, j+n1] - mres_k[i+m1, j+n1])
+
+                    # max_tp_dist = tp_diff + temp_uncert + 1.0
+                    # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
+
+                    # Similarity test (|current value - center value|)
+                    hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
+
+                    # Weight for local heterogeneity
+                    hres_k_std_dist = _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1])
+                    mres_k_std_dist = _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1])
+                    mres_0_std_dist = _logistic_scaler(std_stack[2, i+m1, j+n1], std_stack[2, nrows, 0], std_stack[2, nrows, 1])
+
+                    # if hres_sim <= hres_k_sim_thresh:
+
+                    # Spatial distance
+                    sw_dist = 1.0 + dist_window[m1, n1] / param_a
+
+                    # High value = bad
+                    weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+
+                    # Combine weights
+                    # TODO: add log option
+                    # comb_sum += (1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist))
+                    if (sp_dist == 0) or (tp_dist == 0):
+                        comb_sum += (1.0 / max_weight)
+                    else:
+                        comb_sum += (1.0 / weight)
+
+    if comb_sum > 0:
+
+        for m2 in range(0, w):
+            for n2 in range(0, w):
+
+                if dist_window[m2, n2] != -1:
+
+                    if (hres_k[i+m2, j+n2] > 0) and (mres_k[i+m2, j+n2] > 0) and (mres_0[i+m2, j+n2] > 0):
 
                         # Spectral distance
-                        sp_dist = fabs(hres_k[i+m1, j+n1] - mres_k[i+m1, j+n1])
+                        sp_dist = fabs(hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2])
 
                         # max_sp_dist = sp_diff + sensor_uncert + 1.0
                         # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
 
                         # Temporal distance
-                        tp_dist = fabs(mres_0[i+m1, j+n1] - mres_k[i+m1, j+n1])
+                        tp_dist = fabs(mres_0[i+m2, j+n2] - mres_k[i+m2, j+n2])
 
                         # max_tp_dist = tp_diff + temp_uncert + 1.0
                         # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
 
                         # Similarity test (|current value - center value|)
-                        hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
+                        hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
 
                         # Weight for local heterogeneity
-                        hres_k_std_dist = _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1])
-                        mres_k_std_dist = _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1])
-                        mres_0_std_dist = _logistic_scaler(std_stack[2, i+m1, j+n1], std_stack[2, nrows, 0], std_stack[2, nrows, 1])
+                        hres_k_std_dist = _logistic_scaler(std_stack[0, i+m2, j+n2], std_stack[0, nrows, 0], std_stack[0, nrows, 1])
+                        mres_k_std_dist = _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1])
+                        mres_0_std_dist = _logistic_scaler(std_stack[2, i+m2, j+n2], std_stack[2, nrows, 0], std_stack[2, nrows, 1])
 
-                        if hres_sim <= hres_k_sim_thresh:
+                        # if hres_sim <= hres_k_sim_thresh:
 
-                            # Spatial distance
-                            sw_dist = 1.0 + dist_window[m1, n1] / param_a
+                        # Spatial distance
+                        sw_dist = 1.0 + dist_window[m2, n2] / param_a
 
-                            # High value = bad
-                            weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+                        weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
 
-                            # Combine weights
-                            # TODO: add log option
-                            # comb_sum += (1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist))
-                            if (sp_dist == 0) or (tp_dist == 0):
-                                comb_sum += (1.0 / max_weight)
-                            else:
-                                comb_sum += (1.0 / weight)
+                        # Combine weights
+                        # TODO: add log option
+                        # comb_score = 1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist)
+                        if (sp_dist == 0) or (tp_dist == 0):
+                            score = max_weight
+                        else:
+                            score = weight
 
-        if comb_sum > 0:
+                        fweight = (1.0 / score) / comb_sum
 
-            for m2 in range(0, w):
-                for n2 in range(0, w):
-
-                    if dist_window[m2, n2] != -1:
-
-                        if (hres_k[i+m2, j+n2] > 0) and (mres_k[i+m2, j+n2] > 0) and (mres_0[i+m2, j+n2] > 0):
-
-                            # Spectral distance
-                            sp_dist = fabs(hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2])
-
-                            # max_sp_dist = sp_diff + sensor_uncert + 1.0
-                            # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
-
-                            # Temporal distance
-                            tp_dist = fabs(mres_0[i+m2, j+n2] - mres_k[i+m2, j+n2])
-
-                            # max_tp_dist = tp_diff + temp_uncert + 1.0
-                            # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
-
-                            # Similarity test (|current value - center value|)
-                            hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
-
-                            # Weight for local heterogeneity
-                            hres_k_std_dist = _logistic_scaler(std_stack[0, i+m2, j+n2], std_stack[0, nrows, 0], std_stack[0, nrows, 1])
-                            mres_k_std_dist = _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1])
-                            mres_0_std_dist = _logistic_scaler(std_stack[2, i+m2, j+n2], std_stack[2, nrows, 0], std_stack[2, nrows, 1])
-
-                            if hres_sim <= hres_k_sim_thresh:
-
-                                # Spatial distance
-                                sw_dist = 1.0 + dist_window[m2, n2] / param_a
-
-                                weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
-
-                                # Combine weights
-                                # TODO: add log option
-                                # comb_score = 1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist)
-                                if (sp_dist == 0) or (tp_dist == 0):
-                                    score = max_weight
-                                else:
-                                    score = weight
-
-                                fweight = (1.0 / score) / comb_sum
-
-                                pred += (fweight * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+                        pred += (fweight * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
 
         return pred
 
@@ -425,8 +425,9 @@ cdef void _create_dist_window(double[:, ::1] dist_window_,
     # Create circular window (-1 are outside the radius)
     for m0 in range(0, window_size):
         for n0 in range(0, window_size):
-            if dist_window_[m0, n0] > hw:
-                dist_window_[m0, n0] = -1
+            if window_size > 5:
+                if dist_window_[m0, n0] > hw:
+                    dist_window_[m0, n0] = -1
 
 
 cdef class StarFM(object):
