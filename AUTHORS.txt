@@ -2,6 +2,6 @@ Authors
 -------
 
 * Jordan Graesser
-* Michael Mann
 * Leonardo Hardtke
-
+* Michael Mann
+* Robert Denham
