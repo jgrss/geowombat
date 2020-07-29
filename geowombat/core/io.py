@@ -45,7 +45,6 @@ except:
 import logging
 logger = logging.getLogger(__name__)
 
-logger.debug("importing io module")
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
 
