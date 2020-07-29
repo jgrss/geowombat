@@ -15,3 +15,4 @@ Examples
    moving
    radiometry
    web
+   external

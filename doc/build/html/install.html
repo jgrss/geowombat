@@ -37,38 +37,55 @@
             
   <div class="section" id="installation">
 <span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="virtual-environments">
-<h2>1. Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
-<p>We recommend using virtual environments, but this section can be skipped.</p>
+<div class="section" id="quick-install">
+<h2>Quick install<a class="headerlink" href="#quick-install" title="Permalink to this headline">¶</a></h2>
+<p>Install with pip from the GitHub repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-dependencies">
+<h2>Install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>If you already have GDAL and libspatialindex installed, geowombat should work. To test it, see the <a class="reference internal" href="#test-install"><span class="std std-ref">section on testing</span></a>. If GDAL or libspatialindex are not installed, you will need to do so before having a functional geowombat.</p>
+<div class="section" id="install-gdal">
+<h3>Install GDAL<a class="headerlink" href="#install-gdal" title="Permalink to this headline">¶</a></h3>
+<p>If all you need to install is GDAL, see <a class="reference internal" href="#gdal-install-ubuntu"><span class="std std-ref">Installing GDAL on Ubuntu</span></a> or <a class="reference internal" href="#gdal-install-conda"><span class="std std-ref">Installing GDAL on Conda</span></a>.</p>
+</div>
+<div class="section" id="step-by-step-guide">
+<h3>Step-by-step guide<a class="headerlink" href="#step-by-step-guide" title="Permalink to this headline">¶</a></h3>
+<p>If you are starting from scratch and wish to walk through the full installation procedure, see the following installation steps. We recommend using <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">virtual environments</a> and provide examples with <a class="reference external" href="https://packaging.python.org/key_projects/#virtualenv">virtualenv</a> and <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+</div>
+<div class="section" id="install-with-a-virtual-environment">
+<h3>1. Install with a virtual environment<a class="headerlink" href="#install-with-a-virtual-environment" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="virtual-environments-with-virtualenv">
-<h3>Virtual environments with <cite>virtualenv</cite><a class="headerlink" href="#virtual-environments-with-virtualenv" title="Permalink to this headline">¶</a></h3>
+<h4>Virtual environments with virtualenv<a class="headerlink" href="#virtual-environments-with-virtualenv" title="Permalink to this headline">¶</a></h4>
 <p>Install the <cite>virtualenv</cite> Python package:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install virtualenv
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">virtualenv</span>
 </pre></div>
 </div>
 <p>Create a virtual environment with a specific Python version:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ virtualenv -p python3.7 gwenv
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">-</span><span class="n">p</span> <span class="n">python3</span><span class="o">.</span><span class="mi">7</span> <span class="n">gwenv</span>
 </pre></div>
 </div>
 <p>Activate the virtual environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source gwenv/bin/activate
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">gwenv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="virtual-environments-with-conda">
-<h3>Virtual environments with <cite>Conda</cite><a class="headerlink" href="#virtual-environments-with-conda" title="Permalink to this headline">¶</a></h3>
+<h4>Virtual environments with Conda<a class="headerlink" href="#virtual-environments-with-conda" title="Permalink to this headline">¶</a></h4>
 <p>Install Conda following the <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">online instructions</a>.</p>
 <p>Create a virtual Conda environment with a specific Python version:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda create --name gwenv python=3.7 cython numpy
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">gwenv</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span> <span class="n">cython</span> <span class="n">numpy</span>
 </pre></div>
 </div>
 <p>Activate the virtual environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda activate gwenv
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">gwenv</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="using-the-virtual-environment">
-<h3>Using the virtual environment<a class="headerlink" href="#using-the-virtual-environment" title="Permalink to this headline">¶</a></h3>
+<h4>Using the virtual environment<a class="headerlink" href="#using-the-virtual-environment" title="Permalink to this headline">¶</a></h4>
 <p>With an environment activated, the command line should look something like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(gwenv) $
 </pre></div>
@@ -76,14 +93,14 @@
 </div>
 </div>
 <div class="section" id="geowombat-requirements">
-<h2>2. <cite>GeoWombat</cite> requirements<a class="headerlink" href="#geowombat-requirements" title="Permalink to this headline">¶</a></h2>
+<h3>2. GeoWombat requirements<a class="headerlink" href="#geowombat-requirements" title="Permalink to this headline">¶</a></h3>
 <p>Cython, NumPy, and GDAL must be installed prior to installing GeoWombat. Cython and NumPy can be installed via pip (note that the conda example above installs Cython and NumPy):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install cython numpy
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cython</span> <span class="n">numpy</span>
 </pre></div>
 </div>
 <p>GDAL can be installed via pip or conda, but it requires the GDAL binaries.</p>
 <div class="section" id="installing-non-python-geowombat-prerequisites">
-<h3>Installing non-Python <cite>GeoWombat</cite> prerequisites<a class="headerlink" href="#installing-non-python-geowombat-prerequisites" title="Permalink to this headline">¶</a></h3>
+<h4>Installing non-Python GeoWombat prerequisites<a class="headerlink" href="#installing-non-python-geowombat-prerequisites" title="Permalink to this headline">¶</a></h4>
 <p>GeoWombat requires <a class="reference external" href="https://gdal.org/">GDAL</a> and <a class="reference external" href="https://libspatialindex.org/">libspatialindex</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -91,44 +108,44 @@
 </div>
 </div>
 <div class="section" id="installing-gdal-on-ubuntu">
-<h3>Installing <cite>GDAL</cite> on Ubuntu<a class="headerlink" href="#installing-gdal-on-ubuntu" title="Permalink to this headline">¶</a></h3>
+<span id="gdal-install-ubuntu"></span><h4>Installing GDAL on Ubuntu<a class="headerlink" href="#installing-gdal-on-ubuntu" title="Permalink to this headline">¶</a></h4>
 <p>Install Python 3 (if not installed):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Ubuntu&gt;=16.10
-$ sudo apt install python3
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ubuntu&gt;=16.10</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span>
 </pre></div>
 </div>
 <p>If Python 3 is already installed, but pip is not, install pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ apt install python3-pip
-$
-$ # or
-$ # pip install pip-tools
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span>
+
+<span class="c1"># or</span>
+<span class="c1"># pip install pip-tools</span>
 </pre></div>
 </div>
 <p>Install the GDAL binaries:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Add GDAL and update Ubuntu
-$ sudo add-apt-repository ppa:ubuntugis/ppa &amp;&amp; sudo apt-get update
-$
-$ # Optional--add the latest unstable version (for GDAL 3.0)
-$ # sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
-$
-$ # Install the GDAL binaries
-$ sudo apt install gdal-bin
-$ sudo apt install libgdal-dev
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add GDAL and update Ubuntu</span>
+<span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ubuntugis</span><span class="o">/</span><span class="n">ppa</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+
+<span class="c1"># Optional--add the latest unstable version (for GDAL 3.0)</span>
+<span class="c1"># sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable</span>
+
+<span class="c1"># Install the GDAL binaries</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gdal</span><span class="o">-</span><span class="nb">bin</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libgdal</span><span class="o">-</span><span class="n">dev</span>
 </pre></div>
 </div>
 <p>Update environment paths:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
-$ export C_INCLUDE_PATH=/usr/include/gdal
-$ export LD_LIBRARY_PATH=/usr/local/lib
-$
-$ # Optional, add permanently to a .profile file
-$ # echo &#39;export CPLUS_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
-$ # echo &#39;export C_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile
-$ # echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/.profile
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">CPLUS_INCLUDE_PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">gdal</span>
+<span class="n">export</span> <span class="n">C_INCLUDE_PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">gdal</span>
+<span class="n">export</span> <span class="n">LD_LIBRARY_PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span>
+
+<span class="c1"># Optional, add permanently to a .profile file</span>
+<span class="c1"># echo &#39;export CPLUS_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile</span>
+<span class="c1"># echo &#39;export C_INCLUDE_PATH=&quot;/usr/include/gdal&quot;&#39; &gt;&gt; ~/.profile</span>
+<span class="c1"># echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/.profile</span>
 </pre></div>
 </div>
 <p>Check the installed GDAL version:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gdalinfo --version
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gdalinfo</span> <span class="o">--</span><span class="n">version</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -141,57 +158,58 @@ $ # echo &#39;export LD_LIBRARY_PATH=&quot;/usr/local/lib&quot;&#39; &gt;&gt; ~/
 </div>
 </div>
 <div class="section" id="installing-libspatialindex-on-ubuntu">
-<h3>Installing <cite>libspatialindex</cite> on Ubuntu<a class="headerlink" href="#installing-libspatialindex-on-ubuntu" title="Permalink to this headline">¶</a></h3>
+<h4>Installing libspatialindex on Ubuntu<a class="headerlink" href="#installing-libspatialindex-on-ubuntu" title="Permalink to this headline">¶</a></h4>
 <p>Install <cite>libspatialindex</cite> (which is a requirement for <a class="reference external" href="https://pypi.org/project/Rtree/">Rtree</a>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install libspatialindex-dev
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libspatialindex</span><span class="o">-</span><span class="n">dev</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="installing-gdal-with-conda">
-<h3>Installing <cite>GDAL</cite> with <cite>Conda</cite><a class="headerlink" href="#installing-gdal-with-conda" title="Permalink to this headline">¶</a></h3>
+<span id="gdal-install-conda"></span><h4>Installing GDAL with Conda<a class="headerlink" href="#installing-gdal-with-conda" title="Permalink to this headline">¶</a></h4>
 <p>See <a class="reference external" href="https://anaconda.org/conda-forge/gdal">conda-forge examples</a>.</p>
 </div>
 <div class="section" id="installing-libspatialindex-with-conda">
-<h3>Installing <cite>libspatialindex</cite> with <cite>Conda</cite><a class="headerlink" href="#installing-libspatialindex-with-conda" title="Permalink to this headline">¶</a></h3>
+<h4>Installing libspatialindex with Conda<a class="headerlink" href="#installing-libspatialindex-with-conda" title="Permalink to this headline">¶</a></h4>
 <p>See <a class="reference external" href="https://anaconda.org/conda-forge/libspatialindex">conda-forge examples</a>.</p>
 </div>
 <div class="section" id="install-the-gdal-python-bindings">
-<h3>Install the <cite>GDAL</cite> Python bindings<a class="headerlink" href="#install-the-gdal-python-bindings" title="Permalink to this headline">¶</a></h3>
-<p>GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. To install Python GDAL manually, use pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # match the GDAL binaries
-$ pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;) --no-binary=gdal
-$ # which is the same as the following if the GDAL binary version is 2.4.0
-$ # pip install GDAL==2.4.0 --no-binary=gdal
+<h4>Install the GDAL Python bindings<a class="headerlink" href="#install-the-gdal-python-bindings" title="Permalink to this headline">¶</a></h4>
+<p>GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. However, to install Python GDAL manually, use pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># match the GDAL binaries
+pip install GDAL==$(gdal-config --version | awk -F&#39;[.]&#39; &#39;{print $1&quot;.&quot;$2}&#39;) --no-binary=gdal
+# which is the same as the following if the GDAL binary version is 2.4.0
+# pip install GDAL==2.4.0 --no-binary=gdal
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="install-geowombat">
-<h2>3. Install <cite>GeoWombat</cite><a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h2>
+<h3>3. Install GeoWombat<a class="headerlink" href="#install-geowombat" title="Permalink to this headline">¶</a></h3>
 <p>Install the latest version from GitHub.com:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="install-optional-extras">
-<h2>4. Install optional extras<a class="headerlink" href="#install-optional-extras" title="Permalink to this headline">¶</a></h2>
+<h3>4. Install optional extras<a class="headerlink" href="#install-optional-extras" title="Permalink to this headline">¶</a></h3>
 <p>Install GeoWombat with libraries for co-registration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span><span class="o">.</span><span class="n">git</span><span class="c1">#egg=project[coreg]</span>
 </pre></div>
 </div>
 <p>Install GeoWombat with libraries for co-registration and geo-performance enhancements:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span><span class="o">.</span><span class="n">git</span><span class="c1">#egg=project[coreg,perf]</span>
 </pre></div>
 </div>
 <p>Install GeoWombat with all extra libraries:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span><span class="o">.</span><span class="n">git</span><span class="c1">#egg=project[all]</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="testing-the-installation">
-<h2>5. Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="test-the-installation">
+<span id="test-install"></span><h2>Test the installation<a class="headerlink" href="#test-the-installation" title="Permalink to this headline">¶</a></h2>
 <p>If GeoWombat installed correctly, you should be able to run the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import geowombat as gw;print(gw.__version__)&quot;</span>
 </pre></div>
 </div>
 <p>or in Python:</p>
@@ -202,16 +220,16 @@ $ # pip install GDAL==2.4.0 --no-binary=gdal
 </pre></div>
 </div>
 </div>
-<div class="section" id="a-example-of-a-full-installation-on-ubuntu-with-conda">
-<h2>A. Example of a full installation on Ubuntu with Conda<a class="headerlink" href="#a-example-of-a-full-installation-on-ubuntu-with-conda" title="Permalink to this headline">¶</a></h2>
-<p>The following installs a working anaconda environment including gdal:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pip-tools
-$ conda create -n geowombat python=3.7  cython scipy numpy zarr requests -c conda-forge
-$ conda activate geowombat
-$ sudo apt install libspatialindex-dev libgdal-dev
-$ conda install -c conda-forge libspatialindex zarr requests
-$ pip install git+https://github.com/jgrss/geowombat
-$ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
+<div class="section" id="an-example-of-a-full-installation-on-ubuntu-with-conda">
+<h2>An example of a full installation on Ubuntu with Conda<a class="headerlink" href="#an-example-of-a-full-installation-on-ubuntu-with-conda" title="Permalink to this headline">¶</a></h2>
+<p>The following installs a working anaconda environment including GDAL:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pip</span><span class="o">-</span><span class="n">tools</span>
+<span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">geowombat</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span>  <span class="n">cython</span> <span class="n">scipy</span> <span class="n">numpy</span> <span class="n">zarr</span> <span class="n">requests</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">geowombat</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libspatialindex</span><span class="o">-</span><span class="n">dev</span> <span class="n">libgdal</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">libspatialindex</span> <span class="n">zarr</span> <span class="n">requests</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jgrss</span><span class="o">/</span><span class="n">geowombat</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import geowombat as gw;print(gw.__version__)&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -295,7 +313,7 @@ $ python -c &quot;import geowombat as gw;print(gw.__version__)&quot;
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, GeoWombat.
+      &copy;2020-2020, GeoWombat.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>

@@ -49,7 +49,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-9c1125b9630615e93ab3a994905a87a8&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-b75235286db2c249d064c09970c38497&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -80,9 +80,9 @@
 <span class="go">&lt;xarray.DataArray (time: 3, band: 1, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * band     (band) int64 1</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * time     (time) datetime64[ns] 2240-07-08 2240-07-08 2240-07-08</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -106,8 +106,8 @@
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * band     (band) int64 1 1 1</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -234,7 +234,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, GeoWombat.
+      &copy;2020-2020, GeoWombat.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
