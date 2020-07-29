@@ -1,14 +1,17 @@
 from copy import copy
 from collections import namedtuple
+import logging
 
 from .angles import relative_azimuth
 from ..core.util import project_coords
-from ..errors import logger
 
 import numpy as np
 import xarray as xr
 import dask
 import dask.array as da
+
+
+logger = logging.getLogger(__name__)
 
 
 def dtor(x):

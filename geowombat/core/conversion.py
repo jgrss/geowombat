@@ -1,7 +1,7 @@
 import os
 import multiprocessing as multi
+import logging
 
-from ..errors import logger
 from ..backends.rasterio_ import check_crs
 from .util import sample_feature
 from .util import lazy_wombat
@@ -14,14 +14,14 @@ import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
 from rasterio.crs import CRS
-import shapely
 from shapely.geometry import Polygon
 from affine import Affine
 import pyproj
 from tqdm import tqdm
 from deprecated import deprecated
 
-shapely.speedups.enable()
+
+logger = logging.getLogger(__name__)
 
 
 def _iter_func(a):
@@ -357,8 +357,8 @@ class Converters(object):
 
         if not id_column in df.columns:
             df[id_column] = df.index.values
-        
-                
+
+
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
 

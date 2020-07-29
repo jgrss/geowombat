@@ -1,4 +1,4 @@
-from ..errors import logger
+import logging
 
 import numpy as np
 from osgeo import gdal, gdal_array
@@ -12,6 +12,9 @@ try:
     OPENCV_INSTALLED = True
 except:
     OPENCV_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
 
 
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):

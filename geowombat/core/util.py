@@ -3,8 +3,8 @@ import fnmatch
 from collections import namedtuple, OrderedDict
 from datetime import datetime
 from pathlib import Path
+import logging
 
-from ..errors import logger
 from ..moving import moving_window
 
 import numpy as np
@@ -17,7 +17,6 @@ from rasterio.crs import CRS
 from rasterio.warp import reproject, transform_bounds
 from rasterio.transform import from_bounds
 
-from shapely import speedups
 from affine import Affine
 
 try:
@@ -26,7 +25,8 @@ try:
 except:
     DATEPARSER_INSTALLED = False
 
-speedups.enable()
+
+logger = logging.getLogger(__name__)
 
 
 def lazy_wombat(func):
@@ -459,7 +459,7 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=N
         return gpd.GeoDataFrame([])
 
     if not isinstance(feature_array, np.ndarray):
-    
+
         # "Rasterize" the geometry into a NumPy array
         feature_array = features.rasterize([geom],
                                            out_shape=geom_info.shape,

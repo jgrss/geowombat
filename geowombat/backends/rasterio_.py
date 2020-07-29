@@ -3,8 +3,7 @@ import shutil
 from pathlib import Path
 from collections import namedtuple
 import threading
-
-from ..errors import logger
+import logging
 
 import numpy as np
 import rasterio as rio
@@ -19,6 +18,7 @@ from rasterio.coords import BoundingBox
 import pyproj
 from affine import Affine
 
+
 try:
     import zarr
     import numcodecs
@@ -26,6 +26,9 @@ try:
     ZARR_INSTALLED = True
 except:
     ZARR_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
 
 
 def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, tags, kwargs):

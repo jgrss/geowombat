@@ -14,18 +14,18 @@
 #import sys
 #sys.path.insert(0, os.path.abspath('../..'))
 
+from datetime import datetime
 import geowombat as gw
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'GeoWombat'
-copyright = '2020, GeoWombat'
+copyright = '2020-{:d}, GeoWombat'.format(datetime.now().year)
 author = ''
 
 # The full version, including alpha/beta/rc tags
 release = gw.__version__
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -45,6 +45,7 @@ extensions = ['IPython.sphinxext.ipython_directive',
               'sphinx.ext.doctest',
               'sphinx.ext.inheritance_diagram',
               'sphinx_automodapi.automodapi',
+              'sphinx.ext.autosectionlabel',
               'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
               'numpydoc']

@@ -9,8 +9,8 @@ import multiprocessing as multi
 import threading
 import random
 import string
+import logging
 
-from ..errors import logger
 from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
 
@@ -42,6 +42,9 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
@@ -788,7 +791,7 @@ def to_raster(data,
 
                     for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
                         pass
-                    
+
                 else:
 
                     with pool_executor(n_workers) as executor:

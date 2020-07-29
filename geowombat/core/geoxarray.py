@@ -25,12 +25,6 @@ from rasterio.windows import Window as _Window
 from shapely.geometry import Polygon as _Polygon
 import joblib
 
-try:
-    from shapely import speedups
-    speedups.enable()
-except:
-    pass
-
 
 class _UpdateConfig(object):
 

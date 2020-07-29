@@ -10,8 +10,8 @@ Examples
    io-distributed
    extraction
    band-math
-   machine-learning
    apply
    moving
    radiometry
    web
+   external

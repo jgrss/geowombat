@@ -1,4 +1,6 @@
-from ..errors import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PropertyMixin(object):
