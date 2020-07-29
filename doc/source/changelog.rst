@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.2.24 (30 July 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Removed forced file writing of the log and replaced with per-module logging. `6579eb8 <https://github.com/jgrss/geowombat/commit/6579eb8e059ad8ef4e4b34e3793051104ee9bc39>`_
+
 1.2.23 (27 July 2020)
 ---------------------
 
