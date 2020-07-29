@@ -7,7 +7,6 @@ from pathlib import Path
 
 from . import geoxarray
 from ..config import config, _set_defaults
-from ..errors import logger
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
@@ -21,7 +20,8 @@ from rasterio.windows import from_bounds, Window
 import dask
 import dask.array as da
 
-
+import logging
+logger = logging.getLogger(__name__)
 warnings.filterwarnings('ignore')
 
 ch = Chunks()
@@ -339,7 +339,6 @@ class open(object):
                  dtype=None,
                  num_workers=1,
                  **kwargs):
-
         if isinstance(filename, Path):
             filename = str(filename)
 

@@ -1,7 +1,6 @@
 import os
 import multiprocessing as multi
 
-from ..errors import logger
 from ..backends.rasterio_ import check_crs
 from .util import sample_feature
 from .util import lazy_wombat
@@ -20,6 +19,9 @@ from affine import Affine
 import pyproj
 from tqdm import tqdm
 from deprecated import deprecated
+
+import logging
+logger = logging.getLogger(__name__)
 
 shapely.speedups.enable()
 
@@ -357,8 +359,8 @@ class Converters(object):
 
         if not id_column in df.columns:
             df[id_column] = df.index.values
-        
-                
+
+
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
 

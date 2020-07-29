@@ -4,7 +4,6 @@ from collections import namedtuple, OrderedDict
 from datetime import datetime
 from pathlib import Path
 
-from ..errors import logger
 from ..moving import moving_window
 
 import numpy as np
@@ -25,6 +24,10 @@ try:
     DATEPARSER_INSTALLED = True
 except:
     DATEPARSER_INSTALLED = False
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 speedups.enable()
 
@@ -459,7 +462,7 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=N
         return gpd.GeoDataFrame([])
 
     if not isinstance(feature_array, np.ndarray):
-    
+
         # "Rasterize" the geometry into a NumPy array
         feature_array = features.rasterize([geom],
                                            out_shape=geom_info.shape,
