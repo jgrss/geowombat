@@ -3,6 +3,7 @@ import fnmatch
 from collections import namedtuple, OrderedDict
 from datetime import datetime
 from pathlib import Path
+import logging
 
 from ..moving import moving_window
 
@@ -16,7 +17,6 @@ from rasterio.crs import CRS
 from rasterio.warp import reproject, transform_bounds
 from rasterio.transform import from_bounds
 
-from shapely import speedups
 from affine import Affine
 
 try:
@@ -25,11 +25,8 @@ try:
 except:
     DATEPARSER_INSTALLED = False
 
-import logging
+
 logger = logging.getLogger(__name__)
-
-
-speedups.enable()
 
 
 def lazy_wombat(func):

@@ -1,5 +1,6 @@
 from copy import copy
 from collections import namedtuple
+import logging
 
 from .angles import relative_azimuth
 from ..core.util import project_coords
@@ -9,7 +10,7 @@ import xarray as xr
 import dask
 import dask.array as da
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 

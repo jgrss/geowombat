@@ -1,10 +1,12 @@
+import logging
+
 from .base import PropertyMixin as _PropertyMixin
 
 import numpy as np
 import xarray as xr
 import dask.array as da
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 

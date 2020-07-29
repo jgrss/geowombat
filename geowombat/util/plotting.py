@@ -1,8 +1,12 @@
+import logging
+
 import xarray as xr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import logging
+
+
 logger = logging.getLogger(__name__)
+
 
 class Plotting(object):
 

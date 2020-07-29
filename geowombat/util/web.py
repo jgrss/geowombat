@@ -9,6 +9,7 @@ from collections import namedtuple
 import random
 import string
 import time
+import logging
 
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
@@ -22,13 +23,8 @@ from osgeo import gdal
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
-import shapely
 from shapely.geometry import Polygon
 import psutil
-
-import logging
-logger = logging.getLogger(__name__)
-
 
 try:
     import requests
@@ -46,7 +42,8 @@ try:
 except:
     S2CLOUDLESS_INSTALLED = False
 
-shapely.speedups.enable()
+logger = logging.getLogger(__name__)
+
 
 RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        cubic=gdal.GRA_Cubic,

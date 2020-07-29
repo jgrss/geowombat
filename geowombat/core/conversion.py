@@ -1,5 +1,6 @@
 import os
 import multiprocessing as multi
+import logging
 
 from ..backends.rasterio_ import check_crs
 from .util import sample_feature
@@ -13,17 +14,14 @@ import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
 from rasterio.crs import CRS
-import shapely
 from shapely.geometry import Polygon
 from affine import Affine
 import pyproj
 from tqdm import tqdm
 from deprecated import deprecated
 
-import logging
-logger = logging.getLogger(__name__)
 
-shapely.speedups.enable()
+logger = logging.getLogger(__name__)
 
 
 def _iter_func(a):

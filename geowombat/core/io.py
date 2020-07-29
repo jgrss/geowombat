@@ -9,6 +9,7 @@ import multiprocessing as multi
 import threading
 import random
 import string
+import logging
 
 from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
@@ -42,7 +43,7 @@ try:
 except:
     MKL_LIB = None
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 

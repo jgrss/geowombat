@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from osgeo import gdal, gdal_array
 import dask
@@ -5,15 +7,14 @@ import dask.array as da
 import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
-import logging
-logger = logging.getLogger(__name__)
-
-
 try:
     import cv2
     OPENCV_INSTALLED = True
 except:
     OPENCV_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
 
 
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):

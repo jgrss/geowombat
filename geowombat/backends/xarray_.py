@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import logging
 
 from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
@@ -17,8 +18,9 @@ from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
 from deprecated import deprecated
 
-import logging
+
 logger = logging.getLogger(__name__)
+
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
 

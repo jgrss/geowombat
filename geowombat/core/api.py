@@ -4,6 +4,7 @@ import h5netcdf
 
 import warnings
 from pathlib import Path
+import logging
 
 from . import geoxarray
 from ..config import config, _set_defaults
@@ -20,7 +21,6 @@ from rasterio.windows import from_bounds, Window
 import dask
 import dask.array as da
 
-import logging
 logger = logging.getLogger(__name__)
 warnings.filterwarnings('ignore')
 

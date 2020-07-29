@@ -10,12 +10,6 @@ from affine import Affine
 import shapely
 from shapely.geometry import Polygon
 
-try:
-    from shapely import speedups
-    speedups.enable()
-except:
-    pass
-
 
 WavelengthsPan = namedtuple('WavelengthsPan', 'pan')
 WavelengthsBGR = namedtuple('WavelengthsBGR', 'blue green red')
