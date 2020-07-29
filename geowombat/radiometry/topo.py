@@ -1,11 +1,13 @@
-from ..errors import logger
-
 import numpy as np
 from osgeo import gdal, gdal_array
 import dask
 import dask.array as da
 import xarray as xr
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 try:
     import cv2

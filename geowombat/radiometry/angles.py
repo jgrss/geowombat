@@ -5,7 +5,6 @@ import subprocess
 from collections import namedtuple
 import tarfile
 
-from ..errors import logger
 
 import numpy as np
 import xarray as xr
@@ -14,6 +13,10 @@ from rasterio.warp import reproject
 from affine import Affine
 import xml.etree.ElementTree as ET
 # from pysolar.solar import get_altitude_fast, get_azimuth_fast
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 try:
     import cv2

@@ -10,7 +10,6 @@ import random
 import string
 import time
 
-from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
@@ -26,6 +25,10 @@ import xarray as xr
 import shapely
 from shapely.geometry import Polygon
 import psutil
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 try:
     import requests
@@ -946,7 +949,7 @@ class GeoDownloads(object):
                                             sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         if write_angle_files:
-                                            
+
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)

@@ -4,8 +4,6 @@ from pathlib import Path
 from collections import namedtuple
 import threading
 
-from ..errors import logger
-
 import numpy as np
 import rasterio as rio
 from rasterio.crs import CRS
@@ -18,6 +16,10 @@ from rasterio.coords import BoundingBox
 
 import pyproj
 from affine import Affine
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 try:
     import zarr

@@ -4,7 +4,6 @@ import itertools
 from datetime import datetime
 from collections import defaultdict
 
-from ..errors import logger
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
@@ -35,6 +34,8 @@ try:
 except:
     PYMORPH_INSTALLED = False
 
+import logging
+logger = logging.getLogger(__name__)
 
 def _remove_near_points(dataframe, r):
 
