@@ -29,11 +29,11 @@ with open('geowombat/version.py') as f:
             continue
 
 pkg_name = 'geowombat'
-maintainer = 'Jordan Graesser'
+maintainer = ''
 maintainer_email = ''
-description = 'Geo-utilities for large-scale processing of air- and space-borne imagery'
+description = 'GeoWombat: Utilities for geospatial data'
 git_url = 'https://github.com/jgrss/geowombat'
-download_url = 'https://github.com/jgrss/geowombat/archive/{VERSION}.tar.gz'.format(VERSION=version)
+download_url = '{GIT}/archive/{PKG}-{VERSION}'.format(GIT=git_url, PKG=pkg_name, VERSION=version)
 keywords = ['raster', 'satellite']
 extras = 'extra-requirements.txt'
 
