@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.2.25 ()
+---------
+
+- Bug fixes
+~~~~~~~~~~~
+
+- Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in :class:`geowombat.radiometry.sr.MetaData`.
+
 1.2.24 (30 July 2020)
 ---------------------
 
