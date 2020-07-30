@@ -1,4 +1,5 @@
-from ..errors import logger
+import logging
+
 from ..core import ndarray_to_xarray
 
 import numpy as np
@@ -14,6 +15,9 @@ try:
     LIGHTGBM_INSTALLED = True
 except:
     LIGHTGBM_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
 
 
 @dask.delayed

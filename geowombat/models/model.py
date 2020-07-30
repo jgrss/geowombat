@@ -4,9 +4,9 @@ import ctypes
 import inspect
 from contextlib import contextmanager
 from pathlib import Path
+import logging
 
 from . import time_to_sensor_feas, transform_probas
-from ..errors import logger
 from ..backends import Cluster
 from ..core.util import Chunks
 
@@ -47,6 +47,9 @@ try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
 except:
     MKL_LIB = None
+
+
+logger = logging.getLogger(__name__)
 
 
 @contextmanager
