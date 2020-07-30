@@ -78,7 +78,7 @@ def s_atm(r):
 
 def _format_coeff(dataframe, sensor, key):
 
-    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'swir2'},
+    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '7': 'swir2'},
                       l7={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
                           '6VCID2': 'th2', '7': 'swir2', '8': 'pan'},
                       l8={'1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
