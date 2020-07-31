@@ -92,7 +92,7 @@ def _format_coeff(dataframe, sensor, key):
 
     dataframe_ = dataframe[dataframe.iloc[:, 0].str.startswith(key)].values
 
-    pairs = dict()
+    pairs = {}
 
     for di in range(dataframe_.shape[0]):
 
@@ -100,13 +100,15 @@ def _format_coeff(dataframe, sensor, key):
         cf = dataframe_[di, 1]
 
         # e.g., REFLECTANCE_ADD_BAND_1 -> 1
-        var_band = sensor_dict[''.join(bd.split('_')[3:])]
+        band_name = ''.join(bd.split('_')[3:])
 
-        if var_band in pairs:
+        if band_name in sensor_dict:
+
+            var_band = sensor_dict[band_name]
             pairs[var_band] = float(cf)
 
-    # dataframe_[:, 1] = dataframe_[:, 1].astype(float)
-    # dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
+    if not pairs:
+        logger.warning('  No metadata coefficients were acquired.')
 
     return pairs
 
