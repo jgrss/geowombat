@@ -118,10 +118,10 @@ def get_extensions():
                                  extra_compile_args=['-fopenmp'],
                                  extra_link_args=['-fopenmp'])]
 
-    if Path('geowombat/radiometry/_starfm.pyx').is_file():
+    if Path('geowombat/radiometry/_fusion.pyx').is_file():
 
         extensions += [Extension('*',
-                                 sources=['geowombat/radiometry/_starfm.pyx'],
+                                 sources=['geowombat/radiometry/_fusion.pyx'],
                                  extra_compile_args=['-fopenmp'],
                                  extra_link_args=['-fopenmp'])]
 
