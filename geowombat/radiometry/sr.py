@@ -78,7 +78,7 @@ def s_atm(r):
 
 def _format_coeff(dataframe, sensor, key):
 
-    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '7': 'swir2'},
+    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'th', '7': 'swir2'},
                       l7={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
                           '6VCID2': 'th2', '7': 'swir2', '8': 'pan'},
                       l8={'1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
@@ -95,10 +95,11 @@ def _format_coeff(dataframe, sensor, key):
         bd = dataframe_[di, 0]
         cf = dataframe_[di, 1]
 
-        try:
-            pairs[sensor_dict[''.join(bd.split('_')[3:])]] = float(cf)
-        except:
-            pass
+        # e.g., REFLECTANCE_ADD_BAND_1 -> 1
+        var_band = sensor_dict[''.join(bd.split('_')[3:])]
+
+        if var_band in pairs:
+            pairs[var_band] = float(cf)
 
     # dataframe_[:, 1] = dataframe_[:, 1].astype(float)
     # dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
