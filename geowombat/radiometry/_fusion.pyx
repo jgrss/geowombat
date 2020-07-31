@@ -159,7 +159,7 @@ cdef void _std(double[:, ::1] data1,
         res_std[2, nrows, 1] = data_std3
 
 
-cdef void _fit(double[:, ::1] band_weights,
+cdef void _fit_starfm(double[:, ::1] band_weights,
                double[:, ::1] hres_k,
                double[:, ::1] mres_k,
                double[:, ::1] mres_0,
@@ -233,7 +233,7 @@ cdef void _fit(double[:, ::1] band_weights,
                         band_weights[<int>(i*w)+m2, <int>(j*w)+n2] = weight
 
 
-cdef double _transform(double[:, ::1] band_weights,
+cdef double _transform_starfm(double[:, ::1] band_weights,
                        double[:, ::1] hres_k,
                        double[:, ::1] mres_k,
                        double[:, ::1] mres_0,
@@ -276,7 +276,7 @@ cdef double _transform(double[:, ::1] band_weights,
     return pred
 
 
-cdef double _fit_transform(double[:, ::1] hres_k,
+cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                            double[:, ::1] mres_k,
                            double[:, ::1] mres_0,
                            double[:, ::1] hres_k_sim,
@@ -500,7 +500,7 @@ cdef class StarFM(object):
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
     
-                _fit(output,
+                _fit_starfm(output,
                      hres_k,
                      mres_k,
                      mres_0,
@@ -559,7 +559,7 @@ cdef class StarFM(object):
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
 
-                output[i+hw, j+hw] = _transform(band_weights,
+                output[i+hw, j+hw] = _transform_starfm(band_weights,
                                                 hres_k,
                                                 mres_k,
                                                 mres_0,
@@ -652,7 +652,7 @@ cdef class StarFM(object):
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
 
-                output[i+hw, j+hw] = _fit_transform(hres_k,
+                output[i+hw, j+hw] = _fit_transform_starfm(hres_k,
                                                     mres_k,
                                                     mres_0,
                                                     hres_k_sim,
