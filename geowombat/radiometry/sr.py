@@ -2,6 +2,7 @@ import math
 from collections import namedtuple
 from datetime import datetime as dtime
 import datetime
+import logging
 
 from .angles import relative_azimuth
 
@@ -9,6 +10,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import dask.array as da
+
+
+logger = logging.getLogger(__name__)
 
 
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
@@ -405,6 +409,21 @@ class RadTransforms(MetaData):
 
             if not sensor:
                 sensor = meta.sensor
+
+            # Ensure that the metadata holder has matching bands
+            for bi in band_names:
+
+                if bi not in meta.m_p:
+                    logger.warning(meta.m_p)
+                    logger.warning(band_names)
+                    logger.exception('  The metadata holder does not have matching bands.')
+                    raise ValueError
+
+                if bi not in meta.a_p:
+                    logger.warning(meta.a_p)
+                    logger.warning(band_names)
+                    logger.exception('  The metadata holder does not have matching bands.')
+                    raise ValueError
 
             # Get the gain and offsets and
             #   convert the gain and offsets
