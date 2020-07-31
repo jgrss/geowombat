@@ -330,14 +330,14 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
 
                     # Spectral distance
                     # sp_dist = _logistic_scaler(fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.0, 1.0, 5.0, 15.0)
-                    sp_dist = 1.0 / fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
+                    sp_dist = fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
 
                     # max_sp_dist = sp_diff + sensor_uncert + 1.0
                     # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
 
                     # Temporal distance
                     # tp_dist = _logistic_scaler(fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.0, 1.0, 5.0, 15.0)
-                    tp_dist = 1.0 / fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
+                    tp_dist = fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
 
                     # max_tp_dist = tp_diff + temp_uncert + 1.0
                     # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
@@ -353,12 +353,13 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     # if hres_sim <= hres_k_sim_thresh:
 
                     # Spatial distance
-                    sw_dist = _logistic_scaler(dist_window[m1, n1], 0.0, <double>hw, 7.5, 5.0)
+                    sw_dist = 1.0 + dist_window[m1, n1] / param_a
+                    # sw_dist = _logistic_scaler(dist_window[m1, n1], 0.0, <double>hw, 7.5, 5.0)
                     # sw_dist = 1.0 / log(dist_window[m1, n1] + 1.0)
 
                     # High value = bad
                     # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                    weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+                    weight = sp_dist * tp_dist * sw_dist #* hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
 
                     # Combine weights
                     # TODO: add log option
@@ -366,7 +367,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     # if (sp_dist == 0) or (tp_dist == 0):
                     #     weight_sum += 10000.0
                     # else:
-                    weight_sum += weight
+                    weight_sum += (1.0 / weight)
 
     if weight_sum > 0:
 
@@ -379,14 +380,14 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
 
                         # Spectral distance
                         # sp_dist = _logistic_scaler(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.0, 1.0, 5.0, 15.0)
-                        sp_dist = 1.0 / fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
+                        sp_dist = fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
 
                         # max_sp_dist = sp_diff + sensor_uncert + 1.0
                         # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
 
                         # Temporal distance
                         # tp_dist = _logistic_scaler(fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.0, 1.0, 5.0, 15.0)
-                        tp_dist = 1.0 / fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
+                        tp_dist = fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
 
                         # max_tp_dist = tp_diff + temp_uncert + 1.0
                         # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
@@ -402,11 +403,12 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # if hres_sim <= hres_k_sim_thresh:
 
                         # Spatial distance
-                        sw_dist = _logistic_scaler(dist_window[m2, n2], 0.0, <double>hw, 7.5, 5.0)
+                        sw_dist = 1.0 + dist_window[m2, n2] / param_a
+                        # sw_dist = _logistic_scaler(dist_window[m2, n2], 0.0, <double>hw, 7.5, 5.0)
                         # sw_dist = 1.0 / log(dist_window[m2, n2] + 1.0)
 
                         # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                        weight = sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+                        weight = sp_dist * tp_dist * sw_dist #* hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
 
                         # Combine weights
                         # TODO: add log option
@@ -416,7 +418,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # else:
                         #     score = 1.0 / (1.0 - weight)
 
-                        pred += (weight * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+                        pred += ((1.0 / weight) * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
 
         pred /= weight_sum
 
