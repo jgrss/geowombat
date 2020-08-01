@@ -304,6 +304,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
         Py_ssize_t m1, n1, m2, n2
         double sp_dist, tp_dist, sw_dist
         double weight, score, fweight
+        double sp_dist_a, sp_dist_b
         double weight_sum = 0.0
         double pred = 0.0
         double hres_k_std_dist, mres_k_std_dist, mres_0_std_dist
@@ -312,7 +313,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
         double hres_k_sim_thresh = 2.0 * std_stack[0, i+hw, j+hw] / <double>param_n
 
         # Maximum possible weight
-        double max_weight = 6.0
+        # double max_weight = 1.0 / (0.01 * 0.01 * 0.01)
 
     # if mres_0[i+hw, j+hw] == mres_k[i+hw, j+hw]:
     #     return hres_k[i+hw, j+hw]
@@ -329,15 +330,19 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                 if (hres_k[i+m1, j+n1] > 0) and (mres_k[i+m1, j+n1] > 0) and (mres_0[i+m1, j+n1] > 0):
 
                     # Spectral distance
-                    # sp_dist = _logistic_scaler(fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.0, 1.0, 5.0, 15.0)
-                    sp_dist = fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
+                    sp_dist = _logistic(fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.2, 15.0)
+                    # sp_dist = fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]) + 1.0
 
                     # max_sp_dist = sp_diff + sensor_uncert + 1.0
                     # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
 
                     # Temporal distance
-                    # tp_dist = _logistic_scaler(fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.0, 1.0, 5.0, 15.0)
-                    tp_dist = fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1])
+                    tp_dist = _logistic(fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.2, 15.0)
+                    # tp_dist = fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]) + 1.0
+
+                    # Center distance
+                    sp_dist_a = _logistic(fabs(hres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.2, 15.0) + 1.0
+                    sp_dist_b = _logistic(fabs(mres_k[i+m1, j+n1] - mres_0[i+m1, j+n1]), 0.2, 15.0) + 1.0
 
                     # max_tp_dist = tp_diff + temp_uncert + 1.0
                     # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
@@ -346,9 +351,9 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     # hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
 
                     # Weight for local heterogeneity
-                    hres_k_std_dist = _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 25.0)
-                    mres_k_std_dist = _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 25.0)
-                    mres_0_std_dist = _logistic_scaler(std_stack[2, i+m1, j+n1], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 25.0)
+                    hres_k_std_dist = 1.0 - _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 20.0) + 1.0
+                    mres_k_std_dist = 1.0 - _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 20.0) + 1.0
+                    mres_0_std_dist = 1.0 - _logistic_scaler(std_stack[2, i+m1, j+n1], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 20.0) + 1.0
 
                     # if hres_sim <= hres_k_sim_thresh:
 
@@ -359,15 +364,9 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
 
                     # High value = bad
                     # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                    weight = sp_dist * tp_dist * sw_dist #* hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+                    weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b)
 
-                    # Combine weights
-                    # TODO: add log option
-                    # weight_sum += (1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist))
-                    # if (sp_dist == 0) or (tp_dist == 0):
-                    #     weight_sum += 10000.0
-                    # else:
-                    weight_sum += (1.0 / weight)
+                    weight_sum += weight
 
     if weight_sum > 0:
 
@@ -379,15 +378,15 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     if (hres_k[i+m2, j+n2] > 0) and (mres_k[i+m2, j+n2] > 0) and (mres_0[i+m2, j+n2] > 0):
 
                         # Spectral distance
-                        # sp_dist = _logistic_scaler(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.0, 1.0, 5.0, 15.0)
-                        sp_dist = fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
+                        sp_dist = _logistic(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0)
+                        # sp_dist = fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]) + 1.0
 
                         # max_sp_dist = sp_diff + sensor_uncert + 1.0
                         # sp_dist_filter = 1 if sp_dist > 1.0 / max_sp_dist else 0
 
                         # Temporal distance
-                        # tp_dist = _logistic_scaler(fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.0, 1.0, 5.0, 15.0)
-                        tp_dist = fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2])
+                        tp_dist = _logistic(fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0)
+                        # tp_dist = fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]) + 1.0
 
                         # max_tp_dist = tp_diff + temp_uncert + 1.0
                         # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
@@ -395,10 +394,14 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # Similarity test (|current value - center value|)
                         # hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
 
+                        # Center distance
+                        sp_dist_a = _logistic(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0) + 1.0
+                        sp_dist_b = _logistic(fabs(mres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0) + 1.0
+
                         # Weight for local heterogeneity
-                        hres_k_std_dist = _logistic_scaler(std_stack[0, i+m2, j+n2], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 25.0)
-                        mres_k_std_dist = _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 25.0)
-                        mres_0_std_dist = _logistic_scaler(std_stack[2, i+m2, j+n2], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 25.0)
+                        hres_k_std_dist = 1.0 - _logistic_scaler(std_stack[0, i+m2, j+n2], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 20.0) + 1.0
+                        mres_k_std_dist = 1.0 - _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 20.0) + 1.0
+                        mres_0_std_dist = 1.0 - _logistic_scaler(std_stack[2, i+m2, j+n2], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 20.0) + 1.0
 
                         # if hres_sim <= hres_k_sim_thresh:
 
@@ -408,19 +411,11 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # sw_dist = 1.0 / log(dist_window[m2, n2] + 1.0)
 
                         # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                        weight = sp_dist * tp_dist * sw_dist #* hres_k_std_dist * mres_k_std_dist * mres_0_std_dist
+                        weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b)
 
-                        # Combine weights
-                        # TODO: add log option
-                        # comb_score = 1.0 / (log(sp_dist*param_b) * log(tp_dist*param_b) * sw_dist)
-                        # if (sp_dist == 0) or (tp_dist == 0):
-                        #     score = 10000.0
-                        # else:
-                        #     score = 1.0 / (1.0 - weight)
+                        score = weight / weight_sum
 
-                        pred += ((1.0 / weight) * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
-
-        pred /= weight_sum
+                        pred += (score * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
 
         return pred
 
