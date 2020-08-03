@@ -247,7 +247,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     @property
     def filenames(self):
         """Get the data filenames"""
-        return self._filenames if hasattr(self, '_filenames') else []
+        return self.filename if hasattr(self, 'filename') else []
 
     @filenames.setter
     def filenames(self, file_list):
