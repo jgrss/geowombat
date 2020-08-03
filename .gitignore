@@ -40,6 +40,7 @@ geowombat/tasks
 geowombat/radiometry/sharpen.py
 geowombat/radiometry/_starfm.*
 geowombat/radiometry/haze.py
+geowombat/radiometry/brdf_old.py
 
 # Notebooks
 notebooks/*hls*
