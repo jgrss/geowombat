@@ -629,8 +629,13 @@ class Angles(object):
 
         AngleInfo = namedtuple('AngleInfo', 'vza sza raa vza_rad sza_rad raa_rad')
 
+        # View zenith angle
         vza_rad = da.deg2rad(vza)
+
+        # Solar zenith angle
         sza_rad = da.deg2rad(sza)
+
+        # Relative azimuth angle
         raa_rad = da.deg2rad(raa)
 
         vza_abs = da.fabs(vza_rad)
@@ -650,10 +655,12 @@ class LiKernel(Special, Angles):
 
     def get_li(self, kernel_type, recip_flag):
 
-        # first make sure its in range 0 to 2 pi
+        # relative azimuth angle
+        # ensure it is in a [0,2] pi range
         phi = da.fabs((self.angle_info.raa_rad % (2.0 * self.global_args.m_pi)))
-        cos3 = da.cos(phi)
-        sin3 = da.sin(phi)
+
+        cos_phi = da.cos(phi)
+        sin_phi = da.sin(phi)
 
         tanti = da.tan(self.angle_info.sza_rad)
         tantv = da.tan(self.angle_info.vza_rad)
@@ -662,9 +669,9 @@ class LiKernel(Special, Angles):
         cos2, sin2, tan2 = self.get_pangles(tanti, self.global_args.br, self.global_args.nearly_zero)
 
         # sets cos & sin phase angle terms
-        cos_phaang, phaang, sin_phaang = self.get_phaang(cos1, cos2, sin1, sin2, cos3)
-        distance = self.get_distance(tan1, tan2, cos3)
-        overlap_info = self.get_overlap(cos1, cos2, tan1, tan2, sin3, distance, self.global_args.hb, self.global_args.m_pi)
+        cos_phaang, phaang, sin_phaang = self.get_phaang(cos1, cos2, sin1, sin2, cos_phi)
+        distance = self.get_distance(tan1, tan2, cos_phi)
+        overlap_info = self.get_overlap(cos1, cos2, tan1, tan2, sin_phi, distance, self.global_args.hb, self.global_args.m_pi)
 
         if kernel_type.lower() == 'sparse':
 
@@ -682,25 +689,6 @@ class LiKernel(Special, Angles):
                 else:
                     li = (1.0 + cos_phaang) / (cos1 * (overlap_info.temp - overlap_info.overlap)) - 2.0
 
-            # else:
-            #
-            #     b = overlap_info.temp - overlap_info.overlap
-            #     li = b * 0.0
-            #
-            #     if recip_flag:
-            #         li_ = global_args.overlap - global_args.temp + 0.5 * (1.0 + __cosphaang) / __cos1 / __cos2
-            #     else:
-            #         li_ = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + __cosphaang) / __cos1
-            #
-            #     li = da.where(b <= 2, li_, li)
-            #
-            #     if global_args.recip_flag:
-            #         li_ = (1.0 + __cosphaang) / (__cos1 * __cos2 * (overlap_info.temp - overlap_info.overlap)) - 2.0
-            #     else:
-            #         li_ = (1.0 + __cosphaang) / (__cos1 * (overlap_info.temp - overlap_info.overlap)) - 2.0
-            #
-            #     li = da.where(b <= 2, li_, li)
-
         return li
 
 
@@ -717,15 +705,13 @@ class RossKernel(Special, Angles):
 
         cos_vza = da.cos(angle_info.vza_rad)
         cos_sza = da.cos(angle_info.sza_rad)
-
         sin_vza = da.sin(angle_info.vza_rad)
         sin_sza = da.sin(angle_info.sza_rad)
         cos_raa = da.cos(angle_info.raa_rad)
 
-        cos_phase_angle, phase_angle, sin_phase_angle = get_phase_angle_dask(cos_vza, cos_sza, sin_vza, sin_sza,
-                                                                             cos_raa)
+        cos_phase_angle, phase_angle, sin_phase_angle = self.get_phaang(cos_vza, cos_sza, sin_vza, sin_sza, cos_raa)
 
-        ross_element = (global_args.m_pi2 - phase_angle) * cos_phase_angle + sin_phase_angle
+        ross_element = (global_args.m_p / 2.0 - phase_angle) * cos_phase_angle + sin_phase_angle
 
         return RossKernelOutputs(cos_vza=cos_vza,
                                  cos_sza=cos_sza,
@@ -763,17 +749,17 @@ class RossKernel(Special, Angles):
         if kernel_type.lower() == 'thin':
             ross_kernel_outputs = self.ross_thin(self.angle_info, self.global_args)
         else:
-            ross_kernel_outputs = ross_thick_delayed(self.angle_info, self.global_args)
+            ross_kernel_outputs = self.ross_thick(self.angle_info, self.global_args)
 
         if self.global_args.hs:
             ross = ross_kernel_outputs.ross * (1.0 + 1.0 / (1.0 + ross_kernel_outputs.phase_angle / 0.25))
         else:
-            ross = ross_kernel_outputs.ross
+            ross = ross_kernel_outputs.ross - self.global_args.m_pi / 4.0
 
         return ross
 
 
-class _Kernels(LiKernel):
+class _Kernels(LiKernel, RossKernel):
 
     def __init__(self,
                  vza,
@@ -791,9 +777,8 @@ class _Kernels(LiKernel):
         self.global_args = GlobalArgs(br=br, m_pi=np.pi, hb=hb, hs=hs, nearly_zero=1e-20)
         self.angle_info = self.get_angle_info(vza, sza, raa, self.global_args.m_pi)
 
-        self.li = self.get_li(li_type, recip_flag)
-        self.ross = self.get_ross(ross_type)
-
+        self.li_k = self.get_li(li_type, recip_flag)
+        self.ross_k = self.get_ross(ross_type)
 
 
 class Kernels(object):
@@ -925,8 +910,8 @@ class Kernels(object):
             #                                                                           angle_info,
             #                                                                           global_args)
 
-            self.Ross = ross
-            self.Li = li
+            self.ross_k = ross
+            self.li_k = li
 
         else:
 
@@ -1439,8 +1424,8 @@ class RossLiKernels(object):
         #   coefficients so they are
         #   not overwritten by the
         #   volume scattering coefficients.
-        self.geo_norm = copy(kl.Li)
-        self.vol_norm = copy(kl.Ross)
+        self.geo_norm = copy(kl.li_k)
+        self.vol_norm = copy(kl.ross_k)
 
         # Get the volume scattering kernel.
         #
