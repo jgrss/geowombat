@@ -24,15 +24,13 @@ class Special(object):
 
         temp = tan1 * tan1 + tan2 * tan2 - 2.0 * tan1 * tan2 * cos3
 
-        temp = da.where(temp < 0, 0, temp)
-
-        return da.sqrt(temp)
+        return da.sqrt(da.maximum(temp, 0))
 
     @staticmethod
     def get_overlap(cos1, cos2, tan1, tan2, sin3, distance, hb, m_pi):
 
         """
-        Applies HB ratio transformation
+        Applies the HB ratio transformation
         """
 
         OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
@@ -43,9 +41,9 @@ class Special(object):
 
         tvar = da.arccos(cost)
         sint = da.sin(tvar)
-        overlap = 1.0 / m_pi * (tvar - sint * cost) * temp
 
-        overlap = da.where(overlap < 0, 0, overlap)
+        overlap = 1.0 / m_pi * (tvar - sint * cost) * temp
+        overlap = da.maximum(overlap, 0)
 
         return OverlapInfo(tvar=tvar, sint=sint, overlap=overlap, temp=temp)
 
@@ -225,6 +223,19 @@ class RossKernel(Special, Angles):
 
 
 class BRDFKernels(LiKernel, RossKernel):
+
+    """
+    A class for the Li and Ross BRDF kernels
+
+    Args:
+        vza (dask.array): The view zenith angle.
+        sza (dask.array): The solar zenith angle.
+        raa (dask.array): The relative azimuth angle.
+        li_type (Optional[str]): The Li kernel type. Choices are ['sparse', 'dense'].
+        ross_type (Optional[str]): The Ross kernel type. Choices are ['thin', 'thick'].
+        br (Optional[float]): The BR ratio.
+        hb (Optional[float]): The HB ratio.
+    """
 
     def __init__(self,
                  vza,
@@ -514,12 +525,12 @@ class BRDF(GeoVolKernels):
             coeffs = self._get_coeffs(wavelength)
 
             # c-factor
-            c_factor = ((coeffs['fiso'] +
-                         coeffs['fvol']*self.vol_norm +
-                         coeffs['fgeo']*self.geo_norm) /
-                        (coeffs['fiso'] +
-                         coeffs['fvol']*self.vol_sensor +
-                         coeffs['fgeo']*self.geo_sensor))
+            c_factor = (coeffs['fiso'] +
+                        coeffs['fvol']*self.vol_norm +
+                        coeffs['fgeo']*self.geo_norm) / \
+                       (coeffs['fiso'] +
+                        coeffs['fvol']*self.vol_sensor +
+                        coeffs['fgeo']*self.geo_sensor)
 
             p_norm = data.sel(band=wavelength).data * c_factor
 
