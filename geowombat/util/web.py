@@ -282,8 +282,7 @@ class GeoDownloads(object):
                                          nir=4,
                                          swir1=5,
                                          thermal=6,
-                                         swir2=7,
-                                         pan=8),
+                                         swir2=7),
                                  l7=dict(blue=1,
                                          green=2,
                                          red=3,
@@ -756,7 +755,16 @@ class GeoDownloads(object):
                             else:
 
                                 # Get band names from user
-                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                try:
+                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                except:
+                                    logger.info(sensor)
+                                    logger.info(bands)
+                                    logger.info(band_associations)
+                                    logger.info(load_bands)
+                                    logger.info(finfo_dict)
+                                    import sys
+                                    sys.exit()
 
                             logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 
