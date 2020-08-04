@@ -755,16 +755,7 @@ class GeoDownloads(object):
                             else:
 
                                 # Get band names from user
-                                try:
-                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
-                                except:
-                                    logger.info(sensor)
-                                    logger.info(bands)
-                                    logger.info(band_associations)
-                                    logger.info(load_bands)
-                                    logger.info(finfo_dict)
-                                    import sys
-                                    sys.exit()
+                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
 
                             logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 
