@@ -1,6 +1,9 @@
 import logging
 
+from ..handler import add_handler
+
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 class PropertyMixin(object):

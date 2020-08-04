@@ -11,6 +11,7 @@ import random
 import string
 import logging
 
+from ..handler import add_handler
 from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
 
@@ -45,6 +46,7 @@ except:
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):

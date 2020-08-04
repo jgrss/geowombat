@@ -2,6 +2,7 @@ import os
 import multiprocessing as multi
 import logging
 
+from ..handler import add_handler
 from ..backends.rasterio_ import check_crs
 from .util import sample_feature
 from .util import lazy_wombat
@@ -22,6 +23,7 @@ from deprecated import deprecated
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _iter_func(a):

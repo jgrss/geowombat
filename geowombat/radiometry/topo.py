@@ -1,5 +1,7 @@
 import logging
 
+from ..handler import add_handler
+
 import numpy as np
 from osgeo import gdal, gdal_array
 import dask
@@ -15,6 +17,7 @@ except:
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):

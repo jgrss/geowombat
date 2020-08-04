@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import logging
 
+from ..handler import add_handler
 from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..config import config
@@ -20,6 +21,7 @@ from deprecated import deprecated
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _update_kwarg(ref_obj, ref_kwargs, key):

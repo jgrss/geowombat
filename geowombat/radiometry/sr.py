@@ -4,6 +4,7 @@ from datetime import datetime as dtime
 import datetime
 import logging
 
+from ..handler import add_handler
 from .angles import relative_azimuth
 
 import numpy as np
@@ -13,6 +14,7 @@ import dask.array as da
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):

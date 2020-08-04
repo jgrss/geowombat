@@ -7,6 +7,7 @@ from pathlib import Path
 import logging
 
 from . import geoxarray
+from ..handler import add_handler
 from ..config import config, _set_defaults
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
@@ -22,6 +23,7 @@ import dask
 import dask.array as da
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 warnings.filterwarnings('ignore')
 
 ch = Chunks()

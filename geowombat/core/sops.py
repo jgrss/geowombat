@@ -5,6 +5,7 @@ from datetime import datetime
 from collections import defaultdict
 import logging
 
+from ..handler import add_handler
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
@@ -37,6 +38,7 @@ except:
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _remove_near_points(dataframe, r):
@@ -520,6 +522,9 @@ class SpatialOperations(_PropertyMixin):
 
             if shape_len > 2:
                 bands_idx = slice(0, None)
+
+        if id_column not in data.columns:
+            data['id'] = data.index.values
 
         df = converters.prepare_points(data,
                                        aoi,
