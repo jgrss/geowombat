@@ -3,7 +3,7 @@ from .brdf import BRDF
 from .topo import Topo
 from .sr import LinearAdjustments, RadTransforms
 from .qa import QAMasker
-from .sharpen import pan_sharpen
+# from .sharpen import pan_sharpen
 from ._fusion import ImproPhe, StarFM
 
 __all__ = ['landsat_pixel_angles',
@@ -13,6 +13,5 @@ __all__ = ['landsat_pixel_angles',
            'LinearAdjustments',
            'RadTransforms',
            'QAMasker',
-           'pan_sharpen',
            'ImproPhe',
            'StarFM']
