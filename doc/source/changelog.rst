@@ -15,7 +15,7 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 
-- Reorganized the :class:`geowombat.radiometry.brdf.BRDF()' module.
+- Reorganized the :class:`geowombat.radiometry.brdf.BRDF()` module.
 
 1.2.24 (30 July 2020)
 ---------------------

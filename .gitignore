@@ -31,17 +31,12 @@ geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
 geowombat/models/
-geowombat/radiometry/_fill_gaps.pyx
-geowombat/radiometry/impute.py
-geowombat/examples/concurrent_processing.ipynb
-geowombat/examples/transforms.ipynb
 logo/
 bin/ESPA/
-geowombat/tasks
-geowombat/radiometry/sharpen.py
-geowombat/radiometry/_starfm.*
-geowombat/radiometry/haze.py
-geowombat/radiometry/brdf_old.py
+
+# dev
+geowombat/tasks/
+geowombat/radiometry/*test*.py
 
 # Notebooks
 notebooks/*hls*
