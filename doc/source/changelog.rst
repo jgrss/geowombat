@@ -3,13 +3,19 @@
 Changelog
 =========
 
-1.2.25 ()
----------
+1.2.25 (4 Aug 2020)
+-------------------
 
-- Bug fixes
-~~~~~~~~~~~
+Bug fixes
+~~~~~~~~~
 
 - Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in :class:`geowombat.radiometry.sr.MetaData`.
+- Removed logger file writing, which conflicted with read-only containers.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Reorganized the :class:`geowombat.radiometry.brdf.BRDF()' module.
 
 1.2.24 (30 July 2020)
 ---------------------
