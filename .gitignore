@@ -15,11 +15,12 @@ Thumbs.db
 *.log
 *.pyo
 *.pyc
-.idea
+.idea/
 *.egg-info/
 dist/
 .ipynb_checkpoints
 __pycache__/
+.pytest_cache/
 
 # GeoWombat
 old/
