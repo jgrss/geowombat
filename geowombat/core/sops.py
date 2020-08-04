@@ -523,8 +523,10 @@ class SpatialOperations(_PropertyMixin):
             if shape_len > 2:
                 bands_idx = slice(0, None)
 
-        if id_column not in data.columns:
-            data['id'] = data.index.values
+        if isinstance(aoi, gpd.GeoDataFrame):
+
+            if id_column not in aoi.columns.tolist():
+                aoi['id'] = aoi.index.values
 
         df = converters.prepare_points(data,
                                        aoi,
