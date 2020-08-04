@@ -6,6 +6,8 @@ from collections import namedtuple
 import tarfile
 import logging
 
+from ..handler import add_handler
+
 import numpy as np
 import xarray as xr
 import rasterio as rio
@@ -21,6 +23,7 @@ except:
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def shift_objects(data,

@@ -2,8 +2,9 @@ from copy import copy
 from collections import namedtuple
 import logging
 
-from .angles import relative_azimuth
+from ..handler import add_handler
 from ..core.util import project_coords
+from .angles import relative_azimuth
 
 import numpy as np
 import xarray as xr
@@ -12,6 +13,7 @@ import dask.array as da
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def dtor(x):

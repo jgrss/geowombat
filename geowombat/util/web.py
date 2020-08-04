@@ -11,6 +11,7 @@ import string
 import time
 import logging
 
+from ..handler import add_handler
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
@@ -43,6 +44,7 @@ except:
     S2CLOUDLESS_INSTALLED = False
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
@@ -755,7 +757,14 @@ class GeoDownloads(object):
                             else:
 
                                 # Get band names from user
-                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                try:
+                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                except:
+                                    logger.warning('  File info dictionary:')
+                                    logger.warning(finfo_dict)
+                                    logger.warning('  Loaded bands: {}'.format(','.join(load_bands)))
+                                    logger.exception('  Could not get all band name associations.')
+                                    raise NameError
 
                             logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 

@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
+from ..handler import add_handler
 from ..moving import moving_window
 
 import numpy as np
@@ -27,6 +28,7 @@ except:
 
 
 logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def lazy_wombat(func):
