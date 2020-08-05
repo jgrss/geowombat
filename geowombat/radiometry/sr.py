@@ -437,8 +437,8 @@ class RadTransforms(MetaData):
             # Get the gain and offsets and
             #   convert the gain and offsets
             #   to named coordinates.
-            m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
-            a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+            m_p = coeffs_to_array(meta.m_p, band_names)
+            a_p = coeffs_to_array(meta.a_p, band_names)
 
             # TOAR with sun angle correction
             toar = self.dn_to_toar(dn, m_p, a_p, solar_za=solar_za, angle_factor=angle_factor, sun_angle=True)
