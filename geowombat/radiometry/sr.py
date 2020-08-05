@@ -435,13 +435,8 @@ class RadTransforms(MetaData):
             m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
             a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
 
-            toar = self.dn_to_toar(dn, m_p, a_p)
-
             # TOAR with sun angle correction
-            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*angle_factor))] * len(toar.band), dim='band')
-            cos_sza.coords['band'] = toar.band.values
-            toar = toar / cos_sza
-            toar.attrs = attrs
+            toar = self.dn_to_toar(dn, m_p, a_p, solar_za=solar_za, angle_factor=angle_factor, sun_angle=True)
 
         else:
 
