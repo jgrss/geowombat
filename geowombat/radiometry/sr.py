@@ -17,6 +17,11 @@ logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
+def coeffs_to_array(coeffs, band_names):
+    """Converts coefficients to a DataArray"""
+    return xr.DataArray(data=[coeffs[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+
+
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
 
     """
