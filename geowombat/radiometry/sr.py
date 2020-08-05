@@ -479,41 +479,40 @@ class RadTransforms(MetaData):
         return sr_data
 
     @staticmethod
-    def dn_to_radiance(dn, gain, bias):
+    def _linear_transform(data, gain, bias):
+        return gain * data + bias
+
+    def dn_to_radiance(self, dn, gain, bias):
 
         """
         Converts digital numbers to radiance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
-            gain (Optional[float]): A gain value.
-            bias (Optional[float]): A bias value.
+            gain (DataArray): A gain value.
+            bias (DataArray): A bias value.
 
         Returns:
             ``xarray.DataArray``
         """
 
         attrs = dn.attrs.copy()
-
-        # TODO: get gain and bias from metadata
-        rad_data = gain * dn + bias
-
         attrs['calibration'] = 'radiance'
 
-        rad_data.attrs = attrs
+        return self._linear_transform(dn, gain, bias).assign_attrs(**attrs)
 
-        return rad_data
-
-    @staticmethod
-    def dn_to_toar(dn, gain, bias):
+    def dn_to_toar(self, dn, gain, bias, solar_za=None, angle_factor=0.01, sun_angle=True):
 
         """
         Converts digital numbers to top-of-atmosphere reflectance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
-            gain (Optional[float]): A gain value.
-            bias (Optional[float]): A bias value.
+            gain (DataArray): A gain value.
+            bias (DataArray): A bias value.
+            solar_za (DataArray): The solar zenith angle.
+            angle_factor (Optional[float]): The scale factor for angles.
+            sun_angle (Optional[bool]): Whether to correct for the sun angle.
 
         Returns:
             ``xarray.DataArray``
@@ -521,14 +520,18 @@ class RadTransforms(MetaData):
 
         attrs = dn.attrs.copy()
 
-        # TODO: get gain and bias from metadata
-        toar_data = gain * dn + bias
+        toar = self._linear_transform(dn, gain, bias)
+
+        if sun_angle:
+
+            # TOA reflectance with sun angle correction
+            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
+            cos_sza.coords['band'] = toar.band.values
+            toar = toar / cos_sza
 
         attrs['calibration'] = 'top-of-atmosphere reflectance'
 
-        toar_data.attrs = attrs
-
-        return toar_data
+        return toar.assign_attrs(**attrs)
 
     @staticmethod
     def radiance_to_toar(radiance, solar_za, global_args):
