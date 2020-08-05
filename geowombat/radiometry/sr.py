@@ -604,11 +604,11 @@ class RadTransforms(MetaData):
         # Set 'no data' as nans
         toar = toar.where(toar != src_nodata)
 
-        # Convert micrometers to nanometers
-        central_nm = toar.gw.central_um[sensor] * 1000.0
+        # Get the central wavelength (in micrometers)
+        central_um = toar.gw.central_um[sensor]
         band_names = list(toar.gw.wavelengths[sensor]._fields)
-        band_nm = [getattr(central_nm, p) for p in band_names]
-        nm = xr.DataArray(data=band_nm, coords={'band': band_names}, dims='band')
+        band_um = [getattr(central_um, p)*1000.0 for p in band_names]
+        um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
 
         # Scale the angles to degrees
         sza = solar_za * 0.01
@@ -648,7 +648,8 @@ class RadTransforms(MetaData):
 
         # Rayleigh optical depth
         # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
-        r = 0.008569*nm**-4 * (1.0 + 0.0113*nm**-2 + 0.0013*nm**-4)
+        # Eq. 2.30, p. 544
+        r = 0.008569*um**-4 * (1.0 + 0.0113*um**-2 + 0.0013*um**-4)
 
         # Relative azimuth angle
         # TODO: doesn't work if the band coordinate is named
