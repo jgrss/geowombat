@@ -5,17 +5,26 @@ import datetime
 import logging
 
 from ..handler import add_handler
+from ..core import ndarray_to_xarray
+from ..moving import moving_window
 from .angles import relative_azimuth
-from .lut import InterpLUT
+from .sixs import SixS
 
 import numpy as np
+import cv2
 import pandas as pd
+from rasterio.fill import fillnodata
 import xarray as xr
 import dask.array as da
 
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
+
+
+def coeffs_to_array(coeffs, band_names):
+    """Converts coefficients to a DataArray"""
+    return xr.DataArray(data=[coeffs[bi] for bi in band_names], coords={'band': band_names}, dims='band')
 
 
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
@@ -441,26 +450,31 @@ class RadTransforms(MetaData):
                 # Get the gain and offsets and
                 #   convert the gain and offsets
                 #   to named coordinates.
-                m_l = xr.DataArray(data=[meta.m_l[bi] for bi in band_names], coords={'band': band_names}, dims='band')
-                a_l = xr.DataArray(data=[meta.a_l[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+                # m_p = coeffs_to_array(meta.m_p, band_names)
+                # a_p = coeffs_to_array(meta.a_p, band_names)
+                m_l = coeffs_to_array(meta.m_l, band_names)
+                a_l = coeffs_to_array(meta.a_l, band_names)
 
+                # Convert DN to TOAR, with sun angle correction
+                # toar = self.dn_to_toar(dn, m_p, a_p, solar_za=solar_za, angle_factor=angle_factor, sun_angle=True)
+
+                # Invert TOAR to DN
+                # dn = (1.0 / m_p) * toar - a_p / m_p
+
+                # Convert DN to Radiance
                 radiance = self.dn_to_radiance(dn, m_l, a_l)
 
                 sr_data = []
 
                 for band in band_names:
 
-                    ilut = InterpLUT(sensor,
-                                     dn.wavelengths[sensor][band],
-                                     rad_scale=1000.0,
-                                     angle_scale=angle_factor)
+                    sxs = SixS(sensor, getattr(dn.gw.wavelengths[sensor], band))
+                    sxs.load()
 
-                    ilut.load()
-
-                    sr_data.append(ilut.rad_to_sr(radiance,
-                                                  meta.sza,
-                                                  meta.date_acquired.timetuple().tm_yday,
-                                                  **kwargs))
+                    sr_data.append(sxs.rad_to_sr(radiance.sel(band=band),
+                                                 solar_za,
+                                                 meta.date_acquired.timetuple().tm_yday,
+                                                 **kwargs))
 
                 sr_data = xr.concat(sr_data, dim='band')
 
@@ -469,16 +483,10 @@ class RadTransforms(MetaData):
                 # Get the gain and offsets and
                 #   convert the gain and offsets
                 #   to named coordinates.
-                m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
-                a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+                m_p = coeffs_to_array(meta.m_p, band_names)
+                a_p = coeffs_to_array(meta.a_p, band_names)
 
-                toar = self.dn_to_toar(dn, m_p, a_p)
-
-                # TOAR with sun angle correction
-                cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*angle_factor))] * len(toar.band), dim='band')
-                cos_sza.coords['band'] = toar.band.values
-                toar = toar / cos_sza
-                toar.attrs = attrs
+                toar = self.dn_to_toar(dn, m_p, a_p, solar_za=solar_za, angle_factor=angle_factor, sun_angle=True)
 
         else:
 
@@ -518,41 +526,40 @@ class RadTransforms(MetaData):
         return sr_data
 
     @staticmethod
-    def dn_to_radiance(dn, gain, bias):
+    def _linear_transform(data, gain, bias):
+        return gain * data + bias
+
+    def dn_to_radiance(self, dn, gain, bias):
 
         """
         Converts digital numbers to radiance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
-            gain (Optional[float]): A gain value.
-            bias (Optional[float]): A bias value.
+            gain (DataArray): A gain value.
+            bias (DataArray): A bias value.
 
         Returns:
             ``xarray.DataArray``
         """
 
         attrs = dn.attrs.copy()
-
-        # TODO: get gain and bias from metadata
-        rad_data = gain * dn + bias
-
         attrs['calibration'] = 'radiance'
 
-        rad_data.attrs = attrs
+        return self._linear_transform(dn, gain, bias).assign_attrs(**attrs)
 
-        return rad_data
-
-    @staticmethod
-    def dn_to_toar(dn, gain, bias):
+    def dn_to_toar(self, dn, gain, bias, solar_za=None, angle_factor=0.01, sun_angle=True):
 
         """
         Converts digital numbers to top-of-atmosphere reflectance
 
         Args:
             dn (DataArray): The digital number data to calibrate.
-            gain (Optional[float]): A gain value.
-            bias (Optional[float]): A bias value.
+            gain (DataArray): A gain value.
+            bias (DataArray): A bias value.
+            solar_za (DataArray): The solar zenith angle.
+            angle_factor (Optional[float]): The scale factor for angles.
+            sun_angle (Optional[bool]): Whether to correct for the sun angle.
 
         Returns:
             ``xarray.DataArray``
@@ -560,20 +567,24 @@ class RadTransforms(MetaData):
 
         attrs = dn.attrs.copy()
 
-        # TODO: get gain and bias from metadata
-        toar_data = gain * dn + bias
+        toar = self._linear_transform(dn, gain, bias)
+
+        if sun_angle:
+
+            # TOA reflectance with sun angle correction
+            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
+            cos_sza.coords['band'] = toar.band.values
+            toar = toar / cos_sza
 
         attrs['calibration'] = 'top-of-atmosphere reflectance'
 
-        toar_data.attrs = attrs
-
-        return toar_data
+        return toar.assign_attrs(**attrs)
 
     @staticmethod
     def radiance_to_toar(radiance, solar_za, global_args):
 
         """
-        Converts digital numbers to top-of-atmosphere reflectance
+        Converts radiance to top-of-atmosphere reflectance
 
         Args:
             radiance (DataArray): The radiance data to calibrate.
@@ -731,3 +742,154 @@ class RadTransforms(MetaData):
         sr_data.attrs = attrs
 
         return sr_data
+
+
+class DOS(RadTransforms):
+
+    def aot(self, dn, sensor, meta, src_interp, aot_fallback=0.3, h2o=1.0, o3=0.4, w=5, n_jobs=1):
+
+        """
+        Gets AOT from dark objects
+
+        Args:
+            dn (DataArray): The digital numbers at a coarse resolution.
+            sensor (str): The satellite sensor.
+            meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
+            src_interp (DataArray): A source ``DataArray`` at the target resolution.
+            aot_fallback (Optional[float | DataArray]): The aerosol optical thickness fallback if no dark objects
+                are found (unitless). [0,3].
+            h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
+            o3 (Optional[float]): The ozone (cm-atm). [0,8].
+            w (Optional[int]): The smoothing window size (in pixels).
+            n_jobs (Optional[int]): The number of parallel jobs for ``moving_window``.
+
+        See :cite:`masek_etal_2006` :cite:`kaufman_etal_1997` and :cite:`ouaidrari_vermote_1999`
+
+        @article{masek_etal_2006,
+          title={A Landsat surface reflectance dataset for North America, 1990-2000},
+          author={Masek, Jeffrey G and Vermote, Eric F and Saleous, Nazmi E and Wolfe, Robert and Hall, Forrest G and Huemmrich, Karl Fred and Gao, Feng and Kutler, Jonathan and Lim, Teng-Kui},
+          journal={IEEE Geoscience and Remote Sensing Letters},
+          volume={3},
+          number={1},
+          pages={68--72},
+          year={2006},
+          publisher={IEEE}
+        }
+
+        @article{kaufman_etal_1997,
+            title={The MODIS 2.1-/spl mu/m channel-correlation with visible reflectance for use in remote sensing of aerosol},
+            author={Kaufman, Yoram J and Wald, Andrew E and Remer, Lorraine A and Gao, Bo-Cai and Li, Rong-Rong and Flynn, Luke},
+            journal={IEEE transactions on Geoscience and Remote Sensing},
+            volume={35},
+            number={5},
+            pages={1286--1298},
+            year={1997},
+            publisher={IEEE}
+            }
+
+        @article{ouaidrari_vermote_1999,
+          title={Operational atmospheric correction of Landsat TM data},
+          author={Ouaidrari, Hassan and Vermote, Eric F},
+          journal={Remote Sensing of Environment},
+          volume={70},
+          number={1},
+          pages={4--15},
+          year={1999},
+          publisher={Elsevier}
+        }
+        """
+
+        band_names = dn.band.values.tolist()
+
+        m_p = coeffs_to_array(meta.m_p, band_names)
+        a_p = coeffs_to_array(meta.a_p, band_names)
+
+        m_l = coeffs_to_array(meta.m_l, band_names)
+        a_l = coeffs_to_array(meta.a_l, band_names)
+
+        toar = self.dn_to_toar(dn, m_p, a_p, sun_angle=False)
+        rad = self.dn_to_radiance(dn, m_l, a_l)
+
+        # Get the SWIR2 band TOAR
+        swir2_toar = toar.sel(band='swir2')
+
+        # Get the blue band Radiance
+        blue_rad = rad.sel(band='blue')
+
+        # Get SWIR2 TOAR dark pixels
+        swir2_toar_dark = xr.where((swir2_toar >= 0.01) & (swir2_toar <= 0.15), swir2_toar, np.nan)
+        blue_rad_dark = xr.where((swir2_toar >= 0.01) & (swir2_toar <= 0.15), blue_rad, np.nan)
+
+        # Estimate the blue surface reflectance with
+        # a simple linear transformation (Masek et al., 2006)
+        blue_p = swir2_toar_dark * 0.33
+
+        # Get reflectance and radiance data as numpy arrays
+        blue_p_data = blue_p.squeeze().data.compute()
+        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute()
+
+        valid_idx = np.where(~np.isnan(blue_p_data))
+
+        if valid_idx[0].shape[0] > 0:
+
+            aot = self.get_optimized_aot(blue_rad_dark_data,
+                                         blue_p_data,
+                                         sensor,
+                                         getattr(dn.gw.wavelengths[sensor], 'blue'),
+                                         meta,
+                                         h2o,
+                                         o3)
+
+            mask = np.ones(aot.shape, dtype='uint8')
+            mask[np.isnan(blue_p_data)] = 0
+            aot = fillnodata(aot, mask=mask, max_search_distance=100)
+
+            aot = cv2.resize(aot,
+                             (0, 0),
+                             fy=src_interp.gw.nrows / aot.shape[0],
+                             fx=src_interp.gw.ncols / aot.shape[1],
+                             interpolation=cv2.INTER_CUBIC)
+
+            aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), w, w, w, w, cv2.BORDER_REFLECT)),
+                                stat='mean',
+                                w=w,
+                                n_jobs=n_jobs)[w:-w, w:-w]
+
+            return ndarray_to_xarray(src_interp, aot, ['aot'])
+
+        else:
+
+            return ndarray_to_xarray(np.zeros((src_interp.gw.nrows,
+                                               src_interp.gw.ncols), dtype='float64')+aot_fallback,
+                                     src_interp,
+                                     ['aot'])
+
+    @staticmethod
+    def get_optimized_aot(blue_rad_dark, blue_p_dark, sensor, blue_band, meta, h2o, o3):
+
+        sxs = SixS(sensor, blue_band)
+        sxs.load()
+
+        doy = meta.date_acquired.timetuple().tm_yday
+        altitude = 0.0
+
+        min_score = np.zeros(blue_rad_dark.shape, dtype='float64') + 1e9
+        aot = np.zeros(blue_rad_dark.shape, dtype='float64')
+
+        for aot_iter in np.linspace(0.1, 1.0, 10):
+
+            # sza, h2o, o3, aot, alt
+            a, b = sxs.lut(meta.sza, h2o, o3, aot_iter, altitude)
+
+            elliptical_orbit_correction = 0.03275104 * math.cos(doy / 59.66638337) + 0.96804905
+            a *= elliptical_orbit_correction
+            b *= elliptical_orbit_correction
+
+            res = (blue_rad_dark - a) / b
+
+            score = np.abs(res - blue_p_dark)
+
+            aot = np.where(score < min_score, aot_iter, aot)
+            min_score = np.where(score < min_score, score, min_score)
+
+        return aot

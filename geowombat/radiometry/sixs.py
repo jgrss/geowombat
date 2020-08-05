@@ -14,13 +14,15 @@ import pickle
 import zipfile
 import tarfile
 import itertools
-import math
 import logging
 from collections import namedtuple
 
 from ..handler import add_handler
+from ..core import ndarray_to_xarray
 
+import numpy as np
 from scipy.interpolate import LinearNDInterpolator
+import xarray as xr
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +46,31 @@ def _set_names(sensor_name):
                     zip=s_zip)
 
 
-class InterpLUT(object):
+def interp_lut(sensors, bands):
+
+    """
+    Interpolates a list of sensors and bands
+
+    Args:
+        sensors (list): A list of sensors.
+        bands (list): A list of bands.
+
+    Returns:
+        ``None``
+
+    Example:
+        >>> from geowombat.radiometry.lut import interp_lut
+        >>>
+        >>> interp_lut(['l8'], [2, 3, 4, 5])
+    """
+
+    for sensor in sensors:
+        for band in bands:
+            sxs = SixS(sensor, band, verbose=1)
+            sxs.load()
+
+
+class SixS(object):
 
     """
     A class to handle loading, downloading and interpolating
@@ -65,7 +91,7 @@ class InterpLUT(object):
         >>>     ilut.rad_to_sr(src.sel(band=1), sza, doy, h2o=1.0, o3=0.4, aot=0.3)
     """
 
-    def __init__(self, sensor, band, rad_scale=0.01, angle_scale=0.01, verbose=0):
+    def __init__(self, sensor, band, rad_scale=1.0, angle_scale=0.01, verbose=0):
 
         self.sensor = sensor
         self.band = band
@@ -107,11 +133,11 @@ class InterpLUT(object):
 
         Args:
             data (DataArray): The data to correct, in radiance.
-            sza (float): The solar zenith angle.
+            sza (float | DataArray): The solar zenith angle.
             doy (int): The day of year.
-            h2o (Optional[float]): The water vapor (g/m^2). [0,8.5]
-            o3 (Optional[float]): The ozone (cm-atm). [0,8]
-            aot (Optional[float]): The aerosol optical thickness (unitless). [0,3]
+            h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
+            o3 (Optional[float]): The ozone (cm-atm). [0,8].
+            aot (Optional[float | DataArray]): The aerosol optical thickness (unitless). [0,3].
 
         Returns:
             ``xarray.DataArray``
@@ -121,15 +147,59 @@ class InterpLUT(object):
             logger.exception('  The lookup table does not exist. Be sure to load it.')
             raise NameError
 
+        attrs = data.attrs.copy()
+        band_name = data.band.values
+
         altitude = 0.0
 
-        a, b = self.lut(sza*self.angle_scale, h2o, o3, aot, altitude)
+        if isinstance(sza, xr.DataArray):
+            sza = sza.squeeze().data.compute()
 
-        elliptical_orbit_correction = 0.03275104 * math.cos(doy / 59.66638337) + 0.96804905
+        if isinstance(aot, xr.DataArray):
+            aot = aot.squeeze().data.compute()
+
+        if isinstance(sza, np.ndarray):
+            sza = sza.squeeze().flatten()
+
+        if isinstance(aot, np.ndarray):
+            aot = aot.squeeze().flatten()
+
+        if isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
+            valid_idx = np.where(~np.isnan(aot) & ~np.isnan(sza))
+            sza = sza[valid_idx]
+            aot = aot[valid_idx]
+        elif isinstance(sza, np.ndarray) and not isinstance(aot, np.ndarray):
+            valid_idx = np.where(~np.isnan(sza))
+            sza = sza[valid_idx]
+        elif not isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
+            valid_idx = np.where(~np.isnan(aot))
+            aot = aot[valid_idx]
+
+        ab = self.lut(sza*self.angle_scale, h2o, o3, aot, altitude)
+
+        a = np.zeros(data.gw.nrows*data.gw.ncols, dtype='float64')
+        b = np.zeros(data.gw.nrows*data.gw.ncols, dtype='float64')
+
+        a[:] = np.nan
+        b[:] = np.nan
+
+        a[valid_idx] = ab[:, 0].flatten()
+        b[valid_idx] = ab[:, 1].flatten()
+
+        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
         a *= elliptical_orbit_correction
         b *= elliptical_orbit_correction
 
-        return (data*self.rad_scale - a) / b
+        a = a.reshape(data.gw.nrows, data.gw.ncols)
+        b = b.reshape(data.gw.nrows, data.gw.ncols)
+
+        a = ndarray_to_xarray(data, a, ['coeff'])
+        b = ndarray_to_xarray(data, b, ['coeff'])
+
+        return ((data*self.rad_scale - a.sel(band='coeff')) / b.sel(band='coeff'))\
+                    .expand_dims(dim='band')\
+                    .assign_coords(coords={'band': [band_name]})\
+                    .assign_attrs(**attrs)
 
     def _setup(self):
 
