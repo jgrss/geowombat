@@ -604,10 +604,11 @@ class RadTransforms(MetaData):
         # Set 'no data' as nans
         toar = toar.where(toar != src_nodata)
 
-        central_um = toar.gw.central_um[sensor]
+        # Convert micrometers to nanometers
+        central_nm = toar.gw.central_um[sensor] * 1000.0
         band_names = list(toar.gw.wavelengths[sensor]._fields)
-        band_um = [getattr(central_um, p) for p in band_names]
-        um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
+        band_nm = [getattr(central_nm, p) for p in band_names]
+        nm = xr.DataArray(data=band_nm, coords={'band': band_names}, dims='band')
 
         # Scale the angles to degrees
         sza = solar_za * 0.01
@@ -647,7 +648,7 @@ class RadTransforms(MetaData):
 
         # Rayleigh optical depth
         # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
-        r = 0.008569*um**-4 * (1.0 + 0.0113*um**-2 + 0.0013*um**-4)
+        r = 0.008569*nm**-4 * (1.0 + 0.0113*nm**-2 + 0.0013*nm**-4)
 
         # Relative azimuth angle
         # TODO: doesn't work if the band coordinate is named
@@ -658,15 +659,20 @@ class RadTransforms(MetaData):
         # scattering angle = the angle between the direction of incident and scattered radiation
         # Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
         # http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
+        # cos_sza = cos(pi/180 x sza)
+        # cos_vza = cos(pi/180 x vza)
+        # sin_sza = sin(pi/180 x sza)
+        # sin_vza = sin(pi/180 x vza)
         scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
         cos2_scattering_angle = xr.ufuncs.cos(scattering_angle)**2
 
         # Rayleigh phase function
-        rphase = ((3.0 * 0.9587256) / (4.0 + 1.0 - 0.9587256)) * (1.0 + cos2_scattering_angle)
+        rayleigh_a = 0.9587256
+        rayleigh_b = 1.0 - rayleigh_a
+        rphase = ((3.0 * rayleigh_a) / (4.0 + rayleigh_b)) * (1.0 + cos2_scattering_angle)
 
+        # Get the air mass
         pr_data = p_r(m, r, rphase, cos_sza, cos_vza)
-
-        # da.nan_to_num(pr_data).max().compute()
 
         toar_diff = toar - pr_data
 
