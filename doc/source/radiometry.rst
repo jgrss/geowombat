@@ -14,39 +14,62 @@ GeoWombat uses the global c-factor method to apply BRDF normalization on surface
     from geowombat.radiometry import RadTransforms
     from geowombat.radiometry import BRDF
 
-    # Pixel angle images
-    solar_za = 'solar_za.tif'
-    solar_az = 'solar_az.tif'
-    sensor_za = 'sensor_za.tif'
-    sensor_az = 'sensor_az.tif'
-
-    # Metadata file
-    metadata = 'LC08_L1TP_042034_20160121_20170224_01_T1_MTL.txt'
-
-    sr = RadTransforms()
+    rt = RadTransforms()
     brdf = BRDF()
 
-    # Set global parameters
-    with gw.config.update(sensor='l8'):
+    # 2,3,4,5,6,7 = blue,green,red,nir,swir1,swir2
+    b2 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B2.TIF'
+    b3 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B3.TIF'
+    b4 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B4.TIF'
+    b5 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B5.TIF'
+    b6 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B6.TIF'
+    b7 = 'LC08_L1TP_228074_20190120_20190120_01_RT_B7.TIF'
+    metadata = 'LC08_L1TP_228074_20190120_20190120_01_RT_MTL.txt'
+    angles = 'LC08_L1TP_228074_20190120_20190120_01_RT_ANG.txt'
 
-        # Open the surface reflectance files
-        with gw.open(['LC08_L1TP_042034_20160121_20170224_01_T1_B4.TIF',
-                      'LC08_L1TP_042034_20160121_20170224_01_T1_B5.TIF',
-                      'LC08_L1TP_042034_20160121_20170224_01_T1_B6.TIF'],
-                      stack_dim='band',
-                      chunks=512) as dn:
+    band_names = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2']
+    band_list = [b2, b3, b4, b5, b6, b7]
 
-            # Open the pixel angle files
-            with gw.open(solar_za, chunks=512) as sza,
-                gw.open(solar_az, chunks=512) as saz,
-                    gw.open(sensor_za, chunks=512) as vza,
-                        gw.open(sensor_az, chunks=512) as vaz:
+    ref_bounds = (199374.91, -2294491.38, 244674.40, -2263229.42)
+    nodataval = 65535
+    chunks = 256
 
-                # DN --> surface reflectance
-                sr_data = sr.dn_to_sr(dn, solar_za, sensor_za, meta=metadata)
+    meta = rt.get_landsat_coefficients(metadata)
 
-                # Normalize the surface reflectance
-                brdf_data = brdf.norm_brdf(sr_data, sza, saz, vza, vaz, wavelengths=dn.band.values.tolist())
+    angle_info = landsat_pixel_angles(angles,
+                                      str(b3),         # reference file
+                                      str(main_path),  # output path
+                                      meta.sensor,
+                                      l57_angles_path='../geowombat/bin/ESPA/landsat_angles',
+                                      l8_angles_path='../geowombat/bin/ESPA/l8_angles',
+                                      verbose=1)
 
-                # Save the results to file
-                brdf_data.gw.to_raster('l8_sr_brdf.tif')
+    solar_zenith = 'LC08_L1TP_228074_20190120_20190120_01_RT_solar_zenith.tif'
+    solar_azimuth = 'LC08_L1TP_228074_20190120_20190120_01_RT_solar_azimuth.tif'
+    sensor_zenith = 'LC08_L1TP_228074_20190120_20190120_01_RT_sensor_zenith.tif'
+    sensor_azimuth = 'LC08_L1TP_228074_20190120_20190120_01_RT_sensor_azimuth.tif'
+
+    with gw.config.update(sensor='l8l7', ref_bounds=ref_bounds, ignore_warnings=True):
+
+        with gw.open(band_list, stack_dim='band', chunks=chunks) as src, \
+            gw.open(solar_zenith, chunks=chunks) as solar_za, \
+                gw.open(solar_azimuth, chunks=chunks) as solar_az, \
+                    gw.open(sensor_zenith, chunks=chunks) as sensor_za, \
+                        gw.open(sensor_azimuth, chunks=chunks) as sensor_az:
+
+            sr = rt.dn_to_sr(src,
+                             solar_za, solar_az, sensor_za, sensor_az,
+                             sensor='l8',
+                             meta=meta,
+                             method='srem',
+                             src_nodata=nodataval,
+                             dst_nodata=nodataval)
+
+            sr_brdf = br.norm_brdf(sr,
+                                   solar_za, solar_az, sensor_za, sensor_az,
+                                   sensor='l8',
+                                   wavelengths=src.band.values.tolist(),
+                                   src_nodata=nodataval,
+                                   dst_nodata=nodataval)
+
+.. image:: _static/sr_srem.png
