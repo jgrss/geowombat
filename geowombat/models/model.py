@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from pathlib import Path
 import logging
 
-from . import time_to_sensor_feas, transform_probas
 from ..backends import Cluster
 from ..core.util import Chunks
 
@@ -36,12 +35,6 @@ try:
     IMBLEARN_INSTALLED = True
 except:
     IMBLEARN_INSTALLED = False
-
-try:
-    import sklearn_crfsuite
-    CRFSUITE_INSTALLED = True
-except:
-    CRFSUITE_INSTALLED = False
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -100,153 +93,6 @@ class IOMixin(object):
                     logger.info('  Loading the model from file ...')
 
         self.x, self.y, self.model = joblib.load(filename)
-
-
-class CRFMixin(IOMixin):
-
-    def fit(self, X, y):
-
-        """
-        Fits a Conditional Random Fields classifier
-
-        Args:
-            X (list): The variables (list of dictionaries).
-            y (list): The class labels (list of strings).
-        """
-
-        self.model.fit(X, y)
-
-        return self
-
-    @staticmethod
-    def sklearn_to_deepcrf(X, y, output):
-
-        """
-        Converts CRF features formatted for Scikit-learn CRFsuite to features formatted for deep-crf
-
-        Args:
-            X (list)
-            y (list)
-            output (str)
-
-        Reference:
-            https://github.com/aonotas/deep-crf
-        """
-
-        lines = list()
-
-        for xseries, yseries in zip(X, y):
-
-            for xsample, ysample in zip(xseries, yseries):
-
-                features = ' '.join(map(str, list(xsample.values()))) + ' ' + ysample + '\n'
-                lines.append(features)
-
-            lines.append('\n')
-
-        with open(output, mode='w') as tx:
-            tx.writelines(lines)
-
-    def predict_probas(self,
-                       X,
-                       sensor,
-                       scale_factor=0.0001,
-                       class_labels=None):
-
-        """
-        Predicts class probabilities
-
-        Args:
-            X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
-            sensor (str): The satellite sensor.
-            scale_factor (Optional[float]): The scale factor to apply to `X`.
-            class_labels (Optional[list]): The class labels.
-
-        Returns:
-            ``4d array`` of predictions, shaped as [time x classes x rows x columns].
-        """
-
-        if not class_labels:
-            class_labels = ['c', 'l', 's', 'u', 'w']
-
-        class_labels = [label.encode('utf-8') for label in class_labels]
-
-        ntime, nbands, nrows, ncols = X.shape
-
-        features = np.ascontiguousarray([tlayer.transpose(1, 2, 0).reshape(nrows * ncols,
-                                                                           nbands)
-                                         for tlayer in X], dtype='float64')
-
-        features = time_to_sensor_feas(features,
-                                       sensor.encode('utf-8'),
-                                       ntime,
-                                       nrows,
-                                       ncols,
-                                       scale_factor=scale_factor)
-
-        return transform_probas(dict_keys_to_bytes(self.model.predict_marginals(features)),
-                                class_labels,
-                                len(class_labels),
-                                ntime,
-                                nrows,
-                                ncols)
-
-    def predict(self,
-                X,
-                sensor,
-                scale_factor=0.0001,
-                class_labels=None):
-
-        """
-        Predicts class labels
-
-        Args:
-            X (4d array): The variables to use for predictions, shaped [time x bands x rows x columns].
-            sensor (str): The satellite sensor.
-            scale_factor (Optional[float]): The scale factor to apply to `X`.
-            class_labels (Optional[list]): The class labels.
-
-        Returns:
-            ``4d array`` of predictions, shaped as [time x classes x rows x columns].
-        """
-
-        probas = self.predict_probas(X,
-                                     sensor,
-                                     scale_factor=scale_factor,
-                                     class_labels=class_labels)
-
-        return probas.argmax(axis=0) + 1
-
-
-class CRFClassifier(CRFMixin):
-
-    """
-    A class for classification with Conditional Random Fields
-
-    Example keyword arguments:
-
-        algorithm='lbfgs',
-        c1=0.001,
-        c2=0.001,
-        max_iterations=2000,
-        num_memories=20,
-        epsilon=0.01,
-        delta=0.01,
-        period=20,
-        linesearch='MoreThuente',
-        max_linesearch=20,
-        all_possible_states=True,
-        all_possible_transitions=True,
-        verbose=False)
-    """
-
-    def __init__(self, **kwargs):
-
-        self.x = None
-        self.y = None
-        self.kwargs = kwargs
-
-        self.model = sklearn_crfsuite.CRF(**kwargs)
 
 
 class VotingClassifier(BaseEstimator, ClassifierMixin):
