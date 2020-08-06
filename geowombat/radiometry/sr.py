@@ -739,7 +739,7 @@ class RadTransforms(MetaData):
         sr_data = xr.where(mask < sr_data.gw.nbands,
                            dst_nodata,
                            sr_data.clip(0, 1))\
-            .transpose('band', 'y', 'x').astype('float64')
+                        .transpose('band', 'y', 'x').astype('float64')
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'surface reflectance'
