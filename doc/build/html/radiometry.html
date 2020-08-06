@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radiometry &#8212; GeoWombat 1.2.23 documentation</title>
+    <title>Radiometry &#8212; GeoWombat 1.2.25 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -40,48 +40,70 @@
 <div class="section" id="brdf-adjusted-surface-reflectance">
 <h2>BRDF-adjusted surface reflectance<a class="headerlink" href="#brdf-adjusted-surface-reflectance" title="Permalink to this headline">¶</a></h2>
 <p>GeoWombat uses the global c-factor method to apply BRDF normalization on surface reflectance data. In the example below, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">norm_brdf()</span></code> to normalize a Landsat 8 surface reflectance image.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">RadTransforms</span>
 <span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">BRDF</span>
 
-<span class="c1"># Pixel angle images</span>
-<span class="n">solar_za</span> <span class="o">=</span> <span class="s1">&#39;solar_za.tif&#39;</span>
-<span class="n">solar_az</span> <span class="o">=</span> <span class="s1">&#39;solar_az.tif&#39;</span>
-<span class="n">sensor_za</span> <span class="o">=</span> <span class="s1">&#39;sensor_za.tif&#39;</span>
-<span class="n">sensor_az</span> <span class="o">=</span> <span class="s1">&#39;sensor_az.tif&#39;</span>
-
-<span class="c1"># Metadata file</span>
-<span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_MTL.txt&#39;</span>
-
-<span class="n">sr</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
+<span class="n">rt</span> <span class="o">=</span> <span class="n">RadTransforms</span><span class="p">()</span>
 <span class="n">brdf</span> <span class="o">=</span> <span class="n">BRDF</span><span class="p">()</span>
 
-<span class="c1"># Set global parameters</span>
-<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">):</span>
+<span class="c1"># 2,3,4,5,6,7 = blue,green,red,nir,swir1,swir2</span>
+<span class="n">b2</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B2.TIF&#39;</span>
+<span class="n">b3</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B3.TIF&#39;</span>
+<span class="n">b4</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B4.TIF&#39;</span>
+<span class="n">b5</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B5.TIF&#39;</span>
+<span class="n">b6</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B6.TIF&#39;</span>
+<span class="n">b7</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_B7.TIF&#39;</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_MTL.txt&#39;</span>
+<span class="n">angles</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_ANG.txt&#39;</span>
 
-    <span class="c1"># Open the surface reflectance files</span>
-    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B4.TIF&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B5.TIF&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;LC08_L1TP_042034_20160121_20170224_01_T1_B6.TIF&#39;</span><span class="p">],</span>
-                  <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span>
-                  <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">dn</span><span class="p">:</span>
+<span class="n">band_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">,</span> <span class="s1">&#39;swir1&#39;</span><span class="p">,</span> <span class="s1">&#39;swir2&#39;</span><span class="p">]</span>
+<span class="n">band_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">b4</span><span class="p">,</span> <span class="n">b5</span><span class="p">,</span> <span class="n">b6</span><span class="p">,</span> <span class="n">b7</span><span class="p">]</span>
 
-        <span class="c1"># Open the pixel angle files</span>
-        <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">sza</span><span class="p">,</span>
-            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">saz</span><span class="p">,</span>
-                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_za</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vza</span><span class="p">,</span>
-                    <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_az</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">vaz</span><span class="p">:</span>
+<span class="n">ref_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mf">199374.91</span><span class="p">,</span> <span class="o">-</span><span class="mf">2294491.38</span><span class="p">,</span> <span class="mf">244674.40</span><span class="p">,</span> <span class="o">-</span><span class="mf">2263229.42</span><span class="p">)</span>
+<span class="n">nodataval</span> <span class="o">=</span> <span class="mi">65535</span>
+<span class="n">chunks</span> <span class="o">=</span> <span class="mi">256</span>
 
-            <span class="c1"># DN --&gt; surface reflectance</span>
-            <span class="n">sr_data</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">dn_to_sr</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+<span class="n">meta</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">get_landsat_coefficients</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
 
-            <span class="c1"># Normalize the surface reflectance</span>
-            <span class="n">brdf_data</span> <span class="o">=</span> <span class="n">brdf</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">sr_data</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">saz</span><span class="p">,</span> <span class="n">vza</span><span class="p">,</span> <span class="n">vaz</span><span class="p">,</span> <span class="n">wavelengths</span><span class="o">=</span><span class="n">dn</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="n">angle_info</span> <span class="o">=</span> <span class="n">landsat_pixel_angles</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span>
+                                  <span class="nb">str</span><span class="p">(</span><span class="n">b3</span><span class="p">),</span>         <span class="c1"># reference file</span>
+                                  <span class="nb">str</span><span class="p">(</span><span class="n">main_path</span><span class="p">),</span>  <span class="c1"># output path</span>
+                                  <span class="n">meta</span><span class="o">.</span><span class="n">sensor</span><span class="p">,</span>
+                                  <span class="n">l57_angles_path</span><span class="o">=</span><span class="s1">&#39;../geowombat/bin/ESPA/landsat_angles&#39;</span><span class="p">,</span>
+                                  <span class="n">l8_angles_path</span><span class="o">=</span><span class="s1">&#39;../geowombat/bin/ESPA/l8_angles&#39;</span><span class="p">,</span>
+                                  <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="c1"># Save the results to file</span>
-            <span class="n">brdf_data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_raster</span><span class="p">(</span><span class="s1">&#39;l8_sr_brdf.tif&#39;</span><span class="p">)</span>
+<span class="n">solar_zenith</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_solar_zenith.tif&#39;</span>
+<span class="n">solar_azimuth</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_solar_azimuth.tif&#39;</span>
+<span class="n">sensor_zenith</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_sensor_zenith.tif&#39;</span>
+<span class="n">sensor_azimuth</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_228074_20190120_20190120_01_RT_sensor_azimuth.tif&#39;</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8l7&#39;</span><span class="p">,</span> <span class="n">ref_bounds</span><span class="o">=</span><span class="n">ref_bounds</span><span class="p">,</span> <span class="n">ignore_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">band_list</span><span class="p">,</span> <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">,</span> \
+        <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_zenith</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">solar_za</span><span class="p">,</span> \
+            <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">solar_azimuth</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">solar_az</span><span class="p">,</span> \
+                <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_zenith</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensor_za</span><span class="p">,</span> \
+                    <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sensor_azimuth</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensor_az</span><span class="p">:</span>
+
+        <span class="n">sr</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">dn_to_sr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span>
+                         <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span><span class="p">,</span>
+                         <span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">,</span>
+                         <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+                         <span class="n">method</span><span class="o">=</span><span class="s1">&#39;srem&#39;</span><span class="p">,</span>
+                         <span class="n">src_nodata</span><span class="o">=</span><span class="n">nodataval</span><span class="p">,</span>
+                         <span class="n">dst_nodata</span><span class="o">=</span><span class="n">nodataval</span><span class="p">)</span>
+
+        <span class="n">sr_brdf</span> <span class="o">=</span> <span class="n">br</span><span class="o">.</span><span class="n">norm_brdf</span><span class="p">(</span><span class="n">sr</span><span class="p">,</span>
+                               <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span><span class="p">,</span>
+                               <span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8&#39;</span><span class="p">,</span>
+                               <span class="n">wavelengths</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                               <span class="n">src_nodata</span><span class="o">=</span><span class="n">nodataval</span><span class="p">,</span>
+                               <span class="n">dst_nodata</span><span class="o">=</span><span class="n">nodataval</span><span class="p">)</span>
 </pre></div>
 </div>
+<img alt="_images/sr_srem.png" src="_images/sr_srem.png" />
 </div>
 </div>
 
@@ -168,7 +190,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
