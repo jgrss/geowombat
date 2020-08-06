@@ -29,11 +29,11 @@ with open('geowombat/version.py') as f:
             continue
 
 pkg_name = 'geowombat'
-maintainer = 'Jordan Graesser'
+maintainer = ''
 maintainer_email = ''
-description = 'Geo-utilities for large-scale processing of air- and space-borne imagery'
+description = 'GeoWombat: Utilities for geospatial data'
 git_url = 'https://github.com/jgrss/geowombat'
-download_url = 'https://github.com/jgrss/geowombat/archive/{VERSION}.tar.gz'.format(VERSION=version)
+download_url = '{GIT}/archive/{PKG}-{VERSION}'.format(GIT=git_url, PKG=pkg_name, VERSION=version)
 keywords = ['raster', 'satellite']
 extras = 'extra-requirements.txt'
 
@@ -111,10 +111,17 @@ def get_extensions():
                             extra_compile_args=['-fopenmp'],
                             extra_link_args=['-fopenmp'])]
 
-    if Path('geowombat/radiometry/_starfm.pyx').is_file():
+    if Path('geowombat/moving/_test.pyx').is_file():
 
         extensions += [Extension('*',
-                                 sources=['geowombat/radiometry/_starfm.pyx'],
+                                 sources=['geowombat/moving/_test.pyx'],
+                                 extra_compile_args=['-fopenmp'],
+                                 extra_link_args=['-fopenmp'])]
+
+    if Path('geowombat/radiometry/_fusion.pyx').is_file():
+
+        extensions += [Extension('*',
+                                 sources=['geowombat/radiometry/_fusion.pyx'],
                                  extra_compile_args=['-fopenmp'],
                                  extra_link_args=['-fopenmp'])]
 

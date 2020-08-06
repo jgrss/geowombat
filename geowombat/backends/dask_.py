@@ -60,6 +60,11 @@ class Cluster(object):
         self.cluster = LocalCluster(**self.kwargs)
         self.client = Client(self.cluster)
 
+    def restart(self):
+
+        self.client.restart()
+        print(self.client)    
+        
     def stop(self):
 
         self.client.close()

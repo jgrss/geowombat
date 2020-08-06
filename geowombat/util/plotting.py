@@ -1,8 +1,14 @@
-from ..errors import logger
+import logging
+
+from ..handler import add_handler
 
 import xarray as xr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 class Plotting(object):

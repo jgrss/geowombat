@@ -2,13 +2,20 @@ import math
 from collections import namedtuple
 from datetime import datetime as dtime
 import datetime
+import logging
 
+from ..handler import add_handler
 from .angles import relative_azimuth
+from .lut import InterpLUT
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 import dask.array as da
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
@@ -78,7 +85,7 @@ def s_atm(r):
 
 def _format_coeff(dataframe, sensor, key):
 
-    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'swir2'},
+    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'th', '7': 'swir2'},
                       l7={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
                           '6VCID2': 'th2', '7': 'swir2', '8': 'pan'},
                       l8={'1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
@@ -88,20 +95,23 @@ def _format_coeff(dataframe, sensor, key):
 
     dataframe_ = dataframe[dataframe.iloc[:, 0].str.startswith(key)].values
 
-    pairs = dict()
+    pairs = {}
 
     for di in range(dataframe_.shape[0]):
 
         bd = dataframe_[di, 0]
         cf = dataframe_[di, 1]
 
-        try:
-            pairs[sensor_dict[''.join(bd.split('_')[3:])]] = float(cf)
-        except:
-            pass
+        # e.g., REFLECTANCE_ADD_BAND_1 -> 1
+        band_name = ''.join(bd.split('_')[3:])
 
-    # dataframe_[:, 1] = dataframe_[:, 1].astype(float)
-    # dataframe_[:, 0] = list(range(1, dataframe_.shape[0]+1))
+        if band_name in sensor_dict:
+
+            var_band = sensor_dict[band_name]
+            pairs[var_band] = float(cf)
+
+    if not pairs:
+        logger.warning('  No metadata coefficients were acquired.')
 
     return pairs
 
@@ -132,7 +142,7 @@ class MetaData(object):
                         'LANDSAT_7': 'l7',
                         'LANDSAT_8': 'l8'}
 
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired')
+        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired sza')
 
         df = pd.read_csv(meta_file, sep='=')
 
@@ -147,6 +157,10 @@ class MetaData(object):
         a_l = _format_coeff(df, sensor, 'RADIANCE_ADD_BAND_')
         m_p = _format_coeff(df, sensor, 'REFLECTANCE_MULT_BAND_')
         a_p = _format_coeff(df, sensor, 'REFLECTANCE_ADD_BAND_')
+
+        solar_elev = dict(df[df.iloc[:, 0].str.startswith('SUN_ELEVATION')].values)
+        solar_elev = solar_elev['SUN_ELEVATION'].replace('"', '')
+        solar_zenith = 90.0 - float(solar_elev)
 
         date_acquired_ = dict(df[df.iloc[:, 0].str.startswith('DATE_ACQUIRED')].values)
         date_acquired_ = date_acquired_['DATE_ACQUIRED'].replace('"', '')
@@ -167,7 +181,8 @@ class MetaData(object):
                           a_l=a_l,
                           m_p=m_p,
                           a_p=a_p,
-                          date_acquired=date_acquired)
+                          date_acquired=date_acquired,
+                          sza=solar_zenith)
 
 
 class LinearAdjustments(object):
@@ -357,7 +372,8 @@ class RadTransforms(MetaData):
                  sensor=None,
                  method='srem',
                  angle_factor=0.01,
-                 meta=None):
+                 meta=None,
+                 **kwargs):
 
         """
         Converts digital numbers to surface reflectance
@@ -405,19 +421,64 @@ class RadTransforms(MetaData):
             if not sensor:
                 sensor = meta.sensor
 
-            # Get the gain and offsets and
-            #   convert the gain and offsets
-            #   to named coordinates.
-            m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
-            a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+            # Ensure that the metadata holder has matching bands
+            for bi in band_names:
 
-            toar = self.dn_to_toar(dn, m_p, a_p)
+                if bi not in meta.m_p:
+                    logger.warning(meta.m_p)
+                    logger.warning(band_names)
+                    logger.exception('  The metadata holder does not have matching bands.')
+                    raise ValueError
 
-            # TOAR with sun angle correction
-            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*angle_factor))] * len(toar.band), dim='band')
-            cos_sza.coords['band'] = toar.band.values
-            toar = toar / cos_sza
-            toar.attrs = attrs
+                if bi not in meta.a_p:
+                    logger.warning(meta.a_p)
+                    logger.warning(band_names)
+                    logger.exception('  The metadata holder does not have matching bands.')
+                    raise ValueError
+
+            if method == '6s':
+
+                # Get the gain and offsets and
+                #   convert the gain and offsets
+                #   to named coordinates.
+                m_l = xr.DataArray(data=[meta.m_l[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+                a_l = xr.DataArray(data=[meta.a_l[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+
+                radiance = self.dn_to_radiance(dn, m_l, a_l)
+
+                sr_data = []
+
+                for band in band_names:
+
+                    ilut = InterpLUT(sensor,
+                                     dn.wavelengths[sensor][band],
+                                     rad_scale=1000.0,
+                                     angle_scale=angle_factor)
+
+                    ilut.load()
+
+                    sr_data.append(ilut.rad_to_sr(radiance,
+                                                  meta.sza,
+                                                  meta.date_acquired.timetuple().tm_yday,
+                                                  **kwargs))
+
+                sr_data = xr.concat(sr_data, dim='band')
+
+            elif method == 'srem':
+
+                # Get the gain and offsets and
+                #   convert the gain and offsets
+                #   to named coordinates.
+                m_p = xr.DataArray(data=[meta.m_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+                a_p = xr.DataArray(data=[meta.a_p[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+
+                toar = self.dn_to_toar(dn, m_p, a_p)
+
+                # TOAR with sun angle correction
+                cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za*angle_factor))] * len(toar.band), dim='band')
+                cos_sza.coords['band'] = toar.band.values
+                toar = toar / cos_sza
+                toar.attrs = attrs
 
         else:
 
@@ -435,14 +496,16 @@ class RadTransforms(MetaData):
 
             toar = self.radiance_to_toar(radiance, solar_za, global_args)
 
-        sr_data = self.toar_to_sr(toar,
-                                  solar_za,
-                                  solar_az,
-                                  sensor_za,
-                                  sensor_az,
-                                  sensor,
-                                  src_nodata=src_nodata,
-                                  dst_nodata=dst_nodata)
+        if method == 'srem':
+
+            sr_data = self.toar_to_sr(toar,
+                                      solar_za,
+                                      solar_az,
+                                      sensor_za,
+                                      sensor_az,
+                                      sensor,
+                                      src_nodata=src_nodata,
+                                      dst_nodata=dst_nodata)
 
         attrs['sensor'] = sensor
         attrs['nodata'] = dst_nodata

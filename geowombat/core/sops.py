@@ -3,8 +3,9 @@ import math
 import itertools
 from datetime import datetime
 from collections import defaultdict
+import logging
 
-from ..errors import logger
+from ..handler import add_handler
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
@@ -34,6 +35,10 @@ try:
     PYMORPH_INSTALLED = True
 except:
     PYMORPH_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _remove_near_points(dataframe, r):
@@ -517,6 +522,11 @@ class SpatialOperations(_PropertyMixin):
 
             if shape_len > 2:
                 bands_idx = slice(0, None)
+
+        if isinstance(aoi, gpd.GeoDataFrame):
+
+            if id_column not in aoi.columns.tolist():
+                aoi['id'] = aoi.index.values
 
         df = converters.prepare_points(data,
                                        aoi,

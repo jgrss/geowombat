@@ -36,10 +36,40 @@
             
   <div class="section" id="geowombat-utilities-for-geospatial-data">
 <h1>GeoWombat: Utilities for geospatial data<a class="headerlink" href="#geowombat-utilities-for-geospatial-data" title="Permalink to this headline">¶</a></h1>
-<p><strong>Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale).</strong></p>
-<p>GeoWombat provides utilities to process geospatial raster data. The package is inspired by, and built on, several key libraries for large-scale data processing, such as <a class="reference external" href="http://dask.org">Dask</a>, <a class="reference external" href="http://geopandas.org">Geopandas</a>, <a class="reference external" href="http://pandas.pydata.org">Pandas</a>, <a class="reference external" href="https://rasterio.readthedocs.io">Rasterio</a>, and <a class="reference external" href="http://xarray.pydata.org">Xarray</a>. GeoWombat interfaces directly with Xarray for raster I/O, which uses Rasterio to open raster files such as satellite images or aerial photos as <a class="reference external" href="https://docs.dask.org/en/latest/array.html">Dask arrays</a>. GeoWombat uses the <a class="reference external" href="http://xarray.pydata.org/en/stable/internals.html">Xarray register</a> to extend the functionality of <a class="reference external" href="http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html">Xarray DataArrays</a>.</p>
+<style type="text/css">
+
+    .banner-header {
+        color: #ffffff;
+        font-size: 20px;
+        background-color: #0c5085;
+        margin: auto;
+        text-align: center;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        border-radius: 5px;
+    }
+
+</style><div class="banner-header">
+    Like a wombat, <b>geowombat</b> has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
+</div><p>GeoWombat provides utilities to process geospatial raster data. The package is inspired by, and built on, several key libraries for large-scale data processing, such as <a class="reference external" href="http://dask.org">Dask</a>, <a class="reference external" href="http://geopandas.org">Geopandas</a>, <a class="reference external" href="http://pandas.pydata.org">Pandas</a>, <a class="reference external" href="https://rasterio.readthedocs.io">Rasterio</a>, and <a class="reference external" href="http://xarray.pydata.org">Xarray</a>. GeoWombat interfaces directly with Xarray for raster I/O, which uses Rasterio to open raster files such as satellite images or aerial photos as <a class="reference external" href="https://docs.dask.org/en/latest/array.html">Dask arrays</a>. GeoWombat uses the <a class="reference external" href="http://xarray.pydata.org/en/stable/internals.html">Xarray register</a> to extend the functionality of <a class="reference external" href="http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html">Xarray DataArrays</a>.</p>
 <p>One of the key features of GeoWombat is the on-the-fly handling of multiple files. In particular, GeoWombat leverages Rasterio to transform and align rasters with varying projections and spatial resolutions. In addition to simplifying the process of data alignment, GeoWombat utilizes the <a class="reference external" href="https://docs.dask.org/en/latest/graphs.html">task graphs</a> of Dask arrays. By default, GeoWombat loads a raster as a DataArray, which points to the raster data on file using a chunked Dask array. This task graph feature simplifies parallel computations of one or more raster files of any size.</p>
-<p><strong>Computation scales easily over large datasets with minimal changes to the code</strong></p>
+<style type="text/css">
+    .banner-install{
+        font-size: 20px;
+        margin: auto;
+        text-align: center;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        border-radius: 5px;
+        width: 300px;
+    }
+
+</style>
+
+<div class="banner-install">
+    <span><p><a class="reference internal" href="install.html#install"><span class="std std-ref">Get started with geowombat</span></a></p>
+    </span>
+</div><p><strong>Computation scales easily over large datasets with minimal changes to the code</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set a reference image to align to</span>
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="s1">&#39;image_a.tif&#39;</span><span class="p">):</span>
 
@@ -144,10 +174,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, GeoWombat.
+      &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

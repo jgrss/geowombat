@@ -8,8 +8,8 @@ from datetime import datetime
 from collections import namedtuple
 import random
 import string
+import logging
 
-from ..errors import logger
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 
 import geowombat as gw
@@ -18,12 +18,10 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
-import shapely
 from shapely.geometry import Polygon
-# import wget
 
 
-shapely.speedups.enable()
+logger = logging.getLogger(__name__)
 
 
 def _random_id(string_length):

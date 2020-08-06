@@ -15,11 +15,12 @@ Thumbs.db
 *.log
 *.pyo
 *.pyc
-.idea
+.idea/
 *.egg-info/
 dist/
 .ipynb_checkpoints
 __pycache__/
+.pytest_cache/
 
 # GeoWombat
 old/
@@ -29,13 +30,13 @@ doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
-geowombat/util/starfm*
-geowombat/radiometry/_fill_gaps.pyx
-geowombat/radiometry/impute.py
-geowombat/examples/concurrent_processing.ipynb
-geowombat/examples/transforms.ipynb
+geowombat/models/
 logo/
 bin/ESPA/
+
+# dev
+geowombat/tasks/
+geowombat/radiometry/*test*.py
 
 # Notebooks
 notebooks/*hls*

@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
+import logging
 
+from ..handler import add_handler
 from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
-from ..errors import logger
 from ..config import config
 from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, window_to_bounds, unpack_bounding_box, unpack_window
 from .rasterio_ import transform_crs as rio_transform_crs
@@ -17,6 +18,10 @@ import xarray as xr
 from xarray.ufuncs import maximum as xr_maximum
 from xarray.ufuncs import minimum as xr_mininum
 from deprecated import deprecated
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
@@ -599,7 +604,7 @@ def concat(filenames,
                     src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
 
     if dtype:
-        
+
         attrs = src.attrs.copy()
         return src.astype(dtype).assign_attrs(**attrs)
 

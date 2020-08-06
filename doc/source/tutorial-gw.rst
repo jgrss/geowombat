@@ -3,6 +3,8 @@
 GeoWombat DataArray accessor
 ============================
 
+The GeoWombat class has a number of attributes that define the properties of the image.
+
 DataArray GeoWombat attributes
 ------------------------------
 

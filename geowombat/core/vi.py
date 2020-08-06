@@ -1,9 +1,15 @@
-from ..errors import logger
+import logging
+
+from ..handler import add_handler
 from .base import PropertyMixin as _PropertyMixin
 
 import numpy as np
 import xarray as xr
 import dask.array as da
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def _create_nodata_array(data, nodata, band_name, var_name):

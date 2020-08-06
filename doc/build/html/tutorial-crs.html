@@ -39,17 +39,17 @@
 <span id="tutorial-crs"></span><h1>Coordinate Reference Systems<a class="headerlink" href="#coordinate-reference-systems" title="Permalink to this headline">¶</a></h1>
 <p>Image projections can be transformed in GeoWombat using the configuration manager (see <a class="reference internal" href="tutorial-config.html#tutorial-config"><span class="std std-ref">Configuration manager</span></a>). With the configuration manager, the CRS is transformed using rasterio <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/api/rasterio.crs.html">CRS</a> and <a class="reference external" href="https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html">virtual warping</a>. For references, see <a class="reference external" href="https://spatialreference.org/">Spatial Reference</a> and <a class="reference external" href="http://epsg.io/">epsg.io</a>.</p>
 <p>The CRS can be accessed from the <a class="reference external" href="http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html">xarray.DataArray</a> attributes.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">rgbn</span>
 
 <span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
@@ -64,10 +64,10 @@
 <p>To transform the CRS, use the context manager. In this example, an EPSG code is used.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102008</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">+init=epsg:102008</span>
@@ -80,10 +80,10 @@
 
 <span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="n">proj4</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs=True</span>
@@ -97,10 +97,10 @@
 <p>The resampling algorithm can be specified in the <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> function. Here, we use cubic convolution resampling to warp the data to EPSG code 102008.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102008</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">+init=epsg:102008</span>
@@ -111,10 +111,10 @@
 <p>The transformed cell resolution can be added in the context manager. Here, we resample the data to 10m x 10m spatial resolution.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102008</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">(10.0, 0.0, 792988.0, 0.0, -10.0, 2050382.0)</span>
 <span class="go">+init=epsg:102008</span>
@@ -124,7 +124,7 @@
 </div>
 <p>To transform an <cite>xarray.DataArray</cite> outside of a configuration context, use the <a class="reference internal" href="api/geowombat.transform_crs.html#geowombat.transform_crs" title="geowombat.transform_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.transform_crs()</span></code></a> function.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">help</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform_crs</span><span class="p">))</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">help</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform_crs</span><span class="p">))</span>
 <span class="gp">   ...: </span>
 <span class="go">Help on method transform_crs in module geowombat.core.geoxarray:</span>
 
@@ -156,16 +156,16 @@
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 <span class="gp">   ....: </span>    <span class="n">src_tr</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform_crs</span><span class="p">(</span><span class="mi">102008</span><span class="p">,</span> <span class="n">dst_res</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">resampling</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src_tr</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(5.0, 0.0, 792988.0, 0.0, -5.0, 2050382.0)</span>
 <span class="go">+init=epsg:32618</span>
@@ -219,7 +219,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
@@ -261,10 +261,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, GeoWombat.
+      &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

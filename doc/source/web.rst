@@ -10,7 +10,7 @@ Here, a Landsat 7 panchromatic image is downloaded.
 
 .. code:: python
 
-    from geowombat.web import GeoDownloads
+    from geowombat.util.web import GeoDownloads
 
     gdl = GeoDownloads()
 

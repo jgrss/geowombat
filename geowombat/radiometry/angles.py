@@ -4,8 +4,9 @@ import fnmatch
 import subprocess
 from collections import namedtuple
 import tarfile
+import logging
 
-from ..errors import logger
+from ..handler import add_handler
 
 import numpy as np
 import xarray as xr
@@ -13,13 +14,16 @@ import rasterio as rio
 from rasterio.warp import reproject
 from affine import Affine
 import xml.etree.ElementTree as ET
-# from pysolar.solar import get_altitude_fast, get_azimuth_fast
 
 try:
     import cv2
     OPENCV_INSTALLED = True
 except:
     OPENCV_INSTALLED = False
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def shift_objects(data,

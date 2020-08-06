@@ -61,7 +61,7 @@
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="kn">import</span> <span class="n">QAMasker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.radiometry</span> <span class="k">import</span> <span class="n">QAMasker</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the MODIS cloud mask.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;qa.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">qa</span><span class="p">:</span>
@@ -79,7 +79,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.QAMasker.to_mask" title="geowombat.radiometry.QAMasker.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.QAMasker.to_mask" title="geowombat.radiometry.QAMasker.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a>(self)</p></td>
 <td><p>Converts QA bit-packed data to an integer mask</p></td>
 </tr>
 </tbody>
@@ -87,7 +87,7 @@
 <p class="rubric">Methods Documentation</p>
 <dl class="py method">
 <dt id="geowombat.radiometry.QAMasker.to_mask">
-<code class="sig-name descname">to_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts QA bit-packed data to an integer mask</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -151,7 +151,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Changes</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
@@ -192,10 +192,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, GeoWombat.
+      &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -9,8 +9,9 @@ from collections import namedtuple
 import random
 import string
 import time
+import logging
 
-from ..errors import logger
+from ..handler import add_handler
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core import ndarray_to_xarray
@@ -23,7 +24,6 @@ from osgeo import gdal
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
-import shapely
 from shapely.geometry import Polygon
 import psutil
 
@@ -43,7 +43,9 @@ try:
 except:
     S2CLOUDLESS_INSTALLED = False
 
-shapely.speedups.enable()
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
+
 
 RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        cubic=gdal.GRA_Cubic,
@@ -282,8 +284,7 @@ class GeoDownloads(object):
                                          nir=4,
                                          swir1=5,
                                          thermal=6,
-                                         swir2=7,
-                                         pan=8),
+                                         swir2=7),
                                  l7=dict(blue=1,
                                          green=2,
                                          red=3,
@@ -756,7 +757,14 @@ class GeoDownloads(object):
                             else:
 
                                 # Get band names from user
-                                load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                try:
+                                    load_bands_names = [finfo_dict[bd].name for bd in load_bands]
+                                except:
+                                    logger.warning('  File info dictionary:')
+                                    logger.warning(finfo_dict)
+                                    logger.warning('  Loaded bands: {}'.format(','.join(load_bands)))
+                                    logger.exception('  Could not get all band name associations.')
+                                    raise NameError
 
                             logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
 
@@ -946,7 +954,7 @@ class GeoDownloads(object):
                                             sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
 
                                         if write_angle_files:
-                                            
+
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
                                             angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
