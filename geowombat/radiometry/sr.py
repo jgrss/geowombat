@@ -52,7 +52,7 @@ def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
     cos_sensor_za_stack = xr.concat([cos_sensor_za] * len(m.band), dim='band')
     cos_sensor_za_stack.coords['band'] = m.band.values
 
-    return rphase_stack * ((1.0 - xr.ufuncs.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
+    return rphase_stack * ((1.0 - np.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
 
 
 def t_sv(r, cos_zenith):
@@ -71,8 +71,8 @@ def t_sv(r, cos_zenith):
     cos_zenith_stack = xr.concat([cos_zenith] * len(r.band), dim='band')
     cos_zenith_stack.coords['band'] = r.band.values
 
-    cose1 = xr.ufuncs.exp(-r / cos_zenith_stack)
-    cose2 = xr.ufuncs.exp(0.52*r / cos_zenith_stack)
+    cose1 = np.exp(-r / cos_zenith_stack)
+    cose2 = np.exp(0.52*r / cos_zenith_stack)
 
     return cose1 + cose1 * (cose2 - 1.0)
 
@@ -89,7 +89,7 @@ def s_atm(r):
         ``float``
     """
 
-    return (0.92*r) * xr.ufuncs.exp(-r)
+    return (0.92*r) * np.exp(-r)
 
 
 def _format_coeff(dataframe, sensor, key):
@@ -572,7 +572,7 @@ class RadTransforms(MetaData):
         if sun_angle:
 
             # TOA reflectance with sun angle correction
-            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
+            cos_sza = xr.concat([np.cos(np.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
             cos_sza.coords['band'] = toar.band.values
             toar = toar / cos_sza
 
@@ -671,18 +671,18 @@ class RadTransforms(MetaData):
         vaa.coords['band'] = [1]
 
         # Convert to radians
-        rad_sza = xr.ufuncs.deg2rad(sza)
-        rad_vza = xr.ufuncs.deg2rad(vza)
+        rad_sza = np.deg2rad(sza)
+        rad_vza = np.deg2rad(vza)
 
         # Cosine(deg2rad(angles)) = angles x (pi / 180)
-        cos_sza = xr.ufuncs.cos(rad_sza)
+        cos_sza = np.cos(rad_sza)
         cos_sza.coords['band'] = [1]
-        cos_vza = xr.ufuncs.cos(rad_vza)
+        cos_vza = np.cos(rad_vza)
         cos_vza.coords['band'] = [1]
 
-        sin_sza = xr.ufuncs.sin(rad_sza)
+        sin_sza = np.sin(rad_sza)
         sin_sza.coords['band'] = [1]
-        sin_vza = xr.ufuncs.sin(rad_vza)
+        sin_vza = np.sin(rad_vza)
         sin_vza.coords['band'] = [1]
 
         # air mass
@@ -701,8 +701,8 @@ class RadTransforms(MetaData):
         # Relative azimuth angle
         # TODO: doesn't work if the band coordinate is named
         raa = relative_azimuth(saa, vaa)
-        rad_raa = xr.ufuncs.deg2rad(raa)
-        cos_raa = xr.ufuncs.cos(rad_raa)
+        rad_raa = np.deg2rad(raa)
+        cos_raa = np.cos(rad_raa)
 
         # scattering angle = the angle between the direction of incident and scattered radiation
         # Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
@@ -711,8 +711,8 @@ class RadTransforms(MetaData):
         # cos_vza = cos(pi/180 x vza)
         # sin_sza = sin(pi/180 x sza)
         # sin_vza = sin(pi/180 x vza)
-        scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
-        cos2_scattering_angle = xr.ufuncs.cos(scattering_angle)**2
+        scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+        cos2_scattering_angle = np.cos(scattering_angle)**2
 
         # Rayleigh phase function
         rayleigh_a = 0.9587256
