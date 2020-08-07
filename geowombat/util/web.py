@@ -51,6 +51,8 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        cubic=gdal.GRA_Cubic,
                        nearest=gdal.GRA_NearestNeighbour)
 
+OrbitDates = namedtuple('OrbitDates', 'start end')
+
 
 def _rmdir(pathdir):
 
@@ -278,9 +280,28 @@ class GeoDownloads(object):
                        swir1=11,
                        swir2=12)
 
+        self.gcp_dict = dict(l5='LT05/01',
+                             l7='LE07/01',
+                             l8='LC08/01',
+                             s2='tiles',
+                             s2a='tiles',
+                             s2b='tiles',
+                             s2c='tiles')
+
         self.sensor_collections = dict(l5='lt05',
                                        l7='le07',
                                        l8='lc08')
+
+        self.orbit_dates = dict(l5=OrbitDates(start=datetime.strptime('1984-3-1', '%Y-%m-%d'),
+                                              end=datetime.strptime('2013-6-5', '%Y-%m-%d')),
+                                l7=OrbitDates(start=datetime.strptime('1999-4-15', '%Y-%m-%d'),
+                                              end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                l8=OrbitDates(start=datetime.strptime('2013-2-11', '%Y-%m-%d'),
+                                              end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                s2a=OrbitDates(start=datetime.strptime('2015-6-23', '%Y-%m-%d'),
+                                               end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                s2b=OrbitDates(start=datetime.strptime('2017-3-7', '%Y-%m-%d'),
+                                               end=datetime.strptime('2100-1-1', '%Y-%m-%d')))
 
         self.associations = dict(l5=dict(blue=1,
                                          green=2,
@@ -532,7 +553,14 @@ class GeoDownloads(object):
 
                 yearmonth_query = '{:d}{:02d}'.format(year, m)
 
+                target_date = datetime.strptime(yearmonth_query, '%Y-%m')
+
                 for sensor in sensors:
+
+                    if (target_date < self.orbit_dates[sensor.lower()].start) or \
+                            (target_date > self.orbit_dates[sensor.lower()].end):
+
+                        continue
 
                     band_associations = self.associations[sensor]
 
@@ -1016,14 +1044,6 @@ class GeoDownloads(object):
             ``dict``
         """
 
-        gcp_dict = dict(l5='LT05/01',
-                        l7='LE07/01',
-                        l8='LC08/01',
-                        s2='tiles',
-                        s2a='tiles',
-                        s2b='tiles',
-                        s2c='tiles')
-
         if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2b', 's2c']:
             logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', 's2b', or 's2c'.")
             raise NameError
@@ -1033,7 +1053,7 @@ class GeoDownloads(object):
         else:
             gcp_str = "gsutil ls -r gs://gcp-public-data-landsat"
 
-        gsutil_str = gcp_str + "/" + gcp_dict[sensor] + "/" + query
+        gsutil_str = gcp_str + "/" + self.gcp_dict[sensor] + "/" + query
 
         try:
 
