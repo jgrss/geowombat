@@ -179,7 +179,7 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
 def warp_open(filename,
               band_names=None,
-              nodata=None,
+              nodata=0,
               resampling='nearest',
               dtype=None,
               return_windows=False,
@@ -194,7 +194,7 @@ def warp_open(filename,
     Args:
         filename (str): The file to open.
         band_names (Optional[int, str, or list]): The band names.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         resampling (Optional[str]): The resampling method.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
@@ -290,7 +290,7 @@ def mosaic(filenames,
            bounds_by='reference',
            resampling='nearest',
            band_names=None,
-           nodata=None,
+           nodata=0,
            dtype=None,
            warp_mem_limit=512,
            num_threads=1,
@@ -311,7 +311,7 @@ def mosaic(filenames,
 
         resampling (Optional[str]): The resampling method.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
@@ -447,7 +447,7 @@ def concat(filenames,
            resampling='nearest',
            time_names=None,
            band_names=None,
-           nodata=None,
+           nodata=0,
            dtype=None,
            overlap='max',
            warp_mem_limit=512,
@@ -470,7 +470,7 @@ def concat(filenames,
         resampling (Optional[str]): The resampling method.
         time_names (Optional[1d array-like]): A list of names to give the time dimension.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
