@@ -278,6 +278,10 @@ class GeoDownloads(object):
                        swir1=11,
                        swir2=12)
 
+        self.sensor_collections = dict(l5='lt05',
+                                       l7='le07',
+                                       l8='lc08')
+
         self.associations = dict(l5=dict(blue=1,
                                          green=2,
                                          red=3,
@@ -1190,6 +1194,16 @@ class GeoDownloads(object):
 
                 # Check if the file has been downloaded
                 if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                    if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
+                        
+                        logger.warning(sensor)
+                        logger.warning(self.sensor_collections[sensor.lower()])
+                        logger.warning(scene_id)
+                        logger.warning(sub_download_list)
+                        logger.warning(download_list_unique)
+
+                        raise NameError
 
                     # Path of BRDF stack
                     out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
