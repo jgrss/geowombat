@@ -553,7 +553,7 @@ class GeoDownloads(object):
 
                 yearmonth_query = '{:d}{:02d}'.format(year, m)
 
-                target_date = datetime.strptime(yearmonth_query, '%Y-%m')
+                target_date = datetime.strptime(yearmonth_query, '%Y%m')
 
                 for sensor in sensors:
 
