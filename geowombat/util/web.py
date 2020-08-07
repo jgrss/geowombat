@@ -761,6 +761,10 @@ class GeoDownloads(object):
                                     load_bands_names = [finfo_dict[bd].name for bd in load_bands]
                                 except:
                                     logger.warning('  File info dictionary:')
+                                    logger.info(sensor)
+                                    logger.info(bands)
+                                    logger.info(self.associations)
+                                    logger.info(band_associations)
                                     logger.warning(finfo_dict)
                                     logger.warning('  Loaded bands: {}'.format(','.join(load_bands)))
                                     logger.exception('  Could not get all band name associations.')
