@@ -3,6 +3,15 @@
 Changelog
 =========
 
+1.2.26 (7 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed the default 'no data' value `nodata=None` to `nodata=0` and added `int` and `float` type checks.
+    - This fix addressed `Issue #41 <https://github.com/jgrss/geowombat/issues/41>`_.
+
 1.2.25 (4 Aug 2020)
 -------------------
 
