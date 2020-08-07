@@ -64,21 +64,21 @@ def shift_objects(data,
     vaa.coords['band'] = [1]
 
     # Convert to radians
-    rad_sza = xr.ufuncs.deg2rad(sza)
-    rad_saa = xr.ufuncs.deg2rad(saa)
-    rad_vza = xr.ufuncs.deg2rad(vza)
-    rad_vaa = xr.ufuncs.deg2rad(vaa)
+    rad_sza = np.deg2rad(sza)
+    rad_saa = np.deg2rad(saa)
+    rad_vza = np.deg2rad(vza)
+    rad_vaa = np.deg2rad(vaa)
 
-    apparent_solar_az = np.pi + xr.ufuncs.arctan((xr.ufuncs.sin(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.sin(rad_vaa) * xr.ufuncs.tan(rad_vza)) /
-                                                 (xr.ufuncs.cos(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.cos(rad_vaa) * xr.ufuncs.tan(rad_vza)))
+    apparent_solar_az = np.pi + np.arctan((np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza)) /
+                                          (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza)))
 
     # Maximum horizontal distance
-    d = (h**2 * ((xr.ufuncs.sin(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.sin(rad_vaa) * xr.ufuncs.tan(rad_vza))**2 +
-                 (xr.ufuncs.cos(rad_saa) * xr.ufuncs.tan(rad_sza) - xr.ufuncs.cos(rad_vaa) * xr.ufuncs.tan(rad_vza))**2))**0.5
+    d = (h**2 * ((np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza))**2 +
+                 (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))**2))**0.5
 
     # Convert the polar angle to cartesian offsets
-    x = int((xr.ufuncs.cos(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
-    y = int((xr.ufuncs.sin(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
+    x = int((np.cos(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
+    y = int((np.sin(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
 
     return data.shift(shifts={'x': x, 'y': y}, fill_value=0)
 
@@ -181,9 +181,9 @@ def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
         Scattering angle (in radians) as an ``xarray.DataArray``
     """
 
-    scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+    scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
 
-    return xr.ufuncs.cos(scattering_angle) ** 2
+    return np.cos(scattering_angle) ** 2
 
 
 def relative_azimuth(saa, vaa):
@@ -203,7 +203,7 @@ def relative_azimuth(saa, vaa):
     """
 
     # Relative azimuth (in radians)
-    raa = xr.ufuncs.deg2rad(saa - vaa)
+    raa = np.deg2rad(saa - vaa)
 
     # Create masks
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
@@ -215,7 +215,7 @@ def relative_azimuth(saa, vaa):
     raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
     raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
 
-    return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
+    return np.fabs(np.rad2deg(raa))
 
 
 def get_sentinel_sensor(metadata):
