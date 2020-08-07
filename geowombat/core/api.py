@@ -255,7 +255,7 @@ class open(object):
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
-        nodata (Optional[float | int]): A 'no data' value to set. Default is None.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
@@ -337,10 +337,15 @@ class open(object):
                  resampling='nearest',
                  mosaic=False,
                  overlap='max',
-                 nodata=None,
+                 nodata=0,
                  dtype=None,
                  num_workers=1,
                  **kwargs):
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            logger.exception("  The 'nodata' keyword argument must be an integer or a float.")
+            raise ValueError
+
         if isinstance(filename, Path):
             filename = str(filename)
 
