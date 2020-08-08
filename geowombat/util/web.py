@@ -56,6 +56,10 @@ OrbitDates = namedtuple('OrbitDates', 'start end')
 
 def _rmdir(pathdir):
 
+    """
+    Removes a directory path
+    """
+
     if pathdir.is_dir():
 
         for child in pathdir.iterdir():
@@ -226,6 +230,7 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
+
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -241,17 +246,6 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
                              url_file=url_filename,
                              meta=url_meta,
                              angles=url_angles)
-
-    # elif fn_parts[0].lower() in sentinel_parts:
-    #
-    #     safe_dir = '{SENSOR}_{M}{L}_'.format(SENSOR=fn_parts[0], M=fn_parts[2], L=fn_parts[3])
-    #
-    #     '/01/K/AB/S2A_MSIL1C_20160519T222025_N0202_R029_T01KAB_20160520T024950.SAFE/GRANULE/S2A_OPER_MSI_L1C_TL_SGS__20160519T234326_A004745_T01KAB_N02.02/IMG_DATA/S2A_OPER_MSI_L1C_TL_SGS__20160519T234326_A004745_T01KAB_B05.jp2'
-    #
-    #     fn = '{PUBLIC}-sentinel-2/tiles/{UTM}/{LAT}/{GRID}'.format(PUBLIC=public_url,
-    #                                                                UTM=,
-    #                                                                LAT=,
-    #                                                                GRID=)
 
     return file_info
 
@@ -558,15 +552,13 @@ class GeoDownloads(object):
 
                 for sensor in sensors:
 
+                    # Avoid unnecessary GCP queries
                     if (target_date < self.orbit_dates[sensor.lower()].start) or \
                             (target_date > self.orbit_dates[sensor.lower()].end):
 
                         continue
 
                     band_associations = self.associations[sensor]
-
-                    # TODO: get path/row and MGRS from geometry
-                    # location = '21/H/UD' # or '225/083'
 
                     if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
@@ -624,10 +616,10 @@ class GeoDownloads(object):
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
-                            new_dict_ = dict()
+                            new_dict_ = {}
                             for finfo_key, finfo_dict in file_info.items():
 
-                                sub_dict_ = dict()
+                                sub_dict_ = {}
 
                                 if 'meta' in finfo_dict:
 
@@ -795,13 +787,6 @@ class GeoDownloads(object):
                                 try:
                                     load_bands_names = [finfo_dict[bd].name for bd in load_bands]
                                 except:
-                                    logger.warning('  File info dictionary:')
-                                    logger.info(sensor)
-                                    logger.info(bands)
-                                    logger.info(self.associations)
-                                    logger.info(band_associations)
-                                    logger.warning(finfo_dict)
-                                    logger.warning('  Loaded bands: {}'.format(','.join(load_bands)))
                                     logger.exception('  Could not get all band name associations.')
                                     raise NameError
 
@@ -1070,7 +1055,7 @@ class GeoDownloads(object):
         output = proc.stdout
 
         gcp_search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
-        self._gcp_search_dict = None
+        self._gcp_search_dict = {}
 
         if gcp_search_list:
 
@@ -1084,7 +1069,7 @@ class GeoDownloads(object):
 
     @property
     def get_gcp_results(self):
-        return self._gcp_search_dict
+        return self._gcp_search_dict.copy()
 
     @staticmethod
     def _prepare_gcp_dict(search_list, gcp_str):
@@ -1225,15 +1210,8 @@ class GeoDownloads(object):
 
                     if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
 
-                        import ipdb
-                        ipdb.set_trace()
-
-                        logger.warning(sensor)
-                        logger.warning(self.sensor_collections[sensor.lower()])
-                        logger.warning(scene_id)
-                        logger.warning(sub_download_list)
-                        logger.warning(download_list_unique)
-
+                        logger.exception('  The scene id {SCENE_ID} does not match the sensor {SENSOR}.'.format(SCENE_ID=scene_id,
+                                                                                                                SENSOR=sensor))
                         raise NameError
 
                     # Path of BRDF stack
