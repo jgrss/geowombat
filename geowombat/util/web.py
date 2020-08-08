@@ -260,6 +260,9 @@ class GeoDownloads(object):
 
     def __init__(self):
 
+        self._gcp_search_dict = None
+        self.search_dict = None
+
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
         self.aws_l8_public = 'https://landsat-pds.s3.amazonaws.com/c1/L8'
 
@@ -333,8 +336,6 @@ class GeoDownloads(object):
                                  s2a=s2_dict,
                                  s2b=s2_dict,
                                  s2c=s2_dict)
-
-        self.search_dict = dict()
 
     def download_cube(self,
                       sensors,
@@ -593,6 +594,8 @@ class GeoDownloads(object):
 
                         # Query and list available files on the GCP
                         self.list_gcp(sensor, query)
+
+                        self.search_dict = self.get_gcp_results
 
                         if not self.search_dict:
 
@@ -1066,17 +1069,22 @@ class GeoDownloads(object):
 
         output = proc.stdout
 
-        search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+        gcp_search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+        self._gcp_search_dict = None
 
-        if search_list:
+        if gcp_search_list:
 
             # Check for length-1 lists with empty strings
-            if search_list[0]:
+            if gcp_search_list[0]:
 
                 if sensor in ['s2', 's2a', 's2b', 's2c']:
-                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
+                    self._gcp_search_dict = self._prepare_gcp_dict(gcp_search_list, 'gs://gcp-public-data-sentinel-2/')
                 else:
-                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
+                    self._gcp_search_dict = self._prepare_gcp_dict(gcp_search_list, 'gs://gcp-public-data-landsat/')
+
+    @property
+    def get_gcp_results(self):
+        return self._gcp_search_dict
 
     @staticmethod
     def _prepare_gcp_dict(search_list, gcp_str):
@@ -1098,7 +1106,7 @@ class GeoDownloads(object):
         mask_idx = np.where(df['mask'].values)[0]
         mask_range = mask_idx.shape[0] - 1 if mask_idx.shape[0] > 1 else 1
 
-        url_dict = dict()
+        url_dict = {}
 
         for mi in range(0, mask_range):
 
