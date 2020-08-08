@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.2.27 (8 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error with Google Cloud Platform query updates in :func:`geowombat.util.web.GeoDownloads().download_cube`.
+
 1.2.26 (7 Aug 2020)
 -------------------
 
