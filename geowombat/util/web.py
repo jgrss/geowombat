@@ -1216,7 +1216,10 @@ class GeoDownloads(object):
                 if sensor.lower() in ['l5', 'l7', 'l8']:
 
                     if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
-                        
+
+                        import ipdb
+                        ipdb.set_trace()
+
                         logger.warning(sensor)
                         logger.warning(self.sensor_collections[sensor.lower()])
                         logger.warning(scene_id)
