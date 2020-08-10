@@ -23,6 +23,7 @@ from ..core import ndarray_to_xarray
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator
 import xarray as xr
+import joblib
 
 
 logger = logging.getLogger(__name__)
@@ -217,10 +218,7 @@ class SixS(object):
 
         lut_path_ = self.lut_path if which == 'lut' else self.ilut_path
 
-        with open(lut_path_, mode='rb') as lut_file:
-            lut_dict = pickle.load(lut_file)
-
-        return lut_dict
+        return joblib.load(lut_path_)
 
     def _dump(self, interp_obj):
 
