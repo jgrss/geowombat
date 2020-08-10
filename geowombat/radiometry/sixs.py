@@ -166,6 +166,36 @@ class SixS(object):
                     .assign_coords(coords={'band': [band]})\
                     .assign_attrs(**attrs)
 
+    @staticmethod
+    def get_optimized_aot(blue_rad_dark, blue_p_dark, sensor, blue_band, meta, h2o, o3):
+
+        sxs = SixS(sensor, blue_band)
+        sxs.load()
+
+        doy = meta.date_acquired.timetuple().tm_yday
+        altitude = 0.0
+
+        min_score = np.zeros(blue_rad_dark.shape, dtype='float64') + 1e9
+        aot = np.zeros(blue_rad_dark.shape, dtype='float64')
+
+        for aot_iter in np.linspace(0.1, 1.0, 10):
+
+            # sza, h2o, o3, aot, alt
+            a, b = sxs.lut(meta.sza, h2o, o3, aot_iter, altitude)
+
+            elliptical_orbit_correction = 0.03275104 * math.cos(doy / 59.66638337) + 0.96804905
+            a *= elliptical_orbit_correction
+            b *= elliptical_orbit_correction
+
+            res = (blue_rad_dark - a) / b
+
+            score = np.abs(res - blue_p_dark)
+
+            aot = np.where(score < min_score, aot_iter, aot)
+            min_score = np.where(score < min_score, score, min_score)
+
+        return aot
+
     # def interpolate(self):
     #
     #     """
