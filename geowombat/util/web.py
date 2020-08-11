@@ -580,7 +580,7 @@ class GeoDownloads(object):
 
                         else:
 
-                            query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
+                            query = '{LOCATION}/*{PATHROW}_{YM}*_T1'.format(LOCATION=location,
                                                                             PATHROW=location.replace('/', ''),
                                                                             YM=yearmonth_query)
 
