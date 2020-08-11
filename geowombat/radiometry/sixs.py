@@ -10,10 +10,6 @@ Reference:
 
 import os
 from pathlib import Path
-import pickle
-import zipfile
-import tarfile
-import itertools
 import logging
 from collections import namedtuple
 
@@ -21,7 +17,6 @@ from ..handler import add_handler
 from ..core import ndarray_to_xarray
 
 import numpy as np
-from scipy.interpolate import LinearNDInterpolator
 import xarray as xr
 import joblib
 
@@ -84,7 +79,7 @@ class SixS(object):
     def _load(self):
         self.lut = joblib.load(str(self.sensor_lookup[self.sensor].path))
 
-    def rad_to_sr(self, data, band, sza, doy, h2o=1.0, o3=0.4, aot=0.3):
+    def rad_to_sr(self, data, band, sza, vza, doy, h2o=1.0, o3=0.4, aot=0.3):
 
         """
         Gets 6s coefficients
@@ -93,6 +88,7 @@ class SixS(object):
             data (DataArray): The data to correct, in radiance.
             band (str): The band wavelength to process.
             sza (float | DataArray): The solar zenith angle.
+            vza (float | DataArray): The view zenith angle.
             doy (int): The day of year.
             h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
             o3 (Optional[float]): The ozone (cm-atm). [0,8].
@@ -120,11 +116,17 @@ class SixS(object):
         if isinstance(sza, xr.DataArray):
             sza = sza.squeeze().data.compute()
 
+        if isinstance(vza, xr.DataArray):
+            vza = vza.squeeze().data.compute()
+
         if isinstance(aot, xr.DataArray):
             aot = aot.squeeze().data.compute()
 
         if isinstance(sza, np.ndarray):
             sza = sza.squeeze().flatten()
+
+        if isinstance(vza, np.ndarray):
+            vza = vza.squeeze().flatten()
 
         if isinstance(aot, np.ndarray):
             aot = aot.squeeze().flatten()
@@ -132,45 +134,52 @@ class SixS(object):
         if isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
             valid_idx = np.where(~np.isnan(aot) & ~np.isnan(sza))
             sza = sza[valid_idx]
+            vza = vza[valid_idx]
             aot = aot[valid_idx]
         elif isinstance(sza, np.ndarray) and not isinstance(aot, np.ndarray):
             valid_idx = np.where(~np.isnan(sza))
             sza = sza[valid_idx]
+            vza = vza[valid_idx]
         elif not isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
             valid_idx = np.where(~np.isnan(aot))
             aot = aot[valid_idx]
 
-        ab = band_interp(sza*self.angle_scale, h2o, o3, aot, altitude)
-
-        a = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
-        b = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
-
-        a[:] = np.nan
-        b[:] = np.nan
-
-        a[valid_idx] = ab[:, 0].flatten()
-        b[valid_idx] = ab[:, 1].flatten()
+        coeffs = band_interp(sza*self.angle_scale, vza*self.angle_scale, h2o, o3, aot, altitude)
 
         elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
-        a *= elliptical_orbit_correction
-        b *= elliptical_orbit_correction
 
-        a = a.reshape(band_data.gw.nrows, band_data.gw.ncols)
-        b = b.reshape(band_data.gw.nrows, band_data.gw.ncols)
+        coeffs *= elliptical_orbit_correction
 
-        a = ndarray_to_xarray(band_data, a, ['coeff'])
-        b = ndarray_to_xarray(band_data, b, ['coeff'])
+        xa = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
+        xb = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
+        xc = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
 
-        return ((band_data*self.rad_scale - a.sel(band='coeff')) / b.sel(band='coeff'))\
-                    .expand_dims(dim='band')\
+        xa[:] = np.nan
+        xb[:] = np.nan
+        xc[:] = np.nan
+
+        xa[valid_idx] = coeffs[:, 0].flatten()
+        xb[valid_idx] = coeffs[:, 1].flatten()
+        xc[valid_idx] = coeffs[:, 2].flatten()
+
+        xa = xa.reshape(band_data.gw.nrows, band_data.gw.ncols)
+        xb = xb.reshape(band_data.gw.nrows, band_data.gw.ncols)
+        xc = xc.reshape(band_data.gw.nrows, band_data.gw.ncols)
+
+        xa = ndarray_to_xarray(band_data, xa, ['coeff'])
+        xb = ndarray_to_xarray(band_data, xb, ['coeff'])
+        xc = ndarray_to_xarray(band_data, xc, ['coeff'])
+
+        tmp = (xa.sel(band='coeff') * (band_data*self.rad_scale)) - xb.sel(band='coeff')
+        refl = tmp / (1.0 + xc.sel(band='coeff') * tmp)
+
+        return refl.expand_dims(dim='band')\
                     .assign_coords(coords={'band': [band]})\
                     .assign_attrs(**attrs)
 
-    @staticmethod
-    def get_optimized_aot(blue_rad_dark, blue_p_dark, sensor, blue_band, meta, h2o, o3):
+    def get_optimized_aot(self, blue_rad_dark, blue_p_dark, meta, h2o, o3):
 
-        sxs = SixS(sensor, blue_band)
-        sxs.load()
+        band_interp = self.lut['blue']
 
         doy = meta.date_acquired.timetuple().tm_yday
         altitude = 0.0
@@ -181,9 +190,9 @@ class SixS(object):
         for aot_iter in np.linspace(0.1, 1.0, 10):
 
             # sza, h2o, o3, aot, alt
-            a, b = sxs.lut(meta.sza, h2o, o3, aot_iter, altitude)
+            a, b = band_interp(meta.sza, h2o, o3, aot_iter, altitude)
 
-            elliptical_orbit_correction = 0.03275104 * math.cos(doy / 59.66638337) + 0.96804905
+            elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
             a *= elliptical_orbit_correction
             b *= elliptical_orbit_correction
 
