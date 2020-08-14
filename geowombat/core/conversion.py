@@ -600,7 +600,7 @@ class Converters(object):
     @lazy_wombat
     def polygon_to_array(self,
                          polygon,
-                         col = None,
+                         col=None,
                          data=None,
                          cellx=None,
                          celly=None,
@@ -619,8 +619,8 @@ class Converters(object):
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
-            col (Optional[str]): The column in polygon you want to assign values from.
-                                 If not set, creates a binary raster. 
+            col (Optional[str]): The column in ``polygon`` you want to assign values from.
+                If not set, creates a binary raster.
             data (Optional[DataArray]): An ``xarray.DataArray`` to use as a reference.
             cellx (Optional[float]): The output cell x size.
             celly (Optional[float]): The output cell y size.
