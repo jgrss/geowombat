@@ -600,6 +600,7 @@ class Converters(object):
     @lazy_wombat
     def polygon_to_array(self,
                          polygon,
+                         col = None,
                          data=None,
                          cellx=None,
                          celly=None,
@@ -618,6 +619,8 @@ class Converters(object):
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            col (Optional[str]): The column in polygon you want to assign values from.
+                                 If not set, creates a binary raster. 
             data (Optional[DataArray]): An ``xarray.DataArray`` to use as a reference.
             cellx (Optional[float]): The output cell x size.
             celly (Optional[float]): The output cell y size.
@@ -727,14 +730,19 @@ class Converters(object):
 
             dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
-        varray = rasterize(dataframe.geometry.values,
+        if col:
+            shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
+        else: 
+            shapes = dataframe.geometry.values
+            
+        varray = rasterize(shapes,
                            out_shape=(dst_height, dst_width),
                            transform=dst_transform,
                            fill=fill,
                            default_value=default_value,
                            all_touched=all_touched,
                            dtype=dtype)
-
+        
         cellxh = abs(cellx) / 2.0
         cellyh = abs(celly) / 2.0
 
