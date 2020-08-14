@@ -658,7 +658,7 @@ class Converters(object):
             if os.path.isfile(polygon):
                 dataframe = gpd.read_file(polygon)
             else:
-                logger.exception('  The polygon file does not exists.')
+                logger.exception('  The polygon file does not exist.')
                 raise OSError
 
         if isinstance(data, xr.DataArray):
@@ -674,7 +674,7 @@ class Converters(object):
                 sindex = dataframe.sindex
 
             # Get intersecting features
-            int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.bounds.values.flatten()))))
+            int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.total_bounds.flatten()))))
 
             if not int_idx:
 
