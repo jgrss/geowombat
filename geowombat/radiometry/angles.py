@@ -573,6 +573,7 @@ def landsat_pixel_angles(angles_file,
                          sensor,
                          l57_angles_path=None,
                          l8_angles_path=None,
+                         subsample=1,
                          verbose=0):
 
     """
@@ -585,6 +586,7 @@ def landsat_pixel_angles(angles_file,
         sensor (str): The sensor.
         l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
         l8_angles_path (str): The path to the Landsat 8 angles bin.
+        subsample (Optional[int]): The sub-sample factor when calculating the angles.
         verbose (Optional[int]): The verbosity level.
 
     Returns:
@@ -634,8 +636,9 @@ def landsat_pixel_angles(angles_file,
         # Setup the command.
         if sensor.lower() in ['l5', 'l7']:
 
-            angle_command = '{PATH} {META} -s 1 -b 1'.format(PATH=Path(l57_angles_path).joinpath('landsat_angles').as_posix(),
-                                                             META=angles_file)
+            angle_command = '{PATH} {META} -s {SUBSAMP:d} -b 1'.format(PATH=str(Path(l57_angles_path).joinpath('landsat_angles')),
+                                                                       META=angles_file,
+                                                                       SUBSAMP=subsample)
 
             # 1=zenith, 2=azimuth
             out_order = dict(azimuth=2, zenith=1)
@@ -643,8 +646,9 @@ def landsat_pixel_angles(angles_file,
 
         else:
 
-            angle_command = '{PATH} {META} BOTH 1 -f -32768 -b 4'.format(PATH=Path(l8_angles_path).joinpath('l8_angles').as_posix(),
-                                                                         META=angles_file)
+            angle_command = '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
+                                                                                   META=angles_file,
+                                                                                   SUBSAMP=subsample)
 
             # 1=azimuth, 2=zenith
             out_order = dict(azimuth=1, zenith=2)

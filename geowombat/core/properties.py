@@ -808,7 +808,7 @@ class DataProperties(object):
         Get a ``geopandas.GeoDataFrame`` of the array bounds
         """
 
-        return gpd.GeoDataFrame(data=[Path(self._obj.filename).name if hasattr(self._obj, 'filename') else 1],
+        return gpd.GeoDataFrame(data=[1],
                                 columns=['grid'],
                                 geometry=[self.geometry],
                                 crs=self._obj.crs)

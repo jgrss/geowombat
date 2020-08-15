@@ -3,6 +3,22 @@
 Changelog
 =========
 
+1.2.29 (15 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `col` keyword argument in :func:`geowombat.polygon_to_array`.
+
+1.2.28 (14 Aug 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error when using :func:`geowombat.polygon_to_array` with multiple opened rasters.
+
 1.2.27 (8 Aug 2020)
 -------------------
 
