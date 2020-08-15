@@ -65,7 +65,7 @@ class Classifiers(ClassifiersMixin):
             >>> from sklearn.naive_bayes import GaussianNB
             >>>
             >>> pl = Pipeline(
-            >>>     [("featurizer", Featurizer()), 
+            >>>     [("featurizer", Featurizer()),
             >>>      ("scaler", wrap(StandardScaler)),
             >>>      ("pca", wrap(PCA, reshapes="feature")),
             >>>      ("cls", wrap(GaussianNB, reshapes="feature"))])
