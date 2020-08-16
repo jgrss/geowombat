@@ -30,6 +30,7 @@ msgpack>=1.0.0            # via distributed
 munch>=2.5.0              # via fiona
 netcdf4>=1.5.4            # via -r requirements.in
 numpy>=1.19.1             # via -r requirements.in, cftime, dask, h5py, matplotlib, netcdf4, pandas, rasterio, scikit-learn, scipy, snuggs, xarray
+opencv-python>=4.4.0	  # via -r requirements.in
 pandas>=1.0.5             # via -r requirements.in, dask, geopandas, xarray
 partd>=1.1.0              # via dask
 pillow>=7.2.0             # via matplotlib
