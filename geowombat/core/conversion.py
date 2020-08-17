@@ -539,6 +539,7 @@ class Converters(object):
         poly_values = list(list(zip(*poly_data))[1])
 
         return gpd.GeoDataFrame(data=poly_values,
+                                columns=['value'],
                                 geometry=poly_geom,
                                 crs=data.crs)
 
