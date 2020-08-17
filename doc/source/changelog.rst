@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.2.30 (17 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added array value to polygon `GeoDataFrame` output in :func:`geowombat.array_to_polygon`.
+
 1.2.29 (15 Aug 2020)
 --------------------
 
