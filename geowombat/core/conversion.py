@@ -535,10 +535,11 @@ class Converters(object):
 
         poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
 
-        poly_geom = list(zip(*poly_data))[0]
-        poly_values = list(zip(*poly_data))[1]
+        poly_geom = list(list(zip(*poly_data))[0])
+        poly_values = list(list(zip(*poly_data))[1])
 
         return gpd.GeoDataFrame(data=poly_values,
+                                columns=['value'],
                                 geometry=poly_geom,
                                 crs=data.crs)
 
