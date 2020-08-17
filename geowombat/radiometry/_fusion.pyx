@@ -285,6 +285,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                            double[:, ::1] mres_0,
                            double[:, ::1] hres_k_sim,
                            double[:, ::1] mres_k_sim,
+                           double[:, ::1] conf,
                            double[:, ::1] dist_window,
                            double[:, :, ::1] std_stack,
                            double[::1] abs_dev_k,
@@ -302,24 +303,15 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
 
     cdef:
         Py_ssize_t m1, n1, m2, n2
-        double sp_dist, tp_dist, sw_dist
+        double sp_dist, tp_dist, sw_dist, conf_dist
         double weight, score, fweight
         double sp_dist_a, sp_dist_b
         double weight_sum = 0.0
         double pred = 0.0
         double hres_k_std_dist, mres_k_std_dist, mres_0_std_dist
-        # double hres_sim
+        double hres_sim
 
         double hres_k_sim_thresh = 2.0 * std_stack[0, i+hw, j+hw] / <double>param_n
-
-        # Maximum possible weight
-        # double max_weight = 1.0 / (0.01 * 0.01 * 0.01)
-
-    # if mres_0[i+hw, j+hw] == mres_k[i+hw, j+hw]:
-    #     return hres_k[i+hw, j+hw]
-    # elif hres_k[i+hw, j+hw] == mres_k[i+hw, j+hw]:
-    #     return mres_0[i+hw, j+hw]
-    # else:
 
     for m1 in range(0, w):
         for n1 in range(0, w):
@@ -348,25 +340,28 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
 
                     # Similarity test (|current value - center value|)
-                    # hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
+                    hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
 
                     # Weight for local heterogeneity
                     hres_k_std_dist = 1.0 - _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 20.0) + 1.0
                     mres_k_std_dist = 1.0 - _logistic_scaler(std_stack[1, i+m1, j+n1], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 20.0) + 1.0
                     mres_0_std_dist = 1.0 - _logistic_scaler(std_stack[2, i+m1, j+n1], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 20.0) + 1.0
 
-                    # if hres_sim <= hres_k_sim_thresh:
+                    # Weight for BAP confidence
+                    conf_dist = _logistic(conf[i+m1, j+n1], 0.5, -10.0)
 
-                    # Spatial distance
-                    sw_dist = 1.0 + dist_window[m1, n1] / param_a
-                    # sw_dist = _logistic_scaler(dist_window[m1, n1], 0.0, <double>hw, 7.5, 5.0)
-                    # sw_dist = 1.0 / log(dist_window[m1, n1] + 1.0)
+                    if hres_sim <= hres_k_sim_thresh:
 
-                    # High value = bad
-                    # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                    weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b)
+                        # Spatial distance
+                        sw_dist = 1.0 + dist_window[m1, n1] / param_a
+                        # sw_dist = _logistic_scaler(dist_window[m1, n1], 0.0, <double>hw, 7.5, 5.0)
+                        # sw_dist = 1.0 / log(dist_window[m1, n1] + 1.0)
 
-                    weight_sum += weight
+                        # High value = bad
+                        # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
+                        weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b * conf_dist)
+
+                        weight_sum += weight
 
     if weight_sum > 0:
 
@@ -392,7 +387,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
 
                         # Similarity test (|current value - center value|)
-                        # hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
+                        hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
 
                         # Center distance
                         sp_dist_a = _logistic(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0) + 1.0
@@ -403,19 +398,22 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         mres_k_std_dist = 1.0 - _logistic_scaler(std_stack[1, i+m2, j+n2], std_stack[1, nrows, 0], std_stack[1, nrows, 1], 7.5, 20.0) + 1.0
                         mres_0_std_dist = 1.0 - _logistic_scaler(std_stack[2, i+m2, j+n2], std_stack[2, nrows, 0], std_stack[2, nrows, 1], 7.5, 20.0) + 1.0
 
-                        # if hres_sim <= hres_k_sim_thresh:
+                        # Weight for BAP confidence
+                        conf_dist = _logistic(conf[i+m2, j+n2], 0.5, -10.0)
 
-                        # Spatial distance
-                        sw_dist = 1.0 + dist_window[m2, n2] / param_a
-                        # sw_dist = _logistic_scaler(dist_window[m2, n2], 0.0, <double>hw, 7.5, 5.0)
-                        # sw_dist = 1.0 / log(dist_window[m2, n2] + 1.0)
+                        if hres_sim <= hres_k_sim_thresh:
 
-                        # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
-                        weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b)
+                            # Spatial distance
+                            sw_dist = 1.0 + dist_window[m2, n2] / param_a
+                            # sw_dist = _logistic_scaler(dist_window[m2, n2], 0.0, <double>hw, 7.5, 5.0)
+                            # sw_dist = 1.0 / log(dist_window[m2, n2] + 1.0)
 
-                        score = weight / weight_sum
+                            # weight = (sp_dist + tp_dist + sw_dist + hres_k_std_dist*0.5 + mres_k_std_dist*0.5 + mres_0_std_dist*0.5) / 4.5
+                            weight = 1.0 / (sp_dist * tp_dist * sw_dist * hres_k_std_dist * mres_k_std_dist * mres_0_std_dist * sp_dist_a * sp_dist_b * conf_dist)
 
-                        pred += (score * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+                            score = weight / weight_sum
+
+                            pred += (score * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
 
         return pred
 
@@ -738,7 +736,8 @@ cdef class StarFM(object):
                       double[:, ::1] mres_k not None,
                       double[:, ::1] mres_0 not None,
                       double[:, ::1] hres_k_sim not None,
-                      double[:, ::1] mres_k_sim not None):
+                      double[:, ::1] mres_k_sim not None,
+                      double[:, ::1] conf not None):
 
         cdef:
 
@@ -815,6 +814,7 @@ cdef class StarFM(object):
                                                     mres_0,
                                                     hres_k_sim,
                                                     mres_k_sim,
+                                                    conf,
                                                     dist_window,
                                                     std_stack,
                                                     abs_dev_k,

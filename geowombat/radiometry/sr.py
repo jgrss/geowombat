@@ -52,7 +52,7 @@ def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
     cos_sensor_za_stack = xr.concat([cos_sensor_za] * len(m.band), dim='band')
     cos_sensor_za_stack.coords['band'] = m.band.values
 
-    return rphase_stack * ((1.0 - xr.ufuncs.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
+    return rphase_stack * ((1.0 - np.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
 
 
 def t_sv(r, cos_zenith):
@@ -71,8 +71,8 @@ def t_sv(r, cos_zenith):
     cos_zenith_stack = xr.concat([cos_zenith] * len(r.band), dim='band')
     cos_zenith_stack.coords['band'] = r.band.values
 
-    cose1 = xr.ufuncs.exp(-r / cos_zenith_stack)
-    cose2 = xr.ufuncs.exp(0.52*r / cos_zenith_stack)
+    cose1 = np.exp(-r / cos_zenith_stack)
+    cose2 = np.exp(0.52*r / cos_zenith_stack)
 
     return cose1 + cose1 * (cose2 - 1.0)
 
@@ -89,7 +89,7 @@ def s_atm(r):
         ``float``
     """
 
-    return (0.92*r) * xr.ufuncs.exp(-r)
+    return (0.92*r) * np.exp(-r)
 
 
 def _format_coeff(dataframe, sensor, key):
@@ -466,12 +466,12 @@ class RadTransforms(MetaData):
 
                 sr_data = []
 
+                sxs = SixS(sensor)
+
                 for band in band_names:
 
-                    sxs = SixS(sensor, getattr(dn.gw.wavelengths[sensor], band))
-                    sxs.load()
-
-                    sr_data.append(sxs.rad_to_sr(radiance.sel(band=band),
+                    sr_data.append(sxs.rad_to_sr(radiance,
+                                                 band,
                                                  solar_za,
                                                  meta.date_acquired.timetuple().tm_yday,
                                                  **kwargs))
@@ -572,7 +572,7 @@ class RadTransforms(MetaData):
         if sun_angle:
 
             # TOA reflectance with sun angle correction
-            cos_sza = xr.concat([xr.ufuncs.cos(xr.ufuncs.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
+            cos_sza = xr.concat([np.cos(np.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
             cos_sza.coords['band'] = toar.band.values
             toar = toar / cos_sza
 
@@ -671,18 +671,18 @@ class RadTransforms(MetaData):
         vaa.coords['band'] = [1]
 
         # Convert to radians
-        rad_sza = xr.ufuncs.deg2rad(sza)
-        rad_vza = xr.ufuncs.deg2rad(vza)
+        rad_sza = np.deg2rad(sza)
+        rad_vza = np.deg2rad(vza)
 
         # Cosine(deg2rad(angles)) = angles x (pi / 180)
-        cos_sza = xr.ufuncs.cos(rad_sza)
+        cos_sza = np.cos(rad_sza)
         cos_sza.coords['band'] = [1]
-        cos_vza = xr.ufuncs.cos(rad_vza)
+        cos_vza = np.cos(rad_vza)
         cos_vza.coords['band'] = [1]
 
-        sin_sza = xr.ufuncs.sin(rad_sza)
+        sin_sza = np.sin(rad_sza)
         sin_sza.coords['band'] = [1]
-        sin_vza = xr.ufuncs.sin(rad_vza)
+        sin_vza = np.sin(rad_vza)
         sin_vza.coords['band'] = [1]
 
         # air mass
@@ -701,8 +701,8 @@ class RadTransforms(MetaData):
         # Relative azimuth angle
         # TODO: doesn't work if the band coordinate is named
         raa = relative_azimuth(saa, vaa)
-        rad_raa = xr.ufuncs.deg2rad(raa)
-        cos_raa = xr.ufuncs.cos(rad_raa)
+        rad_raa = np.deg2rad(raa)
+        cos_raa = np.cos(rad_raa)
 
         # scattering angle = the angle between the direction of incident and scattered radiation
         # Liu, CH and Liu GR (2009) AEROSOL OPTICAL DEPTH RETRIEVAL FOR SPOT HRV IMAGES, Journal of Marine Science and Technology
@@ -711,8 +711,8 @@ class RadTransforms(MetaData):
         # cos_vza = cos(pi/180 x vza)
         # sin_sza = sin(pi/180 x sza)
         # sin_vza = sin(pi/180 x vza)
-        scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
-        cos2_scattering_angle = xr.ufuncs.cos(scattering_angle)**2
+        scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+        cos2_scattering_angle = np.cos(scattering_angle)**2
 
         # Rayleigh phase function
         rayleigh_a = 0.9587256
@@ -751,7 +751,7 @@ class RadTransforms(MetaData):
         return sr_data
 
 
-class DOS(RadTransforms):
+class DOS(SixS, RadTransforms):
 
     def aot(self, dn, sensor, meta, src_interp, aot_fallback=0.3, h2o=1.0, o3=0.4, w=5, n_jobs=1):
 
@@ -806,6 +806,8 @@ class DOS(RadTransforms):
         }
         """
 
+        super().__init__(sensor)
+
         band_names = dn.band.values.tolist()
 
         m_p = coeffs_to_array(meta.m_p, band_names)
@@ -841,8 +843,6 @@ class DOS(RadTransforms):
 
             aot = self.get_optimized_aot(blue_rad_dark_data,
                                          blue_p_data,
-                                         sensor,
-                                         getattr(dn.gw.wavelengths[sensor], 'blue'),
                                          meta,
                                          h2o,
                                          o3)
@@ -851,16 +851,7 @@ class DOS(RadTransforms):
             mask[np.isnan(blue_p_data)] = 0
             aot = fillnodata(aot, mask=mask, max_search_distance=100)
 
-            aot = cv2.resize(aot,
-                             (0, 0),
-                             fy=src_interp.gw.nrows / aot.shape[0],
-                             fx=src_interp.gw.ncols / aot.shape[1],
-                             interpolation=cv2.INTER_CUBIC)
-
-            aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), w, w, w, w, cv2.BORDER_REFLECT)),
-                                stat='mean',
-                                w=w,
-                                n_jobs=n_jobs)[w:-w, w:-w]
+            aot = self._resize(aot, src_interp, w, n_jobs)
 
             return ndarray_to_xarray(src_interp, aot, ['aot'])
 
@@ -872,31 +863,29 @@ class DOS(RadTransforms):
                                      ['aot'])
 
     @staticmethod
-    def get_optimized_aot(blue_rad_dark, blue_p_dark, sensor, blue_band, meta, h2o, o3):
+    def _resize(aot, src_interp, w, n_jobs):
 
-        sxs = SixS(sensor, blue_band)
-        sxs.load()
+        for r in np.arange(aot.shape[0]+1000, src_interp.gw.nrows-1000, 5):
 
-        doy = meta.date_acquired.timetuple().tm_yday
-        altitude = 0.0
+            tar_rows = r / aot.shape[0]
+            tar_cols = r / aot.shape[1]
 
-        min_score = np.zeros(blue_rad_dark.shape, dtype='float64') + 1e9
-        aot = np.zeros(blue_rad_dark.shape, dtype='float64')
+            aot = cv2.resize(aot,
+                             (0, 0),
+                             fy=tar_rows,
+                             fx=tar_cols,
+                             interpolation=cv2.INTER_CUBIC)
 
-        for aot_iter in np.linspace(0.1, 1.0, 10):
+        aot = cv2.resize(aot,
+                         (0, 0),
+                         fy=src_interp.gw.nrows / aot.shape[0],
+                         fx=src_interp.gw.ncols / aot.shape[1],
+                         interpolation=cv2.INTER_CUBIC)
 
-            # sza, h2o, o3, aot, alt
-            a, b = sxs.lut(meta.sza, h2o, o3, aot_iter, altitude)
-
-            elliptical_orbit_correction = 0.03275104 * math.cos(doy / 59.66638337) + 0.96804905
-            a *= elliptical_orbit_correction
-            b *= elliptical_orbit_correction
-
-            res = (blue_rad_dark - a) / b
-
-            score = np.abs(res - blue_p_dark)
-
-            aot = np.where(score < min_score, aot_iter, aot)
-            min_score = np.where(score < min_score, score, min_score)
+        aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), w, w, w, w, cv2.BORDER_REFLECT)),
+                            stat='mean',
+                            w=w,
+                            n_jobs=n_jobs)[w:-w, w:-w]
 
         return aot
+

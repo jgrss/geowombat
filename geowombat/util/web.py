@@ -26,6 +26,7 @@ import geopandas as gpd
 import xarray as xr
 from shapely.geometry import Polygon
 import psutil
+from joblib import Parallel, delayed
 
 try:
     import requests
@@ -51,8 +52,16 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        cubic=gdal.GRA_Cubic,
                        nearest=gdal.GRA_NearestNeighbour)
 
+OrbitDates = namedtuple('OrbitDates', 'start end')
+FileInfo = namedtuple('FileInfo', 'name key')
+GoogleFileInfo = namedtuple('GoogleFileInfo', 'url url_file meta angles')
+
 
 def _rmdir(pathdir):
+
+    """
+    Removes a directory path
+    """
 
     if pathdir.is_dir():
 
@@ -215,15 +224,14 @@ def _random_id(string_length):
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
 
-    FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
-
-    file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
+    file_info = GoogleFileInfo(url=None, url_file=None, meta=None, angles=None)
 
     f_base, f_ext = os.path.splitext(filename)
 
     fn_parts = f_base.split('_')
 
     if fn_parts[0].lower() in landsat_parts:
+
         # Collection 1
         url_ = '{PUBLIC}-landsat/{SENSOR}/01/{PATH}/{ROW}/{FDIR}'.format(PUBLIC=public_url,
                                                                          SENSOR=fn_parts[0],
@@ -235,28 +243,94 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
         url_meta = '{URL}/{FN}_MTL.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
         url_angles = '{URL}/{FN}_ANG.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
 
-        file_info = FileInfo(url=url_,
-                             url_file=url_filename,
-                             meta=url_meta,
-                             angles=url_angles)
-
-    # elif fn_parts[0].lower() in sentinel_parts:
-    #
-    #     safe_dir = '{SENSOR}_{M}{L}_'.format(SENSOR=fn_parts[0], M=fn_parts[2], L=fn_parts[3])
-    #
-    #     '/01/K/AB/S2A_MSIL1C_20160519T222025_N0202_R029_T01KAB_20160520T024950.SAFE/GRANULE/S2A_OPER_MSI_L1C_TL_SGS__20160519T234326_A004745_T01KAB_N02.02/IMG_DATA/S2A_OPER_MSI_L1C_TL_SGS__20160519T234326_A004745_T01KAB_B05.jp2'
-    #
-    #     fn = '{PUBLIC}-sentinel-2/tiles/{UTM}/{LAT}/{GRID}'.format(PUBLIC=public_url,
-    #                                                                UTM=,
-    #                                                                LAT=,
-    #                                                                GRID=)
+        file_info = GoogleFileInfo(url=url_,
+                                   url_file=url_filename,
+                                   meta=url_meta,
+                                   angles=url_angles)
 
     return file_info
+
+
+def _download_workers(gcp_str, poutdir, outdir, fname, fn, null_items, verbose):
+
+    # Renaming Sentinel data
+    rename = False
+
+    # Full path of GCP local download
+    down_file = str(poutdir.joinpath(fname))
+
+    if down_file.endswith('_ANG.txt'):
+        fbase = fname.replace('_ANG.txt', '')
+        key = 'angle'
+    elif down_file.endswith('_MTL.txt'):
+        fbase = fname.replace('_MTL.txt', '')
+        key = 'meta'
+    elif down_file.endswith('MTD_TL.xml'):
+
+        fbase = Path(fn).parent.name
+        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+        key = 'meta'
+        rename = True
+
+    elif down_file.endswith('_BQA.TIF'):
+        fbase = fname.replace('_BQA.TIF', '')
+        key = 'qa'
+    else:
+
+        if fname.endswith('.jp2'):
+
+            fbase = Path(fn).parent.parent.name
+            key = Path(fn).name.split('.')[0].split('_')[-1]
+            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+            rename = True
+
+        else:
+
+            fsplit = fname.split('_')
+            fbase = '_'.join(fsplit[:-1])
+            key = fsplit[-1].split('.')[0]
+
+        # TODO: QA60
+
+    continue_download = True
+
+    if fbase in null_items:
+        continue_download = False
+
+    if continue_download:
+
+        ###################
+        # Download the file
+        ###################
+
+        if not Path(down_file).is_file():
+
+            if fn.lower().startswith('gs://gcp-public-data'):
+                com = 'gsutil cp -r {} {}'.format(fn, outdir)
+            else:
+                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+
+            if verbose > 0:
+                logger.info('  Downloading {} ...'.format(fname))
+
+            subprocess.call(com, shell=True)
+
+            if rename:
+                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+
+        # Store file information
+        return key, FileInfo(name=down_file, key=key)
+
+    else:
+        return None, None
 
 
 class GeoDownloads(object):
 
     def __init__(self):
+
+        self._gcp_search_dict = None
+        self.search_dict = None
 
         self.gcp_public = 'https://storage.googleapis.com/gcp-public-data'
         self.aws_l8_public = 'https://landsat-pds.s3.amazonaws.com/c1/L8'
@@ -277,6 +351,29 @@ class GeoDownloads(object):
                        cirrus=10,
                        swir1=11,
                        swir2=12)
+
+        self.gcp_dict = dict(l5='LT05/01',
+                             l7='LE07/01',
+                             l8='LC08/01',
+                             s2='tiles',
+                             s2a='tiles',
+                             s2b='tiles',
+                             s2c='tiles')
+
+        self.sensor_collections = dict(l5='lt05',
+                                       l7='le07',
+                                       l8='lc08')
+
+        self.orbit_dates = dict(l5=OrbitDates(start=datetime.strptime('1984-3-1', '%Y-%m-%d'),
+                                              end=datetime.strptime('2013-6-5', '%Y-%m-%d')),
+                                l7=OrbitDates(start=datetime.strptime('1999-4-15', '%Y-%m-%d'),
+                                              end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                l8=OrbitDates(start=datetime.strptime('2013-2-11', '%Y-%m-%d'),
+                                              end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                s2a=OrbitDates(start=datetime.strptime('2015-6-23', '%Y-%m-%d'),
+                                               end=datetime.strptime('2100-1-1', '%Y-%m-%d')),
+                                s2b=OrbitDates(start=datetime.strptime('2017-3-7', '%Y-%m-%d'),
+                                               end=datetime.strptime('2100-1-1', '%Y-%m-%d')))
 
         self.associations = dict(l5=dict(blue=1,
                                          green=2,
@@ -309,8 +406,6 @@ class GeoDownloads(object):
                                  s2b=s2_dict,
                                  s2c=s2_dict)
 
-        self.search_dict = dict()
-
     def download_cube(self,
                       sensors,
                       date_range,
@@ -324,11 +419,14 @@ class GeoDownloads(object):
                       ref_res=None,
                       l57_angles_path=None,
                       l8_angles_path=None,
+                      subsample=1,
                       write_angle_files=False,
                       mask_qa=False,
                       lqa_mask_items=None,
                       chunks=512,
                       cloud_heights=None,
+                      n_jobs=1,
+                      num_workers=1,
                       num_threads=1,
                       **kwargs):
 
@@ -359,11 +457,14 @@ class GeoDownloads(object):
             resampling (Optional[str]): The resampling method.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
+            subsample (Optional[int]): The sub-sample factor when calculating the angles.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
+            n_jobs (Optional[int]): The number of parallel download workers for ``joblib``.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
@@ -528,12 +629,17 @@ class GeoDownloads(object):
 
                 yearmonth_query = '{:d}{:02d}'.format(year, m)
 
+                target_date = datetime.strptime(yearmonth_query, '%Y%m')
+
                 for sensor in sensors:
 
-                    band_associations = self.associations[sensor]
+                    # Avoid unnecessary GCP queries
+                    if (target_date < self.orbit_dates[sensor.lower()].start) or \
+                            (target_date > self.orbit_dates[sensor.lower()].end):
 
-                    # TODO: get path/row and MGRS from geometry
-                    # location = '21/H/UD' # or '225/083'
+                        continue
+
+                    band_associations = self.associations[sensor]
 
                     if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
@@ -555,12 +661,14 @@ class GeoDownloads(object):
 
                         else:
 
-                            query = '{LOCATION}/*{PATHROW}_{YM}*_T*'.format(LOCATION=location,
+                            query = '{LOCATION}/*{PATHROW}_{YM}*_T1'.format(LOCATION=location,
                                                                             PATHROW=location.replace('/', ''),
                                                                             YM=yearmonth_query)
 
                         # Query and list available files on the GCP
                         self.list_gcp(sensor, query)
+
+                        self.search_dict = self.get_gcp_results
 
                         if not self.search_dict:
 
@@ -586,13 +694,14 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
-                            new_dict_ = dict()
+                            new_dict_ = {}
                             for finfo_key, finfo_dict in file_info.items():
 
-                                sub_dict_ = dict()
+                                sub_dict_ = {}
 
                                 if 'meta' in finfo_dict:
 
@@ -627,6 +736,7 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                         logger.info('  Finished downloading files for yyyymm query, {}.'.format(yearmonth_query))
@@ -708,6 +818,7 @@ class GeoDownloads(object):
                                                                   meta.sensor,
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
+                                                                  subsample=subsample,
                                                                   verbose=1)
 
                                 if (len(bands) == 1) and (bands[0] == 'pan'):
@@ -760,9 +871,6 @@ class GeoDownloads(object):
                                 try:
                                     load_bands_names = [finfo_dict[bd].name for bd in load_bands]
                                 except:
-                                    logger.warning('  File info dictionary:')
-                                    logger.warning(finfo_dict)
-                                    logger.warning('  Loaded bands: {}'.format(','.join(load_bands)))
                                     logger.exception('  Could not get all band name associations.')
                                     raise NameError
 
@@ -781,12 +889,12 @@ class GeoDownloads(object):
                                              chunks=chunks,
                                              num_threads=num_threads) as data:
 
-                                    if data.sel(band=1).min().data.compute(num_threads=num_threads) > 10000:
+                                    if data.sel(band=1).min().data.compute(num_workers=num_workers) > 10000:
                                         valid_data = False
 
                                     if valid_data:
 
-                                        if data.sel(band=1).max().data.compute(num_threads=num_threads) == 0:
+                                        if data.sel(band=1).max().data.compute(num_workers=num_workers) == 0:
                                             valid_data = False
 
                                 if valid_data:
@@ -828,7 +936,7 @@ class GeoDownloads(object):
 
                                                     # Scale from 0-10000 to 0-1 and reshape
                                                     X = (data_cloudless * 0.0001).clip(0, 1).data\
-                                                            .compute(num_workers=num_threads)\
+                                                            .compute(num_workers=num_workers)\
                                                             .transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                     # Predict clouds
@@ -908,7 +1016,7 @@ class GeoDownloads(object):
                                                                                   vza,
                                                                                   vaa,
                                                                                   heights=cloud_heights,
-                                                                                  num_workers=num_threads)
+                                                                                  num_workers=num_workers)
 
                                                     # Update the bands with the mask
                                                     sr_brdf = xr.where((mask.sel(band='mask') == 0) &
@@ -1008,14 +1116,6 @@ class GeoDownloads(object):
             ``dict``
         """
 
-        gcp_dict = dict(l5='LT05/01',
-                        l7='LE07/01',
-                        l8='LC08/01',
-                        s2='tiles',
-                        s2a='tiles',
-                        s2b='tiles',
-                        s2c='tiles')
-
         if sensor not in ['l5', 'l7', 'l8', 's2', 's2a', 's2b', 's2c']:
             logger.exception("  The sensor must be 'l5', 'l7', 'l8', 's2', 's2a', 's2b', or 's2c'.")
             raise NameError
@@ -1025,7 +1125,7 @@ class GeoDownloads(object):
         else:
             gcp_str = "gsutil ls -r gs://gcp-public-data-landsat"
 
-        gsutil_str = gcp_str + "/" + gcp_dict[sensor] + "/" + query
+        gsutil_str = gcp_str + "/" + self.gcp_dict[sensor] + "/" + query
 
         try:
 
@@ -1038,17 +1138,22 @@ class GeoDownloads(object):
 
         output = proc.stdout
 
-        search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+        gcp_search_list = [outp for outp in output.decode('utf-8').split('\n') if '$folder$' not in outp]
+        self._gcp_search_dict = {}
 
-        if search_list:
+        if gcp_search_list:
 
             # Check for length-1 lists with empty strings
-            if search_list[0]:
+            if gcp_search_list[0]:
 
                 if sensor in ['s2', 's2a', 's2b', 's2c']:
-                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-sentinel-2/')
+                    self._gcp_search_dict = self._prepare_gcp_dict(gcp_search_list, 'gs://gcp-public-data-sentinel-2/')
                 else:
-                    self.search_dict = self._prepare_gcp_dict(search_list, 'gs://gcp-public-data-landsat/')
+                    self._gcp_search_dict = self._prepare_gcp_dict(gcp_search_list, 'gs://gcp-public-data-landsat/')
+
+    @property
+    def get_gcp_results(self):
+        return self._gcp_search_dict.copy()
 
     @staticmethod
     def _prepare_gcp_dict(search_list, gcp_str):
@@ -1070,7 +1175,7 @@ class GeoDownloads(object):
         mask_idx = np.where(df['mask'].values)[0]
         mask_range = mask_idx.shape[0] - 1 if mask_idx.shape[0] > 1 else 1
 
-        url_dict = dict()
+        url_dict = {}
 
         for mi in range(0, mask_range):
 
@@ -1098,6 +1203,7 @@ class GeoDownloads(object):
                      search_wildcards=None,
                      search_dict=None,
                      check_file=None,
+                     n_jobs=1,
                      verbose=0):
 
         """
@@ -1112,6 +1218,7 @@ class GeoDownloads(object):
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
             check_file (Optional[str]): A status file to check.
+            n_jobs (Optional[int]): The number of files to download in parallel.
             verbose (Optional[int]): The verbosity level.
 
         Returns:
@@ -1141,8 +1248,6 @@ class GeoDownloads(object):
             gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
         else:
             gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
-
-        FileInfo = namedtuple('FileInfo', 'name key')
 
         downloaded = {}
         null_items = []
@@ -1187,6 +1292,12 @@ class GeoDownloads(object):
                 # Check if the file has been downloaded
                 if sensor.lower() in ['l5', 'l7', 'l8']:
 
+                    if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
+
+                        logger.exception('  The scene id {SCENE_ID} does not match the sensor {SENSOR}.'.format(SCENE_ID=scene_id,
+                                                                                                                SENSOR=sensor))
+                        raise NameError
+
                     # Path of BRDF stack
                     out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
 
@@ -1229,115 +1340,89 @@ class GeoDownloads(object):
 
                 download_list_names = [Path(dfn).name for dfn in sub_download_list]
 
-                for fname, fn in zip(download_list_names, sub_download_list):
+                results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
+                                                                             poutdir,
+                                                                             outdir,
+                                                                             fname,
+                                                                             fn,
+                                                                             null_items,
+                                                                             verbose)
+                                                  for fname, fn in zip(download_list_names, sub_download_list))
 
-                    # Renaming Sentinel data
-                    rename = False
+                for key, finfo_ in results:
 
-                    # Full path of GCP local download
-                    down_file = str(poutdir.joinpath(fname))
+                    if finfo_:
+                        downloaded_sub[key] = finfo_
 
-                    if down_file.endswith('_ANG.txt'):
-                        fbase = fname.replace('_ANG.txt', '')
-                        key = 'angle'
-                    elif down_file.endswith('_MTL.txt'):
-                        fbase = fname.replace('_MTL.txt', '')
-                        key = 'meta'
-                    elif down_file.endswith('MTD_TL.xml'):
-
-                        fbase = Path(fn).parent.name
-                        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
-                        key = 'meta'
-                        rename = True
-
-                    elif down_file.endswith('_BQA.TIF'):
-                        fbase = fname.replace('_BQA.TIF', '')
-                        key = 'qa'
-                    else:
-
-                        if fname.endswith('.jp2'):
-
-                            fbase = Path(fn).parent.parent.name
-                            key = Path(fn).name.split('.')[0].split('_')[-1]
-                            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
-                            rename = True
-
-                        else:
-
-                            fsplit = fname.split('_')
-                            fbase = '_'.join(fsplit[:-1])
-                            key = fsplit[-1].split('.')[0]
-
-                        # TODO: QA60
-
-                    continue_download = True
-
-                    if fbase in null_items:
-                        continue_download = False
-
-                    # if continue_download and check_file:
-                    #
-                    #     ##########################################
-                    #     # Check if the file stack has been created
-                    #     ##########################################
-                    #
-                    #     if key == 'meta':
-                    #
-                    #         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-                    #         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
-                    #
-                    #         if out_brdf.is_file():
-                    #
-                    #             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                    #
-                    #             downloaded_sub[key] = FileInfo(name=down_file, key=key)
-                    #
-                    #             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
-                    #
-                    #             null_items.append(fbase)
-                    #             continue_download = False
-                    #             downloaded_sub = {}
-                    #             break
-                    #
-                    #     # if continue_download:
-                    #     #
-                    #     #     lines = _delayed_read(check_file)
-                    #     #
-                    #     #     if sensor.lower() in ['l5', 'l7', 'l8']:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-                    #     #
-                    #     #     else:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-
-                    if continue_download:
-
-                        ###################
-                        # Download the file
-                        ###################
-
-                        if not Path(down_file).is_file():
-
-                            if fn.lower().startswith('gs://gcp-public-data'):
-                                com = 'gsutil cp -r {} {}'.format(fn, outdir)
-                            else:
-                                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
-
-                            if verbose > 0:
-                                logger.info('  Downloading {} ...'.format(fname))
-
-                            subprocess.call(com, shell=True)
-
-                            if rename:
-                                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
-
-                        # Store file information
-                        downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                # for fname, fn in zip(download_list_names, sub_download_list):
+                #
+                #     # Renaming Sentinel data
+                #     rename = False
+                #
+                #     # Full path of GCP local download
+                #     down_file = str(poutdir.joinpath(fname))
+                #
+                #     if down_file.endswith('_ANG.txt'):
+                #         fbase = fname.replace('_ANG.txt', '')
+                #         key = 'angle'
+                #     elif down_file.endswith('_MTL.txt'):
+                #         fbase = fname.replace('_MTL.txt', '')
+                #         key = 'meta'
+                #     elif down_file.endswith('MTD_TL.xml'):
+                #
+                #         fbase = Path(fn).parent.name
+                #         down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+                #         key = 'meta'
+                #         rename = True
+                #
+                #     elif down_file.endswith('_BQA.TIF'):
+                #         fbase = fname.replace('_BQA.TIF', '')
+                #         key = 'qa'
+                #     else:
+                #
+                #         if fname.endswith('.jp2'):
+                #
+                #             fbase = Path(fn).parent.parent.name
+                #             key = Path(fn).name.split('.')[0].split('_')[-1]
+                #             down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+                #             rename = True
+                #
+                #         else:
+                #
+                #             fsplit = fname.split('_')
+                #             fbase = '_'.join(fsplit[:-1])
+                #             key = fsplit[-1].split('.')[0]
+                #
+                #         # TODO: QA60
+                #
+                #     continue_download = True
+                #
+                #     if fbase in null_items:
+                #         continue_download = False
+                #
+                #     if continue_download:
+                #
+                #         ###################
+                #         # Download the file
+                #         ###################
+                #
+                #         if not Path(down_file).is_file():
+                #
+                #             if fn.lower().startswith('gs://gcp-public-data'):
+                #                 com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                #             else:
+                #                 com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+                #
+                #             if verbose > 0:
+                #                 logger.info('  Downloading {} ...'.format(fname))
+                #
+                #             subprocess.call(com, shell=True)
+                #
+                #             if rename:
+                #                 os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+                #
+                #         # Store file information
+                #         downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
                 if downloaded_sub:
 
