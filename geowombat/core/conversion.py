@@ -538,6 +538,12 @@ class Converters(object):
         poly_geom = list(zip(*poly_data))[0]
         poly_values = list(zip(*poly_data))[1]
 
+        if not isinstance(poly_geom, list):
+            poly_geom = [poly_geom]
+
+        if not isinstance(poly_values, list):
+            poly_values = [poly_values]
+
         return gpd.GeoDataFrame(data=poly_values,
                                 geometry=poly_geom,
                                 crs=data.crs)
