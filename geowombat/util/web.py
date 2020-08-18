@@ -641,7 +641,7 @@ class CloudPathMixin(object):
             cloud (Optional[str]): The cloud strorage to get the URL from. For now, only 'gcp' is supported.
 
         Returns:
-            ``list`` of URLs as strings
+            ``tuple`` of band URLs and metadata URL as strings
 
         Example:
             >>> import os
@@ -652,8 +652,8 @@ class CloudPathMixin(object):
             >>>
             >>> gdl = GeoDownloads()
             >>>
-            >>> urls = gdl.get_landsat_urls('LC08_L1TP_042034_20171225_20180103_01_T1',
-            >>>                             bands=['blue', 'green', 'red'])
+            >>> scene_urls, meta_url = gdl.get_landsat_urls('LC08_L1TP_042034_20171225_20180103_01_T1',
+            >>>                                             bands=['blue', 'green', 'red'])
             >>>
             >>> with gw.open(urls) as src:
             >>>     print(src)
@@ -676,7 +676,10 @@ class CloudPathMixin(object):
 
         lid = f'{sensor_collection}/01/{path}/{row}/{scene_id}'
 
-        return [f'{gcp_base}/{lid}/{scene_id}_B{band_pos}.TIF' for band_pos in band_pos]
+        scene_urls = [f'{gcp_base}/{lid}/{scene_id}_B{band_pos}.TIF' for band_pos in band_pos]
+        meta_url = f'{gcp_base}/{lid}/{scene_id}_MTL.txt'
+
+        return scene_urls, meta_url
 
     @staticmethod
     def get_sentinel2_urls(safe_id, bands=None, cloud='gcp'):
@@ -690,7 +693,7 @@ class CloudPathMixin(object):
             cloud (Optional[str]): The cloud strorage to get the URL from. For now, only 'gcp' is supported.
 
         Returns:
-            ``list`` of URLs as strings
+            ``tuple`` of band URLs and metadata URL as strings
 
         Example:
             >>> import os
@@ -703,8 +706,8 @@ class CloudPathMixin(object):
             >>>
             >>> safe_id = 'S2A_MSIL1C_20180109T135101_N0206_R024_T21HUD_20180109T171608.SAFE/GRANULE/L1C_T21HUD_A013320_20180109T135310'
             >>>
-            >>> urls = gdl.get_sentinel2_urls(safe_id,
-            >>>                               bands=['blue', 'green', 'red', 'nir'])
+            >>> scene_urls, meta_url = gdl.get_sentinel2_urls(safe_id,
+            >>>                                               bands=['blue', 'green', 'red', 'nir'])
             >>>
             >>> with gw.open(urls) as src:
             >>>     print(src)
@@ -728,7 +731,10 @@ class CloudPathMixin(object):
 
         lid = f'{utm}/{zone}/{id_}/{safe_id}/IMG_DATA/{mgrs}_{date}'
 
-        return [f'{gcp_base}/tiles/{lid}_B{band_pos:02d}.jp2' for band_pos in band_pos]
+        scene_urls = [f'{gcp_base}/tiles/{lid}_B{band_pos:02d}.jp2' for band_pos in band_pos]
+        meta_url = f'{utm}/{zone}/{id_}/{safe_id}/MTD_TL.xml'
+
+        return scene_urls, meta_url
 
 
 class GeoDownloads(CloudPathMixin, DownloadMixin):
