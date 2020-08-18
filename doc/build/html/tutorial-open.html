@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opening rasters &#8212; GeoWombat 1.2.25 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening rasters &#8212; GeoWombat 1.2.30 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -49,7 +49,7 @@
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-fa63f27f52b460f848dfdb588417a12c&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-34dc4419bb7e12a5e63387a3c00e665b&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -80,8 +80,8 @@
 <span class="go">&lt;xarray.DataArray (time: 3, band: 1, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * band     (band) int64 1</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * band     (band) int64 1</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * time     (time) datetime64[ns] 2240-07-08 2240-07-08 2240-07-08</span>
 <span class="go">Attributes:</span>
@@ -131,12 +131,12 @@
 <span class="gp">   ...: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">&lt;xarray.DataArray (band: 1, y: 1515, x: 2006)&gt;</span>
-<span class="go">dask.array&lt;maximum, shape=(1, 1515, 2006), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">&lt;xarray.DataArray (y: 1515, x: 2006, band: 1)&gt;</span>
+<span class="go">dask.array&lt;where, shape=(1515, 2006, 1), dtype=uint16, chunksize=(256, 256, 1), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * band     (band) int64 1</span>
 <span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
 <span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">  * band     (band) int64 1</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
 <span class="go">    crs:            +init=epsg:32621</span>
@@ -237,7 +237,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

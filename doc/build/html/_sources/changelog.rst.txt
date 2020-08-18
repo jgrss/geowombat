@@ -3,6 +3,55 @@
 Changelog
 =========
 
+1.x ()
+------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added support for parallel downloads in :func:`download_cube`, from the :class:`geowombat.util.GeoDownloads` class.
+
+1.2.30 (17 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added array value to polygon `GeoDataFrame` output in :func:`geowombat.array_to_polygon`.
+
+1.2.29 (15 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `col` keyword argument in :func:`geowombat.polygon_to_array`.
+
+1.2.28 (14 Aug 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error when using :func:`geowombat.polygon_to_array` with multiple opened rasters.
+
+1.2.27 (8 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error with Google Cloud Platform query updates in :func:`geowombat.util.web.GeoDownloads().download_cube`.
+
+1.2.26 (7 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed the default 'no data' value `nodata=None` to `nodata=0` and added `int` and `float` type checks.
+    - This fix addressed `Issue #41 <https://github.com/jgrss/geowombat/issues/41>`_.
+
 1.2.25 (4 Aug 2020)
 -------------------
 

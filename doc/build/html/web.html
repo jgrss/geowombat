@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web &#8212; GeoWombat 1.2.25 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web &#8212; GeoWombat 1.2.30 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -100,6 +100,88 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="read-from-virtual-cloud-optimized-geotiffs">
+<h2>Read from virtual Cloud Optimized GeoTiffs<a class="headerlink" href="#read-from-virtual-cloud-optimized-geotiffs" title="Permalink to this headline">¶</a></h2>
+<p>Using <cite>rasterio</cite> as a backend, we can read supported files directly from their respective cloud servers. In the example below,
+we query a Landsat scene and open the blue, green, red, and NIR band metadata.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.util</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;CURL_CA_BUNDLE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/etc/ssl/certs/ca-certificates.crt&#39;</span>
+
+<span class="n">gdl</span> <span class="o">=</span> <span class="n">GeoDownloads</span><span class="p">()</span>
+
+<span class="c1"># This part is not necessary if you already know the scene id</span>
+<span class="n">path</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="n">row</span> <span class="o">=</span> <span class="mi">34</span>
+<span class="n">year</span> <span class="o">=</span> <span class="mi">2018</span>
+<span class="n">month</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Query GCP</span>
+<span class="n">gdl</span><span class="o">.</span><span class="n">list_gcp</span><span class="p">(</span><span class="s1">&#39;l8&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{path:03d}</span><span class="s1">/</span><span class="si">{row:03d}</span><span class="s1">/*</span><span class="si">{path:03d}{row:03d}</span><span class="s1">_</span><span class="si">{year:04d}{month:02d}</span><span class="s1">*_T1*&#39;</span><span class="p">)</span>
+
+<span class="c1"># Get the results</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">gdl</span><span class="o">.</span><span class="n">get_gcp_results</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span> <span class="nn">geowombat.util</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
+
+<span class="gp">In [2]: </span><span class="n">gdl</span> <span class="o">=</span> <span class="n">GeoDownloads</span><span class="p">()</span>
+
+<span class="go"># Select a scene id from the query</span>
+<span class="gp">In [3]: </span><span class="n">scene_id</span> <span class="o">=</span> <span class="s1">&#39;LC08_L1TP_042034_20180110_20180119_01_T1&#39;</span>
+
+<span class="go"># Set a list of bands to read</span>
+<span class="gp">In [4]: </span><span class="n">bands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">]</span>
+
+<span class="go"># Get the GCP URLs</span>
+<span class="gp">In [5]: </span><span class="n">urls</span> <span class="o">=</span> <span class="n">gdl</span><span class="o">.</span><span class="n">get_landsat_urls</span><span class="p">(</span><span class="n">scene_id</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">)</span>
+
+<span class="gp">In [6]: </span><span class="nb">print</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>
+<span class="go">[&#39;https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20180110_20180119_01_T1/LC08_L1TP_042034_20180110_20180119_01_T1_B2.TIF&#39;, &#39;https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20180110_20180119_01_T1/LC08_L1TP_042034_20180110_20180119_01_T1_B3.TIF&#39;, &#39;https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20180110_20180119_01_T1/LC08_L1TP_042034_20180110_20180119_01_T1_B4.TIF&#39;, &#39;https://storage.googleapis.com/gcp-public-data-landsat/LC08/01/042/034/LC08_L1TP_042034_20180110_20180119_01_T1/LC08_L1TP_042034_20180110_20180119_01_T1_B5.TIF&#39;]</span>
+</pre></div>
+</div>
+<p>Use the URLs to read the Landsat bands</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Open the images</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;l8bgrn&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The setup for Sentinel 2 is slightly different because of the SAFE directory storage format. Instead of a scene id, we need
+a longer SAFE id.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that the Sentinel 2 data are not cloud optimized because they are stored in the .jp2 format. Therefore, the read performance
+could be much slower compared to the Landsat GeoTiffs.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gdl</span><span class="o">.</span><span class="n">list_gcp</span><span class="p">(</span><span class="s1">&#39;s2b&#39;</span><span class="p">,</span> <span class="s1">&#39;21/H/UD/*201801*.SAFE/GRANULE/*&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">geowombat.util</span> <span class="kn">import</span> <span class="n">GeoDownloads</span>
+
+<span class="gp">In [8]: </span><span class="n">gdl</span> <span class="o">=</span> <span class="n">GeoDownloads</span><span class="p">()</span>
+
+<span class="gp">In [9]: </span><span class="n">safe_id</span> <span class="o">=</span> <span class="s1">&#39;S2B_MSIL1C_20180124T135109_N0206_R024_T21HUD_20180124T153339.SAFE/GRANULE/L1C_T21HUD_A004626_20180124T135105&#39;</span>
+
+<span class="go"># We will read the blue, green, red, and NIR 10m bands</span>
+<span class="gp">In [10]: </span><span class="n">bands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">]</span>
+
+<span class="gp">In [11]: </span><span class="n">urls</span> <span class="o">=</span> <span class="n">gdl</span><span class="o">.</span><span class="n">get_sentinel2_urls</span><span class="p">(</span><span class="n">safe_id</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">)</span>
+
+<span class="gp">In [12]: </span><span class="nb">print</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>
+<span class="go">[&#39;https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/21/H/UD/S2B_MSIL1C_20180124T135109_N0206_R024_T21HUD_20180124T153339.SAFE/GRANULE/L1C_T21HUD_A004626_20180124T135105/IMG_DATA/T21HUD_20180124T135109_B01.jp2&#39;, &#39;https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/21/H/UD/S2B_MSIL1C_20180124T135109_N0206_R024_T21HUD_20180124T153339.SAFE/GRANULE/L1C_T21HUD_A004626_20180124T135105/IMG_DATA/T21HUD_20180124T135109_B02.jp2&#39;, &#39;https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/21/H/UD/S2B_MSIL1C_20180124T135109_N0206_R024_T21HUD_20180124T153339.SAFE/GRANULE/L1C_T21HUD_A004626_20180124T135105/IMG_DATA/T21HUD_20180124T135109_B03.jp2&#39;, &#39;https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/21/H/UD/S2B_MSIL1C_20180124T135109_N0206_R024_T21HUD_20180124T153339.SAFE/GRANULE/L1C_T21HUD_A004626_20180124T135105/IMG_DATA/T21HUD_20180124T135109_B07.jp2&#39;]</span>
+</pre></div>
+</div>
+<p>Use the URLs to read the Sentinel 2 bands</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Open the images</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;s2b10&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -185,7 +267,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

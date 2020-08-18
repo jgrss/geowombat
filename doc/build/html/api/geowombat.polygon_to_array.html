@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>polygon_to_array &#8212; GeoWombat 1.2.25 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>polygon_to_array &#8212; GeoWombat 1.2.30 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -39,12 +39,14 @@
 <h1>polygon_to_array<a class="headerlink" href="#polygon-to-array" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.polygon_to_array">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygon_to_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cellx</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">celly</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">src_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em>, <em class="sig-param"><span class="n">sindex</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygon_to_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygon_to_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">col</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cellx</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">celly</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">src_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em>, <em class="sig-param"><span class="n">sindex</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygon_to_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a polygon geometry to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>polygon</strong> (<em>GeoDataFrame | str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.DataFrame</span></code> or file with polygon geometry.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">polygon</span></code> you want to assign values from.
+If not set, creates a binary raster.</p></li>
 <li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to use as a reference.</p></li>
 <li><p><strong>cellx</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell x size.</p></li>
 <li><p><strong>celly</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell y size.</p></li>
@@ -164,7 +166,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
