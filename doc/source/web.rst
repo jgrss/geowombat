@@ -147,7 +147,7 @@ a longer SAFE id.
     # We will read the blue, green, red, and NIR 10m bands
     bands = ['blue', 'green', 'red', 'nir']
 
-    urls = gdl.get_landsat_urls(safe_id, bands=bands)
+    urls = gdl.get_sentinel2_urls(safe_id, bands=bands)
 
     print(urls)
 
