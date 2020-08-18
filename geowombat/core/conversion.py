@@ -533,9 +533,13 @@ class Converters(object):
                               connectivity=connectivity,
                               transform=data.gw.transform)
 
-        poly_geom = [Polygon(p[0]['coordinates'][0]) for p in poly_objects]
+        poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
 
-        return gpd.GeoDataFrame(data=np.ones(len(poly_geom), dtype='uint8'),
+        poly_geom = list(list(zip(*poly_data))[0])
+        poly_values = list(list(zip(*poly_data))[1])
+
+        return gpd.GeoDataFrame(data=poly_values,
+                                columns=['value'],
                                 geometry=poly_geom,
                                 crs=data.crs)
 
@@ -600,6 +604,7 @@ class Converters(object):
     @lazy_wombat
     def polygon_to_array(self,
                          polygon,
+                         col=None,
                          data=None,
                          cellx=None,
                          celly=None,
@@ -618,6 +623,8 @@ class Converters(object):
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
+            col (Optional[str]): The column in ``polygon`` you want to assign values from.
+                If not set, creates a binary raster.
             data (Optional[DataArray]): An ``xarray.DataArray`` to use as a reference.
             cellx (Optional[float]): The output cell x size.
             celly (Optional[float]): The output cell y size.
@@ -658,7 +665,7 @@ class Converters(object):
             if os.path.isfile(polygon):
                 dataframe = gpd.read_file(polygon)
             else:
-                logger.exception('  The polygon file does not exists.')
+                logger.exception('  The polygon file does not exist.')
                 raise OSError
 
         if isinstance(data, xr.DataArray):
@@ -674,7 +681,7 @@ class Converters(object):
                 sindex = dataframe.sindex
 
             # Get intersecting features
-            int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.bounds.values.flatten()))))
+            int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.total_bounds.flatten()))))
 
             if not int_idx:
 
@@ -727,14 +734,19 @@ class Converters(object):
 
             dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
-        varray = rasterize(dataframe.geometry.values,
+        if col:
+            shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
+        else: 
+            shapes = dataframe.geometry.values
+            
+        varray = rasterize(shapes,
                            out_shape=(dst_height, dst_width),
                            transform=dst_transform,
                            fill=fill,
                            default_value=default_value,
                            all_touched=all_touched,
                            dtype=dtype)
-
+        
         cellxh = abs(cellx) / 2.0
         cellyh = abs(celly) / 2.0
 

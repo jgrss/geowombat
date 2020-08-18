@@ -17,6 +17,7 @@ zarr:                   zarr
 numcodecs:              zarr
 dask-ml:                ml
 lightgbm:               ml
+sklearn-xarray:         ml
 rtree:                  perf
 pygeos:                 perf
 opencv-python:          perf
