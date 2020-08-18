@@ -3,6 +3,19 @@
 Changelog
 =========
 
+1.x ()
+------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added support for parallel downloads in :func:`download_cube`, from the :class:`geowombat.util.GeoDownloads` class.
+
+New
+~~~
+
+- Added Landsat and Sentinel 2 URL parsing in :class:`geowombat.util.GeoDownloads` for data on the Google Cloud Platform.
+
 1.2.30 (17 Aug 2020)
 --------------------
 
