@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.x ()
+------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added support for parallel downloads in :func:`download_cube`, from the :class:`geowombat.util.GeoDownloads` class.
+
 1.2.30 (17 Aug 2020)
 --------------------
 
