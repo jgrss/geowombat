@@ -1,4 +1,5 @@
 from .classifiers import Classifiers
+from .transformers import Stackerizer
 
 
 fit = Classifiers().fit
