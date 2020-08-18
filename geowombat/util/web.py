@@ -26,6 +26,7 @@ import geopandas as gpd
 import xarray as xr
 from shapely.geometry import Polygon
 import psutil
+from joblib import Parallel, delayed
 
 try:
     import requests
@@ -52,6 +53,8 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        nearest=gdal.GRA_NearestNeighbour)
 
 OrbitDates = namedtuple('OrbitDates', 'start end')
+FileInfo = namedtuple('FileInfo', 'name key')
+GoogleFileInfo = namedtuple('GoogleFileInfo', 'url url_file meta angles')
 
 
 def _rmdir(pathdir):
@@ -221,9 +224,7 @@ def _random_id(string_length):
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
 
-    FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
-
-    file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
+    file_info = GoogleFileInfo(url=None, url_file=None, meta=None, angles=None)
 
     f_base, f_ext = os.path.splitext(filename)
 
@@ -242,12 +243,86 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
         url_meta = '{URL}/{FN}_MTL.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
         url_angles = '{URL}/{FN}_ANG.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
 
-        file_info = FileInfo(url=url_,
-                             url_file=url_filename,
-                             meta=url_meta,
-                             angles=url_angles)
+        file_info = GoogleFileInfo(url=url_,
+                                   url_file=url_filename,
+                                   meta=url_meta,
+                                   angles=url_angles)
 
     return file_info
+
+
+def _download_workers(gcp_str, poutdir, outdir, fname, fn, null_items, verbose):
+
+    # Renaming Sentinel data
+    rename = False
+
+    # Full path of GCP local download
+    down_file = str(poutdir.joinpath(fname))
+
+    if down_file.endswith('_ANG.txt'):
+        fbase = fname.replace('_ANG.txt', '')
+        key = 'angle'
+    elif down_file.endswith('_MTL.txt'):
+        fbase = fname.replace('_MTL.txt', '')
+        key = 'meta'
+    elif down_file.endswith('MTD_TL.xml'):
+
+        fbase = Path(fn).parent.name
+        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+        key = 'meta'
+        rename = True
+
+    elif down_file.endswith('_BQA.TIF'):
+        fbase = fname.replace('_BQA.TIF', '')
+        key = 'qa'
+    else:
+
+        if fname.endswith('.jp2'):
+
+            fbase = Path(fn).parent.parent.name
+            key = Path(fn).name.split('.')[0].split('_')[-1]
+            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+            rename = True
+
+        else:
+
+            fsplit = fname.split('_')
+            fbase = '_'.join(fsplit[:-1])
+            key = fsplit[-1].split('.')[0]
+
+        # TODO: QA60
+
+    continue_download = True
+
+    if fbase in null_items:
+        continue_download = False
+
+    if continue_download:
+
+        ###################
+        # Download the file
+        ###################
+
+        if not Path(down_file).is_file():
+
+            if fn.lower().startswith('gs://gcp-public-data'):
+                com = 'gsutil cp -r {} {}'.format(fn, outdir)
+            else:
+                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+
+            if verbose > 0:
+                logger.info('  Downloading {} ...'.format(fname))
+
+            subprocess.call(com, shell=True)
+
+            if rename:
+                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+
+        # Store file information
+        return key, FileInfo(name=down_file, key=key)
+
+    else:
+        return None, None
 
 
 class GeoDownloads(object):
@@ -344,11 +419,14 @@ class GeoDownloads(object):
                       ref_res=None,
                       l57_angles_path=None,
                       l8_angles_path=None,
+                      subsample=1,
                       write_angle_files=False,
                       mask_qa=False,
                       lqa_mask_items=None,
                       chunks=512,
                       cloud_heights=None,
+                      n_jobs=1,
+                      num_workers=1,
                       num_threads=1,
                       **kwargs):
 
@@ -379,11 +457,14 @@ class GeoDownloads(object):
             resampling (Optional[str]): The resampling method.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
+            subsample (Optional[int]): The sub-sample factor when calculating the angles.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
+            n_jobs (Optional[int]): The number of parallel download workers for ``joblib``.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
@@ -613,6 +694,7 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
@@ -654,6 +736,7 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                         logger.info('  Finished downloading files for yyyymm query, {}.'.format(yearmonth_query))
@@ -735,6 +818,7 @@ class GeoDownloads(object):
                                                                   meta.sensor,
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
+                                                                  subsample=subsample,
                                                                   verbose=1)
 
                                 if (len(bands) == 1) and (bands[0] == 'pan'):
@@ -805,12 +889,12 @@ class GeoDownloads(object):
                                              chunks=chunks,
                                              num_threads=num_threads) as data:
 
-                                    if data.sel(band=1).min().data.compute(num_threads=num_threads) > 10000:
+                                    if data.sel(band=1).min().data.compute(num_workers=num_workers) > 10000:
                                         valid_data = False
 
                                     if valid_data:
 
-                                        if data.sel(band=1).max().data.compute(num_threads=num_threads) == 0:
+                                        if data.sel(band=1).max().data.compute(num_workers=num_workers) == 0:
                                             valid_data = False
 
                                 if valid_data:
@@ -852,7 +936,7 @@ class GeoDownloads(object):
 
                                                     # Scale from 0-10000 to 0-1 and reshape
                                                     X = (data_cloudless * 0.0001).clip(0, 1).data\
-                                                            .compute(num_workers=num_threads)\
+                                                            .compute(num_workers=num_workers)\
                                                             .transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                     # Predict clouds
@@ -932,7 +1016,7 @@ class GeoDownloads(object):
                                                                                   vza,
                                                                                   vaa,
                                                                                   heights=cloud_heights,
-                                                                                  num_workers=num_threads)
+                                                                                  num_workers=num_workers)
 
                                                     # Update the bands with the mask
                                                     sr_brdf = xr.where((mask.sel(band='mask') == 0) &
@@ -1119,6 +1203,7 @@ class GeoDownloads(object):
                      search_wildcards=None,
                      search_dict=None,
                      check_file=None,
+                     n_jobs=1,
                      verbose=0):
 
         """
@@ -1133,6 +1218,7 @@ class GeoDownloads(object):
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
             check_file (Optional[str]): A status file to check.
+            n_jobs (Optional[int]): The number of files to download in parallel.
             verbose (Optional[int]): The verbosity level.
 
         Returns:
@@ -1162,8 +1248,6 @@ class GeoDownloads(object):
             gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
         else:
             gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
-
-        FileInfo = namedtuple('FileInfo', 'name key')
 
         downloaded = {}
         null_items = []
@@ -1256,115 +1340,89 @@ class GeoDownloads(object):
 
                 download_list_names = [Path(dfn).name for dfn in sub_download_list]
 
-                for fname, fn in zip(download_list_names, sub_download_list):
+                results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
+                                                                             poutdir,
+                                                                             outdir,
+                                                                             fname,
+                                                                             fn,
+                                                                             null_items,
+                                                                             verbose)
+                                                  for fname, fn in zip(download_list_names, sub_download_list))
 
-                    # Renaming Sentinel data
-                    rename = False
+                for key, finfo_ in results:
 
-                    # Full path of GCP local download
-                    down_file = str(poutdir.joinpath(fname))
+                    if finfo_:
+                        downloaded_sub[key] = finfo_
 
-                    if down_file.endswith('_ANG.txt'):
-                        fbase = fname.replace('_ANG.txt', '')
-                        key = 'angle'
-                    elif down_file.endswith('_MTL.txt'):
-                        fbase = fname.replace('_MTL.txt', '')
-                        key = 'meta'
-                    elif down_file.endswith('MTD_TL.xml'):
-
-                        fbase = Path(fn).parent.name
-                        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
-                        key = 'meta'
-                        rename = True
-
-                    elif down_file.endswith('_BQA.TIF'):
-                        fbase = fname.replace('_BQA.TIF', '')
-                        key = 'qa'
-                    else:
-
-                        if fname.endswith('.jp2'):
-
-                            fbase = Path(fn).parent.parent.name
-                            key = Path(fn).name.split('.')[0].split('_')[-1]
-                            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
-                            rename = True
-
-                        else:
-
-                            fsplit = fname.split('_')
-                            fbase = '_'.join(fsplit[:-1])
-                            key = fsplit[-1].split('.')[0]
-
-                        # TODO: QA60
-
-                    continue_download = True
-
-                    if fbase in null_items:
-                        continue_download = False
-
-                    # if continue_download and check_file:
-                    #
-                    #     ##########################################
-                    #     # Check if the file stack has been created
-                    #     ##########################################
-                    #
-                    #     if key == 'meta':
-                    #
-                    #         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-                    #         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
-                    #
-                    #         if out_brdf.is_file():
-                    #
-                    #             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                    #
-                    #             downloaded_sub[key] = FileInfo(name=down_file, key=key)
-                    #
-                    #             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
-                    #
-                    #             null_items.append(fbase)
-                    #             continue_download = False
-                    #             downloaded_sub = {}
-                    #             break
-                    #
-                    #     # if continue_download:
-                    #     #
-                    #     #     lines = _delayed_read(check_file)
-                    #     #
-                    #     #     if sensor.lower() in ['l5', 'l7', 'l8']:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-                    #     #
-                    #     #     else:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-
-                    if continue_download:
-
-                        ###################
-                        # Download the file
-                        ###################
-
-                        if not Path(down_file).is_file():
-
-                            if fn.lower().startswith('gs://gcp-public-data'):
-                                com = 'gsutil cp -r {} {}'.format(fn, outdir)
-                            else:
-                                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
-
-                            if verbose > 0:
-                                logger.info('  Downloading {} ...'.format(fname))
-
-                            subprocess.call(com, shell=True)
-
-                            if rename:
-                                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
-
-                        # Store file information
-                        downloaded_sub[key] = FileInfo(name=down_file, key=key)
+                # for fname, fn in zip(download_list_names, sub_download_list):
+                #
+                #     # Renaming Sentinel data
+                #     rename = False
+                #
+                #     # Full path of GCP local download
+                #     down_file = str(poutdir.joinpath(fname))
+                #
+                #     if down_file.endswith('_ANG.txt'):
+                #         fbase = fname.replace('_ANG.txt', '')
+                #         key = 'angle'
+                #     elif down_file.endswith('_MTL.txt'):
+                #         fbase = fname.replace('_MTL.txt', '')
+                #         key = 'meta'
+                #     elif down_file.endswith('MTD_TL.xml'):
+                #
+                #         fbase = Path(fn).parent.name
+                #         down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+                #         key = 'meta'
+                #         rename = True
+                #
+                #     elif down_file.endswith('_BQA.TIF'):
+                #         fbase = fname.replace('_BQA.TIF', '')
+                #         key = 'qa'
+                #     else:
+                #
+                #         if fname.endswith('.jp2'):
+                #
+                #             fbase = Path(fn).parent.parent.name
+                #             key = Path(fn).name.split('.')[0].split('_')[-1]
+                #             down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+                #             rename = True
+                #
+                #         else:
+                #
+                #             fsplit = fname.split('_')
+                #             fbase = '_'.join(fsplit[:-1])
+                #             key = fsplit[-1].split('.')[0]
+                #
+                #         # TODO: QA60
+                #
+                #     continue_download = True
+                #
+                #     if fbase in null_items:
+                #         continue_download = False
+                #
+                #     if continue_download:
+                #
+                #         ###################
+                #         # Download the file
+                #         ###################
+                #
+                #         if not Path(down_file).is_file():
+                #
+                #             if fn.lower().startswith('gs://gcp-public-data'):
+                #                 com = 'gsutil cp -r {} {}'.format(fn, outdir)
+                #             else:
+                #                 com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+                #
+                #             if verbose > 0:
+                #                 logger.info('  Downloading {} ...'.format(fname))
+                #
+                #             subprocess.call(com, shell=True)
+                #
+                #             if rename:
+                #                 os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+                #
+                #         # Store file information
+                #         downloaded_sub[key] = FileInfo(name=down_file, key=key)
 
                 if downloaded_sub:
 
