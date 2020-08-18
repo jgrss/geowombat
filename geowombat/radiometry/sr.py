@@ -508,8 +508,8 @@ class RadTransforms(MetaData):
 
         Args:
             dn (DataArray): The digital number data to calibrate.
-            gain (DataArray): A gain value.
-            bias (DataArray): A bias value.
+            gain (DataArray | dict): A gain value.
+            bias (DataArray | dict): A bias value.
             solar_za (DataArray): The solar zenith angle.
             angle_factor (Optional[float]): The scale factor for angles.
             sun_angle (Optional[bool]): Whether to correct for the sun angle.
@@ -518,11 +518,21 @@ class RadTransforms(MetaData):
             ``xarray.DataArray``
         """
 
+        if isinstance(gain, dict):
+            gain = coeffs_to_array(gain, dn.band.values.tolist())
+
+        if isinstance(bias, dict):
+            bias = coeffs_to_array(bias, dn.band.values.tolist())
+
         attrs = dn.attrs.copy()
 
         toar = self._linear_transform(dn, gain, bias)
 
         if sun_angle:
+
+            if not isinstance(solar_za, xr.DataArray):
+                logger.exception('  The solar zenith must be supplied.')
+                raise NameError
 
             # TOA reflectance with sun angle correction
             cos_sza = xr.concat([np.cos(np.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
