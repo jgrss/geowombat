@@ -114,7 +114,8 @@ we query a Landsat scene and open the blue, green, red, and NIR band metadata.
     # Get the GCP URLs
     urls = gdl.get_landsat_urls(scene_id, bands=bands)
 
-    print(urls)
+    for url in urls:
+        print(url)
 
 Use the URLs to read the Landsat bands
 
@@ -149,7 +150,8 @@ a longer SAFE id.
 
     urls = gdl.get_sentinel2_urls(safe_id, bands=bands)
 
-    print(urls)
+    for url in urls:
+        print(url)
 
 Use the URLs to read the Sentinel 2 bands
 
