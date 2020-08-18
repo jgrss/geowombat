@@ -14,6 +14,7 @@ import logging
 from ..handler import add_handler
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
 from ..radiometry.angles import estimate_cloud_shadows
+from ..core.properties import get_sensor_info
 from ..core import ndarray_to_xarray
 from ..backends.gdal_ import warp
 
@@ -26,6 +27,7 @@ import geopandas as gpd
 import xarray as xr
 from shapely.geometry import Polygon
 import psutil
+from joblib import Parallel, delayed
 
 try:
     import requests
@@ -52,6 +54,8 @@ RESAMPLING_DICT = dict(bilinear=gdal.GRA_Bilinear,
                        nearest=gdal.GRA_NearestNeighbour)
 
 OrbitDates = namedtuple('OrbitDates', 'start end')
+FileInfo = namedtuple('FileInfo', 'name key')
+GoogleFileInfo = namedtuple('GoogleFileInfo', 'url url_file meta angles')
 
 
 def _rmdir(pathdir):
@@ -221,9 +225,7 @@ def _random_id(string_length):
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
 
-    FileInfo = namedtuple('FileInfo', 'url url_file meta angles')
-
-    file_info = FileInfo(url=None, url_file=None, meta=None, angles=None)
+    file_info = GoogleFileInfo(url=None, url_file=None, meta=None, angles=None)
 
     f_base, f_ext = os.path.splitext(filename)
 
@@ -242,15 +244,500 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
         url_meta = '{URL}/{FN}_MTL.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
         url_angles = '{URL}/{FN}_ANG.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
 
-        file_info = FileInfo(url=url_,
-                             url_file=url_filename,
-                             meta=url_meta,
-                             angles=url_angles)
+        file_info = GoogleFileInfo(url=url_,
+                                   url_file=url_filename,
+                                   meta=url_meta,
+                                   angles=url_angles)
 
     return file_info
 
 
-class GeoDownloads(object):
+def _download_workers(gcp_str, poutdir, outdir, fname, fn, null_items, verbose):
+
+    # Renaming Sentinel data
+    rename = False
+
+    # Full path of GCP local download
+    down_file = str(poutdir.joinpath(fname))
+
+    if down_file.endswith('_ANG.txt'):
+        fbase = fname.replace('_ANG.txt', '')
+        key = 'angle'
+    elif down_file.endswith('_MTL.txt'):
+        fbase = fname.replace('_MTL.txt', '')
+        key = 'meta'
+    elif down_file.endswith('MTD_TL.xml'):
+
+        fbase = Path(fn).parent.name
+        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
+        key = 'meta'
+        rename = True
+
+    elif down_file.endswith('_BQA.TIF'):
+        fbase = fname.replace('_BQA.TIF', '')
+        key = 'qa'
+    else:
+
+        if fname.endswith('.jp2'):
+
+            fbase = Path(fn).parent.parent.name
+            key = Path(fn).name.split('.')[0].split('_')[-1]
+            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+            rename = True
+
+        else:
+
+            fsplit = fname.split('_')
+            fbase = '_'.join(fsplit[:-1])
+            key = fsplit[-1].split('.')[0]
+
+        # TODO: QA60
+
+    continue_download = True
+
+    if fbase in null_items:
+        continue_download = False
+
+    if continue_download:
+
+        ###################
+        # Download the file
+        ###################
+
+        if not Path(down_file).is_file():
+
+            if fn.lower().startswith('gs://gcp-public-data'):
+                com = 'gsutil cp -r {} {}'.format(fn, outdir)
+            else:
+                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
+
+            if verbose > 0:
+                logger.info('  Downloading {} ...'.format(fname))
+
+            subprocess.call(com, shell=True)
+
+            if rename:
+                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
+
+        # Store file information
+        return key, FileInfo(name=down_file, key=key)
+
+    else:
+        return None, None
+
+
+class DownloadMixin(object):
+
+    def download_gcp(self,
+                     sensor,
+                     downloads=None,
+                     outdir='.',
+                     outdir_brdf=None,
+                     search_wildcards=None,
+                     search_dict=None,
+                     check_file=None,
+                     n_jobs=1,
+                     verbose=0):
+
+        """
+        Downloads a file from Google Cloud platform
+
+        Args:
+            sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2a', 's2c'].
+            downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
+                from ``search_dict`` or ``self.search_dict``.
+            outdir (Optional[str | Path]): The output directory.
+            outdir_brdf (Optional[Path]): The output directory.
+            search_wildcards (Optional[list]): A list of search wildcards.
+            search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
+            check_file (Optional[str]): A status file to check.
+            n_jobs (Optional[int]): The number of files to download in parallel.
+            verbose (Optional[int]): The verbosity level.
+
+        Returns:
+            ``dict`` of ``dicts``
+                where sub-dictionaries contain a ``namedtuple`` of the downloaded file and tag
+        """
+
+        if not search_dict:
+
+            if not self.search_dict:
+                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
+            else:
+                search_dict = self.search_dict
+
+        poutdir = Path(outdir)
+
+        if outdir != '.':
+            poutdir.mkdir(parents=True, exist_ok=True)
+
+        if not downloads:
+            downloads = list(search_dict.keys())
+
+        if not isinstance(downloads, list):
+            downloads = [downloads]
+
+        if sensor in ['s2', 's2a', 's2b', 's2c']:
+            gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
+        else:
+            gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
+
+        downloaded = {}
+        null_items = []
+
+        for search_key in downloads:
+
+            download_list = self.search_dict[search_key]
+
+            if search_wildcards:
+
+                download_list_ = []
+
+                for swild in search_wildcards:
+                    download_list_ += fnmatch.filter(download_list, '*{}'.format(swild))
+
+                download_list = download_list_
+
+            download_list_names = [Path(dfn).name for dfn in download_list]
+
+            logger.info('  The download contains {:d} items: {}'.format(len(download_list_names), ','.join(download_list_names)))
+
+            # Separate each scene
+            if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                # list of file ids
+                id_list = ['_'.join(fn.split('_')[:-1]) for fn in download_list_names if fn.endswith('_MTL.txt')]
+
+                # list of lists where each sub-list is unique
+                download_list_unique = [[fn for fn in download_list if sid in Path(fn).name] for sid in id_list]
+
+            else:
+
+                id_list = list(set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names]))
+                download_list_unique = [download_list]
+
+            for scene_id, sub_download_list in zip(id_list, download_list_unique):
+
+                logger.info('  Checking scene {} ...'.format(scene_id))
+
+                downloaded_sub = {}
+
+                # Check if the file has been downloaded
+                if sensor.lower() in ['l5', 'l7', 'l8']:
+
+                    if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
+
+                        logger.exception('  The scene id {SCENE_ID} does not match the sensor {SENSOR}.'.format(SCENE_ID=scene_id,
+                                                                                                                SENSOR=sensor))
+                        raise NameError
+
+                    # Path of BRDF stack
+                    out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
+
+                else:
+
+                    fn = sub_download_list[0]
+                    fname = Path(fn).name
+
+                    if fname.lower().endswith('.jp2'):
+
+                        fbase = Path(fn).parent.parent.name
+                        key = Path(fn).name.split('.')[0].split('_')[-1]
+                        down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+
+                        brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
+                        out_brdf = outdir_brdf.joinpath(brdfp + '_MTD.tif')
+
+                    else:
+                        out_brdf = None
+
+                if out_brdf:
+
+                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
+
+                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
+                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
+                        continue
+
+                    else:
+                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
+
+                # Move the metadata file to the front of the
+                # list to avoid unnecessary downloads.
+                if sensor.lower() in ['l5', 'l7', 'l8']:
+                    meta_index = [i for i in range(0, len(sub_download_list)) if sub_download_list[i].endswith('_MTL.txt')][0]
+                    sub_download_list.insert(0, sub_download_list.pop(meta_index))
+                else:
+                    # The Sentinel 2 metadata files come in their own list
+                    pass
+
+                download_list_names = [Path(dfn).name for dfn in sub_download_list]
+
+                results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
+                                                                             poutdir,
+                                                                             outdir,
+                                                                             fname,
+                                                                             fn,
+                                                                             null_items,
+                                                                             verbose)
+                                                  for fname, fn in zip(download_list_names, sub_download_list))
+
+                for key, finfo_ in results:
+
+                    if finfo_:
+                        downloaded_sub[key] = finfo_
+
+                if downloaded_sub:
+
+                    if len(downloaded_sub) < len(sub_download_list):
+
+                        downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
+                        missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
+
+                        logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(sub_download_list)))
+                        logger.warning('  {} are missing.'.format(missing_items))
+
+                    downloaded[search_key] = downloaded_sub
+
+        return downloaded
+
+    def download_aws(self,
+                     landsat_id,
+                     band_list,
+                     outdir='.'):
+
+        """
+        Downloads Landsat 8 data from Amazon AWS
+
+        Args:
+            landsat_id (str): The Landsat id to download.
+            band_list (list): The Landsat bands to download.
+            outdir (Optional[str]): The output directory.
+
+        Examples:
+            >>> from geowombat.util import GeoDownloads
+            >>>
+            >>> dl = GeoDownloads()
+            >>> dl.download_aws('LC08_L1TP_224077_20200518_20200518_01_RT', ['b2', 'b3', 'b4'])
+        """
+
+        if not REQUESTS_INSTALLED:
+            logger.exception('Requests must be installed.')
+
+        if not isinstance(outdir, Path):
+            outdir = Path(outdir)
+
+        parts = landsat_id.split('_')
+
+        path_row = parts[2]
+        path = int(path_row[:3])
+        row = int(path_row[3:])
+
+        def _download_file(in_file, out_file):
+
+            response = requests.get(in_file)
+
+            with open(out_file, 'wb') as f:
+                f.write(response.content)
+
+        mtl_id = '{landsat_id}_MTL.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                  path=path,
+                                                                                  row=row,
+                                                                                  landsat_id=landsat_id,
+                                                                                  mtl_id=mtl_id)
+
+        mtl_out = outdir / mtl_id
+
+        _download_file(url, str(mtl_out))
+
+        angle_id = '{landsat_id}_ANG.txt'.format(landsat_id=landsat_id)
+
+        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                    path=path,
+                                                                                    row=row,
+                                                                                    landsat_id=landsat_id,
+                                                                                    angle_id=angle_id)
+
+        angle_out = outdir / angle_id
+
+        _download_file(url, str(angle_out))
+
+        for band in band_list:
+
+            band_id = '{landsat_id}_{band}.TIF'.format(landsat_id=landsat_id,
+                                                       band=band.upper())
+
+            url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'.format(aws_l8_public=self.aws_l8_public,
+                                                                                       path=path,
+                                                                                       row=row,
+                                                                                       landsat_id=landsat_id,
+                                                                                       band_id=band_id)
+            band_out = outdir / band_id
+
+            _download_file(url, str(band_out))
+
+    # def download_landsat_range(self, sensors, bands, path_range, row_range, date_range, **kwargs):
+    #
+    #     """
+    #     Downloads Landsat data from iterables
+    #
+    #     Args:
+    #         sensors (str): A list of sensors to download.
+    #         bands (str): A list of bands to download.
+    #         path_range (iterable): A list of paths.
+    #         row_range (iterable): A list of rows.
+    #         date_range (iterable): A list of ``datetime`` objects or a list of strings as yyyymmdd.
+    #         kwargs (Optional[dict]): Keyword arguments to pass to ``download``.
+    #
+    #     Examples:
+    #         >>> from geowombat.util import GeoDownloads
+    #         >>>
+    #         >>> dl = GeoDownloads()
+    #         >>> dl.download_landsat_range(['lc08'], ['b4'], [42], [34], ['20170616', '20170620'])
+    #     """
+    #
+    #     if (len(date_range) == 2) and not isinstance(date_range[0], datetime):
+    #         start_date = date_range[0]
+    #         end_date = date_range[1]
+    #
+    #         sdt = datetime.strptime(start_date, '%Y%m%d')
+    #         edt = datetime.strptime(end_date, '%Y%m%d')
+    #
+    #         date_range = pd.date_range(start=sdt, end=edt).to_pydatetime().tolist()
+    #
+    #     for sensor in sensors:
+    #         for band in bands:
+    #             for path in path_range:
+    #                 for row in row_range:
+    #                     for dt in date_range:
+    #                         str_date = '{:d}{:02d}{:02d}'.format(dt.year, dt.month, dt.day)
+    #
+    #                         # TODO: check if L1TP is used for all sensors
+    #                         # TODO: fixed DATE2
+    #                         filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(
+    #                             SENSOR=sensor.upper(),
+    #                             PATH=path,
+    #                             ROW=row,
+    #                             DATE=str_date,
+    #                             DATE2=None,
+    #                             BAND=band)
+    #
+    #                         self.download(filename, **kwargs)
+
+
+class CloudPathMixin(object):
+
+    @staticmethod
+    def get_landsat_urls(scene_id, bands=None, cloud='gcp'):
+
+        """
+        Gets Google Cloud Platform COG urls for Landsat
+
+        Args:
+            scene_id (str): The Landsat scene id.
+            bands (Optional[list]): The list of band names.
+            cloud (Optional[str]): The cloud strorage to get the URL from. For now, only 'gcp' is supported.
+
+        Returns:
+            ``tuple`` of band URLs and metadata URL as strings
+
+        Example:
+            >>> import os
+            >>> import geowombat as gw
+            >>> from geowombat.util import GeoDownloads
+            >>>
+            >>> os.environ['CURL_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
+            >>>
+            >>> gdl = GeoDownloads()
+            >>>
+            >>> scene_urls, meta_url = gdl.get_landsat_urls('LC08_L1TP_042034_20171225_20180103_01_T1',
+            >>>                                             bands=['blue', 'green', 'red'])
+            >>>
+            >>> with gw.open(urls) as src:
+            >>>     print(src)
+        """
+
+        gcp_base = 'https://storage.googleapis.com/gcp-public-data-landsat'
+
+        sensor_collection, level, path_row, date_acquire, date_other, collection, tier = scene_id.split('_')
+        path = path_row[:3]
+        row = path_row[3:]
+
+        if bands:
+
+            sensor = f'{sensor_collection[0].lower()}{sensor_collection[3]}'
+            wavelengths = get_sensor_info('wavelength', sensor)
+            band_pos = [getattr(wavelengths, b) for b in bands]
+
+        else:
+            band_pos = [1]
+
+        lid = f'{sensor_collection}/01/{path}/{row}/{scene_id}'
+
+        scene_urls = [f'{gcp_base}/{lid}/{scene_id}_B{band_pos}.TIF' for band_pos in band_pos]
+        meta_url = f'{gcp_base}/{lid}/{scene_id}_MTL.txt'
+
+        return scene_urls, meta_url
+
+    @staticmethod
+    def get_sentinel2_urls(safe_id, bands=None, cloud='gcp'):
+
+        """
+        Gets Google Cloud Platform COG urls for Sentinel 2
+
+        Args:
+            safe_id (str): The Sentinel 2 SAFE id.
+            bands (Optional[list]): The list of band names.
+            cloud (Optional[str]): The cloud strorage to get the URL from. For now, only 'gcp' is supported.
+
+        Returns:
+            ``tuple`` of band URLs and metadata URL as strings
+
+        Example:
+            >>> import os
+            >>> import geowombat as gw
+            >>> from geowombat.util import GeoDownloads
+            >>>
+            >>> os.environ['CURL_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
+            >>>
+            >>> gdl = GeoDownloads()
+            >>>
+            >>> safe_id = 'S2A_MSIL1C_20180109T135101_N0206_R024_T21HUD_20180109T171608.SAFE/GRANULE/L1C_T21HUD_A013320_20180109T135310'
+            >>>
+            >>> scene_urls, meta_url = gdl.get_sentinel2_urls(safe_id,
+            >>>                                               bands=['blue', 'green', 'red', 'nir'])
+            >>>
+            >>> with gw.open(urls) as src:
+            >>>     print(src)
+        """
+
+        gcp_base = 'https://storage.googleapis.com/gcp-public-data-sentinel-2'
+
+        sensor, level, date, __, __, mgrs, __ = safe_id.split('/')[0].split('_')
+        utm = mgrs[1:3]
+        zone = mgrs[3]
+        id_ = mgrs[4:]
+
+        if bands:
+
+            sensor = sensor.lower()
+            wavelengths = get_sensor_info('wavelength', sensor)
+            band_pos = [getattr(wavelengths, b) for b in bands]
+
+        else:
+            band_pos = [1]
+
+        lid = f'{utm}/{zone}/{id_}/{safe_id}/IMG_DATA/{mgrs}_{date}'
+
+        scene_urls = [f'{gcp_base}/tiles/{lid}_B{band_pos:02d}.jp2' for band_pos in band_pos]
+        meta_url = f'{utm}/{zone}/{id_}/{safe_id}/MTD_TL.xml'
+
+        return scene_urls, meta_url
+
+
+class GeoDownloads(CloudPathMixin, DownloadMixin):
 
     def __init__(self):
 
@@ -344,11 +831,14 @@ class GeoDownloads(object):
                       ref_res=None,
                       l57_angles_path=None,
                       l8_angles_path=None,
+                      subsample=1,
                       write_angle_files=False,
                       mask_qa=False,
                       lqa_mask_items=None,
                       chunks=512,
                       cloud_heights=None,
+                      n_jobs=1,
+                      num_workers=1,
                       num_threads=1,
                       **kwargs):
 
@@ -379,11 +869,14 @@ class GeoDownloads(object):
             resampling (Optional[str]): The resampling method.
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
+            subsample (Optional[int]): The sub-sample factor when calculating the angles.
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
+            n_jobs (Optional[int]): The number of parallel download workers for ``joblib``.
+            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             num_threads (Optional[int]): The number of GDAL warp threads.
             kwargs (Optional[dict]): Keyword arguments passed to ``to_raster``.
 
@@ -613,6 +1106,7 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                             # Reorganize the dictionary to combine bands and metadata
@@ -654,6 +1148,7 @@ class GeoDownloads(object):
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           check_file=str(status),
+                                                          n_jobs=n_jobs,
                                                           verbose=1)
 
                         logger.info('  Finished downloading files for yyyymm query, {}.'.format(yearmonth_query))
@@ -735,6 +1230,7 @@ class GeoDownloads(object):
                                                                   meta.sensor,
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
+                                                                  subsample=subsample,
                                                                   verbose=1)
 
                                 if (len(bands) == 1) and (bands[0] == 'pan'):
@@ -805,12 +1301,12 @@ class GeoDownloads(object):
                                              chunks=chunks,
                                              num_threads=num_threads) as data:
 
-                                    if data.sel(band=1).min().data.compute(num_threads=num_threads) > 10000:
+                                    if data.sel(band=1).min().data.compute(num_workers=num_workers) > 10000:
                                         valid_data = False
 
                                     if valid_data:
 
-                                        if data.sel(band=1).max().data.compute(num_threads=num_threads) == 0:
+                                        if data.sel(band=1).max().data.compute(num_workers=num_workers) == 0:
                                             valid_data = False
 
                                 if valid_data:
@@ -852,7 +1348,7 @@ class GeoDownloads(object):
 
                                                     # Scale from 0-10000 to 0-1 and reshape
                                                     X = (data_cloudless * 0.0001).clip(0, 1).data\
-                                                            .compute(num_workers=num_threads)\
+                                                            .compute(num_workers=num_workers)\
                                                             .transpose(1, 2, 0)[np.newaxis, :, :, :]
 
                                                     # Predict clouds
@@ -932,7 +1428,7 @@ class GeoDownloads(object):
                                                                                   vza,
                                                                                   vaa,
                                                                                   heights=cloud_heights,
-                                                                                  num_workers=num_threads)
+                                                                                  num_workers=num_workers)
 
                                                     # Update the bands with the mask
                                                     sr_brdf = xr.where((mask.sel(band='mask') == 0) &
@@ -1110,397 +1606,3 @@ class GeoDownloads(object):
             url_dict[key] = [value for value in values if not value.endswith('/:')]
 
         return url_dict
-
-    def download_gcp(self,
-                     sensor,
-                     downloads=None,
-                     outdir='.',
-                     outdir_brdf=None,
-                     search_wildcards=None,
-                     search_dict=None,
-                     check_file=None,
-                     verbose=0):
-
-        """
-        Downloads a file from Google Cloud platform
-
-        Args:
-            sensor (str): The sensor to query. Choices are ['l5', 'l7', 'l8', 's2a', 's2c'].
-            downloads (Optional[str or list]): The file or list of keys to download. If not given, keys will be taken
-                from ``search_dict`` or ``self.search_dict``.
-            outdir (Optional[str | Path]): The output directory.
-            outdir_brdf (Optional[Path]): The output directory.
-            search_wildcards (Optional[list]): A list of search wildcards.
-            search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
-            check_file (Optional[str]): A status file to check.
-            verbose (Optional[int]): The verbosity level.
-
-        Returns:
-            ``dict`` of ``dicts``
-                where sub-dictionaries contain a ``namedtuple`` of the downloaded file and tag
-        """
-
-        if not search_dict:
-
-            if not self.search_dict:
-                logger.exception('  A keyword search dictionary must be provided, either from `self.list_gcp` or the `search_dict` argument.')
-            else:
-                search_dict = self.search_dict
-
-        poutdir = Path(outdir)
-
-        if outdir != '.':
-            poutdir.mkdir(parents=True, exist_ok=True)
-
-        if not downloads:
-            downloads = list(search_dict.keys())
-
-        if not isinstance(downloads, list):
-            downloads = [downloads]
-
-        if sensor in ['s2', 's2a', 's2b', 's2c']:
-            gcp_str = 'gsutil cp -r gs://gcp-public-data-sentinel-2'
-        else:
-            gcp_str = 'gsutil cp -r gs://gcp-public-data-landsat'
-
-        FileInfo = namedtuple('FileInfo', 'name key')
-
-        downloaded = {}
-        null_items = []
-
-        for search_key in downloads:
-
-            download_list = self.search_dict[search_key]
-
-            if search_wildcards:
-
-                download_list_ = []
-
-                for swild in search_wildcards:
-                    download_list_ += fnmatch.filter(download_list, '*{}'.format(swild))
-
-                download_list = download_list_
-
-            download_list_names = [Path(dfn).name for dfn in download_list]
-
-            logger.info('  The download contains {:d} items: {}'.format(len(download_list_names), ','.join(download_list_names)))
-
-            # Separate each scene
-            if sensor.lower() in ['l5', 'l7', 'l8']:
-
-                # list of file ids
-                id_list = ['_'.join(fn.split('_')[:-1]) for fn in download_list_names if fn.endswith('_MTL.txt')]
-
-                # list of lists where each sub-list is unique
-                download_list_unique = [[fn for fn in download_list if sid in Path(fn).name] for sid in id_list]
-
-            else:
-
-                id_list = list(set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names]))
-                download_list_unique = [download_list]
-
-            for scene_id, sub_download_list in zip(id_list, download_list_unique):
-
-                logger.info('  Checking scene {} ...'.format(scene_id))
-
-                downloaded_sub = {}
-
-                # Check if the file has been downloaded
-                if sensor.lower() in ['l5', 'l7', 'l8']:
-
-                    if not scene_id.lower().startswith(self.sensor_collections[sensor.lower()]):
-
-                        logger.exception('  The scene id {SCENE_ID} does not match the sensor {SENSOR}.'.format(SCENE_ID=scene_id,
-                                                                                                                SENSOR=sensor))
-                        raise NameError
-
-                    # Path of BRDF stack
-                    out_brdf = outdir_brdf.joinpath(scene_id + '.tif')
-
-                else:
-
-                    fn = sub_download_list[0]
-                    fname = Path(fn).name
-
-                    if fname.lower().endswith('.jp2'):
-
-                        fbase = Path(fn).parent.parent.name
-                        key = Path(fn).name.split('.')[0].split('_')[-1]
-                        down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
-
-                        brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-                        out_brdf = outdir_brdf.joinpath(brdfp + '_MTD.tif')
-
-                    else:
-                        out_brdf = None
-
-                if out_brdf:
-
-                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
-
-                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
-                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
-                        continue
-
-                    else:
-                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
-
-                # Move the metadata file to the front of the
-                # list to avoid unnecessary downloads.
-                if sensor.lower() in ['l5', 'l7', 'l8']:
-                    meta_index = [i for i in range(0, len(sub_download_list)) if sub_download_list[i].endswith('_MTL.txt')][0]
-                    sub_download_list.insert(0, sub_download_list.pop(meta_index))
-                else:
-                    # The Sentinel 2 metadata files come in their own list
-                    pass
-
-                download_list_names = [Path(dfn).name for dfn in sub_download_list]
-
-                for fname, fn in zip(download_list_names, sub_download_list):
-
-                    # Renaming Sentinel data
-                    rename = False
-
-                    # Full path of GCP local download
-                    down_file = str(poutdir.joinpath(fname))
-
-                    if down_file.endswith('_ANG.txt'):
-                        fbase = fname.replace('_ANG.txt', '')
-                        key = 'angle'
-                    elif down_file.endswith('_MTL.txt'):
-                        fbase = fname.replace('_MTL.txt', '')
-                        key = 'meta'
-                    elif down_file.endswith('MTD_TL.xml'):
-
-                        fbase = Path(fn).parent.name
-                        down_file = str(poutdir.joinpath(fbase + '_MTD_TL.xml'))
-                        key = 'meta'
-                        rename = True
-
-                    elif down_file.endswith('_BQA.TIF'):
-                        fbase = fname.replace('_BQA.TIF', '')
-                        key = 'qa'
-                    else:
-
-                        if fname.endswith('.jp2'):
-
-                            fbase = Path(fn).parent.parent.name
-                            key = Path(fn).name.split('.')[0].split('_')[-1]
-                            down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
-                            rename = True
-
-                        else:
-
-                            fsplit = fname.split('_')
-                            fbase = '_'.join(fsplit[:-1])
-                            key = fsplit[-1].split('.')[0]
-
-                        # TODO: QA60
-
-                    continue_download = True
-
-                    if fbase in null_items:
-                        continue_download = False
-
-                    # if continue_download and check_file:
-                    #
-                    #     ##########################################
-                    #     # Check if the file stack has been created
-                    #     ##########################################
-                    #
-                    #     if key == 'meta':
-                    #
-                    #         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
-                    #         out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
-                    #
-                    #         if out_brdf.is_file():
-                    #
-                    #             logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                    #
-                    #             downloaded_sub[key] = FileInfo(name=down_file, key=key)
-                    #
-                    #             _clean_and_update(Path(check_file), None, downloaded_sub, down_file, check_angles=False)
-                    #
-                    #             null_items.append(fbase)
-                    #             continue_download = False
-                    #             downloaded_sub = {}
-                    #             break
-                    #
-                    #     # if continue_download:
-                    #     #
-                    #     #     lines = _delayed_read(check_file)
-                    #     #
-                    #     #     if sensor.lower() in ['l5', 'l7', 'l8']:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '_MTL.txt')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-                    #     #
-                    #     #     else:
-                    #     #
-                    #     #         if str(Path(down_file).parent.joinpath(fbase + '.xml')) + '\n' in lines:
-                    #     #             null_items.append(fbase)
-                    #     #             continue_download = False
-
-                    if continue_download:
-
-                        ###################
-                        # Download the file
-                        ###################
-
-                        if not Path(down_file).is_file():
-
-                            if fn.lower().startswith('gs://gcp-public-data'):
-                                com = 'gsutil cp -r {} {}'.format(fn, outdir)
-                            else:
-                                com = 'gsutil cp -r {}/{} {}'.format(gcp_str, fn, outdir)
-
-                            if verbose > 0:
-                                logger.info('  Downloading {} ...'.format(fname))
-
-                            subprocess.call(com, shell=True)
-
-                            if rename:
-                                os.rename(str(Path(outdir).joinpath(Path(fn).name)), down_file)
-
-                        # Store file information
-                        downloaded_sub[key] = FileInfo(name=down_file, key=key)
-
-                if downloaded_sub:
-
-                    if len(downloaded_sub) < len(sub_download_list):
-
-                        downloaded_names = [Path(v.name).name for v in list(downloaded_sub.values())]
-                        missing_items = ','.join(list(set(download_list_names).difference(downloaded_names)))
-
-                        logger.warning('  Only {:d} files out of {:d} were downloaded.'.format(len(downloaded_sub), len(sub_download_list)))
-                        logger.warning('  {} are missing.'.format(missing_items))
-
-                    downloaded[search_key] = downloaded_sub
-
-        return downloaded
-
-    def download_aws(self,
-                     landsat_id,
-                     band_list,
-                     outdir='.'):
-
-        """
-        Downloads Landsat 8 data from Amazon AWS
-
-        Args:
-            landsat_id (str): The Landsat id to download.
-            band_list (list): The Landsat bands to download.
-            outdir (Optional[str]): The output directory.
-
-        Examples:
-            >>> from geowombat.util import GeoDownloads
-            >>>
-            >>> dl = GeoDownloads()
-            >>> dl.download_aws('LC08_L1TP_224077_20200518_20200518_01_RT', ['b2', 'b3', 'b4'])
-        """
-
-        if not REQUESTS_INSTALLED:
-            logger.exception('Requests must be installed.')
-
-        if not isinstance(outdir, Path):
-            outdir = Path(outdir)
-
-        parts = landsat_id.split('_')
-
-        path_row = parts[2]
-        path = int(path_row[:3])
-        row = int(path_row[3:])
-
-        def _download_file(in_file, out_file):
-
-            response = requests.get(in_file)
-
-            with open(out_file, 'wb') as f:
-                f.write(response.content)
-
-        mtl_id = '{landsat_id}_MTL.txt'.format(landsat_id=landsat_id)
-
-        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{mtl_id}'.format(aws_l8_public=self.aws_l8_public,
-                                                                                  path=path,
-                                                                                  row=row,
-                                                                                  landsat_id=landsat_id,
-                                                                                  mtl_id=mtl_id)
-
-        mtl_out = outdir / mtl_id
-
-        _download_file(url, str(mtl_out))
-
-        angle_id = '{landsat_id}_ANG.txt'.format(landsat_id=landsat_id)
-
-        url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{angle_id}'.format(aws_l8_public=self.aws_l8_public,
-                                                                                    path=path,
-                                                                                    row=row,
-                                                                                    landsat_id=landsat_id,
-                                                                                    angle_id=angle_id)
-
-        angle_out = outdir / angle_id
-
-        _download_file(url, str(angle_out))
-
-        for band in band_list:
-
-            band_id = '{landsat_id}_{band}.TIF'.format(landsat_id=landsat_id,
-                                                       band=band.upper())
-
-            url = '{aws_l8_public}/{path:03d}/{row:03d}/{landsat_id}/{band_id}'.format(aws_l8_public=self.aws_l8_public,
-                                                                                       path=path,
-                                                                                       row=row,
-                                                                                       landsat_id=landsat_id,
-                                                                                       band_id=band_id)
-            band_out = outdir / band_id
-
-            _download_file(url, str(band_out))
-
-    def download_landsat_range(self, sensors, bands, path_range, row_range, date_range, **kwargs):
-
-        """
-        Downloads Landsat data from iterables
-
-        Args:
-            sensors (str): A list of sensors to download.
-            bands (str): A list of bands to download.
-            path_range (iterable): A list of paths.
-            row_range (iterable): A list of rows.
-            date_range (iterable): A list of ``datetime`` objects or a list of strings as yyyymmdd.
-            kwargs (Optional[dict]): Keyword arguments to pass to ``download``.
-
-        Examples:
-            >>> from geowombat.util import GeoDownloads
-            >>>
-            >>> dl = GeoDownloads()
-            >>> dl.download_landsat_range(['lc08'], ['b4'], [42], [34], ['20170616', '20170620'])
-        """
-
-        if (len(date_range) == 2) and not isinstance(date_range[0], datetime):
-            start_date = date_range[0]
-            end_date = date_range[1]
-
-            sdt = datetime.strptime(start_date, '%Y%m%d')
-            edt = datetime.strptime(end_date, '%Y%m%d')
-
-            date_range = pd.date_range(start=sdt, end=edt).to_pydatetime().tolist()
-
-        for sensor in sensors:
-            for band in bands:
-                for path in path_range:
-                    for row in row_range:
-                        for dt in date_range:
-                            str_date = '{:d}{:02d}{:02d}'.format(dt.year, dt.month, dt.day)
-
-                            # TODO: check if L1TP is used for all sensors
-                            # TODO: fixed DATE2
-                            filename = '{SENSOR}_L1TP_{PATH:03d}{ROW:03d}_{DATE}_{DATE2}_01_T1_{BAND}.TIF'.format(
-                                SENSOR=sensor.upper(),
-                                PATH=path,
-                                ROW=row,
-                                DATE=str_date,
-                                DATE2=None,
-                                BAND=band)
-
-                            self.download(filename, **kwargs)
