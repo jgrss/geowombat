@@ -1,4 +1,5 @@
 from .. import polygon_to_array
+from .transformers import Stackerizer
 
 import xarray as xr
 from sklearn_xarray import Target
@@ -86,16 +87,13 @@ class Classifiers(ClassifiersMixin):
             labels = polygon_to_array(labels, col=col, data=data)
 
         # TODO: is this sufficient?
+
         if data.gw.has_time_coord:
 
             labels = xr.concat([labels] * data.gw.ntime, dim='band')\
                         .assign_coords({'band': data.time.values.tolist()})
-
-        # Mask 'no data'
-        labels = labels.where(labels != 0)
-
-        # TODO: what is the structure for single dates?
-        if data.gw.has_time_coord:
+            # Mask 'no data'
+            labels = labels.where(labels != 0)
 
             data.coords[targ_name] = (['time', 'y', 'x'], labels)
 
@@ -104,10 +102,32 @@ class Classifiers(ClassifiersMixin):
                             direction='stack').fit_transform(data)
 
             # drop nans from
-            Xna = X[~X.land_use.isnull()]
+            Xna = X[~X[targ_name].isnull()]
 
             # TODO: groupby as a user option?
-            # Xgp = Xna.groupby('land_use').mean('sample')
+            # Xgp = Xna.groupby(targ_name).mean('sample')
+      
+        # TODO: what is the structure for single dates?
+
+        else:
+            # labels = xr.concat([labels], dim='band') 
+
+            # # Mask 'no data'
+            # labels = labels.where(labels != 0)
+            
+            # data.coords[targ_name] = (['y', 'x'], labels)
+
+            # # TODO: where are we importing Stackerizer from?
+            # X = Stackerizer(stack_dims=('y', 'x' ),
+            #                 direction='stack').fit_transform(data)
+
+            # # drop nans from
+            # Xna = X[~X[targ_name].isnull()]
+
+            # # TODO: groupby as a user option?
+            # # Xgp = Xna.groupby(targ_name).mean('sample')
+
+
 
         if grid_search:
             clf = self.grid_search_cv(clf)
