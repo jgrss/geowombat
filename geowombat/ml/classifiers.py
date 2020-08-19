@@ -26,6 +26,41 @@ class ClassifiersMixin(object):
 
         return clf
 
+    @staticmethod
+    def _prepare_labels(data, labels, col, targ_name):
+
+        if not isinstance(labels, xr.DataArray):
+            labels = polygon_to_array(labels, col=col, data=data)
+
+        # TODO: is this sufficient for single dates?
+        if not data.gw.has_time_coord:
+            data = data.assign_coords(time=1)
+
+        labels = xr.concat([labels] * data.gw.ntime, dim='band')\
+                    .assign_coords({'band': data.time.values.tolist()})
+
+        # Mask 'no data'
+        labels = labels.where(labels != 0)
+
+        data.coords[targ_name] = (['time', 'y', 'x'], labels)
+
+        return data
+
+    @staticmethod
+    def _prepare_predictors(data, targ_name):
+
+        # TODO: where are we importing Stackerizer from?
+        X = Stackerizer(stack_dims=('y', 'x', 'time'),
+                        direction='stack').fit_transform(data)
+
+        # drop nans from
+        Xna = X[~X[targ_name].isnull()]
+
+        # TODO: groupby as a user option?
+        # Xgp = Xna.groupby(targ_name).mean('sample')
+
+        return X, Xna
+
 
 class Classifiers(ClassifiersMixin):
 
@@ -83,30 +118,9 @@ class Classifiers(ClassifiersMixin):
             >>>     y = clf.predict(X).unstack('sample')
         """
 
-        if not isinstance(labels, xr.DataArray):
-            labels = polygon_to_array(labels, col=col, data=data)
+        data = self._prepare_labels(data, labels, col, targ_name)
 
-        # TODO: is this sufficient for single dates?
-        if not data.gw.has_time_coord:
-            data = data.assign_coords(time=1)
-
-        labels = xr.concat([labels] * data.gw.ntime, dim='band')\
-                    .assign_coords({'band': data.time.values.tolist()})
-
-        # Mask 'no data'
-        labels = labels.where(labels != 0)
-
-        data.coords[targ_name] = (['time', 'y', 'x'], labels)
-
-        # TODO: where are we importing Stackerizer from?
-        X = Stackerizer(stack_dims=('y', 'x', 'time'),
-                        direction='stack').fit_transform(data)
-
-        # drop nans from
-        Xna = X[~X[targ_name].isnull()]
-
-        # TODO: groupby as a user option?
-        # Xgp = Xna.groupby(targ_name).mean('sample')
+        X, Xna = self._prepare_predictors(data, targ_name)
 
         if grid_search:
             clf = self.grid_search_cv(clf)
