@@ -86,48 +86,27 @@ class Classifiers(ClassifiersMixin):
         if not isinstance(labels, xr.DataArray):
             labels = polygon_to_array(labels, col=col, data=data)
 
-        # TODO: is this sufficient?
+        # TODO: is this sufficient for single dates?
+        if not data.gw.has_time_coord:
+            data = data.assign_coords(time=1)
 
-        if data.gw.has_time_coord:
+        labels = xr.concat([labels] * data.gw.ntime, dim='band')\
+                    .assign_coords({'band': data.time.values.tolist()})
 
-            labels = xr.concat([labels] * data.gw.ntime, dim='band')\
-                        .assign_coords({'band': data.time.values.tolist()})
-            # Mask 'no data'
-            labels = labels.where(labels != 0)
+        # Mask 'no data'
+        labels = labels.where(labels != 0)
 
-            data.coords[targ_name] = (['time', 'y', 'x'], labels)
+        data.coords[targ_name] = (['time', 'y', 'x'], labels)
 
-            # TODO: where are we importing Stackerizer from?
-            X = Stackerizer(stack_dims=('y', 'x', 'time'),
-                            direction='stack').fit_transform(data)
+        # TODO: where are we importing Stackerizer from?
+        X = Stackerizer(stack_dims=('y', 'x', 'time'),
+                        direction='stack').fit_transform(data)
 
-            # drop nans from
-            Xna = X[~X[targ_name].isnull()]
+        # drop nans from
+        Xna = X[~X[targ_name].isnull()]
 
-            # TODO: groupby as a user option?
-            # Xgp = Xna.groupby(targ_name).mean('sample')
-      
-        # TODO: what is the structure for single dates?
-
-        else:
-            # labels = xr.concat([labels], dim='band') 
-
-            # # Mask 'no data'
-            # labels = labels.where(labels != 0)
-            
-            # data.coords[targ_name] = (['y', 'x'], labels)
-
-            # # TODO: where are we importing Stackerizer from?
-            # X = Stackerizer(stack_dims=('y', 'x' ),
-            #                 direction='stack').fit_transform(data)
-
-            # # drop nans from
-            # Xna = X[~X[targ_name].isnull()]
-
-            # # TODO: groupby as a user option?
-            # # Xgp = Xna.groupby(targ_name).mean('sample')
-
-
+        # TODO: groupby as a user option?
+        # Xgp = Xna.groupby(targ_name).mean('sample')
 
         if grid_search:
             clf = self.grid_search_cv(clf)
