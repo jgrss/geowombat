@@ -55,7 +55,7 @@ class ClassifiersMixin(object):
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
-            data = data.assign_coords(time=1)
+            data = data.assign_coords({'time': [1]})
 
         labels = xr.concat([labels] * data.gw.ntime, dim='band')\
                     .assign_coords({'band': data.time.values.tolist()})
@@ -93,49 +93,47 @@ class ClassifiersMixin(object):
         return clf
 
     @staticmethod
+    def add_categorical(data, labels, col, variable_name='cat1'):
 
-    def _add_categorical(data, labels, col, variable_name='cat1'):
         """
         Writes xarray bands to disk by band
 
-        Examples
-        ========
+        Args:
 
-        climatecluster = ' ./ClusterEco15_Y5.shp'
+            data (xarray.DataArray)
+            labels (Path or GeoDataFrame): The labels with categorical data.
+            col (Optional[str]): The column in ``labels`` you want to assign values from.
+                If ``None``, creates a binary raster.
+            variable_name (Optional[str]): The name assigned to the categorical data.
 
-        with gw.open(vrts, 
-                 time_names = [str(x) for x in range(len(vrts))],
-                 ) as ds:
-            ds.attrs['filename'] = vrts 
-            cats = add_categorical(ds, climatecluster,col='ClusterN_2',variable_name='clim_clust')
-            print(cats)res,'/home/mmann1123/Desktop/', postfix='test')
-
-        :param data: xarray to add categorical data to 
-        :type data:  xarray.DataArray
-        :param labels: path or df to shapefile with categorical data
-        :type labels:  path or gpd.geodataframe
-        :param col: Column to create get values from 
-        :type col:  str 
-        :param variable_name: name assigned to categorical data 
-        :type variable_name:  str   
-
+        Example:
+            >>> from geowombat.ml.classifiers import Classifiers
+            >>>
+            >>> gwclf = Classifiers()
+            >>>
+            >>> climatecluster = ' ./ClusterEco15_Y5.shp'
+            >>>
+            >>> time_names = [str(x) for x in range(len(vrts))]
+            >>>
+            >>> with gw.open(vrts, time_names=time_names) as src:
+            >>>     src.attrs['filename'] = vrts
+            >>>     cats = gwclf.add_categorical(src, climatecluster, col='ClusterN_2', variable_name='clim_clust')
         """
 
         if not isinstance(labels, xr.DataArray):
-            labels = gw.polygon_to_array(labels, col=col, data=data )
+            labels = polygon_to_array(labels, col=col, data=data)
             labels['band'] = [variable_name]
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
-            data = data.assign_coords(time=1) # doesn't work I think 
+            data = data.assign_coords({'time': [1]})
 
         labels = xr.concat([labels] * data.gw.ntime, dim='time')\
                     .assign_coords({'time': data.time.values.tolist()})
 
-        data = xr.concat([data,labels], dim = 'band')
+        data = xr.concat([data, labels], dim='band')
 
         return data
-
 
     
 class Classifiers(ClassifiersMixin):
