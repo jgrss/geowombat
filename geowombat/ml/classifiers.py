@@ -16,7 +16,7 @@ def wrapped_cls(cls):
     @functools.wraps(cls)
     def wrapper(self):
 
-        if cls.__module__.split('.') != 'sklearn_xarray':
+        if self.__module__.split('.')[0] != 'sklearn_xarray':
             self = wrap(self, reshapes='feature')
 
         return self
