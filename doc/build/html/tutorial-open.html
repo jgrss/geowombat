@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Opening rasters &#8212; GeoWombat 1.2.30 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening rasters &#8212; GeoWombat 1.2.31 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -41,15 +41,15 @@
 <div class="section" id="opening-a-single-image">
 <h2>Opening a single image<a class="headerlink" href="#opening-a-single-image" title="Permalink to this headline">¶</a></h2>
 <p>Opening an image with default settings looks similar to <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.open_rasterio()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.open()</span></code>. <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a> expects a file name (<cite>str</cite> or <cite>pathlib.Path</cite>).</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-34dc4419bb7e12a5e63387a3c00e665b&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-ee382db4933405d955e5359b44df4dc2&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -63,7 +63,7 @@
 <span class="go">    scales:         (1.0, 1.0, 1.0)</span>
 <span class="go">    offsets:        (0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:  Area</span>
-<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python...</span>
+<span class="go">    filename:       /home/jcgr/Documents/scripts/Python/git_repos/geowombat/e...</span>
 <span class="go">    resampling:     nearest</span>
 </pre></div>
 </div>
@@ -75,14 +75,14 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span>
 
 <span class="gp">In [5]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (time: 3, band: 1, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
-<span class="go">  * band     (band) int64 1</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
+<span class="go">  * band     (band) int64 1</span>
 <span class="go">  * time     (time) datetime64[ns] 2240-07-08 2240-07-08 2240-07-08</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -101,7 +101,7 @@
 
 <span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224078_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">],</span>
 <span class="gp">   ...: </span>             <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
@@ -128,8 +128,8 @@
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span>
 
 <span class="gp">In [9]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">([</span><span class="n">l8_224077_20200518_B2</span><span class="p">,</span> <span class="n">l8_224078_20200518_B2</span><span class="p">],</span>
-<span class="gp">   ...: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="gp">   ...: </span>             <span class="n">mosaic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (y: 1515, x: 2006, band: 1)&gt;</span>
 <span class="go">dask.array&lt;where, shape=(1515, 2006, 1), dtype=uint16, chunksize=(256, 256, 1), chunktype=numpy.ndarray&gt;</span>
@@ -237,7 +237,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

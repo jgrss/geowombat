@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>to_crs &#8212; GeoWombat 1.2.30 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>to_crs &#8212; GeoWombat 1.2.31 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -17,8 +17,6 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="transform_crs" href="geowombat.transform_crs.html" />
-    <link rel="prev" title="apply" href="geowombat.apply.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -37,35 +35,6 @@
             
   <div class="section" id="to-crs">
 <h1>to_crs<a class="headerlink" href="#to-crs" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="geowombat.to_crs">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">to_crs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_src</span></em>, <em class="sig-param"><span class="n">dst_crs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_width</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dst_bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">'nearest'</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">num_threads</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.to_crs" title="Permalink to this definition">¶</a></dt>
-<dd><div class="deprecated">
-<p><span class="versionmodified deprecated">Deprecated since version 1.2.0: </span>Use <a class="reference internal" href="geowombat.transform_crs.html#geowombat.transform_crs" title="geowombat.transform_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.transform_crs()</span></code></a> instead.</p>
-</div>
-<p>Transforms a DataArray to a new coordinate reference system</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_src</strong> (<em>DataArray</em>) – The data to transform.</p></li>
-<li><p><strong>dst_crs</strong> (<em>Optional</em><em>[</em><em>CRS | int | dict | str</em><em>]</em>) – The destination CRS.</p></li>
-<li><p><strong>dst_res</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – The destination resolution.</p></li>
-<li><p><strong>dst_width</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The destination width. Cannot be used with <code class="docutils literal notranslate"><span class="pre">dst_res</span></code>.</p></li>
-<li><p><strong>dst_height</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The destination height. Cannot be used with <code class="docutils literal notranslate"><span class="pre">dst_res</span></code>.</p></li>
-<li><p><strong>dst_bounds</strong> (<em>Optional</em><em>[</em><em>BoundingBox | tuple</em><em>]</em>) – The destination bounds, as a <code class="docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox</span></code>
-or as a tuple of (left, bottom, right, top).</p></li>
-<li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
-Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
-<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The warp memory limit.</p></li>
-<li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel threads.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 
@@ -110,18 +79,14 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 <li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.apply.html" title="previous chapter">apply</a></li>
-      <li>Next: <a href="geowombat.transform_crs.html" title="next chapter">transform_crs</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -151,7 +116,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

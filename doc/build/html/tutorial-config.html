@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configuration manager &#8212; GeoWombat 1.2.30 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration manager &#8212; GeoWombat 1.2.31 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -48,7 +48,7 @@
 <div class="section" id="how-do-i-use-it">
 <h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>
 <p>To use GeoWombat’s configuration manager, just call <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.config.update()</span></code> before opening a file. For example,</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">&lt;</span><span class="n">keywords</span><span class="o">&gt;...</span><span class="p">):</span>
 
@@ -59,7 +59,7 @@
 </pre></div>
 </div>
 <p><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.config.update()</span></code> stores keywords in a dictionary. To see all GeoWombat configuration keywords, just iterate over the dictionary.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
@@ -67,7 +67,7 @@
 <span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">():</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">   ...: </span>        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<span class="gp">   ...: </span>            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Keyword:&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="s1">&#39;Value:&#39;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="gp">   ...: </span>            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Keyword:&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="s1">&#39;Value:&#39;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">Keyword: with_config     Value: True</span>
 <span class="go">Keyword: ignore_warnings Value: False</span>
@@ -93,20 +93,20 @@
 <div class="section" id="reference-settings-crs">
 <h2>Reference settings: CRS<a class="headerlink" href="#reference-settings-crs" title="Permalink to this headline">¶</a></h2>
 <p>Configuration keywords beginning with <strong>ref</strong> are the most important commands when opening rasters. For example, to transform the CRS of the data on-the-fly, use <strong>ref_crs</strong>. For more on Coordinate Reference Systems, see <a class="reference internal" href="tutorial-crs.html#tutorial-crs"><span class="std std-ref">here</span></a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [5]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="go"># Without the manager</span>
 <span class="gp">In [6]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">+init=epsg:32621</span>
 
 <span class="go"># With the manager</span>
 <span class="gp">In [7]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102033</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ...: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+<span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">+init=epsg:102033</span>
 </pre></div>
@@ -115,20 +115,20 @@
 <div class="section" id="reference-settings-cell-size">
 <h2>Reference settings: Cell size<a class="headerlink" href="#reference-settings-cell-size" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to combine multiple configuration keywords. In the example below, the raster CRS is transformed from UTM to Albers Equal Area with a resampled cell size of 100m x 100m.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [9]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="go"># Without the manager</span>
 <span class="gp">In [10]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">30.0 30.0</span>
 
 <span class="go"># With the manager</span>
 <span class="gp">In [11]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_crs</span><span class="o">=</span><span class="mi">102033</span><span class="p">,</span> <span class="n">ref_res</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">100.0 100.0</span>
 </pre></div>
@@ -137,7 +137,7 @@
 <div class="section" id="reference-settings-bounds">
 <h2>Reference settings: Bounds<a class="headerlink" href="#reference-settings-bounds" title="Permalink to this headline">¶</a></h2>
 <p>To subset an image, specify bounds as a <strong>tuple</strong> of (left, bottom, right, top) or a rasterio <strong>BoundingBox</strong> object.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [13]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
@@ -149,14 +149,14 @@
 <span class="go"># bounds = (724634.17, -2806501.39, 737655.48, -2796221.42)</span>
 <span class="go"># Without the manager</span>
 <span class="gp">In [16]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(717345.0, -2832795.0, 778575.0, -2776995.0)</span>
 
 <span class="go"># With the manager</span>
 <span class="gp">In [17]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(724634.17, -2806481.42, 737654.17, -2796221.42)</span>
 </pre></div>
@@ -165,25 +165,25 @@
 <div class="section" id="reference-settings-image">
 <h2>Reference settings: Image<a class="headerlink" href="#reference-settings-image" title="Permalink to this headline">¶</a></h2>
 <p>To use another image as a reference, just set <strong>ref_image</strong>. Then, the opened file’s bounds, CRS, and cell size will be transformed to match those of the reference image.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [18]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [18]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [19]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224077_20200518_B2</span>
 
 <span class="go"># Without the manager</span>
 <span class="gp">In [20]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(717345.0, -2832795.0, 778575.0, -2776995.0)</span>
 
 <span class="gp">In [21]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224077_20200518_B2</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(694005.0, -2812065.0, 754185.0, -2766615.0)</span>
 
 <span class="go"># With the manager</span>
 <span class="gp">In [22]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_image</span><span class="o">=</span><span class="n">l8_224077_20200518_B2</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">(694005.0, -2812065.0, 754185.0, -2766615.0)</span>
 </pre></div>
@@ -196,13 +196,13 @@
 <p class="admonition-title">Note</p>
 <p>In the example below, the example raster comes from a Landsat image. However, only the visible (blue, green, and red) wavelengths are stored. Thus, we use ‘rgb’ as the sensor name. If we had a full 6-band Landsat 7 image, for example, we could use the ‘l7’ sensor flag.</p>
 </div>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [23]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [23]: </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 
 <span class="gp">In [24]: </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="go"># Without the manager</span>
 <span class="gp">In [25]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">&lt;xarray.DataArray &#39;band&#39; (band: 3)&gt;</span>
 <span class="go">array([1, 2, 3])</span>
@@ -212,7 +212,7 @@
 <span class="go"># With the manager</span>
 <span class="gp">In [26]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;bgr&#39;</span><span class="p">):</span>
 <span class="gp">   ....: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">band</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">&lt;xarray.DataArray &#39;band&#39; (band: 3)&gt;</span>
 <span class="go">array([&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;], dtype=&#39;&lt;U5&#39;)</span>
@@ -223,7 +223,7 @@
 <p>To see all available sensor names, use the <strong>avail_sensors</strong> property.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="k">for</span> <span class="n">sensor_name</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">avail_sensors</span><span class="p">:</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="n">sensor_name</span><span class="p">)</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="n">sensor_name</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">bgr</span>
 <span class="go">bgrn</span>
@@ -268,7 +268,7 @@
 <p>For a short description of the sensor, use the <strong>sensor_names</strong> property.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [28]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="k">for</span> <span class="n">sensor_name</span><span class="p">,</span> <span class="n">description</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">sensor_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<span class="gp">   ....: </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sensor_name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">description</span><span class="p">))</span>
+<span class="gp">   ....: </span>        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;{}: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sensor_name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">description</span><span class="p">))</span>
 <span class="gp">   ....: </span>
 <span class="go">rgb            : red, green, and blue</span>
 <span class="go">rgbn           : red, green, blue, and NIR</span>
@@ -465,7 +465,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

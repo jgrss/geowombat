@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Editing rasters &#8212; GeoWombat 1.2.30 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editing rasters &#8212; GeoWombat 1.2.31 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -40,7 +40,7 @@
 <div class="section" id="setting-no-data-values">
 <h2>Setting ‘no data’ values<a class="headerlink" href="#setting-no-data-values" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.DataArray.where()</span></code> function masks data by setting nans, as demonstrated by the example below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="c1"># Zeros are replaced with nans</span>
@@ -52,7 +52,7 @@
 <div class="section" id="setting-no-data-values-with-scaling">
 <h2>Setting ‘no data’ values with scaling<a class="headerlink" href="#setting-no-data-values-with-scaling" title="Permalink to this headline">¶</a></h2>
 <p>In GeoWombat, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.where()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.DataArray.where()</span></code> along with optional scaling in the <code class="xref py py-func docutils literal notranslate"><span class="pre">set_nodata()</span></code> function. In this example, we set zeros as 65535 and scale all other values from a [0,10000] range to [0,1].</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="c1"># Set the &#39;no data&#39; value and scale all other values</span>
@@ -64,7 +64,7 @@
 <div class="section" id="replace-values">
 <h2>Replace values<a class="headerlink" href="#replace-values" title="Permalink to this headline">¶</a></h2>
 <p>The GeoWombat <code class="xref py py-func docutils literal notranslate"><span class="pre">replace()</span></code> function mimics <code class="xref py py-func docutils literal notranslate"><span class="pre">pandas.DataFrame.replace()</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518</span>
 
 <span class="c1"># Replace 1 with 10</span>
@@ -162,7 +162,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
