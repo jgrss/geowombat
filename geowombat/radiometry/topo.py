@@ -20,6 +20,25 @@ logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
+def _resize_elev(elev, proc_dims):
+
+    if OPENCV_INSTALLED:
+
+        elev = cv2.resize(elev.astype('float32'),
+                          proc_dims,
+                          interpolation=cv2.INTER_LINEAR)
+
+    else:
+
+        logger.warning('  OpenCV is not installed, so using scipy.ndimage.zoom to resize the data.')
+
+        from scipy.ndimage import zoom
+
+        elev = zoom(elev.astype('float32'), proc_dims, order=2)
+
+    return elev
+
+
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):
 
     """
@@ -35,16 +54,10 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
         ``numpy.ndarray``
     """
 
-    if not OPENCV_INSTALLED:
-        logger.exception('OpenCV must be installed.')
+    inrows, incols = elev.shape
 
     if proc_dims:
-
-        inrows, incols = elev.shape
-
-        elev = cv2.resize(elev.astype('float32'),
-                          proc_dims,
-                          interpolation=cv2.INTER_LINEAR)
+        elev = _resize_elev(elev, proc_dims)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 
@@ -87,16 +100,12 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
         ``numpy.ndarray``
     """
 
-    if not OPENCV_INSTALLED:
-        logger.exception('OpenCV must be installed.')
+    inrows, incols = elev.shape
 
     if proc_dims:
 
-        inrows, incols = elev.shape
-
-        elev = cv2.resize(elev.astype('float32'),
-                          proc_dims,
-                          interpolation=cv2.INTER_LINEAR)
+        if proc_dims:
+            elev = _resize_elev(elev, proc_dims)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 

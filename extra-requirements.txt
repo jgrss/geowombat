@@ -21,6 +21,8 @@ sklearn-xarray:         ml
 rtree:                  perf
 pygeos:                 perf
 opencv-python:          perf
+h5netcdf:               perf
+netCDF4:                perf
 dateparser:             time
 ipython:                view
 bokeh:                  view
