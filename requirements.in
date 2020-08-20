@@ -6,16 +6,10 @@ geopandas
 pyproj
 shapely
 rasterio
-dask
 dask[array,dataframe]
 distributed
 xarray
 joblib
 tqdm
-h5netcdf
-netCDF4
+scipy
 scikit-learn
-deprecated
-psutil
-opencv-python
-
