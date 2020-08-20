@@ -26,7 +26,6 @@ import pandas as pd
 import geopandas as gpd
 import xarray as xr
 from shapely.geometry import Polygon
-import psutil
 from joblib import Parallel, delayed
 
 try:
@@ -160,13 +159,11 @@ def _update_status_file(fn, log_name):
         tx.writelines(lines)
 
 
-def _clean_and_update(status,
-                      outdir_angles,
+def _clean_and_update(outdir_angles,
                       finfo_dict,
                       meta_name,
                       check_angles=True,
                       check_downloads=True,
-                      update_status=False,
                       load_bands_names=None):
 
     if check_angles:
@@ -186,8 +183,8 @@ def _clean_and_update(status,
             else:
                 logger.warning('  The {} file does not exist to delete.'.format(v.name))
 
-    if update_status:
-        _update_status_file(status, meta_name)
+    # if update_status:
+    #     _update_status_file(status, meta_name)
 
     if load_bands_names:
 
@@ -335,7 +332,6 @@ class DownloadMixin(object):
                      outdir_brdf=None,
                      search_wildcards=None,
                      search_dict=None,
-                     check_file=None,
                      n_jobs=1,
                      verbose=0):
 
@@ -350,7 +346,6 @@ class DownloadMixin(object):
             outdir_brdf (Optional[Path]): The output directory.
             search_wildcards (Optional[list]): A list of search wildcards.
             search_dict (Optional[dict]): A keyword search dictionary to override ``self.search_dict``.
-            check_file (Optional[str]): A status file to check.
             n_jobs (Optional[int]): The number of files to download in parallel.
             verbose (Optional[int]): The verbosity level.
 
@@ -456,7 +451,7 @@ class DownloadMixin(object):
                     if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
 
                         logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
-                        _clean_and_update(Path(check_file), None, None, None, check_angles=False, check_downloads=False)
+                        _clean_and_update(None, None, None, check_angles=False, check_downloads=False)
                         continue
 
                     else:
@@ -932,12 +927,12 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         outdir_brdf.mkdir(parents=True, exist_ok=True)
 
         # Logging file
-        status = Path(outdir).joinpath('status.txt')
-
-        if not status.is_file():
-
-            with open(str(status), mode='w') as tx:
-                pass
+        # status = Path(outdir).joinpath('status.txt')
+        #
+        # if not status.is_file():
+        #
+        #     with open(str(status), mode='w') as tx:
+        #         pass
 
         # Get bounds from geometry
         if isinstance(bounds, tuple) or isinstance(bounds, list):
@@ -1105,7 +1100,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                           outdir=outdir,
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=str(status),
                                                           n_jobs=n_jobs,
                                                           verbose=1)
 
@@ -1147,7 +1141,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                           outdir=outdir,
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
-                                                          check_file=str(status),
                                                           n_jobs=n_jobs,
                                                           verbose=1)
 
@@ -1160,7 +1153,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                             # Incomplete dictionary because file was checked, existed, and cleaned
                             if 'meta' not in finfo_dict:
                                 logger.warning('  The metadata does not exist.')
-                                _clean_and_update(status, None, finfo_dict, None, check_angles=False)
+                                _clean_and_update(None, finfo_dict, None, check_angles=False)
                                 continue
 
                             brdfp = '_'.join(Path(finfo_dict['meta'].name).name.split('_')[:-1])
@@ -1174,18 +1167,18 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if not Path(finfo_dict['meta'].name).is_file():
                                 logger.warning('  The metadata does not exist.')
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                _clean_and_update(outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             if out_brdf.is_file():
 
                                 logger.warning('  The output BRDF file, {}, already exists.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                _clean_and_update(outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             if load_bands[0] not in finfo_dict:
                                 logger.warning('  The download for {} was incomplete.'.format(brdfp))
-                                _clean_and_update(status, outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
+                                _clean_and_update(outdir_angles, finfo_dict, finfo_dict['meta'].name, check_angles=False)
                                 continue
 
                             outdir_angles.mkdir(parents=True, exist_ok=True)
@@ -1489,8 +1482,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             angle_infos[finfo_key] = angle_info
 
-                            _clean_and_update(status,
-                                              outdir_angles,
+                            _clean_and_update(outdir_angles,
                                               finfo_dict,
                                               finfo_dict['meta'].name,
                                               load_bands_names=load_bands_names)

@@ -167,7 +167,6 @@ class Classifiers(ClassifiersMixin):
             >>> import geowombat as gw
             >>> from geowombat.ml import fit
             >>>
-            >>> from sklearn_xarray import wrap
             >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
             >>> from sklearn.preprocessing import StandardScaler
@@ -177,18 +176,17 @@ class Classifiers(ClassifiersMixin):
             >>> # Use a data pipeline
             >>> pl = Pipeline(
             >>>     [("featurizer", Featurizer()),
-            >>>      ("scaler", wrap(StandardScaler)),
-            >>>      ("pca", wrap(PCA, reshapes="feature")),
-            >>>      ("cls", wrap(GaussianNB, reshapes="feature"))])
+            >>>      ("scaler", StandardScaler()),
+            >>>      ("pca", PCA()),
+            >>>      ("cls", GaussianNB()))])
             >>>
             >>> with gw.open('image.tif') as src:
             >>>     X, clf = fit(src, labels, pl, grid_search=True, col='id')
             >>>     y = clf.predict(X).unstack('sample')
             >>>
             >>> # Use a single classifier
-            >>> from sklearn_xarray import wrap
             >>> from sklearn.neural_network import MLPClassifier
-            >>> wrapped = wrap(MLPClassifier())
+            >>> wrapped = MLPClassifier()
             >>>
             >>> with gw.open('image.tif') as src:
             >>>     X, clf = fit(src, labels, wrapped, col='id')

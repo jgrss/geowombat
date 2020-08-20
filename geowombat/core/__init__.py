@@ -1,4 +1,3 @@
-from ..backends import to_crs
 from ..backends import transform_crs
 from .io import apply
 from .io import to_raster
@@ -31,8 +30,6 @@ dask_to_xarray = Converters().dask_to_xarray
 ndarray_to_xarray = Converters().ndarray_to_xarray
 array_to_polygon = Converters().array_to_polygon
 polygon_to_array = Converters().polygon_to_array
-geodataframe_to_array = Converters().geodataframe_to_array
-to_geodataframe = Converters().to_geodataframe
 moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
 avi = VegetationIndices().avi
@@ -44,12 +41,9 @@ wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
 
 __all__ = ['apply',
-           'to_crs',
            'transform_crs',
            'to_raster',
            'to_vrt',
-           'to_geodataframe',
-           'geodataframe_to_array',
            'extract',
            'sample',
            'calc_area',
