@@ -132,7 +132,7 @@ def _add_categorical(data, labels, col, variable_name='cat1'):
     labels = xr.concat([labels] * data.gw.ntime, dim='time')\
                 .assign_coords({'time': data.time.values.tolist()})
     
-    data = xr.concat([data,cats], dim = 'band')
+    data = xr.concat([data,labels], dim = 'band')
 
     return data
 
