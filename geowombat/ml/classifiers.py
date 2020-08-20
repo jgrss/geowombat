@@ -92,7 +92,52 @@ class ClassifiersMixin(object):
 
         return clf
 
+    @staticmethod
 
+    def _add_categorical(data, labels, col, variable_name='cat1'):
+        """
+        Writes xarray bands to disk by band
+
+        Examples
+        ========
+
+        climatecluster = ' ./ClusterEco15_Y5.shp'
+
+        with gw.open(vrts, 
+                 time_names = [str(x) for x in range(len(vrts))],
+                 ) as ds:
+            ds.attrs['filename'] = vrts 
+            cats = add_categorical(ds, climatecluster,col='ClusterN_2',variable_name='clim_clust')
+            print(cats)res,'/home/mmann1123/Desktop/', postfix='test')
+
+        :param data: xarray to add categorical data to 
+        :type data:  xarray.DataArray
+        :param labels: path or df to shapefile with categorical data
+        :type labels:  path or gpd.geodataframe
+        :param col: Column to create get values from 
+        :type col:  str 
+        :param variable_name: name assigned to categorical data 
+        :type variable_name:  str   
+
+        """
+
+        if not isinstance(labels, xr.DataArray):
+            labels = gw.polygon_to_array(labels, col=col, data=data )
+            labels['band'] = [variable_name]
+
+        # TODO: is this sufficient for single dates?
+        if not data.gw.has_time_coord:
+            data = data.assign_coords(time=1) # doesn't work I think 
+
+        labels = xr.concat([labels] * data.gw.ntime, dim='time')\
+                    .assign_coords({'time': data.time.values.tolist()})
+
+        data = xr.concat([data,labels], dim = 'band')
+
+        return data
+
+
+    
 class Classifiers(ClassifiersMixin):
 
     def fit(self,
