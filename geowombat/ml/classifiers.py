@@ -1,11 +1,32 @@
+import functools
+
 from .. import polygon_to_array
 from .transformers import Stackerizer
 
 import xarray as xr
-from sklearn_xarray import Target
-from sklearn_xarray.model_selection import CrossValidatorWrapper
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
+from sklearn_xarray import wrap, Target
+from sklearn_xarray.model_selection import CrossValidatorWrapper
+
+
+def wrapped_cls(cls):
+
+    @functools.wraps(cls)
+    def wrapper(self):
+
+        if cls.__module__.split('.') != 'sklearn_xarray':
+            self = wrap(self, reshapes='feature')
+
+        return self
+
+    return wrapper
+
+
+@wrapped_cls
+class WrappedClassifier(object):
+    pass
 
 
 class ClassifiersMixin(object):
@@ -53,13 +74,23 @@ class ClassifiersMixin(object):
         X = Stackerizer(stack_dims=('y', 'x', 'time'),
                         direction='stack').fit_transform(data)
 
-        # drop nans from
+        # drop nans
         Xna = X[~X[targ_name].isnull()]
 
         # TODO: groupby as a user option?
         # Xgp = Xna.groupby(targ_name).mean('sample')
 
         return X, Xna
+
+    @staticmethod
+    def _prepare_classifiers(clf):
+
+        if isinstance(clf, Pipeline):
+            clf = [WrappedClassifier(clf_) for clf_ in clf]
+        else:
+            clf = WrappedClassifier(clf)
+
+        return clf
 
 
 class Classifiers(ClassifiersMixin):
@@ -100,6 +131,7 @@ class Classifiers(ClassifiersMixin):
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
             >>>
+            >>> # Use a data pipeline
             >>> pl = Pipeline(
             >>>     [("featurizer", Featurizer()),
             >>>      ("scaler", wrap(StandardScaler)),
@@ -110,6 +142,8 @@ class Classifiers(ClassifiersMixin):
             >>>     X, clf = fit(src, labels, pl, grid_search=True, col='id')
             >>>     y = clf.predict(X).unstack('sample')
             >>>
+            >>> # Use a single classifier
+            >>> from sklearn_xarray import wrap
             >>> from sklearn.neural_network import MLPClassifier
             >>> wrapped = wrap(MLPClassifier())
             >>>
@@ -119,8 +153,8 @@ class Classifiers(ClassifiersMixin):
         """
 
         data = self._prepare_labels(data, labels, col, targ_name)
-
         X, Xna = self._prepare_predictors(data, targ_name)
+        clf = self._prepare_classifiers(clf)
 
         if grid_search:
             clf = self.grid_search_cv(clf)
