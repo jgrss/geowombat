@@ -11,12 +11,9 @@ from .core import recode
 from .core import coregister
 from .core import polygons_to_points
 from .core import apply
-from .core import to_crs
 from .core import transform_crs
 from .core import to_raster
 from .core import to_vrt
-from .core import to_geodataframe
-from .core import geodataframe_to_array
 from .core import array_to_polygon
 from .core import polygon_to_array
 from .core import moving
@@ -48,12 +45,9 @@ __all__ = ['config',
            'coregister',
            'polygons_to_points',
            'apply',
-           'to_crs',
            'transform_crs',
            'to_raster',
            'to_vrt',
-           'to_geodataframe',
-           'geodataframe_to_array',
            'array_to_polygon',
            'polygon_to_array',
            'moving',

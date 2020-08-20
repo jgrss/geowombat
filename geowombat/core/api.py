@@ -1,6 +1,13 @@
 # https://github.com/pydata/xarray/issues/2560
-import netCDF4
-import h5netcdf
+try:
+    import netCDF4
+except:
+    pass
+
+try:
+    import h5netcdf
+except:
+    pass
 
 import warnings
 from pathlib import Path
