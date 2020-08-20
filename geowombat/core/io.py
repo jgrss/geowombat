@@ -462,7 +462,7 @@ def to_vrt(data,
                            crs=data.crs,                            # the transformed CRS
                            src_transform=src.gw.transform,             # the original transform
                            transform=data.gw.transform,                # the new transform
-                           dtype=data.gw.dtype,
+                           dtype=data.dtype,
                            resampling=resampling,
                            nodata=nodata,
                            init_dest_nodata=init_dest_nodata,
