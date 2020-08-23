@@ -266,7 +266,7 @@ class Classifiers(ClassifiersMixin):
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
             >>>     y = fit_predict(src, labels, pl, col='lc')
-            >>>     y.sel(band='targ').gw.imshow()
+            >>>     y.sel(time='t1').sel(band='targ').gw.imshow()
         """
 
         X, clf = self.fit(data,
