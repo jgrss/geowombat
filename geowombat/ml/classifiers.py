@@ -86,7 +86,7 @@ class ClassifiersMixin(object):
     def _prepare_classifiers(clf):
 
         if isinstance(clf, Pipeline):
-            clf = [WrappedClassifier(clf_) for clf_ in clf]
+            clf = Pipeline([(clf_name, WrappedClassifier(clf_)) for clf_name, clf_ in clf.steps])
         else:
             clf = WrappedClassifier(clf)
 
@@ -186,10 +186,10 @@ class Classifiers(ClassifiersMixin):
             >>>
             >>> # Use a single classifier
             >>> from sklearn.neural_network import MLPClassifier
-            >>> wrapped = MLPClassifier()
+            >>> mlp = MLPClassifier()
             >>>
             >>> with gw.open('image.tif') as src:
-            >>>     X, clf = fit(src, labels, wrapped, col='id')
+            >>>     X, clf = fit(src, labels, mlp, col='id')
             >>>     y = clf.predict(X).unstack('sample')
         """
 
