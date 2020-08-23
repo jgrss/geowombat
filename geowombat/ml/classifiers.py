@@ -254,4 +254,8 @@ class Classifiers(ClassifiersMixin):
                           targ_dim_name=targ_dim_name,
                           col=col)
 
-        return clf.predict(X).unstack(targ_dim_name)
+        return clf.predict(X)\
+                    .unstack(targ_dim_name)\
+                    .assign_coords(coords={'band': targ_name})\
+                    .expand_dims(dim='band')\
+                    .transpose('time', 'band', 'y', 'x')
