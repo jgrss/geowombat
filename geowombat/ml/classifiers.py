@@ -55,7 +55,9 @@ class ClassifiersMixin(object):
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
-            data = data.assign_coords({'time': [1]})
+            data = data.assign_coords({'time': 't1'})\
+                        .expand_dims(dim='time')\
+                        .transpose('time', 'band', 'y', 'x')
 
         labels = xr.concat([labels] * data.gw.ntime, dim='band')\
                     .assign_coords({'band': data.time.values.tolist()})
@@ -161,7 +163,9 @@ class Classifiers(ClassifiersMixin):
                 If ``None``, creates a binary raster.
 
         Returns:
-            ``xarray.DataArray``
+            ``xarray.DataArray``, ``object``:
+
+                    Reshaped `data`, classifier object
 
         Example:
             >>> import geowombat as gw
@@ -232,18 +236,27 @@ class Classifiers(ClassifiersMixin):
                 If ``None``, creates a binary raster.
 
         Returns:
-            ``xarray.DataArray``
+            ``xarray.DataArray``:
+
+                Predictions shaped ('time' x 'band' x 'y' x 'x')
 
         Example:
             >>> import geowombat as gw
+            >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
             >>> from geowombat.ml import fit_predict
-            >>>
-            >>> from sklearn_xarray import wrap
+            >>> import geopandas as gpd
             >>> from sklearn.neural_network import MLPClassifier
-            >>> wrapped = wrap(MLPClassifier())
+            >>> from sklearn.preprocessing import LabelEncoder
             >>>
-            >>> with gw.open('image.tif') as src:
-            >>>     y = fit_predict(src, labels, wrapped)
+            >>> mlp = MLPClassifier()
+            >>> le = LabelEncoder()
+            >>>
+            >>> labels = gpd.read_file(l8_224078_20200518_polygons)
+            >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
+            >>>
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     y = fit_predict(src, labels, mlp)
+            >>>     y.sel(band='targ').gw.imshow()
         """
 
         X, clf = self.fit(data,
