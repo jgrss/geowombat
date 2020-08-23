@@ -663,6 +663,10 @@ class CloudPathMixin(object):
         if bands:
 
             sensor = f'{sensor_collection[0].lower()}{sensor_collection[3]}'
+
+            # Landsat 7 has the thermal band
+            sensor = 'l7th' if sensor == 'l7' else sensor
+
             wavelengths = get_sensor_info('wavelength', sensor)
             band_pos = [getattr(wavelengths, b) for b in bands]
 
