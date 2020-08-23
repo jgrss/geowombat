@@ -55,6 +55,7 @@ class ClassifiersMixin(object):
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
+
             data = data.assign_coords({'time': 't1'})\
                         .expand_dims(dim='time')\
                         .transpose('time', 'band', 'y', 'x')
