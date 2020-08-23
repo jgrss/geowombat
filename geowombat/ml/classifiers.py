@@ -56,12 +56,12 @@ class ClassifiersMixin(object):
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
-            data = data.assign_coords({'time': 't1'})\
+            data = data.assign_coords(coords={'time': 't1'})\
                         .expand_dims(dim='time')\
                         .transpose('time', 'band', 'y', 'x')
 
         labels = xr.concat([labels] * data.gw.ntime, dim='band')\
-                    .assign_coords({'band': data.time.values.tolist()})
+                    .assign_coords(coords={'band': data.time.values.tolist()})
 
         # Mask 'no data'
         labels = labels.where(labels != 0)
@@ -129,7 +129,10 @@ class ClassifiersMixin(object):
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
-            data = data.assign_coords({'time': [1]})
+
+            data = data.assign_coords(coords={'time': 't1'})\
+                        .expand_dims(dim='time')\
+                        .transpose('time', 'band', 'y', 'x')
 
         labels = xr.concat([labels] * data.gw.ntime, dim='time')\
                     .assign_coords({'time': data.time.values.tolist()})
@@ -170,32 +173,29 @@ class Classifiers(ClassifiersMixin):
 
         Example:
             >>> import geowombat as gw
+            >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
             >>> from geowombat.ml import fit
             >>>
+            >>> import geopandas as gpd
             >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
             >>> from sklearn.preprocessing import StandardScaler
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
             >>>
+            >>> le = LabelEncoder()
+            >>>
+            >>> labels = gpd.read_file(l8_224078_20200518_polygons)
+            >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
+            >>>
             >>> # Use a data pipeline
-            >>> pl = Pipeline(
-            >>>     [("featurizer", Featurizer()),
-            >>>      ("scaler", StandardScaler()),
-            >>>      ("pca", PCA()),
-            >>>      ("cls", GaussianNB()))])
+            >>> pl = Pipeline([('featurizer', Featurizer()),
+            >>>                ('scaler', StandardScaler()),
+            >>>                ('pca', PCA()),
+            >>>                ('clf', GaussianNB()))])
             >>>
-            >>> with gw.open('image.tif') as src:
-            >>>     X, clf = fit(src, labels, pl, grid_search=True, col='id')
-            >>>     y = clf.predict(X).unstack('sample')
-            >>>
-            >>> # Use a single classifier
-            >>> from sklearn.neural_network import MLPClassifier
-            >>> mlp = MLPClassifier()
-            >>>
-            >>> with gw.open('image.tif') as src:
-            >>>     X, clf = fit(src, labels, mlp, col='id')
-            >>>     y = clf.predict(X).unstack('sample')
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     X, clf = fit(src, labels, pl, grid_search=True, col='lc')
         """
 
         data = self._prepare_labels(data, labels, col, targ_name)
@@ -245,18 +245,27 @@ class Classifiers(ClassifiersMixin):
             >>> import geowombat as gw
             >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
             >>> from geowombat.ml import fit_predict
-            >>> import geopandas as gpd
-            >>> from sklearn.neural_network import MLPClassifier
-            >>> from sklearn.preprocessing import LabelEncoder
             >>>
-            >>> mlp = MLPClassifier()
+            >>> import geopandas as gpd
+            >>> from sklearn_xarray.preprocessing import Featurizer
+            >>> from sklearn.pipeline import Pipeline
+            >>> from sklearn.preprocessing import StandardScaler
+            >>> from sklearn.decomposition import PCA
+            >>> from sklearn.naive_bayes import GaussianNB
+            >>>
             >>> le = LabelEncoder()
             >>>
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
+            >>> # Use a data pipeline
+            >>> pl = Pipeline([('featurizer', Featurizer()),
+            >>>                ('scaler', StandardScaler()),
+            >>>                ('pca', PCA()),
+            >>>                ('clf', GaussianNB()))])
+            >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>     y = fit_predict(src, labels, mlp)
+            >>>     y = fit_predict(src, labels, pl, col='lc')
             >>>     y.sel(band='targ').gw.imshow()
         """
 
