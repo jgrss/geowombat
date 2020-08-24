@@ -3,18 +3,13 @@
 Changelog
 =========
 
-1.2.x ()
---------
+1.2.32 (24 Aug 2020)
+--------------------
 
 Bugs
 ~~~~
 
 - Added check/replace for Landsat 7 with thermal band for web downloads from the Google Cloud Platform.
-
-Enhancements
-~~~~~~~~~~~~
-
-- Added installation examples to the README.
 
 1.2.31 (20 Aug 2020)
 --------------------
