@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.2.33 (25 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Fixed coordinate length mismatch with converted polygons in :fun:`geowombat.polygon_to_array`.
+
 1.2.32 (24 Aug 2020)
 --------------------
 
