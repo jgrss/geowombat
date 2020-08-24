@@ -249,7 +249,7 @@ class Classifiers(ClassifiersMixin):
             >>> import geopandas as gpd
             >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
-            >>> from sklearn.preprocessing import StandardScaler
+            >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
             >>>
@@ -266,7 +266,11 @@ class Classifiers(ClassifiersMixin):
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
             >>>     y = fit_predict(src, labels, pl, col='lc')
-            >>>     y.sel(time='t1').sel(band='targ').gw.imshow()
+            >>>     y.isel(time=0).sel(band='targ').gw.imshow()
+            >>>
+            >>> with gw.open([l8_224078_20200518,l8_224078_20200518] ) as src:
+            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y.isel(time=1).sel(band='targ').gw.imshow()
         """
 
         X, clf = self.fit(data,
