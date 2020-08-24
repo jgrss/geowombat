@@ -66,7 +66,39 @@ Computation scales easily over large datasets with minimal changes to the code.
 >>>                              compress='lzw')
 ```
 
+## Installation
+
+GeoWombat is not on PyPi, but it can be installed with `pip`. Most dependencies will be automatically installed. However, the exceptions are `cython`, `numpy`, and the GDAL binaries, which all need to be installed prior to exectuting the `pip` command above. See [the installation documentation](https://geowombat.readthedocs.io/en/latest/install.html) for details on installing GDAL. With GDAL installed, GeoWombat can be installed like:
+
+```commandline
+pip install cython numpy
+pip install git+https://github.com/jgrss/geowombat
+```
+
+Alternatively, use `git` to clone and build the repository like:
+
+```commandline
+git clone https://github.com/jgrss/geowombat.git
+cd geowombat/
+python setup.py build && pip install --upgrade . && rm -rf build/
+```
+
+### Update
+
+To update GeoWombat:
+
+```commandline
+pip install --upgrade git+https://github.com/jgrss/geowombat
+```
+
+Or, to update a cloned repository:
+
+```commandline
+cd geowombat/
+git pull origin master
+python setup.py build && pip install --upgrade . && rm -rf build/
+```
+
 ## Documentation
----
 
 For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).
