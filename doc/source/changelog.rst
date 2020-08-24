@@ -3,6 +3,23 @@
 Changelog
 =========
 
+1.3.0 ()
+--------
+
+New
+~~~
+
+- Added machine learning module `geowombat.ml` with :func:`geowombat.ml.fit` and :func:`geowombat.ml.fit_predict` methods.
+  - Model fitting is performed with `sklearn-xarray <https://phausamann.github.io/sklearn-xarray/>`_
+
+1.2.33 (25 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Fixed coordinate length mismatch with converted polygons in :fun:`geowombat.polygon_to_array`.
+
 1.2.32 (24 Aug 2020)
 --------------------
 

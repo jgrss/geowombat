@@ -646,6 +646,12 @@ class Converters(object):
         xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
         ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
 
+        if xcoords.shape[0] > dst_width:
+            xcoords = xcoords[:dst_width]
+
+        if ycoords.shape[0] > dst_height:
+            ycoords = ycoords[:dst_height]
+
         attrs = {'transform': dst_transform[:6],
                  'crs': dataframe.crs,
                  'res': (cellx, celly),
