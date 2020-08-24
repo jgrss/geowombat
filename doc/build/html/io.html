@@ -69,7 +69,7 @@
 <span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-5d4896e84540da5f22b22950240300ea&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-b682d54dcecaf62a84d98be3a6898c35&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -125,8 +125,8 @@
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(3, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * band     (band) &lt;U1 &#39;b&#39; &#39;g&#39; &#39;r&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -150,9 +150,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -191,9 +191,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1515, x: 2006)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1515, 2006), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>
@@ -216,9 +216,9 @@
 <span class="go">&lt;xarray.DataArray (time: 2, band: 3, y: 1860, x: 2041)&gt;</span>
 <span class="go">dask.array&lt;concatenate, shape=(2, 3, 1860, 2041), dtype=uint16, chunksize=(1, 1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * band     (band) &lt;U5 &#39;blue&#39; &#39;green&#39; &#39;red&#39;</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
+<span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39; &#39;t2&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
@@ -278,9 +278,9 @@
 <span class="go">&lt;xarray.DataArray (time: 1, y: 1515, x: 2006, band: 1)&gt;</span>
 <span class="go">dask.array&lt;broadcast_to, shape=(1, 1515, 2006, 1), dtype=uint16, chunksize=(1, 256, 256, 1), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
-<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
 <span class="go">  * band     (band) &lt;U4 &#39;blue&#39;</span>
 <span class="go">  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05</span>
+<span class="go">  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06</span>
 <span class="go">  * time     (time) &lt;U2 &#39;t1&#39;</span>
 <span class="go">Attributes:</span>
 <span class="go">    transform:      (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)</span>

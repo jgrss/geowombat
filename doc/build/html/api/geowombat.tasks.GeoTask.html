@@ -45,19 +45,19 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<em>dict</em>) – </p></li>
-<li><p><strong>outputs</strong> (<em>dict</em>) – </p></li>
-<li><p><strong>tasks</strong> (<em>tuple</em>) – </p></li>
-<li><p><strong>clean</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – </p></li>
-<li><p><strong>config_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – </p></li>
-<li><p><strong>open_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – </p></li>
-<li><p><strong>func_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – </p></li>
-<li><p><strong>out_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – </p></li>
-<li><p><strong>log_file</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>inputs</strong> (<em>dict</em>) – The input steps.</p></li>
+<li><p><strong>outputs</strong> (<em>dict</em>) – The outputs.</p></li>
+<li><p><strong>tasks</strong> (<em>tuple</em>) – The tasks to execute.</p></li>
+<li><p><strong>clean</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Currently not implemented.</p></li>
+<li><p><strong>config_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The arguments for <cite>geowombat.config.update</cite>.</p></li>
+<li><p><strong>open_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The arguments for <cite>geowombat.open</cite>.</p></li>
+<li><p><strong>func_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The arguments to pass to each function in <cite>tasks</cite>.</p></li>
+<li><p><strong>out_args</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The arguments for <cite>geowombat.to_raster</cite>.</p></li>
+<li><p><strong>log_file</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A file to write the log to.</p></li>
 </ul>
 </dd>
 </dl>
-<p class="rubric">Example</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">,</span> <span class="n">l8_224078_20200518</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.tasks</span> <span class="kn">import</span> <span class="n">GeoTask</span>
