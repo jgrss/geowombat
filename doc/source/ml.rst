@@ -29,7 +29,7 @@ Fit a classifier
     pl = Pipeline([('featurizer', Featurizer()),
                    ('scaler', StandardScaler()),
                    ('pca', PCA()),
-                   ('clf', GaussianNB()))])
+                   ('clf', GaussianNB())])
 
     # Fit the classifier
     with gw.open(l8_224078_20200518) as src:
