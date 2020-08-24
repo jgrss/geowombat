@@ -45,18 +45,78 @@
 
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
-<span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">),</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)}</span>
-<span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r1&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r2&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r3&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|mean&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|stack&#39;</span><span class="p">}</span>
-<span class="n">tasks</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="o">.</span><span class="n">mean</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">))</span>
-<span class="n">func_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">},</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">}}</span>
+<span class="c1"># Setup the input steps</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span>
+          <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span>
+          <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">),</span>
+          <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>                 <span class="c1"># the input of &#39;d&#39; is the output of &#39;c&#39;</span>
+          <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)}</span>     <span class="c1"># the input of &#39;e&#39; is the output of &#39;a&#39;, &#39;b&#39;, and &#39;c&#39;</span>
+
+<span class="c1"># Setup the outputs of each step</span>
+<span class="c1"># Here, we could specify filenames to write or to process in-memory</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r1&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r2&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r3&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|mean&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|stack&#39;</span><span class="p">}</span>
+
+<span class="c1"># Setup the tasks to execute on each input step</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="o">.</span><span class="n">mean</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">))</span>
+
+<span class="c1"># Setup the function keyword arguments of each step</span>
+<span class="n">func_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">}}</span>
+
 <span class="n">open_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;chunks&#39;</span><span class="p">:</span> <span class="mi">512</span><span class="p">}</span>
 <span class="n">config_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sensor&#39;</span><span class="p">:</span> <span class="s1">&#39;bgr&#39;</span><span class="p">,</span> <span class="s1">&#39;nodata&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;scale_factor&#39;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">}</span>
+<span class="n">out_args</span> <span class="o">=</span> <span class="p">{</span>
 
-<span class="n">task_mean</span> <span class="o">=</span> <span class="n">GeoTask</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">config_args</span><span class="o">=</span><span class="n">config_args</span><span class="p">,</span> <span class="n">open_args</span><span class="o">=</span><span class="n">open_args</span><span class="p">,</span> <span class="n">func_args</span><span class="o">=</span><span class="n">func_args</span><span class="p">,</span> <span class="n">out_args</span><span class="o">=</span><span class="p">{})</span>
-<span class="n">viz</span> <span class="o">=</span> <span class="n">task_mean</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+<span class="c1"># Setup the task object</span>
+<span class="n">task_mean</span> <span class="o">=</span> <span class="n">GeoTask</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+                    <span class="n">outputs</span><span class="p">,</span>
+                    <span class="n">tasks</span><span class="p">,</span>
+                    <span class="n">config_args</span><span class="o">=</span><span class="n">config_args</span><span class="p">,</span>
+                    <span class="n">open_args</span><span class="o">=</span><span class="n">open_args</span><span class="p">,</span>
+                    <span class="n">func_args</span><span class="o">=</span><span class="n">func_args</span><span class="p">,</span>
+                    <span class="n">out_args</span><span class="o">=</span><span class="n">out_args</span><span class="p">)</span>
+
+<span class="c1"># Visualize the steps</span>
+<span class="n">task_mean</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 </pre></div>
 </div>
 <img alt="_images/task_mean.png" src="_images/task_mean.png" />
+</div>
+<div class="section" id="create-a-new-task-and-add-to-initial-task">
+<h2>Create a new task and add to initial task<a class="headerlink" href="#create-a-new-task-and-add-to-initial-task" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="s1">&#39;e&#39;</span><span class="p">}</span>         <span class="c1"># &#39;f&#39; takes the output of step &#39;e&#39; from our previous task</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="s1">&#39;mean.tif&#39;</span><span class="p">}</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="o">.</span><span class="n">mean</span><span class="p">),)</span>
+<span class="n">func_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">}}</span>
+<span class="n">out_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;compress&#39;</span><span class="p">:</span> <span class="s1">&#39;lzw&#39;</span><span class="p">,</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+<span class="c1"># Create a task that takes the output of task e and writes the mean to file</span>
+<span class="n">task_write</span> <span class="o">=</span> <span class="n">GeoTask</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+                     <span class="n">outputs</span><span class="p">,</span>
+                     <span class="n">tasks</span><span class="p">,</span>
+                     <span class="n">config_args</span><span class="o">=</span><span class="n">config_args</span><span class="p">,</span>
+                     <span class="n">func_args</span><span class="o">=</span><span class="n">func_args</span><span class="p">,</span>
+                     <span class="n">open_args</span><span class="o">=</span><span class="n">open_args</span><span class="p">,</span>
+                     <span class="n">out_args</span><span class="o">=</span><span class="n">out_args</span><span class="p">)</span>
+
+<span class="c1"># Add the new task</span>
+<span class="n">new_task</span> <span class="o">=</span> <span class="n">task_mean</span> <span class="o">+</span> <span class="n">task_write</span>
+
+<span class="n">new_task</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/task_write.png" src="_images/task_write.png" />
 </div>
 </div>
 
