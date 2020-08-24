@@ -3,6 +3,9 @@
 Pipeline tasks
 ==============
 
+Setup a task and visualize the steps
+------------------------------------
+
 .. code:: python
 
     import geowombat as gw
