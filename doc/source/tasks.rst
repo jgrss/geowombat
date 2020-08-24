@@ -3,16 +3,13 @@
 Pipeline tasks
 ==============
 
-.. ipython:: python
+.. code:: python
 
     import geowombat as gw
     from geowombat.tasks import GeoTask
     from geowombat.data import l8_224078_20200518_B3, l8_224078_20200518_B4, l8_224078_20200518
 
     import xarray as xr
-    import matplotlib.pyplot as plt
-
-.. ipython:: python
 
     inputs = {'a': l8_224078_20200518, 'b': l8_224078_20200518, 'c': (l8_224078_20200518_B3, l8_224078_20200518_B4), 'd': 'c', 'e': ('a', 'b', 'd')}
     outputs = {'a': 'mem|r1', 'b': 'mem|r2', 'c': 'mem|r3', 'd': 'mem|mean', 'e': 'mem|stack'}
