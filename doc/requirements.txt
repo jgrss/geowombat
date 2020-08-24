@@ -64,3 +64,5 @@ numpydoc
 sphinx
 sphinx-automodapi
 sphinxcontrib-bibtex
+graphviz
+sklearn-xarray
