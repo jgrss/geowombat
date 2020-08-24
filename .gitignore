@@ -36,7 +36,6 @@ logo/
 bin/ESPA/
 
 # dev
-geowombat/tasks/
 geowombat/radiometry/*test*.py
 
 # Notebooks
