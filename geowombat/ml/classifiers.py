@@ -192,7 +192,7 @@ class Classifiers(ClassifiersMixin):
             >>> pl = Pipeline([('featurizer', Featurizer()),
             >>>                ('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
-            >>>                ('clf', GaussianNB()))])
+            >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
             >>>     X, clf = fit(src, labels, pl, grid_search=True, col='lc')
