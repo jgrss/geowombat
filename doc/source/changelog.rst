@@ -11,6 +11,9 @@ New
 
 - Added machine learning module `geowombat.ml` with :func:`geowombat.ml.fit` and :func:`geowombat.ml.fit_predict` methods.
   - Model fitting is performed with `sklearn-xarray <https://phausamann.github.io/sklearn-xarray/>`_
+- Added tasks visualization in `geowombat.tasks`.
+  - Tasks can be setup and visualized with the :class:`geowombat.tasks.GeoTask` class.
+  - Requires an installation with `pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]`.
 
 1.2.33 (25 Aug 2020)
 --------------------

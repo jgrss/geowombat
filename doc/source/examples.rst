@@ -11,6 +11,7 @@ Examples
    extraction
    band-math
    apply
+   ml
    moving
    radiometry
    web
