@@ -32,8 +32,9 @@ Fit a classifier
                    ('clf', GaussianNB())])
 
     # Fit the classifier
-    with gw.open(l8_224078_20200518) as src:
-        X, clf = fit(src, labels, pl, grid_search=True, col='lc')
+    with gw.config.update(ref_res=100):
+        with gw.open(l8_224078_20200518, chunks=128) as src:
+            X, clf = fit(src, labels, pl, col='lc')
 
     print(clf)
 
@@ -43,7 +44,18 @@ Fit a classifier and predict on an array
 .. ipython:: python
 
     from geowombat.ml import fit_predict
-    
-    with gw.open(l8_224078_20200518) as src:
-        y = fit_predict(src, labels, pl, col='lc')
-        print(y)
+
+    with gw.config.update(ref_res=100):
+        with gw.open(l8_224078_20200518, chunks=128) as src:
+            y = fit_predict(src, labels, pl, col='lc')
+            print(y)
+
+Fit a classifier with multiple dates
+------------------------------------
+
+.. ipython:: python
+
+    with gw.config.update(ref_res=100):
+        with gw.open([l8_224078_20200518, l8_224078_20200518], time_names=['t1', 't2'], stack_dim='time', chunks=128) as src:
+            y = fit_predict(src, labels, pl, col='lc')
+            print(y)
