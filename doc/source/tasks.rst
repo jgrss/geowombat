@@ -25,7 +25,7 @@ Pipeline tasks
     viz = task_mean.visualize()
 
     viz.format = 'PNG'
-    viz.render(filename='task_mean', view=True)
+    viz.render(filename='task_mean', view=False)
 
     fig, ax = plt.subplots(dpi=200)
     @savefig task_mean.png
