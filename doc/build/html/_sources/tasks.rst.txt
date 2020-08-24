@@ -24,9 +24,4 @@ Pipeline tasks
     task_mean = GeoTask(inputs, outputs, tasks, config_args=config_args, open_args=open_args, func_args=func_args, out_args={})
     viz = task_mean.visualize()
 
-    viz.format = 'PNG'
-    viz.render(filename='task_mean', view=False)
-
-    fig, ax = plt.subplots(dpi=200)
-    @savefig task_mean.png
-    plt.tight_layout(pad=1)
+.. image:: _static/task_mean.png
