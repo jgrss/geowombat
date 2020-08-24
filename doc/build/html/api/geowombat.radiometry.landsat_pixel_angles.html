@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>landsat_pixel_angles &#8212; GeoWombat 1.2.23 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>landsat_pixel_angles &#8212; GeoWombat 1.3.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="sentinel_pixel_angles" href="geowombat.radiometry.sentinel_pixel_angles.html" />
-    <link rel="prev" title="open" href="geowombat.open.html" />
+    <link rel="prev" title="fit_predict" href="geowombat.ml.fit_predict.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -39,7 +39,7 @@
 <h1>landsat_pixel_angles<a class="headerlink" href="#landsat-pixel-angles" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.radiometry.landsat_pixel_angles">
-<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">landsat_pixel_angles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angles_file</span></em>, <em class="sig-param"><span class="n">ref_file</span></em>, <em class="sig-param"><span class="n">outdir</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">l57_angles_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">l8_angles_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.landsat_pixel_angles" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">landsat_pixel_angles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angles_file</span></em>, <em class="sig-param"><span class="n">ref_file</span></em>, <em class="sig-param"><span class="n">outdir</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">l57_angles_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">l8_angles_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subsample</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.landsat_pixel_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates Landsat pixel angle files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -50,6 +50,7 @@
 <li><p><strong>sensor</strong> (<em>str</em>) – The sensor.</p></li>
 <li><p><strong>l57_angles_path</strong> (<em>str</em>) – The path to the Landsat 5 and 7 angles bin.</p></li>
 <li><p><strong>l8_angles_path</strong> (<em>str</em>) – The path to the Landsat 8 angles bin.</p></li>
+<li><p><strong>subsample</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The sub-sample factor when calculating the angles.</p></li>
 <li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The verbosity level.</p></li>
 </ul>
 </dd>
@@ -112,7 +113,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.open.html" title="previous chapter">open</a></li>
+      <li>Previous: <a href="geowombat.ml.fit_predict.html" title="previous chapter">fit_predict</a></li>
       <li>Next: <a href="geowombat.radiometry.sentinel_pixel_angles.html" title="next chapter">sentinel_pixel_angles</a></li>
   </ul></li>
   </ul></li>
@@ -144,7 +145,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

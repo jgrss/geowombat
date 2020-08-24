@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examples &#8212; GeoWombat 1.2.23 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examples &#8212; GeoWombat 1.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -66,15 +66,16 @@
 <li class="toctree-l2"><a class="reference internal" href="band-math.html#tasseled-cap-transformations">Tasseled cap transformations</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="machine-learning.html">Machine learning</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="machine-learning.html#use-a-scikit-learn-classifier">Use a Scikit-learn classifier</a></li>
-<li class="toctree-l2"><a class="reference internal" href="machine-learning.html#use-geowombat-and-dask-to-fit-a-classifier">Use GeoWombat and Dask to fit a classifier</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="apply.html">User functions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="apply.html#user-apply">User apply</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apply.html#user-functions-as-dataarray-attributes">User functions as DataArray attributes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apply.html#applying-in-memory-geowombat-functions-lazily">Applying in-memory GeoWombat functions lazily</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ml.html">Machine learning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#fit-a-classifier">Fit a classifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#fit-a-classifier-and-predict-on-an-array">Fit a classifier and predict on an array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#fit-a-classifier-with-multiple-dates">Fit a classifier with multiple dates</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="moving.html">Moving windows</a></li>
@@ -82,9 +83,16 @@
 <li class="toctree-l2"><a class="reference internal" href="radiometry.html#brdf-adjusted-surface-reflectance">BRDF-adjusted surface reflectance</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Pipeline tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#setup-a-task-and-visualize-the-steps">Setup a task and visualize the steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#create-a-new-task-and-add-to-initial-task">Create a new task and add to initial task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#execute-the-task-pipeline">Execute the task pipeline</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="web.html">Web</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="web.html#download-data-from-google-cloud-platform">Download data from Google Cloud Platform</a></li>
 <li class="toctree-l2"><a class="reference internal" href="web.html#download-and-cube-data">Download and cube data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web.html#read-from-virtual-cloud-optimized-geotiffs">Read from virtual Cloud Optimized GeoTiffs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="external.html">External examples</a></li>
@@ -173,7 +181,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

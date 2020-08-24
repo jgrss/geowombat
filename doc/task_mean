@@ -1,0 +1,135 @@
+digraph {
+	a [label="Task a: norm_diff" color="#3454b4" fillcolor="#c6d2f6" fontcolor="#131f43" shape=oval style=filled]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		sensor [label="sensor: bgr" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	sensor -> e [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		nodata [label="nodata: 0" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	nodata -> e [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		scale_factor [label="scale_factor: 0.0001" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	scale_factor -> e [color=grey style=dashed]
+	b [label="Task b: norm_diff" color="#3454b4" fillcolor="#c6d2f6" fontcolor="#131f43" shape=oval style=filled]
+	a -> b [color="#3454b4" style=bold]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		sensor [label="sensor: bgr" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	sensor -> a [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		nodata [label="nodata: 0" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	nodata -> a [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		scale_factor [label="scale_factor: 0.0001" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	scale_factor -> a [color=grey style=dashed]
+	c [label="Task c: concat" color="#3454b4" fillcolor="#c6d2f6" fontcolor="#131f43" shape=oval style=filled]
+	b -> c [color="#3454b4" style=bold]
+	b -> c [color="#3454b4" style=bold]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		sensor [label="sensor: bgr" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	sensor -> b [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		nodata [label="nodata: 0" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	nodata -> b [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		scale_factor [label="scale_factor: 0.0001" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	scale_factor -> b [color=grey style=dashed]
+	d [label="Task d: mean" color="#3454b4" fillcolor="#c6d2f6" fontcolor="#131f43" shape=oval style=filled]
+	c -> d [color="#3454b4" style=bold]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		sensor [label="sensor: bgr" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	sensor -> c [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		nodata [label="nodata: 0" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	nodata -> c [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		scale_factor [label="scale_factor: 0.0001" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	scale_factor -> c [color=grey style=dashed]
+	e [label="Task e: concat" color="#3454b4" fillcolor="#c6d2f6" fontcolor="#131f43" shape=oval style=filled]
+	a -> e [color="#3454b4" style=bold]
+	b -> e [color="#3454b4" style=bold]
+	d -> e [color="#3454b4" style=bold]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		sensor [label="sensor: bgr" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	sensor -> d [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		nodata [label="nodata: 0" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	nodata -> d [color=grey style=dashed]
+	subgraph cluster_0 {
+		color=lightgrey style=filled
+		scale_factor [label="scale_factor: 0.0001" color=black fillcolor=none fontcolor="#131f43" shape=diamond style="rounded,filled"]
+		label="geowombat.config.update() args"
+	}
+	scale_factor -> d [color=grey style=dashed]
+	"a mem|r1" [label="mem|r1" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=dashed]
+	a -> "a mem|r1" [color="#b49434" style=dashed weight=200]
+	"b mem|r2" [label="mem|r2" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=dashed]
+	b -> "b mem|r2" [color="#b49434" style=dashed weight=200]
+	"c mem|r3" [label="mem|r3" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=dashed]
+	c -> "c mem|r3" [color="#b49434" style=dashed weight=200]
+	"d mem|mean" [label="mem|mean" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=dashed]
+	d -> "d mem|mean" [color="#b49434" style=dashed weight=200]
+	"e mem|stack" [label="mem|stack" color=blue fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=dashed]
+	e -> "e mem|stack" [color="#b49434" style=dashed weight=200]
+	"a /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT.TIF" [label="LC08_L1TP_224078_20200518_20200518_01_RT.TIF" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=filled]
+	"a /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT.TIF" -> a [color="#b49434" weight=200]
+	"a /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT.TIF" -> b [color="#b49434" weight=200]
+	"c /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT_B3.TIF" [label="LC08_L1TP_224078_20200518_20200518_01_RT_B3.TIF" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=filled]
+	"c /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT_B3.TIF" -> c [color="#b49434" weight=200]
+	"c /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF" [label="LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF" color="#b49434" fillcolor="#f3e3b3" fontcolor="#2d250d" shape=box style=filled]
+	"c /home/jcgr/Documents/scripts/Python/envs/ts3.7/lib/python3.7/site-packages/geowombat/data/LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF" -> c [color="#b49434" weight=200]
+	"a b1" [label="b1: green" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"a b1" -> a [color="#555555" weight=200]
+	"a b2" [label="b2: red" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"a b2" -> a [color="#555555" weight=200]
+	"b b1" [label="b1: blue" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"b b1" -> b [color="#555555" weight=200]
+	"b b2" [label="b2: green" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"b b2" -> b [color="#555555" weight=200]
+	"c dim" [label="dim: band" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"c dim" -> c [color="#555555" weight=200]
+	"d dim" [label="dim: band" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"d dim" -> d [color="#555555" weight=200]
+	"e dim" [label="dim: band" color="#555555" fontcolor="#555555" shape=box style=dashed]
+	"e dim" -> e [color="#555555" weight=200]
+}

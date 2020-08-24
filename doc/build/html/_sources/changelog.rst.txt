@@ -3,6 +3,114 @@
 Changelog
 =========
 
+1.3.0 (25 Aug 2020)
+-------------------
+
+New
+~~~
+
+- Added machine learning module `geowombat.ml` with :func:`geowombat.ml.fit` and :func:`geowombat.ml.fit_predict` methods.
+    - Model fitting is performed with `sklearn-xarray <https://phausamann.github.io/sklearn-xarray/>`_
+    - Requires an installation with:
+        - `pip install git+https://github.com/jgrss/geowombat.git#egg=project[ml]`.
+- Added tasks visualization in `geowombat.tasks`.
+    - Tasks can be setup and visualized with the :class:`geowombat.tasks.GeoTask` class.
+        - Visualization graph implementation borrowed from `xarray-simlab <https://xarray-simlab.readthedocs.io/en/latest/index.html>`_
+    - Requires an installation with:
+        - `pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]`.
+
+1.2.33 (25 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Fixed coordinate length mismatch with converted polygons in :func:`geowombat.polygon_to_array`.
+
+1.2.32 (24 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Added check/replace for Landsat 7 with thermal band for web downloads from the Google Cloud Platform.
+
+1.2.31 (20 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added support for parallel downloads in :func:`download_cube`, from the :class:`geowombat.util.GeoDownloads` class.
+
+New
+~~~
+
+- Added Landsat and Sentinel 2 URL parsing in :class:`geowombat.util.GeoDownloads` for data on the Google Cloud Platform.
+
+1.2.30 (17 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added array value to polygon `GeoDataFrame` output in :func:`geowombat.array_to_polygon`.
+
+1.2.29 (15 Aug 2020)
+--------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added `col` keyword argument in :func:`geowombat.polygon_to_array`.
+
+1.2.28 (14 Aug 2020)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error when using :func:`geowombat.polygon_to_array` with multiple opened rasters.
+
+1.2.27 (8 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error with Google Cloud Platform query updates in :func:`geowombat.util.web.GeoDownloads().download_cube`.
+
+1.2.26 (7 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed the default 'no data' value `nodata=None` to `nodata=0` and added `int` and `float` type checks.
+    - This fix addressed `Issue #41 <https://github.com/jgrss/geowombat/issues/41>`_.
+
+1.2.25 (4 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in :class:`geowombat.radiometry.sr.MetaData`.
+- Removed logger file writing, which conflicted with read-only containers.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Reorganized the :class:`geowombat.radiometry.brdf.BRDF()` module.
+
+1.2.24 (30 July 2020)
+---------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Removed forced file writing of the log and replaced with per-module logging. `6579eb8 <https://github.com/jgrss/geowombat/commit/6579eb8e059ad8ef4e4b34e3793051104ee9bc39>`_
+
 1.2.23 (27 July 2020)
 ---------------------
 

@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pipeline tasks &#8212; GeoWombat 1.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Web" href="web.html" />
+    <link rel="prev" title="Radiometry" href="radiometry.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pipeline-tasks">
+<span id="tasks"></span><h1>Pipeline tasks<a class="headerlink" href="#pipeline-tasks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="setup-a-task-and-visualize-the-steps">
+<h2>Setup a task and visualize the steps<a class="headerlink" href="#setup-a-task-and-visualize-the-steps" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
+<span class="kn">from</span> <span class="nn">geowombat.tasks</span> <span class="kn">import</span> <span class="n">GeoTask</span>
+<span class="kn">from</span> <span class="nn">geowombat.data</span> <span class="kn">import</span> <span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">,</span> <span class="n">l8_224078_20200518</span>
+
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="c1"># Setup the input steps</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span>
+          <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">l8_224078_20200518</span><span class="p">,</span>
+          <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">l8_224078_20200518_B3</span><span class="p">,</span> <span class="n">l8_224078_20200518_B4</span><span class="p">),</span>
+          <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>                 <span class="c1"># the input of &#39;d&#39; is the output of &#39;c&#39;</span>
+          <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)}</span>     <span class="c1"># the input of &#39;e&#39; is the output of &#39;a&#39;, &#39;b&#39;, and &#39;c&#39;</span>
+
+<span class="c1"># Setup the outputs of each step</span>
+<span class="c1"># Here, we could specify filenames to write or to process in-memory</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r1&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r2&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|r3&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|mean&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;mem|stack&#39;</span><span class="p">}</span>
+
+<span class="c1"># Setup the tasks to execute on each input step</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">norm_diff</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="o">.</span><span class="n">mean</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">))</span>
+
+<span class="c1"># Setup the function keyword arguments of each step</span>
+<span class="n">func_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b1&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">}}</span>
+
+<span class="n">open_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;chunks&#39;</span><span class="p">:</span> <span class="mi">512</span><span class="p">}</span>
+<span class="n">config_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sensor&#39;</span><span class="p">:</span> <span class="s1">&#39;bgr&#39;</span><span class="p">,</span> <span class="s1">&#39;nodata&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;scale_factor&#39;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">}</span>
+<span class="n">out_args</span> <span class="o">=</span> <span class="p">{</span>
+
+<span class="c1"># Setup the task object</span>
+<span class="n">task_mean</span> <span class="o">=</span> <span class="n">GeoTask</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+                    <span class="n">outputs</span><span class="p">,</span>
+                    <span class="n">tasks</span><span class="p">,</span>
+                    <span class="n">config_args</span><span class="o">=</span><span class="n">config_args</span><span class="p">,</span>
+                    <span class="n">open_args</span><span class="o">=</span><span class="n">open_args</span><span class="p">,</span>
+                    <span class="n">func_args</span><span class="o">=</span><span class="n">func_args</span><span class="p">,</span>
+                    <span class="n">out_args</span><span class="o">=</span><span class="n">out_args</span><span class="p">)</span>
+
+<span class="c1"># Visualize the steps</span>
+<span class="n">task_mean</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/task_mean.png" src="_images/task_mean.png" />
+</div>
+<div class="section" id="create-a-new-task-and-add-to-initial-task">
+<h2>Create a new task and add to initial task<a class="headerlink" href="#create-a-new-task-and-add-to-initial-task" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="s1">&#39;e&#39;</span><span class="p">}</span>         <span class="c1"># &#39;f&#39; takes the output of step &#39;e&#39; from our previous task</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="s1">&#39;mean.tif&#39;</span><span class="p">}</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="o">.</span><span class="n">mean</span><span class="p">),)</span>
+<span class="n">func_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">}}</span>
+<span class="n">out_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;compress&#39;</span><span class="p">:</span> <span class="s1">&#39;lzw&#39;</span><span class="p">,</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+<span class="c1"># Create a task that takes the output of task e and writes the mean to file</span>
+<span class="n">task_write</span> <span class="o">=</span> <span class="n">GeoTask</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+                     <span class="n">outputs</span><span class="p">,</span>
+                     <span class="n">tasks</span><span class="p">,</span>
+                     <span class="n">config_args</span><span class="o">=</span><span class="n">config_args</span><span class="p">,</span>
+                     <span class="n">func_args</span><span class="o">=</span><span class="n">func_args</span><span class="p">,</span>
+                     <span class="n">open_args</span><span class="o">=</span><span class="n">open_args</span><span class="p">,</span>
+                     <span class="n">out_args</span><span class="o">=</span><span class="n">out_args</span><span class="p">)</span>
+
+<span class="c1"># Add the new task</span>
+<span class="n">new_task</span> <span class="o">=</span> <span class="n">task_mean</span> <span class="o">+</span> <span class="n">task_write</span>
+
+<span class="n">new_task</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/task_write.png" src="_images/task_write.png" />
+</div>
+<div class="section" id="execute-the-task-pipeline">
+<h2>Execute the task pipeline<a class="headerlink" href="#execute-the-task-pipeline" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_task</span><span class="o">.</span><span class="n">submit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="radiometry.html" title="previous chapter">Radiometry</a></li>
+      <li>Next: <a href="web.html" title="next chapter">Web</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2020, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/tasks.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
