@@ -88,3 +88,10 @@ Create a new task and add to initial task
 
 .. image:: _static/task_write.png
 
+Execute the task pipeline
+-------------------------
+
+.. code:: python
+
+    new_task.submit()
+
