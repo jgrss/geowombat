@@ -3,6 +3,15 @@
 Changelog
 =========
 
+1.3.0 ()
+--------
+
+New
+~~~
+
+- Added machine learning module `geowombat.ml` with :func:`geowombat.ml.fit` and :func:`geowombat.ml.fit_predict` methods.
+  - Model fitting is performed with `sklearn-xarray <https://phausamann.github.io/sklearn-xarray/>`_
+
 1.2.33 (25 Aug 2020)
 --------------------
 
