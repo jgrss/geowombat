@@ -14,5 +14,6 @@ Examples
    ml
    moving
    radiometry
+   tasks
    web
    external
