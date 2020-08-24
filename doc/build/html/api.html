@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API reference &#8212; GeoWombat 1.2.31 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API reference &#8212; GeoWombat 1.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -169,10 +169,30 @@
 </table>
 </div>
 </div>
-<div class="section" id="module-geowombat.radiometry">
-<span id="geowombat-radiometry-package"></span><h2>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-geowombat.ml">
+<span id="geowombat-ml-package"></span><h2>geowombat.ml Package<a class="headerlink" href="#module-geowombat.ml" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
 <h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.ml.fit.html#geowombat.ml.fit" title="geowombat.ml.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(data, labels, clf[, grid_search, …])</p></td>
+<td><p>Fits a classifier given class labels</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.ml.fit_predict.html#geowombat.ml.fit_predict" title="geowombat.ml.fit_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_predict</span></code></a>(data, labels, clf[, …])</p></td>
+<td><p>Fits a classifier given class labels and predicts on a DataArray</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.radiometry">
+<span id="geowombat-radiometry-package"></span><h2>geowombat.radiometry Package<a class="headerlink" href="#module-geowombat.radiometry" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -188,8 +208,8 @@
 </tbody>
 </table>
 </div>
-<div class="section" id="id3">
-<h3>Classes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Classes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -210,6 +230,58 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html#geowombat.radiometry.QAMasker" title="geowombat.radiometry.QAMasker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QAMasker</span></code></a>(qa, sensor[, mask_items, …])</p></td>
 <td><p>A class for masking bit-packed quality flags</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.tasks">
+<span id="geowombat-tasks-package"></span><h2>geowombat.tasks Package<a class="headerlink" href="#module-geowombat.tasks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Classes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.tasks.GeoTask.html#geowombat.tasks.GeoTask" title="geowombat.tasks.GeoTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoTask</span></code></a>(inputs, outputs, tasks[, clean, …])</p></td>
+<td><p>A Geo-task scheduler</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-geowombat.util">
+<span id="geowombat-util-package"></span><h2>geowombat.util Package<a class="headerlink" href="#module-geowombat.util" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>Functions<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.util.imshow.html#geowombat.util.imshow" title="geowombat.util.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>(data[, mask, nodata, flip, …])</p></td>
+<td><p>Shows an image on a plot</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id7">
+<h3>Classes<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads" title="geowombat.util.GeoDownloads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoDownloads</span></code></a>()</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
 </tr>
 </tbody>
 </table>
@@ -298,7 +370,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

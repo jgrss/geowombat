@@ -3,6 +3,34 @@
 Changelog
 =========
 
+1.3.0 ()
+--------
+
+New
+~~~
+
+- Added machine learning module `geowombat.ml` with :func:`geowombat.ml.fit` and :func:`geowombat.ml.fit_predict` methods.
+  - Model fitting is performed with `sklearn-xarray <https://phausamann.github.io/sklearn-xarray/>`_
+- Added tasks visualization in `geowombat.tasks`.
+  - Tasks can be setup and visualized with the :class:`geowombat.tasks.GeoTask` class.
+  - Requires an installation with `pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]`.
+
+1.2.33 (25 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Fixed coordinate length mismatch with converted polygons in :fun:`geowombat.polygon_to_array`.
+
+1.2.32 (24 Aug 2020)
+--------------------
+
+Bugs
+~~~~
+
+- Added check/replace for Landsat 7 with thermal band for web downloads from the Google Cloud Platform.
+
 1.2.31 (20 Aug 2020)
 --------------------
 

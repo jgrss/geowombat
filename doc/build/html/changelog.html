@@ -4,8 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Changelog &#8212; GeoWombat 1.2.31 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Changelog &#8212; GeoWombat 1.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -37,41 +37,72 @@
             
   <div class="section" id="changelog">
 <span id="id1"></span><h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="aug-2020">
-<h2>1.2.31 (20 Aug 2020)<a class="headerlink" href="#aug-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="enhancements">
-<h3>Enhancements<a class="headerlink" href="#enhancements" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Added support for parallel downloads in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code>, from the <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code> class.</p></li>
-</ul>
-</div>
+<div class="section" id="id2">
+<h2>1.3.0 ()<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="new">
 <h3>New<a class="headerlink" href="#new" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Added Landsat and Sentinel 2 URL parsing in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code> for data on the Google Cloud Platform.</p></li>
+<li><p>Added machine learning module <cite>geowombat.ml</cite> with <a class="reference internal" href="api/geowombat.ml.fit.html#geowombat.ml.fit" title="geowombat.ml.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.ml.fit()</span></code></a> and <a class="reference internal" href="api/geowombat.ml.fit_predict.html#geowombat.ml.fit_predict" title="geowombat.ml.fit_predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.ml.fit_predict()</span></code></a> methods.
+- Model fitting is performed with <a class="reference external" href="https://phausamann.github.io/sklearn-xarray/">sklearn-xarray</a></p></li>
+<li><p>Added tasks visualization in <cite>geowombat.tasks</cite>.
+- Tasks can be setup and visualized with the <a class="reference internal" href="api/geowombat.tasks.GeoTask.html#geowombat.tasks.GeoTask" title="geowombat.tasks.GeoTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.tasks.GeoTask</span></code></a> class.
+- Requires an installation with <cite>pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]</cite>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id2">
-<h2>1.2.30 (17 Aug 2020)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id3">
-<h3>Enhancements<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="aug-2020">
+<h2>1.2.33 (25 Aug 2020)<a class="headerlink" href="#aug-2020" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bugs">
+<h3>Bugs<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed coordinate length mismatch with converted polygons in <a href="#id3"><span class="problematic" id="id4">:fun:`geowombat.polygon_to_array`</span></a>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>1.2.32 (24 Aug 2020)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>Bugs<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added check/replace for Landsat 7 with thermal band for web downloads from the Google Cloud Platform.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>1.2.31 (20 Aug 2020)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="enhancements">
+<h3>Enhancements<a class="headerlink" href="#enhancements" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added support for parallel downloads in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code>, from the <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads" title="geowombat.util.GeoDownloads"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code></a> class.</p></li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h3>New<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added Landsat and Sentinel 2 URL parsing in <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads" title="geowombat.util.GeoDownloads"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code></a> for data on the Google Cloud Platform.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>1.2.30 (17 Aug 2020)<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id10">
+<h3>Enhancements<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added array value to polygon <cite>GeoDataFrame</cite> output in <a class="reference internal" href="api/geowombat.array_to_polygon.html#geowombat.array_to_polygon" title="geowombat.array_to_polygon"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.array_to_polygon()</span></code></a>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id4">
-<h2>1.2.29 (15 Aug 2020)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id5">
-<h3>Enhancements<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h2>1.2.29 (15 Aug 2020)<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id12">
+<h3>Enhancements<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>col</cite> keyword argument in <a class="reference internal" href="api/geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.polygon_to_array()</span></code></a>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id6">
-<h2>1.2.28 (14 Aug 2020)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id13">
+<h2>1.2.28 (14 Aug 2020)<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="bug-fixes">
 <h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -79,19 +110,19 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id7">
-<h2>1.2.27 (8 Aug 2020)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id8">
-<h3>Bug fixes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h2>1.2.27 (8 Aug 2020)<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id15">
+<h3>Bug fixes<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed error with Google Cloud Platform query updates in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.web.GeoDownloads().download_cube()</span></code>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id9">
-<h2>1.2.26 (7 Aug 2020)<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id10">
-<h3>Bug fixes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h2>1.2.26 (7 Aug 2020)<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id17">
+<h3>Bug fixes<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Changed the default ‘no data’ value <cite>nodata=None</cite> to <cite>nodata=0</cite> and added <cite>int</cite> and <cite>float</cite> type checks.</dt><dd><ul>
@@ -103,17 +134,17 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id11">
-<h2>1.2.25 (4 Aug 2020)<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id12">
-<h3>Bug fixes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h2>1.2.25 (4 Aug 2020)<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id19">
+<h3>Bug fixes<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code>.</p></li>
 <li><p>Removed logger file writing, which conflicted with read-only containers.</p></li>
 </ul>
 </div>
-<div class="section" id="id13">
-<h3>Enhancements<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Enhancements<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Reorganized the <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.BRDF()</span></code> module.</p></li>
 </ul>
@@ -121,39 +152,39 @@
 </div>
 <div class="section" id="july-2020">
 <h2>1.2.24 (30 July 2020)<a class="headerlink" href="#july-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id14">
-<h3>Bug fixes<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>Bug fixes<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Removed forced file writing of the log and replaced with per-module logging. <a class="reference external" href="https://github.com/jgrss/geowombat/commit/6579eb8e059ad8ef4e4b34e3793051104ee9bc39">6579eb8</a></p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id15">
-<h2>1.2.23 (27 July 2020)<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id16">
-<h3>Bug fixes<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h2>1.2.23 (27 July 2020)<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id23">
+<h3>Bug fixes<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>fixed padded block writing with user functions in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 <li><p>Added check for existing metadata file in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.web.download_cube()</span></code>.</p></li>
 </ul>
 </div>
-<div class="section" id="id17">
-<h3>Enhancements<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h3>Enhancements<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Reorganized the ReadTheDocs pages.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id18">
-<h2>1.2.22 (21 July 2020)<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id19">
-<h3>Bug fixes<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h2>1.2.22 (21 July 2020)<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id26">
+<h3>Bug fixes<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added missing ‘l5’ download flag in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.web.download_cube()</span></code>.</p></li>
 </ul>
 </div>
-<div class="section" id="id20">
-<h3>Enhancements<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id27">
+<h3>Enhancements<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added ‘l5’ to <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.bandpass()</span></code>.</p></li>
 <li><p>Modified support for writing GeoTiffs as separate files in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
@@ -161,52 +192,52 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id21">
-<h2>1.2.21 (8 July 2020)<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id22">
-<h3>Bug fixes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id28">
+<h2>1.2.21 (8 July 2020)<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id29">
+<h3>Bug fixes<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added check for None row/column chunks in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </div>
-<div class="section" id="id23">
-<h3>Enhancements<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id30">
+<h3>Enhancements<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>affine</cite> and <cite>transform</cite> properties.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id24">
-<h2>1.2.20 (7 July 2020)<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id25">
-<h3>Bug fixes<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id31">
+<h2>1.2.20 (7 July 2020)<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id32">
+<h3>Bug fixes<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed conditional value replacement in <a class="reference internal" href="api/geowombat.calc_area.html#geowombat.calc_area" title="geowombat.calc_area"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.calc_area()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id26">
-<h3>Enhancements<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id33">
+<h3>Enhancements<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>return_binary</cite> argument to <a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="geowombat.core.geoxarray.GeoWombatAccessor.compare"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.geoxarray.GeoWombatAccessor.compare()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id27">
-<h3>New<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>New<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Created <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id28">
-<h2>1.2.19 (6 July 2020)<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id29">
-<h3>Enhancements<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id35">
+<h2>1.2.19 (6 July 2020)<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id36">
+<h3>Enhancements<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added source attributes to return object in <a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="geowombat.core.geoxarray.GeoWombatAccessor.compare"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.geoxarray.GeoWombatAccessor.compare()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id30">
-<h3>New<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h3>New<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Created <a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.replace" title="geowombat.core.geoxarray.GeoWombatAccessor.replace"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.geoxarray.GeoWombatAccessor.replace()</span></code></a> function.</p></li>
 <li><p>Created <a class="reference internal" href="api/geowombat.replace.html#geowombat.replace" title="geowombat.replace"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.replace()</span></code></a> function.</p></li>
@@ -215,16 +246,16 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id31">
-<h2>1.2.18 (1 July 2020)<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id32">
-<h3>Bug fixes<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id38">
+<h2>1.2.18 (1 July 2020)<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id39">
+<h3>Bug fixes<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed call to <a class="reference internal" href="api/geowombat.sample.html#geowombat.sample" title="geowombat.sample"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.sample()</span></code></a> from <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> method.</p></li>
 </ul>
 </div>
-<div class="section" id="id33">
-<h3>New<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id40">
+<h3>New<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added image metadata tags to <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> attributes in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.open</span></code></a>.</p></li>
 <li><p>Added support for VRT creation from multiple files.</p></li>
@@ -236,60 +267,60 @@
 </div>
 <div class="section" id="june-2020">
 <h2>1.2.17 (25 June 2020)<a class="headerlink" href="#june-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id34">
-<h3>Bug fixes<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id41">
+<h3>Bug fixes<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added missing tag update in file compression stage.</p></li>
 <li><p>Fixed issue with compression being triggered with <code class="docutils literal notranslate"><span class="pre">compress=None</span></code> or <code class="docutils literal notranslate"><span class="pre">compress=False</span></code>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id35">
-<h2>1.2.16 (22 June 2020)<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id36">
-<h3>Bug fixes<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id42">
+<h2>1.2.16 (22 June 2020)<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id43">
+<h3>Bug fixes<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed an issue with lingering configuration reference bounds.</p></li>
 </ul>
 </div>
-<div class="section" id="id37">
-<h3>New<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id44">
+<h3>New<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added metadata tags keyword argument to <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 <li><p>Added <cite>chunk_grid</cite> and <cite>footprint_grid</cite> <cite>DataArray</cite> properties.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id38">
-<h2>1.2.15 (15 June 2020)<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id39">
-<h3>New<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id45">
+<h2>1.2.15 (15 June 2020)<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id46">
+<h3>New<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">set_nodata()</span></code> function for <cite>DataArrays</cite>.</p></li>
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">bounds_overlay()</span></code> function for <cite>DataArrays</cite>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id40">
-<h2>1.2.14 (12 June 2020)<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id41">
-<h3>Bug fixes<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id47">
+<h2>1.2.14 (12 June 2020)<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id48">
+<h3>Bug fixes<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Fixed ‘no data’ clipping error in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads.download_cube()</span></code>.</p></li>
+<li><p>Fixed ‘no data’ clipping error in <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads.download_cube" title="geowombat.util.GeoDownloads.download_cube"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads.download_cube()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id42">
-<h3>New<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id49">
+<h3>New<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>file_list</cite> to <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code>.</p></li>
 <li><p>Added <cite>nodata</cite> keyword argument to <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.open</span></code></a>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id43">
-<h2>1.2.13 (2 June 2020)<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id44">
-<h3>New<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id50">
+<h2>1.2.13 (2 June 2020)<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id51">
+<h3>New<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>cloud_height</cite> option in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code>.</p></li>
 <li><p>Added first attempt at supporting HDF reads.</p></li>
@@ -298,23 +329,23 @@
 </div>
 <div class="section" id="may-2020">
 <h2>1.2.12 (3 May 2020)<a class="headerlink" href="#may-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id45">
-<h3>New<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id52">
+<h3>New<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.radiometry.angles.estimate_cloud_shadows()</span></code> to estimate cloud shadows from a cloud mask.</p></li>
 </ul>
 </div>
-<div class="section" id="id46">
-<h3>Bug fixes<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id53">
+<h3>Bug fixes<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed month range parsing in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.web.download_cube()</span></code>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id47">
-<h2>1.2.11 (1 May 2020)<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id48">
-<h3>Enhancements<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id54">
+<h2>1.2.11 (1 May 2020)<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id55">
+<h3>Enhancements<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added micrometer values for Sentinel-2 2A and 2B sensors.</p></li>
 </ul>
@@ -322,27 +353,27 @@
 </div>
 <div class="section" id="april-2020">
 <h2>1.2.10 (27 April 2020)<a class="headerlink" href="#april-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id49">
-<h3>New<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id56">
+<h3>New<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added support for <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.windows.Window()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox()</span></code> objects in the <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.config.update()</span></code> manager.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id50">
-<h2>1.2.9 (1 April 2020)<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id57">
+<h2>1.2.9 (1 April 2020)<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Removed f-string requirement in setup.py script.</p></li>
 <li><p>Added keyword argument in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code> function.</p></li>
 </ul>
 </div>
-<div class="section" id="id51">
-<h2>1.2.8 (1 April 2020)<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id58">
+<h2>1.2.8 (1 April 2020)<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Modified sample iteration overhead in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving.moving_window()</span></code>.</p></li>
 </ul>
-<div class="section" id="id52">
-<h3>New<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id59">
+<h3>New<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>weights</cite> option in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving.moving_window()</span></code>.</p></li>
 </ul>
@@ -350,22 +381,22 @@
 </div>
 <div class="section" id="march-2020">
 <h2>1.2.7 (31 March 2020)<a class="headerlink" href="#march-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id53">
-<h3>New<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id60">
+<h3>New<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added window weights for moving mean.</p></li>
 <li><p>Changed <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving.moving_window()</span></code> parallelism from raster rows to raster samples.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id54">
-<h2>1.2.6 (15 March 2020)<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id61">
+<h2>1.2.6 (15 March 2020)<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed missing <cite>gw.filename</cite> attribute in <a class="reference internal" href="api/geowombat.to_vrt.html#geowombat.to_vrt" title="geowombat.to_vrt"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_vrt()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id55">
-<h2>1.2.5 (4 March 2020)<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id62">
+<h2>1.2.5 (4 March 2020)<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added attribute updating for band math.</p></li>
 </ul>
@@ -376,8 +407,8 @@
 <li><p>Added CRS check for <cite>pyproj</cite> CRS instances.</p></li>
 </ul>
 </div>
-<div class="section" id="id56">
-<h2>1.2.3 (23 February 2020)<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id63">
+<h2>1.2.3 (23 February 2020)<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added check to support new CRS object in <cite>geowombat</cite>.</p></li>
 <li><p>Added padding to image edges when using the <cite>padding</cite> option in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
@@ -386,21 +417,21 @@
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.lonlat_to_xy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_lonlat()</span></code> functions.</p></li>
 </ul>
 </div>
-<div class="section" id="id57">
-<h2>1.2.2 (12 February 2020)<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id64">
+<h2>1.2.2 (12 February 2020)<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added <cite>padding</cite> option to <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 <li><p>Added half cell adjustment to transformed samples in <a class="reference internal" href="api/geowombat.sample.html#geowombat.sample" title="geowombat.sample"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.sample()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id58">
-<h2>1.2.1 (12 February 2020)<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id65">
+<h2>1.2.1 (12 February 2020)<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed a error in checking the spatial index.</p></li>
 </ul>
 </div>
-<div class="section" id="id59">
-<h2>1.2.0 (11 February 2020)<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id66">
+<h2>1.2.0 (11 February 2020)<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>Rearranged and renamed various functions.</p>
 <blockquote>
@@ -414,22 +445,22 @@
 <li><p>Added <cite>lazy_wombat</cite> decorator to allow the user to apply in-memory functions lazily. See <a class="reference internal" href="apply.html#apply"><span class="std std-ref">User functions</span></a> for examples.</p></li>
 </ul>
 </div>
-<div class="section" id="id60">
-<h2>1.1.6 (9 February 2020)<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id67">
+<h2>1.1.6 (9 February 2020)<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added new property <cite>geodataframe</cite>.</p></li>
 <li><p>Fixed error with pass <cite>bounds_by</cite> argument option to <code class="xref py py-func docutils literal notranslate"><span class="pre">mosaic()</span></code>.</p></li>
 <li><p>Modified <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_crs()</span></code> to handle grid resampling.</p></li>
 </ul>
 </div>
-<div class="section" id="id61">
-<h2>1.1.5 (7 February 2020)<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id68">
+<h2>1.1.5 (7 February 2020)<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed error that caused the deletion of <cite>ref_tar</cite> when multiple raster files were opened.</p></li>
 </ul>
 </div>
-<div class="section" id="id62">
-<h2>1.1.4 (7 February 2020)<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id69">
+<h2>1.1.4 (7 February 2020)<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added configuration option <cite>ref_tar</cite> to target align outputs to a reference raster. Example usage looks like:</p></li>
 </ul>
@@ -440,14 +471,14 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="id63">
-<h2>1.1.3 (6 February 2020)<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id70">
+<h2>1.1.3 (6 February 2020)<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added new function <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.geodataframe_to_array()</span></code> to convert a <cite>geopandas.GeoDataFrame</cite> to an <cite>xarray.DataArray</cite>.</p></li>
 </ul>
 </div>
-<div class="section" id="id64">
-<h2>1.1.2 (5 February 2020)<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id71">
+<h2>1.1.2 (5 February 2020)<a class="headerlink" href="#id71" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added ‘empirical-rotation’ method to <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.Topo().norm_topo()</span></code> function in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.Topo</span></code></p></li>
 </ul>
@@ -458,8 +489,8 @@
 <li><p>Fixed error reading by a extent bounds with <cite>dask.delayed</cite></p></li>
 </ul>
 </div>
-<div class="section" id="id65">
-<h2>1.1.0 (24 January 2020)<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id72">
+<h2>1.1.0 (24 January 2020)<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added new class <a class="reference internal" href="api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo" title="geowombat.radiometry.Topo"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.Topo</span></code></a> for topographic corrections.</p></li>
 <li><p>Added new <cite>xarray.DataArray</cite> <cite>geowombat</cite> accessor <code class="xref py py-func docutils literal notranslate"><span class="pre">to_crs()</span></code> for CRS transformations.</p></li>
@@ -469,20 +500,20 @@
 <li><p>Rearranged documentation and fixed minor docstring issues.</p></li>
 </ul>
 </div>
-<div class="section" id="id66">
-<h2>1.0.7 (23 January 2020)<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id73">
+<h2>1.0.7 (23 January 2020)<a class="headerlink" href="#id73" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added new functions <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.indices_to_coords()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.coords_to_indices()</span></code> to replace <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.ij_to_xy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_ij()</span></code>.</p></li>
 </ul>
 </div>
-<div class="section" id="id67">
-<h2>1.0.6 (21 January 2020)<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id74">
+<h2>1.0.6 (21 January 2020)<a class="headerlink" href="#id74" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Added missing imports for <a class="reference internal" href="api/geowombat.sample.html#geowombat.sample" title="geowombat.sample"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.sample()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id68">
-<h2>1.0.5 (21 January 2020)<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id75">
+<h2>1.0.5 (21 January 2020)<a class="headerlink" href="#id75" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="changes">
 <h3>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h3>
 <ul>
@@ -498,68 +529,68 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id69">
-<h2>1.0.4 (19 January 2020)<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id70">
-<h3>Changes<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id76">
+<h2>1.0.4 (19 January 2020)<a class="headerlink" href="#id76" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id77">
+<h3>Changes<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Removed <cite>DataArray</cite> list option from <a class="reference internal" href="api/geowombat.coregister.html#geowombat.coregister" title="geowombat.coregister"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.coregister()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id71">
-<h3>Bug fixes<a class="headerlink" href="#id71" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id78">
+<h3>Bug fixes<a class="headerlink" href="#id78" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed an error with global configuration settings that occurred when <cite>ref_image</cite> was used and subsequently overwritten.</p></li>
 <li><p>Removed <cite>band_names</cite> argument from <code class="xref py py-func docutils literal notranslate"><span class="pre">imshow()</span></code>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id72">
-<h2>1.0.3 (17 January 2020)<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id73">
-<h3>Bug fixes<a class="headerlink" href="#id73" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id79">
+<h2>1.0.3 (17 January 2020)<a class="headerlink" href="#id79" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id80">
+<h3>Bug fixes<a class="headerlink" href="#id80" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added workaround example in the documentation for <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a>.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id74">
-<h2>1.0.2 (16 January 2020)<a class="headerlink" href="#id74" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id75">
-<h3>Bug fixes<a class="headerlink" href="#id75" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id81">
+<h2>1.0.2 (16 January 2020)<a class="headerlink" href="#id81" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id82">
+<h3>Bug fixes<a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed a problem with <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a> block overlaps when requested window sizes were larger than the smallest Dask chunk size.</p></li>
 <li><p>Fixed <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a> percentile quantile sorting of a full moving window.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id76">
-<h2>1.0.1 (15 January 2020)<a class="headerlink" href="#id76" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id77">
-<h3>New<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id83">
+<h2>1.0.1 (15 January 2020)<a class="headerlink" href="#id83" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id84">
+<h3>New<a class="headerlink" href="#id84" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added a check for even or odd window sizes with <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a>.</p></li>
 <li><p>Added an option to co-register a list of images.</p></li>
 <li><p>Added percentiles to <a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.moving()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id78">
-<h3>Bug fixes<a class="headerlink" href="#id78" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id85">
+<h3>Bug fixes<a class="headerlink" href="#id85" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed missing <cite>DataArray</cite> attributes after changing data type.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id79">
-<h2>1.0.0 (13 January 2020)<a class="headerlink" href="#id79" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id86">
+<h2>1.0.0 (13 January 2020)<a class="headerlink" href="#id86" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>First release</p></li>
 </ul>
 </div>
 <div class="section" id="b-12-january-2020">
 <h2>1.3.7b (12 January 2020)<a class="headerlink" href="#b-12-january-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id80">
-<h3>New<a class="headerlink" href="#id80" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id87">
+<h3>New<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.radiometry.pan_sharpen()</span></code> function.</p></li>
 <li><p>Added properties for multi-spectral + panchromatic band stacks.</p></li>
@@ -568,8 +599,8 @@
 </div>
 <div class="section" id="b-9-january-2020">
 <h2>1.3.0b (9 January 2020)<a class="headerlink" href="#b-9-january-2020" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id81">
-<h3>New<a class="headerlink" href="#id81" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id88">
+<h3>New<a class="headerlink" href="#id88" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <a class="reference internal" href="api/geowombat.to_vrt.html#geowombat.to_vrt" title="geowombat.to_vrt"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_vrt()</span></code></a> function.</p></li>
 </ul>
@@ -577,14 +608,14 @@
 </div>
 <div class="section" id="b-29-december-2019">
 <h2>1.2.0b (29 December 2019)<a class="headerlink" href="#b-29-december-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id82">
-<h3>New<a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id89">
+<h3>New<a class="headerlink" href="#id89" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_geodataframe()</span></code> function.</p></li>
 </ul>
 </div>
-<div class="section" id="id83">
-<h3>Bug fixes<a class="headerlink" href="#id83" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id90">
+<h3>Bug fixes<a class="headerlink" href="#id90" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed GeoDataFrame CRS check in <a class="reference internal" href="api/geowombat.extract.html#geowombat.extract" title="geowombat.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.extract()</span></code></a> function.</p></li>
 </ul>
@@ -592,14 +623,14 @@
 </div>
 <div class="section" id="b-20-december-2019">
 <h2>1.0.7b (20 December 2019)<a class="headerlink" href="#b-20-december-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id84">
-<h3>New<a class="headerlink" href="#id84" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id91">
+<h3>New<a class="headerlink" href="#id91" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added user argument <cite>dtype</cite> in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.open</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id85">
-<h3>Bug fixes<a class="headerlink" href="#id85" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id92">
+<h3>Bug fixes<a class="headerlink" href="#id92" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed time and band stacking error.</p></li>
 <li><p>Fixed dictionary string name error in CRF feature processing</p></li>
@@ -608,14 +639,14 @@
 </div>
 <div class="section" id="b-27-november-2019">
 <h2>1.0.0b (27 November 2019)<a class="headerlink" href="#b-27-november-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id86">
-<h3>New<a class="headerlink" href="#id86" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id93">
+<h3>New<a class="headerlink" href="#id93" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <a class="reference internal" href="api/geowombat.mask.html#geowombat.mask" title="geowombat.mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.mask()</span></code></a> function.</p></li>
 </ul>
 </div>
-<div class="section" id="id87">
-<h3>Bug fixes<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id94">
+<h3>Bug fixes<a class="headerlink" href="#id94" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fixed row/column offset error with <code class="xref py py-func docutils literal notranslate"><span class="pre">warp()</span></code> function.</p></li>
 </ul>
@@ -623,8 +654,8 @@
 </div>
 <div class="section" id="b-10-november-2019">
 <h2>1.0.0b (10 November 2019)<a class="headerlink" href="#b-10-november-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id88">
-<h3>New<a class="headerlink" href="#id88" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id95">
+<h3>New<a class="headerlink" href="#id95" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code> function in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.web.GeoDownloads</span></code>.</p></li>
 </ul>
@@ -632,8 +663,8 @@
 </div>
 <div class="section" id="b-1-november-2019">
 <h2>1.0.0b (1 November 2019)<a class="headerlink" href="#b-1-november-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id89">
-<h3>Enhancements<a class="headerlink" href="#id89" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id96">
+<h3>Enhancements<a class="headerlink" href="#id96" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added <cite>expand_by</cite> user argument in <a class="reference internal" href="api/geowombat.clip.html#geowombat.clip" title="geowombat.clip"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.clip()</span></code></a>.</p></li>
 </ul>
@@ -641,8 +672,8 @@
 </div>
 <div class="section" id="b-30-october-2019">
 <h2>1.0.0b (30 October 2019)<a class="headerlink" href="#b-30-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id90">
-<h3>New<a class="headerlink" href="#id90" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id97">
+<h3>New<a class="headerlink" href="#id97" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added user functions as Xarray attributes. See <a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.apply()</span></code></a> for an example.</p></li>
 </ul>
@@ -650,14 +681,14 @@
 </div>
 <div class="section" id="b-24-october-2019">
 <h2>1.0.0b (24 October 2019)<a class="headerlink" href="#b-24-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id91">
-<h3>Enhancements<a class="headerlink" href="#id91" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id98">
+<h3>Enhancements<a class="headerlink" href="#id98" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Implemented improvements from testing processes vs. threads for concurrent I/O in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id92">
-<h3>Bug fixes<a class="headerlink" href="#id92" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id99">
+<h3>Bug fixes<a class="headerlink" href="#id99" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Changed BRDF normalization (<a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.BRDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.BRDF</span></code></a>) from 1d to 2d in order to work with Dask arrays.</p></li>
 </ul>
@@ -665,14 +696,14 @@
 </div>
 <div class="section" id="b-23-october-2019">
 <h2>1.0.0b (23 October 2019)<a class="headerlink" href="#b-23-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id93">
-<h3>Changes<a class="headerlink" href="#id93" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id100">
+<h3>Changes<a class="headerlink" href="#id100" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added fixes for surface reflectance</p></li>
 </ul>
 </div>
-<div class="section" id="id94">
-<h3>New<a class="headerlink" href="#id94" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id101">
+<h3>New<a class="headerlink" href="#id101" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added support for band stacking (in addition to time stacking) in <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.open</span></code></a>. The new keyword argument is <cite>stack_dim</cite> and can be used like:</p></li>
 </ul>
@@ -684,14 +715,14 @@
 </div>
 <div class="section" id="b-20-october-2019">
 <h2>1.0.0b (20 October 2019)<a class="headerlink" href="#b-20-october-2019" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id95">
-<h3>Changes<a class="headerlink" href="#id95" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id102">
+<h3>Changes<a class="headerlink" href="#id102" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Block writing can now be done with <cite>concurrent.futures</cite> or with <cite>dask.store</cite>.</p></li>
 </ul>
 </div>
-<div class="section" id="id96">
-<h3>New<a class="headerlink" href="#id96" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id103">
+<h3>New<a class="headerlink" href="#id103" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Added automatic date parsing when concatenating a list of files.</p></li>
 <li><p>Added BRDF normalization using the c-factor method.</p></li>
@@ -791,7 +822,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
