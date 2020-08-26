@@ -885,7 +885,7 @@ def to_raster(data,
 
                     if out_block_type.lower() == 'zarr':
                         open_file = zarr_file
-    
+
                     kwargs['compress'] = compress_type
 
                     n_windows = len(group_keys)
