@@ -525,11 +525,13 @@ class Converters(object):
             row_chunks (Optional[int]): The ``dask`` row chunk size.
             col_chunks (Optional[int]): The ``dask`` column chunk size.
             src_res (Optional[tuple]: A source resolution to align to.
-            fill (Optional[int]): Used as fill value for all areas not covered by input geometries to ``rasterio.features.rasterize``.
-            default_value (Optional[int]): Used as value for all geometries, if not provided in shapes to ``rasterio.features.rasterize``.
-            all_touched (Optional[bool]): If True, all pixels touched by geometries will be burned in. If false, only pixels whose center
-                        is within the polygon or that are selected by Bresenham’s line algorithm will be burned in.
-                        The ``all_touched`` value for ``rasterio.features.rasterize``.
+            fill (Optional[int]): Used as fill value for all areas not covered by input geometries
+                to ``rasterio.features.rasterize``.
+            default_value (Optional[int]): Used as value for all geometries, if not provided in shapes
+                to ``rasterio.features.rasterize``.
+            all_touched (Optional[bool]): If True, all pixels touched by geometries will be burned in.
+                If false, only pixels whose center is within the polygon or that are selected by Bresenham’s line
+                algorithm will be burned in. The ``all_touched`` value for ``rasterio.features.rasterize``.
             dtype (Optional[rasterio | numpy data type]): The output data type for ``rasterio.features.rasterize``.
             sindex (Optional[object]): An instanced of ``geopandas.GeoDataFrame.sindex``.
 
