@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![](https://img.shields.io/badge/version-1.2.31-blue.svg?cacheSeconds=2592000)
+![](https://img.shields.io/badge/version-1.3.0-blue.svg?cacheSeconds=2592000)
 
 ### GeoWombat: Utilities for geospatial data
 
@@ -66,7 +66,78 @@ Computation scales easily over large datasets with minimal changes to the code.
 >>>                              compress='lzw')
 ```
 
+## Installation
+
+GeoWombat is not on PyPi, but it can be installed with `pip`. Most dependencies will be automatically installed. However, the exceptions are `cython`, `numpy`, and the GDAL binaries, which all need to be installed prior to exectuting the `pip` command below. See [the installation documentation](https://geowombat.readthedocs.io/en/latest/install.html) for details on installing GDAL. With GDAL installed, GeoWombat can be installed like:
+
+```commandline
+pip install cython numpy
+pip install git+https://github.com/jgrss/geowombat
+```
+
+Alternatively, use `git` to clone and build the repository like:
+
+```commandline
+git clone https://github.com/jgrss/geowombat.git
+cd geowombat/
+python setup.py build && pip install --upgrade . && rm -rf build/
+```
+
+### Update
+
+To update GeoWombat:
+
+```shell script
+pip install --upgrade git+https://github.com/jgrss/geowombat
+```
+
+Or, to update a cloned repository:
+
+```shell script
+cd geowombat/
+git pull origin master
+python setup.py build && pip install --upgrade . && rm -rf build/
+```
+
+### (Optional) Install into a virtual environment on Linux
+
+With `virtualenv`
+
+```shell script
+# Create a Python 3.7 virtual environment named gwenv
+virtualenv -p python=3.7 gwenv
+
+# Activate the virtual environment
+source gwenv/bin/activate
+
+# Install Cython and NumPy to build .pyx files
+pip install cython numpy
+
+# Install the libspatialindex and GDAL libraries
+sudo apt install libspatialindex-dev libgdal-dev
+
+# Install GeoWombat with all extra libraries
+pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+```
+
+With `conda`
+
+```shell script
+# Create a Python 3.7 virtual environment named gwenv
+conda create -n gwenv python=3.7 cython numpy -c conda-forge
+
+# Activate the virtual environment
+conda activate gwenv
+
+# Install the libspatialindex and GDAL libraries
+sudo apt install libspatialindex-dev libgdal-dev
+# Alternatively, use conda-forge
+# conda install -c conda-forge libspatialindex gdal
+
+# Install GeoWombat with all extra libraries
+pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+```
+
 ## Documentation
----
 
 For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).

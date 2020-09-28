@@ -6,15 +6,18 @@ from copy import copy
 import string
 import random
 from datetime import datetime
-# from inspect import signature
+import logging
 
-from ..errors import logger
 from .. import config as gw_config
 from .. import open as gw_open
+from ..handler import add_handler
 
 import xarray as xr
 import graphviz
 
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 PROC_NODE_ATTRS = {
     "shape": "oval",
@@ -550,53 +553,3 @@ class GeoTask(BaseGeoTask, GraphBuilder):
         #     self._cleanup('pipeline', task_id)
 
         return res
-
-
-# class IndicesStack(object):
-#
-#     """
-#     A class for stacking spectral indices
-#
-#     Args:
-#         processes (tuple): The spectral indices to process.
-#
-#     Returns:
-#         ``xarray.DataArray``
-#
-#     Example:
-#         >>> import geowombat as gw
-#         >>> from geowombat.tasks import IndicesStack
-#         >>>
-#         >>> task = IndicesStack(('avi', 'evi2', 'evi', 'nbr', 'ndvi', 'tasseled_cap'))
-#         >>>
-#         >>> with gw.open('image.tif') as src:
-#         >>>     res = task.submit(src, scale_factor=0.0001)
-#     """
-#
-#     def __init__(self, processes):
-#
-#         self.processes = processes
-#         self._validate_methods()
-#
-#     def _validate_methods(self):
-#
-#         args = [gw] * len(self.processes)
-#
-#         for object_, proc_ in zip(*args, self.processes):
-#
-#             if not hasattr(object_, proc_):
-#                 raise NameError(f'The {proc_} process is not supported.')
-#
-#     def submit(self, data, *args, **kwargs):
-#
-#         attrs = data.attrs.copy()
-#         results = []
-#
-#         for vi in self.processes:
-#
-#             vi_func = getattr(gw, vi)
-#             results.append(vi_func(data, *args, **kwargs))
-#
-#         results = xr.concat(results, dim='band').astype('float64')
-#
-#         return results.assign_attrs(**attrs)
