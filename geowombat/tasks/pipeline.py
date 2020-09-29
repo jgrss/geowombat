@@ -388,17 +388,17 @@ class GeoTask(BaseGeoTask, GraphBuilder):
     A Geo-task scheduler
 
     Args:
-        inputs (dict)
-        outputs (dict)
-        tasks (tuple)
-        clean (Optional[dict])
-        config_args (Optional[dict])
-        open_args (Optional[dict])
-        func_args (Optional[dict])
-        out_args (Optional[dict])
-        log_file (Optional[str])
+        inputs (dict): The input steps.
+        outputs (dict): The outputs.
+        tasks (tuple): The tasks to execute.
+        clean (Optional[dict]): Currently not implemented.
+        config_args (Optional[dict]): The arguments for `geowombat.config.update`.
+        open_args (Optional[dict]): The arguments for `geowombat.open`.
+        func_args (Optional[dict]): The arguments to pass to each function in `tasks`.
+        out_args (Optional[dict]): The arguments for `geowombat.to_raster`.
+        log_file (Optional[str]): A file to write the log to.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> from geowombat.data import l8_224078_20200518_B3, l8_224078_20200518_B4, l8_224078_20200518
         >>> from geowombat.tasks import GeoTask

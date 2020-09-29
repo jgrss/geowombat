@@ -11,7 +11,9 @@ Examples
    extraction
    band-math
    apply
+   ml
    moving
    radiometry
+   tasks
    web
    external
