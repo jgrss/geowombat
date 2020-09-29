@@ -354,9 +354,20 @@ class SpatialOperations(_PropertyMixin):
 
             for cond, stratum_size in strata.items():
 
-                sign, value = cond.split(',')
-                sign = sign.strip()
-                value = float(value)
+                conditionals = cond.split(';')
+
+                if len(conditionals) > 1:
+
+                    sign, value = conditionals[0].split(',')
+                    sign2, value2 = conditionals[1].split(',')
+                    value = float(value)
+                    value2 = float(value2)
+
+                else:
+
+                    sign, value = cond.split(',')
+                    sign = sign.strip()
+                    value = float(value)
 
                 if isinstance(stratum_size, int):
                     sample_size = stratum_size
@@ -379,19 +390,59 @@ class SpatialOperations(_PropertyMixin):
 
                         break
 
-                    if sign == '>':
-                        valid_samples = da.where(data.sel(band=band).data > value)
-                    elif sign == '>=':
-                        valid_samples = da.where(data.sel(band=band).data >= value)
-                    elif sign == '<':
-                        valid_samples = da.where(data.sel(band=band).data < value)
-                    elif sign == '<=':
-                        valid_samples = da.where(data.sel(band=band).data <= value)
-                    elif sign == '==':
-                        valid_samples = da.where(data.sel(band=band).data == value)
+                    if len(conditionals) > 1:
+
+                        if (sign == '>') and (sign2 == '<'):
+                            valid_samples = da.where((data.sel(band=band).data > value) & data.sel(band=band).data < value2)
+                        elif (sign == '>') and (sign2 == '>'):
+                            valid_samples = da.where((data.sel(band=band).data > value) & data.sel(band=band).data > value2)
+                        elif (sign == '>') and (sign2 == '<='):
+                            valid_samples = da.where((data.sel(band=band).data > value) & data.sel(band=band).data <= value2)
+                        elif (sign == '>') and (sign2 == '>='):
+                            valid_samples = da.where((data.sel(band=band).data > value) & data.sel(band=band).data >= value2)
+                        elif (sign == '<') and (sign2 == '<'):
+                            valid_samples = da.where((data.sel(band=band).data < value) & data.sel(band=band).data < value2)
+                        elif (sign == '<') and (sign2 == '>'):
+                            valid_samples = da.where((data.sel(band=band).data < value) & data.sel(band=band).data > value2)
+                        elif (sign == '<') and (sign2 == '<='):
+                            valid_samples = da.where((data.sel(band=band).data < value) & data.sel(band=band).data <= value2)
+                        elif (sign == '<') and (sign2 == '>='):
+                            valid_samples = da.where((data.sel(band=band).data < value) & data.sel(band=band).data >= value2)
+                        elif (sign == '>=') and (sign2 == '<'):
+                            valid_samples = da.where((data.sel(band=band).data >= value) & data.sel(band=band).data < value2)
+                        elif (sign == '>=') and (sign2 == '>'):
+                            valid_samples = da.where((data.sel(band=band).data >= value) & data.sel(band=band).data > value2)
+                        elif (sign == '>=') and (sign2 == '<='):
+                            valid_samples = da.where((data.sel(band=band).data >= value) & data.sel(band=band).data <= value2)
+                        elif (sign == '>=') and (sign2 == '>='):
+                            valid_samples = da.where((data.sel(band=band).data >= value) & data.sel(band=band).data >= value2)
+                        elif (sign == '<=') and (sign2 == '<'):
+                            valid_samples = da.where((data.sel(band=band).data <= value) & data.sel(band=band).data < value2)
+                        elif (sign == '<=') and (sign2 == '>'):
+                            valid_samples = da.where((data.sel(band=band).data <= value) & data.sel(band=band).data > value2)
+                        elif (sign == '<=') and (sign2 == '<='):
+                            valid_samples = da.where((data.sel(band=band).data <= value) & data.sel(band=band).data <= value2)
+                        elif (sign == '<=') and (sign2 == '>='):
+                            valid_samples = da.where((data.sel(band=band).data <= value) & data.sel(band=band).data >= value2)
+                        else:
+                            logger.exception('  The conditional sign was not recognized.')
+                            raise NameError
+
                     else:
-                        logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
-                        raise NameError
+
+                        if sign == '>':
+                            valid_samples = da.where(data.sel(band=band).data > value)
+                        elif sign == '>=':
+                            valid_samples = da.where(data.sel(band=band).data >= value)
+                        elif sign == '<':
+                            valid_samples = da.where(data.sel(band=band).data < value)
+                        elif sign == '<=':
+                            valid_samples = da.where(data.sel(band=band).data <= value)
+                        elif sign == '==':
+                            valid_samples = da.where(data.sel(band=band).data == value)
+                        else:
+                            logger.exception("  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='.")
+                            raise NameError
 
                     valid_samples = dask.compute(valid_samples,
                                                  num_workers=num_workers,
