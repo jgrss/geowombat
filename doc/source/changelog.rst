@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.3.1 (26 Aug 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added a block type check to avoid compressing `zarr` files when data are written into separate files.
+
 1.3.0 (25 Aug 2020)
 -------------------
 
@@ -22,16 +30,16 @@ New
 1.2.33 (25 Aug 2020)
 --------------------
 
-Bugs
-~~~~
+Bug fixes
+~~~~~~~~~
 
 - Fixed coordinate length mismatch with converted polygons in :func:`geowombat.polygon_to_array`.
 
 1.2.32 (24 Aug 2020)
 --------------------
 
-Bugs
-~~~~
+Bug fixes
+~~~~~~~~~
 
 - Added check/replace for Landsat 7 with thermal band for web downloads from the Google Cloud Platform.
 

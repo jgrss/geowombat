@@ -876,83 +876,85 @@ def to_raster(data,
 
         if compress:
 
-            if verbose > 0:
-                logger.info('  Compressing output file ...')
-
             if separate:
 
-                group_keys = list(root.group_keys())
-                n_groups = len(group_keys   )
-
                 if out_block_type.lower() == 'zarr':
-                    open_file = zarr_file
 
-                kwargs['compress'] = compress_type
+                    group_keys = list(root.group_keys())
+                    n_groups = len(group_keys)
 
-                n_windows = len(group_keys)
+                    if out_block_type.lower() == 'zarr':
+                        open_file = zarr_file
 
-                # Compress into one file
-                with rio.open(filename, mode='w', **kwargs) as dst_:
+                    kwargs['compress'] = compress_type
 
-                    if tags:
-                        dst_.update_tags(**tags)
+                    n_windows = len(group_keys)
 
-                    # Iterate over the windows in chunks
-                    for wchunk in range(0, n_groups, n_chunks):
+                    # Compress into one file
+                    with rio.open(filename, mode='w', **kwargs) as dst_:
 
-                        group_keys_slice = group_keys[wchunk:wchunk + n_chunks]
-                        n_windows_slice = len(group_keys_slice)
+                        if tags:
+                            dst_.update_tags(**tags)
 
-                        if verbose > 0:
+                        # Iterate over the windows in chunks
+                        for wchunk in range(0, n_groups, n_chunks):
 
-                            logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk + 1,
-                                                                                     wchunk + n_windows_slice,
-                                                                                     n_windows))
+                            group_keys_slice = group_keys[wchunk:wchunk + n_chunks]
+                            n_windows_slice = len(group_keys_slice)
 
-                        ################################################
-                        data_gen = ((open_file, group, 'zarr') for group in group_keys_slice)
+                            if verbose > 0:
 
-                        # for f in tqdm(executor.map(_compressor, data_gen), total=n_windows_slice):
-                        #     pass
-                        #
-                        # futures = [executor.submit(_compress_dummy, iter_[0], iter_[1], None) for iter_ in data_gen]
-                        #
-                        # for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
-                        #
-                        #     out_window, out_block = f.result()
-                        #
-                        #     dst_.write(np.squeeze(out_block),
-                        #                window=out_window,
-                        #                indexes=out_indexes_)
-                        ################################################
+                                logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk + 1,
+                                                                                         wchunk + n_windows_slice,
+                                                                                         n_windows))
 
-                        # data_gen = ((root, group, 'zarr') for group in group_keys_slice)
+                            ################################################
+                            data_gen = ((open_file, group, 'zarr') for group in group_keys_slice)
 
-                        # for f, g, t in tqdm(data_gen, total=n_windows_slice):
-                        #
-                        #     out_window, out_indexes, out_block = _block_read_func(f, g, t)
+                            # for f in tqdm(executor.map(_compressor, data_gen), total=n_windows_slice):
+                            #     pass
+                            #
+                            # futures = [executor.submit(_compress_dummy, iter_[0], iter_[1], None) for iter_ in data_gen]
+                            #
+                            # for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                            #
+                            #     out_window, out_block = f.result()
+                            #
+                            #     dst_.write(np.squeeze(out_block),
+                            #                window=out_window,
+                            #                indexes=out_indexes_)
+                            ################################################
 
-                        # executor.map(_block_write_func, data_gen)
+                            # data_gen = ((root, group, 'zarr') for group in group_keys_slice)
 
-                        with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
+                            # for f, g, t in tqdm(data_gen, total=n_windows_slice):
+                            #
+                            #     out_window, out_indexes, out_block = _block_read_func(f, g, t)
 
-                            # Submit all of the tasks as futures
-                            futures = [executor.submit(_block_read_func, f, g, t) for f, g, t in data_gen]
+                            # executor.map(_block_write_func, data_gen)
 
-                            for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:
 
-                                out_window, out_indexes, out_block = f.result()
+                                # Submit all of the tasks as futures
+                                futures = [executor.submit(_block_read_func, f, g, t) for f, g, t in data_gen]
 
-                                dst_.write(out_block,
-                                           window=out_window,
-                                           indexes=out_indexes)
+                                for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
 
-                        futures = None
+                                    out_window, out_indexes, out_block = f.result()
 
-                if not keep_blocks:
-                    shutil.rmtree(sub_dir)
+                                    dst_.write(out_block,
+                                               window=out_window,
+                                               indexes=out_indexes)
+
+                            futures = None
+
+                    if not keep_blocks:
+                        shutil.rmtree(sub_dir)
 
             else:
+
+                if verbose > 0:
+                    logger.info('  Compressing output file ...')
 
                 p = Path(filename)
 
