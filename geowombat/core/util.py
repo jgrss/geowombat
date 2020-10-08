@@ -435,7 +435,7 @@ class MapProcesses(object):
         return results
 
 
-def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=None):
+def sample_feature(fid, geom, crs, res, all_touched, meta, frac, id_column, feature_array=None):
 
     """
     Samples a polygon features
@@ -448,6 +448,7 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=N
         all_touched
         meta
         frac
+        id_column
         feature_array
 
     Returns:
@@ -510,4 +511,4 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, feature_array=N
     return gpd.GeoDataFrame(data=np.c_[fid_, np.arange(0, n_samples)],
                             geometry=gpd.points_from_xy(x_coords, y_coords),
                             crs=crs,
-                            columns=['poly', 'point'])
+                            columns=[id_column, 'point'])

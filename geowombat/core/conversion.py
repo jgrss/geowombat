@@ -424,7 +424,8 @@ class Converters(object):
                                           data.res,
                                           all_touched,
                                           meta,
-                                          frac)
+                                          frac,
+                                          id_column)
 
                 if not point_df.empty:
                     dataframes.append(point_df)
