@@ -304,7 +304,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
     cdef:
         Py_ssize_t m1, n1, m2, n2
         double sp_dist, tp_dist, sw_dist, conf_dist
-        double weight, score, fweight
+        double weight, score, weighted_score
         double sp_dist_a, sp_dist_b
         double weight_sum = 0.0
         double pred = 0.0
@@ -413,7 +413,12 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
 
                             score = weight / weight_sum
 
-                            pred += (score * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+                            weighted_score = (score * (mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2] - mres_k[i+m2, j+n2]))
+
+                            if weighted_score < 0:
+                                weighted_score = score * ((mres_0[i+m2, j+n2] + hres_k[i+m2, j+n2]*0.5) / 1.5)
+
+                            pred += weighted_score
 
         return pred
 

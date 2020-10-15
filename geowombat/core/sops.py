@@ -372,7 +372,10 @@ class SpatialOperations(_PropertyMixin):
                 if isinstance(stratum_size, int):
                     sample_size = stratum_size
                 else:
-                    sample_size = int(n * stratum_size)
+                    sample_size = int(np.ceil(n * stratum_size))
+
+                if sample_size == 0:
+                    continue
 
                 attempts = 0
 
@@ -454,6 +457,9 @@ class SpatialOperations(_PropertyMixin):
                     if y_samples.shape[0] > 0:
 
                         ssize = sample_size if sample_size < y_samples.shape[0] else y_samples.shape[0]-1
+
+                        if ssize == 0:
+                            break
 
                         # Get indices within the stratum
                         idx = np.random.choice(range(0, y_samples.shape[0]), size=ssize, replace=False)
