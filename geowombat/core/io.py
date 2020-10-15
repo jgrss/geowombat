@@ -649,11 +649,15 @@ def to_raster(data,
                 compress = False
             else:
 
-                # Store the compression type because
-                #   it is removed in concurrent writing
-                compress = True
-                compress_type = kwargs['compress']
-                del kwargs['compress']
+                if 'num_threads' in kwargs:
+                    compress = False
+                else:
+                    compress = True
+
+                    # Store the compression type because
+                    #   it is removed in concurrent writing
+                    compress_type = kwargs['compress']
+                    del kwargs['compress']
 
         else:
             compress = False
@@ -697,6 +701,11 @@ def to_raster(data,
 
     if 'transform' not in kwargs:
         kwargs['transform'] = data.gw.transform
+
+    if 'num_threads' in kwargs:
+
+        if isinstance(kwargs['num_threads'], str):
+            kwargs['num_threads'] = 'all_cpus'
 
     root = None
 
