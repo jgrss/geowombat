@@ -425,6 +425,24 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
+    def n_windows(self, row_chunks=None, col_chunks=None):
+
+        """
+        Calculates the number of windows in a row/column iteration
+
+        Args:
+            row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
+            col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+
+        Returns:
+            ``int``
+        """
+
+        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
+        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
+
+        return len(list(range(0, self._obj.gw.nrows, rchunks))) * len(list(range(0, self._obj.gw.ncols, cchunks)))
+
     def windows(self, row_chunks=None, col_chunks=None):
 
         """
