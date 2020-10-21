@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API reference &#8212; GeoWombat 1.3.0 documentation</title>
+    <title>API reference &#8212; GeoWombat 1.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -145,10 +145,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.indices_to_coords.html#geowombat.indices_to_coords" title="geowombat.indices_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_coords</span></code></a>(col_index, row_index, …)</p></td>
 <td><p>Converts array indices to map coordinates</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.lonlat_to_xy.html#geowombat.lonlat_to_xy" title="geowombat.lonlat_to_xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lonlat_to_xy</span></code></a>(lon, lat, dst_crs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.bounds_to_coords.html#geowombat.bounds_to_coords" title="geowombat.bounds_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_to_coords</span></code></a>(bounds, dst_crs)</p></td>
+<td><p>Converts bounds from longitude and latitude to native map coordinates</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.lonlat_to_xy.html#geowombat.lonlat_to_xy" title="geowombat.lonlat_to_xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lonlat_to_xy</span></code></a>(lon, lat, dst_crs)</p></td>
 <td><p>Converts from longitude and latitude to native map coordinates</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.xy_to_lonlat.html#geowombat.xy_to_lonlat" title="geowombat.xy_to_lonlat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy_to_lonlat</span></code></a>(x, y, dst_crs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.xy_to_lonlat.html#geowombat.xy_to_lonlat" title="geowombat.xy_to_lonlat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy_to_lonlat</span></code></a>(x, y, dst_crs)</p></td>
 <td><p>Converts from native map coordinates to longitude and latitude</p></td>
 </tr>
 </tbody>
@@ -370,7 +373,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
