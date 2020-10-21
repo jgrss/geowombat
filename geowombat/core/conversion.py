@@ -31,6 +31,30 @@ def _iter_func(a):
 
 class Converters(object):
 
+    def bounds_to_coords(self, bounds, dst_crs):
+
+        """
+        Converts bounds from longitude and latitude to native map coordinates
+
+        Args:
+            bounds (``tuple`` | ``rasterio.coords.BoundingBox``): The lat/lon bounds to transform.
+            dst_crs (str, object, or DataArray): The CRS to transform to. It can be provided as a string, a
+                CRS instance (e.g., ``pyproj.crs.CRS``), or a ``geowombat.DataArray``.
+
+        Returns:
+
+            ``tuple``:
+
+                (left, bottom, right, top)
+        """
+
+        left, bottom, right, top = bounds
+
+        left, bottom = self.lonlat_to_xy(left, bottom, dst_crs)
+        right, top = self.lonlat_to_xy(left, top, dst_crs)
+
+        return left, bottom, right, top
+
     @staticmethod
     def lonlat_to_xy(lon, lat, dst_crs):
 
