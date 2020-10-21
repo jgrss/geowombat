@@ -21,6 +21,7 @@ mask = SpatialOperations().mask
 replace = SpatialOperations().replace
 recode = SpatialOperations().recode
 coregister = SpatialOperations().coregister
+bounds_to_coords = Converters().bounds_to_coords
 lonlat_to_xy = Converters().lonlat_to_xy
 xy_to_lonlat = Converters().xy_to_lonlat
 polygons_to_points = Converters().polygons_to_points
@@ -53,6 +54,7 @@ __all__ = ['apply',
            'replace',
            'recode',
            'coregister',
+           'bounds_to_coords',
            'lonlat_to_xy',
            'xy_to_lonlat',
            'polygons_to_points',

@@ -742,7 +742,24 @@ def warp(filename,
                                          top=bounds[3])
 
         else:
-            dst_bounds = src.bounds
+
+            if crs:
+
+                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(check_src_crs(src),
+                                                                                    dst_crs,
+                                                                                    src.bounds.left,
+                                                                                    src.bounds.bottom,
+                                                                                    src.bounds.right,
+                                                                                    src.bounds.top,
+                                                                                    densify_pts=21)
+
+                dst_bounds = BoundingBox(left=left_coord,
+                                         bottom=bottom_coord,
+                                         right=right_coord,
+                                         top=top_coord)
+
+            else:
+                dst_bounds = src.bounds
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])

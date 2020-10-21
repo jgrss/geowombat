@@ -425,15 +425,38 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
-    def windows(self, row_chunks=None, col_chunks=None):
+    def n_windows(self, row_chunks=None, col_chunks=None):
 
         """
-        Generates windows
+        Calculates the number of windows in a row/column iteration
 
         Args:
             row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
             col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+
+        Returns:
+            ``int``
         """
+
+        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
+        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
+
+        return len(list(range(0, self._obj.gw.nrows, rchunks))) * len(list(range(0, self._obj.gw.ncols, cchunks)))
+
+    def windows(self, row_chunks=None, col_chunks=None, return_type='window', ndim=2):
+
+        """
+        Generates windows for a row/column iteration
+
+        Args:
+            row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
+            col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+            return_type (Optional[str]): The data to return. Choices are ['data', 'slice', 'window'].
+            ndim (Optional[int]): The number of required dimensions if ``return_type`` = 'data' or 'slice'.
+        """
+
+        if return_type not in ['data', 'slice', 'window']:
+            raise NameError("The return type must be one of 'data', 'slice', or 'window'.")
 
         rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
         cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
@@ -446,10 +469,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 width = n_rows_cols(col_off, cchunks, self._obj.gw.ncols)
 
-                yield _Window(row_off=row_off,
-                              col_off=col_off,
-                              height=height,
-                              width=width)
+                if return_type == 'data':
+
+                    if ndim == 2:
+                        yield self._obj[row_off:row_off+height, col_off:col_off+width]
+                    else:
+                        slicer = tuple([slice(0, None)] * ndim) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        yield self._obj[slicer]
+
+                elif return_type == 'slice':
+
+                    if ndim == 2:
+                        yield (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                    else:
+                        yield tuple([slice(0, None)] * ndim) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+
+                elif return_type == 'window':
+
+                    yield _Window(row_off=row_off,
+                                  col_off=col_off,
+                                  height=height,
+                                  width=width)
 
     def imshow(self,
                mask=False,
@@ -507,8 +547,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>
             >>>     # Convert the input image to a GeoDataFrame
-            >>>     df = src.gw.to_geodataframe(mask='source',
-            >>>                                 num_workers=8)
+            >>>     df = src.gw.to_polygon(mask='source',
+            >>>                            num_workers=8)
         """
 
         return array_to_polygon(self._obj,
@@ -532,11 +572,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             None
         """
 
-        df_ = self.to_geodataframe(self._obj,
-                                   mask=mask,
-                                   connectivity=connectivity)
-
-        df_.to_file(filename)
+        self.to_polygon(mask=mask,
+                        connectivity=connectivity)\
+                .to_file(filename)
 
     def transform_crs(self,
                       dst_crs=None,
