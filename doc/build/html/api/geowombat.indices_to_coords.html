@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>indices_to_coords &#8212; GeoWombat 1.3.0 documentation</title>
+    <title>indices_to_coords &#8212; GeoWombat 1.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -17,7 +17,7 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lonlat_to_xy" href="geowombat.lonlat_to_xy.html" />
+    <link rel="next" title="bounds_to_coords" href="geowombat.bounds_to_coords.html" />
     <link rel="prev" title="coords_to_indices" href="geowombat.coords_to_indices.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -58,7 +58,7 @@
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.core</span> <span class="kn">import</span> <span class="n">indices_to_coords</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geowombat.core</span> <span class="k">import</span> <span class="n">indices_to_coords</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">indices_to_coords</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
@@ -120,7 +120,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.coords_to_indices.html" title="previous chapter">coords_to_indices</a></li>
-      <li>Next: <a href="geowombat.lonlat_to_xy.html" title="next chapter">lonlat_to_xy</a></li>
+      <li>Next: <a href="geowombat.bounds_to_coords.html" title="next chapter">bounds_to_coords</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -151,7 +151,7 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

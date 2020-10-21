@@ -52,12 +52,14 @@ Configuration keywords beginning with **ref** are the most important commands wh
     import geowombat as gw
     from geowombat.data import l8_224078_20200518
 
+    proj4 = "+proj=aea +lat_1=-5 +lat_2=-42 +lat_0=-32 +lon_0=-60 +x_0=0 +y_0=0 +ellps=aust_SA +units=m +no_defs "
+0
     # Without the manager
     with gw.open(l8_224078_20200518) as src:
         print(src.crs)
 
     # With the manager
-    with gw.config.update(ref_crs=102033):
+    with gw.config.update(ref_crs=proj4):
         with gw.open(l8_224078_20200518) as src:
             print(src.crs)
 
@@ -76,7 +78,7 @@ It is possible to combine multiple configuration keywords. In the example below,
         print(src.gw.celly, src.gw.cellx)
 
     # With the manager
-    with gw.config.update(ref_crs=102033, ref_res=(100, 100)):
+    with gw.config.update(ref_crs=proj4, ref_res=(100, 100)):
         with gw.open(l8_224078_20200518) as src:
             print(src.gw.celly, src.gw.cellx)
 

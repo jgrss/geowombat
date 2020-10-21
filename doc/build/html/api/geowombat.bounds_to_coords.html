@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geodataframe_to_array &#8212; GeoWombat 1.3.0 documentation</title>
+    <title>bounds_to_coords &#8212; GeoWombat 1.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -17,6 +17,8 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="lonlat_to_xy" href="geowombat.lonlat_to_xy.html" />
+    <link rel="prev" title="indices_to_coords" href="geowombat.indices_to_coords.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -33,8 +35,29 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="geodataframe-to-array">
-<h1>geodataframe_to_array<a class="headerlink" href="#geodataframe-to-array" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="bounds-to-coords">
+<h1>bounds_to_coords<a class="headerlink" href="#bounds-to-coords" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="geowombat.bounds_to_coords">
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">bounds_to_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">dst_crs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.bounds_to_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts bounds from longitude and latitude to native map coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounds</strong> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code> | <code class="docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox</span></code>) – The lat/lon bounds to transform.</p></li>
+<li><p><strong>dst_crs</strong> (<em>str</em><em>, </em><em>object</em><em>, or </em><em>DataArray</em>) – The CRS to transform to. It can be provided as a string, a
+CRS instance (e.g., <code class="docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code>), or a <code class="docutils literal notranslate"><span class="pre">geowombat.DataArray</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(left, bottom, right, top)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">tuple</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -79,14 +102,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.indices_to_coords.html" title="previous chapter">indices_to_coords</a></li>
+      <li>Next: <a href="geowombat.lonlat_to_xy.html" title="next chapter">lonlat_to_xy</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -116,11 +143,11 @@
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/api/geowombat.geodataframe_to_array.rst.txt"
+      <a href="../_sources/api/geowombat.bounds_to_coords.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
