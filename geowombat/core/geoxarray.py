@@ -507,8 +507,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>
             >>>     # Convert the input image to a GeoDataFrame
-            >>>     df = src.gw.to_geodataframe(mask='source',
-            >>>                                 num_workers=8)
+            >>>     df = src.gw.to_polygon(mask='source',
+            >>>                            num_workers=8)
         """
 
         return array_to_polygon(self._obj,
@@ -532,11 +532,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             None
         """
 
-        df_ = self.to_geodataframe(self._obj,
-                                   mask=mask,
-                                   connectivity=connectivity)
-
-        df_.to_file(filename)
+        self.to_polygon(mask=mask,
+                        connectivity=connectivity)\
+                .to_file(filename)
 
     def transform_crs(self,
                       dst_crs=None,
