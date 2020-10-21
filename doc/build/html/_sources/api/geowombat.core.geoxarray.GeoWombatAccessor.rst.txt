@@ -30,7 +30,6 @@ GeoWombat DataArray (DataArray.gw)
    .. automethod:: set_nodata
    .. automethod:: subset
    .. automethod:: tasseled_cap
-   .. automethod:: to_geodataframe
    .. automethod:: to_polygon
    .. automethod:: to_raster
    .. automethod:: to_vector
