@@ -260,18 +260,20 @@ With :func:`geowombat.to_raster`, a Xarray/Dask task graph is executed in parall
 
 .. code:: python
 
+    import itertools
     import geowombat as gw
     from geowombat.core.parallel import ParallelTask
 
     def user_func(*args):
 
         """
-        Block-level function to be executed in parallel. The first argument is the block data, and
-        the second argument is the number of parallel worker threads for dask.compute().
+        Block-level function to be executed in parallel. The first argument is the block data,
+        the second argument is the block id, and the third argument is the number of parallel
+        worker threads for dask.compute().
         """
 
         # Gather function arguments
-        data, num_workers = list(itertools.chain(*args))
+        data, window_id, num_workers = list(itertools.chain(*args))
 
         # Send the computation to Dask
         return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
