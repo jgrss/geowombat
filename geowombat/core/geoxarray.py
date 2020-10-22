@@ -474,7 +474,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                     if ndim == 2:
                         yield self._obj[row_off:row_off+height, col_off:col_off+width]
                     else:
-                        slicer = tuple([slice(0, None)] * ndim) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        slicer = tuple([slice(0, None)] * (ndim-2)) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
                         yield self._obj[slicer]
 
                 elif return_type == 'slice':
@@ -482,7 +482,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                     if ndim == 2:
                         yield (slice(row_off, row_off+height), slice(col_off, col_off+width))
                     else:
-                        yield tuple([slice(0, None)] * ndim) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        yield tuple([slice(0, None)] * (ndim-2)) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
 
                 elif return_type == 'window':
 

@@ -3,6 +3,19 @@
 Changelog
 =========
 
+1.4.1 (22 Oct 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed slicing error in ``DataArray`` window generator with arrays of >2 dimensions.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added window id in :class:`geowombat.core.parallel.ParallelTask`.
+
 1.4.0 (22 Oct 2020)
 -------------------
 
