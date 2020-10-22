@@ -67,6 +67,7 @@ class ParallelTask(object):
         self.n_chunks = n_chunks
 
         self.windows = None
+        self.slices = None
         self.n_windows = None
 
         if not isinstance(self.n_chunks, int):
@@ -85,6 +86,12 @@ class ParallelTask(object):
                                           cchunksize,
                                           return_as='list',
                                           padding=self.padding)
+
+        # Convert windows into slices
+        if len(self.data.shape) == 2:
+            self.slices = [(slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width)) for w in self.windows]
+        else:
+            self.slices = [tuple([slice(0, None)] * (len(self.data.shape)-2)) + (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width)) for w in self.windows]
 
         self.n_windows = len(self.windows)
 
@@ -105,27 +112,25 @@ class ParallelTask(object):
         # Iterate over the windows in chunks
         for wchunk in range(0, self.n_windows, self.n_chunks):
 
-            window_slice = self.windows[wchunk:wchunk + self.n_chunks]
-            n_windows_slice = len(window_slice)
-
             if self.padding:
+
+                window_slice = self.windows[wchunk:wchunk+self.n_chunks]
+                n_windows_slice = len(window_slice)
 
                 # Read the padded window
                 if len(self.data.shape) == 2:
-                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
                 elif len(self.data.shape) == 3:
-                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
                 else:
-                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
 
             else:
 
-                if len(self.data.shape) == 2:
-                    data_gen = ((self.data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], *args) for widx, w in enumerate(window_slice))
-                elif len(self.data.shape) == 3:
-                    data_gen = ((self.data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], *args) for widx, w in enumerate(window_slice))
-                else:
-                    data_gen = ((self.data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width], *args) for widx, w in enumerate(window_slice))
+                window_slice = self.slices[wchunk:wchunk+self.n_chunks]
+                n_windows_slice = len(window_slice)
+
+                data_gen = ((self.data[slice_], widx, *args) for widx, slice_ in enumerate(window_slice))
 
             if self.n_workers == 1:
 
