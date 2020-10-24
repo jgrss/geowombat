@@ -3,6 +3,15 @@
 Changelog
 =========
 
+1.4.2 (25 Oct 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed check for compression when using ``dask.store``.
+- Updated the resampling methods to account for rasterio updates.
+
 1.4.1 (22 Oct 2020)
 -------------------
 
