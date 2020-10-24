@@ -650,7 +650,12 @@ def to_raster(data,
             else:
 
                 if 'num_threads' in kwargs:
-                    compress = False
+
+                    if use_dask_store:
+                        compress = True
+                    else:
+                        compress = False
+
                 else:
                     compress = True
 
