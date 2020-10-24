@@ -300,10 +300,6 @@ class WriteDaskArray(object):
                 logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')
                 del self.kwargs['compress']
 
-            # An alternative here is to leave the writeable object open as self.
-            # However, this does not seem to work when used within a Dask
-            #   client environment because the `self.dst_` object cannot be pickled.
-
             # Create the output file
             with rio.open(self.filename, mode='w', **self.kwargs) as dst_:
                 pass
