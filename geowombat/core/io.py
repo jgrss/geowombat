@@ -659,6 +659,8 @@ def to_raster(data,
                 else:
                     compress = True
 
+                if compress:
+
                     # Store the compression type because
                     #   it is removed in concurrent writing
                     compress_type = kwargs['compress']
