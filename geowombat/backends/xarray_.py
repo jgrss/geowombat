@@ -434,10 +434,14 @@ def mosaic(filenames,
         if dtype:
 
             attrs = darray.attrs.copy()
-            return darray.astype(dtype).assign_attrs(**attrs)
+
+            return darray \
+                    .transpose('band', 'y', 'x')\
+                    .astype(dtype)\
+                    .assign_attrs(**attrs)
 
         else:
-            return darray
+            return darray.transpose('band', 'y', 'x')
 
 
 def concat(filenames,
