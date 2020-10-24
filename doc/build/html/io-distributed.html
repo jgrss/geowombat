@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Distributed processing &#8212; GeoWombat 1.4.0 documentation</title>
+    <title>Distributed processing &#8212; GeoWombat 1.4.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -270,18 +270,20 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
 <div class="section" id="use-geowombat-to-gather-block-level-results-in-parallel">
 <h2>Use GeoWombat to gather block-level results in parallel<a class="headerlink" href="#use-geowombat-to-gather-block-level-results-in-parallel" title="Permalink to this headline">¶</a></h2>
 <p>With <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>, a Xarray/Dask task graph is executed in parallel and written to a raster file. If, however, you wish to retrieve values for each block without writing the entire blocks to file, use <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>. In the example below, a custom function (<cite>user_func</cite>) is processed in parallel over each raster chunk/block.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">geowombat</span> <span class="kn">as</span> <span class="nn">gw</span>
 <span class="kn">from</span> <span class="nn">geowombat.core.parallel</span> <span class="kn">import</span> <span class="n">ParallelTask</span>
 
 <span class="k">def</span> <span class="nf">user_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Block-level function to be executed in parallel. The first argument is the block data, and</span>
-<span class="sd">    the second argument is the number of parallel worker threads for dask.compute().</span>
+<span class="sd">    Block-level function to be executed in parallel. The first argument is the block data,</span>
+<span class="sd">    the second argument is the block id, and the third argument is the number of parallel</span>
+<span class="sd">    worker threads for dask.compute().</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Gather function arguments</span>
-    <span class="n">data</span><span class="p">,</span> <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">window_id</span><span class="p">,</span> <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
 
     <span class="c1"># Send the computation to Dask</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span>
