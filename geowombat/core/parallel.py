@@ -110,7 +110,7 @@ class ParallelTask(object):
         results = []
 
         # Iterate over the windows in chunks
-        for wchunk in range(0, self.n_windows, self.n_chunks):
+        for cidx, wchunk in enumerate(range(0, self.n_windows, self.n_chunks)):
 
             if self.padding:
 
@@ -119,18 +119,18 @@ class ParallelTask(object):
 
                 # Read the padded window
                 if len(self.data.shape) == 2:
-                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], cidx, widx, *args) for widx, w in enumerate(window_slice))
                 elif len(self.data.shape) == 3:
-                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], cidx, widx, *args) for widx, w in enumerate(window_slice))
                 else:
-                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], cidx, widx, *args) for widx, w in enumerate(window_slice))
 
             else:
 
                 window_slice = self.slices[wchunk:wchunk+self.n_chunks]
                 n_windows_slice = len(window_slice)
 
-                data_gen = ((self.data[slice_], widx, *args) for widx, slice_ in enumerate(window_slice))
+                data_gen = ((self.data[slice_], cidx, widx, *args) for widx, slice_ in enumerate(window_slice))
 
             if self.n_workers == 1:
 
