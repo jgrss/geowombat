@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>polygon_to_array &#8212; GeoWombat 1.3.0 documentation</title>
+    <title>polygon_to_array &#8212; GeoWombat 1.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -47,17 +47,21 @@
 <li><p><strong>polygon</strong> (<em>GeoDataFrame | str</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.DataFrame</span></code> or file with polygon geometry.</p></li>
 <li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">polygon</span></code> you want to assign values from.
 If not set, creates a binary raster.</p></li>
-<li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to use as a reference.</p></li>
+<li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to use as a reference for rasterizing.</p></li>
 <li><p><strong>cellx</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell x size.</p></li>
 <li><p><strong>celly</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The output cell y size.</p></li>
 <li><p><strong>band_name</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> band name.</p></li>
 <li><p><strong>row_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> row chunk size.</p></li>
 <li><p><strong>col_chunks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">dask</span></code> column chunk size.</p></li>
 <li><p><strong>(</strong><strong>Optional</strong><strong>[</strong><strong>tuple</strong><strong>]</strong> (<em>src_res</em>) – A source resolution to align to.</p></li>
-<li><p><strong>fill</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output fill value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
-<li><p><strong>default_value</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output default value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
-<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
-<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The output data type for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>fill</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Used as fill value for all areas not covered by input geometries
+to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>default_value</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Used as value for all geometries, if not provided in shapes
+to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, all pixels touched by geometries will be burned in.
+If false, only pixels whose center is within the polygon or that are selected by Bresenham’s line
+algorithm will be burned in. The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
+<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>rasterio | numpy data type</em><em>]</em>) – The output data type for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
 <li><p><strong>sindex</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – An instanced of <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame.sindex</span></code>.</p></li>
 </ul>
 </dd>
@@ -166,7 +170,7 @@ If not set, creates a binary raster.</p></li>
       &copy;2020-2020, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

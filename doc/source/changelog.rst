@@ -3,6 +3,55 @@
 Changelog
 =========
 
+1.4.1 (22 Oct 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed slicing error in ``DataArray`` window generator with arrays of >2 dimensions.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added window id in :class:`geowombat.core.parallel.ParallelTask`.
+
+1.4.0 (22 Oct 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed error in destination bounds transformation when ``ref_crs`` was used in a configuration context without ``ref_bounds``, like:
+
+.. code:: python
+
+    # Previously did transform correctly
+    with gw.config.update(ref_crs=crs, ref_bounds=bounds):
+        with gw.open() as src:
+            ...
+
+    # Previously did not transform correctly
+    with gw.config.update(ref_crs=crs):
+        with gw.open() as src:
+            ...
+
+New
+~~~
+
+- Created :func:`geowombat.bounds_to_coords` function.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added object types in the the data window generator. Yield type options now include ``DataArrays``, ``slice`` objects, and ``rasterio.windows.Window`` objects.
+
+.. code:: python
+
+    with gw.open() as src:
+        for w in src.gw.windows():
+            ...
+
 1.3.1 (26 Aug 2020)
 -------------------
 
@@ -125,7 +174,7 @@ Bug fixes
 Bug fixes
 ~~~~~~~~~
 
-- fixed padded block writing with user functions in :func:`geowombat.to_raster`.
+- Fixed padded block writing with user functions in :func:`geowombat.to_raster`.
 - Added check for existing metadata file in :func:`geowombat.util.web.download_cube`.
 
 Enhancements

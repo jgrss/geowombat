@@ -27,7 +27,9 @@ To transform the CRS, use the context manager. In this example, an EPSG code is 
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=102008):
+    proj4 = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"
+
+    with gw.config.update(ref_crs=proj4):
         with gw.open(rgbn) as src:
             print(src.transform)
             print(src.crs)
@@ -37,8 +39,6 @@ To transform the CRS, use the context manager. In this example, an EPSG code is 
 Other formats supported by rasterio, (e.g., PROJ4 strings) can be used.
 
 .. ipython:: python
-
-    proj4 = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"
 
     with gw.config.update(ref_crs=proj4):
         with gw.open(rgbn) as src:
@@ -54,7 +54,7 @@ The resampling algorithm can be specified in the :func:`geowombat.open` function
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=102008):
+    with gw.config.update(ref_crs=proj4):
         with gw.open(rgbn, resampling='cubic') as src:
             print(src.transform)
             print(src.crs)
@@ -65,7 +65,7 @@ The transformed cell resolution can be added in the context manager. Here, we re
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=102008, ref_res=(10, 10)):
+    with gw.config.update(ref_crs=proj4, ref_res=(10, 10)):
         with gw.open(rgbn, resampling='cubic') as src:
             print(src.transform)
             print(src.crs)
@@ -87,7 +87,7 @@ To transform an `xarray.DataArray` outside of a configuration context, use the :
         print(src.resampling)
         print(src.res)
         print('')
-        src_tr = src.gw.transform_crs(102008, dst_res=(10, 10), resampling='bilinear')
+        src_tr = src.gw.transform_crs(proj4, dst_res=(10, 10), resampling='bilinear')
         print(src_tr.transform)
         print(src_tr.crs)
         print(src_tr.resampling)
