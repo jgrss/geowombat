@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.4.3 (2 Nov 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added batch id to the window count id in :func:`geowombat.to_raster` and :class:`geowombat.core.parallel.ParallelTask`.
+
 1.4.2 (25 Oct 2020)
 -------------------
 
