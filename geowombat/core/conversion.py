@@ -2,8 +2,10 @@ import os
 import multiprocessing as multi
 import logging
 
+from ..config import config
 from ..handler import add_handler
 from ..backends.rasterio_ import check_crs
+from ..backends.xarray_ import _check_config_globals
 from .util import sample_feature
 from .util import lazy_wombat
 
@@ -534,7 +536,9 @@ class Converters(object):
                          default_value=1,
                          all_touched=True,
                          dtype='uint8',
-                         sindex=None):
+                         sindex=None,
+                         tap=False,
+                         bounds_by='intersection'):
 
         """
         Converts a polygon geometry to an ``xarray.DataArray``.
@@ -559,6 +563,12 @@ class Converters(object):
                 algorithm will be burned in. The ``all_touched`` value for ``rasterio.features.rasterize``.
             dtype (Optional[rasterio | numpy data type]): The output data type for ``rasterio.features.rasterize``.
             sindex (Optional[object]): An instanced of ``geopandas.GeoDataFrame.sindex``.
+            tap (Optional[bool]): Whether to target align pixels.
+            bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
+
+                * reference: Use the bounds of the reference image
+                * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
+                * union: Use the union (i.e., maximum extent) of all the image bounds
 
         Returns:
             ``xarray.DataArray``
@@ -589,6 +599,16 @@ class Converters(object):
             else:
                 logger.exception('  The polygon file does not exist.')
                 raise OSError
+
+        ref_kwargs = {'bounds': None,
+                      'crs': None,
+                      'res': None,
+                      'tap': tap,
+                      'tac': None}
+
+        ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
+                                           bounds_by,
+                                           ref_kwargs)
 
         if isinstance(data, xr.DataArray):
 
@@ -629,23 +649,35 @@ class Converters(object):
             col_chunks = data.gw.col_chunks
             src_res = None
 
-            left, bottom, right, top = data.gw.bounds
+            if ref_kwargs['bounds']:
 
-            dst_height = data.gw.nrows
-            dst_width = data.gw.ncols
+                left, bottom, right, top = ref_kwargs['bounds']
 
-            dst_transform = data.gw.transform
+                if 'res' in ref_kwargs:
+                    cellx, celly = ref_kwargs['res']
+
+            else:
+                left, bottom, right, top = data.gw.bounds
 
         else:
 
-            left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
+            if ref_kwargs['bounds']:
 
-            dst_height = int((top - bottom) / abs(celly))
-            dst_width = int((right - left) / abs(cellx))
+                left, bottom, right, top = ref_kwargs['bounds']
 
-            dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
+                if ref_kwargs['res']:
+                    cellx, celly = ref_kwargs['res']
+
+            else:
+                left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
+
+        dst_height = int((top - bottom) / abs(celly))
+        dst_width = int((right - left) / abs(cellx))
+
+        dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
         if src_res:
+
             dst_transform = aligned_target(dst_transform,
                                            dst_width,
                                            dst_height,

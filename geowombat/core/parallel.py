@@ -37,7 +37,7 @@ class ParallelTask(object):
         >>> from geowombat.core.parallel import ParallelTask
         >>>
         >>> def user_func(*args):
-        >>>     data, num_workers = list(itertools.chain(*args))
+        >>>     data, window_id, num_workers = list(itertools.chain(*args))
         >>>     results = data.data.sum().compute(scheduler='threads', num_workers=num_workers)
         >>>     return results
         >>>
