@@ -16,6 +16,11 @@ class TestOpen(unittest.TestCase):
         with gw.open(l8_224078_20200518) as src:
             self.assertEqual(src.gw.nbands, 3)
 
+    def test_open_multiple(self):
+
+        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+            self.assertEqual(src.gw.ntime, 2)
+
     def test_open_path(self):
 
         with gw.open(Path(l8_224078_20200518)) as src:
@@ -30,6 +35,11 @@ class TestOpen(unittest.TestCase):
 
         with gw.open(l8_224078_20200518) as src:
             self.assertIsInstance(src.data, dask.array.core.Array)
+
+    def test_crs(self):
+
+        with gw.open(l8_224078_20200518) as src:
+            self.assertEqual(src.crs, '+init=epsg:32621')
 
     def test_time_chunks(self):
 
