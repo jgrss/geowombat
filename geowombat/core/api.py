@@ -241,10 +241,8 @@ class open(object):
 
     Args:
         filename (str or list): The file name, search string, or a list of files to open.
-        return_as (Optional[str]): The Xarray data type to return.
-            Choices are ['array', 'dataset'] which correspond to ``xarray.DataArray`` and ``xarray.Dataset``.
-        band_names (Optional[1d array-like]): A list of band names if ``return_as`` = 'dataset' or ``bounds``
-            is given or ``window`` is given. Default is None.
+        band_names (Optional[1d array-like]): A list of band names if ``bounds`` is given or ``window``
+            is given. Default is None.
         time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.
             Default is None.
         stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
@@ -324,18 +322,17 @@ class open(object):
         >>>
         >>> # Stack two images, opening band 3
         >>> with gw.open(['image1.tif', 'image2.tif'],
-        >>>     band_names=['date1', 'date2'],
-        >>>     num_workers=8,
-        >>>     indexes=3,
-        >>>     window=w,
-        >>>     out_dtype='float32') as ds:
+        >>>              band_names=['date1', 'date2'],
+        >>>              num_workers=8,
+        >>>              indexes=3,
+        >>>              window=w,
+        >>>              dtype='float32') as ds:
         >>>
         >>>     print(ds)
     """
 
     def __init__(self,
                  filename,
-                 return_as='array',
                  band_names=None,
                  time_names=None,
                  stack_dim='time',
@@ -360,9 +357,6 @@ class open(object):
         self.__is_context_manager = False
         self.__data_are_separate = 'none'
         self.__filenames = []
-
-        if return_as not in ['array', 'dataset']:
-            logger.exception("  The `Xarray` object must be one of ['array', 'dataset']")
 
         if 'chunks' in kwargs:
             ch.check_chunktype(kwargs['chunks'], output='3d')
