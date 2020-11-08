@@ -654,7 +654,15 @@ class Converters(object):
                 left, bottom, right, top = ref_kwargs['bounds']
 
                 if 'res' in ref_kwargs:
-                    cellx, celly = ref_kwargs['res']
+
+                    if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
+                        cellx, celly = ref_kwargs['res']
+                    elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
+                        cellx = ref_kwargs['res']
+                        celly = ref_kwargs['res']
+                    else:
+                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        raise TypeError
 
             else:
                 left, bottom, right, top = data.gw.bounds
@@ -666,7 +674,15 @@ class Converters(object):
                 left, bottom, right, top = ref_kwargs['bounds']
 
                 if ref_kwargs['res']:
-                    cellx, celly = ref_kwargs['res']
+
+                    if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
+                        cellx, celly = ref_kwargs['res']
+                    elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
+                        cellx = ref_kwargs['res']
+                        celly = ref_kwargs['res']
+                    else:
+                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        raise TypeError
 
             else:
                 left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
