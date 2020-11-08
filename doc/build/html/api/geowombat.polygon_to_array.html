@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>polygon_to_array &#8212; GeoWombat 1.4.2 documentation</title>
+    <title>polygon_to_array &#8212; GeoWombat 1.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -39,7 +39,7 @@
 <h1>polygon_to_array<a class="headerlink" href="#polygon-to-array" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.polygon_to_array">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygon_to_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">col</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cellx</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">celly</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">src_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em>, <em class="sig-param"><span class="n">sindex</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygon_to_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygon_to_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">col</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cellx</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">celly</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">band_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">row_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">col_chunks</span><span class="o">=</span><span class="default_value">512</span></em>, <em class="sig-param"><span class="n">src_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'uint8'</span></em>, <em class="sig-param"><span class="n">sindex</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">bounds_by</span><span class="o">=</span><span class="default_value">'intersection'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygon_to_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a polygon geometry to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -63,6 +63,14 @@ If false, only pixels whose center is within the polygon or that are selected by
 algorithm will be burned in. The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> value for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
 <li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>rasterio | numpy data type</em><em>]</em>) – The output data type for <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
 <li><p><strong>sindex</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – An instanced of <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame.sindex</span></code>.</p></li>
+<li><p><strong>tap</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to target align pixels.</p></li>
+<li><p><strong>bounds_by</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent. Choices are [‘intersection’, ‘union’, ‘reference’].</p>
+<ul>
+<li><p>reference: Use the bounds of the reference image</p></li>
+<li><p>intersection: Use the intersection (i.e., minimum extent) of all the image bounds</p></li>
+<li><p>union: Use the union (i.e., maximum extent) of all the image bounds</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
