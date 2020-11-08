@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.4.4 (8 Nov 2020)
+------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Add global configuration options for :func:`geowombat.polygon_to_array`.
+
 1.4.3 (2 Nov 2020)
 -------------------
 
