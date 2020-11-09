@@ -42,6 +42,24 @@ By default, GeoWombat will stack multiple files by time. So, to stack multiple b
                  stack_dim='band') as src:
         print(src)
 
+.. note::
+
+    If time names are not specified with ``stack_dim`` = 'time', GeoWombat will attempt to parse dates from the file names. This could incur significant overhead when the file list is long. Therefore, it is good practice to specify the time names.
+
+Overhead required to parse file names
+
+.. code:: python
+
+    with gw.open(long_file_list, stack_dim='time') as src:
+        ...
+
+No file parsing overhead
+
+.. code:: python
+
+    with gw.open(long_file_list, time_names=my_time_names, stack_dim='time') as src:
+        ...
+
 Opening multiple bands as a mosaic
 ----------------------------------
 

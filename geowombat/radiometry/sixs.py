@@ -79,6 +79,16 @@ class SixS(object):
     def _load(self):
         self.lut = joblib.load(str(self.sensor_lookup[self.sensor].path))
 
+    @staticmethod
+    def prepare_coeff(band_data, valid_idx, coeffs, cindex):
+
+        x_ = np.zeros(band_data.gw.nrows * band_data.gw.ncols, dtype='float64')
+        x_[:] = np.nan
+        x_[valid_idx] = coeffs[:, cindex].flatten()
+        x_ = x_.reshape(band_data.gw.nrows, band_data.gw.ncols)
+
+        return ndarray_to_xarray(band_data, x_, ['coeff'])
+
     def rad_to_sr(self, data, band, sza, vza, doy, h2o=1.0, o3=0.4, aot=0.3):
 
         """
@@ -150,25 +160,9 @@ class SixS(object):
 
         coeffs *= elliptical_orbit_correction
 
-        xa = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
-        xb = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
-        xc = np.zeros(band_data.gw.nrows*band_data.gw.ncols, dtype='float64')
-
-        xa[:] = np.nan
-        xb[:] = np.nan
-        xc[:] = np.nan
-
-        xa[valid_idx] = coeffs[:, 0].flatten()
-        xb[valid_idx] = coeffs[:, 1].flatten()
-        xc[valid_idx] = coeffs[:, 2].flatten()
-
-        xa = xa.reshape(band_data.gw.nrows, band_data.gw.ncols)
-        xb = xb.reshape(band_data.gw.nrows, band_data.gw.ncols)
-        xc = xc.reshape(band_data.gw.nrows, band_data.gw.ncols)
-
-        xa = ndarray_to_xarray(band_data, xa, ['coeff'])
-        xb = ndarray_to_xarray(band_data, xb, ['coeff'])
-        xc = ndarray_to_xarray(band_data, xc, ['coeff'])
+        xa = self.prepare_coeff(band_data, valid_idx, coeffs, 0)
+        xb = self.prepare_coeff(band_data, valid_idx, coeffs, 1)
+        xc = self.prepare_coeff(band_data, valid_idx, coeffs, 2)
 
         tmp = (xa.sel(band='coeff') * (band_data*self.rad_scale)) - xb.sel(band='coeff')
         refl = tmp / (1.0 + xc.sel(band='coeff') * tmp)

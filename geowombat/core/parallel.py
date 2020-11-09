@@ -37,7 +37,7 @@ class ParallelTask(object):
         >>> from geowombat.core.parallel import ParallelTask
         >>>
         >>> def user_func(*args):
-        >>>     data, num_workers = list(itertools.chain(*args))
+        >>>     data, window_id, num_workers = list(itertools.chain(*args))
         >>>     results = data.data.sum().compute(scheduler='threads', num_workers=num_workers)
         >>>     return results
         >>>
@@ -119,18 +119,18 @@ class ParallelTask(object):
 
                 # Read the padded window
                 if len(self.data.shape) == 2:
-                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
                 elif len(self.data.shape) == 3:
-                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
                 else:
-                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx, *args) for widx, w in enumerate(window_slice))
+                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
 
             else:
 
                 window_slice = self.slices[wchunk:wchunk+self.n_chunks]
                 n_windows_slice = len(window_slice)
 
-                data_gen = ((self.data[slice_], widx, *args) for widx, slice_ in enumerate(window_slice))
+                data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
 
             if self.n_workers == 1:
 
