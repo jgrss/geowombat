@@ -17,7 +17,7 @@ import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
 from rasterio.crs import CRS
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 from affine import Affine
 import pyproj
 from tqdm import tqdm
@@ -355,7 +355,7 @@ class Converters(object):
             logger.info('  Checking geometry extent ...')
 
         # Remove data outside of the image bounds
-        if type(df.iloc[0].geometry) == Polygon:
+        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
             df = gpd.overlay(df,
                              gpd.GeoDataFrame(data=[0],
@@ -368,7 +368,7 @@ class Converters(object):
             # Clip points to the image bounds
             df = df[df.geometry.intersects(data.gw.geometry)]
 
-        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
+        if isinstance(mask, Polygon) or isinstance(mask, MultiPolygon) or isinstance(mask, gpd.GeoDataFrame):
 
             if isinstance(mask, gpd.GeoDataFrame):
 
@@ -393,7 +393,7 @@ class Converters(object):
         #                                  bottom=float(miny)-self._obj.res[0])
 
         # Convert polygons to points
-        if type(df.iloc[0].geometry) == Polygon:
+        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
             if verbose > 0:
                 logger.info('  Converting polygons to points ...')
