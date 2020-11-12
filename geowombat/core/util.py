@@ -438,7 +438,7 @@ class MapProcesses(object):
 def sample_feature(fid, geom, crs, res, all_touched, meta, frac, id_column, feature_array=None):
 
     """
-    Samples a polygon features
+    Samples polygon features
 
     Args:
         fid
