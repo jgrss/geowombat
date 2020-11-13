@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.4.6 (13 Nov 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added `shapely.geometry.MultiPolygon` as an accepted data type in :func:`geowombat.core.prepare_points`.
+
 1.4.5 (9 Nov 2020)
 ------------------
 
