@@ -336,7 +336,7 @@ class Converters(object):
                 raise TypeError
 
         if id_column not in df.columns.tolist():
-            df[id_column] = df.index.values
+            df.loc[:, id_column] = df.index.values
 
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
@@ -361,7 +361,7 @@ class Converters(object):
                              gpd.GeoDataFrame(data=[0],
                                               geometry=[data.gw.geometry],
                                               crs=df_crs),
-                             how='intersection')
+                             how='intersection').drop(columns=[0])
 
         else:
 
@@ -435,7 +435,9 @@ class Converters(object):
 
         meta = data.gw.meta
 
-        dataframes = list()
+        dataframes = []
+
+        df_columns = df.columns.tolist()
 
         with multi.Pool(processes=n_jobs) as pool:
 
@@ -444,14 +446,14 @@ class Converters(object):
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]
 
-                point_df = sample_feature(dfrow[id_column],
-                                          dfrow.geometry,
+                point_df = sample_feature(dfrow,
+                                          id_column,
+                                          df_columns,
                                           data.crs,
                                           data.res,
                                           all_touched,
                                           meta,
-                                          frac,
-                                          id_column)
+                                          frac)
 
                 if not point_df.empty:
                     dataframes.append(point_df)

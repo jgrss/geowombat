@@ -435,31 +435,37 @@ class MapProcesses(object):
         return results
 
 
-def sample_feature(fid, geom, crs, res, all_touched, meta, frac, id_column, feature_array=None):
+def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, frac, feature_array=None):
 
     """
     Samples polygon features
 
     Args:
-        fid
-        geom
-        crs
-        res
-        all_touched
-        meta
-        frac
-        id_column
-        feature_array
+        df_row (pandas.Series)
+        id_column (str)
+        df_columns (list)
+        crs (object)
+        res (tuple)
+        all_touched (bool)
+        meta (namedtuple)
+        frac (float)
+        feature_array (Optional[ndarray])
 
     Returns:
         ``geopandas.GeoDataFrame``
     """
+
+    geom = df_row.geometry
 
     # Get the feature's bounding extent
     geom_info = get_geometry_info(geom, res)
 
     if min(geom_info.shape) == 0:
         return gpd.GeoDataFrame([])
+
+    fid = df_row[id_column]
+
+    other_cols = [col for col in df_columns if col not in [id_column, 'geometry']]
 
     if not isinstance(feature_array, np.ndarray):
 
@@ -483,9 +489,6 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, id_column, feat
     # Convert the map indices to map coordinates
     x_coords, y_coords = meta.affine * (x_samples, y_samples)
 
-    # y_coords = meta.top - y_samples * data.res[0]
-    # x_coords = meta.left + x_samples * data.res[0]
-
     if frac < 1:
 
         rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
@@ -508,7 +511,12 @@ def sample_feature(fid, geom, crs, res, all_touched, meta, frac, id_column, feat
         fid_ = np.zeros([fid_]*n_samples, dtype=object)
 
     # Combine the coordinates into `Shapely` point geometry
-    return gpd.GeoDataFrame(data=np.c_[fid_, np.arange(0, n_samples)],
-                            geometry=gpd.points_from_xy(x_coords, y_coords),
-                            crs=crs,
-                            columns=[id_column, 'point'])
+    fea_df = gpd.GeoDataFrame(data=np.c_[fid_, np.arange(0, n_samples)],
+                              geometry=gpd.points_from_xy(x_coords, y_coords),
+                              crs=crs,
+                              columns=[id_column, 'point'])
+
+    for col in other_cols:
+        fea_df.loc[:, col] = df_row[col]
+
+    return fea_df
