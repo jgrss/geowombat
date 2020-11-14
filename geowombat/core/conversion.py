@@ -17,7 +17,7 @@ import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
 from rasterio.crs import CRS
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 from affine import Affine
 import pyproj
 from tqdm import tqdm
@@ -336,7 +336,7 @@ class Converters(object):
                 raise TypeError
 
         if id_column not in df.columns.tolist():
-            df[id_column] = df.index.values
+            df.loc[:, id_column] = df.index.values
 
         df_crs = check_crs(df.crs).to_proj4()
         data_crs = check_crs(data.crs).to_proj4()
@@ -355,20 +355,20 @@ class Converters(object):
             logger.info('  Checking geometry extent ...')
 
         # Remove data outside of the image bounds
-        if type(df.iloc[0].geometry) == Polygon:
+        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
             df = gpd.overlay(df,
                              gpd.GeoDataFrame(data=[0],
                                               geometry=[data.gw.geometry],
                                               crs=df_crs),
-                             how='intersection')
+                             how='intersection').drop(columns=[0])
 
         else:
 
             # Clip points to the image bounds
             df = df[df.geometry.intersects(data.gw.geometry)]
 
-        if isinstance(mask, Polygon) or isinstance(mask, gpd.GeoDataFrame):
+        if isinstance(mask, Polygon) or isinstance(mask, MultiPolygon) or isinstance(mask, gpd.GeoDataFrame):
 
             if isinstance(mask, gpd.GeoDataFrame):
 
@@ -393,7 +393,7 @@ class Converters(object):
         #                                  bottom=float(miny)-self._obj.res[0])
 
         # Convert polygons to points
-        if type(df.iloc[0].geometry) == Polygon:
+        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
             if verbose > 0:
                 logger.info('  Converting polygons to points ...')
@@ -435,7 +435,9 @@ class Converters(object):
 
         meta = data.gw.meta
 
-        dataframes = list()
+        dataframes = []
+
+        df_columns = df.columns.tolist()
 
         with multi.Pool(processes=n_jobs) as pool:
 
@@ -444,14 +446,14 @@ class Converters(object):
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]
 
-                point_df = sample_feature(dfrow[id_column],
-                                          dfrow.geometry,
+                point_df = sample_feature(dfrow,
+                                          id_column,
+                                          df_columns,
                                           data.crs,
                                           data.res,
                                           all_touched,
                                           meta,
-                                          frac,
-                                          id_column)
+                                          frac)
 
                 if not point_df.empty:
                     dataframes.append(point_df)
