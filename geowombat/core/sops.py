@@ -4,6 +4,7 @@ import itertools
 from datetime import datetime
 from collections import defaultdict
 import logging
+import multiprocessing as multi
 
 from ..handler import add_handler
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
@@ -11,6 +12,7 @@ from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
 from .parallel import ParallelTask
+from .base import _client_dummy, _cluster_dummy
 
 import numpy as np
 from scipy.stats import mode as sci_mode
@@ -531,6 +533,12 @@ class SpatialOperations(_PropertyMixin):
                 mask=None,
                 n_jobs=8,
                 verbose=0,
+                n_workers=1,
+                n_threads=-1,
+                use_client=False,
+                address=None,
+                total_memory=24,
+                processes=False,
                 **kwargs):
 
         """
@@ -550,6 +558,13 @@ class SpatialOperations(_PropertyMixin):
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
+            n_workers (Optional[int]): The number of process workers. Only applies when ``use_client`` = ``True``.
+            n_threads (Optional[int]): The number of thread workers. Only applies when ``use_client`` = ``True``.
+            use_client (Optional[bool]): Whether to use a ``dask`` client.
+            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
+            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
+            processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
+                Only applies when ``use_client`` = ``True``.
             kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
 
         Returns:
@@ -558,9 +573,43 @@ class SpatialOperations(_PropertyMixin):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     df = gw.extract(ds, 'poly.gpkg')
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.extract(src, 'poly.gpkg')
+            >>>
+            >>> # On a cluster
+            >>> # Use a local cluster
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.extract(src, 'poly.gpkg', use_client=True)
+            >>>
+            >>> # Specify the client address with a local cluster
+            >>> with LocalCluster(n_workers=1,
+            >>>                   threads_per_worker=8,
+            >>>                   scheduler_port=0,
+            >>>                   processes=False,
+            >>>                   memory_limit='4GB') as cluster:
+            >>>
+            >>>     with gw.open('image.tif') as src:
+            >>>         df = gw.extract(src, 'poly.gpkg', n_threads=16, use_client=True, address=cluster)
         """
+
+        mem_per_core = int(total_memory / n_workers)
+
+        if n_threads == -1:
+            n_threads = multi.cpu_count()
+
+        if use_client:
+
+            if address:
+                cluster_object = _cluster_dummy
+            else:
+                cluster_object = LocalCluster
+
+            client_object = Client
+
+        else:
+
+            cluster_object = _cluster_dummy
+            client_object = _client_dummy
 
         sensor = self.check_sensor(data, return_error=False)
         band_names = self.check_sensor_band_names(data, sensor, band_names)
@@ -617,7 +666,21 @@ class SpatialOperations(_PropertyMixin):
 
         # Get the raster values for each point
         # TODO: allow neighbor indexing
-        res = data.data.vindex[vidx].compute(**kwargs)
+        if use_client:
+
+            with cluster_object(n_workers=n_workers,
+                                threads_per_worker=n_threads,
+                                scheduler_port=0,
+                                processes=processes,
+                                memory_limit=f'{mem_per_core}GB') as cluster:
+
+                cluster_address = address if address else cluster
+
+                with client_object(address=cluster_address) as client:
+                    res = client.gather(client.compute(data.data.vindex[vidx]))
+
+        else:
+            res = data.data.vindex[vidx].compute(**kwargs)
 
         if len(res.shape) == 1:
             df[band_names[0]] = res.flatten()
