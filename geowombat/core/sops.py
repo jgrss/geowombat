@@ -22,6 +22,7 @@ import geopandas as gpd
 import xarray as xr
 import dask
 import dask.array as da
+from dask.distributed import Client, LocalCluster
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
@@ -579,7 +580,7 @@ class SpatialOperations(_PropertyMixin):
             >>> # On a cluster
             >>> # Use a local cluster
             >>> with gw.open('image.tif') as src:
-            >>>     df = gw.extract(src, 'poly.gpkg', use_client=True)
+            >>>     df = gw.extract(src, 'poly.gpkg', use_client=True, n_threads=16)
             >>>
             >>> # Specify the client address with a local cluster
             >>> with LocalCluster(n_workers=1,
@@ -589,7 +590,7 @@ class SpatialOperations(_PropertyMixin):
             >>>                   memory_limit='4GB') as cluster:
             >>>
             >>>     with gw.open('image.tif') as src:
-            >>>         df = gw.extract(src, 'poly.gpkg', n_threads=16, use_client=True, address=cluster)
+            >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
         """
 
         mem_per_core = int(total_memory / n_workers)
