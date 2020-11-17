@@ -36,6 +36,25 @@ def lazy_wombat(func):
     return func
 
 
+def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
+
+    """
+    Estimates the size of an array in-memory
+
+    Args:
+        ntime (int)
+        nbands (int)
+        nrows (int)
+        ncols (int)
+        dtype (str)
+
+    Returns:
+        ``int`` in MB
+    """
+
+    return np.random.random((ntime, nbands, nrows, ncols)).astype(dtype).nbytes * 1e-6
+
+
 def parse_filename_dates(filenames):
 
     """
@@ -299,9 +318,10 @@ class Chunks(object):
                 if not isinstance(chunksize, int):
                     logger.warning('  The chunksize parameter should be a tuple, dictionary, or integer.')
 
-        # TODO: make compatible with multi-layer predictions (e.g., probabilities)
         if chunk_len != output_len:
-            self.check_chunksize(chunksize, output=output)
+            return self.check_chunksize(chunksize, output=output)
+        else:
+            return chunksize
 
     @staticmethod
     def check_chunksize(chunksize, output='3d'):
