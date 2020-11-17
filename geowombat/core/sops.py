@@ -628,7 +628,7 @@ class SpatialOperations(_PropertyMixin):
         else:
 
             if shape_len > 2:
-                bands_idx = slice(0, None)
+                bands_idx = list(range(0, data.gw.nbands))
 
         if isinstance(aoi, gpd.GeoDataFrame):
 
@@ -678,12 +678,18 @@ class SpatialOperations(_PropertyMixin):
                 cluster_address = address if address else cluster
 
                 with client_object(address=cluster_address) as client:
-                    res = client.gather(client.compute(data.data.vindex[vidx]))
+
+                    res = client.gather(client.compute(data.isel(band=bands_idx,
+                                                                 y=xr.DataArray(vidx[-2], dims='z'),
+                                                                 x=xr.DataArray(vidx[-1], dims='z')).data))
 
         else:
-            res = data.data.vindex[vidx].compute(**kwargs)
 
-        if len(res.shape) == 1:
+            res = data.isel(band=bands_idx,
+                            y=xr.DataArray(vidx[-2], dims='z'),
+                            x=xr.DataArray(vidx[-1], dims='z')).compute(**kwargs)
+
+        if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:
 
@@ -692,7 +698,7 @@ class SpatialOperations(_PropertyMixin):
 
         else:
 
-            # `res` is shaped [samples x time x dimensions]
+            # `res` is shaped [time x bands x samples]
             if time_names:
 
                 if isinstance(time_names[0], datetime):
@@ -703,11 +709,14 @@ class SpatialOperations(_PropertyMixin):
             else:
                 time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
 
-            band_names_concat = ['{}_{}'.format(a, b) for a, b in list(zip(time_names, band_names*res.shape[1]))]
+            band_names_concat = []
+
+            for t in time_names:
+                for b in band_names:
+                    band_names_concat.append(f'{t}_{b}')
 
             df = pd.concat((df,
-                            pd.DataFrame(data=res.reshape(res.shape[0],
-                                                          res.shape[1]*res.shape[2]),
+                            pd.DataFrame(data=res.reshape(res.shape[2], res.shape[0]*res.shape[1]).T,
                                          columns=band_names_concat)),
                            axis=1)
 
