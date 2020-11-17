@@ -718,7 +718,7 @@ class SpatialOperations(_PropertyMixin):
             ntime, nbands, nsamples = res.shape
 
             df = pd.concat((df,
-                            pd.DataFrame(data=res.T.squeeze() if nbands == 1 else res.reshape(nsamples, ntime*nbands).T,
+                            pd.DataFrame(data=res.T.squeeze() if nbands == 1 else res.reshape(ntime*nbands, nsamples).T,
                                          columns=band_names_concat)),
                            axis=1)
 
