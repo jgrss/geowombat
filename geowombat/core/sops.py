@@ -531,6 +531,7 @@ class SpatialOperations(_PropertyMixin):
                 frac=1.0,
                 all_touched=False,
                 id_column='id',
+                time_format='%Y%m%d',
                 mask=None,
                 n_jobs=8,
                 verbose=0,
@@ -556,6 +557,7 @@ class SpatialOperations(_PropertyMixin):
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The id column name.
+            time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
@@ -687,27 +689,24 @@ class SpatialOperations(_PropertyMixin):
 
             res = data.isel(band=bands_idx,
                             y=xr.DataArray(vidx[-2], dims='z'),
-                            x=xr.DataArray(vidx[-1], dims='z')).compute(**kwargs)
+                            x=xr.DataArray(vidx[-1], dims='z')).data.compute(**kwargs)
 
         if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:
 
-            # `res` is shaped [samples x dimensions]
-            df = pd.concat((df, pd.DataFrame(data=res, columns=band_names)), axis=1)
+            # `res` is shaped [dimensions x samples]
+            df = pd.concat((df, pd.DataFrame(data=res.T, columns=band_names)), axis=1)
 
         else:
 
-            # `res` is shaped [time x bands x samples]
             if time_names:
 
                 if isinstance(time_names[0], datetime):
-                    time_names = list(itertools.chain(*[[t.strftime('%Y-%m-%d')]*res.shape[2] for t in time_names]))
-                else:
-                    time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
+                    time_names = [t.strftime(time_format) for t in time_names]
 
             else:
-                time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
+                time_names = [f't{t}' for t in range(1, res.shape[0]+1)]
 
             band_names_concat = []
 
@@ -715,8 +714,11 @@ class SpatialOperations(_PropertyMixin):
                 for b in band_names:
                     band_names_concat.append(f'{t}_{b}')
 
+            # `res` is shaped [time x bands x samples]
+            ntime, nbands, nsamples = res.shape
+
             df = pd.concat((df,
-                            pd.DataFrame(data=res.reshape(res.shape[2], res.shape[0]*res.shape[1]).T,
+                            pd.DataFrame(data=res.T.squeeze() if nbands == 1 else res.reshape(nsamples, ntime*nbands).T,
                                          columns=band_names_concat)),
                            axis=1)
 
