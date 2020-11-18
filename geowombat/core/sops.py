@@ -663,7 +663,6 @@ class SpatialOperations(_PropertyMixin):
             if shape_len > 3:
 
                 # The first 3 dimensions are (bands, rows, columns)
-                # TODO: allow user-defined time slice?
                 for b in range(0, shape_len - 3):
                     vidx = (slice(0, None),) + vidx
 
