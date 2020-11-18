@@ -28,8 +28,10 @@ class ParallelTask(object):
         scheduler (Optional[str]): The parallel task scheduler to use. Choices are ['processes', 'threads', 'mpool'].
 
             mpool: process pool of workers using ``multiprocessing.Pool``
+            ray: process pool of workers using ``ray.remote``.
             processes: process pool of workers using ``concurrent.futures``
             threads: thread pool of workers using ``concurrent.futures``
+
         n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
         n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
@@ -37,17 +39,26 @@ class ParallelTask(object):
         >>> import geowombat as gw
         >>> from geowombat.core.parallel import ParallelTask
         >>>
-        >>> def user_func(*args):
+        >>> def user_func_threads(*args):
         >>>     data, window_id, num_workers = list(itertools.chain(*args))
-        >>>     results = data.data.sum().compute(scheduler='threads', num_workers=num_workers)
-        >>>     return results
+        >>>     return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
         >>>
         >>> # Process 8 windows in parallel using threads
         >>> # Process 4 dask chunks in parallel using threads
         >>> # 32 total workers are needed
         >>> with gw.open('image.tif') as src:
         >>>     pt = ParallelTask(src, n_workers=8)
-        >>>     res = pt.map(user_func, 4)
+        >>>     res = pt.map(user_func_threads, 4)
+        >>>
+        >>> import ray
+        >>>
+        >>> @ray.remote
+        >>> def user_func_ray(data, window_id, num_workers):
+        >>>     return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
+        >>>
+        >>> with gw.open('image.tif') as src:
+        >>>     pt = ParallelTask(src, n_workers=8)
+        >>>     res = ray.get(pt.map(user_func_ray, 4))
     """
 
     def __init__(self,
@@ -141,7 +152,7 @@ class ParallelTask(object):
 
                 if self.n_workers == 1:
 
-                    for result in tqdm(map(func, data_gen), total=n_windows_slice):
+                    for result in map(func, data_gen):
                         results.append(result)
 
                 else:
@@ -150,6 +161,11 @@ class ParallelTask(object):
 
                         for result in executor.imap(func, data_gen, **kwargs):
                             results.append(result)
+
+                    elif self.scheduler == 'ray':
+
+                        for args in data_gen:
+                            results.append(func.remote(*args))
 
                     else:
 
