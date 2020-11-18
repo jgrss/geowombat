@@ -531,6 +531,7 @@ class SpatialOperations(_PropertyMixin):
                 frac=1.0,
                 all_touched=False,
                 id_column='id',
+                time_format='%Y%m%d',
                 mask=None,
                 n_jobs=8,
                 verbose=0,
@@ -556,6 +557,7 @@ class SpatialOperations(_PropertyMixin):
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The id column name.
+            time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
@@ -628,7 +630,7 @@ class SpatialOperations(_PropertyMixin):
         else:
 
             if shape_len > 2:
-                bands_idx = slice(0, None)
+                bands_idx = list(range(0, data.gw.nbands))
 
         if isinstance(aoi, gpd.GeoDataFrame):
 
@@ -678,36 +680,45 @@ class SpatialOperations(_PropertyMixin):
                 cluster_address = address if address else cluster
 
                 with client_object(address=cluster_address) as client:
-                    res = client.gather(client.compute(data.data.vindex[vidx]))
+
+                    res = client.gather(client.compute(data.isel(band=bands_idx,
+                                                                 y=xr.DataArray(vidx[-2], dims='z'),
+                                                                 x=xr.DataArray(vidx[-1], dims='z')).data))
 
         else:
-            res = data.data.vindex[vidx].compute(**kwargs)
 
-        if len(res.shape) == 1:
+            res = data.isel(band=bands_idx,
+                            y=xr.DataArray(vidx[-2], dims='z'),
+                            x=xr.DataArray(vidx[-1], dims='z')).data.compute(**kwargs)
+
+        if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:
 
-            # `res` is shaped [samples x dimensions]
-            df = pd.concat((df, pd.DataFrame(data=res, columns=band_names)), axis=1)
+            # `res` is shaped [dimensions x samples]
+            df = pd.concat((df, pd.DataFrame(data=res.T, columns=band_names)), axis=1)
 
         else:
 
-            # `res` is shaped [samples x time x dimensions]
             if time_names:
 
                 if isinstance(time_names[0], datetime):
-                    time_names = list(itertools.chain(*[[t.strftime('%Y-%m-%d')]*res.shape[2] for t in time_names]))
-                else:
-                    time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
+                    time_names = [t.strftime(time_format) for t in time_names]
 
             else:
-                time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
+                time_names = [f't{t}' for t in range(1, res.shape[0]+1)]
 
-            band_names_concat = ['{}_{}'.format(a, b) for a, b in list(zip(time_names, band_names*res.shape[1]))]
+            band_names_concat = []
+
+            for t in time_names:
+                for b in band_names:
+                    band_names_concat.append(f'{t}_{b}')
+
+            # `res` is shaped [time x bands x samples]
+            ntime, nbands, nsamples = res.shape
 
             df = pd.concat((df,
-                            pd.DataFrame(data=res.reshape(res.shape[0],
-                                                          res.shape[1]*res.shape[2]),
+                            pd.DataFrame(data=res.T.squeeze() if nbands == 1 else res.reshape(ntime*nbands, nsamples).T,
                                          columns=band_names_concat)),
                            axis=1)
 
