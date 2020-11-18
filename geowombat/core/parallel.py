@@ -1,9 +1,10 @@
 import multiprocessing as multi
 import concurrent.futures
 
+from .base import _executor_dummy
 from .windows import get_window_offsets
 
-from tqdm import tqdm
+from tqdm import trange
 
 
 _EXEC_DICT = {'mpool': multi.Pool,
@@ -95,60 +96,64 @@ class ParallelTask(object):
 
         self.n_windows = len(self.windows)
 
-    def map(self, func, *args):
+    def map(self, func, *args, **kwargs):
 
         """
         Maps a function over a DataArray
 
         Args:
             func (func): The function to apply to the ``data`` chunks.
+            args (items): Function arguments.
+            kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
 
         Returns:
             ``list``: Results for each data chunk.
         """
 
+        executor_pool = _executor_dummy if self.n_workers == 1 else self.executor
+
         results = []
 
-        # Iterate over the windows in chunks
-        for wchunk in range(0, self.n_windows, self.n_chunks):
+        with executor_pool(self.n_workers) as executor:
 
-            if self.padding:
+            # Iterate over the windows in chunks
+            for wchunk in trange(0, self.n_windows, self.n_chunks):
 
-                window_slice = self.windows[wchunk:wchunk+self.n_chunks]
-                n_windows_slice = len(window_slice)
+                if self.padding:
 
-                # Read the padded window
-                if len(self.data.shape) == 2:
-                    data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
-                elif len(self.data.shape) == 3:
-                    data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                    window_slice = self.windows[wchunk:wchunk+self.n_chunks]
+                    n_windows_slice = len(window_slice)
+
+                    # Read the padded window
+                    if len(self.data.shape) == 2:
+                        data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                    elif len(self.data.shape) == 3:
+                        data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                    else:
+                        data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+
                 else:
-                    data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
 
-            else:
+                    window_slice = self.slices[wchunk:wchunk+self.n_chunks]
+                    n_windows_slice = len(window_slice)
 
-                window_slice = self.slices[wchunk:wchunk+self.n_chunks]
-                n_windows_slice = len(window_slice)
+                    data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
 
-                data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
+                if self.n_workers == 1:
 
-            if self.n_workers == 1:
+                    for result in tqdm(map(func, data_gen), total=n_windows_slice):
+                        results.append(result)
 
-                for result in tqdm(map(func, data_gen), total=n_windows_slice):
-                    results.append(result)
-
-            else:
-
-                with self.executor(self.n_workers) as executor:
+                else:
 
                     if self.scheduler == 'mpool':
 
-                        for result in tqdm(executor.imap_unordered(func, data_gen), total=n_windows_slice):
+                        for result in executor.imap(func, data_gen, **kwargs):
                             results.append(result)
 
                     else:
 
-                        for result in tqdm(executor.map(func, data_gen), total=n_windows_slice):
+                        for result in executor.map(func, data_gen):
                             results.append(result)
 
         return results
