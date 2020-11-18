@@ -541,6 +541,7 @@ class SpatialOperations(_PropertyMixin):
                 address=None,
                 total_memory=24,
                 processes=False,
+                pool_kwargs=None,
                 **kwargs):
 
         """
@@ -568,6 +569,7 @@ class SpatialOperations(_PropertyMixin):
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
                 Only applies when ``use_client`` = ``True``.
+            pool_kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
             kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
 
         Returns:
@@ -644,7 +646,8 @@ class SpatialOperations(_PropertyMixin):
                                        id_column=id_column,
                                        mask=mask,
                                        n_jobs=n_jobs,
-                                       verbose=verbose)
+                                       verbose=verbose,
+                                       **pool_kwargs)
 
         if verbose > 0:
             logger.info('  Extracting data ...')
