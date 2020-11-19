@@ -42,11 +42,11 @@ def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
     Estimates the size of an array in-memory
 
     Args:
-        ntime (int)
-        nbands (int)
-        nrows (int)
-        ncols (int)
-        dtype (str)
+        ntime (int): The number of time dimensions.
+        nbands (int): The number of band dimensions.
+        nrows (int): The number of row dimensions.
+        ncols (int): The number of column dimensions.
+        dtype (str): The data type.
 
     Returns:
         ``int`` in MB

@@ -8,6 +8,11 @@ logger = add_handler(logger)
 
 
 @contextmanager
+def _executor_dummy(processes=1):
+    yield None
+
+
+@contextmanager
 def _cluster_dummy(**kwargs):
     yield None
 
