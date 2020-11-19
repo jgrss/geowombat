@@ -8,6 +8,7 @@ from tqdm import trange
 
 
 _EXEC_DICT = {'mpool': multi.Pool,
+              'ray': None,
               'processes': concurrent.futures.ProcessPoolExecutor,
               'threads': concurrent.futures.ThreadPoolExecutor}
 
@@ -56,9 +57,13 @@ class ParallelTask(object):
         >>> def user_func_ray(data, window_id, num_workers):
         >>>     return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
         >>>
+        >>> ray.init(num_cpus=8)
+        >>>
         >>> with gw.open('image.tif') as src:
         >>>     pt = ParallelTask(src, n_workers=8)
         >>>     res = ray.get(pt.map(user_func_ray, 4))
+        >>>
+        >>> ray.shutdown()
     """
 
     def __init__(self,
@@ -121,7 +126,7 @@ class ParallelTask(object):
             ``list``: Results for each data chunk.
         """
 
-        executor_pool = _executor_dummy if self.n_workers == 1 else self.executor
+        executor_pool = _executor_dummy if (self.n_workers == 1) or (self.scheduler == 'ray') else self.executor
 
         results = []
 
@@ -164,8 +169,8 @@ class ParallelTask(object):
 
                     elif self.scheduler == 'ray':
 
-                        for args in data_gen:
-                            results.append(func.remote(*args))
+                        for dargs in data_gen:
+                            results.append(func.remote(*dargs))
 
                     else:
 
