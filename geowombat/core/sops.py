@@ -597,6 +597,9 @@ class SpatialOperations(_PropertyMixin):
             >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
         """
 
+        if not pool_kwargs:
+            pool_kwargs = {}
+
         mem_per_core = int(total_memory / n_workers)
 
         if n_threads == -1:
@@ -657,17 +660,33 @@ class SpatialOperations(_PropertyMixin):
                                             df.geometry.y.values,
                                             data.gw.transform)
 
-        vidx = (y.tolist(), x.tolist())
+        if y.max() >= data.gw.nrows:
+            idx_nonnull = np.where(y < data.gw.nrows)
+            y = y[idx_nonnull]
+            x = x[idx_nonnull]
 
-        if shape_len > 2:
+        if x.max() >= data.gw.ncols:
+            idx_nonnull = np.where(x < data.gw.ncols)
+            y = y[idx_nonnull]
+            x = x[idx_nonnull]
 
-            vidx = (bands_idx,) + vidx
+        # vidx = (y.tolist(), x.tolist())
+        #
+        # if shape_len > 2:
+        #
+        #     vidx = (bands_idx,) + vidx
+        #
+        #     if shape_len > 3:
+        #
+        #         # The first 3 dimensions are (bands, rows, columns)
+        #         for b in range(0, shape_len - 3):
+        #             vidx = (slice(0, None),) + vidx
 
-            if shape_len > 3:
+        # yidx = xr.DataArray(vidx[-2], dims='z')
+        # xidx = xr.DataArray(vidx[-1], dims='z')
 
-                # The first 3 dimensions are (bands, rows, columns)
-                for b in range(0, shape_len - 3):
-                    vidx = (slice(0, None),) + vidx
+        yidx = xr.DataArray(y, dims='z')
+        xidx = xr.DataArray(x, dims='z')
 
         # Get the raster values for each point
         # TODO: allow neighbor indexing
@@ -684,14 +703,14 @@ class SpatialOperations(_PropertyMixin):
                 with client_object(address=cluster_address) as client:
 
                     res = client.gather(client.compute(data.isel(band=bands_idx,
-                                                                 y=xr.DataArray(vidx[-2], dims='z'),
-                                                                 x=xr.DataArray(vidx[-1], dims='z')).data))
+                                                                 y=yidx,
+                                                                 x=xidx).data))
 
         else:
 
             res = data.isel(band=bands_idx,
-                            y=xr.DataArray(vidx[-2], dims='z'),
-                            x=xr.DataArray(vidx[-1], dims='z')).data.compute(**kwargs)
+                            y=yidx,
+                            x=xidx).data.compute(**kwargs)
 
         if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
