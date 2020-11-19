@@ -4,6 +4,7 @@ import concurrent.futures
 from .base import _executor_dummy
 from .windows import get_window_offsets
 
+import xarray as xr
 from tqdm import trange
 
 
@@ -88,10 +89,15 @@ class ParallelTask(object):
         >>>     with gw.open('image.tif') as src:
         >>>         pt = ParallelTask(src, scheduler='threads', n_workers=4, n_chunks=50)
         >>>         res = pt.map(user_func_threads, 2)
+        >>>
+        >>> for pt in ParallelTask(image_list, scheduler='threads', n_workers=4, n_chunks=50):
+        >>>     for image in image_list:
+        >>>         res = pt.map(user_func_threads, 2)
     """
 
     def __init__(self,
                  data,
+                 chunks=None,
                  row_chunks=None,
                  col_chunks=None,
                  padding=None,
@@ -99,13 +105,23 @@ class ParallelTask(object):
                  n_workers=1,
                  n_chunks=None):
 
-        self.data = data
+        self.chunks = 512 if not isinstance(chunks, int) else chunks
+
+        if isinstance(data, list):
+            self.data_list = data
+            self.data = xr.open_rasterio(self.data_list[0], chunks={'band': 1, 'y': self.chunks, 'x': self.chunks})
+        else:
+            self.data = data
+
+        self.row_chunks = row_chunks
+        self.col_chunks = col_chunks
         self.padding = padding
         self.n = None
         self.scheduler = scheduler
         self.executor = _EXEC_DICT[scheduler]
         self.n_workers = n_workers
         self.n_chunks = n_chunks
+        self._in_session = False
 
         self.windows = None
         self.slices = None
@@ -114,12 +130,37 @@ class ParallelTask(object):
         if not isinstance(self.n_chunks, int):
             self.n_chunks = self.n_workers * 50
 
-        self._setup(row_chunks, col_chunks)
+        if not isinstance(data, list):
+            self._setup()
 
-    def _setup(self, row_chunks, col_chunks):
+    def __iter__(self):
+        self.i_ = 0
+        return self
 
-        rchunksize = row_chunks if isinstance(row_chunks, int) else self.data.gw.row_chunks
-        cchunksize = col_chunks if isinstance(col_chunks, int) else self.data.gw.col_chunks
+    def __next__(self):
+
+        self.data.close()
+
+        if self.i_ >= len(self.data_list):
+            raise StopIteration
+
+        self.data = xr.open_rasterio(self.data_list[self.i_], chunks={'band': 1, 'y': self.chunks, 'x': self.chunks})
+        self._setup()
+        self.i_ += 1
+
+        return self
+
+    def __enter__(self):
+        self._in_session = True
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._in_session = False
+
+    def _setup(self):
+
+        rchunksize = self.row_chunks if isinstance(self.row_chunks, int) else self.data.gw.row_chunks
+        cchunksize = self.col_chunks if isinstance(self.col_chunks, int) else self.data.gw.col_chunks
 
         self.windows = get_window_offsets(self.data.gw.nrows,
                                           self.data.gw.ncols,
