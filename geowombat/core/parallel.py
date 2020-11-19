@@ -36,9 +36,13 @@ class ParallelTask(object):
         n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
         n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> from geowombat.core.parallel import ParallelTask
+        >>>
+        >>> ########################
+        >>> # Use concurrent threads
+        >>> ########################
         >>>
         >>> def user_func_threads(*args):
         >>>     data, window_id, num_workers = list(itertools.chain(*args))
@@ -48,22 +52,42 @@ class ParallelTask(object):
         >>> # Process 4 dask chunks in parallel using threads
         >>> # 32 total workers are needed
         >>> with gw.open('image.tif') as src:
-        >>>     pt = ParallelTask(src, n_workers=8)
+        >>>     pt = ParallelTask(src, scheduler='threads', n_workers=8)
         >>>     res = pt.map(user_func_threads, 4)
+        >>>
+        >>> #########
+        >>> # Use Ray
+        >>> #########
         >>>
         >>> import ray
         >>>
         >>> @ray.remote
-        >>> def user_func_ray(data, window_id, num_workers):
-        >>>     return data.data.sum().compute(scheduler='threads', num_workers=num_workers)
+        >>> def user_func_ray(data_block_id, data_slice, window_id, num_workers):
+        >>>     return data_block_id[data_slice].data.sum().compute(scheduler='threads', num_workers=num_workers)
         >>>
         >>> ray.init(num_cpus=8)
         >>>
-        >>> with gw.open('image.tif') as src:
-        >>>     pt = ParallelTask(src, n_workers=8)
+        >>> with gw.open('image.tif', chunks=512) as src:
+        >>>     pt = ParallelTask(src, row_chunks=1024, col_chunks=1024, scheduler='ray', n_workers=8)
         >>>     res = ray.get(pt.map(user_func_ray, 4))
         >>>
         >>> ray.shutdown()
+        >>>
+        >>> #####################################
+        >>> # Use with a dask.distributed cluster
+        >>> #####################################
+        >>>
+        >>> from dask.distributed import LocalCluster
+        >>>
+        >>> with LocalCluster(n_workers=4,
+        >>>                   threads_per_worker=2,
+        >>>                   scheduler_port=0,
+        >>>                   processes=False,
+        >>>                   memory_limit='4GB') as cluster:
+        >>>
+        >>>     with gw.open('image.tif') as src:
+        >>>         pt = ParallelTask(src, scheduler='threads', n_workers=4, n_chunks=50)
+        >>>         res = pt.map(user_func_threads, 2)
     """
 
     def __init__(self,
@@ -119,6 +143,39 @@ class ParallelTask(object):
 
         Args:
             func (func): The function to apply to the ``data`` chunks.
+
+                When using any scheduler other than 'ray' (i.e., 'mpool', 'threads', 'processes'), the function
+                should always be defined with ``*args``. With these schedulers, the function will always return
+                the ``DataArray`` window and window id as the first two arguments. If no user arguments are
+                passed to ``map`` , the function will look like:
+
+                    def my_func(*args):
+                        data, window_id = list(itertools.chain(*args))
+                        # do something
+                        return results
+
+                If user arguments are passed, e.g., ``map(my_func, arg1, arg2)``, the function will look like:
+
+                    def my_func(*args):
+                        data, window_id, arg1, arg2 = list(itertools.chain(*args))
+                        # do something
+                        return results
+
+                When ``scheduler`` = 'ray', the user function requires an additional slice argument that looks like:
+
+                    @ray.remote
+                    def my_ray_func(data_block_id, data_slice, window_id):
+                        # do something
+                        return results
+
+                Note the addition of the ``@ray.remote`` decorator, as well as the explicit arguments in the function
+                call. Extra user arguments would look like:
+
+                    @ray.remote
+                    def my_ray_func(data_block_id, data_slice, window_id, arg1, arg2):
+                        # do something
+                        return results
+
             args (items): Function arguments.
             kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
 
@@ -127,6 +184,14 @@ class ParallelTask(object):
         """
 
         executor_pool = _executor_dummy if (self.n_workers == 1) or (self.scheduler == 'ray') else self.executor
+
+        if self.scheduler == 'ray':
+
+            if self.padding:
+                raise SyntaxError('Ray cannot be used with array padding.')
+
+            import ray
+            data_id = ray.put(self.data)
 
         results = []
 
@@ -150,10 +215,12 @@ class ParallelTask(object):
 
                 else:
 
-                    window_slice = self.slices[wchunk:wchunk+self.n_chunks]
-                    n_windows_slice = len(window_slice)
+                    window_slice = self.slices[wchunk:wchunk + self.n_chunks]
 
-                    data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
+                    if self.scheduler == 'ray':
+                        data_gen = ((data_id, slice_, widx + wchunk, *args) for widx, slice_ in enumerate(window_slice))
+                    else:
+                        data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
 
                 if self.n_workers == 1:
 
