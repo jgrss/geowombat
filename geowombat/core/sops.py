@@ -710,7 +710,7 @@ class SpatialOperations(_PropertyMixin):
 
             res = data.isel(band=bands_idx,
                             y=yidx,
-                            x=xidx).data.compute(**kwargs)
+                            x=xidx).gw.compute(**kwargs)
 
         if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
