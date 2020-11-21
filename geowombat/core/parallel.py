@@ -92,13 +92,12 @@ class ParallelTask(object):
         >>>         res = pt.map(user_func_threads, 2)
         >>>
         >>> # Map over multiple rasters
-        >>> for pt in ParallelTask(['image1.tif', 'image2.tif'], scheduler='threads', n_workers=4, n_chunks=50):
-        >>>     for image in image_list:
-        >>>         res = pt.map(user_func_threads, 2)
+        >>> for pt in ParallelTask(['image1.tif', 'image2.tif'], scheduler='threads', n_workers=4, n_chunks=500):
+        >>>     res = pt.map(user_func_threads, 2)
     """
 
     def __init__(self,
-                 data,
+                 data=None,
                  chunks=None,
                  row_chunks=None,
                  col_chunks=None,
