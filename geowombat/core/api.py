@@ -359,7 +359,8 @@ class open(object):
         self.__filenames = []
 
         if 'chunks' in kwargs:
-            ch.check_chunktype(kwargs['chunks'], output='3d')
+            if kwargs['chunks']:
+                ch.check_chunktype(kwargs['chunks'], output='3d')
 
         if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
 
