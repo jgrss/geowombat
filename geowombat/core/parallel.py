@@ -5,7 +5,7 @@ from .base import _executor_dummy
 from .windows import get_window_offsets
 
 import xarray as xr
-from tqdm import trange
+from tqdm import trange, tqdm
 
 
 _EXEC_DICT = {'mpool': multi.Pool,
@@ -34,6 +34,7 @@ class ParallelTask(object):
             processes: process pool of workers using ``concurrent.futures``
             threads: thread pool of workers using ``concurrent.futures``
 
+        get_ray (Optional[bool]): Whether to get results from ``ray`` futures.
         n_workers (Optional[int]): The number of parallel workers for ``scheduler``.
         n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
 
@@ -90,7 +91,8 @@ class ParallelTask(object):
         >>>         pt = ParallelTask(src, scheduler='threads', n_workers=4, n_chunks=50)
         >>>         res = pt.map(user_func_threads, 2)
         >>>
-        >>> for pt in ParallelTask(image_list, scheduler='threads', n_workers=4, n_chunks=50):
+        >>> # Map over multiple rasters
+        >>> for pt in ParallelTask(['image1.tif', 'image2.tif'], scheduler='threads', n_workers=4, n_chunks=50):
         >>>     for image in image_list:
         >>>         res = pt.map(user_func_threads, 2)
     """
@@ -102,6 +104,7 @@ class ParallelTask(object):
                  col_chunks=None,
                  padding=None,
                  scheduler='threads',
+                 get_ray=False,
                  n_workers=1,
                  n_chunks=None):
 
@@ -118,6 +121,7 @@ class ParallelTask(object):
         self.padding = padding
         self.n = None
         self.scheduler = scheduler
+        self.get_ray = get_ray
         self.executor = _EXEC_DICT[scheduler]
         self.n_workers = n_workers
         self.n_chunks = n_chunks
@@ -224,7 +228,12 @@ class ParallelTask(object):
             ``list``: Results for each data chunk.
         """
 
-        executor_pool = _executor_dummy if (self.n_workers == 1) or (self.scheduler == 'ray') else self.executor
+        if (self.n_workers == 1) or (self.scheduler == 'ray'):
+            executor_pool = _executor_dummy
+            ranger = range
+        else:
+            executor_pool = self.executor
+            ranger = trange
 
         if self.scheduler == 'ray':
 
@@ -239,12 +248,11 @@ class ParallelTask(object):
         with executor_pool(self.n_workers) as executor:
 
             # Iterate over the windows in chunks
-            for wchunk in trange(0, self.n_windows, self.n_chunks):
+            for wchunk in ranger(0, self.n_windows, self.n_chunks):
 
                 if self.padding:
 
                     window_slice = self.windows[wchunk:wchunk+self.n_chunks]
-                    n_windows_slice = len(window_slice)
 
                     # Read the padded window
                     if len(self.data.shape) == 2:
@@ -277,12 +285,34 @@ class ParallelTask(object):
 
                     elif self.scheduler == 'ray':
 
-                        for dargs in data_gen:
-                            results.append(func.remote(*dargs))
+                        if isinstance(func, ray.actor.ActorHandle):
+                            futures = [func.exec_task.remote(*dargs) for dargs in data_gen]
+                        else:
+                            futures = [func.remote(*dargs) for dargs in data_gen]
+
+                        if self.get_ray:
+
+                            with tqdm(total=len(futures)) as pbar:
+
+                                results_ = []
+                                while len(futures):
+
+                                    done_id, futures = ray.wait(futures)
+                                    results_.append(ray.get(done_id[0]))
+
+                                    pbar.update(1)
+
+                            results += results_
+
+                        else:
+                            results += futures
 
                     else:
 
                         for result in executor.map(func, data_gen):
                             results.append(result)
+
+        if self.scheduler == 'ray':
+            del data_id
 
         return results
