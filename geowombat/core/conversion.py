@@ -317,7 +317,8 @@ class Converters(object):
                        id_column='id',
                        mask=None,
                        n_jobs=8,
-                       verbose=0):
+                       verbose=0,
+                       **kwargs):
 
         if isinstance(aoi, gpd.GeoDataFrame):
             df = aoi
@@ -384,14 +385,6 @@ class Converters(object):
                 logger.exception('  No geometry intersects the user-provided mask.')
                 raise LookupError
 
-        # Subset the DataArray
-        # minx, miny, maxx, maxy = df.total_bounds
-        #
-        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
-        #                                  top=float(maxy)+self._obj.res[0],
-        #                                  right=float(maxx)+self._obj.res[0],
-        #                                  bottom=float(miny)-self._obj.res[0])
-
         # Convert polygons to points
         if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
@@ -403,7 +396,8 @@ class Converters(object):
                                          frac=frac,
                                          all_touched=all_touched,
                                          id_column=id_column,
-                                         n_jobs=n_jobs)
+                                         n_jobs=n_jobs,
+                                         **kwargs)
 
         # Ensure a unique index
         df.index = list(range(0, df.shape[0]))
@@ -416,7 +410,8 @@ class Converters(object):
                            frac=1.0,
                            all_touched=False,
                            id_column='id',
-                           n_jobs=1):
+                           n_jobs=1,
+                           **kwargs):
 
         """
         Converts polygons to points
@@ -428,6 +423,7 @@ class Converters(object):
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The 'id' column.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
+            kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -441,7 +437,7 @@ class Converters(object):
 
         with multi.Pool(processes=n_jobs) as pool:
 
-            for i in tqdm(pool.imap(_iter_func, range(0, df.shape[0])), total=df.shape[0]):
+            for i in pool.imap(_iter_func, range(0, df.shape[0]), **kwargs):
 
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]

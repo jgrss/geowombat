@@ -261,6 +261,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def data_are_separate(self, dim):
         self._stack_dim = dim
 
+    def compute(self, **kwargs):
+
+        if not self._obj.chunks:
+            return self._obj.data
+        else:
+            return self._obj.data.compute(**kwargs)
+
     def match_data(self, data, band_names):
 
         """

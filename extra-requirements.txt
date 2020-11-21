@@ -23,6 +23,7 @@ pygeos:                 perf
 opencv-python:          perf
 h5netcdf:               perf
 netCDF4:                perf
+ray:                    perf
 dateparser:             time
 ipython:                view
 bokeh:                  view

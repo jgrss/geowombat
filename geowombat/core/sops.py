@@ -4,6 +4,7 @@ import itertools
 from datetime import datetime
 from collections import defaultdict
 import logging
+import multiprocessing as multi
 
 from ..handler import add_handler
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
@@ -11,6 +12,7 @@ from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
 from .parallel import ParallelTask
+from .base import _client_dummy, _cluster_dummy
 
 import numpy as np
 from scipy.stats import mode as sci_mode
@@ -20,6 +22,7 @@ import geopandas as gpd
 import xarray as xr
 import dask
 import dask.array as da
+from dask.distributed import Client, LocalCluster
 from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
@@ -528,9 +531,17 @@ class SpatialOperations(_PropertyMixin):
                 frac=1.0,
                 all_touched=False,
                 id_column='id',
+                time_format='%Y%m%d',
                 mask=None,
                 n_jobs=8,
                 verbose=0,
+                n_workers=1,
+                n_threads=-1,
+                use_client=False,
+                address=None,
+                total_memory=24,
+                processes=False,
+                pool_kwargs=None,
                 **kwargs):
 
         """
@@ -547,9 +558,18 @@ class SpatialOperations(_PropertyMixin):
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The id column name.
+            time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
+            n_workers (Optional[int]): The number of process workers. Only applies when ``use_client`` = ``True``.
+            n_threads (Optional[int]): The number of thread workers. Only applies when ``use_client`` = ``True``.
+            use_client (Optional[bool]): Whether to use a ``dask`` client.
+            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
+            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
+            processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
+                Only applies when ``use_client`` = ``True``.
+            pool_kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
             kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
 
         Returns:
@@ -558,9 +578,46 @@ class SpatialOperations(_PropertyMixin):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     df = gw.extract(ds, 'poly.gpkg')
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.extract(src, 'poly.gpkg')
+            >>>
+            >>> # On a cluster
+            >>> # Use a local cluster
+            >>> with gw.open('image.tif') as src:
+            >>>     df = gw.extract(src, 'poly.gpkg', use_client=True, n_threads=16)
+            >>>
+            >>> # Specify the client address with a local cluster
+            >>> with LocalCluster(n_workers=1,
+            >>>                   threads_per_worker=8,
+            >>>                   scheduler_port=0,
+            >>>                   processes=False,
+            >>>                   memory_limit='4GB') as cluster:
+            >>>
+            >>>     with gw.open('image.tif') as src:
+            >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
         """
+
+        if not pool_kwargs:
+            pool_kwargs = {}
+
+        mem_per_core = int(total_memory / n_workers)
+
+        if n_threads == -1:
+            n_threads = multi.cpu_count()
+
+        if use_client:
+
+            if address:
+                cluster_object = _cluster_dummy
+            else:
+                cluster_object = LocalCluster
+
+            client_object = Client
+
+        else:
+
+            cluster_object = _cluster_dummy
+            client_object = _client_dummy
 
         sensor = self.check_sensor(data, return_error=False)
         band_names = self.check_sensor_band_names(data, sensor, band_names)
@@ -578,7 +635,7 @@ class SpatialOperations(_PropertyMixin):
         else:
 
             if shape_len > 2:
-                bands_idx = slice(0, None)
+                bands_idx = list(range(0, data.gw.nbands))
 
         if isinstance(aoi, gpd.GeoDataFrame):
 
@@ -592,7 +649,8 @@ class SpatialOperations(_PropertyMixin):
                                        id_column=id_column,
                                        mask=mask,
                                        n_jobs=n_jobs,
-                                       verbose=verbose)
+                                       verbose=verbose,
+                                       **pool_kwargs)
 
         if verbose > 0:
             logger.info('  Extracting data ...')
@@ -602,48 +660,86 @@ class SpatialOperations(_PropertyMixin):
                                             df.geometry.y.values,
                                             data.gw.transform)
 
-        vidx = (y.tolist(), x.tolist())
+        if y.max() >= data.gw.nrows:
+            idx_nonnull = np.where(y < data.gw.nrows)
+            y = y[idx_nonnull]
+            x = x[idx_nonnull]
 
-        if shape_len > 2:
+        if x.max() >= data.gw.ncols:
+            idx_nonnull = np.where(x < data.gw.ncols)
+            y = y[idx_nonnull]
+            x = x[idx_nonnull]
 
-            vidx = (bands_idx,) + vidx
+        # vidx = (y.tolist(), x.tolist())
+        #
+        # if shape_len > 2:
+        #
+        #     vidx = (bands_idx,) + vidx
+        #
+        #     if shape_len > 3:
+        #
+        #         # The first 3 dimensions are (bands, rows, columns)
+        #         for b in range(0, shape_len - 3):
+        #             vidx = (slice(0, None),) + vidx
 
-            if shape_len > 3:
+        # yidx = xr.DataArray(vidx[-2], dims='z')
+        # xidx = xr.DataArray(vidx[-1], dims='z')
 
-                # The first 3 dimensions are (bands, rows, columns)
-                # TODO: allow user-defined time slice?
-                for b in range(0, shape_len - 3):
-                    vidx = (slice(0, None),) + vidx
+        yidx = xr.DataArray(y, dims='z')
+        xidx = xr.DataArray(x, dims='z')
 
         # Get the raster values for each point
         # TODO: allow neighbor indexing
-        res = data.data.vindex[vidx].compute(**kwargs)
+        if use_client:
 
-        if len(res.shape) == 1:
-            df[band_names[0]] = res.flatten()
-        elif len(res.shape) == 2:
+            with cluster_object(n_workers=n_workers,
+                                threads_per_worker=n_threads,
+                                scheduler_port=0,
+                                processes=processes,
+                                memory_limit=f'{mem_per_core}GB') as cluster:
 
-            # `res` is shaped [samples x dimensions]
-            df = pd.concat((df, pd.DataFrame(data=res, columns=band_names)), axis=1)
+                cluster_address = address if address else cluster
+
+                with client_object(address=cluster_address) as client:
+
+                    res = client.gather(client.compute(data.isel(band=bands_idx,
+                                                                 y=yidx,
+                                                                 x=xidx).data))
 
         else:
 
-            # `res` is shaped [samples x time x dimensions]
+            res = data.isel(band=bands_idx,
+                            y=yidx,
+                            x=xidx).gw.compute(**kwargs)
+
+        if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
+            df[band_names[0]] = res.flatten()
+        elif len(res.shape) == 2:
+
+            # `res` is shaped [dimensions x samples]
+            df = pd.concat((df, pd.DataFrame(data=res.T, columns=band_names)), axis=1)
+
+        else:
+
             if time_names:
 
                 if isinstance(time_names[0], datetime):
-                    time_names = list(itertools.chain(*[[t.strftime('%Y-%m-%d')]*res.shape[2] for t in time_names]))
-                else:
-                    time_names = list(itertools.chain(*[[t]*res.shape[2] for t in time_names]))
+                    time_names = [t.strftime(time_format) for t in time_names]
 
             else:
-                time_names = list(itertools.chain(*[['t{:d}'.format(t)]*res.shape[2] for t in range(1, res.shape[1]+1)]))
+                time_names = [f't{t}' for t in range(1, res.shape[0]+1)]
 
-            band_names_concat = ['{}_{}'.format(a, b) for a, b in list(zip(time_names, band_names*res.shape[1]))]
+            band_names_concat = []
+
+            for t in time_names:
+                for b in band_names:
+                    band_names_concat.append(f'{t}_{b}')
+
+            # `res` is shaped [time x bands x samples]
+            ntime, nbands, nsamples = res.shape
 
             df = pd.concat((df,
-                            pd.DataFrame(data=res.reshape(res.shape[0],
-                                                          res.shape[1]*res.shape[2]),
+                            pd.DataFrame(data=res.T.squeeze() if nbands == 1 else res.reshape(ntime*nbands, nsamples).T,
                                          columns=band_names_concat)),
                            axis=1)
 
