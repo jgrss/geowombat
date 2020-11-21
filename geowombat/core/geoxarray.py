@@ -263,7 +263,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def compute(self, **kwargs):
 
-        if not None:
+        if not self._obj.chunks:
             return self._obj.values
         else:
             return self._obj.data.compute(**kwargs)
