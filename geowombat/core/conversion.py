@@ -6,6 +6,7 @@ from ..config import config
 from ..handler import add_handler
 from ..backends.rasterio_ import check_crs
 from ..backends.xarray_ import _check_config_globals
+from ..backends import transform_crs
 from .util import sample_feature
 from .util import lazy_wombat
 
@@ -20,7 +21,6 @@ from rasterio.crs import CRS
 from shapely.geometry import Polygon, MultiPolygon
 from affine import Affine
 import pyproj
-from tqdm import tqdm
 
 
 logger = logging.getLogger(__name__)
@@ -718,8 +718,16 @@ class Converters(object):
         cellxh = abs(cellx) / 2.0
         cellyh = abs(celly) / 2.0
 
-        xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
-        ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
+        if isinstance(data, xr.DataArray):
+
+            # Ensure the coordinates align
+            xcoords = data.x.values
+            ycoords = data.y.values
+
+        else:
+
+            xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
+            ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
 
         if xcoords.shape[0] > dst_width:
             xcoords = xcoords[:dst_width]
