@@ -651,7 +651,7 @@ class Converters(object):
 
                 left, bottom, right, top = ref_kwargs['bounds']
 
-                if 'res' in ref_kwargs:
+                if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
 
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
@@ -671,7 +671,7 @@ class Converters(object):
 
                 left, bottom, right, top = ref_kwargs['bounds']
 
-                if ref_kwargs['res']:
+                if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
 
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
