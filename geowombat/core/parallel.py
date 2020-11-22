@@ -220,11 +220,71 @@ class ParallelTask(object):
                         # do something
                         return results
 
+                Other ``ray`` classes can also be used in place of a function.
+
             args (items): Function arguments.
             kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
 
         Returns:
             ``list``: Results for each data chunk.
+
+        Examples:
+            >>> import geowombat as gw
+            >>> from geowombat.core.parallel import ParallelTask
+            >>> from geowombat.data import l8_224078_20200518_points, l8_224078_20200518
+            >>> import geopandas as gpd
+            >>> import rasterio as rio
+            >>> import ray
+            >>> from ray.util import ActorPool
+            >>>
+            >>> @ray.remote
+            >>> class Actor(object):
+            >>>
+            >>>     def __init__(self, aoi_id=None, id_column=None, band_names=None):
+            >>>
+            >>>         self.aoi_id = aoi_id
+            >>>         self.id_column = id_column
+            >>>         self.band_names = band_names
+            >>>
+            >>>     # While the names can differ, these three arguments are required.
+            >>>     # For ``ParallelTask``, the callable function within an ``Actor`` must be named exec_task.
+            >>>     def exec_task(self, data_block_id, data_slice, window_id):
+            >>>
+            >>>         data_block = data_block_id[data_slice]
+            >>>         left, bottom, right, top = data_block.gw.bounds
+            >>>         aoi_sub = self.aoi_id.cx[left:right, bottom:top]
+            >>>
+            >>>         if aoi_sub.empty:
+            >>>             return aoi_sub
+            >>>
+            >>>         # Return a GeoDataFrame for each actor
+            >>>         return gw.extract(data_block,
+            >>>                           aoi_sub,
+            >>>                           id_column=self.id_column,
+            >>>                           band_names=self.band_names)
+            >>>
+            >>> ray.init(num_cpus=8)
+            >>>
+            >>> band_names = [1, 2, 3]
+            >>> df_id = ray.put(gpd.read_file(l8_224078_20200518_points))
+            >>>
+            >>> with rio.Env(GDAL_CACHEMAX=256*1e6) as env:
+            >>>
+            >>>     # Since we are iterating over the image block by block, we do not need to load
+            >>>     # a lazy dask array (i.e., chunked).
+            >>>     with gw.open(l8_224078_20200518, band_names=band_names, chunks=None) as src:
+            >>>
+            >>>         # Setup the pool of actors, one for each resource available to ``ray``.
+            >>>         actor_pool = ActorPool([Actor.remote(aoi_id=df_id, id_column='id', band_names=band_names)
+            >>>                                 for n in range(0, int(ray.cluster_resources()['CPU']))])
+            >>>
+            >>>         # Setup the task object
+            >>>         pt = ParallelTask(src, row_chunks=4096, col_chunks=4096, scheduler='ray', n_chunks=1000)
+            >>>         results = pt.map(actor_pool)
+            >>>
+            >>> del df_id, actor_pool
+            >>>
+            >>> ray.shutdown()
         """
 
         if (self.n_workers == 1) or (self.scheduler == 'ray'):
@@ -270,7 +330,7 @@ class ParallelTask(object):
                     else:
                         data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
 
-                if self.n_workers == 1:
+                if (self.n_workers == 1) and (self.scheduler != 'ray'):
 
                     for result in map(func, data_gen):
                         results.append(result)
@@ -284,27 +344,34 @@ class ParallelTask(object):
 
                     elif self.scheduler == 'ray':
 
-                        if isinstance(func, ray.actor.ActorHandle):
-                            futures = [func.exec_task.remote(*dargs) for dargs in data_gen]
-                        else:
-                            futures = [func.remote(*dargs) for dargs in data_gen]
+                        if isinstance(func, ray.util.actor_pool.ActorPool):
 
-                        if self.get_ray:
-
-                            with tqdm(total=len(futures)) as pbar:
-
-                                results_ = []
-                                while len(futures):
-
-                                    done_id, futures = ray.wait(futures)
-                                    results_.append(ray.get(done_id[0]))
-
-                                    pbar.update(1)
-
-                            results += results_
+                            for result in tqdm(func.map(lambda a, v: a.exec_task.remote(*v), data_gen), total=len(window_slice)):
+                                results.append(result)
 
                         else:
-                            results += futures
+
+                            if isinstance(func, ray.actor.ActorHandle):
+                                futures = [func.exec_task.remote(*dargs) for dargs in data_gen]
+                            else:
+                                futures = [func.remote(*dargs) for dargs in data_gen]
+
+                            if self.get_ray:
+
+                                with tqdm(total=len(futures)) as pbar:
+
+                                    results_ = []
+                                    while len(futures):
+
+                                        done_id, futures = ray.wait(futures)
+                                        results_.append(ray.get(done_id[0]))
+
+                                        pbar.update(1)
+
+                                results += results_
+
+                            else:
+                                results += futures
 
                     else:
 
