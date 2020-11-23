@@ -4,6 +4,7 @@ import concurrent.futures
 from .base import _executor_dummy
 from .windows import get_window_offsets
 
+import rasterio as rio
 import xarray as xr
 from tqdm import trange, tqdm
 
@@ -111,7 +112,7 @@ class ParallelTask(object):
 
         if isinstance(data, list):
             self.data_list = data
-            self.data = xr.open_rasterio(self.data_list[0], chunks={'band': 1, 'y': self.chunks, 'x': self.chunks})
+            self.data = xr.open_rasterio(self.data_list[0])
         else:
             self.data = data
 
@@ -147,7 +148,7 @@ class ParallelTask(object):
         if self.i_ >= len(self.data_list):
             raise StopIteration
 
-        self.data = xr.open_rasterio(self.data_list[self.i_], chunks={'band': 1, 'y': self.chunks, 'x': self.chunks})
+        self.data = xr.open_rasterio(self.data_list[self.i_])
         self._setup()
         self.i_ += 1
 
@@ -162,11 +163,14 @@ class ParallelTask(object):
 
     def _setup(self):
 
-        rchunksize = self.row_chunks if isinstance(self.row_chunks, int) else self.data.gw.row_chunks
-        cchunksize = self.col_chunks if isinstance(self.col_chunks, int) else self.data.gw.col_chunks
+        default_rchunks = self.data.block_window(1, 0, 0).height if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.row_chunks
+        default_cchunks = self.data.block_window(1, 0, 0).width if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.col_chunks
 
-        self.windows = get_window_offsets(self.data.gw.nrows,
-                                          self.data.gw.ncols,
+        rchunksize = self.row_chunks if isinstance(self.row_chunks, int) else default_rchunks
+        cchunksize = self.col_chunks if isinstance(self.col_chunks, int) else default_cchunks
+
+        self.windows = get_window_offsets(self.data.height if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.nrows,
+                                          self.data.width if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.ncols,
                                           rchunksize,
                                           cchunksize,
                                           return_as='list',
@@ -300,7 +304,11 @@ class ParallelTask(object):
                 raise SyntaxError('Ray cannot be used with array padding.')
 
             import ray
-            data_id = ray.put(self.data)
+
+            if isinstance(self.data, rio.io.DatasetReader):
+                data_id = self.data.name
+            else:
+                data_id = ray.put(self.data)
 
         results = []
 
