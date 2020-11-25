@@ -631,7 +631,8 @@ class Converters(object):
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name), 
+                                                          band_names = band_name)
 
             # Subset to the intersecting features
             dataframe = dataframe.iloc[int_idx]
