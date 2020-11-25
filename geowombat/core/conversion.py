@@ -655,7 +655,7 @@ class Converters(object):
 
                 left, bottom, right, top = ref_kwargs['bounds']
 
-                if 'res' in ref_kwargs:
+                if ref_kwargs['res']:
 
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
@@ -663,7 +663,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])) )
                         raise TypeError
 
             else:
