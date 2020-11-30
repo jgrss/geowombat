@@ -4,7 +4,6 @@ import shutil
 import itertools
 import ctypes
 import concurrent.futures
-from contextlib import contextmanager
 import multiprocessing as multi
 import threading
 import random
@@ -14,6 +13,7 @@ import logging
 from ..handler import add_handler
 from ..backends.rasterio_ import to_gtiff, WriteDaskArray
 from .windows import get_window_offsets
+from .base import _client_dummy, _cluster_dummy
 
 try:
     from ..backends.zarr_ import to_zarr
@@ -89,16 +89,6 @@ def _window_worker_time(w, n_bands, tidx, n_time):
         window_slice = tuple([slice(tidx, n_time)] + [slice(0, n_bands)] + list(window_slice))
 
     return window_slice
-
-
-@contextmanager
-def _cluster_dummy(**kwargs):
-    yield None
-
-
-@contextmanager
-def _client_dummy(**kwargs):
-    yield None
 
 
 # def _compressor(*args):
@@ -503,7 +493,8 @@ def to_raster(data,
               n_chunks=None,
               use_client=False,
               address=None,
-              total_memory=48,
+              total_memory=24,
+              processes=False,
               padding=None,
               tags=None,
               **kwargs):
@@ -533,8 +524,8 @@ def to_raster(data,
             threads: thread pool of workers using ``concurrent.futures``
 
         n_jobs (Optional[int]): The total number of parallel jobs.
-        n_workers (Optional[int]): The number of processes.
-        n_threads (Optional[int]): The number of threads.
+        n_workers (Optional[int]): The number of process workers.
+        n_threads (Optional[int]): The number of thread workers.
         n_chunks (Optional[int]): The chunk size of windows. If not given, equal to ``n_workers`` x 50.
         overviews (Optional[bool or list]): Whether to build overview layers.
         resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
@@ -542,6 +533,8 @@ def to_raster(data,
         use_client (Optional[bool]): Whether to use a ``dask`` client.
         address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
         total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
+        processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client. Only applies
+            when ``use_client`` = ``True``.
         padding (Optional[tuple]): Padding for each window. ``padding`` should be given as a tuple
             of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
             a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
@@ -845,8 +838,8 @@ def to_raster(data,
             with cluster_object(n_workers=n_workers,
                                 threads_per_worker=n_threads,
                                 scheduler_port=0,
-                                processes=False,
-                                memory_limit='{:d}GB'.format(mem_per_core)) as cluster:
+                                processes=processes,
+                                memory_limit=f'{mem_per_core}GB') as cluster:
 
                 cluster_address = address if address else cluster
 

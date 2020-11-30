@@ -512,8 +512,8 @@ def concat(filenames,
 
     if time_names:
 
-        concat_list = list()
-        new_time_names = list()
+        concat_list = []
+        new_time_names = []
 
         # Check the time names for duplicates
         for tidx in range(0, len(time_names)):

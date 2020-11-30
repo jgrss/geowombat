@@ -1,9 +1,25 @@
 import logging
+from contextlib import contextmanager
 
 from ..handler import add_handler
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
+
+
+@contextmanager
+def _executor_dummy(processes=1):
+    yield None
+
+
+@contextmanager
+def _cluster_dummy(**kwargs):
+    yield None
+
+
+@contextmanager
+def _client_dummy(**kwargs):
+    yield None
 
 
 class PropertyMixin(object):

@@ -3,6 +3,23 @@
 Changelog
 =========
 
+1.5.0 (1 Dec 2020)
+------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added optional ``dask.distributed`` ``Client`` in :func:`geowombat.extract`
+- :class:`geowombat.core.parallel.ParallelTask`.
+    - Added 'ray' as an optional scheduler with ``@ray.remote`` user functions.
+    - Added the option of iterating over a list of raster files.
+- Added option to pass ``chunks=None`` in :class:`geowombat.open`.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed conflict with global configuration and a user-provided reference ``DataArray`` in :func:`geowombat.polygon_to_array`.
+
 1.4.6 (13 Nov 2020)
 -------------------
 

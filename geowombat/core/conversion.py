@@ -6,6 +6,7 @@ from ..config import config
 from ..handler import add_handler
 from ..backends.rasterio_ import check_crs
 from ..backends.xarray_ import _check_config_globals
+from ..backends import transform_crs
 from .util import sample_feature
 from .util import lazy_wombat
 
@@ -20,7 +21,6 @@ from rasterio.crs import CRS
 from shapely.geometry import Polygon, MultiPolygon
 from affine import Affine
 import pyproj
-from tqdm import tqdm
 
 
 logger = logging.getLogger(__name__)
@@ -317,7 +317,8 @@ class Converters(object):
                        id_column='id',
                        mask=None,
                        n_jobs=8,
-                       verbose=0):
+                       verbose=0,
+                       **kwargs):
 
         if isinstance(aoi, gpd.GeoDataFrame):
             df = aoi
@@ -384,14 +385,6 @@ class Converters(object):
                 logger.exception('  No geometry intersects the user-provided mask.')
                 raise LookupError
 
-        # Subset the DataArray
-        # minx, miny, maxx, maxy = df.total_bounds
-        #
-        # obj_subset = self._obj.gw.subset(left=float(minx)-self._obj.res[0],
-        #                                  top=float(maxy)+self._obj.res[0],
-        #                                  right=float(maxx)+self._obj.res[0],
-        #                                  bottom=float(miny)-self._obj.res[0])
-
         # Convert polygons to points
         if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
 
@@ -403,7 +396,8 @@ class Converters(object):
                                          frac=frac,
                                          all_touched=all_touched,
                                          id_column=id_column,
-                                         n_jobs=n_jobs)
+                                         n_jobs=n_jobs,
+                                         **kwargs)
 
         # Ensure a unique index
         df.index = list(range(0, df.shape[0]))
@@ -416,7 +410,8 @@ class Converters(object):
                            frac=1.0,
                            all_touched=False,
                            id_column='id',
-                           n_jobs=1):
+                           n_jobs=1,
+                           **kwargs):
 
         """
         Converts polygons to points
@@ -428,6 +423,7 @@ class Converters(object):
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The 'id' column.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
+            kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -441,7 +437,7 @@ class Converters(object):
 
         with multi.Pool(processes=n_jobs) as pool:
 
-            for i in tqdm(pool.imap(_iter_func, range(0, df.shape[0])), total=df.shape[0]):
+            for i in pool.imap(_iter_func, range(0, df.shape[0]), **kwargs):
 
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]
@@ -608,9 +604,11 @@ class Converters(object):
                       'tap': tap,
                       'tac': None}
 
-        ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
-                                           bounds_by,
-                                           ref_kwargs)
+        if config['with_config'] and not isinstance(data, xr.DataArray):
+
+            ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
+                                               bounds_by,
+                                               ref_kwargs)
 
         if isinstance(data, xr.DataArray):
 
@@ -631,20 +629,21 @@ class Converters(object):
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), 
-                                                          band_names = band_name)
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             # Subset to the intersecting features
             dataframe = dataframe.iloc[int_idx]
 
             # Clip the geometry
-            dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
+            dataframe = gpd.clip(dataframe, data.gw.geodataframe)
 
             if dataframe.empty:
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             cellx = data.gw.cellx
             celly = data.gw.celly
@@ -656,7 +655,7 @@ class Converters(object):
 
                 left, bottom, right, top = ref_kwargs['bounds']
 
-                if ref_kwargs['res']:
+                if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
 
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
@@ -664,7 +663,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])) )
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
@@ -676,7 +675,7 @@ class Converters(object):
 
                 left, bottom, right, top = ref_kwargs['bounds']
 
-                if ref_kwargs['res']:
+                if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
 
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
@@ -684,7 +683,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
@@ -723,8 +722,16 @@ class Converters(object):
         cellxh = abs(cellx) / 2.0
         cellyh = abs(celly) / 2.0
 
-        xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
-        ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
+        if isinstance(data, xr.DataArray):
+
+            # Ensure the coordinates align
+            xcoords = data.x.values
+            ycoords = data.y.values
+
+        else:
+
+            xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
+            ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
 
         if xcoords.shape[0] > dst_width:
             xcoords = xcoords[:dst_width]
