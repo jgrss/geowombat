@@ -604,9 +604,11 @@ class Converters(object):
                       'tap': tap,
                       'tac': None}
 
-        ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
-                                           bounds_by,
-                                           ref_kwargs)
+        if config['with_config'] and not isinstance(data, xr.DataArray):
+
+            ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
+                                               bounds_by,
+                                               ref_kwargs)
 
         if isinstance(data, xr.DataArray):
 
@@ -633,7 +635,7 @@ class Converters(object):
             dataframe = dataframe.iloc[int_idx]
 
             # Clip the geometry
-            dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
+            dataframe = gpd.clip(dataframe, data.gw.geodataframe)
 
             if dataframe.empty:
 
