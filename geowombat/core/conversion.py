@@ -629,7 +629,8 @@ class Converters(object):
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             # Subset to the intersecting features
             dataframe = dataframe.iloc[int_idx]
@@ -641,7 +642,8 @@ class Converters(object):
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             cellx = data.gw.cellx
             celly = data.gw.celly
@@ -661,7 +663,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
@@ -681,7 +683,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
