@@ -109,6 +109,9 @@ Install the GDAL binaries::
     # Install the GDAL binaries
     sudo apt install gdal-bin
     sudo apt install libgdal-dev
+    
+    # Ensure g++ cc1plus is installed for geowombat compile
+    sudo apt-get install g++
 
 Update environment paths::
 
