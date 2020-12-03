@@ -472,7 +472,7 @@ class Converters(object):
             mask (Optional[str, numpy ndarray, or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
                 Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
                 Numpy's, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-                and mask is None, the source's mask will be inverted and used in place of mask. if ``mask`` is equal to
+                and mask is None, the source's mask will be inverted and used in place of mask. If ``mask`` is equal to
                 'source', then ``data`` is used as the mask.
             connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
             num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
@@ -511,13 +511,18 @@ class Converters(object):
 
         poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
 
-        poly_geom = list(list(zip(*poly_data))[0])
-        poly_values = list(list(zip(*poly_data))[1])
+        if poly_data:
 
-        return gpd.GeoDataFrame(data=poly_values,
-                                columns=['value'],
-                                geometry=poly_geom,
-                                crs=data.crs)
+            poly_geom = list(list(zip(*poly_data))[0])
+            poly_values = list(list(zip(*poly_data))[1])
+
+            return gpd.GeoDataFrame(data=poly_values,
+                                    columns=['value'],
+                                    geometry=poly_geom,
+                                    crs=data.crs)
+
+        else:
+            return gpd.GeoDataFrame([], crs=data.crs)
 
     @lazy_wombat
     def polygon_to_array(self,
