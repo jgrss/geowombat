@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.5.1 (3 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for empty polygon list in :func:`geowombat.array_to_polygon`.
+
 1.5.0 (1 Dec 2020)
 ------------------
 
