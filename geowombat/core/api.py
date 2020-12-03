@@ -12,6 +12,8 @@ except:
 import warnings
 from pathlib import Path
 import logging
+import contextlib
+import threading
 
 from . import geoxarray
 from ..handler import add_handler
@@ -41,6 +43,7 @@ IO_DICT = dict(rasterio=['.tif',
                          '.TIFF',
                          '.img',
                          '.IMG',
+                         '.kea',
                          '.vrt',
                          '.VRT',
                          '.jp2',
@@ -489,6 +492,15 @@ class open(object):
     def _reset(d):
         d = None
 
+    @contextlib.contextmanager
+    def _optional_lock(self, needs_lock):
+        """Context manager for optionally acquiring a lock."""
+        if needs_lock:
+            with threading.Lock():
+                yield
+        else:
+            yield
+
     def close(self):
 
         if hasattr(self, 'data'):
@@ -499,5 +511,10 @@ class open(object):
 
             if hasattr(self.data, 'close'):
                 self.data.close()
+
+        if 'gw' in self.data._cache:
+
+            with self._optional_lock(True):
+                file = self.data._cache.pop('gw', None)
 
         self.data = None

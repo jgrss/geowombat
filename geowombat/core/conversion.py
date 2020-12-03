@@ -472,7 +472,7 @@ class Converters(object):
             mask (Optional[str, numpy ndarray, or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
                 Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
                 Numpy's, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-                and mask is None, the source's mask will be inverted and used in place of mask. if ``mask`` is equal to
+                and mask is None, the source's mask will be inverted and used in place of mask. If ``mask`` is equal to
                 'source', then ``data`` is used as the mask.
             connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
             num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
@@ -511,13 +511,18 @@ class Converters(object):
 
         poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
 
-        poly_geom = list(list(zip(*poly_data))[0])
-        poly_values = list(list(zip(*poly_data))[1])
+        if poly_data:
 
-        return gpd.GeoDataFrame(data=poly_values,
-                                columns=['value'],
-                                geometry=poly_geom,
-                                crs=data.crs)
+            poly_geom = list(list(zip(*poly_data))[0])
+            poly_values = list(list(zip(*poly_data))[1])
+
+            return gpd.GeoDataFrame(data=poly_values,
+                                    columns=['value'],
+                                    geometry=poly_geom,
+                                    crs=data.crs)
+
+        else:
+            return gpd.GeoDataFrame([], crs=data.crs)
 
     @lazy_wombat
     def polygon_to_array(self,
@@ -604,9 +609,11 @@ class Converters(object):
                       'tap': tap,
                       'tac': None}
 
-        ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
-                                           bounds_by,
-                                           ref_kwargs)
+        if config['with_config'] and not isinstance(data, xr.DataArray):
+
+            ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
+                                               bounds_by,
+                                               ref_kwargs)
 
         if isinstance(data, xr.DataArray):
 
@@ -627,19 +634,21 @@ class Converters(object):
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             # Subset to the intersecting features
             dataframe = dataframe.iloc[int_idx]
 
             # Clip the geometry
-            dataframe = gpd.overlay(dataframe, data.gw.geodataframe, how='intersection')
+            dataframe = gpd.clip(dataframe, data.gw.geodataframe)
 
             if dataframe.empty:
 
                 return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
                                                           chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name), [1])
+                                                          dtype=data.dtype.name),
+                                           band_names=band_name)
 
             cellx = data.gw.cellx
             celly = data.gw.celly
@@ -659,7 +668,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
@@ -679,7 +688,7 @@ class Converters(object):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float.')
+                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
                         raise TypeError
 
             else:
