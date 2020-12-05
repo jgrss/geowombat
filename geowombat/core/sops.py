@@ -652,6 +652,9 @@ class SpatialOperations(_PropertyMixin):
                                        verbose=verbose,
                                        **pool_kwargs)
 
+        if df.empty:
+            return df
+
         if verbose > 0:
             logger.info('  Extracting data ...')
 
