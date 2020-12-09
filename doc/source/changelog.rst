@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.5.2 (9 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed ``where`` clause from ``self`` to ``xarray`` in :func:`geowombat.wi`.
+
 1.5.1 (3 Dec 2020)
 ------------------
 
