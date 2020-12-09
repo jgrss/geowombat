@@ -335,7 +335,9 @@ class BandMath(object):
         else:
             result = data.sel(band='swir1') + data.sel(band='red')
 
-        result = result.where(result > 0.5, 0, 1.0 - (result / 0.5)).fillna(nodata).astype('float64')
+        result = xr.where(result > 0.5, 0, 1.0 - (result / 0.5))\
+                        .fillna(nodata)\
+                        .astype('float64')
 
         return self.mask_and_assign(data, result, band_variable, 'red', nodata, 'wi', mask, 0, 1, scale_factor, sensor)
 
