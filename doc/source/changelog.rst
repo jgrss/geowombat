@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.5.3 (11 Dec 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added ``window_id`` return item in :func:`geowombat.calc_area`.
+
 1.5.2 (9 Dec 2020)
 ------------------
 
