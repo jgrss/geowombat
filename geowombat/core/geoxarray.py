@@ -640,6 +640,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Example:
             >>> import geowombat as gw
+            >>> import xarray as xr
             >>>
             >>> # Write a single DataArray to a .nc file
             >>> with gw.config.update(sensor='l7'):
@@ -651,9 +652,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
             >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
             >>>
-            >>>         src = xr.where(src == 0, -32768, src).astype('int16')
+            >>>         src = xr.where(src == 0, -32768, src)\
+            >>>                     .astype('int16')\
+            >>>                     .assign_attrs(**src.attrs)
             >>>
             >>>         src.gw.to_netcdf('filename.nc', ang.astype('int16'), zlib=True, complevel=5, _FillValue=-32768)
+            >>>
+            >>> # Open the data and convert to a DataArray
+            >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
+            >>>     src = ds.to_array(dim='band')
         """
 
         to_netcdf(self._obj, filename, *args, **kwargs)

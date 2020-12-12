@@ -488,6 +488,7 @@ def to_netcdf(data, filename, *args, **kwargs):
 
     Example:
         >>> import geowombat as gw
+        >>> import xarray as xr
         >>>
         >>> # Write a single DataArray to a .nc file
         >>> with gw.config.update(sensor='l7'):
@@ -499,10 +500,15 @@ def to_netcdf(data, filename, *args, **kwargs):
         >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
         >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
         >>>
-        >>>         src = src.where(lambda x: x != 0).astype('int16')
-        >>>         ang = ang.where(lambda x: x != -32768).astype('int16')
+        >>>         src = xr.where(src == 0, -32768, src)\
+        >>>                     .astype('int16')\
+        >>>                     .assign_attrs(**src.attrs)
         >>>
-        >>>         gw.to_netcdf(src, 'filename.nc', ang, zlib=True, complevel=5)
+        >>>         gw.to_netcdf(src, 'filename.nc', ang.astype('int16'), zlib=True, complevel=5)
+        >>>
+        >>> # Open the data and convert to a DataArray
+        >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
+        >>>     src = ds.to_array(dim='band')
     """
 
     encodings = {}
@@ -530,6 +536,7 @@ def to_netcdf(data, filename, *args, **kwargs):
         res = xr.concat((res, other_data), dim='band')
 
     res.to_dataset(dim='band')\
+            .assign_attrs(**data.attrs)\
             .to_netcdf(path=filename,
                        mode='w',
                        format='NETCDF4',
