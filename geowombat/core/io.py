@@ -25,6 +25,7 @@ except:
 import numpy as np
 from osgeo import gdal
 
+import xarray as xr
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
@@ -473,6 +474,68 @@ def to_vrt(data,
         ds = gdal.BuildVRT(filename, data.gw.filenames, options=vrt_options)
 
         ds = None
+
+
+def to_netcdf(data, filename, *args, **kwargs):
+
+    """
+    Writes an Xarray DataArray to a NetCDF file
+
+    Args:
+        filename (str): The output file name to write to.
+        args (DataArray): Additional ``DataArrays`` to stack.
+        kwargs (dict): Encoding arguments.
+
+    Example:
+        >>> import geowombat as gw
+        >>>
+        >>> # Write a single DataArray to a .nc file
+        >>> with gw.config.update(sensor='l7'):
+        >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src:
+        >>>         gw.to_netcdf(src, 'filename.nc', zlib=True, complevel=5)
+        >>>
+        >>> # Add extra layers
+        >>> with gw.config.update(sensor='l7'):
+        >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
+        >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
+        >>>
+        >>>         src = src.where(lambda x: x != 0).astype('int16')
+        >>>         ang = ang.where(lambda x: x != -32768).astype('int16')
+        >>>
+        >>>         gw.to_netcdf(src, 'filename.nc', ang, zlib=True, complevel=5)
+    """
+
+    encodings = {}
+
+    for band_name in data.band.values.tolist():
+
+        encode_dict = {'chunksizes': (data.gw.row_chunks, data.gw.col_chunks),
+                       'dtype': data.dtype}
+
+        encode_dict.update(**kwargs)
+        encodings[band_name] = encode_dict
+
+    res = data
+
+    for other_data in args:
+
+        for band_name in other_data.band.values.tolist():
+
+            encode_dict = {'chunksizes': (other_data.gw.row_chunks, other_data.gw.col_chunks),
+                           'dtype': other_data.dtype}
+
+            encode_dict.update(**kwargs)
+            encodings[band_name] = encode_dict
+
+        res = xr.concat((res, other_data), dim='band')
+
+    res.to_dataset(dim='band')\
+            .to_netcdf(path=filename,
+                       mode='w',
+                       format='NETCDF4',
+                       engine='h5netcdf',
+                       encoding=encodings,
+                       compute=True)
 
 
 def to_raster(data,

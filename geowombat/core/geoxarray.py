@@ -1,6 +1,6 @@
 from ..config import config
 
-from . import to_raster, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
+from . import to_raster, to_netcdf, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
@@ -605,7 +605,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 or as a tuple of (left, bottom, right, top).
             resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-            warp_mem_limit (Optional[int]): The warp memory limit.
+            warp_mem_lim    it (Optional[int]): The warp memory limit.
             num_threads (Optional[int]): The number of parallel threads.
 
         Returns:
@@ -627,6 +627,36 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                               resampling=resampling,
                               warp_mem_limit=warp_mem_limit,
                               num_threads=num_threads)
+
+    def to_netcdf(self, filename, *args, **kwargs):
+
+        """
+        Writes an Xarray DataArray to a NetCDF file
+
+        Args:
+            filename (str): The output file name to write to.
+            args (DataArray): Additional ``DataArrays`` to stack.
+            kwargs (dict): Encoding arguments.
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> # Write a single DataArray to a .nc file
+            >>> with gw.config.update(sensor='l7'):
+            >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src:
+            >>>         src.gw.to_netcdf('filename.nc', zlib=True, complevel=5)
+            >>>
+            >>> # Add extra layers
+            >>> with gw.config.update(sensor='l7'):
+            >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
+            >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
+            >>>
+            >>>         src = xr.where(src == 0, -32768, src).astype('int16')
+            >>>
+            >>>         src.gw.to_netcdf('filename.nc', ang.astype('int16'), zlib=True, complevel=5, _FillValue=-32768)
+        """
+
+        to_netcdf(self._obj, filename, *args, **kwargs)
 
     def to_raster(self,
                   filename,
