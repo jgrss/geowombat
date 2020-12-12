@@ -11,6 +11,11 @@ Bug fixes
 
 - Added ``window_id`` return item in :func:`geowombat.calc_area`.
 
+New
+~~~
+
+- Added :func:`geowombat.to_netcdf` function.
+
 1.5.2 (9 Dec 2020)
 ------------------
 
