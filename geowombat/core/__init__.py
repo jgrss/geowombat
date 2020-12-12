@@ -1,6 +1,7 @@
 from ..backends import transform_crs
 from .io import apply
 from .io import to_raster
+from .io import to_netcdf
 from .io import to_vrt
 from .sops import SpatialOperations
 from .conversion import Converters
@@ -44,6 +45,7 @@ tasseled_cap = TasseledCap().tasseled_cap
 __all__ = ['apply',
            'transform_crs',
            'to_raster',
+           'to_netcdf',
            'to_vrt',
            'extract',
            'sample',
