@@ -482,6 +482,7 @@ def to_netcdf(data, filename, *args, **kwargs):
     Writes an Xarray DataArray to a NetCDF file
 
     Args:
+        data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
