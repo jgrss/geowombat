@@ -399,8 +399,10 @@ class Converters(object):
                                          n_jobs=n_jobs,
                                          **kwargs)
 
-        # Ensure a unique index
-        df.index = list(range(0, df.shape[0]))
+        if not df.empty:
+
+            # Ensure a unique index
+            df.index = list(range(0, df.shape[0]))
 
         return df
 
@@ -454,12 +456,17 @@ class Converters(object):
                 if not point_df.empty:
                     dataframes.append(point_df)
 
-        dataframes = pd.concat(dataframes, axis=0)
+        if dataframes:
 
-        # Make the points unique
-        dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
+            dataframes = pd.concat(dataframes, axis=0)
 
-        return dataframes
+            # Make the points unique
+            dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
+
+            return dataframes
+
+        else:
+            return gpd.GeoDataFrame(data=[])
 
     @staticmethod
     def array_to_polygon(data, mask=None, connectivity=4, num_workers=1):

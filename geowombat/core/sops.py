@@ -150,7 +150,7 @@ class SpatialOperations(_PropertyMixin):
 
         def area_func(*args):
 
-            data_chunk, uvalues, area_units, n_threads = list(itertools.chain(*args))
+            data_chunk, window_id, uvalues, area_units, n_threads = list(itertools.chain(*args))
 
             sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
             area_conversion = 1e-6 if area_units == 'km2' else 0.0001
@@ -651,6 +651,9 @@ class SpatialOperations(_PropertyMixin):
                                        n_jobs=n_jobs,
                                        verbose=verbose,
                                        **pool_kwargs)
+
+        if df.empty:
+            return df
 
         if verbose > 0:
             logger.info('  Extracting data ...')

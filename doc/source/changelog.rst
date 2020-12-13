@@ -3,6 +3,35 @@
 Changelog
 =========
 
+1.5.3 (13 Dec 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added ``window_id`` return item in :func:`geowombat.calc_area`.
+
+New
+~~~
+
+- Added :func:`geowombat.to_netcdf` function.
+
+1.5.2 (9 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed ``where`` clause from ``self`` to ``xarray`` in :func:`geowombat.wi`.
+
+1.5.1 (3 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for empty polygon list in :func:`geowombat.array_to_polygon`.
+
 1.5.0 (1 Dec 2020)
 ------------------
 
