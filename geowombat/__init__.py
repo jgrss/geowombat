@@ -13,6 +13,7 @@ from .core import polygons_to_points
 from .core import apply
 from .core import transform_crs
 from .core import to_raster
+from .core import to_netcdf
 from .core import to_vrt
 from .core import array_to_polygon
 from .core import polygon_to_array
@@ -48,6 +49,7 @@ __all__ = ['config',
            'apply',
            'transform_crs',
            'to_raster',
+           'to_netcdf',
            'to_vrt',
            'array_to_polygon',
            'polygon_to_array',
