@@ -245,7 +245,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     @property
     def filenames(self):
-        """Get the data filenames"""
+        """Gets the data filenames"""
         return self._filenames if hasattr(self, '_filenames') else []
 
     @filenames.setter
@@ -254,12 +254,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     @property
     def data_are_separate(self):
-        """Check whether the data are loaded separately"""
-        return True if hasattr(self, '_stack_dim') and (self._stack_dim in ['band', 'time']) else 'none'
+        """Checks whether the data are loaded separately"""
+        return True if hasattr(self, '_stack_dim') and (self._stack_dim in ['band', 'time']) else False
 
     @data_are_separate.setter
     def data_are_separate(self, dim):
         self._stack_dim = dim
+        
+    @property
+    def data_are_stacked(self):
+        """Checks whether the data are stacked"""
+        return self._sbool if hasattr(self, '_sbool') else False
+
+    @data_are_stacked.setter
+    def data_are_stacked(self, sbool):
+        self._sbool = sbool
 
     def compute(self, **kwargs):
 

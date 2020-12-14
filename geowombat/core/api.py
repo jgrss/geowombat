@@ -362,7 +362,8 @@ class open(object):
 
         self.data = data_
         self.__is_context_manager = False
-        self.__data_are_separate = 'none'
+        self.__data_are_separate = None
+        self.__data_are_stacked = None
         self.__filenames = []
 
         if 'chunks' in kwargs:
@@ -427,6 +428,8 @@ class open(object):
                                           nodata=nodata,
                                           dtype=dtype,
                                           **kwargs)
+                    
+                    self.__data_are_stacked = False
 
                 else:
 
@@ -441,6 +444,8 @@ class open(object):
                                           overlap=overlap,
                                           dtype=dtype,
                                           **kwargs)
+                    
+                    self.__data_are_stacked = True
 
                 self.__data_are_separate = stack_dim
                 self.__filenames = [str(fn) for fn in filename]
@@ -481,6 +486,7 @@ class open(object):
         self.__is_context_manager = True
         self.data.gw.filenames = self.__filenames
         self.data.gw.data_are_separate = self.__data_are_separate
+        self.data.gw.data_are_stacked = self.__data_are_stacked
         return self.data
 
     def __exit__(self, *args, **kwargs):
