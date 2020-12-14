@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.5.4 (15 Dec 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for ``stack_dim`` argument in :func:`geowombat.open`.
+
 1.5.3 (13 Dec 2020)
 -------------------
 
