@@ -351,7 +351,11 @@ class open(object):
 
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             logger.exception("  The 'nodata' keyword argument must be an integer or a float.")
-            raise ValueError
+            raise TypeError
+
+        if stack_dim not in ['band', 'time']:
+            logger.exception(f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}")
+            raise NameError
 
         if isinstance(filename, Path):
             filename = str(filename)
