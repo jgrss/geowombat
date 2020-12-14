@@ -463,7 +463,7 @@ def to_vrt(data,
 
     else:
 
-        separate = True if data.gw.data_are_separate else False
+        separate = True if data.gw.data_are_separate and data.gw.data_are_stacked else False
 
         vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
                                            xRes=data.gw.cellx,
