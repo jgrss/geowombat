@@ -463,7 +463,7 @@ def to_vrt(data,
 
     else:
 
-        if 'filenames' not in data.attrs:
+        if not data.gw.filenames:
             logger.exception('  The data filenames attribute is empty. Use gw.open(..., persist_filenames=True).')
             raise KeyError
 
