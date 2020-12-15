@@ -463,6 +463,10 @@ def to_vrt(data,
 
     else:
 
+        if 'filenames' not in data.attrs:
+            logger.exception('  The data filenames attribute is empty. Use gw.open(..., persist_filenames=True).')
+            raise KeyError
+
         separate = True if data.gw.data_are_separate and data.gw.data_are_stacked else False
 
         vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
