@@ -10,6 +10,12 @@ Bug fixes
 ~~~~~~~~~
 
 - Added check for ``stack_dim`` argument in :func:`geowombat.open`.
+- Fixed ``data_are_separate`` and ``data_are_stacked`` properties.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added ``persist_filenames`` keyword argument in :func:`geowombat.open`.
 
 1.5.3 (13 Dec 2020)
 -------------------
