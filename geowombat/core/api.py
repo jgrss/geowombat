@@ -260,6 +260,8 @@ class open(object):
 
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``DataArray`` attributes.
+            By default, ``persist_filenames=False`` to avoid storing large file lists.
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
@@ -342,6 +344,7 @@ class open(object):
                  bounds=None,
                  bounds_by='reference',
                  resampling='nearest',
+                 persist_filenames=False,
                  mosaic=False,
                  overlap='max',
                  nodata=0,
@@ -362,8 +365,8 @@ class open(object):
 
         self.data = data_
         self.__is_context_manager = False
-        self.__data_are_separate = None
-        self.__data_are_stacked = None
+        self.__data_are_separate = False
+        self.__data_are_stacked = False
         self.__filenames = []
 
         if 'chunks' in kwargs:
@@ -428,8 +431,6 @@ class open(object):
                                           nodata=nodata,
                                           dtype=dtype,
                                           **kwargs)
-                    
-                    self.__data_are_stacked = False
 
                 else:
 
@@ -447,7 +448,7 @@ class open(object):
                     
                     self.__data_are_stacked = True
 
-                self.__data_are_separate = stack_dim
+                self.__data_are_separate = True
                 self.__filenames = [str(fn) for fn in filename]
 
             else:
@@ -482,11 +483,14 @@ class open(object):
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src
 
+        self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
+        self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)
+
+        if persist_filenames:
+            self.data.attrs['filenames'] = self.__filenames
+
     def __enter__(self):
         self.__is_context_manager = True
-        self.data.gw.filenames = self.__filenames
-        self.data.gw.data_are_separate = self.__data_are_separate
-        self.data.gw.data_are_stacked = self.__data_are_stacked
         return self.data
 
     def __exit__(self, *args, **kwargs):
