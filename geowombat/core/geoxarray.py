@@ -245,21 +245,18 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     @property
     def filenames(self):
-        """Get the data filenames"""
-        return self._filenames if hasattr(self, '_filenames') else []
-
-    @filenames.setter
-    def filenames(self, file_list):
-        self._filenames = file_list
+        """Gets the data filenames"""
+        return self._obj.attrs['filenames'] if 'filenames' in self._obj.attrs else []
 
     @property
     def data_are_separate(self):
-        """Check whether the data are loaded separately"""
-        return True if hasattr(self, '_stack_dim') and (self._stack_dim in ['band', 'time']) else 'none'
+        """Checks whether the data are loaded separately"""
+        return bool(self._obj.attrs['data_are_separate']) if 'data_are_separate' in self._obj.attrs else False
 
-    @data_are_separate.setter
-    def data_are_separate(self, dim):
-        self._stack_dim = dim
+    @property
+    def data_are_stacked(self):
+        """Checks whether the data are stacked"""
+        return bool(self._obj.attrs['data_are_stacked']) if 'data_are_stacked' in self._obj.attrs else False
 
     def compute(self, **kwargs):
 
@@ -802,6 +799,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def to_vrt(self,
                filename,
+               overwrite=False,
                resampling=None,
                nodata=None,
                init_dest_nodata=True,
@@ -812,6 +810,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str): The output file name to write to.
+            overwrite (Optional[bool]): Whether to overwrite an existing VRT file.
             resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
             nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
             init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
@@ -837,6 +836,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         to_vrt(self._obj,
                filename,
+               overwrite=overwrite,
                resampling=resampling,
                nodata=nodata,
                init_dest_nodata=init_dest_nodata,

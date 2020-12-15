@@ -405,6 +405,7 @@ def _write_xarray(*args):
 
 def to_vrt(data,
            filename,
+           overwrite=False,
            resampling=None,
            nodata=None,
            init_dest_nodata=True,
@@ -416,6 +417,7 @@ def to_vrt(data,
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
+        overwrite (Optional[bool]): Whether to overwrite an existing VRT file.
         resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``. Default is 'nearest'.
         nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
         init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
@@ -440,6 +442,14 @@ def to_vrt(data,
         >>>         gw.to_vrt(src, 'output.vrt')
     """
 
+    if Path(filename).is_file():
+
+        if overwrite:
+            Path(filename).unlink()
+        else:
+            logger.warning(f'  The VRT file {filename} already exists.')
+            return
+
     if not resampling:
         resampling = Resampling.nearest
 
@@ -463,7 +473,11 @@ def to_vrt(data,
 
     else:
 
-        separate = True if data.gw.data_are_separate else False
+        if not data.gw.filenames:
+            logger.exception('  The data filenames attribute is empty. Use gw.open(..., persist_filenames=True).')
+            raise KeyError
+
+        separate = True if data.gw.data_are_separate and data.gw.data_are_stacked else False
 
         vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
                                            xRes=data.gw.cellx,
