@@ -799,6 +799,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def to_vrt(self,
                filename,
+               overwrite=False,
                resampling=None,
                nodata=None,
                init_dest_nodata=True,
@@ -809,6 +810,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str): The output file name to write to.
+            overwrite (Optional[bool]): Whether to overwrite an existing VRT file.
             resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
             nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
             init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
@@ -834,6 +836,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         to_vrt(self._obj,
                filename,
+               overwrite=overwrite,
                resampling=resampling,
                nodata=nodata,
                init_dest_nodata=init_dest_nodata,
