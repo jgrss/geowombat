@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.5.5 (28 Dec 2020)
+-------------------
+
+New
+~~~
+
+- Added ``min_frac_area`` keyword argument in :func:`geowombat.extract`.
+
 1.5.4 (15 Dec 2020)
 -------------------
 
