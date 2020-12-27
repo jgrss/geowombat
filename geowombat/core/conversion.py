@@ -313,6 +313,7 @@ class Converters(object):
                        data,
                        aoi,
                        frac=1.0,
+                       min_frac_area=None,
                        all_touched=False,
                        id_column='id',
                        mask=None,
@@ -394,6 +395,7 @@ class Converters(object):
             df = self.polygons_to_points(data,
                                          df,
                                          frac=frac,
+                                         min_frac_area=min_frac_area,
                                          all_touched=all_touched,
                                          id_column=id_column,
                                          n_jobs=n_jobs,
@@ -410,6 +412,7 @@ class Converters(object):
     def polygons_to_points(data,
                            df,
                            frac=1.0,
+                           min_frac_area=None,
                            all_touched=False,
                            id_column='id',
                            n_jobs=1,
@@ -422,6 +425,8 @@ class Converters(object):
             data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` containing the geometry to rasterize.
             frac (Optional[float]): A fractional subset of points to extract in each feature.
+            min_frac_area (Optional[int | float]): A minimum polygon area to use ``frac``. Otherwise, use all samples
+                within a polygon.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The 'id' column.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
@@ -451,7 +456,8 @@ class Converters(object):
                                           data.res,
                                           all_touched,
                                           meta,
-                                          frac)
+                                          frac,
+                                          min_frac_area)
 
                 if not point_df.empty:
                     dataframes.append(point_df)
