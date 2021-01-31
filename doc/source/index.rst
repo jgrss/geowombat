@@ -33,14 +33,15 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 
 **Common Remote Sensing Uses**
 * Simple read/write for a variety of sensors (Landsat, Sentinel etc)
-* Mosaicing tiles
-* Reproject
-* Extract to points / polygon
+* Image mosaicing
+* On-the-fly image transformations (reprojection)
+* Point / polygon raster sampling, extraction
 * Time series analysis
 * Band math (NDVI, Tasseled cap, EVI etc)
-* Classification with sklearn
+* Image classification and regression
 * Radiometry (BRDF normalization)
 * Distributed processing 
+
 
 **Mosaic Images Example**
 .. image:: _static/union_example.png

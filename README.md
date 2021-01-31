@@ -12,14 +12,14 @@ Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong b
 * Simple read/write for a variety of sensors, including:
     * Sentinel 2
     * Landsat 5-8
-    * Planetscope
+    * PlanetScope
     * Others 
-* Mosaicing tiles
-* Reproject
-* Extract to points / polygon
+* Image mosaicing
+* On-the-fly image transformations (reprojection)
+* Point / polygon raster sampling, extraction
 * Time series analysis
 * Band math (NDVI, Tasseled cap, EVI etc)
-* Classification with sklearn
+* Image classification and regression
 * Radiometry (BRDF normalization)
 * Distributed processing 
     
