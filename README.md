@@ -6,9 +6,24 @@
 
 ### GeoWombat: Utilities for geospatial data
 
-Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
+Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale). 
 
-## Basic usage
+## Common Remote Sensing Uses
+* Simple read/write for a variety of sensors, including:
+    * Sentinel 2
+    * Landsat 5-8
+    * PlanetScope
+    * Others 
+* Image mosaicing
+* On-the-fly image transformations (reprojection)
+* Point / polygon raster sampling, extraction
+* Time series analysis
+* Band math (NDVI, Tasseled cap, EVI etc)
+* Image classification and regression
+* Radiometry (BRDF normalization)
+* Distributed processing 
+    
+## Basic usage - Sentinel & Landsat
 
 ```python
 >>> import geowombat as gw
