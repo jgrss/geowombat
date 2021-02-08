@@ -108,6 +108,8 @@ class SixS(object):
                   wavelength,
                   sza,
                   doy,
+                  src_nodata=-32768,
+                  dst_nodata=-32768,
                   angle_factor=0.01,
                   interp_method='fast',
                   h2o=1.0,
@@ -125,6 +127,8 @@ class SixS(object):
             wavelength (str): The band wavelength to process.
             sza (float | DataArray): The solar zenith angle.
             doy (int): The day of year.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
             angle_factor (Optional[float]): The scale factor for angles.
             interp_method (Optional[str]): The LUT interpolation method. Choices are ['fast', 'slow'].
                 'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
@@ -171,12 +175,30 @@ class SixS(object):
                                          xa.sel(band='coeff'),
                                          xb.sel(band='coeff'),
                                          xc.sel(band='coeff'))\
-                        .astype('float64')\
-                        .clip(0, 1)
-
-        return sr.expand_dims(dim='band')\
+                    .fillna(src_nodata)\
+                    .expand_dims(dim='band')\
                     .assign_coords(coords={'band': [wavelength]})\
-                    .assign_attrs(**attrs)
+                    .astype('float64')\
+                    .clip(0, 1)
+
+        # Create a 'no data' mask
+        mask = sr.where((sr != src_nodata) & (band_data != src_nodata))\
+                    .count(dim='band')\
+                    .astype('uint8')
+
+        # Mask 'no data' values
+        sr = xr.where(mask < sr.gw.nbands,
+                      dst_nodata,
+                      sr)\
+                .transpose('band', 'y', 'x')
+
+        attrs['sensor'] = sensor
+        attrs['nodata'] = dst_nodata
+        attrs['calibration'] = 'surface reflectance'
+        attrs['method'] = '6s radiative transfer model'
+        attrs['drange'] = (0, 1)
+
+        return sr.assign_attrs(**attrs)
 
     def get_optimized_aot(self,
                           blue_rad_dark,
