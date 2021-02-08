@@ -1400,8 +1400,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                   angle_factor=1.0,
                                                                   interp_method='fast',
                                                                   aot_fallback=0.3,
-                                                                  h2o=0.25,
-                                                                  o3=0.1,
+                                                                  h2o=2.0,
+                                                                  o3=0.3,  # global average of total ozone in a vertical column (3 cm)
                                                                   n_jobs=n_jobs)
 
                                                 sr = rt.dn_to_sr(data,
@@ -1413,8 +1413,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                  angle_factor=1.0,
                                                                  method='6s',
                                                                  interp_method='fast',
-                                                                 h2o=0.25,
-                                                                 o3=0.1,
+                                                                 h2o=2.0,
+                                                                 o3=0.3,
                                                                  aot=aot,
                                                                  n_jobs=n_jobs)
 
