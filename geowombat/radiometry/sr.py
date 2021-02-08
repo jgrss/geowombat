@@ -382,6 +382,7 @@ class RadTransforms(MetaData):
                  method='srem',
                  angle_factor=0.01,
                  meta=None,
+                 interp_method='fast',
                  **kwargs):
 
         """
@@ -396,9 +397,13 @@ class RadTransforms(MetaData):
             src_nodata (Optional[int or float]): The input 'no data' value.
             dst_nodata (Optional[int or float]): The output 'no data' value.
             sensor (Optional[str]): The data's sensor.
-            method (Optional[str]): The method to use. Only 'srem' is supported.
+            method (Optional[str]): The correction method to use. Choices are ['srem', '6s'].
             angle_factor (Optional[float]): The scale factor for angles.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
+            interp_method (Optional[str]): The LUT interpolation method if ``method`` = '6s'. Choices are ['fast', 'slow'].
+                'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
+                'slow': Uses linear interpolation with ``scipy.interpolate.LinearNDInterpolator``.
+            kwargs (Optional[dict]): Extra keyword arguments passed to ``radiometry.sixs.SixS().rad_to_sr``.
 
         References:
             https://www.usgs.gov/land-resources/nli/landsat/using-usgs-landsat-level-1-data-product
@@ -466,14 +471,17 @@ class RadTransforms(MetaData):
 
                 sr_data = []
 
-                sxs = SixS(sensor)
+                sxs = SixS()
 
                 for band in band_names:
 
                     sr_data.append(sxs.rad_to_sr(radiance,
+                                                 meta.sensor,
                                                  band,
                                                  solar_za,
                                                  meta.date_acquired.timetuple().tm_yday,
+                                                 angle_factor=angle_factor,
+                                                 interp_method=interp_method,
                                                  **kwargs))
 
                 sr_data = xr.concat(sr_data, dim='band')
@@ -521,9 +529,7 @@ class RadTransforms(MetaData):
         attrs['method'] = method
         attrs['drange'] = (0, 1)
 
-        sr_data.attrs = attrs
-
-        return sr_data
+        return sr_data.assign_attrs(**attrs)
 
     @staticmethod
     def _linear_transform(data, gain, bias):
@@ -763,62 +769,58 @@ class RadTransforms(MetaData):
 
 class DOS(SixS, RadTransforms):
 
-    def aot(self, dn, sensor, meta, src_interp, aot_fallback=0.3, h2o=1.0, o3=0.4, w=5, n_jobs=1):
+    def get_aot(self,
+                dn,
+                sza,
+                meta,
+                angle_factor=0.01,
+                dn_interp=None,
+                interp_method='fast',
+                aot_fallback=0.3,
+                h2o=1.0,
+                o3=0.4,
+                altitude=0.0,
+                w=5,
+                n_jobs=1):
 
         """
-        Gets AOT from dark objects
+        Gets the aerosol optical thickness (AOT) from dark objects
 
         Args:
             dn (DataArray): The digital numbers at a coarse resolution.
-            sensor (str): The satellite sensor.
+            sza (float | DataArray): The solar zenith angle.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
-            src_interp (DataArray): A source ``DataArray`` at the target resolution.
+            angle_factor (Optional[float]): The scale factor for angles.
+            dn_interp (Optional[DataArray]): A source ``DataArray`` at the target resolution.
+            interp_method (Optional[str]): The LUT interpolation method. Choices are ['fast', 'slow'].
+                'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
+                'slow': Uses linear interpolation with ``scipy.interpolate.LinearNDInterpolator``.
             aot_fallback (Optional[float | DataArray]): The aerosol optical thickness fallback if no dark objects
                 are found (unitless). [0,3].
             h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
             o3 (Optional[float]): The ozone (cm-atm). [0,8].
+            altitude (Optional[float]): The altitude over the sensor acquisition location.
             w (Optional[int]): The smoothing window size (in pixels).
-            n_jobs (Optional[int]): The number of parallel jobs for ``moving_window``.
+            n_jobs (Optional[int]): The number of parallel jobs for ``moving_window`` and ``dask.compute``.
 
-        See :cite:`masek_etal_2006` :cite:`kaufman_etal_1997` and :cite:`ouaidrari_vermote_1999`
+        Returns:
 
-        @article{masek_etal_2006,
-          title={A Landsat surface reflectance dataset for North America, 1990-2000},
-          author={Masek, Jeffrey G and Vermote, Eric F and Saleous, Nazmi E and Wolfe, Robert and Hall, Forrest G and Huemmrich, Karl Fred and Gao, Feng and Kutler, Jonathan and Lim, Teng-Kui},
-          journal={IEEE Geoscience and Remote Sensing Letters},
-          volume={3},
-          number={1},
-          pages={68--72},
-          year={2006},
-          publisher={IEEE}
-        }
+            ``xarray.DataArray``:
 
-        @article{kaufman_etal_1997,
-            title={The MODIS 2.1-/spl mu/m channel-correlation with visible reflectance for use in remote sensing of aerosol},
-            author={Kaufman, Yoram J and Wald, Andrew E and Remer, Lorraine A and Gao, Bo-Cai and Li, Rong-Rong and Flynn, Luke},
-            journal={IEEE transactions on Geoscience and Remote Sensing},
-            volume={35},
-            number={5},
-            pages={1286--1298},
-            year={1997},
-            publisher={IEEE}
-            }
+                Data range: 0-3
 
-        @article{ouaidrari_vermote_1999,
-          title={Operational atmospheric correction of Landsat TM data},
-          author={Ouaidrari, Hassan and Vermote, Eric F},
-          journal={Remote Sensing of Environment},
-          volume={70},
-          number={1},
-          pages={4--15},
-          year={1999},
-          publisher={Elsevier}
-        }
+        References:
+            See :cite:`masek_etal_2006`, :cite:`kaufman_etal_1997`, and :cite:`ouaidrari_vermote_1999`.
         """
 
-        super().__init__(sensor)
+        if isinstance(sza, xr.DataArray):
+            sza = sza.squeeze().data.compute(num_workers=n_jobs)
+
+        sza *= angle_factor
 
         band_names = dn.band.values.tolist()
+
+        doy = meta.date_acquired.timetuple().tm_yday
 
         m_p = coeffs_to_array(meta.m_p, band_names)
         a_p = coeffs_to_array(meta.a_p, band_names)
@@ -844,8 +846,8 @@ class DOS(SixS, RadTransforms):
         blue_p = swir2_toar_dark * 0.33
 
         # Get reflectance and radiance data as numpy arrays
-        blue_p_data = blue_p.squeeze().data.compute()
-        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute()
+        blue_p_data = blue_p.squeeze().data.compute(num_workers=n_jobs)
+        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute(num_workers=n_jobs)
 
         valid_idx = np.where(~np.isnan(blue_p_data))
 
@@ -853,24 +855,43 @@ class DOS(SixS, RadTransforms):
 
             aot = self.get_optimized_aot(blue_rad_dark_data,
                                          blue_p_data,
-                                         meta,
+                                         meta.sensor,
+                                         'blue',
+                                         interp_method,
+                                         meta.sza,
+                                         doy,
                                          h2o,
-                                         o3)
+                                         o3,
+                                         altitude)
 
             mask = np.ones(aot.shape, dtype='uint8')
             mask[np.isnan(blue_p_data)] = 0
             aot = fillnodata(aot, mask=mask, max_search_distance=100)
 
-            aot = self._resize(aot, src_interp, w, n_jobs)
+            if isinstance(dn_interp, xr.DataArray):
 
-            return ndarray_to_xarray(src_interp, aot, ['aot'])
+                aot = self._resize(aot, dn_interp, w, n_jobs)
+
+                return ndarray_to_xarray(dn_interp, aot, ['aot'])
+
+            else:
+                return ndarray_to_xarray(dn, aot, ['aot'])
 
         else:
 
-            return ndarray_to_xarray(np.zeros((src_interp.gw.nrows,
-                                               src_interp.gw.ncols), dtype='float64')+aot_fallback,
-                                     src_interp,
-                                     ['aot'])
+            if isinstance(dn_interp, xr.DataArray):
+
+                return ndarray_to_xarray(np.zeros((dn_interp.gw.nrows,
+                                                   dn_interp.gw.ncols), dtype='float64')+aot_fallback,
+                                         dn_interp,
+                                         ['aot'])
+
+            else:
+
+                return ndarray_to_xarray(np.zeros((dn.gw.nrows,
+                                                   dn.gw.ncols), dtype='float64')+aot_fallback,
+                                         dn,
+                                         ['aot'])
 
     @staticmethod
     def _resize(aot, src_interp, w, n_jobs):
@@ -898,4 +919,3 @@ class DOS(SixS, RadTransforms):
                             n_jobs=n_jobs)[w:-w, w:-w]
 
         return aot
-
