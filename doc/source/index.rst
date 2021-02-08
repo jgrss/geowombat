@@ -43,6 +43,11 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 * Radiometry (BRDF normalization)
 * Distributed processing 
 
+**Mosaic Images Example**
+
+.. image:: _static/union_example.png
+   :width: 300
+
 .. raw:: html
 
     <style type="text/css">
