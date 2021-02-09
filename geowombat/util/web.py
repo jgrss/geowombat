@@ -1380,7 +1380,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
                                             # The S-2 data are in TOAR (0-10000)
-                                            toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
+                                            toar_scaled = (data * 0.0001)\
+                                                            .astype('float64')\
+                                                            .clip(0, 1)
+
                                             toar_scaled.attrs = attrs
 
                                             # Convert TOAR to surface reflectance
@@ -1419,10 +1422,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                 else:
                                                     altitude = 0.0
 
-                                                # Resample to 1 km x 1 km
+                                                # Resample to 100m x 100m
                                                 data_coarse = data.sel(band=['blue', 'swir2']).gw\
-                                                                    .transform_crs(dst_res=1000.0,
-                                                                                   resampling='average')
+                                                                    .transform_crs(dst_res=100.0,
+                                                                                   resampling='med')
 
                                                 aot = dos.get_aot(data_coarse,
                                                                   meta.sza,
@@ -1434,7 +1437,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                   h2o=2.0,
                                                                   o3=0.3,  # global average of total ozone in a vertical column (3 cm)
                                                                   altitude=altitude,
-                                                                  w=None,
+                                                                  w=101,
                                                                   n_jobs=n_jobs)
 
                                                 sr = rt.dn_to_sr(data,
@@ -1443,6 +1446,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                  None,
                                                                  None,
                                                                  meta=meta,
+                                                                 src_nodata=nodataval,
+                                                                 dst_nodata=nodataval,
                                                                  angle_factor=1.0,
                                                                  method='6s',
                                                                  interp_method='fast',
