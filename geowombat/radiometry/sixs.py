@@ -9,6 +9,9 @@ Reference:
 """
 
 import os
+import shutil
+import string
+import random
 from pathlib import Path
 import logging
 from collections import namedtuple
@@ -52,6 +55,17 @@ SENSOR_LOOKUP = {'l5': _set_names('l5'),
                  'l8': _set_names('l8'),
                  's2a': _set_names('s2a'),
                  's2b': _set_names('s2b')}
+
+
+def _random_id(string_length):
+
+    """
+    Generates a random string of letters and digits
+    """
+
+    letters_digits = string.ascii_letters + string.digits
+
+    return ''.join(random.choice(letters_digits) for i in range(string_length))
 
 
 class PassKey(object):
@@ -153,9 +167,22 @@ class EarthDataDownloader(PassKey):
 class Altitude(object):
 
     @staticmethod
-    def get_mean_altitude(data, username, key_file, code_file, outdir, n_jobs=1, delete_downloaded=False):
+    def get_mean_altitude(data,
+                          username,
+                          key_file,
+                          code_file,
+                          out_dir,
+                          n_jobs=1,
+                          delete_downloaded=False):
 
-        srtm_df = gpd.read_file(DATA_PATH / 'srtm30m_bounding_boxes.gpkg')
+        srtm_grid_path = DATA_PATH / 'srtm30m_bounding_boxes.gpkg'
+        srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
+
+        shutil.copy(str(srtm_grid_path), str(srtm_grid_path_temp))
+
+        srtm_df = gpd.read_file(srtm_grid_path_temp)
+
+        srtm_grid_path_temp.unlink()
 
         srtm_df_int = srtm_df[srtm_df.geometry.intersects(data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0])]
 
@@ -166,7 +193,7 @@ class Altitude(object):
 
         for dfn in srtm_df_int.dataFile.values.tolist():
 
-            zip_file = f"{outdir}/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip"
+            zip_file = f"{out_dir}/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip"
 
             edd.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip",
                          zip_file)
