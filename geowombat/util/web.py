@@ -1299,7 +1299,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
                                                   ref_crs=crs,
-                                                  ref_res=ref_res if ref_res else load_bands_names[-1]):
+                                                  ref_res=ref_res if ref_res else load_bands_names[-1],
+                                                  ignore_warnings=True):
 
                                 valid_data = True
 
