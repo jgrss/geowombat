@@ -1193,6 +1193,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
+                                # TODO: get sentinel metadata
+
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
                                                                    str(outdir_angles),
@@ -1247,7 +1249,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
 
-                                logger.info('  Translating jp2 files to gtiff for {} ...'.format(brdfp))
+                                logger.info(f'  Translating jp2 files to gtiff for {brdfp} ...')
 
                                 load_bands_names = []
 
@@ -1283,7 +1285,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                     logger.exception('  Could not get all band name associations.')
                                     raise NameError
 
-                            logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
+                            logger.info(f'  Applying BRDF and SR correction for {brdfp} ...')
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
@@ -1366,24 +1368,23 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
 
-                                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+                                        if sr_method == 'srem':
 
-                                            # The S-2 data are in TOAR (0-10000)
-                                            toar_scaled = (data * 0.0001)\
-                                                            .astype('float64')\
-                                                            .clip(0, 1)
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                            toar_scaled.attrs = attrs
+                                                # The S-2 data are in TOAR (0-10000)
+                                                toar_scaled = (data * 0.0001)\
+                                                                .astype('float64')\
+                                                                .clip(0, 1)\
+                                                                .assign_attrs(**attrs)
 
-                                            # Convert TOAR to surface reflectance
-                                            sr = rt.toar_to_sr(toar_scaled,
-                                                               sza, saa, vza, vaa,
-                                                               rad_sensor,
-                                                               dst_nodata=nodataval)
+                                                # Convert TOAR to surface reflectance
+                                                sr = rt.toar_to_sr(toar_scaled,
+                                                                   sza, saa, vza, vaa,
+                                                                   rad_sensor,
+                                                                   dst_nodata=nodataval)
 
-                                        else:
-
-                                            if sr_method == 'srem':
+                                            else:
 
                                                 # Convert DN to surface reflectance
                                                 sr = rt.dn_to_sr(data,
@@ -1393,58 +1394,68 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                  src_nodata=nodataval,
                                                                  dst_nodata=nodataval)
 
+                                        else:
+
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+
+                                                # The S-2 data are in TOAR (0-10000)
+                                                data = (data * 0.0001)\
+                                                        .astype('float64')\
+                                                        .assign_attrs(**attrs)
+
+                                                # Invert TOAR to DN
+                                                # data = (1.0 / beta) * data - (alpha / beta)
+
+                                            if isinstance(earthdata_username, str) and \
+                                                    isinstance(earthdata_key_file, str) and \
+                                                    isinstance(earthdata_code_file, str):
+
+                                                altitude = dos.get_mean_altitude(data,
+                                                                                 earthdata_username,
+                                                                                 earthdata_key_file,
+                                                                                 earthdata_code_file,
+                                                                                 srtm_outdir,
+                                                                                 n_jobs=n_jobs)
+
+                                                altitude *= 0.0001
+
                                             else:
+                                                altitude = 0.0
 
-                                                if isinstance(earthdata_username, str) and \
-                                                        isinstance(earthdata_key_file, str) and \
-                                                        isinstance(earthdata_code_file, str):
+                                            # Resample to 100m x 100m
+                                            data_coarse = data.sel(band=['blue', 'swir2']).gw\
+                                                                .transform_crs(dst_res=100.0,
+                                                                               resampling='med')
 
-                                                    altitude = dos.get_mean_altitude(data,
-                                                                                     earthdata_username,
-                                                                                     earthdata_key_file,
-                                                                                     earthdata_code_file,
-                                                                                     srtm_outdir,
-                                                                                     n_jobs=n_jobs)
+                                            aot = dos.get_aot(data_coarse,
+                                                              meta.sza,
+                                                              meta,
+                                                              dn_interp=data,
+                                                              angle_factor=1.0,
+                                                              interp_method='fast',
+                                                              aot_fallback=0.3,
+                                                              h2o=2.0,
+                                                              o3=0.3,  # global average of total ozone in a vertical column (3 cm)
+                                                              altitude=altitude,
+                                                              w=101,
+                                                              n_jobs=n_jobs)
 
-                                                    altitude *= 0.0001
-
-                                                else:
-                                                    altitude = 0.0
-
-                                                # Resample to 100m x 100m
-                                                data_coarse = data.sel(band=['blue', 'swir2']).gw\
-                                                                    .transform_crs(dst_res=100.0,
-                                                                                   resampling='med')
-
-                                                aot = dos.get_aot(data_coarse,
-                                                                  meta.sza,
-                                                                  meta,
-                                                                  dn_interp=data,
-                                                                  angle_factor=1.0,
-                                                                  interp_method='fast',
-                                                                  aot_fallback=0.3,
-                                                                  h2o=2.0,
-                                                                  o3=0.3,  # global average of total ozone in a vertical column (3 cm)
-                                                                  altitude=altitude,
-                                                                  w=101,
-                                                                  n_jobs=n_jobs)
-
-                                                sr = rt.dn_to_sr(data,
-                                                                 meta.sza,
-                                                                 None,
-                                                                 None,
-                                                                 None,
-                                                                 meta=meta,
-                                                                 src_nodata=nodataval,
-                                                                 dst_nodata=nodataval,
-                                                                 angle_factor=1.0,
-                                                                 method='6s',
-                                                                 interp_method='fast',
-                                                                 h2o=2.0,
-                                                                 o3=0.3,
-                                                                 aot=aot,
-                                                                 altitude=altitude,
-                                                                 n_jobs=n_jobs)
+                                            sr = rt.dn_to_sr(data,
+                                                             meta.sza,
+                                                             None,
+                                                             None,
+                                                             None,
+                                                             meta=meta,
+                                                             src_nodata=nodataval,
+                                                             dst_nodata=nodataval,
+                                                             angle_factor=1.0,
+                                                             method='6s',
+                                                             interp_method='fast',
+                                                             h2o=2.0,
+                                                             o3=0.3,
+                                                             aot=aot,
+                                                             altitude=altitude,
+                                                             n_jobs=n_jobs)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
