@@ -12,13 +12,22 @@ import os
 from pathlib import Path
 import logging
 from collections import namedtuple
+from getpass import getpass
+import math
 
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
 
+import geowombat as gw
+
 import numpy as np
+import geopandas as gpd
 import xarray as xr
 import joblib
+import requests
+import yaml
+from tqdm import tqdm
+from cryptography.fernet import Fernet
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +54,149 @@ SENSOR_LOOKUP = {'l5': _set_names('l5'),
                  's2b': _set_names('s2b')}
 
 
-class SixS(object):
+class PassKey(object):
+
+    @staticmethod
+    def create_key(key_file):
+
+        key = Fernet.generate_key()
+
+        with open(key_file, mode='w') as pf:
+            yaml.dump({'key': key}, pf, default_flow_style=False)
+
+    @staticmethod
+    def create_passcode(key_file, passcode_file):
+
+        """
+        Args:
+            key_file (str)
+            passcode_file (str)
+        """
+
+        passcode = getpass()
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        ciphered_text = cipher_suite.encrypt(passcode.encode())
+
+        with open(passcode_file, mode='w') as pf:
+            yaml.dump({'passcode': ciphered_text}, pf, default_flow_style=False)
+
+    @staticmethod
+    def load_passcode(key_file, passcode_file):
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        with open(passcode_file, mode='r') as pf:
+            ciphered_text = yaml.load(pf, Loader=yaml.FullLoader)
+
+        return cipher_suite.decrypt(ciphered_text['passcode'])
+
+
+class EarthDataDownloader(PassKey):
+
+    def __init__(self, username, key_file, code_file):
+
+        self.username = username
+        self.key_file = key_file
+        self.code_file = code_file
+
+        self.outpath = None
+
+    def download(self, url, outfile):
+
+        self.outpath = Path(outfile)
+
+        if self.outpath.is_file():
+            logger.warning(f'  The file {outfile} is already downloaded.')
+            return
+
+        base64_password = self.load_passcode(self.key_file, self.code_file).decode()
+
+        chunk_size = 256 * 10240
+
+        with requests.Session() as session:
+
+            session.auth = (self.username, base64_password)
+
+            # Open
+            req = session.request('get', url)
+            response = session.get(req.url, auth=(self.username, base64_password))
+
+            if not response.ok:
+                logger.exception('  Could not retrieve the page.')
+                raise NameError
+
+            if 'Content-Length' in response.headers:
+
+                content_length = float(response.headers['Content-Length'])
+                content_iters = int(math.ceil(content_length / chunk_size))
+                chunk_size_ = chunk_size * 1
+
+            else:
+
+                content_iters = 1
+                chunk_size_ = chunk_size * 1000
+
+            with open(str(outfile), 'wb') as ofn:
+
+                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
+                    ofn.write(data)
+
+
+class Altitude(object):
+
+    @staticmethod
+    def get_mean_altitude(data, username, key_file, code_file, outdir, n_jobs=1, delete_downloaded=False):
+
+        srtm_df = gpd.read_file(DATA_PATH / 'srtm30m_bounding_boxes.gpkg')
+
+        srtm_df_int = srtm_df[srtm_df.geometry.intersects(data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0])]
+
+        edd = EarthDataDownloader(username, key_file, code_file)
+
+        hgt_files = []
+        zip_paths = []
+
+        for dfn in srtm_df_int.dataFile.values.tolist():
+
+            zip_file = f"{outdir}/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip"
+
+            edd.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip",
+                         zip_file)
+
+            src_zip = f"zip+file://{zip_file}!/{Path(zip_file).stem.split('_')[-1]}.hgt"
+
+            hgt_files.append(Path(zip_file))
+            zip_paths.append(src_zip)
+
+        if len(zip_paths) == 1:
+            zip_paths = zip_paths[0]
+            mosaic = False
+        else:
+            mosaic = True
+
+        with gw.open(zip_paths, mosaic=mosaic) as src:
+
+            mean_elev = src.transpose('band', 'y', 'x')\
+                                .mean().data\
+                                .compute(num_workers=n_jobs)
+
+        if delete_downloaded:
+
+            for fn in hgt_files:
+                fn.unlink()
+
+        return mean_elev
+
+
+class SixS(Altitude):
 
     """
     A class to handle loading, downloading and interpolating
@@ -154,10 +305,10 @@ class SixS(object):
         band_data = data.sel(band=wavelength)
 
         if isinstance(sza, xr.DataArray):
-            sza = sza.squeeze().data.compute(num_workers=n_jobs)
+            sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
 
         if isinstance(aot, xr.DataArray):
-            aot = aot.squeeze().data.compute(num_workers=n_jobs)
+            aot = aot.squeeze().astype('float64').data.compute(num_workers=n_jobs)
 
         sza *= angle_factor
 
@@ -236,7 +387,7 @@ class SixS(object):
 
         elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
 
-        for aot_iter in np.arange(0.01, 3.01, 0.01):
+        for aot_iter in np.arange(0.01, 1.1, 0.01):
 
             xa, xb, xc = lut(sza, h2o, o3, aot_iter, altitude)
 
