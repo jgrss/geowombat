@@ -455,7 +455,7 @@ class MapProcesses(object):
         return results
 
 
-def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, frac, feature_array=None):
+def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, frac, min_frac_area, feature_array=None):
 
     """
     Samples polygon features
@@ -469,6 +469,7 @@ def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, f
         all_touched (bool)
         meta (namedtuple)
         frac (float)
+        min_frac_area (int | float)
         feature_array (Optional[ndarray])
 
     Returns:
@@ -511,12 +512,20 @@ def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, f
 
     if frac < 1:
 
-        rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
-                                    size=int(y_coords.shape[0] * frac),
-                                    replace=False)
+        take_subset = True
 
-        y_coords = y_coords[rand_idx]
-        x_coords = x_coords[rand_idx]
+        if isinstance(min_frac_area, int) or isinstance(min_frac_area, float):
+            if y_coords.shape[0] <= min_frac_area:
+                take_subset = False
+
+        if take_subset:
+
+            rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
+                                        size=int(y_coords.shape[0] * frac),
+                                        replace=False)
+
+            y_coords = y_coords[rand_idx]
+            x_coords = x_coords[rand_idx]
 
     n_samples = y_coords.shape[0]
 

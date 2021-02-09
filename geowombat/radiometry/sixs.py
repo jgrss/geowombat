@@ -9,16 +9,28 @@ Reference:
 """
 
 import os
+import shutil
+import string
+import random
 from pathlib import Path
 import logging
 from collections import namedtuple
+from getpass import getpass
+import math
 
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
 
+import geowombat as gw
+
 import numpy as np
+import geopandas as gpd
 import xarray as xr
 import joblib
+import requests
+import yaml
+from tqdm import tqdm
+from cryptography.fernet import Fernet
 
 
 logger = logging.getLogger(__name__)
@@ -32,13 +44,186 @@ DATA_PATH = p / '../data'
 
 def _set_names(sensor_name):
 
-    lut_path = DATA_PATH / 'lut' / '{}.bz2'.format(sensor_name)
+    lut_path = DATA_PATH / 'lut'
 
     return LUTNames(name=sensor_name,
                     path=lut_path)
 
 
-class SixS(object):
+SENSOR_LOOKUP = {'l5': _set_names('l5'),
+                 'l7': _set_names('l7'),
+                 'l8': _set_names('l8'),
+                 's2a': _set_names('s2a'),
+                 's2b': _set_names('s2b')}
+
+
+def _random_id(string_length):
+
+    """
+    Generates a random string of letters and digits
+    """
+
+    letters_digits = string.ascii_letters + string.digits
+
+    return ''.join(random.choice(letters_digits) for i in range(string_length))
+
+
+class PassKey(object):
+
+    @staticmethod
+    def create_key(key_file):
+
+        key = Fernet.generate_key()
+
+        with open(key_file, mode='w') as pf:
+            yaml.dump({'key': key}, pf, default_flow_style=False)
+
+    @staticmethod
+    def create_passcode(key_file, passcode_file):
+
+        """
+        Args:
+            key_file (str)
+            passcode_file (str)
+        """
+
+        passcode = getpass()
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        ciphered_text = cipher_suite.encrypt(passcode.encode())
+
+        with open(passcode_file, mode='w') as pf:
+            yaml.dump({'passcode': ciphered_text}, pf, default_flow_style=False)
+
+    @staticmethod
+    def load_passcode(key_file, passcode_file):
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        with open(passcode_file, mode='r') as pf:
+            ciphered_text = yaml.load(pf, Loader=yaml.FullLoader)
+
+        return cipher_suite.decrypt(ciphered_text['passcode'])
+
+
+class EarthDataDownloader(PassKey):
+
+    def __init__(self, username, key_file, code_file):
+
+        self.username = username
+        self.key_file = key_file
+        self.code_file = code_file
+
+        self.outpath = None
+
+    def download(self, url, outfile):
+
+        self.outpath = Path(outfile)
+
+        if self.outpath.is_file():
+            logger.warning(f'  The file {outfile} is already downloaded.')
+            return
+
+        base64_password = self.load_passcode(self.key_file, self.code_file).decode()
+
+        chunk_size = 256 * 10240
+
+        with requests.Session() as session:
+
+            session.auth = (self.username, base64_password)
+
+            # Open
+            req = session.request('get', url)
+            response = session.get(req.url, auth=(self.username, base64_password))
+
+            if not response.ok:
+                logger.exception('  Could not retrieve the page.')
+                raise NameError
+
+            if 'Content-Length' in response.headers:
+
+                content_length = float(response.headers['Content-Length'])
+                content_iters = int(math.ceil(content_length / chunk_size))
+                chunk_size_ = chunk_size * 1
+
+            else:
+
+                content_iters = 1
+                chunk_size_ = chunk_size * 1000
+
+            with open(str(outfile), 'wb') as ofn:
+
+                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
+                    ofn.write(data)
+
+
+class Altitude(object):
+
+    @staticmethod
+    def get_mean_altitude(data,
+                          username,
+                          key_file,
+                          code_file,
+                          out_dir,
+                          n_jobs=1,
+                          delete_downloaded=False):
+
+        srtm_grid_path = DATA_PATH / 'srtm30m_bounding_boxes.gpkg'
+        srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
+
+        shutil.copy(str(srtm_grid_path), str(srtm_grid_path_temp))
+
+        srtm_df = gpd.read_file(srtm_grid_path_temp)
+
+        srtm_grid_path_temp.unlink()
+
+        srtm_df_int = srtm_df[srtm_df.geometry.intersects(data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0])]
+
+        edd = EarthDataDownloader(username, key_file, code_file)
+
+        hgt_files = []
+        zip_paths = []
+
+        for dfn in srtm_df_int.dataFile.values.tolist():
+
+            zip_file = f"{out_dir}/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip"
+
+            edd.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip",
+                         zip_file)
+
+            src_zip = f"zip+file://{zip_file}!/{Path(zip_file).stem.split('_')[-1]}.hgt"
+
+            hgt_files.append(Path(zip_file))
+            zip_paths.append(src_zip)
+
+        if len(zip_paths) == 1:
+            zip_paths = zip_paths[0]
+            mosaic = False
+        else:
+            mosaic = True
+
+        with gw.open(zip_paths, mosaic=mosaic) as src:
+
+            mean_elev = src.transpose('band', 'y', 'x')\
+                                .mean().data\
+                                .compute(num_workers=n_jobs)
+
+        if delete_downloaded:
+
+            for fn in hgt_files:
+                fn.unlink()
+
+        return mean_elev
+
+
+class SixS(Altitude):
 
     """
     A class to handle loading, downloading and interpolating
@@ -46,10 +231,8 @@ class SixS(object):
 
     Args:
         sensor (str): The sensor to adjust.
-        band (int): The band to adjust.
         rad_scale (Optional[float]): The radiance scale factor. Scaled values should be in the range [0,1000].
-        angle_scale (Optional[float]): The angle scale factor.
-        verbose (Optional[int]): The verbosity level.
+        angle_factor (Optional[float]): The angle scale factor.
 
     Example:
         >>> sixs = SixS('l5', verbose=1)
@@ -59,174 +242,201 @@ class SixS(object):
         >>>         sixs.rad_to_sr(src, 'blue', sza, doy, h2o=1.0, o3=0.4, aot=0.3)
     """
 
-    def __init__(self, sensor, rad_scale=1.0, angle_scale=0.01, verbose=0):
+    @staticmethod
+    def _load(sensor, wavelength, interp_method):
 
-        self.sensor = sensor
-        self.rad_scale = rad_scale
-        self.angle_scale = angle_scale
-        self.verbose = verbose
+        lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
 
-        self.lut = None
+        lut_ = joblib.load(str(lut_path))
 
-        self.sensor_lookup = {'l5': _set_names('l5'),
-                              'l7': _set_names('l7'),
-                              'l8': _set_names('l8'),
-                              's2': _set_names('s2')}
-
-        # Load the lookup tables
-        self._load()
-
-    def _load(self):
-        self.lut = joblib.load(str(self.sensor_lookup[self.sensor].path))
+        return lut_[interp_method]
 
     @staticmethod
-    def prepare_coeff(band_data, valid_idx, coeffs, cindex):
-
-        x_ = np.zeros(band_data.gw.nrows * band_data.gw.ncols, dtype='float64')
-        x_[:] = np.nan
-        x_[valid_idx] = coeffs[:, cindex].flatten()
-        x_ = x_.reshape(band_data.gw.nrows, band_data.gw.ncols)
-
-        return ndarray_to_xarray(band_data, x_, ['coeff'])
-
-    def rad_to_sr(self, data, band, sza, vza, doy, h2o=1.0, o3=0.4, aot=0.3):
+    def _rad_to_sr_from_coeffs(rad, xa, xb, xc):
 
         """
-        Gets 6s coefficients
+        Transforms radiance to surface reflectance using 6S coefficients
+
+        Args:
+            rad (float | DataArray): The radiance.
+            xa (float | DataArray): The inverse of the transmittance.
+            xb (float | DataArray): The scattering term of the atmosphere.
+            xc (float | DataArray): The spherical albedo (atmospheric reflectance for isotropic light).
+
+        Returns:
+            ``float``
+
+        References:
+            https://py6s.readthedocs.io/en/latest/installation.html
+                y = xa * (measured radiance) - xb
+                acr = y / (1. + xc * y)
+        """
+
+        y = xa * rad - xb
+
+        return y / (1.0 + xc * y)
+
+    @staticmethod
+    def prepare_coeff(band_data, coeffs, cindex):
+        return ndarray_to_xarray(band_data, coeffs[:, :, cindex], ['coeff'])
+
+    def rad_to_sr(self,
+                  data,
+                  sensor,
+                  wavelength,
+                  sza,
+                  doy,
+                  src_nodata=-32768,
+                  dst_nodata=-32768,
+                  angle_factor=0.01,
+                  interp_method='fast',
+                  h2o=1.0,
+                  o3=0.4,
+                  aot=0.3,
+                  altitude=0.0,
+                  n_jobs=1):
+
+        """
+        Converts radiance to surface reflectance using a 6S radiative transfer model lookup table
 
         Args:
             data (DataArray): The data to correct, in radiance.
-            band (str): The band wavelength to process.
+            sensor (str): The sensor name.
+            wavelength (str): The band wavelength to process.
             sza (float | DataArray): The solar zenith angle.
-            vza (float | DataArray): The view zenith angle.
             doy (int): The day of year.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
+            angle_factor (Optional[float]): The scale factor for angles.
+            interp_method (Optional[str]): The LUT interpolation method. Choices are ['fast', 'slow'].
+                'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
+                'slow': Uses linear interpolation with ``scipy.interpolate.LinearNDInterpolator``.
             h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
             o3 (Optional[float]): The ozone (cm-atm). [0,8].
             aot (Optional[float | DataArray]): The aerosol optical thickness (unitless). [0,3].
+            altitude (Optional[float]): The altitude over the sensor acquisition location.
+            n_jobs (Optional[int]): The number of parallel jobs for ``dask.compute``.
 
         Returns:
-            ``xarray.DataArray``
+
+            ``xarray.DataArray``:
+
+                Data range: 0-1
         """
 
-        if not self.lut:
-            logger.exception('  The lookup table does not exist. Be sure to load it.')
-            raise NameError
-
-        if band not in self.lut:
-            logger.exception('  The band {} does not exist in the LUT.'.format(band))
-
-        band_interp = self.lut[band]
+        # Load the LUT
+        lut = self._load(sensor, wavelength, interp_method)
 
         attrs = data.attrs.copy()
 
-        band_data = data.sel(band=band)
-
-        altitude = 0.0
+        band_data = data.sel(band=wavelength)
 
         if isinstance(sza, xr.DataArray):
-            sza = sza.squeeze().data.compute()
-
-        if isinstance(vza, xr.DataArray):
-            vza = vza.squeeze().data.compute()
+            sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
 
         if isinstance(aot, xr.DataArray):
-            aot = aot.squeeze().data.compute()
+            aot = aot.squeeze().astype('float64').data.compute(num_workers=n_jobs)
 
-        if isinstance(sza, np.ndarray):
-            sza = sza.squeeze().flatten()
+        sza *= angle_factor
 
-        if isinstance(vza, np.ndarray):
-            vza = vza.squeeze().flatten()
-
-        if isinstance(aot, np.ndarray):
-            aot = aot.squeeze().flatten()
-
-        if isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
-            valid_idx = np.where(~np.isnan(aot) & ~np.isnan(sza))
-            sza = sza[valid_idx]
-            vza = vza[valid_idx]
-            aot = aot[valid_idx]
-        elif isinstance(sza, np.ndarray) and not isinstance(aot, np.ndarray):
-            valid_idx = np.where(~np.isnan(sza))
-            sza = sza[valid_idx]
-            vza = vza[valid_idx]
-        elif not isinstance(sza, np.ndarray) and isinstance(aot, np.ndarray):
-            valid_idx = np.where(~np.isnan(aot))
-            aot = aot[valid_idx]
-
-        coeffs = band_interp(sza*self.angle_scale, vza*self.angle_scale, h2o, o3, aot, altitude)
+        coeffs = lut(sza, h2o, o3, aot, altitude)
 
         elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
 
         coeffs *= elliptical_orbit_correction
 
-        xa = self.prepare_coeff(band_data, valid_idx, coeffs, 0)
-        xb = self.prepare_coeff(band_data, valid_idx, coeffs, 1)
-        xc = self.prepare_coeff(band_data, valid_idx, coeffs, 2)
+        xa = self.prepare_coeff(band_data, coeffs, 0)
+        xb = self.prepare_coeff(band_data, coeffs, 1)
+        xc = self.prepare_coeff(band_data, coeffs, 2)
 
-        tmp = (xa.sel(band='coeff') * (band_data*self.rad_scale)) - xb.sel(band='coeff')
-        refl = tmp / (1.0 + xc.sel(band='coeff') * tmp)
+        sr = self._rad_to_sr_from_coeffs(band_data,
+                                         xa.sel(band='coeff'),
+                                         xb.sel(band='coeff'),
+                                         xc.sel(band='coeff'))\
+                    .fillna(src_nodata)\
+                    .expand_dims(dim='band')\
+                    .assign_coords(coords={'band': [wavelength]})\
+                    .astype('float64')
 
-        return refl.expand_dims(dim='band')\
-                    .assign_coords(coords={'band': [band]})\
-                    .assign_attrs(**attrs)
+        # Create a 'no data' mask
+        mask = sr.where((sr != src_nodata) & (band_data != src_nodata))\
+                    .count(dim='band')\
+                    .astype('uint8')
 
-    def get_optimized_aot(self, blue_rad_dark, blue_p_dark, meta, h2o, o3):
+        # Create a mask to check zeros
+        zmask = sr.where(sr > 0)\
+                    .count(dim='band')\
+                    .astype('uint8')
 
-        band_interp = self.lut['blue']
+        # Mask 'no data' values
+        sr = xr.where(mask < sr.gw.nbands,
+                      dst_nodata,
+                      sr.clip(0, 1))\
+                .transpose('band', 'y', 'x')
 
-        doy = meta.date_acquired.timetuple().tm_yday
-        altitude = 0.0
+        # Set zeros in all bands
+        sr = xr.where(zmask < sr.gw.nbands,
+                      0,
+                      sr.clip(0, 1))\
+                .transpose('band', 'y', 'x')
+
+        attrs['sensor'] = sensor
+        attrs['nodata'] = dst_nodata
+        attrs['calibration'] = 'surface reflectance'
+        attrs['method'] = '6s radiative transfer model'
+        attrs['drange'] = (0, 1)
+
+        return sr.assign_attrs(**attrs)
+
+    def get_optimized_aot(self,
+                          blue_rad_dark,
+                          blue_p_dark,
+                          sensor,
+                          wavelength,
+                          interp_method,
+                          sza,
+                          doy,
+                          h2o,
+                          o3,
+                          altitude):
+
+        """
+        Gets the optimal aerosol optical thickness
+
+        Args:
+            blue_rad_dark (DataArray)
+            blue_p_dark (DataArray)
+            sensor (str)
+            wavelength (str)
+            interp_method (str)
+            sza (float): The solar zenith angle (in degrees).
+            doy (int): The day of year.
+            h2o (float): The water vapor (g/m^2). [0,8.5].
+            o3 (float): The ozone (cm-atm). [0,8].
+            altitude (float)
+        """
+
+        # Load the LUT
+        lut = self._load(sensor, wavelength, interp_method)
 
         min_score = np.zeros(blue_rad_dark.shape, dtype='float64') + 1e9
         aot = np.zeros(blue_rad_dark.shape, dtype='float64')
 
-        for aot_iter in np.linspace(0.1, 1.0, 10):
+        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
 
-            # sza, h2o, o3, aot, alt
-            a, b = band_interp(meta.sza, h2o, o3, aot_iter, altitude)
+        for aot_iter in np.arange(0.01, 1.1, 0.01):
 
-            elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
-            a *= elliptical_orbit_correction
-            b *= elliptical_orbit_correction
+            xa, xb, xc = lut(sza, h2o, o3, aot_iter, altitude)
 
-            res = (blue_rad_dark - a) / b
+            xa *= elliptical_orbit_correction
+            xb *= elliptical_orbit_correction
+            xc *= elliptical_orbit_correction
+
+            res = self._rad_to_sr_from_coeffs(blue_rad_dark, xa, xb, xc)
 
             score = np.abs(res - blue_p_dark)
 
             aot = np.where(score < min_score, aot_iter, aot)
             min_score = np.where(score < min_score, score, min_score)
 
-        return aot
-
-    # def interpolate(self):
-    #
-    #     """
-    #     Interpolates look-up tables
-    #     """
-    #
-    #     if self.verbose > 0:
-    #         logger.info('  Interpolating the LUT ...')
-    #
-    #     lut_dict = self._load('lut')
-    #
-    #     in_vars = lut_dict['config']['invars']
-    #
-    #     # all permutations
-    #     inputs = list(itertools.product(in_vars['solar_zs'],
-    #                                     in_vars['H2Os'],
-    #                                     in_vars['O3s'],
-    #                                     in_vars['AOTs'],
-    #                                     in_vars['alts']))
-    #
-    #     # output variables (6S correction coefficients)
-    #     outputs = lut_dict['outputs']
-    #
-    #     interpolator = LinearNDInterpolator(inputs, outputs)
-    #
-    #     self._dump(interpolator)
-    #
-    #     if self.verbose > 0:
-    #
-    #         logger.info('  Finished interpolating for sensor {SENSOR}, band {BAND}.'.format(SENSOR=self.sensor,
-    #                                                                                         BAND=self.band))
+        return aot.clip(0, 1)

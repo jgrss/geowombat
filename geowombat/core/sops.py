@@ -529,6 +529,7 @@ class SpatialOperations(_PropertyMixin):
                 time_names=None,
                 band_names=None,
                 frac=1.0,
+                min_frac_area=None,
                 all_touched=False,
                 id_column='id',
                 time_format='%Y%m%d',
@@ -556,6 +557,8 @@ class SpatialOperations(_PropertyMixin):
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
+            min_frac_area (Optional[int | float]): A minimum polygon area to use ``frac``. Otherwise, use all samples
+                within a polygon.
             all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
             id_column (Optional[str]): The id column name.
             time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
@@ -645,6 +648,7 @@ class SpatialOperations(_PropertyMixin):
         df = converters.prepare_points(data,
                                        aoi,
                                        frac=frac,
+                                       min_frac_area=min_frac_area,
                                        all_touched=all_touched,
                                        id_column=id_column,
                                        mask=mask,

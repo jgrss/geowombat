@@ -283,8 +283,6 @@ cdef double _transform_starfm(double[:, ::1] band_weights,
 cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                            double[:, ::1] mres_k,
                            double[:, ::1] mres_0,
-                           double[:, ::1] hres_k_sim,
-                           double[:, ::1] mres_k_sim,
                            double[:, ::1] conf,
                            double[:, ::1] dist_window,
                            double[:, :, ::1] std_stack,
@@ -340,7 +338,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                     # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
 
                     # Similarity test (|current value - center value|)
-                    hres_sim = fabs(hres_k_sim[i+m1, j+n1] - hres_k_sim[i+hw, j+hw])
+                    hres_sim = fabs(hres_k[i+m1, j+n1] - hres_k[i+hw, j+hw])
 
                     # Weight for local heterogeneity
                     hres_k_std_dist = 1.0 - _logistic_scaler(std_stack[0, i+m1, j+n1], std_stack[0, nrows, 0], std_stack[0, nrows, 1], 7.5, 20.0) + 1.0
@@ -387,7 +385,7 @@ cdef double _fit_transform_starfm(double[:, ::1] hres_k,
                         # tp_dist_filter = 1 if tp_dist > 1.0 / max_tp_dist else 0
 
                         # Similarity test (|current value - center value|)
-                        hres_sim = fabs(hres_k_sim[i+m2, j+n2] - hres_k_sim[i+hw, j+hw])
+                        hres_sim = fabs(hres_k[i+m2, j+n2] - hres_k[i+hw, j+hw])
 
                         # Center distance
                         sp_dist_a = _logistic(fabs(hres_k[i+m2, j+n2] - mres_0[i+m2, j+n2]), 0.2, 15.0) + 1.0
@@ -740,8 +738,6 @@ cdef class StarFM(object):
                       double[:, ::1] hres_k not None,
                       double[:, ::1] mres_k not None,
                       double[:, ::1] mres_0 not None,
-                      double[:, ::1] hres_k_sim not None,
-                      double[:, ::1] mres_k_sim not None,
                       double[:, ::1] conf not None):
 
         cdef:
@@ -817,8 +813,6 @@ cdef class StarFM(object):
                 output[i+hw, j+hw] = _fit_transform_starfm(hres_k,
                                                     mres_k,
                                                     mres_0,
-                                                    hres_k_sim,
-                                                    mres_k_sim,
                                                     conf,
                                                     dist_window,
                                                     std_stack,

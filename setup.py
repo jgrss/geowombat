@@ -100,6 +100,7 @@ def get_package_data():
                           'data/*.TIF',
                           'data/*.gpkg',
                           'data/*.tar.gz',
+                          'data/lut/*.lut',
                           'moving/*.so',
                           'bin/*.tar.gz']}
 

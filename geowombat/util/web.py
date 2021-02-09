@@ -12,7 +12,7 @@ import time
 import logging
 
 from ..handler import add_handler
-from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker
+from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker, DOS
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core.properties import get_sensor_info
 from ..core import ndarray_to_xarray
@@ -207,17 +207,6 @@ def _assign_attrs(data, attrs, bands_out):
     data.attrs = attrs
 
     return data
-
-
-def _random_id(string_length):
-
-    """
-    Generates a random string of letters and digits
-    """
-
-    letters_digits = string.ascii_letters + string.digits
-
-    return ''.join(random.choice(letters_digits) for i in range(string_length))
 
 
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
@@ -836,6 +825,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                       lqa_mask_items=None,
                       chunks=512,
                       cloud_heights=None,
+                      sr_method='srem',
+                      earthdata_username=None,
+                      earthdata_key_file=None,
+                      earthdata_code_file=None,
+                      srtm_outdir=None,
                       n_jobs=1,
                       num_workers=1,
                       num_threads=1,
@@ -874,6 +868,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
+            sr_method (Optional[str]): The surface reflectance correction method. Choices are ['srem', '6s'].
+            earthdata_username (Optional[str]): The EarthData username.
+            earthdata_key_file (Optional[str]): The EarthData secret key file.
+            earthdata_code_file (Optional[str]): The EarthData secret passcode file.
+            srtm_outdir (Optional[str]): The output SRTM directory.
             n_jobs (Optional[int]): The number of parallel download workers for ``joblib``.
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             num_threads (Optional[int]): The number of GDAL warp threads.
@@ -923,6 +922,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         rt = RadTransforms()
         br = BRDF()
         la = LinearAdjustments()
+        dos = DOS()
 
         main_path = Path(outdir)
         outdir_brdf = main_path.joinpath('brdf')
@@ -1193,6 +1193,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
+                                # TODO: get sentinel metadata
+
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
                                                                    str(outdir_angles),
@@ -1247,7 +1249,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
 
-                                logger.info('  Translating jp2 files to gtiff for {} ...'.format(brdfp))
+                                logger.info(f'  Translating jp2 files to gtiff for {brdfp} ...')
 
                                 load_bands_names = []
 
@@ -1283,12 +1285,13 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                     logger.exception('  Could not get all band name associations.')
                                     raise NameError
 
-                            logger.info('  Applying BRDF and SR correction for {} ...'.format(brdfp))
+                            logger.info(f'  Applying BRDF and SR correction for {brdfp} ...')
 
                             with gw.config.update(sensor=rad_sensor,
                                                   ref_bounds=out_bounds,
                                                   ref_crs=crs,
-                                                  ref_res=ref_res if ref_res else load_bands_names[-1]):
+                                                  ref_res=ref_res if ref_res else load_bands_names[-1],
+                                                  ignore_warnings=True):
 
                                 valid_data = True
 
@@ -1365,27 +1368,94 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     logger.warning('  S2Cloudless is not installed, so skipping Sentinel cloud masking.')
 
-                                        if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+                                        if sr_method == 'srem':
 
-                                            # The S-2 data are in TOAR (0-10000)
-                                            toar_scaled = (data * 0.0001).clip(0, 1).astype('float64')
-                                            toar_scaled.attrs = attrs
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                            # Convert TOAR to surface reflectance
-                                            sr = rt.toar_to_sr(toar_scaled,
-                                                               sza, saa, vza, vaa,
-                                                               rad_sensor,
-                                                               dst_nodata=nodataval)
+                                                # The S-2 data are in TOAR (0-10000)
+                                                toar_scaled = (data * 0.0001)\
+                                                                .astype('float64')\
+                                                                .clip(0, 1)\
+                                                                .assign_attrs(**attrs)
+
+                                                # Convert TOAR to surface reflectance
+                                                sr = rt.toar_to_sr(toar_scaled,
+                                                                   sza, saa, vza, vaa,
+                                                                   rad_sensor,
+                                                                   dst_nodata=nodataval)
+
+                                            else:
+
+                                                # Convert DN to surface reflectance
+                                                sr = rt.dn_to_sr(data,
+                                                                 sza, saa, vza, vaa,
+                                                                 sensor=rad_sensor,
+                                                                 meta=meta,
+                                                                 src_nodata=nodataval,
+                                                                 dst_nodata=nodataval)
 
                                         else:
 
-                                            # Convert DN to surface reflectance
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+
+                                                # The S-2 data are in TOAR (0-10000)
+                                                data = (data * 0.0001)\
+                                                        .astype('float64')\
+                                                        .assign_attrs(**attrs)
+
+                                                # Invert TOAR to DN
+                                                # data = (1.0 / beta) * data - (alpha / beta)
+
+                                            if isinstance(earthdata_username, str) and \
+                                                    isinstance(earthdata_key_file, str) and \
+                                                    isinstance(earthdata_code_file, str):
+
+                                                altitude = dos.get_mean_altitude(data,
+                                                                                 earthdata_username,
+                                                                                 earthdata_key_file,
+                                                                                 earthdata_code_file,
+                                                                                 srtm_outdir,
+                                                                                 n_jobs=n_jobs)
+
+                                                altitude *= 0.0001
+
+                                            else:
+                                                altitude = 0.0
+
+                                            # Resample to 100m x 100m
+                                            data_coarse = data.sel(band=['blue', 'swir2']).gw\
+                                                                .transform_crs(dst_res=100.0,
+                                                                               resampling='med')
+
+                                            aot = dos.get_aot(data_coarse,
+                                                              meta.sza,
+                                                              meta,
+                                                              dn_interp=data,
+                                                              angle_factor=1.0,
+                                                              interp_method='fast',
+                                                              aot_fallback=0.3,
+                                                              h2o=2.0,
+                                                              o3=0.3,  # global average of total ozone in a vertical column (3 cm)
+                                                              altitude=altitude,
+                                                              w=101,
+                                                              n_jobs=n_jobs)
+
                                             sr = rt.dn_to_sr(data,
-                                                             sza, saa, vza, vaa,
-                                                             sensor=rad_sensor,
+                                                             meta.sza,
+                                                             None,
+                                                             None,
+                                                             None,
                                                              meta=meta,
                                                              src_nodata=nodataval,
-                                                             dst_nodata=nodataval)
+                                                             dst_nodata=nodataval,
+                                                             angle_factor=1.0,
+                                                             method='6s',
+                                                             interp_method='fast',
+                                                             h2o=2.0,
+                                                             o3=0.3,
+                                                             aot=aot,
+                                                             altitude=altitude,
+                                                             n_jobs=n_jobs)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
