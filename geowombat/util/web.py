@@ -837,6 +837,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                       chunks=512,
                       cloud_heights=None,
                       sr_method='srem',
+                      earthdata_username=None,
+                      earthdata_key_file=None,
+                      earthdata_code_file=None,
+                      srtm_outdir=None,
                       n_jobs=1,
                       num_workers=1,
                       num_threads=1,
@@ -876,6 +880,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             chunks (Optional[int]): The chunk size to read at.
             cloud_heights (Optional[list]): The cloud heights, in kilometers.
             sr_method (Optional[str]): The surface reflectance correction method. Choices are ['srem', '6s'].
+            earthdata_username (Optional[str]): The EarthData username.
+            earthdata_key_file (Optional[str]): The EarthData secret key file.
+            earthdata_code_file (Optional[str]): The EarthData secret passcode file.
+            srtm_outdir (Optional[str]): The output SRTM directory.
             n_jobs (Optional[int]): The number of parallel download workers for ``joblib``.
             num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
             num_threads (Optional[int]): The number of GDAL warp threads.
@@ -1394,14 +1402,38 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                             else:
 
-                                                aot = dos.get_aot(data,
+                                                if isinstance(earthdata_username, str) and \
+                                                        isinstance(earthdata_key_file, str) and \
+                                                        isinstance(earthdata_code_file, str):
+
+                                                    altitude = dos.get_mean_altitude(data,
+                                                                                     earthdata_username,
+                                                                                     earthdata_key_file,
+                                                                                     earthdata_code_file,
+                                                                                     srtm_outdir,
+                                                                                     n_jobs=n_jobs)
+
+                                                    altitude *= 0.0001
+
+                                                else:
+                                                    altitude = 0.0
+
+                                                # Resample to 1 km x 1 km
+                                                data_coarse = data.sel(band=['blue', 'swir2']).gw\
+                                                                    .transform_crs(dst_res=1000.0,
+                                                                                   resampling='average')
+
+                                                aot = dos.get_aot(data_coarse,
                                                                   meta.sza,
                                                                   meta,
+                                                                  dn_interp=data,
                                                                   angle_factor=1.0,
                                                                   interp_method='fast',
                                                                   aot_fallback=0.3,
                                                                   h2o=2.0,
                                                                   o3=0.3,  # global average of total ozone in a vertical column (3 cm)
+                                                                  altitude=altitude,
+                                                                  w=None,
                                                                   n_jobs=n_jobs)
 
                                                 sr = rt.dn_to_sr(data,
@@ -1416,6 +1448,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                  h2o=2.0,
                                                                  o3=0.3,
                                                                  aot=aot,
+                                                                 altitude=altitude,
                                                                  n_jobs=n_jobs)
 
                                         # BRDF normalization
