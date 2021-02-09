@@ -782,10 +782,10 @@ class DOS(SixS, RadTransforms):
                 dn_interp=None,
                 interp_method='fast',
                 aot_fallback=0.3,
-                h2o=1.0,
-                o3=0.4,
+                h2o=2.0,
+                o3=0.3,
                 altitude=0.0,
-                w=5,
+                w=None,
                 n_jobs=1):
 
         """
@@ -804,7 +804,7 @@ class DOS(SixS, RadTransforms):
                 are found (unitless). [0,3].
             h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
             o3 (Optional[float]): The ozone (cm-atm). [0,8].
-            altitude (Optional[float]): The altitude over the sensor acquisition location.
+            altitude (Optional[float]): The altitude over the sensor acquisition location (km above sea level).
             w (Optional[int]): The smoothing window size (in pixels).
             n_jobs (Optional[int]): The number of parallel jobs for ``moving_window`` and ``dask.compute``.
 
@@ -901,26 +901,19 @@ class DOS(SixS, RadTransforms):
     @staticmethod
     def _resize(aot, src_interp, w, n_jobs):
 
-        for r in np.arange(aot.shape[0]+1000, src_interp.gw.nrows-1000, 5):
-
-            tar_rows = r / aot.shape[0]
-            tar_cols = r / aot.shape[1]
-
-            aot = cv2.resize(aot,
-                             (0, 0),
-                             fy=tar_rows,
-                             fx=tar_cols,
-                             interpolation=cv2.INTER_CUBIC)
-
         aot = cv2.resize(aot,
                          (0, 0),
                          fy=src_interp.gw.nrows / aot.shape[0],
                          fx=src_interp.gw.ncols / aot.shape[1],
                          interpolation=cv2.INTER_CUBIC)
 
-        aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), w, w, w, w, cv2.BORDER_REFLECT)),
-                            stat='mean',
-                            w=w,
-                            n_jobs=n_jobs)[w:-w, w:-w]
+        if isinstance(w, int):
+
+            hw = int(w / 2.0)
+
+            aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), hw, hw, hw, hw, cv2.BORDER_REFLECT)),
+                                stat='mean',
+                                w=w,
+                                n_jobs=n_jobs)[hw:-hw, hw:-hw]
 
         return aot
