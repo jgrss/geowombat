@@ -209,17 +209,6 @@ def _assign_attrs(data, attrs, bands_out):
     return data
 
 
-def _random_id(string_length):
-
-    """
-    Generates a random string of letters and digits
-    """
-
-    letters_digits = string.ascii_letters + string.digits
-
-    return ''.join(random.choice(letters_digits) for i in range(string_length))
-
-
 def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
 
     file_info = GoogleFileInfo(url=None, url_file=None, meta=None, angles=None)
