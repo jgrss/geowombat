@@ -748,18 +748,17 @@ class RadTransforms(MetaData):
 
         sr_data = (toar_diff / (toar_diff * ab_ratio + transmission))\
                         .fillna(src_nodata)\
-                        .astype('float64')\
-                        .clip(0, 1)
+                        .astype('float64')
 
         # Create a 'no data' mask
-        mask = sr_data.where((sr_data != src_nodata) & (toar != src_nodata))\
+        mask = sr_data.where((sr_data != src_nodata) & (sr_data > 0) & (toar != src_nodata))\
                         .count(dim='band')\
                         .astype('uint8')
 
         # Mask 'no data' values
         sr_data = xr.where(mask < sr_data.gw.nbands,
                            dst_nodata,
-                           sr_data)\
+                           sr_data.clip(0, 1))\
                         .transpose('band', 'y', 'x')
 
         attrs['sensor'] = sensor
