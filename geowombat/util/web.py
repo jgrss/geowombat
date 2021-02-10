@@ -1193,7 +1193,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                # TODO: get sentinel metadata
+                                meta = rt.get_sentinel_coefficients(finfo_dict['meta'].name)
 
                                 angle_info = sentinel_pixel_angles(finfo_dict['meta'].name,
                                                                    ref_file,
@@ -1403,9 +1403,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                         .astype('float64')\
                                                         .assign_attrs(**attrs)
 
-                                                # Invert TOAR to DN
-                                                # data = (1.0 / beta) * data - (alpha / beta)
-
                                             if isinstance(earthdata_username, str) and \
                                                     isinstance(earthdata_key_file, str) and \
                                                     isinstance(earthdata_code_file, str):
@@ -1440,22 +1437,43 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                               w=101,
                                                               n_jobs=n_jobs)
 
-                                            sr = rt.dn_to_sr(data,
-                                                             meta.sza,
-                                                             None,
-                                                             None,
-                                                             None,
-                                                             meta=meta,
-                                                             src_nodata=nodataval,
-                                                             dst_nodata=nodataval,
-                                                             angle_factor=1.0,
-                                                             method='6s',
-                                                             interp_method='fast',
-                                                             h2o=2.0,
-                                                             o3=0.3,
-                                                             aot=aot,
-                                                             altitude=altitude,
-                                                             n_jobs=n_jobs)
+                                            if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+
+                                                sr = rt.toar_to_sr(data,
+                                                                   meta.sza,
+                                                                   None,
+                                                                   None,
+                                                                   None,
+                                                                   meta=meta,
+                                                                   src_nodata=nodataval,
+                                                                   dst_nodata=nodataval,
+                                                                   angle_factor=1.0,
+                                                                   method='6s',
+                                                                   interp_method='fast',
+                                                                   h2o=2.0,
+                                                                   o3=0.3,
+                                                                   aot=aot,
+                                                                   altitude=altitude,
+                                                                   n_jobs=n_jobs)
+
+                                            else:
+
+                                                sr = rt.dn_to_sr(data,
+                                                                 meta.sza,
+                                                                 None,
+                                                                 None,
+                                                                 None,
+                                                                 meta=meta,
+                                                                 src_nodata=nodataval,
+                                                                 dst_nodata=nodataval,
+                                                                 angle_factor=1.0,
+                                                                 method='6s',
+                                                                 interp_method='fast',
+                                                                 h2o=2.0,
+                                                                 o3=0.3,
+                                                                 aot=aot,
+                                                                 altitude=altitude,
+                                                                 n_jobs=n_jobs)
 
                                         # BRDF normalization
                                         sr_brdf = br.norm_brdf(sr,
