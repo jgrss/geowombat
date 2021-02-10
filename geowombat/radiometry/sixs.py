@@ -264,7 +264,7 @@ class SixS(Altitude):
             xc (float | DataArray): The spherical albedo (atmospheric reflectance for isotropic light).
 
         Returns:
-            ``float``
+            ``float`` | ``xarray.DataArray``
 
         References:
             https://py6s.readthedocs.io/en/latest/installation.html
@@ -277,8 +277,138 @@ class SixS(Altitude):
         return y / (1.0 + xc * y)
 
     @staticmethod
+    def _toar_to_sr_from_coeffs(toar, t_g, p_alpha, s, t_s, t_v):
+
+        """
+        Transforms top of atmosphere reflectance to surface reflectance using 6S coefficients
+
+        Args:
+            toar (float | DataArray): The top of atmosphere reflectance.
+            t_g (float): The total gaseous transmission of the atmosphere.
+            p_alpha (float): The atmospheric reflectance.
+            s (float): The spherical albedo of the atmosphere.
+            t_s (float): The atmospheric transmittance from sun to target.
+            t_v (float): The atmospheric transmittance from target to satellite.
+
+        Returns:
+            ``float`` | ``xarray.DataArray``
+        """
+
+        sr_s = ((toar / t_g) - p_alpha) / (t_s * t_v)
+
+        return sr_s / (1.0 + s * sr_s)
+
+    @staticmethod
     def prepare_coeff(band_data, coeffs, cindex):
         return ndarray_to_xarray(band_data, coeffs[:, :, cindex], ['coeff'])
+
+    def toar_to_sr(data,
+                   sensor,
+                   wavelength,
+                   sza,
+                   doy,
+                   src_nodata=-32768,
+                   dst_nodata=-32768,
+                   angle_factor=0.01,
+                   interp_method='fast',
+                   h2o=1.0,
+                   o3=0.4,
+                   aot=0.3,
+                   altitude=0.0):
+
+        """
+        Convets top of atmosphere reflectance to surface reflectance using 6S outputs
+
+        Args:
+            data (DataArray): The top of atmosphere reflectance.
+            sensor (str): The sensor name.
+            wavelength (str): The band wavelength to process.
+            sza (float | DataArray): The solar zenith angle.
+            doy (int): The day of year.
+            src_nodata (Optional[int or float]): The input 'no data' value.
+            dst_nodata (Optional[int or float]): The output 'no data' value.
+            angle_factor (Optional[float]): The scale factor for angles.
+            interp_method (Optional[str]): The LUT interpolation method. Choices are ['fast', 'slow'].
+                'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
+                'slow': Uses linear interpolation with ``scipy.interpolate.LinearNDInterpolator``.
+            h2o (Optional[float]): The water vapor (g/m^2). [0,8.5].
+            o3 (Optional[float]): The ozone (cm-atm). [0,8].
+            aot (Optional[float | DataArray]): The aerosol optical thickness (unitless). [0,3].
+            altitude (Optional[float]): The altitude over the sensor acquisition location.
+
+        6S model outputs:
+            t_g (float): The total gaseous transmission of the atmosphere.
+                s.run() --> s.outputs.total_gaseous_transmittance
+            p_alpha (float): The atmospheric reflectance.
+                s.run() --> s.outputs.atmospheric_intrinsic_reflectance
+            s (float): The spherical albedo of the atmosphere.
+                s.run() --> s.outputs.spherical_albedo
+            t_s (float): The atmospheric transmittance from sun to target.
+                #s.run() --> s.outputs.diffuse_solar_irradiance
+                s.run() --> s.outputs.transmittance_rayleigh_scattering.downward
+            t_v (float): The atmospheric transmittance from target to satellite.
+                #s.run() --> s.outputs.direct_solar_irradiance
+                s.run() --> s.outputs.transmittance_rayleigh_scattering.upward
+        """
+
+        # Load the LUT
+        lut = self._load(sensor, wavelength, interp_method)
+
+        band_data = data.sel(band=wavelength)
+
+        # t_g, p_alpha, s, t_s, t_v
+        coeffs = lut(sza, h2o, o3, aot, altitude)
+
+        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+
+        coeffs *= elliptical_orbit_correction
+
+        t_g = self.prepare_coeff(band_data, coeffs, 0)
+        p_alpha = self.prepare_coeff(band_data, coeffs, 1)
+        s = self.prepare_coeff(band_data, coeffs, 2)
+        t_s = self.prepare_coeff(band_data, coeffs, 3)
+        t_v = self.prepare_coeff(band_data, coeffs, 4)
+
+        sr = self._toar_to_sr_from_coeffs(band_data,
+                                          t_g.sel(band='coeff'),
+                                          p_alpha.sel(band='coeff'),
+                                          s.sel(band='coeff'),
+                                          t_s.sel(band='coeff'),
+                                          t_v.sel(band='coeff'))\
+                    .fillna(src_nodata)\
+                    .expand_dims(dim='band')\
+                    .assign_coords(coords={'band': [wavelength]})\
+                    .astype('float64')
+
+        # Create a 'no data' mask
+        mask = sr.where((sr != src_nodata) & (band_data != src_nodata))\
+                    .count(dim='band')\
+                    .astype('uint8')
+
+        # Create a mask to check zeros
+        zmask = sr.where(sr > 0)\
+                    .count(dim='band')\
+                    .astype('uint8')
+
+        # Mask 'no data' values
+        sr = xr.where(mask < sr.gw.nbands,
+                      dst_nodata,
+                      sr.clip(0, 1))\
+                .transpose('band', 'y', 'x')
+
+        # Set zeros in all bands
+        sr = xr.where(zmask < sr.gw.nbands,
+                      0,
+                      sr.clip(0, 1))\
+                .transpose('band', 'y', 'x')
+
+        attrs['sensor'] = sensor
+        attrs['nodata'] = dst_nodata
+        attrs['calibration'] = 'surface reflectance'
+        attrs['method'] = '6s radiative transfer model'
+        attrs['drange'] = (0, 1)
+
+        return sr.assign_attrs(**attrs)
 
     def rad_to_sr(self,
                   data,
