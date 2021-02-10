@@ -687,27 +687,38 @@ class RadTransforms(MetaData):
                    solar_az,
                    sensor_za,
                    sensor_az,
-                   sensor,
+                   sensor=None,
                    src_nodata=-32768,
                    dst_nodata=-32768,
-                   method='srem'):
+                   method='srem',
+                   angle_factor=0.01,
+                   meta=None,
+                   interp_method='fast',
+                   **kwargs):
 
         """
         Converts top-of-atmosphere reflectance to surface reflectance
 
         Args:
             toar (DataArray): The top-of-atmosphere reflectance.
-            solar_za (DataArray): The solar zenith angle.
+            solar_za (float | DataArray): The solar zenith angle.
             solar_az (DataArray): The solar azimuth angle.
             sensor_za (DataArray): The sensor zenith angle.
             sensor_az (DataArray): The sensor azimuth angle.
-            sensor (str): The satellite sensor.
+            sensor (Optional[str]): The data's sensor.
             src_nodata (Optional[int or float]): The input 'no data' value.
             dst_nodata (Optional[int or float]): The output 'no data' value.
             method (Optional[str]): The method to use. Choices are ['srem', '6s'].
 
                 Choices:
                     'srem': A Simplified and Robust Surface Reflectance Estimation Method (SREM)
+
+            angle_factor (Optional[float]): The scale factor for angles.
+            meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
+            interp_method (Optional[str]): The LUT interpolation method if ``method`` = '6s'. Choices are ['fast', 'slow'].
+                'fast': Uses nearest neighbor lookup with ``scipy.interpolate.NearestNDInterpolator``.
+                'slow': Uses linear interpolation with ``scipy.interpolate.LinearNDInterpolator``.
+            kwargs (Optional[dict]): Extra keyword arguments passed to ``radiometry.sixs.SixS().toar_to_sr``.
 
         References:
 
@@ -724,6 +735,9 @@ class RadTransforms(MetaData):
 
         attrs = toar.attrs.copy()
 
+        # Get the data band names and positional indices
+        band_names = toar.band.values.tolist()
+
         # Set 'no data' as nans
         toar = toar.where(toar != src_nodata)
 
@@ -736,11 +750,15 @@ class RadTransforms(MetaData):
             for band in band_names:
 
                 sr_data.append(sxs.toar_to_sr(toar,
-                                              t_g,
-                                              p_alpha,
-                                              s,
-                                              t_s,
-                                              t_v))
+                                              sensor,
+                                              band,
+                                              solar_za,
+                                              meta.date_acquired.timetuple().tm_yday,
+                                              src_nodata=src_nodata,
+                                              dst_nodata=dst_nodata,
+                                              angle_factor=angle_factor,
+                                              interp_method=interp_method,
+                                              **kwargs))
 
             sr_data = xr.concat(sr_data, dim='band')
 
@@ -753,16 +771,16 @@ class RadTransforms(MetaData):
             um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
 
             # Scale the angles to degrees
-            sza = solar_za * 0.01
+            sza = solar_za * angle_factor
             sza.coords['band'] = [1]
 
-            saa = solar_az * 0.01
+            saa = solar_az * angle_factor
             saa.coords['band'] = [1]
 
-            vza = sensor_za * 0.01
+            vza = sensor_za * angle_factor
             vza.coords['band'] = [1]
 
-            vaa = sensor_az * 0.01
+            vaa = sensor_az * angle_factor
             vaa.coords['band'] = [1]
 
             # Convert to radians
