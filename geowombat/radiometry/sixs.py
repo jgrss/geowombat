@@ -302,7 +302,8 @@ class SixS(Altitude):
     def prepare_coeff(band_data, coeffs, cindex):
         return ndarray_to_xarray(band_data, coeffs[:, :, cindex], ['coeff'])
 
-    def toar_to_sr(data,
+    def toar_to_sr(self,
+                   data,
                    sensor,
                    wavelength,
                    sza,
@@ -314,7 +315,8 @@ class SixS(Altitude):
                    h2o=1.0,
                    o3=0.4,
                    aot=0.3,
-                   altitude=0.0):
+                   altitude=0.0,
+                   n_jobs=1):
 
         """
         Convets top of atmosphere reflectance to surface reflectance using 6S outputs
@@ -335,6 +337,7 @@ class SixS(Altitude):
             o3 (Optional[float]): The ozone (cm-atm). [0,8].
             aot (Optional[float | DataArray]): The aerosol optical thickness (unitless). [0,3].
             altitude (Optional[float]): The altitude over the sensor acquisition location.
+            n_jobs (Optional[int]): The number of parallel jobs for ``dask.compute``.
 
         6S model outputs:
             t_g (float): The total gaseous transmission of the atmosphere.
@@ -344,17 +347,20 @@ class SixS(Altitude):
             s (float): The spherical albedo of the atmosphere.
                 s.run() --> s.outputs.spherical_albedo
             t_s (float): The atmospheric transmittance from sun to target.
-                #s.run() --> s.outputs.diffuse_solar_irradiance
-                s.run() --> s.outputs.transmittance_rayleigh_scattering.downward
+                s.run() --> s.outputs.transmittance_total_scattering.downward
             t_v (float): The atmospheric transmittance from target to satellite.
-                #s.run() --> s.outputs.direct_solar_irradiance
-                s.run() --> s.outputs.transmittance_rayleigh_scattering.upward
+                s.run() --> s.outputs.transmittance_total_scattering.upward
         """
 
         # Load the LUT
         lut = self._load(sensor, wavelength, interp_method)
 
         band_data = data.sel(band=wavelength)
+
+        if isinstance(sza, xr.DataArray):
+            sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+
+        sza *= angle_factor
 
         # t_g, p_alpha, s, t_s, t_v
         coeffs = lut(sza, h2o, o3, aot, altitude)
