@@ -393,20 +393,9 @@ class SixS(Altitude):
                     .count(dim='band')\
                     .astype('uint8')
 
-        # Create a mask to check zeros
-        zmask = sr.where(sr > 0)\
-                    .count(dim='band')\
-                    .astype('uint8')
-
         # Mask 'no data' values
         sr = xr.where(mask < sr.gw.nbands,
                       dst_nodata,
-                      sr.clip(0, 1))\
-                .transpose('band', 'y', 'x')
-
-        # Set zeros in all bands
-        sr = xr.where(zmask < sr.gw.nbands,
-                      0,
                       sr.clip(0, 1))\
                 .transpose('band', 'y', 'x')
 
@@ -501,20 +490,9 @@ class SixS(Altitude):
                     .count(dim='band')\
                     .astype('uint8')
 
-        # Create a mask to check zeros
-        zmask = sr.where(sr > 0)\
-                    .count(dim='band')\
-                    .astype('uint8')
-
         # Mask 'no data' values
         sr = xr.where(mask < sr.gw.nbands,
                       dst_nodata,
-                      sr.clip(0, 1))\
-                .transpose('band', 'y', 'x')
-
-        # Set zeros in all bands
-        sr = xr.where(zmask < sr.gw.nbands,
-                      0,
                       sr.clip(0, 1))\
                 .transpose('band', 'y', 'x')
 
