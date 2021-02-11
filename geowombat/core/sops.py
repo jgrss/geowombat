@@ -923,9 +923,8 @@ class SpatialOperations(_PropertyMixin):
         else:
             return data.where(mask == 1)
 
-    def replace(self,
-                data,
-                to_replace):
+    @staticmethod
+    def replace(data, to_replace):
 
         """
         Replace values given in to_replace with value.
