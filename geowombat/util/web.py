@@ -1513,8 +1513,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     wavel_sub = sr_brdf.gw.set_nodata(nodataval,
                                                                                       nodataval,
-                                                                                      (0, 1),
-                                                                                      'float64')
+                                                                                      out_range=(0, 1),
+                                                                                      dtype='float64')
 
                                                     # Estimate the cloud shadows
                                                     mask = estimate_cloud_shadows(wavel_sub,
@@ -1563,8 +1563,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             # Set 'no data' values
                                             sr_brdf = sr_brdf.gw.set_nodata(nodataval,
                                                                             nodataval,
-                                                                            (0, 10000),
-                                                                            'uint16')
+                                                                            out_range=(0, 10000),
+                                                                            dtype='uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
                                             sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
