@@ -925,9 +925,12 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         dos = DOS()
 
         main_path = Path(outdir)
+
+        outdir_tmp = main_path.joinpath('tmp')
         outdir_brdf = main_path.joinpath('brdf')
 
         main_path.mkdir(parents=True, exist_ok=True)
+        outdir_tmp.mkdir(parents=True, exist_ok=True)
         outdir_brdf.mkdir(parents=True, exist_ok=True)
 
         # Logging file
@@ -1101,7 +1104,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
                             file_info = self.download_gcp(sensor,
-                                                          outdir=outdir,
+                                                          outdir=outdir_tmp,
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           n_jobs=n_jobs,
@@ -1142,7 +1145,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                             search_wildcards = ['ANG.txt', 'MTL.txt', 'BQA.TIF'] + [bd + '.TIF' for bd in load_bands]
 
                             file_info = self.download_gcp(sensor,
-                                                          outdir=outdir,
+                                                          outdir=outdir_tmp,
                                                           outdir_brdf=outdir_brdf,
                                                           search_wildcards=search_wildcards,
                                                           n_jobs=n_jobs,
@@ -1165,9 +1168,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                             out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
+                                outdir_angles = outdir_tmp.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTD_TL.xml', '')))
                             else:
-                                outdir_angles = main_path.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
+                                outdir_angles = outdir_tmp.joinpath('angles_{}'.format(Path(finfo_dict['meta'].name).name.replace('_MTL.txt', '')))
 
                             if not Path(finfo_dict['meta'].name).is_file():
                                 logger.warning('  The metadata does not exist.')
