@@ -1383,6 +1383,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                 sr = rt.toar_to_sr(toar_scaled,
                                                                    sza, saa, vza, vaa,
                                                                    rad_sensor,
+                                                                   method='srem',
                                                                    dst_nodata=nodataval)
 
                                             else:
@@ -1390,6 +1391,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                 # Convert DN to surface reflectance
                                                 sr = rt.dn_to_sr(data,
                                                                  sza, saa, vza, vaa,
+                                                                 method='srem',
                                                                  sensor=rad_sensor,
                                                                  meta=meta,
                                                                  src_nodata=nodataval,
@@ -1445,6 +1447,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                               n_jobs=n_jobs)
 
                                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
+
+                                                logger.info('CORRECT 6S WITH S2!')
 
                                                 sr = rt.toar_to_sr(data,
                                                                    meta.sza,
