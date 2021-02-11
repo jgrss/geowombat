@@ -6,8 +6,6 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
-import random
-import string
 import time
 import logging
 
@@ -656,7 +654,7 @@ class CloudPathMixin(object):
             # Landsat 7 has the thermal band
             sensor = 'l7th' if sensor == 'l7' else sensor
 
-            wavelengths = get_sensor_info('wavelength', sensor)
+            wavelengths = get_sensor_info(key='wavelength', sensor=sensor)
             band_pos = [getattr(wavelengths, b) for b in bands]
 
         else:
@@ -711,7 +709,7 @@ class CloudPathMixin(object):
         if bands:
 
             sensor = sensor.lower()
-            wavelengths = get_sensor_info('wavelength', sensor)
+            wavelengths = get_sensor_info(key='wavelength', sensor=sensor)
             band_pos = [getattr(wavelengths, b) for b in bands]
 
         else:
@@ -1098,8 +1096,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                         # Download data
                         if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                            load_bands = ['B{:02d}'.format(band_associations[bd]) if bd != 'rededge'
-                                          else 'B{:01d}A'.format(band_associations[bd]) for bd in bands]
+                            load_bands = [f'B{band_associations[bd]:02d}' if bd != 'rededge' else
+                                          f'B{band_associations[bd]:01d}A' for bd in bands]
 
                             search_wildcards = ['MTD_TL.xml'] + [bd + '.jp2' for bd in load_bands]
 
@@ -1406,6 +1404,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                         .astype('float64')\
                                                         .assign_attrs(**attrs)
 
+                                                data_values = 'toar'
+
+                                            else:
+                                                data_values = 'dn'
+
                                             if isinstance(earthdata_username, str) and \
                                                     isinstance(earthdata_key_file, str) and \
                                                     isinstance(earthdata_code_file, str):
@@ -1430,6 +1433,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             aot = dos.get_aot(data_coarse,
                                                               meta.sza,
                                                               meta,
+                                                              data_values=data_values,
                                                               dn_interp=data,
                                                               angle_factor=1.0,
                                                               interp_method='fast',
