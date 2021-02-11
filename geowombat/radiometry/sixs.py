@@ -352,6 +352,8 @@ class SixS(Altitude):
                 s.run() --> s.outputs.transmittance_total_scattering.upward
         """
 
+        attrs = data.attrs.copy()
+
         # Load the LUT
         lut = self._load(sensor, wavelength, interp_method)
 
