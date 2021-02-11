@@ -894,7 +894,7 @@ class RadTransforms(MetaData):
                     .astype('uint8')
 
         # Create a mask to check zeros
-        zmask = sr.where(sr_data > 0)\
+        zmask = sr_data.where(sr_data > 0)\
                     .count(dim='band')\
                     .astype('uint8')
 
@@ -905,7 +905,7 @@ class RadTransforms(MetaData):
                         .transpose('band', 'y', 'x')
 
         # Set zeros in all bands
-        sr_data = xr.where(zmask < sr.gw.nbands,
+        sr_data = xr.where(zmask < sr_data.gw.nbands,
                            0,
                            sr_data.clip(0, 1))\
                         .transpose('band', 'y', 'x')
