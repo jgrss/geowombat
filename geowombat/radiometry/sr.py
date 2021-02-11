@@ -9,6 +9,7 @@ from ..core import ndarray_to_xarray
 from ..moving import moving_window
 from .angles import relative_azimuth
 from .sixs import SixS
+from ..core.properties import get_sensor_info
 
 import numpy as np
 import cv2
@@ -881,9 +882,10 @@ class RadTransforms(MetaData):
 class DOS(SixS, RadTransforms):
 
     def get_aot(self,
-                dn,
+                data,
                 sza,
                 meta,
+                data_values='dn',
                 angle_factor=0.01,
                 dn_interp=None,
                 interp_method='fast',
@@ -898,9 +900,10 @@ class DOS(SixS, RadTransforms):
         Gets the aerosol optical thickness (AOT) from dark objects
 
         Args:
-            dn (DataArray): The digital numbers at a coarse resolution.
+            data (DataArray): The digital numbers or top of atmosphere reflectance at a coarse resolution.
             sza (float | DataArray): The solar zenith angle.
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
+            data_values (Optional[str]): The values of ``data``. Choices are ['dn', 'toar'].
             angle_factor (Optional[float]): The scale factor for angles.
             dn_interp (Optional[DataArray]): A source ``DataArray`` at the target resolution.
             interp_method (Optional[str]): The LUT interpolation method. Choices are ['fast', 'slow'].
@@ -924,23 +927,43 @@ class DOS(SixS, RadTransforms):
             See :cite:`masek_etal_2006`, :cite:`kaufman_etal_1997`, and :cite:`ouaidrari_vermote_1999`.
         """
 
+        if data_values not in ['dn', 'toar']:
+            logger.exception("  The data values should be 'dn' or 'toar'")
+            raise NameError
+
         if isinstance(sza, xr.DataArray):
             sza = sza.squeeze().data.compute(num_workers=n_jobs)
 
         sza *= angle_factor
 
-        band_names = dn.band.values.tolist()
+        band_names = data.band.values.tolist()
 
         doy = meta.date_acquired.timetuple().tm_yday
 
-        m_p = coeffs_to_array(meta.m_p, band_names)
-        a_p = coeffs_to_array(meta.a_p, band_names)
+        if data_values == 'dn':
 
-        m_l = coeffs_to_array(meta.m_l, band_names)
-        a_l = coeffs_to_array(meta.a_l, band_names)
+            m_p = coeffs_to_array(meta.m_p, band_names)
+            a_p = coeffs_to_array(meta.a_p, band_names)
 
-        toar = self.dn_to_toar(dn, m_p, a_p, sun_angle=False)
-        rad = self.dn_to_radiance(dn, m_l, a_l)
+            m_l = coeffs_to_array(meta.m_l, band_names)
+            a_l = coeffs_to_array(meta.a_l, band_names)
+
+            toar = self.dn_to_toar(data, m_p, a_p, sun_angle=False)
+            rad = self.dn_to_radiance(data, m_l, a_l)
+
+        else:
+
+            toar = data
+
+            julian_day = meta.date_acquired.toordinal() + 1721424.5
+
+            earth_sun_dist = 1.0 / (1.0 - 0.01673 * np.cos(0.0172 * (julian_day - 2.0)))**2
+            solar_irradiances = get_sensor_info(key='solar_irradiance', sensor=meta.sensor)
+            solar_irradiances = {b: getattr(solar_irradiances, b) for b in band_names}
+            solar_irradiances = coeffs_to_array(solar_irradiances, band_names)
+
+            # Convert TOAR to radiance
+            rad = (earth_sun_dist * data * solar_irradiances * np.cos(sza)) / np.pi
 
         # Get the SWIR2 band TOAR
         swir2_toar = toar.sel(band='swir2')
@@ -969,7 +992,7 @@ class DOS(SixS, RadTransforms):
                                          meta.sensor,
                                          'blue',
                                          interp_method,
-                                         meta.sza,
+                                         sza,
                                          doy,
                                          h2o,
                                          o3,
@@ -986,7 +1009,7 @@ class DOS(SixS, RadTransforms):
                 return ndarray_to_xarray(dn_interp, aot, ['aot'])
 
             else:
-                return ndarray_to_xarray(dn, aot, ['aot'])
+                return ndarray_to_xarray(data, aot, ['aot'])
 
         else:
 
@@ -999,9 +1022,9 @@ class DOS(SixS, RadTransforms):
 
             else:
 
-                return ndarray_to_xarray(np.zeros((dn.gw.nrows,
-                                                   dn.gw.ncols), dtype='float64')+aot_fallback,
-                                         dn,
+                return ndarray_to_xarray(np.zeros((data.gw.nrows,
+                                                   data.gw.ncols), dtype='float64')+aot_fallback,
+                                         data,
                                          ['aot'])
 
     @staticmethod
