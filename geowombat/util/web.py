@@ -1448,8 +1448,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
-                                                logger.info('CORRECT 6S WITH S2!')
-
                                                 sr = rt.toar_to_sr(data,
                                                                    meta.sza,
                                                                    None,
