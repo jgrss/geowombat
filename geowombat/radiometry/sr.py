@@ -7,7 +7,7 @@ import logging
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
 from ..moving import moving_window
-from .angles import relative_azimuth
+from .angles import relative_azimuth, parse_sentinel_angles
 from .sixs import SixS
 from ..core.properties import get_sensor_info
 
@@ -211,7 +211,9 @@ class MetaData(object):
                 sensor, date_acquired, sza
         """
 
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor date_acquired sza')
+        solar_zenith = None
+
+        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor date_acquired sza grid_sza grid_saa grid_vza grid_vaa')
 
         tree = ET.parse(meta_file)
         root = tree.getroot()
@@ -248,9 +250,29 @@ class MetaData(object):
 
         date_acquired = dtime(int(year), int(month), int(day[:2]), int(day[3:5]), tzinfo=datetime.timezone.utc)
 
+        sza, saa = parse_sentinel_angles(meta_file, 'solar', 0)
+        vza, vaa = parse_sentinel_angles(meta_file, 'view', 0)
+
+        def grid_to_data_array(grid, band_names):
+
+            if len(grid.shape) == 2:
+                grid = grid[np.newaxis, :, :]
+
+            return xr.DataArray(grid,
+                                dims=('band', 'y', 'x'),
+                                coords={'band': band_names,
+                                        'y': range(0, grid.shape[1]),
+                                        'x': range(0, grid.shape[2])})
+
         return MetaCoeffs(sensor=sensor,
                           date_acquired=date_acquired,
-                          sza=solar_zenith)
+                          sza=solar_zenith,
+                          grid_sza=grid_to_data_array(sza, ['sza']),
+                          grid_saa=grid_to_data_array(saa, ['saa']),
+                          grid_vza=grid_to_data_array(vza, ['coastal', 'blue', 'green', 'red', 'nir1', 'nir2', 'nir3',
+                                                             'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']),
+                          grid_vaa=grid_to_data_array(vaa, ['coastal', 'blue', 'green', 'red', 'nir1', 'nir2', 'nir3',
+                                                             'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']))
 
 
 class LinearAdjustments(object):
@@ -683,15 +705,13 @@ class RadTransforms(MetaData):
         return toar_data
 
     @staticmethod
-    def toar_to_rad(toar,
-                    sza,
-                    meta):
+    def toar_to_rad(toar, meta):
 
         """
         Converts top of atmosphere reflectance to top of atmosphere radiance
 
         Args:
-            toar (DataArray): The top of atmosphere reflectance.
+            toar (DataArray): The top of atmosphere reflectance (0-1).
             sza (float | DataArray): The solar zenith angle (in degrees).
             meta (Optional[namedtuple]): A metadata object with gain and bias coefficients.
 
@@ -701,18 +721,30 @@ class RadTransforms(MetaData):
 
         attrs = toar.attrs.copy()
 
+        # Get the mean incidence angle for each band
+        vza = meta.grid_vza.sel(band=toar.band.values.tolist())\
+                    .where(lambda x: x != 0)\
+                    .reduce(np.nanmean, dim=('y', 'x'))
+
         band_names = toar.band.values.tolist()
 
-        julian_day = meta.date_acquired.toordinal() + 1721424.5
+        # Julian day with ESA reference date
+        # https://sentinel.esa.int/web/sentinel/technical-guides/sentinel-2-msi/level-1c/algorithm
+        julian_day = meta.date_acquired.toordinal() + dtime.strptime('1950-1-1', '%Y-%m-%d').toordinal() # + 1721424.5
 
-        earth_sun_dist = 1.0 / (1.0 - 0.01673 * np.cos(0.0172 * (julian_day - 2.0)))**2
+        # Earth-sun distance
+        # This could be replace with 1/U from the ESA metadata. However, since the
+        # U variable is stored in a separate metadata file it's easier to just
+        # calculate it here.
+        d2 = 1.0 / ((1.0 - 0.0167 * np.cos(0.0172 * (julian_day - 2.0)))**2)
 
+        # Band solar irradiance
         solar_irradiances = get_sensor_info(key='solar_irradiance', sensor=meta.sensor)
         solar_irradiances = {b: getattr(solar_irradiances, b) for b in band_names}
         solar_irradiances = coeffs_to_array(solar_irradiances, band_names)
 
         # Convert TOAR to radiance
-        rad = (earth_sun_dist * toar * solar_irradiances * np.cos(sza)) / np.pi
+        rad = (((toar*10000.0) * np.cos(np.deg2rad(vza)) * solar_irradiances) / (np.pi * d2)) * 0.0001
 
         return rad.assign_attrs(**attrs)
 
@@ -735,7 +767,7 @@ class RadTransforms(MetaData):
         Converts top-of-atmosphere reflectance to surface reflectance
 
         Args:
-            toar (DataArray): The top-of-atmosphere reflectance.
+            toar (DataArray): The top-of-atmosphere reflectance (0-1).
             solar_za (float | DataArray): The solar zenith angle.
             solar_az (DataArray): The solar azimuth angle.
             sensor_za (DataArray): The sensor zenith angle.
@@ -782,7 +814,7 @@ class RadTransforms(MetaData):
                 sensor = meta.sensor
 
             # Convert TOAR to radiance
-            rad = self.toar_to_rad(toar, solar_za, meta)
+            rad = self.toar_to_rad(toar, meta)
 
             sr_data = []
 
@@ -790,16 +822,27 @@ class RadTransforms(MetaData):
 
             for band in band_names:
 
-                sr_data.append(sxs.rad_to_sr(rad,
-                                             sensor,
-                                             band,
-                                             solar_za,
-                                             meta.date_acquired.timetuple().tm_yday,
-                                             src_nodata=src_nodata,
-                                             dst_nodata=dst_nodata,
-                                             angle_factor=angle_factor,
-                                             interp_method=interp_method,
-                                             **kwargs))
+                sr_data.append(sxs.toar_to_sr(rad,
+                                              sensor,
+                                              band,
+                                              solar_za,
+                                              meta.date_acquired.timetuple().tm_yday,
+                                              src_nodata=src_nodata,
+                                              dst_nodata=dst_nodata,
+                                              angle_factor=angle_factor,
+                                              interp_method=interp_method,
+                                              **kwargs))
+
+                # sr_data.append(sxs.rad_to_sr(rad,
+                #                              sensor,
+                #                              band,
+                #                              solar_za,
+                #                              meta.date_acquired.timetuple().tm_yday,
+                #                              src_nodata=src_nodata,
+                #                              dst_nodata=dst_nodata,
+                #                              angle_factor=angle_factor,
+                #                              interp_method=interp_method,
+                #                              **kwargs))
 
             sr_data = xr.concat(sr_data, dim='band')
 
@@ -983,7 +1026,7 @@ class DOS(SixS, RadTransforms):
         else:
 
             toar = data
-            rad = self.toar_to_rad(data, sza, meta)
+            rad = self.toar_to_rad(data, meta)
 
         # Get the SWIR2 band TOAR
         swir2_toar = toar.sel(band='swir2')
