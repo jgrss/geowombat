@@ -237,7 +237,7 @@ def get_sentinel_sensor(metadata):
     return file_name[:3].lower()
 
 
-def _parse_sentinel_angles(metadata, proc_angles, nodata):
+def parse_sentinel_angles(metadata, proc_angles, nodata):
 
     """
     Gets the Sentinel-2 solar angles from metadata
@@ -362,8 +362,8 @@ def sentinel_pixel_angles(metadata,
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
 
-    sza, saa = _parse_sentinel_angles(metadata, 'solar', nodata)
-    vza, vaa = _parse_sentinel_angles(metadata, 'view', nodata)
+    sza, saa = parse_sentinel_angles(metadata, 'solar', nodata)
+    vza, vaa = parse_sentinel_angles(metadata, 'view', nodata)
 
     sensor_name = get_sentinel_sensor(metadata)
 
