@@ -243,9 +243,12 @@ class SixS(Altitude):
     """
 
     @staticmethod
-    def _load(sensor, wavelength, interp_method):
+    def _load(sensor, wavelength, interp_method, from_toar=False):
 
-        lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
+        if from_toar:
+            lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
+        else:
+            lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
 
         lut_ = joblib.load(str(lut_path))
 
@@ -302,6 +305,20 @@ class SixS(Altitude):
     def prepare_coeff(band_data, coeffs, cindex):
         return ndarray_to_xarray(band_data, coeffs[:, :, cindex], ['coeff'])
 
+    @staticmethod
+    def _mask_nodata(data, other_data, src_nodata, dst_nodata):
+
+        # Create a 'no data' mask
+        mask = data.where((data != src_nodata) & (other_data != src_nodata))\
+                        .count(dim='band')\
+                        .astype('uint8')
+
+        # Mask 'no data' values
+        return xr.where(mask < data.gw.nbands,
+                        dst_nodata,
+                        data.clip(0, 1))\
+                    .transpose('band', 'y', 'x')
+
     def toar_to_sr(self,
                    data,
                    sensor,
@@ -355,7 +372,7 @@ class SixS(Altitude):
         attrs = data.attrs.copy()
 
         # Load the LUT
-        lut = self._load(sensor, wavelength, interp_method)
+        lut = self._load(sensor, wavelength, interp_method, from_toar=True)
 
         band_data = data.sel(band=wavelength)
 
@@ -388,16 +405,7 @@ class SixS(Altitude):
                     .assign_coords(coords={'band': [wavelength]})\
                     .astype('float64')
 
-        # Create a 'no data' mask
-        mask = sr.where((sr != src_nodata) & (band_data != src_nodata))\
-                    .count(dim='band')\
-                    .astype('uint8')
-
-        # Mask 'no data' values
-        sr = xr.where(mask < sr.gw.nbands,
-                      dst_nodata,
-                      sr.clip(0, 1))\
-                .transpose('band', 'y', 'x')
+        sr = self._mask_nodata(sr, band_data, src_nodata, dst_nodata)
 
         attrs['sensor'] = sensor
         attrs['nodata'] = dst_nodata
@@ -485,16 +493,7 @@ class SixS(Altitude):
                     .assign_coords(coords={'band': [wavelength]})\
                     .astype('float64')
 
-        # Create a 'no data' mask
-        mask = sr.where((sr != src_nodata) & (band_data != src_nodata))\
-                    .count(dim='band')\
-                    .astype('uint8')
-
-        # Mask 'no data' values
-        sr = xr.where(mask < sr.gw.nbands,
-                      dst_nodata,
-                      sr.clip(0, 1))\
-                .transpose('band', 'y', 'x')
+        sr = self._mask_nodata(sr, band_data, src_nodata, dst_nodata)
 
         attrs['sensor'] = sensor
         attrs['nodata'] = dst_nodata
