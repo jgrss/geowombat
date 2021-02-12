@@ -1209,7 +1209,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             src_nodata (Optional[float | int]): The source 'no data' value.
             dst_clear_val (Optional[int]): The destination clear value.
             dst_mask_val (Optional[int]): The destination mask value.
-            
+
         Returns:
             ``xarray.DataArray``
         """
