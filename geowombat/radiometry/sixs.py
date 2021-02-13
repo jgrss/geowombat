@@ -336,7 +336,7 @@ class SixS(Altitude):
                    n_jobs=1):
 
         """
-        Convets top of atmosphere reflectance to surface reflectance using 6S outputs
+        Converts top of atmosphere reflectance to surface reflectance using 6S outputs
 
         Args:
             data (DataArray): The top of atmosphere reflectance.
@@ -380,6 +380,9 @@ class SixS(Altitude):
             sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
 
         sza *= angle_factor
+
+        if not isinstance(aot, xr.DataArray):
+            aot = xr.zeros_like(data[0]).squeeze() + aot
 
         # t_g, p_alpha, s, t_s, t_v
         coeffs = lut(sza, h2o, o3, aot, altitude)
