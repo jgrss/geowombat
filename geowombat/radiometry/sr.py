@@ -733,7 +733,7 @@ class RadTransforms(MetaData):
         julian_day = meta.date_acquired.toordinal() + dtime.strptime('1950-1-1', '%Y-%m-%d').toordinal() # + 1721424.5
 
         # Earth-sun distance
-        # This could be replace with 1/U from the ESA metadata. However, since the
+        # This could be replaced with 1/U from the ESA metadata. However, since the
         # U variable is stored in a separate metadata file it's easier to just
         # calculate it here.
         d2 = 1.0 / ((1.0 - 0.0167 * np.cos(0.0172 * (julian_day - 2.0)))**2)
@@ -822,27 +822,16 @@ class RadTransforms(MetaData):
 
             for band in band_names:
 
-                sr_data.append(sxs.toar_to_sr(rad,
-                                              sensor,
-                                              band,
-                                              solar_za,
-                                              meta.date_acquired.timetuple().tm_yday,
-                                              src_nodata=src_nodata,
-                                              dst_nodata=dst_nodata,
-                                              angle_factor=angle_factor,
-                                              interp_method=interp_method,
-                                              **kwargs))
-
-                # sr_data.append(sxs.rad_to_sr(rad,
-                #                              sensor,
-                #                              band,
-                #                              solar_za,
-                #                              meta.date_acquired.timetuple().tm_yday,
-                #                              src_nodata=src_nodata,
-                #                              dst_nodata=dst_nodata,
-                #                              angle_factor=angle_factor,
-                #                              interp_method=interp_method,
-                #                              **kwargs))
+                sr_data.append(sxs.rad_to_sr(rad,
+                                             sensor,
+                                             band,
+                                             solar_za,
+                                             meta.date_acquired.timetuple().tm_yday,
+                                             src_nodata=src_nodata,
+                                             dst_nodata=dst_nodata,
+                                             angle_factor=angle_factor,
+                                             interp_method=interp_method,
+                                             **kwargs))
 
             sr_data = xr.concat(sr_data, dim='band')
 
@@ -1078,16 +1067,16 @@ class DOS(SixS, RadTransforms):
 
             if isinstance(dn_interp, xr.DataArray):
 
-                return ndarray_to_xarray(np.zeros((dn_interp.gw.nrows,
+                return ndarray_to_xarray(dn_interp,
+                                         np.zeros((dn_interp.gw.nrows,
                                                    dn_interp.gw.ncols), dtype='float64')+aot_fallback,
-                                         dn_interp,
                                          ['aot'])
 
             else:
 
-                return ndarray_to_xarray(np.zeros((data.gw.nrows,
+                return ndarray_to_xarray(data,
+                                         np.zeros((data.gw.nrows,
                                                    data.gw.ncols), dtype='float64')+aot_fallback,
-                                         data,
                                          ['aot'])
 
     @staticmethod
