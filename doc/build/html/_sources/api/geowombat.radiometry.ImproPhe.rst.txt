@@ -1,0 +1,17 @@
+ImproPhe
+========
+
+.. currentmodule:: geowombat.radiometry
+
+.. autoclass:: ImproPhe
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~ImproPhe.fit_transform
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: fit_transform

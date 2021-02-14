@@ -5,19 +5,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RadTransforms &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <title>RadTransforms &#8212; GeoWombat 1.5.6 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="QAMasker" href="geowombat.radiometry.QAMasker.html" />
+    <link rel="next" title="DOS" href="geowombat.radiometry.DOS.html" />
     <link rel="prev" title="LinearAdjustments" href="geowombat.radiometry.LinearAdjustments.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -39,7 +37,7 @@
 <h1>RadTransforms<a class="headerlink" href="#radtransforms" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="geowombat.radiometry.RadTransforms">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">RadTransforms</code><a class="headerlink" href="#geowombat.radiometry.RadTransforms" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></code><code class="sig-name descname"><span class="pre">RadTransforms</span></code><a class="headerlink" href="#geowombat.radiometry.RadTransforms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code></p>
 <p>A class for radiometric transformations</p>
 <p class="rubric">Methods</p>
@@ -61,8 +59,14 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_landsat_coefficients</span></code>(meta_file)</p></td>
 <td><p>Gets coefficients from a Landsat metadata file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
-<td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sentinel_coefficients</span></code>(meta_file)</p></td>
+<td><p>Gets coefficients from a Sentinel metadata file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="geowombat.radiometry.RadTransforms.radiance_to_toar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code></a>(radiance, solar_za, global_args)</p></td>
+<td><p>Converts radiance to top-of-atmosphere reflectance</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_rad</span></code>(toar, meta)</p></td>
+<td><p>Converts top of atmosphere reflectance to top of atmosphere radiance</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="geowombat.radiometry.RadTransforms.toar_to_sr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code></a>(toar, solar_za, solar_az, …[, …])</p></td>
 <td><p>Converts top-of-atmosphere reflectance to surface reflectance</p></td>
@@ -72,7 +76,7 @@
 <p class="rubric">Methods Documentation</p>
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.dn_to_radiance">
-<code class="sig-name descname">dn_to_radiance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dn</span></em>, <em class="sig-param"><span class="n">gain</span></em>, <em class="sig-param"><span class="n">bias</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">dn_to_radiance</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_radiance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to radiance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -90,7 +94,7 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.dn_to_sr">
-<code class="sig-name descname">dn_to_sr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dn</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'srem'</span></em>, <em class="sig-param"><span class="n">angle_factor</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">meta</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">dn_to_sr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_za</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_az</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_za</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_az</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">32768</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">32768</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'srem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -103,9 +107,13 @@
 <li><p><strong>src_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The input ‘no data’ value.</p></li>
 <li><p><strong>dst_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The output ‘no data’ value.</p></li>
 <li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
-<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The method to use. Only ‘srem’ is supported.</p></li>
+<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The correction method to use. Choices are [‘srem’, ‘6s’].</p></li>
 <li><p><strong>angle_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The scale factor for angles.</p></li>
 <li><p><strong>meta</strong> (<em>Optional</em><em>[</em><em>namedtuple</em><em>]</em>) – A metadata object with gain and bias coefficients.</p></li>
+<li><p><strong>interp_method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The LUT interpolation method if <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘6s’. Choices are [‘fast’, ‘slow’].
+‘fast’: Uses nearest neighbor lookup with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.NearestNDInterpolator</span></code>.
+‘slow’: Uses linear interpolation with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.LinearNDInterpolator</span></code>.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Extra keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">radiometry.sixs.SixS().rad_to_sr</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -134,7 +142,7 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.dn_to_toar">
-<code class="sig-name descname">dn_to_toar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dn</span></em>, <em class="sig-param"><span class="n">gain</span></em>, <em class="sig-param"><span class="n">bias</span></em>, <em class="sig-param"><span class="n">solar_za</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">angle_factor</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">sun_angle</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">dn_to_toar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_za</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sun_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.dn_to_toar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts digital numbers to top-of-atmosphere reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -155,8 +163,8 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.radiance_to_toar">
-<em class="property">static </em><code class="sig-name descname">radiance_to_toar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">radiance</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">global_args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts digital numbers to top-of-atmosphere reflectance</p>
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">radiance_to_toar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radiance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_za</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.radiance_to_toar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts radiance to top-of-atmosphere reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -173,30 +181,37 @@
 
 <dl class="py method">
 <dt id="geowombat.radiometry.RadTransforms.toar_to_sr">
-<em class="property">static </em><code class="sig-name descname">toar_to_sr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">toar</span></em>, <em class="sig-param"><span class="n">solar_za</span></em>, <em class="sig-param"><span class="n">solar_az</span></em>, <em class="sig-param"><span class="n">sensor_za</span></em>, <em class="sig-param"><span class="n">sensor_az</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">src_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">dst_nodata</span><span class="o">=</span><span class="default_value">- 32768</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'srem'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">toar_to_sr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_za</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solar_az</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_za</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_az</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">32768</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">32768</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'srem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.RadTransforms.toar_to_sr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts top-of-atmosphere reflectance to surface reflectance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>toar</strong> (<em>DataArray</em>) – The top-of-atmosphere reflectance.</p></li>
-<li><p><strong>solar_za</strong> (<em>DataArray</em>) – The solar zenith angle.</p></li>
+<li><p><strong>toar</strong> (<em>DataArray</em>) – The top-of-atmosphere reflectance (0-1).</p></li>
+<li><p><strong>solar_za</strong> (<em>float | DataArray</em>) – The solar zenith angle.</p></li>
 <li><p><strong>solar_az</strong> (<em>DataArray</em>) – The solar azimuth angle.</p></li>
 <li><p><strong>sensor_za</strong> (<em>DataArray</em>) – The sensor zenith angle.</p></li>
 <li><p><strong>sensor_az</strong> (<em>DataArray</em>) – The sensor azimuth angle.</p></li>
-<li><p><strong>sensor</strong> (<em>str</em>) – The satellite sensor.</p></li>
+<li><p><strong>sensor</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The data’s sensor.</p></li>
 <li><p><strong>src_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The input ‘no data’ value.</p></li>
 <li><p><strong>dst_nodata</strong> (<em>Optional</em><em>[</em><em>int</em><em> or </em><em>float</em><em>]</em>) – The output ‘no data’ value.</p></li>
-<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>The method to use. Currently, only ‘srem’ is supported and <code class="docutils literal notranslate"><span class="pre">method</span></code> is not used.</p>
+<li><p><strong>method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>The method to use. Choices are [‘srem’, ‘6s’].</p>
 <dl class="simple">
 <dt>Choices:</dt><dd><p>’srem’: A Simplified and Robust Surface Reflectance Estimation Method (SREM)</p>
 </dd>
 </dl>
 </p></li>
+<li><p><strong>angle_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The scale factor for angles.</p></li>
+<li><p><strong>meta</strong> (<em>Optional</em><em>[</em><em>namedtuple</em><em>]</em>) – A metadata object with gain and bias coefficients.</p></li>
+<li><p><strong>interp_method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The LUT interpolation method if <code class="docutils literal notranslate"><span class="pre">method</span></code> = ‘6s’. Choices are [‘fast’, ‘slow’].
+‘fast’: Uses nearest neighbor lookup with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.NearestNDInterpolator</span></code>.
+‘slow’: Uses linear interpolation with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.LinearNDInterpolator</span></code>.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Extra keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">radiometry.sixs.SixS().toar_to_sr</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>See <a class="bibtex reference internal" href="#bilal-etal-2019" id="id1">[BNN+19]</a> for the SREM method</p>
+<p>See <a class="bibtex reference internal" href="#bilal-etal-2019" id="id1">[BNN+19]</a> for the SREM method.</p>
+<p>See <a class="bibtex reference internal" href="#proud-etal-2010" id="id2">[PFRS10]</a> and <a class="bibtex reference internal" href="#lee-etal-2020" id="id3">[LLS+20]</a> for the 6S method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Data range: 0-1</p>
@@ -212,6 +227,21 @@
 <p id="bibtex-bibliography-api/geowombat.radiometry.RadTransforms-0"><dl class="citation">
 <dt class="bibtex label" id="bilal-etal-2019"><span class="brackets"><a class="fn-backref" href="#id1">BNN+19</a></span></dt>
 <dd><p>Muhammad Bilal, Majid Nazeer, Janet E Nichol, Max P Bleiweiss, Zhongfeng Qiu, Evelyn Jäkel, James R Campbell, Luqman Atique, Xiaolan Huang, and Simone Lolli. A simplified and robust surface reflectance estimation method (SREM) for use over diverse land surfaces using multi-sensor data. <em>Remote Sensing</em>, 11(11):1344, 2019.</p>
+</dd>
+<dt class="bibtex label" id="kaufman-etal-1997"><span class="brackets">KWR+97</span></dt>
+<dd><p>Yoram J Kaufman, Andrew E Wald, Lorraine A Remer, Bo-Cai Gao, Rong-Rong Li, and Luke Flynn. The modis 2.1-/spl mu/m channel-correlation with visible reflectance for use in remote sensing of aerosol. <em>IEEE transactions on Geoscience and Remote Sensing</em>, 35(5):1286–1298, 1997.</p>
+</dd>
+<dt class="bibtex label" id="lee-etal-2020"><span class="brackets"><a class="fn-backref" href="#id3">LLS+20</a></span></dt>
+<dd><p>Kyeong-Sang Lee, Chang Suk Lee, Minji Seo, Sungwon Choi, Noh-Hun Seong, Donghyun Jin, Jong-Min Yeom, and Kyung-Soo Han. Improvements of 6S look-up-table based surface reflectance employing minimum curvature surface method. <em>Asia-Pacific Journal of Atmospheric Sciences</em>, pages 1–14, 2020.</p>
+</dd>
+<dt class="bibtex label" id="masek-etal-2006"><span class="brackets">MVS+06</span></dt>
+<dd><p>Jeffrey G Masek, Eric F Vermote, Nazmi E Saleous, Robert Wolfe, Forrest G Hall, Karl Fred Huemmrich, Feng Gao, Jonathan Kutler, and Teng-Kui Lim. A landsat surface reflectance dataset for north america, 1990-2000. <em>IEEE Geoscience and Remote Sensing Letters</em>, 3(1):68–72, 2006.</p>
+</dd>
+<dt class="bibtex label" id="ouaidrari-vermote-1999"><span class="brackets">OV99</span></dt>
+<dd><p>Hassan Ouaidrari and Eric F Vermote. Operational atmospheric correction of landsat tm data. <em>Remote Sensing of Environment</em>, 70(1):4–15, 1999.</p>
+</dd>
+<dt class="bibtex label" id="proud-etal-2010"><span class="brackets"><a class="fn-backref" href="#id2">PFRS10</a></span></dt>
+<dd><p>Simon Richard Proud, Rasmus Fensholt, Mads Olander Rasmussen, and Inge Sandholt. A comparison of the effectiveness of 6S and SMAC in correcting for atmospheric interference of Meteosat Second Generation images. <em>Journal of Geophysical Research: Atmospheres</em>, 2010.</p>
 </dd>
 </dl>
 </p>
@@ -269,7 +299,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
       <li>Previous: <a href="geowombat.radiometry.LinearAdjustments.html" title="previous chapter">LinearAdjustments</a></li>
-      <li>Next: <a href="geowombat.radiometry.QAMasker.html" title="next chapter">QAMasker</a></li>
+      <li>Next: <a href="geowombat.radiometry.DOS.html" title="next chapter">DOS</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -297,10 +327,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

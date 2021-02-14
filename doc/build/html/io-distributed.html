@@ -5,16 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Distributed processing &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <title>Distributed processing &#8212; GeoWombat 1.5.6 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Data extraction" href="extraction.html" />
@@ -151,7 +149,7 @@ to file in parallel are shown at the bottom of the page.</p>
 <span class="gp">   ...: </span>        <span class="n">results</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
@@ -181,22 +179,24 @@ to file in parallel are shown at the bottom of the page.</p>
 <span class="gp">   ...: </span>            <span class="n">results</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 1, y: 1860, x: 2041)&gt;</span>
-<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=float64, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;broadcast_to, shape=(1, 1860, 2041), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * y        (y) float64 -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
 <span class="go">  * x        (x) float64 7.174e+05 7.174e+05 7.174e+05 ... 7.785e+05 7.786e+05</span>
 <span class="go">  * band     (band) &lt;U7 &#39;results&#39;</span>
 <span class="go">Attributes:</span>
-<span class="go">    transform:      (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
-<span class="go">    crs:            +init=epsg:32621</span>
-<span class="go">    res:            (30.0, 30.0)</span>
-<span class="go">    is_tiled:       1</span>
-<span class="go">    nodatavals:     (nan,)</span>
-<span class="go">    scales:         (1.0,)</span>
-<span class="go">    offsets:        (0.0,)</span>
-<span class="go">    AREA_OR_POINT:  Point</span>
-<span class="go">    filename:       [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;LC08...</span>
-<span class="go">    sensor:         blue, green, and red</span>
+<span class="go">    transform:          (30.0, 0.0, 717345.0, 0.0, -30.0, -2776995.0)</span>
+<span class="go">    crs:                +init=epsg:32621</span>
+<span class="go">    res:                (30.0, 30.0)</span>
+<span class="go">    is_tiled:           1</span>
+<span class="go">    nodatavals:         (nan,)</span>
+<span class="go">    scales:             (1.0,)</span>
+<span class="go">    offsets:            (0.0,)</span>
+<span class="go">    AREA_OR_POINT:      Point</span>
+<span class="go">    filename:           [&#39;LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF&#39;, &#39;...</span>
+<span class="go">    sensor:             blue, green, and red</span>
+<span class="go">    data_are_separate:  1</span>
+<span class="go">    data_are_stacked:   1</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
@@ -406,10 +406,10 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

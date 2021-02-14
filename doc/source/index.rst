@@ -27,14 +27,14 @@ GeoWombat: Utilities for geospatial data
 
 
 Raster & Remotely Sensed Data Made Easy
-##########
+#######################################
 
 GeoWombat provides utilities to process geospatial and time series of raster data at scale. Easily process Landsat, Sentinel, Planetscope or RGB data and others. 
 
 **Common Remote Sensing Uses**
 
 * Simple read/write for a variety of sensors (Landsat, Sentinel etc)
-* Image mosaicing
+* Image mosaicking
 * On-the-fly image transformations (reprojection)
 * Point / polygon raster sampling, extraction
 * Time series analysis
@@ -46,7 +46,7 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 **Mosaic Images Example**
 
 .. image:: _static/union_example.png
-   :width: 300
+   :width: 400
 
 .. raw:: html
 

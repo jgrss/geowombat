@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOS &#8212; GeoWombat 1.5.6 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="QAMasker" href="geowombat.radiometry.QAMasker.html" />
+    <link rel="prev" title="RadTransforms" href="geowombat.radiometry.RadTransforms.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="dos">
+<h1>DOS<a class="headerlink" href="#dos" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="geowombat.radiometry.DOS">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></code><code class="sig-name descname"><span class="pre">DOS</span></code><a class="headerlink" href="#geowombat.radiometry.DOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sixs.SixS</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.RadTransforms</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_radiance</span></code>(dn, gain, bias)</p></td>
+<td><p>Converts digital numbers to radiance</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_sr</span></code>(dn, solar_za, solar_az, sensor_za, …)</p></td>
+<td><p>Converts digital numbers to surface reflectance</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dn_to_toar</span></code>(dn, gain, bias[, solar_za, …])</p></td>
+<td><p>Converts digital numbers to top-of-atmosphere reflectance</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.radiometry.DOS.get_aot" title="geowombat.radiometry.DOS.get_aot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aot</span></code></a>(data, sza, meta[, data_values, …])</p></td>
+<td><p>Gets the aerosol optical thickness (AOT) from dark objects</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_landsat_coefficients</span></code>(meta_file)</p></td>
+<td><p>Gets coefficients from a Landsat metadata file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_optimized_aot</span></code>(blue_rad_dark, …)</p></td>
+<td><p>Gets the optimal aerosol optical thickness</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sentinel_coefficients</span></code>(meta_file)</p></td>
+<td><p>Gets coefficients from a Sentinel metadata file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rad_to_sr</span></code>(data, sensor, wavelength, sza, doy)</p></td>
+<td><p>Converts radiance to surface reflectance using a 6S radiative transfer model lookup table</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">radiance_to_toar</span></code>(radiance, solar_za, global_args)</p></td>
+<td><p>Converts radiance to top-of-atmosphere reflectance</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_rad</span></code>(toar, meta)</p></td>
+<td><p>Converts top of atmosphere reflectance to top of atmosphere radiance</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">toar_to_sr</span></code>(data, sensor, wavelength, sza, doy)</p></td>
+<td><p>Converts top of atmosphere reflectance to surface reflectance using 6S outputs</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>get_mean_altitude</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>prepare_coeff</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Summary</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.radiometry.DOS.get_aot" title="geowombat.radiometry.DOS.get_aot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aot</span></code></a>(data, sza, meta[, data_values, …])</p></td>
+<td><p>Gets the aerosol optical thickness (AOT) from dark objects</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Documentation</p>
+<dl class="py method">
+<dt id="geowombat.radiometry.DOS.get_aot">
+<code class="sig-name descname"><span class="pre">get_aot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sza</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dn_interp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aot_fallback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h2o</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">altitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.DOS.get_aot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the aerosol optical thickness (AOT) from dark objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The digital numbers or top of atmosphere reflectance at a coarse resolution.</p></li>
+<li><p><strong>sza</strong> (<em>float | DataArray</em>) – The solar zenith angle.</p></li>
+<li><p><strong>meta</strong> (<em>Optional</em><em>[</em><em>namedtuple</em><em>]</em>) – A metadata object with gain and bias coefficients.</p></li>
+<li><p><strong>data_values</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The values of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Choices are [‘dn’, ‘toar’].</p></li>
+<li><p><strong>angle_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The scale factor for angles.</p></li>
+<li><p><strong>dn_interp</strong> (<em>Optional</em><em>[</em><em>DataArray</em><em>]</em>) – A source <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> at the target resolution.</p></li>
+<li><p><strong>interp_method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The LUT interpolation method. Choices are [‘fast’, ‘slow’].
+‘fast’: Uses nearest neighbor lookup with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.NearestNDInterpolator</span></code>.
+‘slow’: Uses linear interpolation with <code class="docutils literal notranslate"><span class="pre">scipy.interpolate.LinearNDInterpolator</span></code>.</p></li>
+<li><p><strong>aot_fallback</strong> (<em>Optional</em><em>[</em><em>float | DataArray</em><em>]</em>) – The aerosol optical thickness fallback if no dark objects
+are found (unitless). [0,3].</p></li>
+<li><p><strong>h2o</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The water vapor (g/m^2). [0,8.5].</p></li>
+<li><p><strong>o3</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The ozone (cm-atm). [0,8].</p></li>
+<li><p><strong>altitude</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The altitude over the sensor acquisition location (km above sea level).</p></li>
+<li><p><strong>w</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The smoothing window size (in pixels).</p></li>
+<li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel jobs for <code class="docutils literal notranslate"><span class="pre">moving_window</span></code> and <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Data range: 0-3</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>See <a class="bibtex reference internal" href="geowombat.radiometry.RadTransforms.html#masek-etal-2006" id="id1">[MVS+06]</a>, <a class="bibtex reference internal" href="geowombat.radiometry.RadTransforms.html#kaufman-etal-1997" id="id2">[KWR+97]</a>, and <a class="bibtex reference internal" href="geowombat.radiometry.RadTransforms.html#ouaidrari-vermote-1999" id="id3">[OV99]</a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jgrss&repo=geowombat&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Changes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API reference</a><ul>
+      <li>Previous: <a href="geowombat.radiometry.RadTransforms.html" title="previous chapter">RadTransforms</a></li>
+      <li>Next: <a href="geowombat.radiometry.QAMasker.html" title="next chapter">QAMasker</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, GeoWombat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/geowombat.radiometry.DOS.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jgrss/geowombat" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -5,16 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Coordinate Reference Systems &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <title>Coordinate Reference Systems &#8212; GeoWombat 1.5.6 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -63,8 +61,8 @@
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.733015122)</span>
-<span class="go">+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs=True</span>
+<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.7330151177)</span>
+<span class="go">+proj=aea +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs=True</span>
 <span class="go">nearest</span>
 <span class="go">(5.0, 5.0)</span>
 </pre></div>
@@ -77,8 +75,8 @@
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.733015122)</span>
-<span class="go">+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs=True</span>
+<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.7330151177)</span>
+<span class="go">+proj=aea +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs=True</span>
 <span class="go">nearest</span>
 <span class="go">(5.0, 5.0)</span>
 </pre></div>
@@ -91,8 +89,8 @@
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.733015122)</span>
-<span class="go">+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs=True</span>
+<span class="go">(5.0, 0.0, 2502400.7632678417, 0.0, -5.0, -2147313.7330151177)</span>
+<span class="go">+proj=aea +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs=True</span>
 <span class="go">cubic</span>
 <span class="go">(5.0, 5.0)</span>
 </pre></div>
@@ -105,8 +103,8 @@
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">resampling</span><span class="p">)</span>
 <span class="gp">   ...: </span>        <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
 <span class="gp">   ...: </span>
-<span class="go">(10.0, 0.0, 2502400.7632678417, 0.0, -10.0, -2147313.733015122)</span>
-<span class="go">+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs=True</span>
+<span class="go">(10.0, 0.0, 2502400.7632678417, 0.0, -10.0, -2147313.7330151177)</span>
+<span class="go">+proj=aea +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs=True</span>
 <span class="go">cubic</span>
 <span class="go">(10.0, 10.0)</span>
 </pre></div>
@@ -129,7 +127,7 @@
 <span class="go">            or as a tuple of (left, bottom, right, top).</span>
 <span class="go">        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.</span>
 <span class="go">            Choices are [&#39;average&#39;, &#39;bilinear&#39;, &#39;cubic&#39;, &#39;cubic_spline&#39;, &#39;gauss&#39;, &#39;lanczos&#39;, &#39;max&#39;, &#39;med&#39;, &#39;min&#39;, &#39;mode&#39;, &#39;nearest&#39;].</span>
-<span class="go">        warp_mem_limit (Optional[int]): The warp memory limit.</span>
+<span class="go">        warp_mem_lim    it (Optional[int]): The warp memory limit.</span>
 <span class="go">        num_threads (Optional[int]): The number of parallel threads.</span>
 <span class="go">    </span>
 <span class="go">    Returns:</span>
@@ -161,8 +159,8 @@
 <span class="go">nearest</span>
 <span class="go">(5.0, 5.0)</span>
 
-<span class="go">(10.0, 0.0, 2502400.7632678417, 0.0, -10.0, -2147313.733015122)</span>
-<span class="go">PROJCS[&quot;unnamed&quot;,GEOGCS[&quot;NAD83&quot;,DATUM[&quot;North_American_Datum_1983&quot;,SPHEROID[&quot;GRS 1980&quot;,6378137,298.257222101,AUTHORITY[&quot;EPSG&quot;,&quot;7019&quot;]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[&quot;EPSG&quot;,&quot;6269&quot;]],PRIMEM[&quot;Greenwich&quot;,0,AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]],UNIT[&quot;degree&quot;,0.0174532925199433,AUTHORITY[&quot;EPSG&quot;,&quot;9122&quot;]],AUTHORITY[&quot;EPSG&quot;,&quot;4269&quot;]],PROJECTION[&quot;Albers_Conic_Equal_Area&quot;],PARAMETER[&quot;standard_parallel_1&quot;,20],PARAMETER[&quot;standard_parallel_2&quot;,60],PARAMETER[&quot;latitude_of_center&quot;,40],PARAMETER[&quot;longitude_of_center&quot;,-96],PARAMETER[&quot;false_easting&quot;,0],PARAMETER[&quot;false_northing&quot;,0],UNIT[&quot;Meter&quot;,1]]</span>
+<span class="go">(10.0, 0.0, 2502400.7632678417, 0.0, -10.0, -2147313.7330151177)</span>
+<span class="go">PROJCS[&quot;unknown&quot;,GEOGCS[&quot;unknown&quot;,DATUM[&quot;North_American_Datum_1983&quot;,SPHEROID[&quot;GRS 1980&quot;,6378137,298.257222101,AUTHORITY[&quot;EPSG&quot;,&quot;7019&quot;]],AUTHORITY[&quot;EPSG&quot;,&quot;6269&quot;]],PRIMEM[&quot;Greenwich&quot;,0,AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]],UNIT[&quot;degree&quot;,0.0174532925199433,AUTHORITY[&quot;EPSG&quot;,&quot;9122&quot;]]],PROJECTION[&quot;Albers_Conic_Equal_Area&quot;],PARAMETER[&quot;latitude_of_center&quot;,40],PARAMETER[&quot;longitude_of_center&quot;,-96],PARAMETER[&quot;standard_parallel_1&quot;,20],PARAMETER[&quot;standard_parallel_2&quot;,60],PARAMETER[&quot;false_easting&quot;,0],PARAMETER[&quot;false_northing&quot;,0],UNIT[&quot;metre&quot;,1,AUTHORITY[&quot;EPSG&quot;,&quot;9001&quot;]],AXIS[&quot;Easting&quot;,EAST],AXIS[&quot;Northing&quot;,NORTH]]</span>
 <span class="go">bilinear</span>
 <span class="go">(10, 10)</span>
 </pre></div>
@@ -245,10 +243,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

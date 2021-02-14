@@ -5,16 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>array_to_polygon &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <title>array_to_polygon &#8212; GeoWombat 1.5.6 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="polygon_to_array" href="geowombat.polygon_to_array.html" />
@@ -39,7 +37,7 @@
 <h1>array_to_polygon<a class="headerlink" href="#array-to-polygon" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.array_to_polygon">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">array_to_polygon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">connectivity</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.array_to_polygon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">geowombat.</span></code><code class="sig-name descname"><span class="pre">array_to_polygon</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connectivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.array_to_polygon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray`</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">``geopandas.GeoDataFrame</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -48,7 +46,7 @@
 <li><p><strong>mask</strong> (<em>Optional</em><em>[</em><em>str</em><em>, </em><em>numpy ndarray</em><em>, or </em><em>rasterio Band object</em><em>]</em>) – Must evaluate to bool (<a href="#id1"><span class="problematic" id="id2">rasterio.bool_</span></a> or rasterio.uint8).
 Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
 Numpy’s, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-and mask is None, the source’s mask will be inverted and used in place of mask. if <code class="docutils literal notranslate"><span class="pre">mask</span></code> is equal to
+and mask is None, the source’s mask will be inverted and used in place of mask. If <code class="docutils literal notranslate"><span class="pre">mask</span></code> is equal to
 ‘source’, then <code class="docutils literal notranslate"><span class="pre">data</span></code> is used as the mask.</p></li>
 <li><p><strong>connectivity</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Use 4 or 8 pixel connectivity for grouping pixels into features.</p></li>
 <li><p><strong>num_workers</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel workers to send to <code class="docutils literal notranslate"><span class="pre">dask.compute</span></code>.</p></li>
@@ -153,10 +151,10 @@ and mask is None, the source’s mask will be inverted and used in place of mask
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
