@@ -3,6 +3,18 @@
 Changelog
 =========
 
+1.6.0 ()
+--------
+
+New
+~~~
+
+Atmospheric correction
+
+- Created :class:`geowombat.Radiometry.sixs.SixS`.
+- Created 6S lookup tables (LUTs) for Landsat 5, 7, and 8 and Sentinel 2A and 2B.
+    - Includes LUTs for wavelengths blue, green, red, NIR, SWIR1, and SWIR2.
+
 1.5.5 (28 Dec 2020)
 -------------------
 
