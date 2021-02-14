@@ -30,6 +30,7 @@ doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
+geowombat/moving/*test*
 geowombat/models/
 logo/
 bin/ESPA/
