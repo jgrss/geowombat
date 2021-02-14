@@ -181,9 +181,9 @@ def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
         Scattering angle (in radians) as an ``xarray.DataArray``
     """
 
-    scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+    scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
 
-    return np.cos(scattering_angle) ** 2
+    return xr.ufuncs.cos(scattering_angle) ** 2
 
 
 def relative_azimuth(saa, vaa):
@@ -203,7 +203,7 @@ def relative_azimuth(saa, vaa):
     """
 
     # Relative azimuth (in radians)
-    raa = np.deg2rad(saa - vaa)
+    raa = xr.ufuncs.deg2rad(saa - vaa)
 
     # Create masks
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
@@ -215,7 +215,7 @@ def relative_azimuth(saa, vaa):
     raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
     raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
 
-    return np.fabs(np.rad2deg(raa))
+    return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
 
 
 def get_sentinel_sensor(metadata):
@@ -237,7 +237,7 @@ def get_sentinel_sensor(metadata):
     return file_name[:3].lower()
 
 
-def _parse_sentinel_angles(metadata, proc_angles, nodata):
+def parse_sentinel_angles(metadata, proc_angles, nodata):
 
     """
     Gets the Sentinel-2 solar angles from metadata
@@ -270,8 +270,9 @@ def _parse_sentinel_angles(metadata, proc_angles, nodata):
     # Find the angles
     for child in root:
 
-        if child.tag[-14:] == 'Geometric_Info':
+        if child.tag.split('}')[-1] == 'Geometric_Info':
             geoinfo = child
+            break
 
     for segment in geoinfo:
 
@@ -361,8 +362,8 @@ def sentinel_pixel_angles(metadata,
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
 
-    sza, saa = _parse_sentinel_angles(metadata, 'solar', nodata)
-    vza, vaa = _parse_sentinel_angles(metadata, 'view', nodata)
+    sza, saa = parse_sentinel_angles(metadata, 'solar', nodata)
+    vza, vaa = parse_sentinel_angles(metadata, 'view', nodata)
 
     sensor_name = get_sentinel_sensor(metadata)
 

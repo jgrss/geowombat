@@ -1199,17 +1199,52 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                        verbose=verbose,
                        **kwargs)
 
-    def set_nodata(self, src_nodata, dst_nodata, clip_range, dtype, scale_factor=None):
+    def band_mask(self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1):
+
+        """
+        Creates a mask from band nonzeros
+
+        Args:
+            valid_bands (list): The bands considered valid.
+            src_nodata (Optional[float | int]): The source 'no data' value.
+            dst_clear_val (Optional[int]): The destination clear value.
+            dst_mask_val (Optional[int]): The destination mask value.
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        mask = self._obj.where(self._obj.sel(band=valid_bands) > 0)\
+                            .count(dim='band')\
+                            .expand_dims(dim='band')\
+                            .assign_coords(band=['mask'])\
+                            .astype('uint8')
+
+        if isinstance(src_nodata, int) or isinstance(src_nodata, float):
+
+            return xr.where((mask < len(valid_bands)) | (self._obj.sel(band='blue') == src_nodata),
+                            dst_mask_val,
+                            dst_clear_val)\
+                        .assign_attrs(**self._obj.attrs)
+
+        else:
+
+            return xr.where(mask < len(valid_bands),
+                            dst_mask_val,
+                            dst_clear_val)\
+                        .assign_attrs(**self._obj.attrs)
+
+    def set_nodata(self, src_nodata, dst_nodata, out_range=None, dtype=None, scale_factor=None):
 
         """
         Sets 'no data' values in the DataArray
 
         Args:
-            src_noata (int | float): The 'no data' values to replace.
+            src_nodata (int | float): The 'no data' values to replace.
             dst_nodata (int | float): The 'no data' value to set.
-            clip_range (tuple): The output clip range.
-            dtype (str): The output data type.
-            scale_factor (float): A scale factor to apply.
+            out_range (Optional[tuple]): The output clip range.
+            dtype (Optional[str]): The output data type.
+            scale_factor (Optional[float]): A scale factor to apply.
 
         Returns:
             ``xarray.DataArray``
@@ -1218,8 +1253,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif') as src:
-            >>>     src = src.gw.set_nodata(0, 65535, (0, 10000), 'uint16')
+            >>>     src = src.gw.set_nodata(0, 65535, out_range=(0, 10000), dtype='uint16')
         """
+
+        if dtype:
+            dtype = self._obj.dtype
 
         if not isinstance(scale_factor, float):
             scale_factor = 1.0
@@ -1227,16 +1265,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         attrs = self._obj.attrs.copy()
 
         # Create a 'no data' mask
-        mask = self._obj.where(self._obj != src_nodata).count(dim='band').astype('uint8')
+        mask = self._obj.where(self._obj != src_nodata)\
+                            .count(dim='band')\
+                            .astype('uint8')
 
         if self._obj.gw.has_time_coord:
             mask = mask.transpose('time', 'y', 'x')
 
         # Mask the data
-        data = xr.where(mask < self._obj.gw.nbands,
-                        dst_nodata,
-                        (self._obj*scale_factor).clip(clip_range[0], clip_range[1]))
-        
+        if out_range:
+
+            data = xr.where(mask < self._obj.gw.nbands,
+                            dst_nodata,
+                            self._obj*scale_factor)\
+                        .clip(out_range[0], out_range[1])
+
+        else:
+
+            data = xr.where(mask < self._obj.gw.nbands,
+                            dst_nodata,
+                            self._obj*scale_factor)
+
         if self._obj.gw.has_time_coord:
             data = data.transpose('time', 'band', 'y', 'x').astype(dtype)
         else:

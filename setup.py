@@ -16,15 +16,12 @@ try:
 except:
     raise ImportError('NumPy must be installed to build GeoWombat.')
 
-
 # Parse the version from the module.
 # Source: https://github.com/mapbox/rasterio/blob/master/setup.py
 with open('geowombat/version.py') as f:
-
     for line in f:
 
         if line.find("__version__") >= 0:
-
             version = line.split("=")[1].strip()
             version = version.strip('"')
             version = version.strip("'")
@@ -48,7 +45,6 @@ with open('LICENSE.txt') as f:
 
 with open('requirements.txt') as f:
     required_packages = f.readlines()
-
 
 # Attempt to get the GDAL binary version
 try:
@@ -104,6 +100,7 @@ def get_package_data():
                           'data/*.TIF',
                           'data/*.gpkg',
                           'data/*.tar.gz',
+                          'data/lut/*.lut',
                           'moving/*.so',
                           'bin/*.tar.gz']}
 
@@ -133,7 +130,7 @@ def get_extensions():
 
 
 def setup_package():
-
+    
     include_dirs = [np.get_include()]
 
     metadata = dict(name=pkg_name,
