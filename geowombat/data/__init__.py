@@ -37,6 +37,8 @@ l8_224078_20200518 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT.TIF')
 l8_224078_20200518_points = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_points.gpkg')
 l8_224078_20200518_polygons = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_polygons.gpkg')
 
+srtm30m_bounding_boxes = str(p / 'srtm30m_bounding_boxes.gpkg')
+
 
 class PassKey(object):
 
