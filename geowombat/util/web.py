@@ -1292,7 +1292,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                   ref_bounds=out_bounds,
                                                   ref_crs=crs,
                                                   ref_res=ref_res if ref_res else load_bands_names[-1],
-                                                  ignore_warnings=True):
+                                                  ignore_warnings=True,
+                                                  nasa_earthdata_user=earthdata_username,
+                                                  nasa_earthdata_key=earthdata_key_file,
+                                                  nasa_earthdata_code=earthdata_code_file):
 
                                 valid_data = True
 
@@ -1416,9 +1419,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                     isinstance(earthdata_code_file, str):
 
                                                 altitude = dos.get_mean_altitude(data,
-                                                                                 earthdata_username,
-                                                                                 earthdata_key_file,
-                                                                                 earthdata_code_file,
                                                                                  srtm_outdir,
                                                                                  n_jobs=n_jobs)
 
@@ -1429,7 +1429,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                             # Resample to 100m x 100m
                                             data_coarse = data.sel(band=['blue', 'swir2']).gw\
-                                                                .transform_crs(dst_res=100.0,
+                                                                .transform_crs(dst_res=500.0,
                                                                                resampling='med')
 
                                             aot = dos.get_aot(data_coarse,
@@ -1443,7 +1443,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                               h2o=2.0,
                                                               o3=0.3,  # global average of total ozone in a vertical column (3 cm)
                                                               altitude=altitude,
-                                                              w=101,
+                                                              w=151,
                                                               n_jobs=n_jobs)
 
                                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
