@@ -40,7 +40,7 @@ geowombat/data/lut
 # dev
 geowombat/radiometry/*test*.py
 geowombat/radiometry/mask.py
-geowombat/radiometry/*fusion*
+#geowombat/radiometry/*fusion*
 geowombat/radiometry/*.c
 geowombat/radiometry/*.so
 geowombat/radiometry/*.pyd
