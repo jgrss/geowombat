@@ -818,6 +818,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                       l57_angles_path=None,
                       l8_angles_path=None,
                       subsample=1,
+                      write_format='gtiff',
                       write_angle_files=False,
                       mask_qa=False,
                       lqa_mask_items=None,
@@ -861,6 +862,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             subsample (Optional[int]): The sub-sample factor when calculating the angles.
+            write_format (Optional[bool]): The data format to write. Choices are ['gtiff', 'netcdf'].
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
@@ -898,6 +900,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             >>>                   n_workers=1,
             >>>                   n_threads=8)
         """
+
+        if write_format not in ['gtiff', 'netcdf']:
+            logger.warning(f'  Did not recognize {write_format}. Setting the output data format as gtiff.')
+            write_format = 'gtiff'
 
         if not lqa_mask_items:
 
@@ -1531,7 +1537,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                        nodataval).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                                if write_format == 'gtiff':
+                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                                else:
+                                                    sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
 
                                             else:
 
@@ -1554,7 +1564,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                        nodataval).astype('uint16')
 
                                                     sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                                    if write_format == 'gtiff':
+                                                        sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                                    else:
+                                                        sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
 
                                         else:
 
@@ -1565,13 +1579,21 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                             dtype='uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                            if write_format == 'gtiff':
+                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                            else:
+                                                sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
 
                                         if write_angle_files:
 
                                             angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
                                             angle_stack.attrs = sza.attrs.copy()
-                                            angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
+
+                                            if write_format == 'gtiff':
+                                                angle_stack.gw.to_raster(str(out_angles), **kwargs)
+                                            else:
+                                                angle_stack.gw.to_netcdf(str(out_angles), zlib=True, complevel=5)
 
                                 else:
 
