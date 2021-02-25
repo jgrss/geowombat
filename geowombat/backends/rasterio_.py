@@ -5,6 +5,8 @@ from collections import namedtuple
 import threading
 import logging
 
+import geowombat as gw
+
 import numpy as np
 import rasterio as rio
 from rasterio.crs import CRS
@@ -14,7 +16,7 @@ from rasterio.warp import aligned_target, calculate_default_transform, transform
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
-
+import xarray as xr
 import pyproj
 from affine import Affine
 
@@ -29,6 +31,21 @@ except:
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_file_info(src_obj):
+
+    src_bounds = src_obj.bounds
+    src_res = src_obj.res
+    src_width = src_obj.width
+    src_height = src_obj.height
+
+    FileInfo = namedtuple('FileInfo', 'src_bounds src_res src_width src_height')
+
+    return FileInfo(src_bounds=src_bounds,
+                    src_res=src_res,
+                    src_width=src_width,
+                    src_height=src_height)
 
 
 def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, tags, kwargs):
@@ -339,7 +356,7 @@ def check_src_crs(src):
     Checks a rasterio open() instance
 
     Args:
-        src (object): An `rasterio.open` instance.
+        src (object): A `rasterio.open` instance.
 
     Returns:
         ``rasterio.crs.CRS``
@@ -380,6 +397,42 @@ def check_crs(crs):
         raise TypeError
 
     return dst_crs
+
+
+def check_file_crs(filename):
+
+    """
+    Checks a file CRS
+
+    Args:
+        filename (Path | str): The file to open.
+
+    Returns:
+        ``object`` or ``string``
+    """
+
+    # rasterio does not read the CRS from a .nc file
+    if '.nc' in str(filename).lower():
+
+        # rasterio does not open and read metadata from NetCDF files
+        if str(filename).lower().startswith('netcdf:'):
+
+            with xr.open_dataset(filename.split(':')[1], chunks=256) as src:
+                src_crs = src.crs
+
+        else:
+
+            with xr.open_dataset(filename, chunks=256) as src:
+                src_crs = src.crs
+
+    else:
+
+        with rio.open(filename) as src:
+            src_crs = src.crs
+
+        src_crs = check_src_crs(src_crs)
+
+    return src_crs
 
 
 def unpack_bounding_box(bounds):
@@ -512,80 +565,97 @@ def get_file_bounds(filenames,
         transform, width, height
     """
 
-    with rio.open(filenames[0]) as src:
+    if filenames[0].lower().startswith('netcdf:'):
+
+        with rio.open(filenames[0]) as src:
+            file_bounds = src.bounds
+
+        return file_bounds
+
+    else:
 
         if crs:
             dst_crs = check_crs(crs)
         else:
-            dst_crs = check_src_crs(src)
+            dst_crs = check_file_crs(filenames[0])
 
-        if res:
-            dst_res = check_res(res)
+        src_crs = check_file_crs(filenames[0])
+
+        with rio.open(filenames[0]) as src:
+
+            src_info = get_file_info(src)
+
+            if res:
+                dst_res = check_res(res)
+            else:
+                dst_res = src_info.src_res
+
+            # Transform the extent to the reference CRS
+            bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src_crs,
+                                                                                    dst_crs,
+                                                                                    src_info.src_bounds.left,
+                                                                                    src_info.src_bounds.bottom,
+                                                                                    src_info.src_bounds.right,
+                                                                                    src_info.src_bounds.top,
+                                                                                    densify_pts=21)
+
+        if bounds_by.lower() in ['union', 'intersection']:
+
+            for fn in filenames[1:]:
+
+                src_crs = check_file_crs(fn)
+
+                with rio.open(fn) as src:
+
+                    src_info = get_file_info(src)
+
+                    # Transform the extent to the reference CRS
+                    left, bottom, right, top = transform_bounds(src_crs,
+                                                                dst_crs,
+                                                                src_info.src_bounds.left,
+                                                                src_info.src_bounds.bottom,
+                                                                src_info.src_bounds.right,
+                                                                src_info.src_bounds.top,
+                                                                densify_pts=21)
+
+                # Update the mosaic bounds
+                if bounds_by.lower() == 'union':
+
+                    bounds_left = min(bounds_left, left)
+                    bounds_bottom = min(bounds_bottom, bottom)
+                    bounds_right = max(bounds_right, right)
+                    bounds_top = max(bounds_top, top)
+
+                elif bounds_by.lower() == 'intersection':
+
+                    bounds_left = max(bounds_left, left)
+                    bounds_bottom = max(bounds_bottom, bottom)
+                    bounds_right = min(bounds_right, right)
+                    bounds_top = min(bounds_top, top)
+
+            # Align the cells
+            bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
+                                                                         bounds_bottom,
+                                                                         bounds_right,
+                                                                         bounds_top,
+                                                                         dst_res)
+
         else:
-            dst_res = src.res
 
-        # Transform the extent to the reference CRS
-        bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(check_src_crs(src),
-                                                                                dst_crs,
-                                                                                src.bounds.left,
-                                                                                src.bounds.bottom,
-                                                                                src.bounds.right,
-                                                                                src.bounds.top,
-                                                                                densify_pts=21)
+            bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
+            bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
-    if bounds_by.lower() in ['union', 'intersection']:
+            bounds_transform = from_bounds(bounds_left,
+                                           bounds_bottom,
+                                           bounds_right,
+                                           bounds_top,
+                                           bounds_width,
+                                           bounds_height)
 
-        for fn in filenames[1:]:
-
-            with rio.open(fn) as src:
-
-                # Transform the extent to the reference CRS
-                left, bottom, right, top = transform_bounds(check_src_crs(src),
-                                                            dst_crs,
-                                                            src.bounds.left,
-                                                            src.bounds.bottom,
-                                                            src.bounds.right,
-                                                            src.bounds.top,
-                                                            densify_pts=21)
-
-            # Update the mosaic bounds
-            if bounds_by.lower() == 'union':
-
-                bounds_left = min(bounds_left, left)
-                bounds_bottom = min(bounds_bottom, bottom)
-                bounds_right = max(bounds_right, right)
-                bounds_top = max(bounds_top, top)
-
-            elif bounds_by.lower() == 'intersection':
-
-                bounds_left = max(bounds_left, left)
-                bounds_bottom = max(bounds_bottom, bottom)
-                bounds_right = min(bounds_right, right)
-                bounds_top = min(bounds_top, top)
-
-        # Align the cells
-        bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
-                                                                     bounds_bottom,
-                                                                     bounds_right,
-                                                                     bounds_top,
-                                                                     dst_res)
-
-    else:
-
-        bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
-        bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
-
-        bounds_transform = from_bounds(bounds_left,
-                                       bounds_bottom,
-                                       bounds_right,
-                                       bounds_top,
-                                       bounds_width,
-                                       bounds_height)
-
-    if return_bounds:
-        return array_bounds(bounds_height, bounds_width, bounds_transform)
-    else:
-        return bounds_transform, bounds_width, bounds_height
+        if return_bounds:
+            return array_bounds(bounds_height, bounds_width, bounds_transform)
+        else:
+            return bounds_transform, bounds_width, bounds_height
 
 
 def warp_images(filenames,
@@ -660,9 +730,10 @@ def get_ref_image_meta(filename):
 
     WarpInfo = namedtuple('WarpInfo', 'bounds crs res')
 
+    src_crs = check_file_crs(filename)
+
     with rio.open(filename) as src:
 
-        src_crs = check_src_crs(src)
         bounds = src.bounds
         res = src.res
 
@@ -700,20 +771,24 @@ def warp(filename,
         ``rasterio.vrt.WarpedVRT``
     """
 
+    if crs:
+        dst_crs = check_crs(crs)
+    else:
+        dst_crs = check_file_crs(filename)
+
+    src_crs = check_file_crs(filename)
+
     with rio.open(filename) as src:
+
+        src_info = get_file_info(src)
 
         if res:
             dst_res = check_res(res)
         else:
-            dst_res = src.res
-
-        if crs:
-            dst_crs = check_crs(crs)
-        else:
-            dst_crs = check_src_crs(src)
+            dst_res = src_info.src_res
 
         # Check if the data need to be subset
-        if bounds and (bounds != src.bounds):
+        if bounds and (bounds != src_info.src_bounds):
 
             if isinstance(bounds, str):
 
@@ -738,12 +813,12 @@ def warp(filename,
 
             if crs:
 
-                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(check_src_crs(src),
+                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(src_crs,
                                                                                     dst_crs,
-                                                                                    src.bounds.left,
-                                                                                    src.bounds.bottom,
-                                                                                    src.bounds.right,
-                                                                                    src.bounds.top,
+                                                                                    src_info.src_bounds.left,
+                                                                                    src_info.src_bounds.bottom,
+                                                                                    src_info.src_bounds.right,
+                                                                                    src_info.src_bounds.top,
                                                                                     densify_pts=21)
 
                 dst_bounds = BoundingBox(left=left_coord,
@@ -752,22 +827,24 @@ def warp(filename,
                                          top=top_coord)
 
             else:
-                dst_bounds = src.bounds
+                dst_bounds = src_info.src_bounds
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
         # Do not warp if all the key metadata match the reference information
-        if (src.bounds == bounds) and \
-                (src.res == dst_res) and \
-                (src.crs == dst_crs) and \
-                (src.width == dst_width) and \
-                (src.height == dst_height):
+        if (src_info.src_bounds == bounds) and \
+                (src_info.src_res == dst_res) and \
+                (src_crs == dst_crs) and \
+                (src_info.src_width == dst_width) and \
+                (src_info.src_height == dst_height) and \
+                ('.nc' not in filename.lower()):
 
             output = filename
 
         else:
 
+            src_transform = Affine(src_info.src_res[0], 0.0, src_info.src_bounds.left, 0.0, -src_info.src_res[1], src_info.src_bounds.top)
             dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
             if tac:
@@ -787,14 +864,16 @@ def warp(filename,
                                                                       dst_res)
 
             vrt_options = {'resampling': getattr(Resampling, resampling),
+                           'src_crs': src_crs,
                            'crs': dst_crs,
+                           'src_transform': src_transform,
                            'transform': dst_transform,
                            'height': dst_height,
                            'width': dst_width,
                            'nodata': nodata,
                            'warp_mem_limit': warp_mem_limit,
                            'warp_extras': {'multi': True,
-                                           'warp_option': 'NUM_THREADS={:d}'.format(num_threads)}}
+                                           'warp_option': f'NUM_THREADS={num_threads}'}}
 
             with WarpedVRT(src, **vrt_options) as vrt:
                 output = vrt

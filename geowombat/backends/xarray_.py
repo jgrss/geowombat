@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import logging
+import contextlib
 
 from ..handler import add_handler
 from ..core.windows import get_window_offsets
@@ -37,7 +38,7 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
         ``dict``
     """
 
-    if isinstance(ref_obj, str) and os.path.isfile(ref_obj):
+    if isinstance(ref_obj, str) and Path(ref_obj).is_file():
 
         # Get the metadata from the reference image
         ref_meta = get_ref_image_meta(ref_obj)
@@ -111,7 +112,7 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
         else:
 
-            if isinstance(filenames, str):
+            if isinstance(filenames, str) or isinstance(filenames, Path):
 
                 # Use the bounds of the image
                 ref_kwargs['bounds'] = get_file_bounds([filenames],
@@ -178,9 +179,10 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
 def warp_open(filename,
               band_names=None,
-              nodata=0,
               resampling='nearest',
               dtype=None,
+              netcdf_vars=None,
+              nodata=0,
               return_windows=False,
               warp_mem_limit=512,
               num_threads=1,
@@ -193,10 +195,11 @@ def warp_open(filename,
     Args:
         filename (str): The file to open.
         band_names (Optional[int, str, or list]): The band names.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         resampling (Optional[str]): The resampling method.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
+        netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         return_windows (Optional[bool]): Whether to return block windows.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
@@ -216,15 +219,48 @@ def warp_open(filename,
                   'tap': tap,
                   'tac': None}
 
+    ref_kwargs_netcdf_stack = ref_kwargs.copy()
+    ref_kwargs_netcdf_stack['bounds_by'] = 'union'
+    del ref_kwargs_netcdf_stack['tap']
+
     ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
 
-    with rio_open(filename) as src:
-        tags = src.tags()
+    filenames = None
+
+    # Create a list of variables to open
+    if filename.lower().startswith('netcdf:') and netcdf_vars:
+        filenames = (f'{filename}:' + f',{filename}:'.join(netcdf_vars)).split(',')
+
+    if filenames:
+
+        ref_kwargs_netcdf_stack = _check_config_globals(filenames[0], 'reference', ref_kwargs_netcdf_stack)
+
+        with rio_open(filenames[0]) as src:
+            tags = src.tags()
+
+    else:
+
+        ref_kwargs_netcdf_stack = _check_config_globals(filename, 'reference', ref_kwargs_netcdf_stack)
+
+        with rio_open(filename) as src:
+            tags = src.tags()
+
+    @contextlib.contextmanager
+    def warp_netcdf_vars():
+
+        # Warp all images to the same grid.
+        warped_objects = warp_images(filenames,
+                                     resampling=resampling,
+                                     **ref_kwargs_netcdf_stack)
+
+        yield xr.concat((xr.open_rasterio(wobj, **kwargs)\
+                            .assign_coords(band=[band_names[wi]] if band_names else [netcdf_vars[wi]])
+                         for wi, wobj in enumerate(warped_objects)), dim='band')
 
     with xr.open_rasterio(warp(filename,
                                resampling=resampling,
                                **ref_kwargs),
-                          **kwargs) as src:
+                          **kwargs) if not filenames else warp_netcdf_vars() as src:
 
         if band_names:
             src.coords['band'] = band_names
@@ -451,6 +487,7 @@ def concat(filenames,
            band_names=None,
            nodata=0,
            dtype=None,
+           netcdf_vars=None,
            overlap='max',
            warp_mem_limit=512,
            num_threads=1,
@@ -475,6 +512,7 @@ def concat(filenames,
         nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
+        netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data.
             Choices are ['min', 'max', 'mean']. Only used when mosaicking arrays from the same timeframe.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
@@ -487,7 +525,7 @@ def concat(filenames,
     """
 
     if stack_dim.lower() not in ['band', 'time']:
-        logger.exception("  The stack dimension should be 'band' or 'time'")
+        logger.exception("  The stack dimension should be 'band' or 'time'.")
 
     ref_kwargs = {'bounds': None,
                   'crs': None,
@@ -498,19 +536,34 @@ def concat(filenames,
                   'tap': tap,
                   'tac': None}
 
-    ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
+    ref_kwargs = _check_config_globals(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames,
+                                       bounds_by,
+                                       ref_kwargs)
 
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
 
+    src_ = warp_open(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames[0],
+                     resampling=resampling,
+                     band_names=band_names,
+                     nodata=nodata,
+                     warp_mem_limit=warp_mem_limit,
+                     num_threads=num_threads,
+                     **kwargs)
+
+    attrs = src_.attrs.copy()
+
+    src_.close()
+    src_ = None
+
     # Keep a copy of the transformed attributes.
-    with xr.open_rasterio(warp(filenames[0],
-                               resampling=resampling,
-                               **ref_kwargs), **kwargs) as src_:
+    # with xr.open_rasterio(warp(filenames[0],
+    #                            resampling=resampling,
+    #                            **ref_kwargs), **kwargs) as src_:
+    #
+    #     attrs = src_.attrs.copy()
 
-        attrs = src_.attrs.copy()
-
-    if time_names:
+    if time_names and not (str(filenames[0]).lower().startswith('netcdf:')):
 
         concat_list = []
         new_time_names = []
@@ -553,19 +606,26 @@ def concat(filenames,
                                              **kwargs))
 
         # Warp all images and concatenate along the 'time' axis into a DataArray
-        output = xr.concat(concat_list, dim=stack_dim.lower())
-
-        # Assign the new time band names
-        src = output.assign_coords(time=new_time_names)
+        src = xr.concat(concat_list, dim=stack_dim.lower())\
+                    .assign_coords(time=new_time_names)
 
     else:
 
         # Warp all images and concatenate along
         #   the 'time' axis into a DataArray.
-        src = xr.concat([xr.open_rasterio(warp(fn,
-                                               resampling=resampling,
-                                               **ref_kwargs), **kwargs)
-                         for fn in filenames], dim=stack_dim.lower())
+        # src = xr.concat([xr.open_rasterio(warp(fn,
+        #                                        resampling=resampling,
+        #                                        **ref_kwargs), **kwargs)
+        #                  for fn in filenames], dim=stack_dim.lower())
+
+        src = xr.concat([warp_open(fn,
+                                   resampling=resampling,
+                                   band_names=band_names,
+                                   netcdf_vars=netcdf_vars,
+                                   nodata=nodata,
+                                   warp_mem_limit=warp_mem_limit,
+                                   num_threads=num_threads,
+                                   **kwargs) for fn in filenames], dim=stack_dim.lower())
 
     src.attrs['filename'] = [Path(fn).name for fn in filenames]
 
@@ -575,8 +635,17 @@ def concat(filenames,
 
     src = src.assign_attrs(**attrs)
 
-    if not time_names and (stack_dim == 'time'):
-        src.coords['time'] = parse_filename_dates(filenames)
+    if stack_dim == 'time':
+
+        if time_names:
+            src.coords['time'] = time_names
+        else:
+            src.coords['time'] = parse_filename_dates(filenames)
+
+        try:
+            src = src.groupby('time').max().assign_attrs(**attrs)
+        except:
+            pass
 
     if band_names:
         src.coords['band'] = band_names
