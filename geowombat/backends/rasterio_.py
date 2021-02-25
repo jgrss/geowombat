@@ -428,9 +428,7 @@ def check_file_crs(filename):
     else:
 
         with rio.open(filename) as src:
-            src_crs = src.crs
-
-        src_crs = check_src_crs(src_crs)
+            src_crs = check_src_crs(src)
 
     return src_crs
 

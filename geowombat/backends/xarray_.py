@@ -637,15 +637,22 @@ def concat(filenames,
 
     if stack_dim == 'time':
 
-        if time_names:
-            src.coords['time'] = time_names
-        else:
-            src.coords['time'] = parse_filename_dates(filenames)
+        if str(filenames[0]).lower().startswith('netcdf:'):
 
-        try:
-            src = src.groupby('time').max().assign_attrs(**attrs)
-        except:
-            pass
+            if time_names:
+                src.coords['time'] = time_names
+            else:
+                src.coords['time'] = parse_filename_dates(filenames)
+
+            try:
+                src = src.groupby('time').max().assign_attrs(**attrs)
+            except:
+                pass
+
+        else:
+
+            if not time_names:
+                src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
         src.coords['band'] = band_names
