@@ -1587,8 +1587,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                         if write_angle_files:
 
-                                            angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
-                                            angle_stack.attrs = sza.attrs.copy()
+                                            angle_stack = xr.concat((sza, saa), dim='band')\
+                                                                .astype('int16')\
+                                                                .assign_coords(band=['sza', 'saa'])\
+                                                                .assign_attrs(**sza.attrs.copy())
 
                                             if write_format == 'gtiff':
                                                 angle_stack.gw.to_raster(str(out_angles), **kwargs)

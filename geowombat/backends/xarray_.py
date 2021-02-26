@@ -268,7 +268,7 @@ def warp_open(filename,
                 src.coords['band'] = band_names[:src.gw.nbands]
             else:
                 src.coords['band'] = band_names
-                
+
         else:
 
             if src.gw.sensor:
