@@ -263,7 +263,13 @@ def warp_open(filename,
                           **kwargs) if not filenames else warp_netcdf_vars() as src:
 
         if band_names:
-            src.coords['band'] = band_names
+
+            try:
+                src.coords['band'] = band_names
+            except:
+                logger.exception(f"  Could not set the band names {','.join(band_names)} on array with {src.gw.nbands} bands.")
+                raise ValueError
+                
         else:
 
             if src.gw.sensor:
@@ -545,7 +551,7 @@ def concat(filenames,
 
     src_ = warp_open(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames[0],
                      resampling=resampling,
-                     band_names=netcdf_vars[0] if netcdf_vars else band_names,
+                     band_names=[netcdf_vars[0]] if netcdf_vars else band_names,
                      nodata=nodata,
                      warp_mem_limit=warp_mem_limit,
                      num_threads=num_threads,
