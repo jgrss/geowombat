@@ -264,11 +264,10 @@ def warp_open(filename,
 
         if band_names:
 
-            try:
+            if len(band_names) > src.gw.nbands:
+                src.coords['band'] = band_names[:src.gw.nbands]
+            else:
                 src.coords['band'] = band_names
-            except:
-                logger.exception(f"  Could not set the band names {','.join(band_names)} on array with {src.gw.nbands} bands.")
-                raise ValueError
                 
         else:
 
