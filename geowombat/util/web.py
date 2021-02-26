@@ -1583,7 +1583,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             if write_format == 'gtiff':
                                                 sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
                                             else:
-                                                sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
+                                                
+                                                sr_brdf.gw.to_netcdf(str(out_brdf).replace('.tif', '.nc'),
+                                                                     zlib=True,
+                                                                     complevel=5)
 
                                         if write_angle_files:
 
@@ -1595,7 +1598,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             if write_format == 'gtiff':
                                                 angle_stack.gw.to_raster(str(out_angles), **kwargs)
                                             else:
-                                                angle_stack.gw.to_netcdf(str(out_angles), zlib=True, complevel=5)
+
+                                                angle_stack.gw.to_netcdf(str(out_angles).replace('.tif', '.nc'),
+                                                                         zlib=True,
+                                                                         complevel=5)
 
                                 else:
 
