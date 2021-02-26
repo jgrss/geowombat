@@ -527,25 +527,25 @@ def concat(filenames,
     if stack_dim.lower() not in ['band', 'time']:
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
-    ref_kwargs = {'bounds': None,
-                  'crs': None,
-                  'res': None,
-                  'nodata': nodata,
-                  'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads,
-                  'tap': tap,
-                  'tac': None}
+    # ref_kwargs = {'bounds': None,
+    #               'crs': None,
+    #               'res': None,
+    #               'nodata': nodata,
+    #               'warp_mem_limit': warp_mem_limit,
+    #               'num_threads': num_threads,
+    #               'tap': tap,
+    #               'tac': None}
 
-    ref_kwargs = _check_config_globals(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames,
-                                       bounds_by,
-                                       ref_kwargs)
+    # ref_kwargs = _check_config_globals(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames,
+    #                                    bounds_by,
+    #                                    ref_kwargs)
 
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
 
     src_ = warp_open(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames[0],
                      resampling=resampling,
-                     band_names=band_names,
+                     band_names=netcdf_vars[0] if netcdf_vars else band_names,
                      nodata=nodata,
                      warp_mem_limit=warp_mem_limit,
                      num_threads=num_threads,
