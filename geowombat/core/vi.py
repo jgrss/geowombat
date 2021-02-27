@@ -669,7 +669,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
-                NBR = \frac{NIR - SWIR1}{NIR + SWIR1}
+                NBR = \frac{NIR - SWIR2}{NIR + SWIR2}
 
         Returns:
 

@@ -435,14 +435,16 @@ class DownloadMixin(object):
 
                 if out_brdf:
 
-                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
+                    if out_brdf.is_file() or \
+                            Path(str(out_brdf).replace('.tif', '.nc')).is_file() or \
+                            Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
 
-                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
+                        logger.warning(f'  The output BRDF file, {str(out_brdf)}, already exists.')
                         _clean_and_update(None, None, None, check_angles=False, check_downloads=False)
                         continue
 
                     else:
-                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
+                        logger.warning(f'  Continuing with the download for {str(out_brdf)}.')
 
                 # Move the metadata file to the front of the
                 # list to avoid unnecessary downloads.
@@ -1583,7 +1585,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             if write_format == 'gtiff':
                                                 sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
                                             else:
-                                                
+
                                                 sr_brdf.gw.to_netcdf(str(out_brdf).replace('.tif', '.nc'),
                                                                      zlib=True,
                                                                      complevel=5)
