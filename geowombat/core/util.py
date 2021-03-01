@@ -128,12 +128,13 @@ def parse_wildcard(string):
 
 def sort_images_by_date(image_path,
                         image_wildcard,
-                        date_pos,
-                        date_start,
-                        date_end,
+                        date_pos=None,
+                        date_start=None,
+                        date_end=None,
                         split_by='_',
                         date_format='%Y%m%d',
-                        file_list=None):
+                        file_list=None,
+                        prepend_str=None):
 
     """
     Sorts images by date
@@ -147,15 +148,17 @@ def sort_images_by_date(image_path,
         split_by (Optional[str]): How to split the file name.
         date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
         file_list (Optional[list of Paths]): A file list of names to sort. Overrides ``image_path``.
+        prepend_str (Optional[str]): A string to prepend to each filename.
 
     Returns:
         ``collections.OrderedDict``
 
     Example:
+        >>> from pathlib import Path
         >>> from geowombat.core import sort_images_by_date
         >>>
         >>> # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif
-        >>> image_path = '/path/to/images'
+        >>> image_path = Path('/path/to/images')
         >>>
         >>> image_dict = sort_images_by_date(image_path, '*.tif', 3, 0, 8)
         >>> image_names = list(image_dict.keys())
@@ -167,9 +170,12 @@ def sort_images_by_date(image_path,
     else:
         fl = list(image_path.glob(image_wildcard))
 
+    if prepend_str:
+        fl = [Path(f'{prepend_str}{str(fn)}') for fn in fl]
+
     dates = [datetime.strptime(fn.name.split(split_by)[date_pos][date_start:date_end], date_format) for fn in fl]
 
-    return OrderedDict(sorted(dict(zip([fn.as_posix() for fn in fl], dates)).items(), key=lambda x_: x_[1]))
+    return OrderedDict(sorted(dict(zip([str(fn) for fn in fl], dates)).items(), key=lambda x_: x_[1]))
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
