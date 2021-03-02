@@ -85,7 +85,60 @@ class PassKey(object):
         return cipher_suite.decrypt(ciphered_text['passcode'])
 
 
-class NASAEarthdataDownloader(PassKey):
+class BaseDownloader(object):
+
+    def download(self, url, outfile, safe_download=True):
+
+        self.outpath = Path(outfile)
+
+        if self.outpath.is_file():
+            logger.warning(f'  The file {outfile} is already downloaded.')
+            return
+
+        if safe_download:
+            base64_password = self.load_passcode(self.key_file, self.code_file).decode()
+
+        chunk_size = 256 * 10240
+
+        with requests.Session() as session:
+
+            if safe_download:
+                session.auth = (self.username, base64_password)
+
+            # Open
+            req = session.request('get', url)
+
+            if safe_download:
+                response = session.get(req.url, auth=(self.username, base64_password))
+            else:
+                response = session.get(req.url)
+
+            if not response.ok:
+                logger.exception('  Could not retrieve the page.')
+                raise NameError
+
+            if 'Content-Length' in response.headers:
+
+                content_length = float(response.headers['Content-Length'])
+                content_iters = int(math.ceil(content_length / chunk_size))
+                chunk_size_ = chunk_size * 1
+
+            else:
+
+                content_iters = 1
+                chunk_size_ = chunk_size * 1000
+
+            with open(str(outfile), 'wb') as ofn:
+
+                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
+                    ofn.write(data)
+
+
+class LUTDownloader(BaseDownloader):
+    pass
+
+
+class NASAEarthdataDownloader(PassKey, BaseDownloader):
 
     """
     A class to handle NASA Earthdata downloads
@@ -141,56 +194,3 @@ class NASAEarthdataDownloader(PassKey):
 
         self.download(f"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/61/MOD04_3K/{year}/{doy}/",
                       outfile)
-
-        # from ..core import ndarray_to_xarray
-        # from affine import Affine
-        # from osgeo import gdal
-        # src = gdal.Open()
-        # ds = src.GetSubDatasets()
-        # aot_path = [pair[0] for pair in ds if pair[0].endswith(':Optical_Depth_Land_And_Ocean')][0]
-        # src = None
-        # src = gdal.Open(aot_path)
-        # arr = src.ReadAsArray()
-        # c, a, b, f, d, e = src.GetGeoTransform()
-        # transform = Affine(a, b, c, d, e, f)
-        # ndarray_to_xarray(, arr, ['aot'])
-
-    def download(self, url, outfile):
-
-        self.outpath = Path(outfile)
-
-        if self.outpath.is_file():
-            logger.warning(f'  The file {outfile} is already downloaded.')
-            return
-
-        base64_password = self.load_passcode(self.key_file, self.code_file).decode()
-
-        chunk_size = 256 * 10240
-
-        with requests.Session() as session:
-
-            session.auth = (self.username, base64_password)
-
-            # Open
-            req = session.request('get', url)
-            response = session.get(req.url, auth=(self.username, base64_password))
-
-            if not response.ok:
-                logger.exception('  Could not retrieve the page.')
-                raise NameError
-
-            if 'Content-Length' in response.headers:
-
-                content_length = float(response.headers['Content-Length'])
-                content_iters = int(math.ceil(content_length / chunk_size))
-                chunk_size_ = chunk_size * 1
-
-            else:
-
-                content_iters = 1
-                chunk_size_ = chunk_size * 1000
-
-            with open(str(outfile), 'wb') as ofn:
-
-                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
-                    ofn.write(data)
