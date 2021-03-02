@@ -34,8 +34,11 @@ geowombat/models/
 logo/
 bin/ESPA/
 
+geowombat/data/lut
+
 # dev
 geowombat/radiometry/*test*.py
+geowombat/radiometry/*fusion*
 
 # Notebooks
 notebooks/*hls*
