@@ -46,7 +46,7 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 **Mosaic Images Example**
 
 .. image:: _static/union_example.png
-   :width: 400
+   :width: 500
 
 .. raw:: html
 

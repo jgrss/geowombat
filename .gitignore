@@ -16,6 +16,8 @@ Thumbs.db
 *.pyo
 *.pyc
 .idea/
+build/
+dist/
 *.egg-info/
 dist/
 .ipynb_checkpoints

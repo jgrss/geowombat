@@ -53,7 +53,7 @@ Configuration keywords beginning with **ref** are the most important commands wh
     from geowombat.data import l8_224078_20200518
 
     proj4 = "+proj=aea +lat_1=-5 +lat_2=-42 +lat_0=-32 +lon_0=-60 +x_0=0 +y_0=0 +ellps=aust_SA +units=m +no_defs "
-0
+
     # Without the manager
     with gw.open(l8_224078_20200518) as src:
         print(src.crs)

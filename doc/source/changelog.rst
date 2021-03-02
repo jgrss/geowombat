@@ -3,15 +3,15 @@
 Changelog
 =========
 
-1.6.0 ()
---------
+1.6.0 (3 March 2021)
+--------------------
 
 New
 ~~~
 
 - NetCDF support
 
-    - NetCDF files can be opened following (rasterio dataset formatting)[https://rasterio.readthedocs.io/en/latest/topics/datasets.html].
+    - NetCDF files can be opened following `rasterio dataset formatting <https://rasterio.readthedocs.io/en/latest/topics/datasets.html>`_.
     - Band variables for multiple datasets can be opened with the `netcdf_vars` argument. E.g.,
 
 .. code:: python
@@ -24,6 +24,13 @@ New
     - Created :class:`geowombat.Radiometry.sixs.SixS`.
     - Created 6S lookup tables (LUTs) for Landsat 5, 7, and 8 and Sentinel 2A and 2B.
         - Includes LUTs for wavelengths blue, green, red, NIR, SWIR1, and SWIR2.
+
+- Spatial-temporal fusion
+
+    - Added StarFM method under :func:`geowombat.radiometry._fusion`.
+
+.. warning::
+    This implementation of StarFM is experimental and not tested against the original method.
 
 - Added `prepend_str` argument to :func:`geowomat.core.sort_images_by_date`.
 

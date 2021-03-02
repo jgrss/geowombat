@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>open &#8212; GeoWombat 1.5.6 documentation</title>
+    <title>open &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -13,6 +13,7 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="fit" href="geowombat.ml.fit.html" />
@@ -37,7 +38,7 @@
 <h1>open<a class="headerlink" href="#open" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.open">
-<code class="sig-prename descclassname"><span class="pre">geowombat.</span></code><code class="sig-name descname"><span class="pre">open</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stack_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">persist_filenames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mosaic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">band_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_names</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stack_dim</span><span class="o">=</span><span class="default_value">'time'</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds_by</span><span class="o">=</span><span class="default_value">'reference'</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">'nearest'</span></em>, <em class="sig-param"><span class="n">persist_filenames</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">netcdf_vars</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mosaic</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">overlap</span><span class="o">=</span><span class="default_value">'max'</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a raster file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -62,6 +63,7 @@ Choices are [‘intersection’, ‘union’, ‘reference’].</p>
 Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
 <li><p><strong>persist_filenames</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to persist the filenames list with the <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> attributes.
 By default, <code class="docutils literal notranslate"><span class="pre">persist_filenames=False</span></code> to avoid storing large file lists.</p></li>
+<li><p><strong>netcdf_vars</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – NetCDF variables to open as a band stack.</p></li>
 <li><p><strong>mosaic</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, whether to mosaic the arrays instead of stacking.</p></li>
 <li><p><strong>overlap</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The keyword that determines how to handle overlapping data if <code class="docutils literal notranslate"><span class="pre">filenames</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
 Choices are [‘min’, ‘max’, ‘mean’].</p></li>
@@ -136,6 +138,14 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
 <span class="gp">&gt;&gt;&gt; </span>             <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open a NetCDF variable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;netcdf:image.nc:blue&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Open multiple NetCDF variables as an array stack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;netcdf:image.nc&#39;</span><span class="p">,</span> <span class="n">netcdf_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -225,7 +235,7 @@ is given or <code class="docutils literal notranslate"><span class="pre">window<
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
