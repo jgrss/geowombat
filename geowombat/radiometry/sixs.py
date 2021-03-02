@@ -18,7 +18,7 @@ from collections import namedtuple
 
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
-from ..data import NASAEarthdataDownloader
+from ..data import LUTDownloader, NASAEarthdataDownloader
 
 import geowombat as gw
 
@@ -33,13 +33,14 @@ logger = add_handler(logger)
 
 LUTNames = namedtuple('LUTNames', 'name path')
 
-p = Path(os.path.abspath(os.path.dirname(__file__)))
-DATA_PATH = p / '../data'
+DATA_PATH = Path.home() / '.geowombat/datasets'
 
 
 def _set_names(sensor_name):
 
     lut_path = DATA_PATH / 'lut'
+
+    lut_path.mkdir(parents=True, exist_ok=True)
 
     return LUTNames(name=sensor_name,
                     path=lut_path)
@@ -157,9 +158,20 @@ class SixS(Altitude):
     def _load(sensor, wavelength, interp_method, from_toar=False):
 
         if from_toar:
+            raise NotImplementedError('Lookup tables from top of atmosphere reflectance are not supported.')
             lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
         else:
             lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
+
+        if not lut_path.is_file():
+
+            logger.info(f'  Downloading {lut_path.name} into {SENSOR_LOOKUP[sensor].path}.')
+
+            lutd = LUTDownloader()
+
+            lutd.download(f'https://s3geowombat.s3.amazonaws.com/{sensor}_{wavelength}.lut',
+                          str(lut_path),
+                          safe_download=False)
 
         lut_ = joblib.load(str(lut_path))
 
