@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>polygons_to_points &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <title>polygons_to_points &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -39,7 +38,7 @@
 <h1>polygons_to_points<a class="headerlink" href="#polygons-to-points" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.polygons_to_points">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygons_to_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">frac</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">id_column</span><span class="o">=</span><span class="default_value">'id'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygons_to_points" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">polygons_to_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">frac</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">min_frac_area</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">all_touched</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">id_column</span><span class="o">=</span><span class="default_value">'id'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.polygons_to_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts polygons to points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -47,9 +46,12 @@
 <li><p><strong>data</strong> (<em>DataArray</em><em> or </em><em>Dataset</em>) – The <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>.</p></li>
 <li><p><strong>df</strong> (<em>GeoDataFrame</em>) – The <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> containing the geometry to rasterize.</p></li>
 <li><p><strong>frac</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A fractional subset of points to extract in each feature.</p></li>
+<li><p><strong>min_frac_area</strong> (<em>Optional</em><em>[</em><em>int | float</em><em>]</em>) – A minimum polygon area to use <code class="docutils literal notranslate"><span class="pre">frac</span></code>. Otherwise, use all samples
+within a polygon.</p></li>
 <li><p><strong>all_touched</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – The <code class="docutils literal notranslate"><span class="pre">all_touched</span></code> argument is passed to <code class="docutils literal notranslate"><span class="pre">rasterio.features.rasterize</span></code>.</p></li>
 <li><p><strong>id_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The ‘id’ column.</p></li>
 <li><p><strong>n_jobs</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of features to rasterize in parallel.</p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool().imap</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -140,10 +142,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

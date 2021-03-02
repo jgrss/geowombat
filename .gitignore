@@ -16,8 +16,9 @@ Thumbs.db
 *.pyo
 *.pyc
 .idea/
-*.egg-info/
+build/
 dist/
+*.egg-info/
 .ipynb_checkpoints
 __pycache__/
 .pytest_cache/
@@ -30,6 +31,7 @@ doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd
+geowombat/moving/*test*
 geowombat/models/
 logo/
 bin/ESPA/
@@ -39,7 +41,10 @@ geowombat/data/lut
 # dev
 geowombat/moving/*test*
 geowombat/radiometry/*test*
-geowombat/radiometry/*fusion*
+geowombat/radiometry/mask.py
+geowombat/radiometry/*.c
+geowombat/radiometry/*.so
+geowombat/radiometry/*.pyd
 
 # Notebooks
 notebooks/*hls*

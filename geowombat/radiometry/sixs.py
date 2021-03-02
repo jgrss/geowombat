@@ -15,11 +15,10 @@ import random
 from pathlib import Path
 import logging
 from collections import namedtuple
-from getpass import getpass
-import math
 
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
+from ..data import LUTDownloader, NASAEarthdataDownloader
 
 import geowombat as gw
 
@@ -27,10 +26,6 @@ import numpy as np
 import geopandas as gpd
 import xarray as xr
 import joblib
-import requests
-import yaml
-from tqdm import tqdm
-from cryptography.fernet import Fernet
 
 
 logger = logging.getLogger(__name__)
@@ -38,13 +33,14 @@ logger = add_handler(logger)
 
 LUTNames = namedtuple('LUTNames', 'name path')
 
-p = Path(os.path.abspath(os.path.dirname(__file__)))
-DATA_PATH = p / '../data'
+DATA_PATH = Path.home() / '.geowombat/datasets'
 
 
 def _set_names(sensor_name):
 
     lut_path = DATA_PATH / 'lut'
+
+    lut_path.mkdir(parents=True, exist_ok=True)
 
     return LUTNames(name=sensor_name,
                     path=lut_path)
@@ -68,112 +64,29 @@ def _random_id(string_length):
     return ''.join(random.choice(letters_digits) for i in range(string_length))
 
 
-class PassKey(object):
-
-    @staticmethod
-    def create_key(key_file):
-
-        key = Fernet.generate_key()
-
-        with open(key_file, mode='w') as pf:
-            yaml.dump({'key': key}, pf, default_flow_style=False)
-
-    @staticmethod
-    def create_passcode(key_file, passcode_file):
-
-        """
-        Args:
-            key_file (str)
-            passcode_file (str)
-        """
-
-        passcode = getpass()
-
-        with open(key_file, mode='r') as pf:
-            key = yaml.load(pf, Loader=yaml.FullLoader)
-
-        cipher_suite = Fernet(key['key'])
-
-        ciphered_text = cipher_suite.encrypt(passcode.encode())
-
-        with open(passcode_file, mode='w') as pf:
-            yaml.dump({'passcode': ciphered_text}, pf, default_flow_style=False)
-
-    @staticmethod
-    def load_passcode(key_file, passcode_file):
-
-        with open(key_file, mode='r') as pf:
-            key = yaml.load(pf, Loader=yaml.FullLoader)
-
-        cipher_suite = Fernet(key['key'])
-
-        with open(passcode_file, mode='r') as pf:
-            ciphered_text = yaml.load(pf, Loader=yaml.FullLoader)
-
-        return cipher_suite.decrypt(ciphered_text['passcode'])
-
-
-class EarthDataDownloader(PassKey):
-
-    def __init__(self, username, key_file, code_file):
-
-        self.username = username
-        self.key_file = key_file
-        self.code_file = code_file
-
-        self.outpath = None
-
-    def download(self, url, outfile):
-
-        self.outpath = Path(outfile)
-
-        if self.outpath.is_file():
-            logger.warning(f'  The file {outfile} is already downloaded.')
-            return
-
-        base64_password = self.load_passcode(self.key_file, self.code_file).decode()
-
-        chunk_size = 256 * 10240
-
-        with requests.Session() as session:
-
-            session.auth = (self.username, base64_password)
-
-            # Open
-            req = session.request('get', url)
-            response = session.get(req.url, auth=(self.username, base64_password))
-
-            if not response.ok:
-                logger.exception('  Could not retrieve the page.')
-                raise NameError
-
-            if 'Content-Length' in response.headers:
-
-                content_length = float(response.headers['Content-Length'])
-                content_iters = int(math.ceil(content_length / chunk_size))
-                chunk_size_ = chunk_size * 1
-
-            else:
-
-                content_iters = 1
-                chunk_size_ = chunk_size * 1000
-
-            with open(str(outfile), 'wb') as ofn:
-
-                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
-                    ofn.write(data)
-
-
 class Altitude(object):
 
     @staticmethod
     def get_mean_altitude(data,
-                          username,
-                          key_file,
-                          code_file,
                           out_dir,
+                          username=None,
+                          key_file=None,
+                          code_file=None,
                           n_jobs=1,
                           delete_downloaded=False):
+
+        if not username:
+            username = data.gw.nasa_earthdata_user
+
+        if not key_file:
+            key_file = data.gw.nasa_earthdata_key
+
+        if not code_file:
+            code_file = data.gw.nasa_earthdata_code
+
+        if not username or not key_file or not code_file:
+            logger.exception('  The NASA EarthData username, secret key file, and secret code file must be provided to download SRTM data.')
+            raise AttributeError
 
         srtm_grid_path = DATA_PATH / 'srtm30m_bounding_boxes.gpkg'
         srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
@@ -186,7 +99,7 @@ class Altitude(object):
 
         srtm_df_int = srtm_df[srtm_df.geometry.intersects(data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0])]
 
-        edd = EarthDataDownloader(username, key_file, code_file)
+        nedd = NASAEarthdataDownloader(username, key_file, code_file)
 
         hgt_files = []
         zip_paths = []
@@ -195,8 +108,7 @@ class Altitude(object):
 
             zip_file = f"{out_dir}/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip"
 
-            edd.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{dfn.split('.')[0].lower()}.zip",
-                         zip_file)
+            nedd.download_srtm(dfn.split('.')[0].lower(), zip_file)
 
             src_zip = f"zip+file://{zip_file}!/{Path(zip_file).stem.split('_')[-1]}.hgt"
 
@@ -246,9 +158,20 @@ class SixS(Altitude):
     def _load(sensor, wavelength, interp_method, from_toar=False):
 
         if from_toar:
+            raise NotImplementedError('Lookup tables from top of atmosphere reflectance are not supported.')
             lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
         else:
             lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
+
+        if not lut_path.is_file():
+
+            logger.info(f'  Downloading {lut_path.name} into {SENSOR_LOOKUP[sensor].path}.')
+
+            lutd = LUTDownloader()
+
+            lutd.download(f'https://s3geowombat.s3.amazonaws.com/{sensor}_{wavelength}.lut',
+                          str(lut_path),
+                          safe_download=False)
 
         lut_ = joblib.load(str(lut_path))
 

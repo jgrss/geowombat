@@ -23,7 +23,7 @@ Plot the entire array
 
     fig, ax = plt.subplots(dpi=200)
     with gw.open(l8_224078_20200518) as src:
-        src.where(src != 0).sel(band=[3, 2, 1]).plot.imshow(robust=True, ax=ax)
+        src.where(src != 0).sel(band=[3, 2, 1]).gw.imshow(robust=True, ax=ax)
     @savefig rgb_plot.png
     plt.tight_layout(pad=1)
 
@@ -38,7 +38,7 @@ Plot the intersection of two arrays
                  band_names=['blue'],
                  mosaic=True,
                  bounds_by='intersection') as src:
-        src.where(src != 0).sel(band='blue').plot.imshow(robust=True, ax=ax)
+        src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_intersection_plot.png
     plt.tight_layout(pad=1)
 
@@ -53,7 +53,7 @@ Plot the union of two arrays
                  band_names=['blue'],
                  mosaic=True,
                  bounds_by='union') as src:
-        src.where(src != 0).sel(band='blue').plot.imshow(robust=True, ax=ax)
+        src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_union_plot.png
     plt.tight_layout(pad=1)
 
@@ -70,7 +70,7 @@ Setup a plot function
                          mosaic=True,
                          bounds_by=bounds_by) as srca:
                 # Plot the NIR band
-                srca.where(srca != 0).sel(band='nir').plot.imshow(robust=True, cbar_kwargs={'label': 'DN'}, ax=ax)
+                srca.where(srca != 0).sel(band='nir').gw.imshow(robust=True, cbar_kwargs={'label': 'DN'}, ax=ax)
                 # Plot the image chunks
                 srca.gw.chunk_grid.plot(color='none', edgecolor='k', ls='-', lw=0.5, ax=ax)
                 # Plot the image footprints
@@ -94,8 +94,8 @@ Setup a plot function
         ax.set_title(title, size=size)
         plt.tight_layout(pad=1)
 
-Mosaic by the union of images
------------------------------
+Image mosaics
+-------------
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
 footprints while the black grids illustrate the ``DataArray`` chunks.

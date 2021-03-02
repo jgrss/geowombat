@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![](https://img.shields.io/badge/version-1.5.6-blue.svg?cacheSeconds=2592000)
+![](https://img.shields.io/badge/version-1.6.0-blue.svg?cacheSeconds=2592000)
 
 ### GeoWombat: Utilities for geospatial data
 
@@ -14,7 +14,7 @@ Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong b
     * Landsat 5-8
     * PlanetScope
     * Others 
-* Image mosaicing
+* Image mosaicking
 * On-the-fly image transformations (reprojection)
 * Point / polygon raster sampling, extraction
 * Time series analysis

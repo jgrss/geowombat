@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API reference &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <title>API reference &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -103,55 +102,58 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_raster</span></code></a>(data, filename[, readxsize, …])</p></td>
 <td><p>Writes a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a raster file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.to_vrt.html#geowombat.to_vrt" title="geowombat.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(data, filename[, resampling, nodata, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.to_netcdf.html#geowombat.to_netcdf" title="geowombat.to_netcdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_netcdf</span></code></a>(data, filename, *args, **kwargs)</p></td>
+<td><p>Writes an Xarray DataArray to a NetCDF file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.to_vrt.html#geowombat.to_vrt" title="geowombat.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(data, filename[, overwrite, …])</p></td>
 <td><p>Writes a file to a VRT file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.array_to_polygon.html#geowombat.array_to_polygon" title="geowombat.array_to_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array_to_polygon</span></code></a>(data[, mask, connectivity, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.array_to_polygon.html#geowombat.array_to_polygon" title="geowombat.array_to_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array_to_polygon</span></code></a>(data[, mask, connectivity, …])</p></td>
 <td><p>Converts an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray`</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">``geopandas.GeoDataFrame</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygon_to_array</span></code></a>(polygon[, col, data, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.polygon_to_array.html#geowombat.polygon_to_array" title="geowombat.polygon_to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygon_to_array</span></code></a>(polygon[, col, data, …])</p></td>
 <td><p>Converts a polygon geometry to an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, perc, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.moving.html#geowombat.moving" title="geowombat.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>(data[, band_names, stat, perc, …])</p></td>
 <td><p>Applies a moving window function over Dask array blocks</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.norm_diff.html#geowombat.norm_diff" title="geowombat.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(data, b1, b2[, sensor, nodata, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.norm_diff.html#geowombat.norm_diff" title="geowombat.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(data, b1, b2[, sensor, nodata, …])</p></td>
 <td><p>Calculates the normalized difference band ratio</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.avi.html#geowombat.avi" title="geowombat.avi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.avi.html#geowombat.avi" title="geowombat.avi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the advanced vegetation index</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.evi.html#geowombat.evi" title="geowombat.evi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.evi.html#geowombat.evi" title="geowombat.evi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the enhanced vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.evi2.html#geowombat.evi2" title="geowombat.evi2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi2</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.evi2.html#geowombat.evi2" title="geowombat.evi2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi2</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the two-band modified enhanced vegetation index</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.nbr.html#geowombat.nbr" title="geowombat.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.nbr.html#geowombat.nbr" title="geowombat.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized burn ratio</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.ndvi.html#geowombat.ndvi" title="geowombat.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.ndvi.html#geowombat.ndvi" title="geowombat.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized difference vegetation index</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.wi.html#geowombat.wi" title="geowombat.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.wi.html#geowombat.wi" title="geowombat.wi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wi</span></code></a>(data[, nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the woody vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.tasseled_cap.html#geowombat.tasseled_cap" title="geowombat.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(data[, nodata, sensor, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.tasseled_cap.html#geowombat.tasseled_cap" title="geowombat.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>(data[, nodata, sensor, …])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.coords_to_indices.html#geowombat.coords_to_indices" title="geowombat.coords_to_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coords_to_indices</span></code></a>(x, y, transform)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.coords_to_indices.html#geowombat.coords_to_indices" title="geowombat.coords_to_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coords_to_indices</span></code></a>(x, y, transform)</p></td>
 <td><p>Converts map coordinates to array indices</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.indices_to_coords.html#geowombat.indices_to_coords" title="geowombat.indices_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_coords</span></code></a>(col_index, row_index, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.indices_to_coords.html#geowombat.indices_to_coords" title="geowombat.indices_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_coords</span></code></a>(col_index, row_index, …)</p></td>
 <td><p>Converts array indices to map coordinates</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.bounds_to_coords.html#geowombat.bounds_to_coords" title="geowombat.bounds_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_to_coords</span></code></a>(bounds, dst_crs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.bounds_to_coords.html#geowombat.bounds_to_coords" title="geowombat.bounds_to_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_to_coords</span></code></a>(bounds, dst_crs)</p></td>
 <td><p>Converts bounds from longitude and latitude to native map coordinates</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.lonlat_to_xy.html#geowombat.lonlat_to_xy" title="geowombat.lonlat_to_xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lonlat_to_xy</span></code></a>(lon, lat, dst_crs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.lonlat_to_xy.html#geowombat.lonlat_to_xy" title="geowombat.lonlat_to_xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lonlat_to_xy</span></code></a>(lon, lat, dst_crs)</p></td>
 <td><p>Converts from longitude and latitude to native map coordinates</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.xy_to_lonlat.html#geowombat.xy_to_lonlat" title="geowombat.xy_to_lonlat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy_to_lonlat</span></code></a>(x, y, dst_crs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.xy_to_lonlat.html#geowombat.xy_to_lonlat" title="geowombat.xy_to_lonlat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy_to_lonlat</span></code></a>(x, y, dst_crs)</p></td>
 <td><p>Converts from native map coordinates to longitude and latitude</p></td>
 </tr>
 </tbody>
@@ -231,7 +233,11 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms" title="geowombat.radiometry.RadTransforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RadTransforms</span></code></a>()</p></td>
 <td><p>A class for radiometric transformations</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html#geowombat.radiometry.QAMasker" title="geowombat.radiometry.QAMasker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QAMasker</span></code></a>(qa, sensor[, mask_items, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/geowombat.radiometry.DOS.html#geowombat.radiometry.DOS" title="geowombat.radiometry.DOS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DOS</span></code></a>()</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html#geowombat.radiometry.QAMasker" title="geowombat.radiometry.QAMasker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QAMasker</span></code></a>(qa, sensor[, mask_items, …])</p></td>
 <td><p>A class for masking bit-packed quality flags</p></td>
 </tr>
 </tbody>
@@ -370,10 +376,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

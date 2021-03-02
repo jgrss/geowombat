@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data extraction &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <title>Data extraction &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -213,20 +212,20 @@
 <span class="gp">   ....: </span>
 
 <span class="gp">In [30]: </span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-<span class="go">     id  point                         geometry   blue  green    red</span>
-<span class="go">0     0      0  POINT (737535.000 -2795205.000)   8017   7435   6283</span>
-<span class="go">1     0      1  POINT (737565.000 -2795205.000)   8016   7439   6294</span>
-<span class="go">2     0      2  POINT (737595.000 -2795205.000)   8012   7442   6295</span>
-<span class="go">3     0      3  POINT (737625.000 -2795205.000)   7997   7422   6284</span>
-<span class="go">4     0      4  POINT (737655.000 -2795205.000)   7997   7405   6266</span>
-<span class="go">..   ..    ...                              ...    ...    ...    ...</span>
-<span class="go">667   3    667  POINT (739005.000 -2811795.000)   9014   8236   8325</span>
-<span class="go">668   3    668  POINT (739035.000 -2811795.000)   8567   8564   8447</span>
-<span class="go">669   3    669  POINT (739065.000 -2811795.000)   8099   7676   7332</span>
-<span class="go">670   3    670  POINT (739095.000 -2811795.000)  10151   9651  10153</span>
-<span class="go">671   3    671  POINT (739125.000 -2811795.000)   8065   7735   7501</span>
+<span class="go">     id  point                         geometry       name   blue  green    red</span>
+<span class="go">0     0      0  POINT (737535.000 -2795205.000)      water   8017   7435   6283</span>
+<span class="go">1     0      1  POINT (737565.000 -2795205.000)      water   8016   7439   6294</span>
+<span class="go">2     0      2  POINT (737595.000 -2795205.000)      water   8012   7442   6295</span>
+<span class="go">3     0      3  POINT (737625.000 -2795205.000)      water   7997   7422   6284</span>
+<span class="go">4     0      4  POINT (737655.000 -2795205.000)      water   7997   7405   6266</span>
+<span class="go">..   ..    ...                              ...        ...    ...    ...    ...</span>
+<span class="go">667   3    667  POINT (739005.000 -2811795.000)  developed   9014   8236   8325</span>
+<span class="go">668   3    668  POINT (739035.000 -2811795.000)  developed   8567   8564   8447</span>
+<span class="go">669   3    669  POINT (739065.000 -2811795.000)  developed   8099   7676   7332</span>
+<span class="go">670   3    670  POINT (739095.000 -2811795.000)  developed  10151   9651  10153</span>
+<span class="go">671   3    671  POINT (739125.000 -2811795.000)  developed   8065   7735   7501</span>
 
-<span class="go">[672 rows x 6 columns]</span>
+<span class="go">[672 rows x 7 columns]</span>
 </pre></div>
 </div>
 </div>
@@ -312,10 +311,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

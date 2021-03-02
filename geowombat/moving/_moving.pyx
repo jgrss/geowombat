@@ -222,6 +222,30 @@ cdef double _get_mean(double[:, ::1] input_view,
             return res
 
 
+cdef double _get_expand(double[:, ::1] input_view,
+                        Py_ssize_t i,
+                        Py_ssize_t j,
+                        int w,
+                        double w_samples,
+                        double nodata,
+                        double[:, ::1] window_weights) nogil:
+
+    cdef:
+        Py_ssize_t m, n
+        unsigned int hw = <int>(w / 2.0)
+
+    if input_view[i+hw, j+hw] == 0:
+
+        for m in range(0, w):
+            for n in range(0, w):
+
+                if window_weights[m, n] > 0:
+                    if input_view[i+m, j+n] == 1:
+                        return 1.0
+
+    return input_view[i+hw, j+hw]
+
+
 cdef double _get_min(double[:, ::1] input_view,
                      Py_ssize_t i,
                      Py_ssize_t j,
@@ -372,6 +396,8 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
             window_function = &_get_min
         elif stat == 'max':
             window_function = &_get_max
+        elif stat == 'expand':
+            window_function = &_get_expand
         else:
             raise ValueError('The statistic is not supported.')
 
@@ -405,7 +431,7 @@ def moving_window(np.ndarray indata not None,
 
     Args:
         indata (2d NumPy array): The array to process.
-        stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
+        stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc', 'expand'].
         perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
         w (Optional[int]): The moving window size (in pixels).
         nodata (Optional[int or float]): A 'no data' value to ignore.

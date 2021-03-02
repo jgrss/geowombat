@@ -1,5 +1,19 @@
 import os
 from pathlib import Path
+from getpass import getpass
+import math
+import logging
+
+import requests
+import yaml
+from tqdm import tqdm
+from cryptography.fernet import Fernet
+
+from ..handler import add_handler
+
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 p = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -22,3 +36,161 @@ l8_224078_20200518_B4 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF
 l8_224078_20200518 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT.TIF')
 l8_224078_20200518_points = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_points.gpkg')
 l8_224078_20200518_polygons = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_polygons.gpkg')
+
+srtm30m_bounding_boxes = str(p / 'srtm30m_bounding_boxes.gpkg')
+
+
+class PassKey(object):
+
+    @staticmethod
+    def create_key(key_file):
+
+        key = Fernet.generate_key()
+
+        with open(key_file, mode='w') as pf:
+            yaml.dump({'key': key}, pf, default_flow_style=False)
+
+    @staticmethod
+    def create_passcode(key_file, passcode_file):
+
+        """
+        Args:
+            key_file (str)
+            passcode_file (str)
+        """
+
+        passcode = getpass()
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        ciphered_text = cipher_suite.encrypt(passcode.encode())
+
+        with open(passcode_file, mode='w') as pf:
+            yaml.dump({'passcode': ciphered_text}, pf, default_flow_style=False)
+
+    @staticmethod
+    def load_passcode(key_file, passcode_file):
+
+        with open(key_file, mode='r') as pf:
+            key = yaml.load(pf, Loader=yaml.FullLoader)
+
+        cipher_suite = Fernet(key['key'])
+
+        with open(passcode_file, mode='r') as pf:
+            ciphered_text = yaml.load(pf, Loader=yaml.FullLoader)
+
+        return cipher_suite.decrypt(ciphered_text['passcode'])
+
+
+class BaseDownloader(object):
+
+    def download(self, url, outfile, safe_download=True):
+
+        self.outpath = Path(outfile)
+
+        if self.outpath.is_file():
+            logger.warning(f'  The file {outfile} is already downloaded.')
+            return
+
+        if safe_download:
+            base64_password = self.load_passcode(self.key_file, self.code_file).decode()
+
+        chunk_size = 256 * 10240
+
+        with requests.Session() as session:
+
+            if safe_download:
+                session.auth = (self.username, base64_password)
+
+            # Open
+            req = session.request('get', url)
+
+            if safe_download:
+                response = session.get(req.url, auth=(self.username, base64_password))
+            else:
+                response = session.get(req.url)
+
+            if not response.ok:
+                logger.exception('  Could not retrieve the page.')
+                raise NameError
+
+            if 'Content-Length' in response.headers:
+
+                content_length = float(response.headers['Content-Length'])
+                content_iters = int(math.ceil(content_length / chunk_size))
+                chunk_size_ = chunk_size * 1
+
+            else:
+
+                content_iters = 1
+                chunk_size_ = chunk_size * 1000
+
+            with open(str(outfile), 'wb') as ofn:
+
+                for data in tqdm(response.iter_content(chunk_size=chunk_size_), total=content_iters):
+                    ofn.write(data)
+
+
+class LUTDownloader(BaseDownloader):
+    pass
+
+
+class NASAEarthdataDownloader(PassKey, BaseDownloader):
+
+    """
+    A class to handle NASA Earthdata downloads
+
+    Args:
+        username (str): The NASA Earthdata username.
+        key_file (str): The NASA Earthdata secret key file.
+        code_file (str): The NASA Earthdata secret code file.
+
+    Account:
+        A NASA Earthdata secret key and code file pair are required. First, create a login account at
+        https://earthdata.nasa.gov/. Then, to generate a secret key/code pair do:
+
+        >>> from geowombat.data import PassKey
+        >>>
+        >>> pk = PassKey()
+        >>> pk.create_key('my.key')
+        >>> pk.create_passcode('my.key', 'my.code')
+
+        Use the key/code pair to download data.
+
+        >>> from geowombat.data import NASAEarthdataDownloader
+        >>>
+        >>> nedd = NASAEarthdataDownloader('<user name>', 'my.key', 'my.code')
+        >>>
+        >>> # Download a SRTM elevation grid
+        >>> nedd.download_srtm('n00e006', 'NASADEM_HGT_n00e006.zip')
+        >>>
+        >>> # Download a MODIS aersol HDF file
+        >>> nedd.download_aerosol('MOD04_3K.A2020001.0025.061.2020002233531.hdf')
+    """
+
+    def __init__(self, username, key_file, code_file):
+
+        self.username = username
+        self.key_file = key_file
+        self.code_file = code_file
+
+        self.outpath = None
+
+    def download_srtm(self, grid_id, outfile=None):
+
+        if not outfile:
+            outfile = f"NASADEM_HGT_{grid_id}.zip"
+
+        self.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{grid_id}.zip",
+                      outfile)
+
+    def download_aerosol(self, year, doy, outfile=None):
+
+        if not outfile:
+            outfile = f'{year}{int(doy):03d}'
+
+        self.download(f"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/61/MOD04_3K/{year}/{doy}/",
+                      outfile)

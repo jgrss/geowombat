@@ -262,6 +262,7 @@ class open(object):
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``DataArray`` attributes.
             By default, ``persist_filenames=False`` to avoid storing large file lists.
+        netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
             Choices are ['min', 'max', 'mean'].
@@ -334,6 +335,14 @@ class open(object):
         >>>              dtype='float32') as ds:
         >>>
         >>>     print(ds)
+        >>>
+        >>> # Open a NetCDF variable
+        >>> with gw.open('netcdf:image.nc:blue') as src:
+        >>>     print(src)
+        >>>
+        >>> # Open multiple NetCDF variables as an array stack
+        >>> with gw.open('netcdf:image.nc', netcdf_vars=['blue', 'green', 'red']) as src:
+        >>>     print(src)
     """
 
     def __init__(self,
@@ -345,6 +354,7 @@ class open(object):
                  bounds_by='reference',
                  resampling='nearest',
                  persist_filenames=False,
+                 netcdf_vars=None,
                  mosaic=False,
                  overlap='max',
                  nodata=0,
@@ -444,6 +454,7 @@ class open(object):
                                           nodata=nodata,
                                           overlap=overlap,
                                           dtype=dtype,
+                                          netcdf_vars=netcdf_vars,
                                           **kwargs)
                     
                     self.__data_are_stacked = True
@@ -457,10 +468,13 @@ class open(object):
 
                 file_names = get_file_extension(filename)
 
-                if file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']:
+                if (file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']) and not \
+                        filename.lower().startswith('netcdf:'):
+
                     logger.exception('  The file format is not recognized.')
 
-                if file_names.f_ext.lower() in IO_DICT['rasterio']:
+                if (file_names.f_ext.lower() in IO_DICT['rasterio']) or \
+                        (filename.lower().startswith('netcdf:')):
 
                     if 'chunks' not in kwargs:
 
@@ -473,6 +487,7 @@ class open(object):
                                           band_names=band_names,
                                           resampling=resampling,
                                           dtype=dtype,
+                                          netcdf_vars=netcdf_vars,
                                           **kwargs)
 
                 else:
@@ -481,7 +496,7 @@ class open(object):
                         logger.exception('  The chunks should be a dictionary.')
 
                     with xr.open_dataset(filename, **kwargs) as src:
-                        self.data = src
+                        self.data = src.to_array(dim='band')
 
         self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
         self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)

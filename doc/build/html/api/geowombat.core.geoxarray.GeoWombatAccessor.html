@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GeoWombat DataArray (DataArray.gw) &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <title>GeoWombat DataArray (DataArray.gw) &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -77,9 +76,11 @@ through a call to <code class="docutils literal notranslate"><span class="pre">g
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">col_chunks</span></code></dt><dd><p>Get the column chunk size</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_are_separate</span></code></dt><dd><p>Check whether the data are loaded separately</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_are_separate</span></code></dt><dd><p>Checks whether the data are loaded separately</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">filenames</span></code></dt><dd><p>Get the data filenames</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_are_stacked</span></code></dt><dd><p>Checks whether the data are stacked</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">filenames</span></code></dt><dd><p>Gets the data filenames</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">footprint_grid</span></code></dt><dd><p>Get the image footprint grid</p>
 </dd>
@@ -147,74 +148,80 @@ through a call to <code class="docutils literal notranslate"><span class="pre">g
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.avi" title="geowombat.core.geoxarray.GeoWombatAccessor.avi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avi</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the advanced vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay" title="geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_overlay</span></code></a>(bounds[, how])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">band_mask</span></code>(valid_bands[, src_nodata, …])</p></td>
+<td><p>Creates a mask from band nonzeros</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay" title="geowombat.core.geoxarray.GeoWombatAccessor.bounds_overlay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds_overlay</span></code></a>(bounds[, how])</p></td>
 <td><p>Checks whether the bounds overlay the image bounds</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.calc_area" title="geowombat.core.geoxarray.GeoWombatAccessor.calc_area"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_area</span></code></a>(values[, op, units, row_chunks, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.calc_area" title="geowombat.core.geoxarray.GeoWombatAccessor.calc_area"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_area</span></code></a>(values[, op, units, row_chunks, …])</p></td>
 <td><p>Calculates the area of data values</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.clip" title="geowombat.core.geoxarray.GeoWombatAccessor.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(df[, query, mask_data])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.clip" title="geowombat.core.geoxarray.GeoWombatAccessor.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(df[, query, mask_data])</p></td>
 <td><p>Clips a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="geowombat.core.geoxarray.GeoWombatAccessor.compare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare</span></code></a>(op, b[, return_binary])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.compare" title="geowombat.core.geoxarray.GeoWombatAccessor.compare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare</span></code></a>(op, b[, return_binary])</p></td>
 <td><p>Comparison operation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.evi" title="geowombat.core.geoxarray.GeoWombatAccessor.evi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.evi" title="geowombat.core.geoxarray.GeoWombatAccessor.evi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the enhanced vegetation index</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.evi2" title="geowombat.core.geoxarray.GeoWombatAccessor.evi2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi2</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.evi2" title="geowombat.core.geoxarray.GeoWombatAccessor.evi2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evi2</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the two-band modified enhanced vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.extract" title="geowombat.core.geoxarray.GeoWombatAccessor.extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract</span></code></a>(aoi[, bands, time_names, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.extract" title="geowombat.core.geoxarray.GeoWombatAccessor.extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract</span></code></a>(aoi[, bands, time_names, …])</p></td>
 <td><p>Extracts data within an area or points of interest.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.imshow" title="geowombat.core.geoxarray.GeoWombatAccessor.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>([mask, nodata, flip, text_color, rot])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.imshow" title="geowombat.core.geoxarray.GeoWombatAccessor.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>([mask, nodata, flip, text_color, rot])</p></td>
 <td><p>Shows an image on a plot</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.mask" title="geowombat.core.geoxarray.GeoWombatAccessor.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a>(df[, query, keep])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.mask" title="geowombat.core.geoxarray.GeoWombatAccessor.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a>(df[, query, keep])</p></td>
 <td><p>Masks a DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.match_data" title="geowombat.core.geoxarray.GeoWombatAccessor.match_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_data</span></code></a>(data, band_names)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.match_data" title="geowombat.core.geoxarray.GeoWombatAccessor.match_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_data</span></code></a>(data, band_names)</p></td>
 <td><p>Coerces the DataArray to match another GeoWombat DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>([band_coords, stat, perc, nodata, w, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.moving" title="geowombat.core.geoxarray.GeoWombatAccessor.moving"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moving</span></code></a>([band_coords, stat, perc, nodata, w, …])</p></td>
 <td><p>Applies a moving window function to the DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_windows</span></code>([row_chunks, col_chunks])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_windows</span></code>([row_chunks, col_chunks])</p></td>
 <td><p>Calculates the number of windows in a row/column iteration</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.nbr" title="geowombat.core.geoxarray.GeoWombatAccessor.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.nbr" title="geowombat.core.geoxarray.GeoWombatAccessor.nbr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbr</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized burn ratio</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.ndvi" title="geowombat.core.geoxarray.GeoWombatAccessor.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.ndvi" title="geowombat.core.geoxarray.GeoWombatAccessor.ndvi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndvi</span></code></a>([nodata, mask, sensor, scale_factor])</p></td>
 <td><p>Calculates the normalized difference vegetation index</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(solar_za, solar_az, sensor_za, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_brdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_brdf</span></code></a>(solar_za, solar_az, sensor_za, …)</p></td>
 <td><p>Applies Bidirectional Reflectance Distribution Function (BRDF) normalization</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_diff" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(b1, b2[, nodata, mask, sensor, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.norm_diff" title="geowombat.core.geoxarray.GeoWombatAccessor.norm_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm_diff</span></code></a>(b1, b2[, nodata, mask, sensor, …])</p></td>
 <td><p>Calculates the normalized difference band ratio</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code>(clf[, outname, chunksize, x_chunks, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code>(clf[, outname, chunksize, x_chunks, …])</p></td>
 <td><p>Predicts an image using a pre-fit model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.recode" title="geowombat.core.geoxarray.GeoWombatAccessor.recode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recode</span></code></a>(polygon, to_replace[, num_workers])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.recode" title="geowombat.core.geoxarray.GeoWombatAccessor.recode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recode</span></code></a>(polygon, to_replace[, num_workers])</p></td>
 <td><p>Recodes a DataArray with polygon mappings</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.replace" title="geowombat.core.geoxarray.GeoWombatAccessor.replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">replace</span></code></a>(to_replace)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.replace" title="geowombat.core.geoxarray.GeoWombatAccessor.replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">replace</span></code></a>(to_replace)</p></td>
 <td><p>Replace values given in to_replace with value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.sample" title="geowombat.core.geoxarray.GeoWombatAccessor.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>([method, band, n, strata, spacing, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.sample" title="geowombat.core.geoxarray.GeoWombatAccessor.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>([method, band, n, strata, spacing, …])</p></td>
 <td><p>Generates samples from a raster</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="geowombat.core.geoxarray.GeoWombatAccessor.set_nodata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nodata</span></code></a>(src_nodata, dst_nodata, …[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="geowombat.core.geoxarray.GeoWombatAccessor.set_nodata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nodata</span></code></a>(src_nodata, dst_nodata[, …])</p></td>
 <td><p>Sets ‘no data’ values in the DataArray</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>([left, top, right, bottom, rows, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.subset" title="geowombat.core.geoxarray.GeoWombatAccessor.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>([left, top, right, bottom, rows, …])</p></td>
 <td><p>Subsets a DataArray</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>([nodata, sensor, scale_factor])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap" title="geowombat.core.geoxarray.GeoWombatAccessor.tasseled_cap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tasseled_cap</span></code></a>([nodata, sensor, scale_factor])</p></td>
 <td><p>Applies a tasseled cap transformation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_netcdf</span></code>(filename, *args, **kwargs)</p></td>
+<td><p>Writes an Xarray DataArray to a NetCDF file</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_polygon" title="geowombat.core.geoxarray.GeoWombatAccessor.to_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_polygon</span></code></a>([mask, connectivity])</p></td>
 <td><p>Converts a <code class="docutils literal notranslate"><span class="pre">dask</span></code> array to a <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></p></td>
@@ -225,7 +232,7 @@ through a call to <code class="docutils literal notranslate"><span class="pre">g
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vector" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vector</span></code></a>(filename[, mask, connectivity])</p></td>
 <td><p>Writes an Xarray DataArray to a vector file</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(filename[, resampling, nodata, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_vrt</span></code></a>(filename[, overwrite, resampling, …])</p></td>
 <td><p>Writes a file to a VRT file</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.transform_crs" title="geowombat.core.geoxarray.GeoWombatAccessor.transform_crs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_crs</span></code></a>([dst_crs, dst_res, dst_width, …])</p></td>
@@ -236,6 +243,17 @@ through a call to <code class="docutils literal notranslate"><span class="pre">g
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#geowombat.core.geoxarray.GeoWombatAccessor.windows" title="geowombat.core.geoxarray.GeoWombatAccessor.windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">windows</span></code></a>([row_chunks, col_chunks, …])</p></td>
 <td><p>Generates windows for a row/column iteration</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 48%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>compute</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -847,16 +865,16 @@ as {from: to} pairs. If <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.set_nodata">
-<code class="sig-name descname">set_nodata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src_nodata</span></em>, <em class="sig-param"><span class="n">dst_nodata</span></em>, <em class="sig-param"><span class="n">clip_range</span></em>, <em class="sig-param"><span class="n">dtype</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_nodata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src_nodata</span></em>, <em class="sig-param"><span class="n">dst_nodata</span></em>, <em class="sig-param"><span class="n">out_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets ‘no data’ values in the DataArray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>src_noata</strong> (<em>int | float</em>) – The ‘no data’ values to replace.</p></li>
+<li><p><strong>src_nodata</strong> (<em>int | float</em>) – The ‘no data’ values to replace.</p></li>
 <li><p><strong>dst_nodata</strong> (<em>int | float</em>) – The ‘no data’ value to set.</p></li>
-<li><p><strong>clip_range</strong> (<em>tuple</em>) – The output clip range.</p></li>
-<li><p><strong>dtype</strong> (<em>str</em>) – The output data type.</p></li>
-<li><p><strong>scale_factor</strong> (<em>float</em>) – A scale factor to apply.</p></li>
+<li><p><strong>out_range</strong> (<em>Optional</em><em>[</em><em>tuple</em><em>]</em>) – The output clip range.</p></li>
+<li><p><strong>dtype</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The output data type.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – A scale factor to apply.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -867,7 +885,7 @@ as {from: to} pairs. If <code class="docutils literal notranslate"><span class="
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">geowombat</span> <span class="k">as</span> <span class="nn">gw</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;image.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="s1">&#39;uint16&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="n">out_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;uint16&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1041,12 +1059,13 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 
 <dl class="py method">
 <dt id="geowombat.core.geoxarray.GeoWombatAccessor.to_vrt">
-<code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_dest_nodata</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_vrt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">resampling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_dest_nodata</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">warp_mem_limit</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor.to_vrt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a file to a VRT file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – The output file name to write to.</p></li>
+<li><p><strong>overwrite</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to overwrite an existing VRT file.</p></li>
 <li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – The resampling algorithm for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
 <li><p><strong>nodata</strong> (<em>Optional</em><em>[</em><em>float</em><em> or </em><em>int</em><em>]</em>) – The ‘no data’ value for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
 <li><p><strong>init_dest_nodata</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether or not to initialize output to <code class="docutils literal notranslate"><span class="pre">nodata</span></code> for <code class="docutils literal notranslate"><span class="pre">rasterio.vrt.WarpedVRT</span></code>.</p></li>
@@ -1089,7 +1108,7 @@ and mask is None, the source’s mask will be inverted and used in place of mask
 or as a tuple of (left, bottom, right, top).</p></li>
 <li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>.
 Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’, ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>
-<li><p><strong>warp_mem_limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The warp memory limit.</p></li>
+<li><p><strong>it</strong> (<em>warp_mem_lim</em>) – The warp memory limit.</p></li>
 <li><p><strong>num_threads</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of parallel threads.</p></li>
 </ul>
 </dd>
@@ -1242,10 +1261,10 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

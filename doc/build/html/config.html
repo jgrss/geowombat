@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configuration &#8212; GeoWombat 1.4.4 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <title>Configuration &#8212; GeoWombat 1.6.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -64,6 +63,9 @@
 <span class="go">bigtiff NO</span>
 <span class="go">l57_angles_path None</span>
 <span class="go">l8_angles_path None</span>
+<span class="go">nasa_earthdata_user None</span>
+<span class="go">nasa_earthdata_key None</span>
+<span class="go">nasa_earthdata_code None</span>
 
 <span class="gp">In [3]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">,</span> <span class="n">tiled</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
 <span class="gp">   ...: </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
@@ -88,6 +90,9 @@
 <span class="go">bigtiff NO</span>
 <span class="go">l57_angles_path None</span>
 <span class="go">l8_angles_path None</span>
+<span class="go">nasa_earthdata_user None</span>
+<span class="go">nasa_earthdata_key None</span>
+<span class="go">nasa_earthdata_code None</span>
 
 <span class="gp">In [4]: </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rgbn</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
 <span class="gp">   ...: </span>    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -111,6 +116,9 @@
 <span class="go">bigtiff NO</span>
 <span class="go">l57_angles_path None</span>
 <span class="go">l8_angles_path None</span>
+<span class="go">nasa_earthdata_user None</span>
+<span class="go">nasa_earthdata_key None</span>
+<span class="go">nasa_earthdata_code None</span>
 </pre></div>
 </div>
 </div>
@@ -279,10 +287,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2020, GeoWombat.
+      &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

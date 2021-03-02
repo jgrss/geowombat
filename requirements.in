@@ -13,3 +13,5 @@ joblib
 tqdm
 scipy
 scikit-learn
+cryptography
+

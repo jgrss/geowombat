@@ -3,6 +3,122 @@
 Changelog
 =========
 
+1.6.0 (3 March 2021)
+--------------------
+
+New
+~~~
+
+- NetCDF support
+
+    - NetCDF files can be opened following `rasterio dataset formatting <https://rasterio.readthedocs.io/en/latest/topics/datasets.html>`_.
+    - Band variables for multiple datasets can be opened with the `netcdf_vars` argument. E.g.,
+
+.. code:: python
+
+    with gw.open('netcdf:dataset.nc', netcdf_vars=['blue', 'green', 'red'] as src:
+        print(src)
+
+- Atmospheric correction
+
+    - Created :class:`geowombat.Radiometry.sixs.SixS`.
+    - Created 6S lookup tables (LUTs) for Landsat 5, 7, and 8 and Sentinel 2A and 2B.
+        - Includes LUTs for wavelengths blue, green, red, NIR, SWIR1, and SWIR2.
+
+- Spatial-temporal fusion
+
+    - Added StarFM method under :func:`geowombat.radiometry._fusion`.
+
+.. warning::
+    This implementation of StarFM is experimental and not tested against the original method.
+
+- Added `prepend_str` argument to :func:`geowomat.core.sort_images_by_date`.
+
+1.5.5 (28 Dec 2020)
+-------------------
+
+New
+~~~
+
+- Added ``min_frac_area`` keyword argument in :func:`geowombat.extract`.
+
+1.5.4 (15 Dec 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for ``stack_dim`` argument in :func:`geowombat.open`.
+- Fixed ``data_are_separate`` and ``data_are_stacked`` properties.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added ``persist_filenames`` keyword argument in :func:`geowombat.open`.
+
+1.5.3 (13 Dec 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added ``window_id`` return item in :func:`geowombat.calc_area`.
+
+New
+~~~
+
+- Added :func:`geowombat.to_netcdf` function.
+
+1.5.2 (9 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Changed ``where`` clause from ``self`` to ``xarray`` in :func:`geowombat.wi`.
+
+1.5.1 (3 Dec 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for empty polygon list in :func:`geowombat.array_to_polygon`.
+
+1.5.0 (1 Dec 2020)
+------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added optional ``dask.distributed`` ``Client`` in :func:`geowombat.extract`
+- :class:`geowombat.core.parallel.ParallelTask`.
+    - Added 'ray' as an optional scheduler with ``@ray.remote`` user functions.
+    - Added the option of iterating over a list of raster files.
+- Added option to pass ``chunks=None`` in :class:`geowombat.open`.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed conflict with global configuration and a user-provided reference ``DataArray`` in :func:`geowombat.polygon_to_array`.
+
+1.4.6 (13 Nov 2020)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added `shapely.geometry.MultiPolygon` as an accepted data type in :func:`geowombat.core.prepare_points`.
+- Added missing `GeoDataFrame` columns in :func:`geowombat.core.polygons_to_points`.
+
+1.4.5 (9 Nov 2020)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for config reference resolution type in :func:`geowombat.polygon_to_array`.
+
 1.4.4 (8 Nov 2020)
 ------------------
 

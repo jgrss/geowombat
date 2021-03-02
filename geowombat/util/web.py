@@ -435,14 +435,16 @@ class DownloadMixin(object):
 
                 if out_brdf:
 
-                    if out_brdf.is_file() or Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
+                    if out_brdf.is_file() or \
+                            Path(str(out_brdf).replace('.tif', '.nc')).is_file() or \
+                            Path(str(out_brdf).replace('.tif', '.nodata')).is_file():
 
-                        logger.warning('  The output BRDF file, {}, already exists.'.format(str(out_brdf)))
+                        logger.warning(f'  The output BRDF file, {str(out_brdf)}, already exists.')
                         _clean_and_update(None, None, None, check_angles=False, check_downloads=False)
                         continue
 
                     else:
-                        logger.warning('  Continuing with the download for {}.'.format(str(out_brdf)))
+                        logger.warning(f'  Continuing with the download for {str(out_brdf)}.')
 
                 # Move the metadata file to the front of the
                 # list to avoid unnecessary downloads.
@@ -818,6 +820,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                       l57_angles_path=None,
                       l8_angles_path=None,
                       subsample=1,
+                      write_format='gtiff',
                       write_angle_files=False,
                       mask_qa=False,
                       lqa_mask_items=None,
@@ -861,6 +864,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
             l8_angles_path (str): The path to the Landsat 8 angles bin.
             subsample (Optional[int]): The sub-sample factor when calculating the angles.
+            write_format (Optional[bool]): The data format to write. Choices are ['gtiff', 'netcdf'].
             write_angle_files (Optional[bool]): Whether to write the angles to file.
             mask_qa (Optional[bool]): Whether to mask data with the QA file.
             lqa_mask_items (Optional[list]): A list of QA mask items for Landsat.
@@ -898,6 +902,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             >>>                   n_workers=1,
             >>>                   n_threads=8)
         """
+
+        if write_format not in ['gtiff', 'netcdf']:
+            logger.warning(f'  Did not recognize {write_format}. Setting the output data format as gtiff.')
+            write_format = 'gtiff'
 
         if not lqa_mask_items:
 
@@ -1292,7 +1300,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                   ref_bounds=out_bounds,
                                                   ref_crs=crs,
                                                   ref_res=ref_res if ref_res else load_bands_names[-1],
-                                                  ignore_warnings=True):
+                                                  ignore_warnings=True,
+                                                  nasa_earthdata_user=earthdata_username,
+                                                  nasa_earthdata_key=earthdata_key_file,
+                                                  nasa_earthdata_code=earthdata_code_file):
 
                                 valid_data = True
 
@@ -1416,9 +1427,6 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                     isinstance(earthdata_code_file, str):
 
                                                 altitude = dos.get_mean_altitude(data,
-                                                                                 earthdata_username,
-                                                                                 earthdata_key_file,
-                                                                                 earthdata_code_file,
                                                                                  srtm_outdir,
                                                                                  n_jobs=n_jobs)
 
@@ -1429,7 +1437,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                             # Resample to 100m x 100m
                                             data_coarse = data.sel(band=['blue', 'swir2']).gw\
-                                                                .transform_crs(dst_res=100.0,
+                                                                .transform_crs(dst_res=500.0,
                                                                                resampling='med')
 
                                             aot = dos.get_aot(data_coarse,
@@ -1443,7 +1451,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                               h2o=2.0,
                                                               o3=0.3,  # global average of total ozone in a vertical column (3 cm)
                                                               altitude=altitude,
-                                                              w=101,
+                                                              w=151,
                                                               n_jobs=n_jobs)
 
                                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
@@ -1531,7 +1539,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                        nodataval).astype('uint16')
 
                                                 sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                                if write_format == 'gtiff':
+                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                                else:
+                                                    sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
 
                                             else:
 
@@ -1554,7 +1566,11 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                        nodataval).astype('uint16')
 
                                                     sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                                    sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                                    if write_format == 'gtiff':
+                                                        sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                                    else:
+                                                        sr_brdf.gw.to_netcdf(str(out_brdf), zlib=True, complevel=5)
 
                                         else:
 
@@ -1565,13 +1581,29 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                             dtype='uint16')
 
                                             sr_brdf = _assign_attrs(sr_brdf, attrs, bands_out)
-                                            sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+
+                                            if write_format == 'gtiff':
+                                                sr_brdf.gw.to_raster(str(out_brdf), **kwargs)
+                                            else:
+
+                                                sr_brdf.gw.to_netcdf(str(out_brdf).replace('.tif', '.nc'),
+                                                                     zlib=True,
+                                                                     complevel=5)
 
                                         if write_angle_files:
 
-                                            angle_stack = xr.concat((sza, saa), dim='band').astype('int16')
-                                            angle_stack.attrs = sza.attrs.copy()
-                                            angle_stack.gw.to_raster(str(out_angles), **angle_kwargs)
+                                            angle_stack = xr.concat((sza, saa), dim='band')\
+                                                                .astype('int16')\
+                                                                .assign_coords(band=['sza', 'saa'])\
+                                                                .assign_attrs(**sza.attrs.copy())
+
+                                            if write_format == 'gtiff':
+                                                angle_stack.gw.to_raster(str(out_angles), **kwargs)
+                                            else:
+
+                                                angle_stack.gw.to_netcdf(str(out_angles).replace('.tif', '.nc'),
+                                                                         zlib=True,
+                                                                         complevel=5)
 
                                 else:
 
