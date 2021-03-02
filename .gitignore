@@ -37,7 +37,8 @@ bin/ESPA/
 geowombat/data/lut
 
 # dev
-geowombat/radiometry/*test*.py
+geowombat/moving/*test*
+geowombat/radiometry/*test*
 geowombat/radiometry/*fusion*
 
 # Notebooks
