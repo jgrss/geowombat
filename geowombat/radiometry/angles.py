@@ -616,6 +616,7 @@ def landsat_pixel_angles(angles_file,
 
     with rio.open(ref_file) as src:
 
+        ref_res = src.res
         ref_height = src.height
         ref_width = src.width
         ref_extent = src.bounds
@@ -684,13 +685,29 @@ def landsat_pixel_angles(angles_file,
                                                   'azimuth',
                                                   'zenith']):
 
+            new_res = subsample*ref_res[0]
+
+            # Update the .hdr file
+            with open(in_angle + '.hdr', mode='r') as txt:
+
+                lines = txt.readlines()
+
+                for lidx, line in enumerate(lines):
+                    if line.startswith('map info'):
+                        lines[lidx] = line.replace('30.000, 30.000', f'{new_res:.3f}, {new_res:.3f}')
+
+            Path(in_angle + '.hdr').unlink()
+
+            with open(in_angle + '.hdr', mode='w') as txt:
+                txt.writelines(lines)
+
             with rio.open(in_angle) as src:
 
                 profile = src.profile.copy()
 
-                profile.update(transform=Affine(src.res[0], 0.0, ref_extent.left, 0.0, -src.res[1], ref_extent.top),
-                               height=ref_height,
-                               width=ref_width,
+                profile.update(transform=Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top),
+                               height=src.height,
+                               width=src.width,
                                nodata=-32768,
                                dtype='int16',
                                count=1,
