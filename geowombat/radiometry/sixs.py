@@ -8,7 +8,6 @@ Reference:
     https://github.com/samsammurphy/6S_emulator/blob/master/bin/interpolated_LUTs.py
 """
 
-import os
 import shutil
 import string
 import random
@@ -19,6 +18,7 @@ from collections import namedtuple
 from ..handler import add_handler
 from ..core import ndarray_to_xarray
 from ..data import LUTDownloader, NASAEarthdataDownloader
+from ..data import srtm30m_bounding_boxes
 
 import geowombat as gw
 
@@ -88,10 +88,9 @@ class Altitude(object):
             logger.exception('  The NASA EarthData username, secret key file, and secret code file must be provided to download SRTM data.')
             raise AttributeError
 
-        srtm_grid_path = DATA_PATH / 'srtm30m_bounding_boxes.gpkg'
         srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
 
-        shutil.copy(str(srtm_grid_path), str(srtm_grid_path_temp))
+        shutil.copy(str(srtm30m_bounding_boxes), str(srtm_grid_path_temp))
 
         srtm_df = gpd.read_file(srtm_grid_path_temp)
 
