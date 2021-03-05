@@ -1325,16 +1325,16 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                     with gw.open(angle_info.sza,
                                                  chunks=chunks,
-                                                 resampling='cubic') as sza, \
+                                                 resampling='bilinear') as sza, \
                                             gw.open(angle_info.vza,
                                                     chunks=chunks,
-                                                    resampling='cubic') as vza, \
+                                                    resampling='bilinear') as vza, \
                                             gw.open(angle_info.saa,
                                                     chunks=chunks,
-                                                    resampling='cubic') as saa, \
+                                                    resampling='bilinear') as saa, \
                                             gw.open(angle_info.vaa,
                                                     chunks=chunks,
-                                                    resampling='cubic') as vaa, \
+                                                    resampling='bilinear') as vaa, \
                                             gw.open(load_bands_names,
                                                     band_names=bands,
                                                     stack_dim='band',
