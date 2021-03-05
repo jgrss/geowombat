@@ -3,6 +3,16 @@
 Changelog
 =========
 
+1.6.1 (5 March 2021)
+--------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed Landsat angle .hdr file cell size in :func:`geowombat.radiometry.landsat_pixel_angles`.
+    - When using the Landsat angle files with `subsample` > 1, the generated .img.hdr files retain the native 30 m cell size.
+    - This fix edits the .img.hdr file to update the resample cell size.
+
 1.6.0 (3 March 2021)
 --------------------
 
