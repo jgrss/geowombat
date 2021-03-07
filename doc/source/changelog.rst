@@ -3,6 +3,19 @@
 Changelog
 =========
 
+1.6.2 ()
+--------
+
+New
+~~~
+
+- Added ``coords_only`` keyword argument in :func:`geowombat.transform_crs`.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Replaced ``joblib.Parallel`` with ``concurrent.futures.ThreadPoolExecutor`` in :func:`geowombat.util.web.DownloadMixin().download_gcp`.
+
 1.6.1 (5 March 2021)
 --------------------
 
