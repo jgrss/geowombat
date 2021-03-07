@@ -25,7 +25,6 @@ import pandas as pd
 import geopandas as gpd
 import xarray as xr
 from shapely.geometry import Polygon
-from joblib import Parallel, delayed
 
 try:
     import requests
@@ -1247,6 +1246,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                                   l57_angles_path=l57_angles_path,
                                                                   l8_angles_path=l8_angles_path,
                                                                   subsample=subsample,
+                                                                  resampling='bilinear',
+                                                                  num_threads=num_workers,
                                                                   verbose=1)
 
                                 if (len(bands) == 1) and (bands[0] == 'pan'):
