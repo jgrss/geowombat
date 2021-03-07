@@ -14,6 +14,7 @@ from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
 from rasterio.transform import array_bounds, from_bounds
+from rasterio.transform import xy as rio_xy
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 import xarray as xr
@@ -885,6 +886,7 @@ def transform_crs(data_src,
                   dst_width=None,
                   dst_height=None,
                   dst_bounds=None,
+                  coords_only=False,
                   resampling='nearest',
                   warp_mem_limit=512,
                   num_threads=1):
@@ -900,13 +902,20 @@ def transform_crs(data_src,
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
             or as a tuple of (left, bottom, right, top).
+        coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
+            the array is not warped and the size is unchanged. It also avoids in-memory computations.
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         warp_mem_limit (Optional[int]): The warp memory limit.
         num_threads (Optional[int]): The number of parallel threads.
 
     Returns:
-        ``numpy.ndarray`` ``tuple`` ``CRS``
+
+        If ``coords_only`` = ``True``:
+            ``tuple`` ``tuple`` ``CRS``
+
+        If ``coords_only`` = ``False``:
+            ``numpy.ndarray`` ``tuple`` ``CRS``
     """
 
     if dst_crs:
@@ -935,8 +944,38 @@ def transform_crs(data_src,
         if not dst_height:
             dst_height = data_src.gw.nrows
 
+    dst_transform, dst_width_, dst_height_ = calculate_default_transform(data_src.crs,
+                                                                         dst_crs,
+                                                                         data_src.gw.ncols,
+                                                                         data_src.gw.nrows,
+                                                                         left=data_src.gw.left,
+                                                                         bottom=data_src.gw.bottom,
+                                                                         right=data_src.gw.right,
+                                                                         top=data_src.gw.top,
+                                                                         dst_width=dst_width,
+                                                                         dst_height=dst_height,
+                                                                         resolution=dst_res)
+
+    if coords_only:
+
+        xs, ys = rio_xy(dst_transform, np.arange(0, data_src.gw.nrows), np.arange(0, data_src.gw.ncols))
+
+        return (xs, ys), dst_transform, dst_crs
+
+    if not isinstance(dst_width, int):
+        dst_width = data_src.gw.ncols
+
+    if not isinstance(dst_height, int):
+        dst_height = data_src.gw.nrows
+
     if not dst_bounds:
-        dst_bounds = data_src.gw.bounds
+
+        dst_left = dst_transform[2]
+        dst_top = dst_transform[5]
+        dst_right = dst_left + (dst_width*dst_transform[0])
+        dst_bottom = dst_top - (dst_height*dst_transform[4])
+
+        dst_bounds = (dst_left, dst_bottom, dst_right, dst_top)
 
     if not isinstance(dst_bounds, BoundingBox):
 
@@ -944,18 +983,6 @@ def transform_crs(data_src,
                                  bottom=dst_bounds[1],
                                  right=dst_bounds[2],
                                  top=dst_bounds[3])
-
-    dst_transform, dst_width, dst_height = calculate_default_transform(data_src.crs,
-                                                                       dst_crs,
-                                                                       data_src.gw.ncols,
-                                                                       data_src.gw.nrows,
-                                                                       left=dst_bounds.left,
-                                                                       bottom=dst_bounds.bottom,
-                                                                       right=dst_bounds.right,
-                                                                       top=dst_bounds.top,
-                                                                       dst_width=dst_width,
-                                                                       dst_height=dst_height,
-                                                                       resolution=dst_res)
 
     if not dst_res:
 

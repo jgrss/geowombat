@@ -701,6 +701,7 @@ def transform_crs(data_src,
                   dst_width=None,
                   dst_height=None,
                   dst_bounds=None,
+                  coords_only=False,
                   resampling='nearest',
                   warp_mem_limit=512,
                   num_threads=1):
@@ -716,6 +717,8 @@ def transform_crs(data_src,
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
             or as a tuple of (left, bottom, right, top).
+        coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
+            the array is not warped and the size is unchanged. It also avoids in-memory computations.
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         warp_mem_limit (Optional[int]): The warp memory limit.
@@ -731,40 +734,58 @@ def transform_crs(data_src,
                                                          dst_width=dst_width,
                                                          dst_height=dst_height,
                                                          dst_bounds=dst_bounds,
+                                                         coords_only=coords_only,
                                                          resampling=resampling,
                                                          warp_mem_limit=warp_mem_limit,
                                                          num_threads=num_threads)
 
-    nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
+    if coords_only:
 
-    left = dst_transform[2]
-    cellx = abs(dst_transform[0])
-    x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)
+        cellx = abs(dst_transform[0])
+        celly = abs(dst_transform[4])
 
-    top = dst_transform[5]
-    celly = abs(dst_transform[4])
-    y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)
+        attrs = data_src.attrs.copy()
 
-    if not dst_res:
-        dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
+        attrs['crs'] = dst_crs
+        attrs['transform'] = dst_transform
+        attrs['res'] = (cellx, celly)
 
-    data_dst = xr.DataArray(data=da.from_array(data_dst,
-                                               chunks=data_src.data.chunksize),
-                            coords={'band': data_src.band.values.tolist(),
-                                    'y': y,
-                                    'x': x},
-                            dims=('band', 'y', 'x'),
-                            attrs=data_src.attrs)
+        xs, ys = data_dst
 
-    data_dst.attrs['transform'] = tuple(dst_transform)[:6]
-    data_dst.attrs['crs'] = dst_crs
-    data_dst.attrs['res'] = dst_res
-    data_dst.attrs['resampling'] = resampling
+        return data_src.assign_coords(x=xs, y=ys).assign_attrs(**attrs)
 
-    if 'sensor' in data_src.attrs:
-        data_dst.attrs['sensor'] = data_src.attrs['sensor']
+    else:
 
-    if 'filename' in data_src.attrs:
-        data_dst.attrs['filename'] = data_src.attrs['filename']
+        nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
 
-    return data_dst
+        left = dst_transform[2]
+        cellx = abs(dst_transform[0])
+        x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)
+
+        top = dst_transform[5]
+        celly = abs(dst_transform[4])
+        y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)
+
+        if not dst_res:
+            dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
+
+        data_dst = xr.DataArray(data=da.from_array(data_dst,
+                                                   chunks=data_src.data.chunksize),
+                                coords={'band': data_src.band.values.tolist(),
+                                        'y': y,
+                                        'x': x},
+                                dims=('band', 'y', 'x'),
+                                attrs=data_src.attrs)
+
+        data_dst.attrs['transform'] = tuple(dst_transform)[:6]
+        data_dst.attrs['crs'] = dst_crs
+        data_dst.attrs['res'] = dst_res
+        data_dst.attrs['resampling'] = resampling
+
+        if 'sensor' in data_src.attrs:
+            data_dst.attrs['sensor'] = data_src.attrs['sensor']
+
+        if 'filename' in data_src.attrs:
+            data_dst.attrs['filename'] = data_src.attrs['filename']
+
+        return data_dst
