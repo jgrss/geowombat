@@ -8,6 +8,7 @@ from datetime import datetime
 from collections import namedtuple
 import time
 import logging
+import concurrent.futures
 
 from ..handler import add_handler
 from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker, DOS
@@ -457,14 +458,30 @@ class DownloadMixin(object):
 
                 download_list_names = [Path(dfn).name for dfn in sub_download_list]
 
-                results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
-                                                                             poutdir,
-                                                                             outdir,
-                                                                             fname,
-                                                                             fn,
-                                                                             null_items,
-                                                                             verbose)
-                                                  for fname, fn in zip(download_list_names, sub_download_list))
+                results = []
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+
+                    futures = [executor.submit(_download_workers,
+                                               gcp_str,
+                                               poutdir,
+                                               outdir,
+                                               fname,
+                                               fn,
+                                               null_items,
+                                               verbose) for fname, fn in zip(download_list_names, sub_download_list)]
+
+                    for f in concurrent.futures.as_completed(futures):
+                        results.append(f.result())
+
+                # results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
+                #                                                              poutdir,
+                #                                                              outdir,
+                #                                                              fname,
+                #                                                              fn,
+                #                                                              null_items,
+                #                                                              verbose)
+                #                                   for fname, fn in zip(download_list_names, sub_download_list))
 
                 for key, finfo_ in results:
 
