@@ -3,8 +3,17 @@
 Changelog
 =========
 
-1.6.2 ()
---------
+1.6.3 (8 March 2021)
+--------------------
+
+New
+~~~
+
+- Added ``resampling`` and ``num_threads`` keyword arguments to :func:`geowombat.radiometry.landsat_pixel_angles` and :func:`geowombat.util.GeoDownloads().download_cube`.
+- Added ``max_aot`` keyword argument to :func:`geowombat.radiometry.sixs.SixS().get_optimized_aot`.
+
+1.6.2 (7 March 2021)
+--------------------
 
 New
 ~~~
