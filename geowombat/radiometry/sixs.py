@@ -88,6 +88,9 @@ class Altitude(object):
             logger.exception('  The NASA EarthData username, secret key file, and secret code file must be provided to download SRTM data.')
             raise AttributeError
 
+        if not Path(out_dir).is_dir():
+            Path(out_dir).mkdir(parents=True, exist_ok=True)
+
         srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
 
         shutil.copy(str(srtm30m_bounding_boxes), str(srtm_grid_path_temp))
@@ -438,7 +441,8 @@ class SixS(Altitude):
                           doy,
                           h2o,
                           o3,
-                          altitude):
+                          altitude,
+                          max_aot=0.5):
 
         """
         Gets the optimal aerosol optical thickness
@@ -454,6 +458,7 @@ class SixS(Altitude):
             h2o (float): The water vapor (g/m^2). [0,8.5].
             o3 (float): The ozone (cm-atm). [0,8].
             altitude (float)
+            max_aot (float)
         """
 
         # Load the LUT
@@ -464,7 +469,7 @@ class SixS(Altitude):
 
         elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
 
-        for aot_iter in np.arange(0.01, 1.1, 0.01):
+        for aot_iter in np.arange(0.01, max_aot+0.01, 0.01):
 
             xa, xb, xc = lut(sza, h2o, o3, aot_iter, altitude)
 
@@ -479,4 +484,4 @@ class SixS(Altitude):
             aot = np.where(score < min_score, aot_iter, aot)
             min_score = np.where(score < min_score, score, min_score)
 
-        return aot.clip(0, 1)
+        return aot.clip(0, max_aot)
