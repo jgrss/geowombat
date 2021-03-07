@@ -11,7 +11,7 @@ from ..handler import add_handler
 import numpy as np
 import xarray as xr
 import rasterio as rio
-from rasterio.warp import reproject
+from rasterio.warp import reproject, Resampling
 from affine import Affine
 import xml.etree.ElementTree as ET
 
@@ -575,6 +575,8 @@ def landsat_pixel_angles(angles_file,
                          l57_angles_path=None,
                          l8_angles_path=None,
                          subsample=1,
+                         resampling='bilinear',
+                         num_threads=1,
                          verbose=0):
 
     """
@@ -588,6 +590,9 @@ def landsat_pixel_angles(angles_file,
         l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
         l8_angles_path (str): The path to the Landsat 8 angles bin.
         subsample (Optional[int]): The sub-sample factor when calculating the angles.
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
+            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        num_threads (Optional[int]): The number of threads to pass to ``rasterio.warp.reproject``.
         verbose (Optional[int]): The verbosity level.
 
     Returns:
@@ -724,7 +729,8 @@ def landsat_pixel_angles(angles_file,
                     # TODO: num_threads
                     reproject(src_band,
                               destination=dst_band,
-                              num_threads=8)
+                              resampling=getattr(Resampling, resampling),
+                              num_threads=num_threads)
 
     return AngleInfo(vaa=sensor_azimuth_file,
                      vza=sensor_zenith_file,
