@@ -474,15 +474,6 @@ class DownloadMixin(object):
                     for f in concurrent.futures.as_completed(futures):
                         results.append(f.result())
 
-                # results = Parallel(n_jobs=n_jobs)(delayed(_download_workers)(gcp_str,
-                #                                                              poutdir,
-                #                                                              outdir,
-                #                                                              fname,
-                #                                                              fn,
-                #                                                              null_items,
-                #                                                              verbose)
-                #                                   for fname, fn in zip(download_list_names, sub_download_list))
-
                 for key, finfo_ in results:
 
                     if finfo_:
