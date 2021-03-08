@@ -958,16 +958,13 @@ def transform_crs(data_src,
 
         if isinstance(dst_width, int) and isinstance(dst_height, int):
 
-            xs, ys = dst_transform * (np.arange(0, max(dst_height, dst_width)),
-                                      np.arange(0, max(dst_height, dst_width)))
+            xs = dst_transform * (np.arange(0, dst_width), np.arange(0, dst_width))[0]
+            ys = dst_transform * (np.arange(0, dst_height), np.arange(0, dst_height))[1]
 
         else:
 
-            xs, ys = dst_transform * (np.arange(0, max(dst_height_, dst_width_)),
-                                      np.arange(0, max(dst_height_, dst_width_)))
-
-        xs = xs[:dst_width]
-        ys = ys[:dst_height]
+            xs = dst_transform * (np.arange(0, dst_width_), np.arange(0, dst_width_))[0]
+            ys = dst_transform * (np.arange(0, dst_height_), np.arange(0, dst_height_))[1]
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
         xy_coords = XYCoords(xs=xs, ys=ys)
