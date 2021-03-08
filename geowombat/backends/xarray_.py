@@ -747,7 +747,7 @@ def transform_crs(data_src,
         attrs = data_src.attrs.copy()
 
         attrs['crs'] = dst_crs
-        attrs['transform'] = dst_transform
+        attrs['transform'] = dst_transform[:6]
         attrs['res'] = (cellx, celly)
 
         return data_src.assign_coords(x=data_dst.xs, y=data_dst.ys).assign_attrs(**attrs)
