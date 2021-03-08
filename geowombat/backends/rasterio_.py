@@ -932,9 +932,8 @@ def transform_crs(data_src,
 
     else:
 
-        if not isinstance(dst_width, int):
-            if not isinstance(dst_height, int):
-                dst_res = data_src.res
+        if not isinstance(dst_width, int) and not isinstance(dst_height, int):
+            dst_res = data_src.res
 
     if not dst_res:
 
@@ -958,10 +957,13 @@ def transform_crs(data_src,
 
     if coords_only:
 
-        xs, ys = rio_xy(dst_transform, np.arange(0, data_src.gw.nrows), np.arange(0, data_src.gw.ncols))
+        if isinstance(dst_width, int) and isinstance(dst_height, int):
+            xs, ys = rio_xy(dst_transform, list(range(0, dst_height)), list(range(0, dst_width)))
+        else:
+            xs, ys = rio_xy(dst_transform, list(range(0, dst_height_)), list(range(0, dst_width_)))
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
-        xy_coords = XYCoords(xs=np.array(xs).copy(), ys=np.array(ys).copy())
+        xy_coords = XYCoords(xs=xs, ys=ys)
 
         return xy_coords, dst_transform, dst_crs
 
