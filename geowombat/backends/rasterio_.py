@@ -960,7 +960,10 @@ def transform_crs(data_src,
 
         xs, ys = rio_xy(dst_transform, np.arange(0, data_src.gw.nrows), np.arange(0, data_src.gw.ncols))
 
-        return (xs, ys), dst_transform, dst_crs
+        XYCoords = namedtuple('XYCoords', 'xs ys')
+        xy_coords = XYCoords(xs=xs, ys=ys)
+
+        return xy_coords, dst_transform, dst_crs
 
     if not isinstance(dst_width, int):
         dst_width = data_src.gw.ncols
