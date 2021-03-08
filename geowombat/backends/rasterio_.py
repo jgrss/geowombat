@@ -961,7 +961,7 @@ def transform_crs(data_src,
         xs, ys = rio_xy(dst_transform, np.arange(0, data_src.gw.nrows), np.arange(0, data_src.gw.ncols))
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
-        xy_coords = XYCoords(xs=xs, ys=ys)
+        xy_coords = XYCoords(xs=np.array(xs).copy(), ys=np.array(ys).copy())
 
         return xy_coords, dst_transform, dst_crs
 
