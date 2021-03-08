@@ -14,7 +14,6 @@ from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
 from rasterio.transform import array_bounds, from_bounds
-from rasterio.transform import xy as rio_xy
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 import xarray as xr
@@ -958,9 +957,17 @@ def transform_crs(data_src,
     if coords_only:
 
         if isinstance(dst_width, int) and isinstance(dst_height, int):
-            xs, ys = rio_xy(dst_transform, list(range(0, dst_height)), list(range(0, dst_width)))
+
+            xs, ys = dst_transform * (np.arange(0, max(dst_height, dst_width)),
+                                      np.arange(0, max(dst_height, dst_width)))
+
         else:
-            xs, ys = rio_xy(dst_transform, list(range(0, dst_height_)), list(range(0, dst_width_)))
+
+            xs, ys = dst_transform * (np.arange(0, max(dst_height_, dst_width_)),
+                                      np.arange(0, max(dst_height_, dst_width_)))
+
+        xs = xs[:dst_width]
+        ys = ys[:dst_height]
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
         xy_coords = XYCoords(xs=xs, ys=ys)
