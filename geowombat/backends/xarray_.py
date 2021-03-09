@@ -9,6 +9,7 @@ from ..core.util import parse_filename_dates
 from ..config import config
 from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, window_to_bounds, unpack_bounding_box, unpack_window
 from .rasterio_ import transform_crs as rio_transform_crs
+from .open_rasterio_ import open_rasterio
 
 import numpy as np
 from rasterio import open as rio_open
@@ -54,7 +55,7 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
 
 def _get_raster_coords(filename):
 
-    with xr.open_rasterio(filename) as src:
+    with open_rasterio(filename) as src:
 
         x = src.x.values - src.res[0] / 2.0
         y = src.y.values + src.res[1] / 2.0
@@ -253,14 +254,14 @@ def warp_open(filename,
                                      resampling=resampling,
                                      **ref_kwargs_netcdf_stack)
 
-        yield xr.concat((xr.open_rasterio(wobj, **kwargs)\
+        yield xr.concat((open_rasterio(wobj, **kwargs)\
                             .assign_coords(band=[band_names[wi]] if band_names else [netcdf_vars[wi]])
                          for wi, wobj in enumerate(warped_objects)), dim='band')
 
-    with xr.open_rasterio(warp(filename,
-                               resampling=resampling,
-                               **ref_kwargs),
-                          **kwargs) if not filenames else warp_netcdf_vars() as src:
+    with open_rasterio(warp(filename,
+                            resampling=resampling,
+                            **ref_kwargs),
+                       **kwargs) if not filenames else warp_netcdf_vars() as src:
 
         if band_names:
 
@@ -387,19 +388,19 @@ def mosaic(filenames,
         tags = src_.tags()
 
     # Combine the data
-    with xr.open_rasterio(warped_objects[0], **kwargs) as darray:
+    with open_rasterio(warped_objects[0], **kwargs) as darray:
 
         attrs = darray.attrs.copy()
 
         # Get the original bounds, unsampled
-        with xr.open_rasterio(filenames[0], **kwargs) as src_:
+        with open_rasterio(filenames[0], **kwargs) as src_:
             footprints.append(src_.gw.geometry)
 
         for fidx, fn in enumerate(warped_objects[1:]):
 
-            with xr.open_rasterio(fn, **kwargs) as darrayb:
+            with open_rasterio(fn, **kwargs) as darrayb:
 
-                with xr.open_rasterio(filenames[fidx+1], **kwargs) as src_:
+                with open_rasterio(filenames[fidx+1], **kwargs) as src_:
                     footprints.append(src_.gw.geometry)
                 src_ = None
 
