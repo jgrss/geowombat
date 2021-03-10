@@ -817,6 +817,7 @@ def warp(filename,
                     left_coord, bottom_coord, right_coord, top_coord = unpack_bounding_box(bounds)
                 else:
                     logger.exception('  The bounds were not accepted.')
+                    raise TypeError
 
                 dst_bounds = BoundingBox(left=left_coord,
                                          bottom=bottom_coord,

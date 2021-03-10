@@ -758,11 +758,11 @@ def transform_crs(data_src,
 
         left = dst_transform[2]
         cellx = abs(dst_transform[0])
-        x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)
+        x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)[:ncols]
 
         top = dst_transform[5]
         celly = abs(dst_transform[4])
-        y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)
+        y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)[:nrows]
 
         if not dst_res:
             dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
