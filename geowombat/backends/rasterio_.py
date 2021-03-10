@@ -786,7 +786,27 @@ def warp(filename,
             dst_res = src_info.src_res
 
         # Check if the data need to be subset
-        if bounds and (tuple(bounds) != tuple(src_info.src_bounds)):
+        if (bounds is None) or (tuple(bounds) == tuple(src_info.src_bounds)):
+
+            if crs:
+
+                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(src_crs,
+                                                                                    dst_crs,
+                                                                                    src_info.src_bounds.left,
+                                                                                    src_info.src_bounds.bottom,
+                                                                                    src_info.src_bounds.right,
+                                                                                    src_info.src_bounds.top,
+                                                                                    densify_pts=21)
+
+                dst_bounds = BoundingBox(left=left_coord,
+                                         bottom=bottom_coord,
+                                         right=right_coord,
+                                         top=top_coord)
+
+            else:
+                dst_bounds = src_info.src_bounds
+
+        else:
 
             # Ensure that the user bounds object is a ``BoundingBox``
             if isinstance(bounds, str):
@@ -810,28 +830,8 @@ def warp(filename,
 
             else:
 
-                logger.exception('  The bounds type was not understood. Bounds should be given as a rasterio.coords.BoundingBox, tuple, or ndarray.')
+                logger.exception(f'  The bounds type was not understood. Bounds should be given as a rasterio.coords.BoundingBox, tuple, or ndarray, not a {type(bounds)}.')
                 raise TypeError
-
-        else:
-
-            if crs:
-
-                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(src_crs,
-                                                                                    dst_crs,
-                                                                                    src_info.src_bounds.left,
-                                                                                    src_info.src_bounds.bottom,
-                                                                                    src_info.src_bounds.right,
-                                                                                    src_info.src_bounds.top,
-                                                                                    densify_pts=21)
-
-                dst_bounds = BoundingBox(left=left_coord,
-                                         bottom=bottom_coord,
-                                         right=right_coord,
-                                         top=top_coord)
-
-            else:
-                dst_bounds = src_info.src_bounds
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
