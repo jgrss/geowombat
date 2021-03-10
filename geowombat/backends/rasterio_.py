@@ -823,7 +823,7 @@ def warp(filename,
                                          right=right_coord,
                                          top=top_coord)
 
-            elif isinstance(bounds, tuple) or isinstance(bounds, np.ndarray):
+            elif isinstance(bounds, tuple) or isinstance(bounds, list) or isinstance(bounds, np.ndarray):
 
                 dst_bounds = BoundingBox(left=bounds[0],
                                          bottom=bounds[1],
