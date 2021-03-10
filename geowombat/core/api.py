@@ -472,6 +472,7 @@ class open(object):
                         filename.lower().startswith('netcdf:'):
 
                     logger.exception('  The file format is not recognized.')
+                    raise OSError
 
                 if (file_names.f_ext.lower() in IO_DICT['rasterio']) or \
                         (filename.lower().startswith('netcdf:')):
@@ -494,6 +495,7 @@ class open(object):
 
                     if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
                         logger.exception('  The chunks should be a dictionary.')
+                        raise TypeError
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
