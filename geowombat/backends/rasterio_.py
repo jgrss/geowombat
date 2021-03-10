@@ -786,8 +786,9 @@ def warp(filename,
             dst_res = src_info.src_res
 
         # Check if the data need to be subset
-        if bounds and (bounds != src_info.src_bounds):
+        if bounds and (tuple(bounds) != tuple(src_info.src_bounds)):
 
+            # Ensure that the user bounds object is a ``BoundingBox``
             if isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
@@ -800,12 +801,17 @@ def warp(filename,
                                          right=right_coord,
                                          top=top_coord)
 
-            else:
+            elif isinstance(bounds, tuple) or isinstance(bounds, np.ndarray):
 
                 dst_bounds = BoundingBox(left=bounds[0],
                                          bottom=bounds[1],
                                          right=bounds[2],
                                          top=bounds[3])
+
+            else:
+
+                logger.exception('  The bounds type was not understood. Bounds should be given as a rasterio.coords.BoundingBox, tuple, or ndarray.')
+                raise TypeError
 
         else:
 
@@ -831,7 +837,7 @@ def warp(filename,
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
         # Do not warp if all the key metadata match the reference information
-        if (src_info.src_bounds == bounds) and \
+        if (tuple(src_info.src_bounds) == tuple(bounds)) and \
                 (src_info.src_res == dst_res) and \
                 (src_crs == dst_crs) and \
                 (src_info.src_width == dst_width) and \
