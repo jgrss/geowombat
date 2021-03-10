@@ -809,7 +809,9 @@ def warp(filename,
         else:
 
             # Ensure that the user bounds object is a ``BoundingBox``
-            if isinstance(bounds, str):
+            if isinstance(bounds, BoundingBox):
+                pass
+            elif isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
                     left_coord, bottom_coord, right_coord, top_coord = unpack_bounding_box(bounds)
