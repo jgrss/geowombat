@@ -92,7 +92,6 @@ class BaseDownloader(object):
         self.outpath = Path(outfile)
 
         if self.outpath.is_file():
-            logger.warning(f'  The file {outfile} is already downloaded.')
             return
 
         if safe_download:
