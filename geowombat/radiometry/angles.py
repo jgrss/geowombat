@@ -433,10 +433,10 @@ def sentinel_pixel_angles(metadata,
 
                 dst.write(angle_array_resamp, indexes=1)
 
-    return AngleInfo(vaa=sensor_azimuth_file,
-                     vza=sensor_zenith_file,
-                     saa=solar_azimuth_file,
-                     sza=solar_zenith_file,
+    return AngleInfo(vaa=str(sensor_azimuth_file),
+                     vza=str(sensor_zenith_file),
+                     saa=str(solar_azimuth_file),
+                     sza=str(solar_zenith_file),
                      sensor=sensor_name)
 
 
