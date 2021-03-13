@@ -599,6 +599,8 @@ def landsat_pixel_angles(angles_file,
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
 
+    cwd = os.getcwd()
+
     if not l57_angles_path:
 
         gw_bin = os.path.realpath(os.path.dirname(__file__))
@@ -731,6 +733,8 @@ def landsat_pixel_angles(angles_file,
                               destination=dst_band,
                               resampling=getattr(Resampling, resampling),
                               num_threads=num_threads)
+
+    os.chdir(cwd)
 
     return AngleInfo(vaa=sensor_azimuth_file,
                      vza=sensor_zenith_file,
