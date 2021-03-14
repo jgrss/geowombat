@@ -86,7 +86,9 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             ref_kwargs['res'] = ref_meta.res
 
         else:
-            logger.warning('  The reference image does not exist')
+
+            if not config['ignore_warnings']:
+                logger.warning('  The reference image does not exist')
 
     else:
 
@@ -169,10 +171,14 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                 if os.path.isfile(config['ref_tar']):
                     ref_kwargs = _update_kwarg(_get_raster_coords(config['ref_tar']), ref_kwargs, 'tac')
                 else:
-                    logger.warning('  The target aligned raster does not exist.')
+
+                    if not config['ignore_warnings']:
+                        logger.warning('  The target aligned raster does not exist.')
 
             else:
-                logger.warning('  The target aligned raster must be an image.')
+
+                if not config['ignore_warnings']:
+                    logger.warning('  The target aligned raster must be an image.')
 
     return ref_kwargs
 
@@ -275,8 +281,10 @@ def warp_open(filename,
 
                 if src.gw.sensor not in src.gw.avail_sensors:
 
-                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
-                                                                                                           ', '.join(src.gw.avail_sensors)))
+                    if not src.gw.config['ignore_warnings']:
+
+                        logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
+                                                                                                               ', '.join(src.gw.avail_sensors)))
 
                 else:
 
@@ -448,15 +456,20 @@ def mosaic(filenames,
 
                 if darray.gw.sensor not in darray.gw.avail_sensors:
 
-                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(darray.gw.sensor,
-                                                                                                           ', '.join(darray.gw.avail_sensors)))
+                    if not darray.gw.config['ignore_warnings']:
+
+                        logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(darray.gw.sensor,
+                                                                                                               ', '.join(darray.gw.avail_sensors)))
 
                 else:
 
                     new_band_names = list(darray.gw.wavelengths[darray.gw.sensor]._fields)
 
                     if len(new_band_names) != len(darray.band.values.tolist()):
-                        logger.warning('  The band list length does not match the sensor bands.')
+
+                        if not darray.gw.config['ignore_warnings']:
+                            logger.warning('  The band list length does not match the sensor bands.')
+
                     else:
 
                         darray.coords['band'] = new_band_names
@@ -667,8 +680,10 @@ def concat(filenames,
 
             if src.gw.sensor not in src.gw.avail_sensors:
 
-                logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
-                                                                                                       ', '.join(src.gw.avail_sensors)))
+                if not src.gw.config['ignore_warnings']:
+
+                    logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
+                                                                                                           ', '.join(src.gw.avail_sensors)))
 
             else:
 
