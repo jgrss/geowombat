@@ -431,6 +431,9 @@ class SixS(Altitude):
 
         return sr.assign_attrs(**attrs)
 
+
+class AOT(object):
+
     def get_optimized_aot(self,
                           blue_rad_dark,
                           blue_p_dark,

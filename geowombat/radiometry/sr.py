@@ -8,7 +8,7 @@ from ..handler import add_handler
 from ..core import ndarray_to_xarray
 from ..moving import moving_window
 from .angles import relative_azimuth, parse_sentinel_angles
-from .sixs import SixS
+from .sixs import AOT, SixS
 from ..core.properties import get_sensor_info
 
 import numpy as np
@@ -940,7 +940,7 @@ class RadTransforms(MetaData):
         return sr_data.assign_attrs(**attrs)
 
 
-class DOS(SixS, RadTransforms):
+class DOS(AOT, RadTransforms):
 
     def get_aot(self,
                 data,
