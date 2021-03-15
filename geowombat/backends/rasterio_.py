@@ -810,7 +810,7 @@ def warp(filename,
 
             # Ensure that the user bounds object is a ``BoundingBox``
             if isinstance(bounds, BoundingBox):
-                pass
+                dst_bounds = bounds
             elif isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
