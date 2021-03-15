@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; GeoWombat 1.6.0 documentation</title>
+    <title>Index &#8212; GeoWombat 1.6.4b documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -13,7 +13,6 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -44,6 +43,7 @@
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -238,6 +238,8 @@
 </li>
       <li><a href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF.get_mean_sza">get_mean_sza() (geowombat.radiometry.BRDF static method)</a>
 </li>
+      <li><a href="api/geowombat.radiometry.DOS.html#geowombat.radiometry.DOS.get_optimized_aot">get_optimized_aot() (geowombat.radiometry.DOS method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -253,6 +255,14 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/geowombat.indices_to_coords.html#geowombat.indices_to_coords">indices_to_coords() (in module geowombat)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.kndvi">kndvi() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -377,18 +387,20 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/geowombat.radiometry.SixS.html#geowombat.radiometry.SixS.rad_to_sr">rad_to_sr() (geowombat.radiometry.SixS method)</a>
+</li>
       <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.radiance_to_toar">radiance_to_toar() (geowombat.radiometry.RadTransforms static method)</a>
 </li>
       <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms">RadTransforms (class in geowombat.radiometry)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.recode">recode() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
 
       <ul>
         <li><a href="api/geowombat.recode.html#geowombat.recode">(in module geowombat)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.replace">replace() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
 
       <ul>
@@ -409,9 +421,11 @@
       </ul></li>
       <li><a href="api/geowombat.radiometry.sentinel_pixel_angles.html#geowombat.radiometry.sentinel_pixel_angles">sentinel_pixel_angles() (in module geowombat.radiometry)</a>
 </li>
+      <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata">set_nodata() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.set_nodata">set_nodata() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
+      <li><a href="api/geowombat.radiometry.SixS.html#geowombat.radiometry.SixS">SixS (class in geowombat.radiometry)</a>
 </li>
       <li><a href="api/geowombat.tasks.GeoTask.html#geowombat.tasks.GeoTask.submit">submit() (geowombat.tasks.GeoTask method)</a>
 </li>
@@ -456,7 +470,11 @@
 </li>
       </ul></li>
       <li><a href="api/geowombat.radiometry.RadTransforms.html#geowombat.radiometry.RadTransforms.toar_to_sr">toar_to_sr() (geowombat.radiometry.RadTransforms method)</a>
+
+      <ul>
+        <li><a href="api/geowombat.radiometry.SixS.html#geowombat.radiometry.SixS.toar_to_sr">(geowombat.radiometry.SixS method)</a>
 </li>
+      </ul></li>
       <li><a href="api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo">Topo (class in geowombat.radiometry)</a>
 </li>
       <li><a href="api/geowombat.core.geoxarray.GeoWombatAccessor.html#geowombat.core.geoxarray.GeoWombatAccessor.transform_crs">transform_crs() (geowombat.core.geoxarray.GeoWombatAccessor method)</a>
@@ -572,7 +590,7 @@
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

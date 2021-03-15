@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Band math &#8212; GeoWombat 1.6.0 documentation</title>
+    <title>Band math &#8212; GeoWombat 1.6.4b documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -13,7 +13,6 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="User functions" href="apply.html" />
@@ -53,7 +52,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">evi</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0f9cdbe358a1e037d5754b1f9f2e2af6&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-fe09baa0706d005bf87242adcb6b9f53&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -68,7 +67,7 @@
 <span class="go">    offsets:            (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -83,12 +82,12 @@
 <span class="go">    crs:                +init=epsg:32618</span>
 <span class="go">    res:                (5.0, 5.0)</span>
 <span class="go">    is_tiled:           1</span>
-<span class="go">    nodatavals:         None</span>
+<span class="go">    nodatavals:         (None,)</span>
 <span class="go">    scales:             (1.0,)</span>
 <span class="go">    offsets:            (0.0,)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -115,13 +114,13 @@
 <span class="go">    crs:                +init=epsg:32618</span>
 <span class="go">    res:                (5.0, 5.0)</span>
 <span class="go">    is_tiled:           1</span>
-<span class="go">    nodatavals:         None</span>
+<span class="go">    nodatavals:         (None,)</span>
 <span class="go">    scales:             (1.0,)</span>
 <span class="go">    offsets:            (0.0,)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
 <span class="go">    sensor:             rgbn</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -149,13 +148,13 @@
 <span class="go">    crs:                +init=epsg:32618</span>
 <span class="go">    res:                (5.0, 5.0)</span>
 <span class="go">    is_tiled:           1</span>
-<span class="go">    nodatavals:         None</span>
+<span class="go">    nodatavals:         (None,)</span>
 <span class="go">    scales:             (1.0,)</span>
 <span class="go">    offsets:            (0.0,)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
 <span class="go">    sensor:             rgbn</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -184,13 +183,13 @@
 <span class="go">    crs:                +init=epsg:32618</span>
 <span class="go">    res:                (5.0, 5.0)</span>
 <span class="go">    is_tiled:           1</span>
-<span class="go">    nodatavals:         None</span>
+<span class="go">    nodatavals:         (None,)</span>
 <span class="go">    scales:             (1.0,)</span>
 <span class="go">    offsets:            (0.0,)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
 <span class="go">    sensor:             rgbn</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -224,7 +223,7 @@
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
 <span class="go">    sensor:             Quickbird with 4 (visible + NIR) bands</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
@@ -316,7 +315,7 @@
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

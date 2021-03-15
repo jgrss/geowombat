@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>evi2 &#8212; GeoWombat 1.6.0 documentation</title>
+    <title>evi2 &#8212; GeoWombat 1.6.4b documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -38,7 +38,7 @@
 <h1>evi2<a class="headerlink" href="#evi2" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="geowombat.evi2">
-<code class="sig-prename descclassname">geowombat.</code><code class="sig-name descname">evi2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">nodata</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sensor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.evi2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">geowombat.</span></code><code class="sig-name descname"><span class="pre">evi2</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.evi2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the two-band modified enhanced vegetation index</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -56,6 +56,10 @@
 <div><div class="math notranslate nohighlight">
 \[EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}\]</div>
 </div></blockquote>
+<dl class="simple">
+<dt>Reference:</dt><dd><p>See <a class="bibtex reference internal" href="geowombat.wi.html#jiang-etal-2008" id="id1">[JHDM08]</a></p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Data range: 0 to 1</p>
@@ -66,6 +70,12 @@
 </dl>
 </dd></dl>
 
+<p id="bibtex-bibliography-api/geowombat.evi2-0"><dl class="citation">
+<dt class="bibtex label" id="jiang-etal-2008"><span class="brackets"><a class="fn-backref" href="#id1">JHDM08</a></span></dt>
+<dd><p>Zhangyan Jiang, Alfredo R Huete, Kamel Didan, and Tomoaki Miura. Development of a two-band enhanced vegetation index without a blue band. <em>Remote sensing of Environment</em>, 112(10):3833–3845, 2008.</p>
+</dd>
+</dl>
+</p>
 </div>
 
 
@@ -151,7 +161,7 @@
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

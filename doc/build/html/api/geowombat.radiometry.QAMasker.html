@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QAMasker &#8212; GeoWombat 1.6.0 documentation</title>
+    <title>QAMasker &#8212; GeoWombat 1.6.4b documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -13,11 +13,10 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="GeoTask" href="geowombat.tasks.GeoTask.html" />
-    <link rel="prev" title="DOS" href="geowombat.radiometry.DOS.html" />
+    <link rel="prev" title="SixS" href="geowombat.radiometry.SixS.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -38,7 +37,7 @@
 <h1>QAMasker<a class="headerlink" href="#qamasker" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="geowombat.radiometry.QAMasker">
-<em class="property">class </em><code class="sig-prename descclassname">geowombat.radiometry.</code><code class="sig-name descname">QAMasker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qa</span></em>, <em class="sig-param"><span class="n">sensor</span></em>, <em class="sig-param"><span class="n">mask_items</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">modis_qa_band</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">modis_quality</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">confidence_level</span><span class="o">=</span><span class="default_value">'yes'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></code><code class="sig-name descname"><span class="pre">QAMasker</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modis_qa_band</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modis_quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yes'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for masking bit-packed quality flags</p>
 <dl class="field-list simple">
@@ -104,7 +103,7 @@
 <p class="rubric">Methods Documentation</p>
 <dl class="py method">
 <dt id="geowombat.radiometry.QAMasker.to_mask">
-<code class="sig-name descname">to_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">to_mask</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.radiometry.QAMasker.to_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts QA bit-packed data to an integer mask</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -181,7 +180,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API reference</a><ul>
-      <li>Previous: <a href="geowombat.radiometry.DOS.html" title="previous chapter">DOS</a></li>
+      <li>Previous: <a href="geowombat.radiometry.SixS.html" title="previous chapter">SixS</a></li>
       <li>Next: <a href="geowombat.tasks.GeoTask.html" title="next chapter">GeoTask</a></li>
   </ul></li>
   </ul></li>
@@ -213,7 +212,7 @@
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

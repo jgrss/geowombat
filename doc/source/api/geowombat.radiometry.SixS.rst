@@ -1,12 +1,12 @@
-DOS
-===
+SixS
+====
 
 .. currentmodule:: geowombat.radiometry
 
-.. autoclass:: DOS
+.. autoclass:: SixS
    :show-inheritance:
 
    .. rubric:: Methods Documentation
 
-   .. automethod:: get_aot
-   .. automethod:: get_optimized_aot
+   .. automethod:: rad_to_sr
+   .. automethod:: toar_to_sr

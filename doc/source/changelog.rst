@@ -3,6 +3,25 @@
 Changelog
 =========
 
+1.6.4 ()
+--------
+
+New
+~~~
+
+- Added kernel NDVI to vegetation indices.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed missing return value in vegetation index clip.
+- Improved checks for ``DataArray`` band coordinate in vegetation index calculations.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added automatic band dimension squeezing in :func:`DataArray.gw.plot.imshow`.
+
 1.6.3 (8 March 2021)
 --------------------
 

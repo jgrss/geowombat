@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quick overview &#8212; GeoWombat 1.6.0 documentation</title>
+    <title>Quick overview &#8212; GeoWombat 1.6.4b documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -13,7 +13,6 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorial" href="tutorial.html" />
@@ -55,14 +54,14 @@
 
 <span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt;</span>
-<span class="go">array([[ 1.07769858, -0.15732185, -0.79755023],</span>
-<span class="go">       [ 0.74284826, -0.037894  , -1.09984907]])</span>
+<span class="go">array([[ 0.27391354, -0.63094266, -2.64432804],</span>
+<span class="go">       [-2.15826998,  0.77563338,  0.34466021]])</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) int64 10 20</span>
 <span class="go">Dimensions without coordinates: y</span>
 
 <span class="gp">In [6]: </span><span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aad8e08e6d8&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7ff071074d68&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -76,7 +75,7 @@
 <span class="gp">   ...: </span>    <span class="k">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
 <span class="gp">   ...: </span>
 <span class="go">&lt;xarray.DataArray (band: 4, y: 403, x: 515)&gt;</span>
-<span class="go">dask.array&lt;open_rasterio-0f9cdbe358a1e037d5754b1f9f2e2af6&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-fe09baa0706d005bf87242adcb6b9f53&lt;this-array&gt;, shape=(4, 403, 515), dtype=uint8, chunksize=(1, 64, 64), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 1 2 3 4</span>
 <span class="go">  * y        (y) float64 2.05e+06 2.05e+06 2.05e+06 ... 2.048e+06 2.048e+06</span>
@@ -91,11 +90,11 @@
 <span class="go">    offsets:            (0.0, 0.0, 0.0, 0.0)</span>
 <span class="go">    AREA_OR_POINT:      Area</span>
 <span class="go">    DataType:           Generic</span>
-<span class="go">    filename:           /export/home/graesserj/code/python/envs/ts3/lib/pytho...</span>
+<span class="go">    filename:           /home/jcgr/Documents/scripts/Python/git_repos/geowomb...</span>
 <span class="go">    resampling:         nearest</span>
 <span class="go">    data_are_separate:  0</span>
 <span class="go">    data_are_stacked:   0</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x2aab42cfc160&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7ff071515160&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -204,7 +203,7 @@
       &copy;2020-2021, GeoWombat.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

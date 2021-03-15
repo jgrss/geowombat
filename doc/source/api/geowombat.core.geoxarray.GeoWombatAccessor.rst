@@ -17,6 +17,7 @@ GeoWombat DataArray (DataArray.gw)
    .. automethod:: evi2
    .. automethod:: extract
    .. automethod:: imshow
+   .. automethod:: kndvi
    .. automethod:: mask
    .. automethod:: match_data
    .. automethod:: moving

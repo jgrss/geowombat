@@ -1,9 +1,9 @@
-evi2
-====
+kndvi
+=====
 
 .. currentmodule:: geowombat
 
-.. autofunction:: evi2
+.. autofunction:: kndvi
 
 .. bibliography:: references_vi.bib
     :cited:
