@@ -105,7 +105,7 @@ class Plotting(object):
                                   **kwargs)
 
         else:
-            plot_data.plot.imshow(**kwargs)
+            plot_data.squeeze().plot.imshow(**kwargs)
 
         ax.xaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
         ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
