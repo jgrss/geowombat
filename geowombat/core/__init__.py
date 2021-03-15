@@ -39,6 +39,7 @@ evi = VegetationIndices().evi
 evi2 = VegetationIndices().evi2
 nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
+kndvi = VegetationIndices().kndvi
 wi = VegetationIndices().wi
 tasseled_cap = TasseledCap().tasseled_cap
 
@@ -74,5 +75,6 @@ __all__ = ['apply',
            'evi2',
            'nbr',
            'ndvi',
+           'kndvi',
            'wi',
            'tasseled_cap']
