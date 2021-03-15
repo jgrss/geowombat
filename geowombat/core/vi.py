@@ -101,7 +101,7 @@ class BandMath(object):
 
         new_attrs = data.attrs.copy()
 
-        new_attrs['nodatavals'] = (nodata)
+        new_attrs['nodatavals'] = (nodata,)
         new_attrs['scales'] = (1.0,)
         new_attrs['offsets'] = (0.0,)
         new_attrs['pre-scaling'] = scale_factor
@@ -109,9 +109,9 @@ class BandMath(object):
         new_attrs['vi'] = new_name
         new_attrs['drange'] = (clip_min, clip_max)
 
-        result.clip(min=clip_min, max=clip_max)
+        result = result.clip(min=clip_min, max=clip_max)
 
-        if 'time' in result.coords:
+        if result.gw.has_time_coord:
 
             if band_variable == 'wavelength':
                 result = result.assign_coords(wavelength=new_name)
@@ -125,12 +125,18 @@ class BandMath(object):
 
         else:
 
-            result = result.assign_coords(coords={band_variable: new_name})
-            result = result.expand_dims(dim='band')
+            if result.gw.has_band_coord and result.gw.has_band_dim:
+                result = result.assign_coords(coords={band_variable: [new_name]})
+            else:
+                result = result.assign_coords(coords={band_variable: new_name})
 
-        result = result.assign_attrs(**new_attrs)
+            if not result.gw.has_band_dim:
+                result = result.expand_dims(dim='band')
 
-        return result
+            # Ensure expected order
+            result = result.transpose('band', 'y', 'x')
+
+        return result.assign_attrs(**new_attrs)
 
     def norm_diff_math(self, data, b1, b2, name, sensor, nodata=None, mask=False, scale_factor=1.0):
 
@@ -310,6 +316,29 @@ class BandMath(object):
 
         return self.norm_diff_math(data, red, nir, 'ndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
+    def kndvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+
+        """
+        kernel Normalized difference vegetation index
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
+            nir = 'nir'
+            red = 'red'
+        else:
+            nir = wavelengths[sensor].nir
+            red = wavelengths[sensor].red
+
+        result = self.norm_diff_math(data, red, nir, 'kndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        result = xr.ufuncs.tanh(result**2)
+
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'kndvi', mask, -1, 1, scale_factor, sensor)
+
     def wi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
         """
@@ -356,6 +385,7 @@ def linear_transform(data, bands, scale, offset):
     Equation:
 
         .. math::
+
             y = scale \times band + offset
 
     Returns:
@@ -530,6 +560,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
+
                 {norm}_{diff} = \frac{b2 - b1}{b2 + b1}
 
         Returns:
@@ -637,6 +668,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
                 EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}
 
+        Reference:
+            See :cite:`jiang_etal_2008`
+
         Returns:
 
             ``xarray.DataArray``:
@@ -669,6 +703,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
+
                 NBR = \frac{NIR - SWIR2}{NIR + SWIR2}
 
         Returns:
@@ -703,6 +738,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
         Equation:
 
             .. math::
+
                 NDVI = \frac{NIR - red}{NIR + red}
 
         Returns:
@@ -721,6 +757,44 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor = data.gw.scale_factor
 
         return self.ndvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+
+    def kndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the kernel normalized difference vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                kNDVI = tanh({NDVI}^2)
+
+        Reference:
+            See :cite:`camps-valls_etal_2021`
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
+        """
+
+        sensor = self.check_sensor(data, sensor)
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        return self.kndvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def wi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -745,6 +819,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
                 \atop
                 1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }
                 }
+
+        Reference:
+            See :cite:`lehmann_etal_2013`
 
         Returns:
 

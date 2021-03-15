@@ -8,6 +8,7 @@ from . import evi as gw_evi
 from . import evi2 as gw_evi2
 from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
+from . import kndvi as gw_kndvi
 from . import wi as gw_wi
 from . import tasseled_cap as gw_tasseled_cap
 from . import transform_crs as _transform_crs
@@ -1500,6 +1501,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return gw_ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+
+    def kndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the kernel normalized difference vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                kNDVI = tanh({NDVI}^2)
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
+        """
+
+        return gw_kndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def wi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
