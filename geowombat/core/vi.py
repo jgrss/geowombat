@@ -111,29 +111,18 @@ class BandMath(object):
 
         result = result.clip(min=clip_min, max=clip_max)
 
-        if result.gw.has_time_coord:
+        if result.gw.has_band_coord and result.gw.has_band_dim:
+            result = result.assign_coords(coords={band_variable: [new_name]})
+        else:
+            result = result.assign_coords(coords={band_variable: new_name})
 
-            if band_variable == 'wavelength':
-                result = result.assign_coords(wavelength=new_name)
-            else:
-                result = result.assign_coords(band=new_name)
-
+        if not result.gw.has_band_dim:
             result = result.expand_dims(dim=band_variable)
 
-            # Ensure expected order
+        # Ensure expected order
+        if result.gw.has_time_coord:
             result = result.transpose('time', 'band', 'y', 'x')
-
         else:
-
-            if result.gw.has_band_coord and result.gw.has_band_dim:
-                result = result.assign_coords(coords={band_variable: [new_name]})
-            else:
-                result = result.assign_coords(coords={band_variable: new_name})
-
-            if not result.gw.has_band_dim:
-                result = result.expand_dims(dim='band')
-
-            # Ensure expected order
             result = result.transpose('band', 'y', 'x')
 
         return result.assign_attrs(**new_attrs)
