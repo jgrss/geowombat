@@ -3,8 +3,8 @@
 Changelog
 =========
 
-1.6.4 ()
---------
+1.6.4 (16 March 2021)
+---------------------
 
 New
 ~~~
@@ -15,14 +15,14 @@ Bug fixes
 ~~~~~~~~~
 
 - Fixed ``has_band_dim`` and ``has_time_dim`` property methods.
-    - Now use ``xarray.DataArray.dims`` to check for existing dimensions.
+    - Now uses ``xarray.DataArray.dims`` to check for existing dimensions.
 - Fixed missing return value in vegetation index clip.
 - Improved checks for ``DataArray`` band coordinate in vegetation index calculations.
 
 Enhancements
 ~~~~~~~~~~~~
 
-- Added automatic band dimension squeezing in :func:`DataArray.gw.plot.imshow`.
+- Added automatic band dimension squeezing in :func:`DataArray.gw.imshow`.
 
 1.6.3 (8 March 2021)
 --------------------
