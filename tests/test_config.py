@@ -3,6 +3,8 @@ import unittest
 import geowombat as gw
 from geowombat.data import l8_224078_20200518
 
+from testfixtures import LogCapture
+
 
 class TestConfig(unittest.TestCase):
 
@@ -63,6 +65,18 @@ class TestConfig(unittest.TestCase):
 
         with gw.open(l8_224078_20200518) as src:
             self.assertFalse(src.gw.config['with_config'])
+
+    def test_warnings_ignore(self):
+
+        with LogCapture() as log:
+
+            with gw.config.update(sensor='l7', ignore_warnings=True):
+
+                with gw.open(l8_224078_20200518) as src:
+                    pass
+
+            self.assertNotIn(('geowombat.backends.xarray_', 'WARNING', "  The new bands, ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'], do not match the sensor bands, [1, 2, 3]."),
+                             log)
 
 
 if __name__ == '__main__':

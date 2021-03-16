@@ -16,10 +16,50 @@ class TestOpen(unittest.TestCase):
         with gw.open(l8_224078_20200518) as src:
             self.assertEqual(src.gw.nbands, 3)
 
+    def test_has_band_dim(self):
+
+        with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(src.gw.has_band_dim)
+
+    def test_has_band_coord(self):
+
+        with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(src.gw.has_band_coord)
+
+    def test_has_band(self):
+
+        with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(src.gw.has_band)
+
+    def test_has_no_band_coord(self):
+
+        with gw.open(l8_224078_20200518) as src:
+            self.assertFalse(src.drop_vars('band').gw.has_band_coord)
+
     def test_open_multiple(self):
 
         with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
             self.assertEqual(src.gw.ntime, 2)
+
+    def test_has_time_dim(self):
+
+        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+            self.assertTrue(src.gw.has_time_dim)
+
+    def test_has_time_coord(self):
+
+        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+            self.assertTrue(src.gw.has_time_coord)
+
+    def test_has_time(self):
+
+        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+            self.assertTrue(src.gw.has_time)
+
+    def test_has_no_time_coord(self):
+
+        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+            self.assertFalse(src.drop_vars('time').gw.has_time_coord)
 
     def test_open_path(self):
 
@@ -85,6 +125,15 @@ class TestOpen(unittest.TestCase):
 
         with gw.open(l8_224078_20200518) as src, rio.open(l8_224078_20200518) as rsrc:
             self.assertEqual(src.gw.ncols, rsrc.width)
+
+    def test_transform(self):
+
+        with gw.open(l8_224078_20200518) as src:
+
+            self.assertEqual('epsg:4326', src.gw.transform_crs(dst_crs=4326,
+                                                               dst_width=src.gw.ncols,
+                                                               dst_height=src.gw.nrows,
+                                                               coords_only=True).crs.to_string().lower())
 
 
 if __name__ == '__main__':
