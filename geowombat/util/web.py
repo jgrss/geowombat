@@ -11,7 +11,7 @@ import logging
 import concurrent.futures
 
 from ..handler import add_handler
-from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker, DOS
+from ..radiometry import BRDF, LinearAdjustments, RadTransforms, landsat_pixel_angles, sentinel_pixel_angles, QAMasker, DOS, SixS
 from ..radiometry.angles import estimate_cloud_shadows
 from ..core.properties import get_sensor_info
 from ..core import ndarray_to_xarray
@@ -936,6 +936,7 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         br = BRDF()
         la = LinearAdjustments()
         dos = DOS()
+        sixs = SixS()
 
         main_path = Path(outdir)
 
@@ -1435,9 +1436,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                     isinstance(earthdata_key_file, str) and \
                                                     isinstance(earthdata_code_file, str):
 
-                                                altitude = dos.get_mean_altitude(data,
-                                                                                 srtm_outdir,
-                                                                                 n_jobs=n_jobs)
+                                                altitude = sixs.get_mean_altitude(data,
+                                                                                  srtm_outdir,
+                                                                                  n_jobs=n_jobs)
 
                                                 altitude *= 0.0001
 
