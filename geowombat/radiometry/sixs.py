@@ -137,31 +137,14 @@ class Altitude(object):
         return mean_elev
 
 
-class SixS(Altitude):
-
-    """
-    A class to handle loading, downloading and interpolating
-    of LUTs (look up tables) used by the 6S emulator.
-
-    Args:
-        sensor (str): The sensor to adjust.
-        rad_scale (Optional[float]): The radiance scale factor. Scaled values should be in the range [0,1000].
-        angle_factor (Optional[float]): The angle scale factor.
-
-    Example:
-        >>> sixs = SixS('l5', verbose=1)
-        >>>
-        >>> with gw.config.update(sensor='l7'):
-        >>>     with gw.open('image.tif') as src, gw.open('solar_za') as sza:
-        >>>         sixs.rad_to_sr(src, 'blue', sza, doy, h2o=1.0, o3=0.4, aot=0.3)
-    """
+class SixSMixin(object):
 
     @staticmethod
     def _load(sensor, wavelength, interp_method, from_toar=False):
 
         if from_toar:
             raise NotImplementedError('Lookup tables from top of atmosphere reflectance are not supported.')
-            lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
+            # lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
         else:
             lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
 
@@ -203,6 +186,26 @@ class SixS(Altitude):
         y = xa * rad - xb
 
         return y / (1.0 + xc * y)
+
+
+class SixS(Altitude, SixSMixin):
+
+    """
+    A class to handle loading, downloading and interpolating
+    of LUTs (look up tables) used by the 6S emulator.
+
+    Args:
+        sensor (str): The sensor to adjust.
+        rad_scale (Optional[float]): The radiance scale factor. Scaled values should be in the range [0,1000].
+        angle_factor (Optional[float]): The angle scale factor.
+
+    Example:
+        >>> sixs = SixS('l5', verbose=1)
+        >>>
+        >>> with gw.config.update(sensor='l7'):
+        >>>     with gw.open('image.tif') as src, gw.open('solar_za') as sza:
+        >>>         sixs.rad_to_sr(src, 'blue', sza, doy, h2o=1.0, o3=0.4, aot=0.3)
+    """
 
     @staticmethod
     def _toar_to_sr_from_coeffs(toar, t_g, p_alpha, s, t_s, t_v):
@@ -432,7 +435,7 @@ class SixS(Altitude):
         return sr.assign_attrs(**attrs)
 
 
-class AOT(object):
+class AOT(SixSMixin):
 
     def get_optimized_aot(self,
                           blue_rad_dark,
