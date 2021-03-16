@@ -848,12 +848,12 @@ class DataProperties(object):
     @property
     def has_band_dim(self):
         """Check whether the DataArray has a band dimension"""
-        return True if self.ndims == 3 else False
+        return True if 'band' in self._obj.dims else False
 
     @property
     def has_band(self):
         """Check whether the DataArray has a band attribute"""
-        return True if ('band' in self._obj.coords) and (self.ndims == 3) else False
+        return self.has_band_coord and self.has_band_dim
 
     @property
     def has_time_coord(self):
@@ -863,12 +863,12 @@ class DataProperties(object):
     @property
     def has_time_dim(self):
         """Check whether the DataArray has a time dimension"""
-        return True if self.ndims == 4 else False
+        return True if 'time' in self._obj.dims else False
 
     @property
     def has_time(self):
         """Check whether the DataArray has a time attribute"""
-        return True if ('time' in self._obj.coords) and (self.ndims == 4) else False
+        return self.has_time_coord and self.has_time_dim
 
     @property
     def geodataframe(self):
