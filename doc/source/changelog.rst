@@ -14,6 +14,8 @@ New
 Bug fixes
 ~~~~~~~~~
 
+- Fixed ``has_band_dim`` and ``has_time_dim`` property methods.
+    - Now use ``xarray.DataArray.dims`` to check for existing dimensions.
 - Fixed missing return value in vegetation index clip.
 - Improved checks for ``DataArray`` band coordinate in vegetation index calculations.
 
