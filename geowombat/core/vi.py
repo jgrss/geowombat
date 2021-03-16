@@ -120,7 +120,7 @@ class BandMath(object):
             result = result.expand_dims(dim=band_variable)
 
         # Ensure expected order
-        if result.gw.has_time_coord:
+        if result.gw.has_time:
             result = result.transpose('time', 'band', 'y', 'x')
         else:
             result = result.transpose('band', 'y', 'x')
