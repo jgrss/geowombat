@@ -192,6 +192,9 @@ Install GeoWombat with all extra libraries::
 Test the installation
 ---------------------
 
+1. Test the import
+##################
+
 If GeoWombat installed correctly, you should be able to run the following command::
 
     python -c "import geowombat as gw;print(gw.__version__)"
@@ -202,6 +205,22 @@ or in Python:
 
     import geowombat as gw
     print(gw.__version__)
+
+2. Unittests
+############
+
+Install `testfixtures` (used to test logging outputs in `test_config.py`)::
+
+    pip install testfixtures
+
+Run all unittests inside GeoWombat's `/tests` directory::
+
+    cd geowombat/tests
+    python -m unittest
+
+Run an individual test::
+
+    python test_open.py
     
 An example of a full installation on Ubuntu with Conda
 ------------------------------------------------------
