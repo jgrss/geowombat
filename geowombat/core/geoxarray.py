@@ -587,6 +587,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       dst_width=None,
                       dst_height=None,
                       dst_bounds=None,
+                      coords_only=False,
                       resampling='nearest',
                       warp_mem_limit=512,
                       num_threads=1):
@@ -601,6 +602,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
             dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
                 or as a tuple of (left, bottom, right, top).
+            coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
+                the array is not warped and the size is unchanged. It also avoids in-memory computations.
             resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
             warp_mem_lim    it (Optional[int]): The warp memory limit.
@@ -622,6 +625,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                               dst_width=dst_width,
                               dst_height=dst_height,
                               dst_bounds=dst_bounds,
+                              coords_only=coords_only,
                               resampling=resampling,
                               warp_mem_limit=warp_mem_limit,
                               num_threads=num_threads)
