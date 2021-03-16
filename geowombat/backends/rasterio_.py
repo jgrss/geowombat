@@ -377,24 +377,32 @@ def check_crs(crs):
         ``rasterio.crs.CRS``
     """
 
-    if isinstance(crs, pyproj.crs.crs.CRS):
-        dst_crs = CRS.from_proj4(crs.to_proj4())
-    elif isinstance(crs, CRS):
-        dst_crs = crs
-    elif isinstance(crs, int):
-        dst_crs = CRS.from_epsg(crs)
-    elif isinstance(crs, dict):
-        dst_crs = CRS.from_dict(crs)
-    elif isinstance(crs, str):
+    import warnings
 
-        if crs.startswith('+proj'):
-            dst_crs = CRS.from_proj4(crs)
-        else:
-            dst_crs = CRS.from_string(crs)
+    with rio.Env():
 
-    else:
-        logger.exception('  The CRS was not understood.')
-        raise TypeError
+        with warnings.catch_warnings():
+
+            warnings.simplefilter('ignore', UserWarning)
+
+            if isinstance(crs, pyproj.crs.crs.CRS):
+                dst_crs = CRS.from_proj4(crs.to_proj4())
+            elif isinstance(crs, CRS):
+                dst_crs = crs
+            elif isinstance(crs, int):
+                dst_crs = CRS.from_epsg(crs)
+            elif isinstance(crs, dict):
+                dst_crs = CRS.from_dict(crs)
+            elif isinstance(crs, str):
+
+                if crs.startswith('+proj'):
+                    dst_crs = CRS.from_proj4(crs)
+                else:
+                    dst_crs = CRS.from_string(crs.replace('+init=', ''))
+
+            else:
+                logger.exception('  The CRS was not understood.')
+                raise TypeError
 
     return dst_crs
 
