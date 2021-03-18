@@ -229,7 +229,12 @@ class Converters(object):
     @staticmethod
     def ndarray_to_xarray(data,
                           numpy_data,
-                          band_names):
+                          band_names,
+                          row_chunks=None,
+                          col_chunks=None,
+                          y=None,
+                          x=None,
+                          attrs=None):
 
         """
         Converts a NumPy array to an Xarray DataArray
@@ -238,6 +243,11 @@ class Converters(object):
             data (DataArray): The DataArray with attribute information.
             numpy_data (ndarray): The ndarray to convert.
             band_names (1d array-like): The output band names.
+            row_chunks (Optional[int]): Overrides ``data.gw.row_chunks``.
+            col_chunks (Optional[int]): Overrides ``data.gw.col_chunks``.
+            y (Optional[1d array]): Overrides ``data.y``.
+            x (Optional[1d array]): Overrides ``data.x``.
+            attrs (Optional[dict]): Overrides ``data.attrs``.
 
         Returns:
             ``xarray.DataArray``
@@ -246,13 +256,19 @@ class Converters(object):
         if len(numpy_data.shape) == 2:
             numpy_data = numpy_data[np.newaxis, :, :]
 
+        data_row_chunks = row_chunks if isinstance(row_chunks, int) else data.gw.row_chunks
+        data_col_chunks = col_chunks if isinstance(col_chunks, int) else data.gw.col_chunks
+        data_y = y if isinstance(y, np.ndarray) else data.y
+        data_x = x if isinstance(x, np.ndarray) else data.x
+        data_attrs = attrs if isinstance(attrs, dict) else data.attrs
+
         return xr.DataArray(da.from_array(numpy_data,
-                                          chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
+                                          chunks=(1, data_row_chunks, data_col_chunks)),
                             dims=('band', 'y', 'x'),
                             coords={'band': band_names,
-                                    'y': data.y,
-                                    'x': data.x},
-                            attrs=data.attrs)
+                                    'y': data_y,
+                                    'x': data_x},
+                            attrs=data_attrs)
 
     @staticmethod
     def xarray_to_xdataset(data_array,
