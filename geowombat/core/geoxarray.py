@@ -259,6 +259,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Checks whether the data are stacked"""
         return bool(self._obj.attrs['data_are_stacked']) if 'data_are_stacked' in self._obj.attrs else False
 
+    def read(self, band=None, **kwargs):
+        return self._obj.sel(band=band).gw.compute(**kwargs)
+
     def compute(self, **kwargs):
 
         if not self._obj.chunks:
