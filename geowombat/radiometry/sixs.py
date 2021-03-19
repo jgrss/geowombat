@@ -402,6 +402,8 @@ class SixS(Altitude, SixSMixin):
 
         if isinstance(aot, xr.DataArray):
             aot = aot.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+        else:
+            aot = np.zeros((data.gw.nrows, data.gw.ncols), dtype='float64')+aot
 
         sza *= angle_factor
 
