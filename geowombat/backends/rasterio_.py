@@ -1017,7 +1017,7 @@ def transform_crs(data_src,
 
         dst_res = (cellx, celly)
 
-    transformed_array = list()
+    transformed_array = []
 
     for band in range(0, data_src.gw.nbands):
 
