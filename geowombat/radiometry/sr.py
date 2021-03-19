@@ -153,7 +153,7 @@ class MetaData(object):
                         'LANDSAT_7': 'l7',
                         'LANDSAT_8': 'l8'}
 
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired sza')
+        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired sza left bottom right top')
 
         df = pd.read_csv(meta_file, sep='=')
 
@@ -168,6 +168,16 @@ class MetaData(object):
         a_l = _format_coeff(df, sensor, 'RADIANCE_ADD_BAND_')
         m_p = _format_coeff(df, sensor, 'REFLECTANCE_MULT_BAND_')
         a_p = _format_coeff(df, sensor, 'REFLECTANCE_ADD_BAND_')
+
+        ux_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_X_PRODUCT')].values)
+        lx_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_X_PRODUCT')].values)
+        uy_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_Y_PRODUCT')].values)
+        ly_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_Y_PRODUCT')].values)
+
+        left = float(ux_dict['CORNER_UL_PROJECTION_X_PRODUCT'])
+        bottom = float(ly_dict['CORNER_LR_PROJECTION_Y_PRODUCT'])
+        right = float(lx_dict['CORNER_LR_PROJECTION_X_PRODUCT'])
+        top = float(uy_dict['CORNER_UL_PROJECTION_Y_PRODUCT'])
 
         solar_elev = dict(df[df.iloc[:, 0].str.startswith('SUN_ELEVATION')].values)
         solar_elev = solar_elev['SUN_ELEVATION'].replace('"', '')
@@ -193,7 +203,11 @@ class MetaData(object):
                           m_p=m_p,
                           a_p=a_p,
                           date_acquired=date_acquired,
-                          sza=solar_zenith)
+                          sza=solar_zenith,
+                          left=left,
+                          bottom=bottom,
+                          right=right,
+                          top=top)
 
     @staticmethod
     def get_sentinel_coefficients(meta_file):
