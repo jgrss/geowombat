@@ -716,7 +716,7 @@ def landsat_pixel_angles(angles_file,
                 # Adjust Landsat images in the Southern hemisphere
                 if str(epsg).startswith('326') and (ref_extent.top < 0):
 
-                    transform = Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top-10_000_000.0)
+                    transform = Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top+10_000_000.0)
                     crs = CRS.from_epsg(f'327{str(epsg)[3:]}')
 
                 else:
