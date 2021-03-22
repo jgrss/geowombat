@@ -6,6 +6,7 @@ from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
+from . import gcvi as gw_gcvi
 from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import kndvi as gw_kndvi
@@ -1456,6 +1457,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+
+    def gcvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the green chlorophyll vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                GCVI = \frac{NIR}{green} - 1
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
+        """
+
+        return gw_gcvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def nbr(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 

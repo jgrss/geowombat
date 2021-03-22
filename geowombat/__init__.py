@@ -22,6 +22,7 @@ from .core import norm_diff
 from .core import avi
 from .core import evi
 from .core import evi2
+from .core import kndvi
 from .core import nbr
 from .core import ndvi
 from .core import wi
@@ -58,6 +59,7 @@ __all__ = ['config',
            'avi',
            'evi',
            'evi2',
+           'kndvi',
            'nbr',
            'ndvi',
            'wi',

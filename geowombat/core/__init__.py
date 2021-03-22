@@ -36,7 +36,8 @@ moving = MapProcesses().moving
 norm_diff = VegetationIndices().norm_diff
 avi = VegetationIndices().avi
 evi = VegetationIndices().evi
-evi2 = VegetationIndices().evi2
+evi2 = VegetationIndices().gcvi
+gcvi = VegetationIndices().evi2
 nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
 kndvi = VegetationIndices().kndvi
@@ -73,6 +74,7 @@ __all__ = ['apply',
            'avi',
            'evi',
            'evi2',
+           'gcvi',
            'nbr',
            'ndvi',
            'kndvi',
