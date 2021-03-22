@@ -712,7 +712,6 @@ def landsat_pixel_angles(angles_file,
                 profile = src.profile.copy()
 
                 epsg = src.crs.to_epsg()
-                # CRS.from_string(src.crs.replace('+init=', '')).to_epsg()
 
                 # Adjust Landsat images in the Southern hemisphere
                 if str(epsg).startswith('326') and (ref_extent.top < 0):
@@ -740,7 +739,8 @@ def landsat_pixel_angles(angles_file,
 
                 with rio.open(out_angle, mode='w', **profile) as dst:
 
-
+                    dst.write(src.read(1),
+                              indexes=1)
 
                     # dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
                     #
