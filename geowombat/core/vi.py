@@ -36,17 +36,21 @@ class BandMath(object):
     @staticmethod
     def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
 
-        attrs = data.attrs
+        attrs = data.attrs.copy()
 
         if band_variable == 'wavelength':
-            band_data = data.where(data != nodata).sel(wavelength=names) * scale_factor
+
+            band_data = data.where((data != nodata) & (data != np.inf) & (data != -np.inf))\
+                            .sel(wavelength=names) * scale_factor
         else:
-            band_data = data.where(data != nodata).sel(band=names) * scale_factor
 
-        band_data = band_data.assign_coords(coords={band_variable: new_names})
-        band_data = band_data.assign_attrs(**attrs)
+            band_data = data.where((data != nodata) & (data != np.inf) & (data != -np.inf))\
+                            .sel(band=names) * scale_factor
 
-        return band_data
+        return band_data\
+                    .fillna(nodata)\
+                    .assign_coords(coords={band_variable: new_names})\
+                    .assign_attrs(**attrs)
 
     @staticmethod
     def mask_and_assign(data,
