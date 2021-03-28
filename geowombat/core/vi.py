@@ -36,15 +36,21 @@ class BandMath(object):
     @staticmethod
     def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
 
+        # Maximum of 64-bit to clip infs
+        clip_range = 2**64
+
         attrs = data.attrs.copy()
 
         if band_variable == 'wavelength':
 
-            band_data = data.where((data != nodata) & (data != np.inf) & (data != -np.inf))\
+            band_data = data.clip(-clip_range, clip_range)\
+                            .where(lambda x: (x != nodata) & (x > -clip_range) & (x < clip_range))\
                             .sel(wavelength=names) * scale_factor
+
         else:
 
-            band_data = data.where((data != nodata) & (data != np.inf) & (data != -np.inf))\
+            band_data = data.clip(-clip_range, clip_range)\
+                            .where(lambda x: (x != nodata) & (x > -clip_range) & (x < clip_range))\
                             .sel(band=names) * scale_factor
 
         return band_data\
