@@ -47,7 +47,7 @@ class BandMath(object):
                             .where(lambda x: (x.wavelength != nodata) &
                                              (x.wavelength != -clip_range) &
                                              (x.wavelength != clip_range))\
-                            .sel(wavelength=names) * scale_factor
+                            .sel(wavelength=names)
 
         else:
 
@@ -55,9 +55,9 @@ class BandMath(object):
                             .where(lambda x: (x.band != nodata) &
                                              (x.band != -clip_range) &
                                              (x.band != clip_range))\
-                            .sel(band=names) * scale_factor
+                            .sel(band=names)
 
-        return band_data\
+        return (band_data.astype('float64') * scale_factor)\
                     .fillna(nodata)\
                     .assign_coords(coords={band_variable: new_names})\
                     .assign_attrs(**attrs)
