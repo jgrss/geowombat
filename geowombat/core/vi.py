@@ -45,16 +45,16 @@ class BandMath(object):
 
             band_data = data.clip(-clip_range, clip_range)\
                             .where(lambda x: (x.wavelength != nodata) &
-                                             (x.wavelength > -clip_range) &
-                                             (x.wavelength < clip_range))\
+                                             (x.wavelength != -clip_range) &
+                                             (x.wavelength != clip_range))\
                             .sel(wavelength=names) * scale_factor
 
         else:
 
             band_data = data.clip(-clip_range, clip_range)\
                             .where(lambda x: (x.band != nodata) &
-                                             (x.band > -clip_range) &
-                                             (x.band < clip_range))\
+                                             (x.band != -clip_range) &
+                                             (x.band != clip_range))\
                             .sel(band=names) * scale_factor
 
         return band_data\
