@@ -322,17 +322,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             raise NameError('The comparison operation is not supported.')
 
         if op == 'lt':
-            out = self._obj.where(lambda x: x.band < b)
+            out = self._obj.where(self._obj < b)
         elif op == 'le':
-            out = self._obj.where(lambda x: x.band <= b)
+            out = self._obj.where(self._obj <= b)
         elif op == 'gt':
-            out = self._obj.where(lambda x: x.band > b)
+            out = self._obj.where(self._obj > b)
         elif op == 'ge':
-            out = self._obj.where(lambda x: x.band >= b)
+            out = self._obj.where(self._obj >= b)
         elif op == 'eq':
-            out = self._obj.where(lambda x: x.band == b)
+            out = self._obj.where(self._obj == b)
         elif op == 'ne':
-            out = self._obj.where(lambda x: x.band != b)
+            out = self._obj.where(self._obj != b)
 
         if return_binary:
             out = xr.where(out > 0, 1, np.nan)
