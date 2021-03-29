@@ -322,22 +322,22 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             raise NameError('The comparison operation is not supported.')
 
         if op == 'lt':
-            out = self._obj.where(self._obj < b)
+            out = self._obj.where(lambda x: x.band < b)
         elif op == 'le':
-            out = self._obj.where(self._obj <= b)
+            out = self._obj.where(lambda x: x.band <= b)
         elif op == 'gt':
-            out = self._obj.where(self._obj > b)
+            out = self._obj.where(lambda x: x.band > b)
         elif op == 'ge':
-            out = self._obj.where(self._obj >= b)
+            out = self._obj.where(lambda x: x.band >= b)
         elif op == 'eq':
-            out = self._obj.where(self._obj == b)
+            out = self._obj.where(lambda x: x.band == b)
         elif op == 'ne':
-            out = self._obj.where(self._obj != b)
+            out = self._obj.where(lambda x: x.band != b)
 
         if return_binary:
             out = xr.where(out > 0, 1, np.nan)
 
-        return out.astype(self._obj.dtype).assign_attrs(**self._obj.attrs.copy())
+        return out.astype(self._obj.dtype.name).assign_attrs(**self._obj.attrs.copy())
 
     def replace(self, to_replace):
 
@@ -1274,7 +1274,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         attrs = self._obj.attrs.copy()
 
         # Create a 'no data' mask
-        mask = self._obj.where(self._obj != src_nodata)\
+        mask = self._obj.where(lambda x: x.band != src_nodata)\
                             .count(dim='band')\
                             .astype('uint8')
 
