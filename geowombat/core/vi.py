@@ -43,7 +43,8 @@ class BandMath(object):
 
         if band_variable == 'wavelength':
 
-            band_data = data.clip(-clip_range, clip_range)\
+            band_data = data.astype('float64')\
+                            .clip(-clip_range, clip_range)\
                             .where(lambda x: (x.wavelength != nodata) &
                                              (x.wavelength != -clip_range) &
                                              (x.wavelength != clip_range))\
@@ -51,7 +52,8 @@ class BandMath(object):
 
         else:
 
-            band_data = data.clip(-clip_range, clip_range)\
+            band_data = data.astype('float64')\
+                            .clip(-clip_range, clip_range)\
                             .where(lambda x: (x.band != nodata) &
                                              (x.band != -clip_range) &
                                              (x.band != clip_range))\
