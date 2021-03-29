@@ -58,7 +58,6 @@ class BandMath(object):
                             .sel(band=names)
 
         return (band_data.astype('float64') * scale_factor)\
-                    .fillna(nodata)\
                     .assign_coords(coords={band_variable: new_names})\
                     .assign_attrs(**attrs)
 
