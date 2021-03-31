@@ -402,25 +402,27 @@ class Converters(object):
                 logger.exception('  No geometry intersects the user-provided mask.')
                 raise LookupError
 
-        # Convert polygons to points
-        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
-
-            if verbose > 0:
-                logger.info('  Converting polygons to points ...')
-
-            df = self.polygons_to_points(data,
-                                         df,
-                                         frac=frac,
-                                         min_frac_area=min_frac_area,
-                                         all_touched=all_touched,
-                                         id_column=id_column,
-                                         n_jobs=n_jobs,
-                                         **kwargs)
-
         if not df.empty:
 
-            # Ensure a unique index
-            df.index = list(range(0, df.shape[0]))
+            # Convert polygons to points
+            if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
+    
+                if verbose > 0:
+                    logger.info('  Converting polygons to points ...')
+
+                df = self.polygons_to_points(data,
+                                             df,
+                                             frac=frac,
+                                             min_frac_area=min_frac_area,
+                                             all_touched=all_touched,
+                                             id_column=id_column,
+                                             n_jobs=n_jobs,
+                                             **kwargs)
+
+            if not df.empty:
+
+                # Ensure a unique index
+                df.index = list(range(0, df.shape[0]))
 
         return df
 
