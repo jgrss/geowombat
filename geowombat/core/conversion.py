@@ -406,7 +406,7 @@ class Converters(object):
 
             # Convert polygons to points
             if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
-    
+
                 if verbose > 0:
                     logger.info('  Converting polygons to points ...')
 
