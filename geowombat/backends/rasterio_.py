@@ -5,6 +5,8 @@ from collections import namedtuple
 import threading
 import logging
 
+import affine
+
 import geowombat as gw
 
 import numpy as np
@@ -1016,6 +1018,9 @@ def transform_crs(data_src,
         celly = (dst_bounds.top - dst_bounds.bottom) / dst_height
 
         dst_res = (cellx, celly)
+
+    # Ensure the final transform is set based on adjusted bounds
+    dst_transform = affine.Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
     transformed_array = []
 
