@@ -18,7 +18,7 @@ The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/
         print(src.resampling)
         print(src.res)
 
-To transform the CRS, use the context manager. In this example, an EPSG code is used.
+To transform the CRS, use the context manager. In this example, a proj4 code is used.
 
 .. ipython:: python
 
