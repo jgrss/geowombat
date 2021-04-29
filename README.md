@@ -1,4 +1,4 @@
-![](data/logo.png)
+![](data/logo3.png)
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
@@ -6,7 +6,7 @@
 
 ### GeoWombat: Utilities for geospatial data
 
-Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale). 
+Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
 
 ## Common Remote Sensing Uses
 * Simple read/write for a variety of sensors, including:
