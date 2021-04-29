@@ -3,6 +3,18 @@
 Changelog
 =========
 
+1.6.5 ()
+--------
+
+New
+
+- Added :func:`DataArray.gw.read` method.
+
+Bug fixes
+~~~~~~~~~
+
+- Added check for AOT object type to generate a NumPy array when a float is given.
+
 1.6.4 (16 March 2021)
 ---------------------
 
