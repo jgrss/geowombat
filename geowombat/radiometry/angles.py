@@ -739,7 +739,7 @@ def landsat_pixel_angles(angles_file,
 
                 with rio.open(out_angle, mode='w', **profile) as dst:
 
-                    dst.write(src.read(1),
+                    dst.write(src.read(out_order[band_pos]),
                               indexes=1)
 
                     # dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
