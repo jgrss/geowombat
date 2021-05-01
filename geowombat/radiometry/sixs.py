@@ -72,6 +72,7 @@ class Altitude(object):
                           username=None,
                           key_file=None,
                           code_file=None,
+                          chunks=512,
                           n_jobs=1,
                           delete_downloaded=False):
 
@@ -123,7 +124,7 @@ class Altitude(object):
         else:
             mosaic = True
 
-        with gw.open(zip_paths, mosaic=mosaic) as src:
+        with gw.open(zip_paths, mosaic=mosaic, chunks=chunks) as src:
 
             mean_elev = src.transpose('band', 'y', 'x')\
                                 .mean().data\
