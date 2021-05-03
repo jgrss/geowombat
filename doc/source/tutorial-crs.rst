@@ -23,7 +23,7 @@ The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/
 Transforming a CRS on-the-fly
 -----------------------------
 
-To transform the CRS, use the context manager. In this example, an EPSG code is used.
+To transform the CRS, use the context manager. In this example, a proj4 string is used.
 
 .. ipython:: python
 
@@ -36,11 +36,11 @@ To transform the CRS, use the context manager. In this example, an EPSG code is 
             print(src.resampling)
             print(src.res)
 
-Other formats supported by rasterio, (e.g., PROJ4 strings) can be used.
+Other formats supported by rasterio, (e.g., crs codes) can be used.
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=proj4):
+    with gw.config.update(ref_crs=102008):
         with gw.open(rgbn) as src:
             print(src.transform)
             print(src.crs)
@@ -54,7 +54,7 @@ The resampling algorithm can be specified in the :func:`geowombat.open` function
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=proj4):
+    with gw.config.update(ref_crs=102008):
         with gw.open(rgbn, resampling='cubic') as src:
             print(src.transform)
             print(src.crs)
