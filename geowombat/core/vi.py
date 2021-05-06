@@ -555,14 +555,12 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
         tc_coefficients = self.get_coefficients(data.gw.wavelengths, sensor)
 
         tcap = ((data.where(data != nodata) * scale_factor) * tc_coefficients)\
-            .sum(dim='band')\
-            .fillna(nodata)\
-            .transpose('coeff', 'y', 'x')\
-            .rename({'coeff': 'band'})
+                    .sum(dim='band')\
+                    .fillna(nodata)\
+                    .transpose('coeff', 'y', 'x')\
+                    .rename({'coeff': 'band'})
 
-        tcap.attrs = data.attrs
-
-        return tcap
+        return tcap.astype('float64').assign_attrs(**data.attrs)
 
 
 class VegetationIndices(_PropertyMixin, BandMath):
