@@ -716,6 +716,8 @@ def transform_crs(data_src,
                   dst_width=None,
                   dst_height=None,
                   dst_bounds=None,
+                  src_nodata=None,
+                  dst_nodata=None,
                   coords_only=False,
                   resampling='nearest',
                   warp_mem_limit=512,
@@ -732,6 +734,12 @@ def transform_crs(data_src,
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
             or as a tuple of (left, bottom, right, top).
+        src_nodata (Optional[int | float]): The source nodata value. Pixels with this value will not be used for
+            interpolation. If not set, it will default to the nodata value of the source image if a masked ndarray
+            or rasterio band, if available.
+        dst_nodata (Optional[int | float]): The nodata value used to initialize the destination; it will remain in
+            all areas not covered by the reprojected source. Defaults to the nodata value of the destination
+            image (if set), the value of src_nodata, or 0 (GDAL default).
         coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
             the array is not warped and the size is unchanged. It also avoids in-memory computations.
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
@@ -749,6 +757,8 @@ def transform_crs(data_src,
                                                          dst_width=dst_width,
                                                          dst_height=dst_height,
                                                          dst_bounds=dst_bounds,
+                                                         src_nodata=src_nodata,
+                                                         dst_nodata=dst_nodata,
                                                          coords_only=coords_only,
                                                          resampling=resampling,
                                                          warp_mem_limit=warp_mem_limit,

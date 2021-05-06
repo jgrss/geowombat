@@ -72,6 +72,7 @@ class Altitude(object):
                           username=None,
                           key_file=None,
                           code_file=None,
+                          chunks=512,
                           n_jobs=1,
                           delete_downloaded=False):
 
@@ -123,7 +124,7 @@ class Altitude(object):
         else:
             mosaic = True
 
-        with gw.open(zip_paths, mosaic=mosaic) as src:
+        with gw.open(zip_paths, mosaic=mosaic, chunks=chunks) as src:
 
             mean_elev = src.transpose('band', 'y', 'x')\
                                 .mean().data\
@@ -402,6 +403,8 @@ class SixS(Altitude, SixSMixin):
 
         if isinstance(aot, xr.DataArray):
             aot = aot.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+        else:
+            aot = np.zeros((data.gw.nrows, data.gw.ncols), dtype='float64')+aot
 
         sza *= angle_factor
 

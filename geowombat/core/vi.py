@@ -36,17 +36,25 @@ class BandMath(object):
     @staticmethod
     def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
 
-        attrs = data.attrs
+        attrs = data.attrs.copy()
 
         if band_variable == 'wavelength':
-            band_data = data.where(data != nodata).sel(wavelength=names) * scale_factor
+
+            band_data = data.astype('float64')\
+                            .where(xr.ufuncs.isfinite(data))\
+                            .where(lambda x: x.band != nodata)\
+                            .sel(wavelength=names)
+
         else:
-            band_data = data.where(data != nodata).sel(band=names) * scale_factor
 
-        band_data = band_data.assign_coords(coords={band_variable: new_names})
-        band_data = band_data.assign_attrs(**attrs)
+            band_data = data.astype('float64')\
+                            .where(xr.ufuncs.isfinite(data))\
+                            .where(lambda x: x.band != nodata)\
+                            .sel(band=names)
 
-        return band_data
+        return (band_data.astype('float64') * scale_factor)\
+                    .assign_coords(coords={band_variable: new_names})\
+                    .assign_attrs(**attrs)
 
     @staticmethod
     def mask_and_assign(data,
@@ -264,6 +272,33 @@ class BandMath(object):
                              (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red')))))).fillna(nodata).astype('float64')
 
         return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi2', mask, 0, 1, scale_factor, sensor)
+
+    def gcvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+
+        """
+        green chlorophyll vegetation index
+
+        Returns:
+            ``xarray.DataArray``
+        """
+
+        band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
+
+        if 'nir' in data.coords[band_variable].values.tolist():
+            nir = 'nir'
+            green = 'green'
+        else:
+            nir = wavelengths[sensor].nir
+            green = wavelengths[sensor].green
+
+        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, green], ['nir', 'green'])
+
+        if band_variable == 'wavelength':
+            result = (data.sel(wavelength='nir') / data.sel(wavelength='green')) - 1.0
+        else:
+            result = (data.sel(band='nir') / data.sel(band='green')) - 1.0
+
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'gcvi', mask, -1, 1, scale_factor, sensor)
 
     def nbr_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
@@ -676,6 +711,41 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor = data.gw.scale_factor
 
         return self.evi2_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+
+    def gcvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the green chlorophyll vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+
+                GCVI = \frac{NIR}{green} - 1
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
+        """
+
+        sensor = self.check_sensor(data, sensor)
+
+        if not isinstance(nodata, int) and not isinstance(nodata, float):
+            nodata = data.gw.nodata
+
+        if scale_factor == 1.0:
+            scale_factor = data.gw.scale_factor
+
+        return self.gcvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
 
     def nbr(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 

@@ -6,6 +6,7 @@ from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
 from . import evi as gw_evi
 from . import evi2 as gw_evi2
+from . import gcvi as gw_gcvi
 from . import nbr as gw_nbr
 from . import ndvi as gw_ndvi
 from . import kndvi as gw_kndvi
@@ -259,6 +260,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Checks whether the data are stacked"""
         return bool(self._obj.attrs['data_are_stacked']) if 'data_are_stacked' in self._obj.attrs else False
 
+    def read(self, band=None, **kwargs):
+        return self._obj.sel(band=band).gw.compute(**kwargs)
+
     def compute(self, **kwargs):
 
         if not self._obj.chunks:
@@ -333,7 +337,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if return_binary:
             out = xr.where(out > 0, 1, np.nan)
 
-        return out.astype(self._obj.dtype).assign_attrs(**self._obj.attrs.copy())
+        return out.astype(self._obj.dtype.name).assign_attrs(**self._obj.attrs.copy())
 
     def replace(self, to_replace):
 
@@ -587,6 +591,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                       dst_width=None,
                       dst_height=None,
                       dst_bounds=None,
+                      src_nodata=None,
+                      dst_nodata=None,
                       coords_only=False,
                       resampling='nearest',
                       warp_mem_limit=512,
@@ -602,6 +608,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
             dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
                 or as a tuple of (left, bottom, right, top).
+            src_nodata (Optional[int | float]): The source nodata value. Pixels with this value will not be used for
+                interpolation. If not set, it will default to the nodata value of the source image if a masked ndarray
+                or rasterio band, if available.
+            dst_nodata (Optional[int | float]): The nodata value used to initialize the destination; it will remain in
+                all areas not covered by the reprojected source. Defaults to the nodata value of the destination
+                image (if set), the value of src_nodata, or 0 (GDAL default).
             coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
                 the array is not warped and the size is unchanged. It also avoids in-memory computations.
             resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
@@ -625,6 +637,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                               dst_width=dst_width,
                               dst_height=dst_height,
                               dst_bounds=dst_bounds,
+                              src_nodata=src_nodata,
+                              dst_nodata=dst_nodata,
                               coords_only=coords_only,
                               resampling=resampling,
                               warp_mem_limit=warp_mem_limit,
@@ -1270,7 +1284,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         attrs = self._obj.attrs.copy()
 
         # Create a 'no data' mask
-        mask = self._obj.where(self._obj != src_nodata)\
+        mask = self._obj.where(lambda x: x.band != src_nodata)\
                             .count(dim='band')\
                             .astype('uint8')
 
@@ -1453,6 +1467,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+
+    def gcvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+
+        r"""
+        Calculates the green chlorophyll vegetation index
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
+            scale_factor (Optional[float]): A scale factor to apply to the data.
+
+        Equation:
+
+            .. math::
+                GCVI = \frac{NIR}{green} - 1
+
+        Returns:
+
+            ``xarray.DataArray``:
+
+                Data range: -1 to 1
+        """
+
+        return gw_gcvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
 
     def nbr(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 

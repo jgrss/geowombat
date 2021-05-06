@@ -11,7 +11,8 @@ from ..handler import add_handler
 import numpy as np
 import xarray as xr
 import rasterio as rio
-from rasterio.warp import reproject, Resampling
+from rasterio.crs import CRS
+# from rasterio.warp import reproject, Resampling
 from affine import Affine
 import xml.etree.ElementTree as ET
 
@@ -570,7 +571,7 @@ def sentinel_pixel_angles(metadata,
 
 def landsat_pixel_angles(angles_file,
                          ref_file,
-                         outdir,
+                         out_dir,
                          sensor,
                          l57_angles_path=None,
                          l8_angles_path=None,
@@ -585,7 +586,7 @@ def landsat_pixel_angles(angles_file,
     Args:
         angles_file (str): The angles file.
         ref_file (str): A reference file.
-        outdir (str): The output directory.
+        out_dir (str): The output directory.
         sensor (str): The sensor.
         l57_angles_path (str): The path to the Landsat 5 and 7 angles bin.
         l8_angles_path (str): The path to the Landsat 8 angles bin.
@@ -628,7 +629,7 @@ def landsat_pixel_angles(angles_file,
 
     ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
 
-    opath = Path(outdir)
+    opath = Path(out_dir)
 
     opath.mkdir(parents=True, exist_ok=True)
 
@@ -661,7 +662,7 @@ def landsat_pixel_angles(angles_file,
             out_order = dict(azimuth=1, zenith=2)
             # out_order = [1, 2, 1, 2]
 
-        os.chdir(outdir)
+        os.chdir(out_dir)
 
         if verbose > 0:
             logger.info('  Generating pixel angles ...')
@@ -670,8 +671,8 @@ def landsat_pixel_angles(angles_file,
         subprocess.call(angle_command, shell=True)
 
         # Get angle data from 1 band.
-        sensor_angles = fnmatch.filter(os.listdir(outdir), '*sensor_B04.img')[0]
-        solar_angles = fnmatch.filter(os.listdir(outdir), '*solar_B04.img')[0]
+        sensor_angles = fnmatch.filter(os.listdir(out_dir), '*sensor_B04.img')[0]
+        solar_angles = fnmatch.filter(os.listdir(out_dir), '*solar_B04.img')[0]
 
         sensor_angles_fn_in = opath.joinpath(sensor_angles).as_posix()
         solar_angles_fn_in = opath.joinpath(solar_angles).as_posix()
@@ -710,7 +711,21 @@ def landsat_pixel_angles(angles_file,
 
                 profile = src.profile.copy()
 
-                profile.update(transform=Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top),
+                epsg = src.crs.to_epsg()
+
+                # Adjust Landsat images in the Southern hemisphere
+                if str(epsg).startswith('326') and (ref_extent.top < 0):
+
+                    transform = Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top+10_000_000.0)
+                    crs = CRS.from_epsg(f'327{str(epsg)[3:]}')
+
+                else:
+
+                    transform = Affine(new_res, 0.0, ref_extent.left, 0.0, -new_res, ref_extent.top)
+                    crs = src.crs
+
+                profile.update(transform=transform,
+                               crs=crs,
                                height=src.height,
                                width=src.width,
                                nodata=-32768,
@@ -720,17 +735,19 @@ def landsat_pixel_angles(angles_file,
                                tiled=True,
                                compress='lzw')
 
-                src_band = rio.Band(src, out_order[band_pos], 'int16', (src.height, src.width))
+                # src_band = rio.Band(src, out_order[band_pos], 'int16', (src.height, src.width))
 
                 with rio.open(out_angle, mode='w', **profile) as dst:
 
-                    dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
+                    dst.write(src.read(out_order[band_pos]),
+                              indexes=1)
 
-                    # TODO: num_threads
-                    reproject(src_band,
-                              destination=dst_band,
-                              resampling=getattr(Resampling, resampling),
-                              num_threads=num_threads)
+                    # dst_band = rio.Band(dst, 1, 'int16', (dst.height, dst.width))
+                    #
+                    # reproject(src_band,
+                    #           destination=dst_band,
+                    #           resampling=getattr(Resampling, resampling),
+                    #           num_threads=num_threads)
 
     os.chdir(os.path.expanduser('~'))
 

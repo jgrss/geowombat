@@ -25,6 +25,7 @@ WavelengthsS2 = namedtuple('WavelengthsS2', 'blue green red nir1 nir2 nir3 nir r
 WavelengthsS2Full = namedtuple('WavelengthsS2', 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2')
 WavelengthsS220 = namedtuple('WavelengthsS220', 'nir1 nir2 nir3 rededge swir1 swir2')
 WavelengthsS2Cloudless = namedtuple('WavelengthsS2Cloudless', 'coastal blue red nir1 nir rededge water cirrus swir1 swir2')
+WavelengthsMCD43A4 = namedtuple('WavelengthsMCD43A4', 'red nir blue green nir2 swir1 swir2')
 
 
 def get_sensor_info(key=None, sensor=None):
@@ -334,14 +335,19 @@ def get_sensor_info(key=None, sensor=None):
                                 l8th='Landsat 8 Operational Land Imager (OLI) and Thermal Infrared Sensor (TIRS) with thermal band',
                                 l8pan='Landsat 8 panchromatic band',
                                 s2='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
+                                s2a='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
+                                s2b='Sentinel 2 Multi-Spectral Instrument (MSI) without 3 60m bands (coastal, water vapor, cirrus)',
                                 s2f='Sentinel 2 Multi-Spectral Instrument (MSI) with 3 60m bands (coastal, water vapor, cirrus)',
                                 s2l7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
+                                s2al7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
+                                s2bl7='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 Landsat 7-like bands',
                                 s210='Sentinel 2 Multi-Spectral Instrument (MSI) with 4 10m (visible + NIR) bands',
                                 s220='Sentinel 2 Multi-Spectral Instrument (MSI) with 6 20m bands',
                                 s2cloudless='Sentinel 2 Multi-Spectral Instrument (MSI) with 10 bands for s2cloudless',
                                 ps='PlanetScope with 4 (visible + NIR) bands',
                                 qb='Quickbird with 4 (visible + NIR) bands',
-                                ik='IKONOS with 4 (visible + NIR) bands'),
+                                ik='IKONOS with 4 (visible + NIR) bands',
+                                mcd43a4='MODIS Nadir BRDF-Adjusted Reflectance Daily 500m with 7 bands'),
                    'wavelength': dict(rgb=WavelengthsRGB(red=1,
                                                          green=2,
                                                          blue=3),
@@ -585,7 +591,14 @@ def get_sensor_info(key=None, sensor=None):
                                       ik=WavelengthsBGRN(blue=1,
                                                          green=2,
                                                          red=3,
-                                                         nir=4))}
+                                                         nir=4),
+                                      mcd43a4=WavelengthsMCD43A4(red=1,
+                                                                 nir=2,
+                                                                 blue=3,
+                                                                 green=4,
+                                                                 nir2=5,
+                                                                 swir1=6,
+                                                                 swir2=7))}
 
     if not key and sensor:
         raise NameError('The key sensor must be given with the key.')

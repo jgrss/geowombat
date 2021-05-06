@@ -37,6 +37,7 @@ norm_diff = VegetationIndices().norm_diff
 avi = VegetationIndices().avi
 evi = VegetationIndices().evi
 evi2 = VegetationIndices().evi2
+gcvi = VegetationIndices().gcvi
 nbr = VegetationIndices().nbr
 ndvi = VegetationIndices().ndvi
 kndvi = VegetationIndices().kndvi
@@ -73,6 +74,7 @@ __all__ = ['apply',
            'avi',
            'evi',
            'evi2',
+           'gcvi',
            'nbr',
            'ndvi',
            'kndvi',

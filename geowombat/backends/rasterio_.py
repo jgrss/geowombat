@@ -5,6 +5,8 @@ from collections import namedtuple
 import threading
 import logging
 
+import affine
+
 import geowombat as gw
 
 import numpy as np
@@ -902,6 +904,8 @@ def transform_crs(data_src,
                   dst_width=None,
                   dst_height=None,
                   dst_bounds=None,
+                  src_nodata=None,
+                  dst_nodata=None,
                   coords_only=False,
                   resampling='nearest',
                   warp_mem_limit=512,
@@ -918,6 +922,12 @@ def transform_crs(data_src,
         dst_height (Optional[int]): The destination height. Cannot be used with ``dst_res``.
         dst_bounds (Optional[BoundingBox | tuple]): The destination bounds, as a ``rasterio.coords.BoundingBox``
             or as a tuple of (left, bottom, right, top).
+        src_nodata (Optional[int | float]): The source nodata value. Pixels with this value will not be used for
+            interpolation. If not set, it will default to the nodata value of the source image if a masked ndarray
+            or rasterio band, if available.
+        dst_nodata (Optional[int | float]): The nodata value used to initialize the destination; it will remain in
+            all areas not covered by the reprojected source. Defaults to the nodata value of the destination
+            image (if set), the value of src_nodata, or 0 (GDAL default).
         coords_only (Optional[bool]): Whether to return transformed coordinates. If ``coords_only`` = ``True`` then
             the array is not warped and the size is unchanged. It also avoids in-memory computations.
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
@@ -1017,7 +1027,10 @@ def transform_crs(data_src,
 
         dst_res = (cellx, celly)
 
-    transformed_array = list()
+    # Ensure the final transform is set based on adjusted bounds
+    dst_transform = affine.Affine(abs(dst_res[0]), 0.0, dst_bounds.left, 0.0, -abs(dst_res[1]), dst_bounds.top)
+
+    transformed_array = []
 
     for band in range(0, data_src.gw.nbands):
 
@@ -1030,6 +1043,8 @@ def transform_crs(data_src,
                                             src_crs=data_src.crs,
                                             dst_transform=dst_transform,
                                             dst_crs=dst_crs,
+                                            src_nodata=src_nodata,
+                                            dst_nodata=dst_nodata,
                                             resampling=getattr(Resampling, resampling),
                                             dst_resolution=dst_res,
                                             warp_mem_limit=warp_mem_limit,
