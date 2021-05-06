@@ -3,10 +3,11 @@
 Changelog
 =========
 
-1.6.5 ()
---------
+1.6.5 (6 May 2021)
+------------------
 
 New
+~~~
 
 - Added :func:`DataArray.gw.read` method.
 
@@ -14,6 +15,9 @@ Bug fixes
 ~~~~~~~~~
 
 - Added check for AOT object type to generate a NumPy array when a float is given.
+- Fixed type conversion in :class:`geowombat.core.vi.TasseledCap` outputs.
+- Fixed band lookup order in Landsat angle file creation.
+- Improved masking in `geowombat.core.vi` module.
 
 1.6.4 (16 March 2021)
 ---------------------
