@@ -70,7 +70,7 @@ def get_attrs(src, **kwargs):
 
     attrs = dict()
 
-    attrs['transform'] = src.gw.transform
+    attrs['transform'] = src.gw.transform if hasattr(src, 'gw') else src.transform
 
     if hasattr(src, 'crs'):
 
