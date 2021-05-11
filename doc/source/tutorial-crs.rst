@@ -40,7 +40,7 @@ Other formats supported by rasterio, (e.g., crs codes) can be used.
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=102008):
+    with gw.config.update(ref_crs='ESRI:102008'):
         with gw.open(rgbn) as src:
             print(src.transform)
             print(src.crs)
@@ -54,7 +54,7 @@ The resampling algorithm can be specified in the :func:`geowombat.open` function
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=102008):
+    with gw.config.update(ref_crs='ESRI:102008'):
         with gw.open(rgbn, resampling='cubic') as src:
             print(src.transform)
             print(src.crs)
