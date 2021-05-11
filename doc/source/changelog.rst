@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.6.7 (12 May 2021)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added geowombat attribute lookup in :func:`geowombat.open` to support bounds as data slice objects.
+
 1.6.6 (11 May 2021)
 -------------------
 
