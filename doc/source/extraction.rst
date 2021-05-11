@@ -102,7 +102,7 @@ A latitude/longitude pair can be extracted after converting to the map projectio
 Extracting data with point geometry
 -----------------------------------
 
-In the example below, 'l8_224078_20200518_points' is a `GeoPackage <https://www.geopackage.org/>`_ of point locations, and the output `df` is a `GeoPandas GeoDataFrame <https://geopandas.org/reference/geopandas.GeoDataFrame.html>`_. To extract the raster values at the point locations, use :func:`geowombat.extract`.
+In the example below, 'l8_224078_20200518_points' is a `GeoPackage <https://www.geopackage.org/>`_ of point locations, and the output `df` is a `GeoPandas GeoDataFrame <https://geopandas.org/docs/reference/api/geopandas.GeoDataFrame.html?highlight=geodataframe#geopandas.GeoDataFrame>`_. To extract the raster values at the point locations, use :func:`geowombat.extract`.
 
 .. ipython:: python
 
