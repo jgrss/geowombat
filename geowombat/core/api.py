@@ -170,8 +170,10 @@ def read(filename,
 
         with rio.open(filename) as src:
 
+            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
+
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src.gw.transform)
+                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
@@ -190,16 +192,18 @@ def read(filename,
         data = xr.DataArray(data,
                             dims=('band', 'y', 'x'),
                             coords={'band': band_names,
-                                    'y': ycoords,
-                                    'x': xcoords},
+                                    'y': ycoords[:data.shape[-2]],
+                                    'x': xcoords[:data.shape[-1]]},
                             attrs=attrs)
 
     else:
 
         with rio.open(filename[0]) as src:
 
+            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
+
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src.gw.transform)
+                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
@@ -227,8 +231,8 @@ def read(filename,
                             dims=('time', 'band', 'y', 'x'),
                             coords={'time': time_names,
                                     'band': band_names,
-                                    'y': ycoords,
-                                    'x': xcoords},
+                                    'y': ycoords[:data.shape[-2]],
+                                    'x': xcoords[:data.shape[-1]]},
                             attrs=attrs)
 
     return data
@@ -240,7 +244,7 @@ data_ = None
 class open(object):
 
     """
-    Opens a raster file
+    Opens one or more raster files
 
     Args:
         filename (str or list): The file name, search string, or a list of files to open.
