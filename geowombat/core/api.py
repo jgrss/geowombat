@@ -553,3 +553,134 @@ class open(object):
                 file = self.data._cache.pop('gw', None)
 
         self.data = None
+
+
+def load(image_list,
+         time_names,
+         band_names,
+         chunks=512,
+         nodata=0,
+         data_slice=None,
+         num_workers=1,
+         scheduler='ray'):
+
+    """
+    Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
+    alignments and CRSs. It assumes each image in ``image_list`` has the same y and x dimensions and
+    that the coordinates align.
+
+    The `load` function cannot be used if `dataclasses` was pip installed.
+
+    Args:
+        image_list (list)
+        time_names (list)
+        band_names (list)
+        chunks (Optional[int])
+        nodata (Optional[float | int])
+        data_slice (Optional[tuple])
+        num_workers (Optional[int])
+        scheduler (Optional[str]): Currently not implemented.
+
+    Returns:
+        ``list``, ``ndarray``:
+            Datetime list, array of (time x bands x rows x columns)
+
+    Example:
+        >>> import datetime
+        >>> import geowombat as gw
+        >>>
+        >>> image_names = ['LT05_L1TP_227082_19990311_20161220_01_T1.nc',
+        >>>                'LT05_L1TP_227081_19990311_20161220_01_T1.nc',
+        >>>                'LT05_L1TP_227082_19990327_20161220_01_T1.nc']
+        >>>
+        >>> image_dates = [datetime.datetime(1999, 3, 11, 0, 0),
+        >>>                datetime.datetime(1999, 3, 11, 0, 0),
+        >>>                datetime.datetime(1999, 3, 27, 0, 0)]
+        >>>
+        >>> data_slice = (slice(0, None), slice(0, None), slice(0, 64), slice(0, 64))
+        >>>
+        >>> # Load data into memory
+        >>> dates, y = gw.load(image_names,
+        >>>                    image_dates,
+        >>>                    ['red', 'nir'],
+        >>>                    chunks=512,
+        >>>                    nodata=65535,
+        >>>                    data_slice=data_slice,
+        >>>                    num_workers=4)
+    """
+
+    netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
+
+    if any(netcdf_prepend):
+        raise NameError('The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.')
+
+    import dask
+    from dask.diagnostics import ProgressBar
+    import ray
+    from ray.util.dask import ray_dask_get
+
+    with open(f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
+              time_names=time_names[0],
+              band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
+              netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
+              chunks=chunks) as src:
+
+        attrs = src.attrs.copy()
+
+    if not data_slice:
+
+        data_slice = (slice(0, None),
+                      slice(0, None),
+                      slice(0, None),
+                      slice(0, None))
+
+    def expand_time(dataset):
+
+        """
+        `open_mfdataset` preprocess function
+        """
+
+        # Convert the Dataset into a DataArray,
+        # rename the band coordinate,
+        # select the required VI bands,
+        # assign y/x coordinates from a reference,
+        # add the time coordiante, and
+        # get the sub-array slice
+        darray = dataset.to_array()\
+                        .rename({'variable': 'band'})\
+                        .sel(band=band_names)\
+                        .assign_coords(y=src.y, x=src.x)\
+                        .expand_dims(dim='time')[data_slice]
+
+        # Scale from [0-10000] -> [0,1]
+        return xr.where(darray == nodata, 0, darray*0.0001).astype('float64')
+
+    ray.shutdown()
+    ray.init(num_cpus=num_workers)
+
+    with dask.config.set(scheduler=ray_dask_get):
+
+        # Open all arrays and calculate the VI
+        ds = xr.open_mfdataset(image_list,
+                               concat_dim='time',
+                               chunks={'y': chunks, 'x': chunks},
+                               combine='nested',
+                               engine='h5netcdf',
+                               preprocess=expand_time,
+                               parallel=True)\
+                    .assign_coords(time=time_names)\
+                    .groupby('time').max()\
+                    .assign_attrs(**attrs)
+
+        # Get the time series dates after grouping
+        real_proc_times = ds.gw.pydatetime
+
+        # Convert the DataArray into a NumPy array
+        # ds.data.visualize(filename='graph.svg')
+        # with performance_report(filename='dask-report.html'):
+        with ProgressBar():
+            y = ds.data.compute()
+
+    ray.shutdown()
+
+    return real_proc_times, y
