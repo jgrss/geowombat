@@ -3,6 +3,15 @@
 Changelog
 =========
 
+1.7.0 (17 May 2021)
+-------------------
+
+New
+~~~
+
+- Created :func:`geowombat.load` function.
+    - This function is intended to support in-memory loading of time series data using :func:`xarray.open_mfdataset`, `dask <https://dask.org/>`_, and `ray <https://ray.io/>`_.
+
 1.6.7 (12 May 2021)
 -------------------
 
