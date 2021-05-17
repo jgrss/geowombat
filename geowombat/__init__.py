@@ -1,5 +1,6 @@
 from . import config
 from .core.api import open
+from .core.api import load
 from .core import extract
 from .core import sample
 from .core import calc_area
@@ -37,6 +38,7 @@ from .version import __version__
 
 __all__ = ['config',
            'open',
+           'load',
            'extract',
            'sample',
            'calc_area',
