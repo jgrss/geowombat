@@ -650,10 +650,15 @@ def load(image_list,
                         .rename({'variable': 'band'})\
                         .sel(band=band_names)\
                         .assign_coords(y=src.y, x=src.x)\
-                        .expand_dims(dim='time')[data_slice]
+                        .expand_dims(dim='time')\
+                        .astype('float64')[data_slice]
 
         # Scale from [0-10000] -> [0,1]
-        return xr.where(darray == nodata, 0, darray*0.0001).astype('float64')
+        darray = xr.where(darray == nodata, 0, darray*0.0001)
+
+        return darray.where(xr.ufuncs.isfinite(darray))\
+                        .fillna(0)\
+                        .clip(0, 1)
 
     ray.shutdown()
     ray.init(num_cpus=num_workers)
