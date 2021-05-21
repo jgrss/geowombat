@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.7.1 (21 May 2021)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Added a check for finite values in :func:`geowombat.load` to safely load ``numpy.inf`` values.
+
 1.7.0 (17 May 2021)
 -------------------
 
