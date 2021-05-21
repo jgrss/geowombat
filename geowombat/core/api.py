@@ -651,7 +651,8 @@ def load(image_list,
                         .sel(band=band_names)\
                         .assign_coords(y=src.y, x=src.x)\
                         .expand_dims(dim='time')\
-                        .astype('float64')[data_slice]
+                        .astype('float64')\
+                        .clip(0, 10000)[data_slice]
 
         # Scale from [0-10000] -> [0,1]
         darray = xr.where(darray == nodata, 0, darray*0.0001)
