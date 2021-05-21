@@ -67,7 +67,8 @@ class BandMath(object):
                         clip_min,
                         clip_max,
                         scale_factor,
-                        sensor):
+                        sensor,
+                        norm=False):
 
         """
         Masks a DataArray
@@ -84,6 +85,7 @@ class BandMath(object):
             clip_max (int)
             scale_factor (float)
             sensor (str)
+            norm (bool)
 
         Returns:
             ``xarray.DataArray``
@@ -118,6 +120,9 @@ class BandMath(object):
         new_attrs['drange'] = (clip_min, clip_max)
 
         result = result.clip(min=clip_min, max=clip_max)
+
+        if norm:
+            result = result / clip_max
 
         if result.gw.has_band_coord and result.gw.has_band_dim:
             result = result.assign_coords(coords={band_variable: [new_name]})
@@ -298,7 +303,7 @@ class BandMath(object):
         else:
             result = (data.sel(band='nir') / data.sel(band='green')) - 1.0
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'gcvi', mask, -1, 1, scale_factor, sensor)
+        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'gcvi', mask, 0, 10, scale_factor, sensor, norm=True)
 
     def nbr_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
 
@@ -732,7 +737,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
             ``xarray.DataArray``:
 
-                Data range: -1 to 1
+                Data range: 0 to 1
         """
 
         sensor = self.check_sensor(data, sensor)
