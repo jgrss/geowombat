@@ -559,7 +559,9 @@ def load(image_list,
          time_names,
          band_names,
          chunks=512,
-         nodata=0,
+         nodata=65535,
+         in_range=None,
+         out_range=None,
          data_slice=None,
          num_workers=1,
          scheduler='ray'):
@@ -572,14 +574,16 @@ def load(image_list,
     The `load` function cannot be used if `dataclasses` was pip installed.
 
     Args:
-        image_list (list)
-        time_names (list)
-        band_names (list)
-        chunks (Optional[int])
-        nodata (Optional[float | int])
-        data_slice (Optional[tuple])
-        num_workers (Optional[int])
-        scheduler (Optional[str]): Currently not implemented.
+        image_list (list): The list of image file paths.
+        time_names (list): The list of image ``datetime`` objects.
+        band_names (list): The list of bands to open.
+        chunks (Optional[int]): The dask chunk size.
+        nodata (Optional[float | int]): The 'no data' value.
+        in_range (Optional[tuple]): The input (min, max) range. If not given, defaults to (0, 10000).
+        out_range (Optional[tuple]): The output (min, max) range. If not given, defaults to (0, 1).
+        data_slice (Optional[tuple]): The slice object to read, given as (time, bands, rows, columns).
+        num_workers (Optional[int]): The number of threads.
+        scheduler (Optional[str]): The distributed scheduler. Currently not implemented.
 
     Returns:
         ``list``, ``ndarray``:
@@ -613,6 +617,14 @@ def load(image_list,
 
     if any(netcdf_prepend):
         raise NameError('The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.')
+
+    if not in_range:
+        in_range = (0, 10000)
+
+    if not out_range:
+        out_range = (0, 1)
+
+    scale_factor = float(out_range[1]) / float(in_range[1])
 
     import dask
     from dask.diagnostics import ProgressBar
@@ -651,15 +663,14 @@ def load(image_list,
                         .sel(band=band_names)\
                         .assign_coords(y=src.y, x=src.x)\
                         .expand_dims(dim='time')\
-                        .astype('float64')\
-                        .clip(0, 10000)[data_slice]
+                        .clip(0, max(in_range[1], nodata))[data_slice]
 
         # Scale from [0-10000] -> [0,1]
-        darray = xr.where(darray == nodata, 0, darray*0.0001)
+        darray = xr.where(darray == nodata, 0, darray*scale_factor).astype('float64')
 
         return darray.where(xr.ufuncs.isfinite(darray))\
                         .fillna(0)\
-                        .clip(0, 1)
+                        .clip(min=out_range[0], max=out_range[1])
 
     ray.shutdown()
     ray.init(num_cpus=num_workers)
