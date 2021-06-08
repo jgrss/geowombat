@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.7.2 (9 June 2021)
+-------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed time grouping in :func:`geowombat.load`.
+
 1.7.1 (21 May 2021)
 -------------------
 
