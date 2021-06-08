@@ -564,6 +564,7 @@ def load(image_list,
          out_range=None,
          data_slice=None,
          num_workers=1,
+         src=None,
          scheduler='ray'):
 
     """
@@ -631,13 +632,21 @@ def load(image_list,
     import ray
     from ray.util.dask import ray_dask_get
 
-    with open(f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
-              time_names=time_names[0],
-              band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
-              netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
-              chunks=chunks) as src:
+    if src is None:
 
-        attrs = src.attrs.copy()
+        with open(f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
+                  time_names=time_names[0],
+                  band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
+                  netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
+                  chunks=chunks) as src:
+
+            pass
+
+    attrs = src.attrs.copy()
+    nrows = src.gw.nrows
+    ncols = src.gw.ncols
+    ycoords = src.y
+    xcoords = src.x
 
     if not data_slice:
 
@@ -659,9 +668,9 @@ def load(image_list,
         # add the time coordiante, and
         # get the sub-array slice
         darray = dataset.to_array()\
-                        .rename({'variable': 'band'})\
+                        .rename({'variable': 'band'})[:, :nrows, :ncols]\
                         .sel(band=band_names)\
-                        .assign_coords(y=src.y, x=src.x)\
+                        .assign_coords(y=ycoords, x=xcoords)\
                         .expand_dims(dim='time')\
                         .clip(0, max(in_range[1], nodata))[data_slice]
 
@@ -677,7 +686,7 @@ def load(image_list,
 
     with dask.config.set(scheduler=ray_dask_get):
 
-        # Open all arrays and calculate the VI
+        # Open all arrays
         ds = xr.open_mfdataset(image_list,
                                concat_dim='time',
                                chunks={'y': chunks, 'x': chunks},
@@ -686,7 +695,8 @@ def load(image_list,
                                preprocess=expand_time,
                                parallel=True)\
                     .assign_coords(time=time_names)\
-                    .groupby('time').max()\
+                    .groupby('time.date').max()\
+                    .rename({'date': 'time'})\
                     .assign_attrs(**attrs)
 
         # Get the time series dates after grouping
