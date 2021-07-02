@@ -12,8 +12,10 @@ except:
 import warnings
 from pathlib import Path
 import logging
-import contextlib
 import threading
+from contextlib import contextmanager
+from typing import Generic, Union
+import concurrent.futures
 
 from . import geoxarray
 from ..handler import add_handler
@@ -30,6 +32,18 @@ import rasterio as rio
 from rasterio.windows import from_bounds, Window
 import dask
 import dask.array as da
+
+from affine import Affine
+from rasterio.enums import Resampling
+from rasterio.vrt import WarpedVRT
+from tqdm.auto import tqdm
+
+try:
+    from jax import device_put
+    JAX_INSTALLED = True
+except:
+    JAX_INSTALLED = False
+
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -527,7 +541,7 @@ class open(object):
     def _reset(d):
         d = None
 
-    @contextlib.contextmanager
+    @contextmanager
     def _optional_lock(self, needs_lock):
         """Context manager for optionally acquiring a lock."""
         if needs_lock:
@@ -711,3 +725,262 @@ def load(image_list,
     ray.shutdown()
 
     return real_proc_times, y
+
+
+class _Warp(object):
+
+    def warp(self,
+             dst_crs=None,
+             dst_res=None,
+             dst_bounds=None,
+             resampling='nearest',
+             nodata=None,
+             warp_mem_limit=None,
+             num_threads=None,
+             window_size=None):
+
+        dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
+
+        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
+        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
+
+        vrt_options = {'resampling': getattr(Resampling, resampling),
+                       'crs': dst_crs,
+                       'transform': dst_transform,
+                       'height': dst_height,
+                       'width': dst_width,
+                       'nodata': nodata,
+                       'warp_mem_limit': warp_mem_limit,
+                       'warp_extras': {'multi': True,
+                                       'warp_option': f'NUM_THREADS={num_threads}'}}
+
+        self.vrts_ = [WarpedVRT(src,
+                                src_crs=src.crs,
+                                src_transform=src.transform,
+                                **vrt_options) for src in self.srcs_]
+
+        if window_size:
+
+            def adjust_window(pixel_index, block_size, rows_cols):
+                return block_size if (pixel_index + block_size) < rows_cols else rows_cols - pixel_index
+
+            self.windows_ = []
+
+            for row_off in range(0, dst_height, window_size[0]):
+                wheight = adjust_window(row_off, window_size[0], dst_height)
+                for col_off in range(0, dst_width, window_size[1]):
+                    wwidth = adjust_window(col_off, window_size[1], dst_width)
+                    self.windows_.append(Window(row_off=row_off, col_off=col_off, height=wheight, width=wwidth))
+
+        else:
+            self.windows_ = [[w[1] for w in src.block_windows(1)] for src in self.vrts_][0]
+
+
+class _Open(_Warp):
+
+    def __init__(self, filenames):
+        self.srcs_ = [rio.open(fn) for fn in filenames]
+
+
+class _PropsMixin(object):
+
+    @property
+    def crs(self):
+        return self.handler.vrts_[0].crs
+
+    @property
+    def transform(self):
+        return self.handler.vrts_[0].transform
+
+    @property
+    def count(self):
+        return self.handler.vrts_[0].count
+
+    @property
+    def width(self):
+        return self.handler.vrts_[0].width
+
+    @property
+    def height(self):
+        return self.handler.vrts_[0].height
+
+    @property
+    def blockxsize(self):
+        return self.handler.windows_[0].width
+
+    @property
+    def blockysize(self):
+        return self.handler.windows_[0].height
+
+    @property
+    def nchunks(self):
+        return len(self.handler.windows_)
+
+    @property
+    def band_dict(self):
+        return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
+
+
+@contextmanager
+def _tqdm(*args, **kwargs):
+    yield None
+
+
+class series(_PropsMixin):
+
+    def __init__(self,
+                 filenames,
+                 band_names=None,
+                 crs=None,
+                 res=None,
+                 bounds=None,
+                 resampling='nearest',
+                 nodata=None,
+                 warp_mem_limit=256,
+                 num_threads=1,
+                 window_size=None):
+
+        if not JAX_INSTALLED:
+            logger.exception('Jax must be installed.')
+            raise ImportError('Jax must be installed.')
+
+        self.filenames = filenames
+        self.band_names = band_names
+
+        self.handler = _Open(filenames)
+
+        self.handler.warp(dst_crs=crs,
+                          dst_res=res,
+                          dst_bounds=bounds,
+                          resampling=resampling,
+                          nodata=nodata,
+                          warp_mem_limit=warp_mem_limit,
+                          num_threads=num_threads,
+                          window_size=window_size)
+
+    def read(self, bands, window=None, gain=1.0, offset=0.0):
+
+        if isinstance(bands, int):
+
+            if bands == -1:
+                band_list = list(range(1, self.count+1))
+            else:
+                band_list = [bands]
+
+        else:
+            band_list = bands
+
+        return device_put(np.array([np.stack([vrt.read(band, window=window)*gain + offset for band in band_list]).squeeze() for vrt in self.handler.vrts_]))
+
+    @staticmethod
+    def _create_file(filename, **profile):
+
+        if Path(filename).is_file():
+            Path(filename).unlink()
+
+        with rio.open(filename, mode='w', **profile) as dst:
+            pass
+
+    def apply(self,
+              func: Generic,
+              outfile: Union[Path, str],
+              bands: Union[list, int],
+              gain: float = 1.0,
+              offset: Union[float, int] = 0.0,
+              dst_bands: int = 1,
+              dst_dtype: str = 'float64',
+              processes: bool = False,
+              num_workers: int = 1,
+              monitor: bool = True):
+
+        """
+        Applies over windows
+
+        Example:
+            >>> import itertools
+            >>> import geowombat as gw
+            >>> from geowombat.data import l8_224078_20200518
+            >>> import rasterio as rio
+            >>>
+            >>>
+            >>> def temporal_mean(*args):
+            >>>     w, band_dict, array = list(itertools.chain(*args))
+            >>>     # time x bands x rows x columns
+            >>>     sl1 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
+            >>>     sl2 = (slice(0, None), slice(band_dict['green'], band_dict['green']+1), slice(0, None), slice(0, None))
+            >>>     # Normalized vegetation index
+            >>>     vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
+            >>>     # Take the mean over time
+            >>>     return w, vi.mean(axis=0).squeeze()
+            >>>
+            >>> with rio.open(l8_224078_20200518) as src:
+            >>>     res = src.res
+            >>>     bounds = src.bounds
+            >>>     nodata = 0
+            >>>
+            >>> # Open two files, each with 3 bands
+            >>> with gw.series([l8_224078_20200518, l8_224078_20200518],
+            >>>                band_names=['blue', 'green', 'red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply(temporal_mean,
+            >>>               outfile='test.tif',
+            >>>               bands=-1,             # open all bands
+            >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
+            >>>               dst_bands=1,          # the output has one band
+            >>>               dst_dtype='float64',
+            >>>               processes=False,      # use threads
+            >>>               num_workers=4)        # use 4 concurrent threads, one per window
+        """
+
+        profile = {'count': dst_bands,
+                   'width': self.width,
+                   'height': self.height,
+                   'crs': self.crs,
+                   'transform': self.transform,
+                   'driver': 'GTiff',
+                   'dtype': dst_dtype,
+                   'compress': 'none',
+                   'sharing': False,
+                   'tiled': True,
+                   'blockxsize': self.blockxsize,
+                   'blockysize': self.blockysize}
+
+        pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
+
+        tqdm_obj = tqdm if monitor else _tqdm
+
+        # Create the file
+        self._create_file(outfile, **profile)
+
+        with rio.open(outfile, mode='r+', sharing=False) as dst:
+
+            with pool(num_workers) as executor:
+
+                data_gen = ((w, self.band_dict, self.read(bands, window=w, gain=gain, offset=offset)) for w in self.handler.windows_)
+
+                for w, res in tqdm_obj(executor.map(func, data_gen), total=self.nchunks):
+
+                    with threading.Lock():
+                        
+                        dst.write(res,
+                                  indexes=1 if dst_bands == 1 else range(1, dst_bands+1),
+                                  window=w)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+
+        for src in self.handler.srcs_:
+            src.close()
+
+        for vrt in self.handler.vrts_:
+            vrt.close()
+
+        self.handler = None
