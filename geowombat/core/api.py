@@ -10,6 +10,7 @@ except:
     pass
 
 import warnings
+import itertools
 from pathlib import Path
 import logging
 import threading
@@ -30,6 +31,7 @@ import numpy as np
 import xarray as xr
 import rasterio as rio
 from rasterio.windows import from_bounds, Window
+from rasterio.coords import BoundingBox
 import dask
 import dask.array as da
 
@@ -39,6 +41,7 @@ from rasterio.vrt import WarpedVRT
 from tqdm.auto import tqdm
 
 try:
+    import jax.numpy as jnp
     from jax import device_put
     JAX_INSTALLED = True
 except:
@@ -821,24 +824,71 @@ class _PropsMixin(object):
         return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
 
 
+class _SeriesMixin(object):
+
+    @staticmethod
+    def mean(*args):
+        """Calculates the temporal mean"""
+        w, band_dict, array = list(itertools.chain(*args))
+        return w, jnp.nanmean(array, axis=1).squeeze()
+
+    @staticmethod
+    def cv(*args):
+        """Calculates the temporal coefficient of variation"""
+        w, band_dict, array = list(itertools.chain(*args))
+        return w, jnp.nanstd(array, axis=1).squeeze() / (jnp.nanmean(array, axis=1).squeeze() + 1e-9)
+
+    @staticmethod
+    def min(*args):
+        """Calculates the temporal min"""
+        w, band_dict, array = list(itertools.chain(*args))
+        return w, jnp.nanmin(array, axis=1).squeeze()
+
+    @staticmethod
+    def max(*args):
+        """Calculates the temporal max"""
+        w, band_dict, array = list(itertools.chain(*args))
+        return w, jnp.nanmax(array, axis=1).squeeze()
+
+
 @contextmanager
 def _tqdm(*args, **kwargs):
     yield None
 
 
-class series(_PropsMixin):
+class series(_PropsMixin, _SeriesMixin):
+
+    """
+    A class for time series concurrent processing on a GPU
+
+    Args:
+        filenames (list): The list of filenames to open.
+        band_names (Optional[list]): The band associated names.
+        crs (Optional[str]): The coordinate reference system.
+        res (Optional[list | tuple]): The cell resolution.
+        bounds (Optional[object]): The coordinate bounds.
+        resampling (Optional[str]): The resampling method.
+        nodata (Optional[float | int]): The 'no data' value.
+        warp_mem_limit (Optional[int]): The ``rasterio`` warping memory limit (in MB).
+        num_threads (Optional[int]): The number of ``rasterio`` warping threads.
+        window_size (Optional[list | tuple]): The concurrent processing window size (height, width).
+
+    Requirement:
+        > # CUDA 11.1
+        > pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    """
 
     def __init__(self,
-                 filenames,
-                 band_names=None,
-                 crs=None,
-                 res=None,
-                 bounds=None,
-                 resampling='nearest',
-                 nodata=None,
-                 warp_mem_limit=256,
-                 num_threads=1,
-                 window_size=None):
+                 filenames: list,
+                 band_names: list = None,
+                 crs: str = None,
+                 res: Union[list, tuple] = None,
+                 bounds: BoundingBox = None,
+                 resampling: str = 'nearest',
+                 nodata: Union[float, int] = None,
+                 warp_mem_limit: int = 256,
+                 num_threads: int = 1,
+                 window_size: Union[list, tuple] = None):
 
         if not JAX_INSTALLED:
             logger.exception('Jax must be installed.')
@@ -858,7 +908,15 @@ class series(_PropsMixin):
                           num_threads=num_threads,
                           window_size=window_size)
 
-    def read(self, bands, window=None, gain=1.0, offset=0.0):
+    def read(self,
+             bands: Union[int, list],
+             window: Window = None,
+             gain: float = 1.0,
+             offset: Union[float, int] = 0.0) -> jnp.DeviceArray:
+
+        """
+        Reads a window
+        """
 
         if isinstance(bands, int):
 
@@ -870,7 +928,14 @@ class series(_PropsMixin):
         else:
             band_list = bands
 
-        return device_put(np.array([np.stack([vrt.read(band, window=window)*gain + offset for band in band_list]).squeeze() for vrt in self.handler.vrts_]))
+        def _read(array):
+            array = array * gain + offset
+            array[array == self.nodata] = np.nan
+            return array
+
+        return device_put(np.array([np.stack([_read(vrt.read(band, window=window))
+                                              for band in band_list]).squeeze()
+                                    for vrt in self.handler.vrts_]))
 
     @staticmethod
     def _create_file(filename, **profile):
@@ -882,7 +947,7 @@ class series(_PropsMixin):
             pass
 
     def apply(self,
-              func: Generic,
+              func: Union[Generic, str],
               outfile: Union[Path, str],
               bands: Union[list, int],
               gain: float = 1.0,
@@ -891,15 +956,30 @@ class series(_PropsMixin):
               dst_dtype: str = 'float64',
               processes: bool = False,
               num_workers: int = 1,
-              monitor: bool = True):
+              monitor_progress: bool = True):
 
         """
-        Applies over windows
+        Applies a function concurrently over windows
+
+        Args:
+            func (object | str): The function to apply. If ``func`` is a string, choices are ['mean', 'min', 'max'].
+            outfile (Path | str): The output file.
+            bands (list | int): The bands to read.
+            gain (Optional[float]): A gain factor to apply.
+            offset (Optional[float | int]): An offset factor to apply.
+            dst_bands (Optional[int]): The number of destination bands in ``outfile``.
+            dst_dtype (Optional[str]): The output data storage type in ``outfile``.
+            processes (Optional[bool]): Whether to use process workers, otherwise use threads.
+            num_workers (Optional[int]): The number of concurrent workers.
+            monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
+
+        Returns:
+            None, writes to ``outfile``
 
         Example:
             >>> import itertools
             >>> import geowombat as gw
-            >>> from geowombat.data import l8_224078_20200518
+            >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_B4
             >>> import rasterio as rio
             >>>
             >>>
@@ -918,8 +998,8 @@ class series(_PropsMixin):
             >>>     bounds = src.bounds
             >>>     nodata = 0
             >>>
-            >>> # Open two files, each with 3 bands
-            >>> with gw.series([l8_224078_20200518, l8_224078_20200518],
+            >>> # Open many files, each with 3 bands
+            >>> with gw.series([l8_224078_20200518]*100,
             >>>                band_names=['blue', 'green', 'red'],
             >>>                crs='epsg:32621',
             >>>                res=res,
@@ -929,7 +1009,26 @@ class series(_PropsMixin):
             >>>                window_size=(1024, 1024)) as src:
             >>>
             >>>     src.apply(temporal_mean,
-            >>>               outfile='test.tif',
+            >>>               outfile='vi_mean.tif',
+            >>>               bands=-1,             # open all bands
+            >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
+            >>>               dst_bands=1,          # the output has one band
+            >>>               dst_dtype='float64',
+            >>>               processes=False,      # use threads
+            >>>               num_workers=4)        # use 4 concurrent threads, one per window
+            >>>
+            >>> # Open many files, each with 1 band
+            >>> with gw.series([l8_224078_20200518_B4]*100,
+            >>>                band_names=['red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply('mean',               # built-in function over single-band images
+            >>>               outfile='red_mean.tif',
             >>>               bands=-1,             # open all bands
             >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
             >>>               dst_bands=1,          # the output has one band
@@ -953,7 +1052,9 @@ class series(_PropsMixin):
 
         pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
 
-        tqdm_obj = tqdm if monitor else _tqdm
+        tqdm_obj = tqdm if monitor_progress else _tqdm
+
+        apply_func_ = getattr(self, func) if isinstance(func, str) else func
 
         # Create the file
         self._create_file(outfile, **profile)
@@ -964,10 +1065,10 @@ class series(_PropsMixin):
 
                 data_gen = ((w, self.band_dict, self.read(bands, window=w, gain=gain, offset=offset)) for w in self.handler.windows_)
 
-                for w, res in tqdm_obj(executor.map(func, data_gen), total=self.nchunks):
+                for w, res in tqdm_obj(executor.map(apply_func_, data_gen), total=self.nchunks):
 
                     with threading.Lock():
-                        
+
                         dst.write(res,
                                   indexes=1 if dst_bands == 1 else range(1, dst_bands+1),
                                   window=w)
