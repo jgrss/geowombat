@@ -859,13 +859,13 @@ class TimeModule(object):
 
         w, array, band_dict = list(itertools.chain(*args))
 
-        return self.calculate(w, array, band_dict=band_dict)
+        return w, self.calculate(array, band_dict=band_dict)
 
     def __repr__(self):
         print(f'TimeModule() -> self.dtype={self.dtype}, self.count={self.count}')
 
     @abstractmethod
-    def calculate(self, w, array, band_dict=None):
+    def calculate(self, array, band_dict=None):
         raise NotImplementedError
 
 
@@ -882,12 +882,12 @@ class TimeSeriesStats(TimeModule):
         else:
             self.count = len(list(self.time_stats))
 
-    def calculate(self, w, array, band_dict=None):
+    def calculate(self, array, band_dict=None):
 
         if isinstance(self.time_stats, str):
-            return getattr(self, self.time_stats)(w, array)
+            return getattr(self, self.time_stats)(array)
         else:
-            return self._stack(w, array, self.time_stats)
+            return self._stack(array, self.time_stats)
 
     @staticmethod
     def _scale_min_max(xv, mni, mxi, mno, mxo):
@@ -906,43 +906,43 @@ class TimeSeriesStats(TimeModule):
         return jnp.linalg.lstsq(jnp.c_[x, jnp.ones_like(x)], M, rcond=None)[0]
 
     @staticmethod
-    def amp(w, array):
+    def amp(array):
         """Calculates the amplitude"""
-        return w, jnp.nanmax(array, axis=0).squeeze() - jnp.nanmin(array, axis=0).squeeze()
+        return jnp.nanmax(array, axis=0).squeeze() - jnp.nanmin(array, axis=0).squeeze()
 
     @staticmethod
-    def cv(w, array):
+    def cv(array):
         """Calculates the coefficient of variation"""
-        return w, jnp.nanstd(array, axis=0).squeeze() / (jnp.nanmean(array, axis=0).squeeze() + 1e-9)
+        return jnp.nanstd(array, axis=0).squeeze() / (jnp.nanmean(array, axis=0).squeeze() + 1e-9)
 
     @staticmethod
-    def max(w, array):
+    def max(array):
         """Calculates the max"""
-        return w, jnp.nanmax(array, axis=0).squeeze()
+        return jnp.nanmax(array, axis=0).squeeze()
 
     @staticmethod
-    def mean(w, array):
+    def mean(array):
         """Calculates the mean"""
-        return w, jnp.nanmean(array, axis=0).squeeze()
+        return jnp.nanmean(array, axis=0).squeeze()
 
-    def mean_abs_diff(self, w, array):
+    def mean_abs_diff(self, array):
         """Calculates the mean absolute difference"""
         d = jnp.nanmean(jnp.fabs(jnp.diff(array, n=1, axis=0)), axis=0).squeeze()
-        return w, self._scale_min_max(d, 0.0, 0.05, 0.0, 1.0)
+        return self._scale_min_max(d, 0.0, 0.05, 0.0, 1.0)
 
     @staticmethod
-    def min(w, array):
+    def min(array):
         """Calculates the min"""
-        return w, jnp.nanmin(array, axis=0).squeeze()
+        return jnp.nanmin(array, axis=0).squeeze()
 
     @staticmethod
-    def norm_abs_energy(w, array):
+    def norm_abs_energy(array):
         """Calculates the normalized absolute energy"""
-        return w, jnp.nansum(array**2, axis=0).squeeze() / (jnp.nanmax(array, axis=0)**2 * array.shape[0]).squeeze()
+        return jnp.nansum(array**2, axis=0).squeeze() / (jnp.nanmax(array, axis=0)**2 * array.shape[0]).squeeze()
 
-    def _stack(self, w, array, stats):
+    def _stack(self, array, stats):
         """Calculates a stack of statistics"""
-        return w, jnp.stack([getattr(self, stat)(w, array)[1][np.newaxis, :, :] for stat in stats]).squeeze()
+        return jnp.stack([getattr(self, stat)(array)[1][np.newaxis, :, :] for stat in stats]).squeeze()
 
 
 @contextmanager
@@ -1087,15 +1087,14 @@ class series(_PropsMixin):
             >>>         super(TemporalMean, self).__init__()
             >>>
             >>>     # The main function
-            >>>     def calculate(self, w, array, band_dict=None):
+            >>>     def calculate(self, array, band_dict=None):
             >>>
             >>>         sl1 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
             >>>         sl2 = (slice(0, None), slice(band_dict['green'], band_dict['green']+1), slice(0, None), slice(0, None))
             >>>
             >>>         vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
             >>>
-            >>>         # The ``calculate`` function method must always return the (window, array results).
-            >>>         return w, vi.mean(axis=0).squeeze()
+            >>>         return vi.mean(axis=0).squeeze()
             >>>
             >>> with rio.open(l8_224078_20200518) as src:
             >>>     res = src.res
