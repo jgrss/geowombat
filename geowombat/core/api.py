@@ -743,6 +743,28 @@ class _Warp(object):
              num_threads=None,
              window_size=None):
 
+        if dst_crs is None:
+            dst_crs = self.srcs_[0].crs
+
+        if dst_res is None:
+            dst_res = self.srcs_[0].res
+
+        if dst_bounds is None:
+            dst_bounds = self.srcs_[0].bounds
+        else:
+
+            if isinstance(dst_bounds, list) or isinstance(dst_bounds, tuple):
+                dst_bounds = BoundingBox(left=dst_bounds[0], bottom=dst_bounds[1], right=dst_bounds[2], top=dst_bounds[3])
+
+        if nodata is None:
+            nodata = self.srcs_[0].nodata
+
+        if warp_mem_limit is None:
+            warp_mem_limit = 256
+
+        if num_threads is None:
+            num_threads = 1
+
         dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
@@ -955,7 +977,7 @@ class series(_PropsMixin):
                  band_names: list = None,
                  crs: str = None,
                  res: Union[list, tuple] = None,
-                 bounds: BoundingBox = None,
+                 bounds: Union[BoundingBox, list, tuple] = None,
                  resampling: str = 'nearest',
                  nodata: Union[float, int] = 0,
                  warp_mem_limit: int = 256,
