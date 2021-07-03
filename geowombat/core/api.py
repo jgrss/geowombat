@@ -9,6 +9,7 @@ try:
 except:
     pass
 
+from abc import abstractmethod
 import warnings
 import itertools
 from pathlib import Path
@@ -824,7 +825,13 @@ class _PropsMixin(object):
         return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
 
 
-class TimeModule(object):
+class TimeModule(_AbstractTimeModule):
+
+    def __init__(self):
+
+        self.dtype = 'float64'
+        self.count = 1
+        self.compress = 'lzw'
 
     def __call__(self, *args):
 
@@ -835,16 +842,18 @@ class TimeModule(object):
     def __repr__(self):
         print(f'TimeModule() -> self.dtype={self.dtype}, self.count={self.count}')
 
+    @abstractmethod
+    def run(self, w, array, band_dict=None):
+        raise NotImplementedError
+
 
 class TimeSeriesStats(TimeModule):
 
     def __init__(self, time_stats):
 
-        super(TimeModule, self).__init__()
+        super(TimeSeriesStats, self).__init__()
 
         self.time_stats = time_stats
-
-        self.dtype = 'float64'
 
         if isinstance(self.time_stats, str):
             self.count = 1
@@ -1053,13 +1062,7 @@ class series(_PropsMixin):
             >>> class TemporalMean(TimeModule):
             >>>
             >>>     def __init__(self):
-            >>>
-            >>>         # Required 3 lines
-            >>>         super(TimeModule, self).__init__()
-            >>>
-            >>>         # Set the output data type and band count
-            >>>         self.dtype = 'float64'
-            >>>         self.count = 1
+            >>>         super(TemporalMean, self).__init__()
             >>>
             >>>     # The main function
             >>>     def run(self, w, array, band_dict=None):
@@ -1151,7 +1154,7 @@ class series(_PropsMixin):
                    'transform': self.transform,
                    'driver': 'GTiff',
                    'dtype': apply_func_.dtype,
-                   'compress': 'none',
+                   'compress': apply_func_.compress,
                    'sharing': False,
                    'tiled': True,
                    'blockxsize': self.blockxsize,
