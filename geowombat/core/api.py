@@ -15,7 +15,7 @@ from pathlib import Path
 import logging
 import threading
 from contextlib import contextmanager
-from typing import Generic, Union
+from typing import Callable, Union
 import concurrent.futures
 
 from . import geoxarray
@@ -824,31 +824,94 @@ class _PropsMixin(object):
         return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
 
 
-class _SeriesMixin(object):
+class TimeModule(object):
+
+    def __call__(self, *args):
+
+        w, array, band_dict = list(itertools.chain(*args))
+
+        return self.run(w, array, band_dict=band_dict)
+
+    def __repr__(self):
+        print(f'TimeModule() -> self.dtype={self.dtype}, self.count={self.count}')
+
+
+class TimeSeriesStats(TimeModule):
+
+    def __init__(self, time_stats):
+
+        super(TimeModule, self).__init__()
+
+        self.time_stats = time_stats
+
+        self.dtype = 'float64'
+
+        if isinstance(self.time_stats, str):
+            self.count = 1
+        else:
+            self.count = len(list(self.time_stats))
+
+    def run(self, w, array, band_dict=None):
+
+        if isinstance(self.time_stats, str):
+            return getattr(self, self.time_stats)(w, array)
+        else:
+            return self._stack(w, array, self.time_stats)
 
     @staticmethod
-    def mean(*args):
-        """Calculates the temporal mean"""
-        w, band_dict, array = list(itertools.chain(*args))
-        return w, jnp.nanmean(array, axis=1).squeeze()
+    def _scale_min_max(xv, mni, mxi, mno, mxo):
+        return ((((mxo - mno) * (xv - mni)) / (mxi - mni)) + mno).clip(mno, mxo)
 
     @staticmethod
-    def cv(*args):
-        """Calculates the temporal coefficient of variation"""
-        w, band_dict, array = list(itertools.chain(*args))
-        return w, jnp.nanstd(array, axis=1).squeeze() / (jnp.nanmean(array, axis=1).squeeze() + 1e-9)
+    def _lstsq(data):
+
+        ndims, nbands, nrows, ncols = data.shape
+
+        M = data.squeeze().transpose(1, 2, 0).reshape(nrows*ncols, ndims).T
+
+        x = jnp.arange(0, M.shape[0])
+
+        # Fit a least squares solution to each sample
+        return jnp.linalg.lstsq(jnp.c_[x, jnp.ones_like(x)], M, rcond=None)[0]
 
     @staticmethod
-    def min(*args):
-        """Calculates the temporal min"""
-        w, band_dict, array = list(itertools.chain(*args))
-        return w, jnp.nanmin(array, axis=1).squeeze()
+    def amp(w, array):
+        """Calculates the amplitude"""
+        return w, jnp.nanmax(array, axis=0).squeeze() - jnp.nanmin(array, axis=0).squeeze()
 
     @staticmethod
-    def max(*args):
-        """Calculates the temporal max"""
-        w, band_dict, array = list(itertools.chain(*args))
-        return w, jnp.nanmax(array, axis=1).squeeze()
+    def cv(w, array):
+        """Calculates the coefficient of variation"""
+        return w, jnp.nanstd(array, axis=0).squeeze() / (jnp.nanmean(array, axis=0).squeeze() + 1e-9)
+
+    @staticmethod
+    def max(w, array):
+        """Calculates the max"""
+        return w, jnp.nanmax(array, axis=0).squeeze()
+
+    @staticmethod
+    def mean(w, array):
+        """Calculates the mean"""
+        return w, jnp.nanmean(array, axis=0).squeeze()
+
+    def mean_abs_diff(self, w, array):
+        """Calculates the mean absolute difference"""
+        d = jnp.nanmean(jnp.fabs(jnp.diff(array, n=1, axis=0)), axis=0).squeeze()
+        return w, self._scale_min_max(d, 0.0, 0.05, 0.0, 1.0)
+
+    @staticmethod
+    def min(w, array):
+        """Calculates the min"""
+        return w, jnp.nanmin(array, axis=0).squeeze()
+
+    @staticmethod
+    def norm_abs_energy(w, array):
+        """Calculates the normalized absolute energy"""
+        return w, jnp.nansum(array**2, axis=0).squeeze() / (jnp.nanmax(array, axis=0)**2 * array.shape[0]).squeeze()
+
+    def _stack(self, w, array, stats):
+        """Calculates a stack of statistics"""
+        return w, jnp.stack([getattr(self, stat)(w, array)[1][np.newaxis, :, :] for stat in stats]).squeeze()
 
 
 @contextmanager
@@ -856,7 +919,7 @@ def _tqdm(*args, **kwargs):
     yield None
 
 
-class series(_PropsMixin, _SeriesMixin):
+class series(_PropsMixin):
 
     """
     A class for time series concurrent processing on a GPU
@@ -885,7 +948,7 @@ class series(_PropsMixin, _SeriesMixin):
                  res: Union[list, tuple] = None,
                  bounds: BoundingBox = None,
                  resampling: str = 'nearest',
-                 nodata: Union[float, int] = None,
+                 nodata: Union[float, int] = 0,
                  warp_mem_limit: int = 256,
                  num_threads: int = 1,
                  window_size: Union[list, tuple] = None):
@@ -928,13 +991,17 @@ class series(_PropsMixin, _SeriesMixin):
         else:
             band_list = bands
 
-        def _read(array):
+        def _read(vrt_ptr, bd):
+
+            array = vrt_ptr.read(bd, window=window)
+            mask = vrt_ptr.read_masks(bd, window=window)
+
             array = array * gain + offset
-            array[array == self.nodata] = np.nan
+            array[mask == 0] = np.nan
+
             return array
 
-        return device_put(np.array([np.stack([_read(vrt.read(band, window=window))
-                                              for band in band_list]).squeeze()
+        return device_put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze()
                                     for vrt in self.handler.vrts_]))
 
     @staticmethod
@@ -947,13 +1014,11 @@ class series(_PropsMixin, _SeriesMixin):
             pass
 
     def apply(self,
-              func: Union[Generic, str],
+              func: Union[Callable, str, list, tuple],
               outfile: Union[Path, str],
               bands: Union[list, int],
               gain: float = 1.0,
               offset: Union[float, int] = 0.0,
-              dst_bands: int = 1,
-              dst_dtype: str = 'float64',
               processes: bool = False,
               num_workers: int = 1,
               monitor_progress: bool = True):
@@ -962,13 +1027,12 @@ class series(_PropsMixin, _SeriesMixin):
         Applies a function concurrently over windows
 
         Args:
-            func (object | str): The function to apply. If ``func`` is a string, choices are ['mean', 'min', 'max'].
+            func (object | str | list | tuple): The function to apply. If ``func`` is a string,
+                choices are ['cv', 'max', 'mean', 'min'].
             outfile (Path | str): The output file.
             bands (list | int): The bands to read.
             gain (Optional[float]): A gain factor to apply.
             offset (Optional[float | int]): An offset factor to apply.
-            dst_bands (Optional[int]): The number of destination bands in ``outfile``.
-            dst_dtype (Optional[str]): The output data storage type in ``outfile``.
             processes (Optional[bool]): Whether to use process workers, otherwise use threads.
             num_workers (Optional[int]): The number of concurrent workers.
             monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
@@ -979,19 +1043,34 @@ class series(_PropsMixin, _SeriesMixin):
         Example:
             >>> import itertools
             >>> import geowombat as gw
-            >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_B4
             >>> import rasterio as rio
             >>>
+            >>> # Import an image with 3 bands
+            >>> from geowombat.data import l8_224078_20200518
+            >>> from geowombat.core.api import TimeModule
             >>>
-            >>> def temporal_mean(*args):
-            >>>     w, band_dict, array = list(itertools.chain(*args))
-            >>>     # time x bands x rows x columns
-            >>>     sl1 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
-            >>>     sl2 = (slice(0, None), slice(band_dict['green'], band_dict['green']+1), slice(0, None), slice(0, None))
-            >>>     # Normalized vegetation index
-            >>>     vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
-            >>>     # Take the mean over time
-            >>>     return w, vi.mean(axis=0).squeeze()
+            >>> # Create a custom class
+            >>> class TemporalMean(TimeModule):
+            >>>
+            >>>     def __init__(self):
+            >>>
+            >>>         # Required 3 lines
+            >>>         super(TimeModule, self).__init__()
+            >>>
+            >>>         # Set the output data type and band count
+            >>>         self.dtype = 'float64'
+            >>>         self.count = 1
+            >>>
+            >>>     # The main function
+            >>>     def run(self, w, array, band_dict=None):
+            >>>
+            >>>         sl1 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
+            >>>         sl2 = (slice(0, None), slice(band_dict['green'], band_dict['green']+1), slice(0, None), slice(0, None))
+            >>>
+            >>>         vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
+            >>>
+            >>>         # The ``run`` function method must always return the (window, array results).
+            >>>         return w, vi.mean(axis=0).squeeze()
             >>>
             >>> with rio.open(l8_224078_20200518) as src:
             >>>     res = src.res
@@ -1008,14 +1087,15 @@ class series(_PropsMixin, _SeriesMixin):
             >>>                num_threads=4,
             >>>                window_size=(1024, 1024)) as src:
             >>>
-            >>>     src.apply(temporal_mean,
+            >>>     src.apply(TemporalMean(),
             >>>               outfile='vi_mean.tif',
             >>>               bands=-1,             # open all bands
             >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
-            >>>               dst_bands=1,          # the output has one band
-            >>>               dst_dtype='float64',
             >>>               processes=False,      # use threads
             >>>               num_workers=4)        # use 4 concurrent threads, one per window
+            >>>
+            >>> # Import a single-band image
+            >>> from geowombat.data import l8_224078_20200518_B4
             >>>
             >>> # Open many files, each with 1 band
             >>> with gw.series([l8_224078_20200518_B4]*100,
@@ -1029,32 +1109,53 @@ class series(_PropsMixin, _SeriesMixin):
             >>>
             >>>     src.apply('mean',               # built-in function over single-band images
             >>>               outfile='red_mean.tif',
-            >>>               bands=-1,             # open all bands
+            >>>               bands=1,              # open all bands
             >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
-            >>>               dst_bands=1,          # the output has one band
-            >>>               dst_dtype='float64',
-            >>>               processes=False,      # use threads
             >>>               num_workers=4)        # use 4 concurrent threads, one per window
+            >>>
+            >>> with gw.series([l8_224078_20200518_B4]*100,
+            >>>                band_names=['red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply(['mean', 'max', 'cv'],    # run multiple statistics
+            >>>               outfile='stack_mean.tif',
+            >>>               bands=1,                  # open all bands
+            >>>               gain=0.0001,              # scale from [0,10000] -> [0,1]
+            >>>               num_workers=4)            # use 4 concurrent threads, one per window
         """
-
-        profile = {'count': dst_bands,
-                   'width': self.width,
-                   'height': self.height,
-                   'crs': self.crs,
-                   'transform': self.transform,
-                   'driver': 'GTiff',
-                   'dtype': dst_dtype,
-                   'compress': 'none',
-                   'sharing': False,
-                   'tiled': True,
-                   'blockxsize': self.blockxsize,
-                   'blockysize': self.blockysize}
 
         pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
 
         tqdm_obj = tqdm if monitor_progress else _tqdm
 
-        apply_func_ = getattr(self, func) if isinstance(func, str) else func
+        if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
+
+            if self.count > 1:
+                logger.exception('Only single-band images can be used with built-in functions.')
+                raise ValueError('Only single-band images can be used with built-in functions.')
+
+            apply_func_ = TimeSeriesStats(func)
+
+        else:
+            apply_func_ = func
+
+        profile = {'count': apply_func_.count,
+                   'width': self.width,
+                   'height': self.height,
+                   'crs': self.crs,
+                   'transform': self.transform,
+                   'driver': 'GTiff',
+                   'dtype': apply_func_.dtype,
+                   'compress': 'none',
+                   'sharing': False,
+                   'tiled': True,
+                   'blockxsize': self.blockxsize,
+                   'blockysize': self.blockysize}
 
         # Create the file
         self._create_file(outfile, **profile)
@@ -1063,14 +1164,15 @@ class series(_PropsMixin, _SeriesMixin):
 
             with pool(num_workers) as executor:
 
-                data_gen = ((w, self.band_dict, self.read(bands, window=w, gain=gain, offset=offset)) for w in self.handler.windows_)
+                data_gen = ((w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
+                            for w in self.handler.windows_)
 
                 for w, res in tqdm_obj(executor.map(apply_func_, data_gen), total=self.nchunks):
 
                     with threading.Lock():
 
                         dst.write(res,
-                                  indexes=1 if dst_bands == 1 else range(1, dst_bands+1),
+                                  indexes=1 if apply_func_.count == 1 else range(1, apply_func_.count+1),
                                   window=w)
 
     def __enter__(self):
