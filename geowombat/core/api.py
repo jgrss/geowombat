@@ -825,7 +825,7 @@ class _PropsMixin(object):
         return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
 
 
-class TimeModule(_AbstractTimeModule):
+class TimeModule(object):
 
     def __init__(self):
 
