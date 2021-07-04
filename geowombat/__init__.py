@@ -2,6 +2,8 @@ from . import config
 from .core.api import open
 from .core.api import load
 from .core.api import series
+from .core.series import TimeModulePipeline
+from .core.series import TimeModule
 from .core import extract
 from .core import sample
 from .core import calc_area
@@ -41,6 +43,8 @@ __all__ = ['config',
            'open',
            'load',
            'series',
+           'TimeModulePipeline',
+           'TimeModule',
            'extract',
            'sample',
            'calc_area',

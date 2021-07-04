@@ -17,3 +17,4 @@ Examples
    tasks
    web
    external
+   gpu
