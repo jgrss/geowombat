@@ -66,3 +66,5 @@ sphinx-automodapi
 sphinxcontrib-bibtex==1.0.0  # 2.0.0 is incompatible
 graphviz
 sklearn-xarray
+jax
+jaxlib

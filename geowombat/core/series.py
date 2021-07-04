@@ -11,10 +11,44 @@ from rasterio.vrt import WarpedVRT
 from rasterio.windows import Window
 
 try:
+    import torch
+    PYTORCH_INSTALLED = True
+except:
+    PYTORCH_INSTALLED = False
+
+try:
+    import tensorflow as tf
+    TENSORFLOW_INSTALLED = True
+except:
+    TENSORFLOW_INSTALLED = False
+
+try:
     import jax.numpy as jnp
+    from jax import device_put as jax_put
     JAX_INSTALLED = True
 except:
     JAX_INSTALLED = False
+
+
+class GPULib(object):
+
+    def __init__(self, gpu_lib):
+        self.gpu_lib = gpu_lib
+
+    @staticmethod
+    def jax(array):
+        return jax_put(array)
+
+    @staticmethod
+    def pytorch(array):
+        return torch.from_numpy(array).float().to('cuda:0')
+
+    @staticmethod
+    def tensorflow(array):
+        return tf.convert_to_tensor(array, tf.float64)
+
+    def __call__(self, array):
+        return getattr(self, self.gpu_lib)
 
 
 class _Warp(object):
@@ -154,6 +188,13 @@ class TimeModule(object):
     def __str__(self):
         return "jax.numpy.DeviceArray()[bands x height x width]"
 
+    def __add__(self, other):
+
+        if isinstance(other, TimeModulePipeline):
+            return TimeModulePipeline([self] + other.modules)
+        else:
+            return TimeModulePipeline([self, other])
+
     @abstractmethod
     def calculate(self, array: jnp.DeviceArray, band_dict: dict = None) -> jnp.DeviceArray:
         raise NotImplementedError
@@ -172,6 +213,13 @@ class TimeModulePipeline(object):
         self.dtype = self.modules[-1].dtype
         self.compress = self.modules[-1].compress
         self.bigtiff = self.modules[-1].bigtiff
+
+    def __add__(self, other):
+
+        if isinstance(other, TimeModulePipeline):
+            return TimeModulePipeline(self.modules + other.modules)
+        else:
+            return TimeModulePipeline(self.modules + [other])
 
     def __call__(self, *args):
 

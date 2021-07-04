@@ -19,7 +19,7 @@ from typing import Callable, Union
 import concurrent.futures
 
 from . import geoxarray
-from .series import BaseSeries, SeriesStats
+from .series import BaseSeries, SeriesStats, GPULib
 from .util import Chunks, get_file_extension, parse_wildcard
 from ..handler import add_handler
 from ..config import config, _set_defaults
@@ -39,7 +39,6 @@ from tqdm.auto import tqdm
 
 try:
     import jax.numpy as jnp
-    from jax import device_put
     JAX_INSTALLED = True
 except:
     JAX_INSTALLED = False
@@ -740,6 +739,7 @@ class series(BaseSeries):
     Args:
         filenames (list): The list of filenames to open.
         band_names (Optional[list]): The band associated names.
+        gpu_lib (Optional[str]): The GPU library. Choices are ['jax', 'pytorch', 'tensorflow'].
         crs (Optional[str]): The coordinate reference system.
         res (Optional[list | tuple]): The cell resolution.
         bounds (Optional[object]): The coordinate bounds.
@@ -757,6 +757,7 @@ class series(BaseSeries):
     def __init__(self,
                  filenames: list,
                  band_names: list = None,
+                 gpu_lib: str = 'jax',
                  crs: str = None,
                  res: Union[list, tuple] = None,
                  bounds: Union[BoundingBox, list, tuple] = None,
@@ -776,6 +777,8 @@ class series(BaseSeries):
         self.srcs_ = None
         self.vrts_ = None
         self.windows_ = None
+
+        self.gpu_put = GPULib(gpu_lib)
 
         self.open(filenames)
 
@@ -818,8 +821,8 @@ class series(BaseSeries):
 
             return array
 
-        return device_put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze()
-                                    for vrt in self.vrts_]))
+        return self.gpu_put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze()
+                                      for vrt in self.vrts_]))
 
     @staticmethod
     def _create_file(filename, **profile):

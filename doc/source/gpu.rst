@@ -155,27 +155,24 @@ the other to compute the temporal max. We could use these separately as illustra
 outputs would generate images with two bands. However, we can also combine the two modules to generate
 one 4-band image.
 
-.. code:: python
+.. ipython:: python
+
+    import geowombat as gw
+    import jax.numpy as jnp
 
     class TemporalMean(gw.TimeModule):
-
         def __init__(self):
-
             super(TemporalMean, self).__init__()
-
             self.count = 2
-
         def calculate(self, array, band_dict=None):
             return jnp.nanmean(array, axis=0).squeeze()
 
+.. ipython:: python
+
     class TemporalMax(gw.TimeModule):
-
         def __init__(self):
-
             super(TemporalMax, self).__init__()
-
             self.count = 2
-
         def calculate(self, array, band_dict=None):
             return jnp.nanmax(array, axis=0).squeeze()
 
@@ -192,6 +189,26 @@ Combine the two modules
                   'temporal_stack.tif',
                   bands=[1, 2],
                   num_workers=8)
+
+.. note::
+
+    Modules can also be combined with the ``+`` sign.
+
+For example,
+
+.. ipython:: python
+
+    stacked_module = TemporalMean() + TemporalMax()
+    print(stacked_module.modules)
+
+is equivalent to
+
+.. ipython:: python
+
+    stacked_module = gw.TimeModulePipeline([TemporalMean(),
+                                            TemporalMax()])
+
+    print(stacked_module.modules)
 
 Using the band dictionary
 -------------------------
