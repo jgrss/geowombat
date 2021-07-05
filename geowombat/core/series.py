@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 from abc import abstractmethod
 import itertools
 
@@ -178,9 +178,9 @@ class TimeModule(object):
 
     def __call__(self, *args):
 
-        w, array, band_dict = list(itertools.chain(*args))
+        w, array, self.band_dict = list(itertools.chain(*args))
 
-        return w, self.calculate(array, band_dict=band_dict)
+        return w, self.calculate(array)
 
     def __repr__(self):
         return f"{self.__class__.__name__}():\n    self.dtype='{self.dtype}'\n    self.count={self.count}\n    self.compress='{self.compress}'\n    self.bigtiff='{self.bigtiff}'"
@@ -196,7 +196,7 @@ class TimeModule(object):
             return TimeModulePipeline([self, other])
 
     @abstractmethod
-    def calculate(self, array: jnp.DeviceArray, band_dict: dict = None) -> jnp.DeviceArray:
+    def calculate(self, data: Any) -> Any:
         raise NotImplementedError
 
 
@@ -223,7 +223,7 @@ class TimeModulePipeline(object):
 
     def __call__(self, *args):
 
-        w = list(itertools.chain(*args))[0]
+        w, array, self.band_dict = list(itertools.chain(*args))
 
         results = []
         for module in self.modules:

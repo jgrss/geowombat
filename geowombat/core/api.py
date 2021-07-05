@@ -875,10 +875,10 @@ class series(BaseSeries):
             >>>         super(TemporalMean, self).__init__()
             >>>
             >>>     # The main function
-            >>>     def calculate(self, array, band_dict=None):
+            >>>     def calculate(self, array):
             >>>
-            >>>         sl1 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
-            >>>         sl2 = (slice(0, None), slice(band_dict['green'], band_dict['green']+1), slice(0, None), slice(0, None))
+            >>>         sl1 = (slice(0, None), slice(self.band_dict['red'], self.band_dict['red']+1), slice(0, None), slice(0, None))
+            >>>         sl2 = (slice(0, None), slice(self.band_dict['green'], self.band_dict['green']+1), slice(0, None), slice(0, None))
             >>>
             >>>         vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
             >>>

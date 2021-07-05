@@ -37,6 +37,10 @@ Install JAX (with CUDA 11.1 below)::
 
     pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 
+Install PyTorch (with CUDA 11.1 below)::
+
+    pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+
 Basic example
 -------------
 
@@ -76,12 +80,13 @@ Custom time series modules can be generated with classes following the format be
 .. note::
 
     ``super(TemporalMean, self).__init__()`` instantiates the base time series module. The only required method
-    is :func:`calculate`, which takes two arguments, ``band_dict`` being optional on the user end. The returned
-    value must be a ``jax.numpy.DeviceArray`` shaped ``[bands x rows x columns]`` or ``[rows x columns]``.
+    is :func:`calculate`, which takes one argument. The returned value must be an array shaped
+    ``[bands x rows x columns]`` or ``[rows x columns]``.
 
 .. note::
 
-    ``jax.numpy`` ``nan`` reductions (e.g., ``jnp.nanmean``) should be used because the array data are masked.
+    If ``gw.series(..., gpu_lib='jax')`` then ``jax.numpy`` ``nan`` reductions (e.g., ``jnp.nanmean``) should
+    be used because the array data are masked.
 
 .. code:: python
 
@@ -90,15 +95,15 @@ Custom time series modules can be generated with classes following the format be
         def __init__(self):
             super(TemporalMean, self).__init__()
 
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
 
             """
             Args:
-                array (jax.numpy.DeviceArray): Shaped [time x bands x rows x columns].
-                band_dict (Optional[dict]): A dictionary with band index positions mappings.
+                array (``numpy.ndarray`` | ``jax.numpy.DeviceArray`` | ``torch.tensor`` | ``tensorflow.tensor``):
+                    Shaped [time x bands x rows x columns].
 
             Returns:
-                ``jax.numpy.DeviceArray``
+                ``numpy.ndarray`` | ``jax.numpy.DeviceArray`` | ``torch.tensor`` | ``tensorflow.tensor``
             """
 
             # Reduce the time axis, which is the first index position.
@@ -132,7 +137,7 @@ First, we add a ``count`` attribute that overrides the default of 1.
 
             self.count = 2
 
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
             return jnp.nanmean(array, axis=0).squeeze()
 
 Then, all is needed is to read the desired bands.
@@ -164,7 +169,7 @@ one 4-band image.
         def __init__(self):
             super(TemporalMean, self).__init__()
             self.count = 2
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
             return jnp.nanmean(array, axis=0).squeeze()
 
 .. ipython:: python
@@ -173,7 +178,7 @@ one 4-band image.
         def __init__(self):
             super(TemporalMax, self).__init__()
             self.count = 2
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
             return jnp.nanmax(array, axis=0).squeeze()
 
 Combine the two modules
@@ -224,11 +229,11 @@ Using the band dictionary
             self.count = 1
             self.dtype = 'uint16'
 
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
 
             # Set slice tuples for [time, bands, rows, columns]
-            sl1 = (slice(0, None), slice(band_dict['nir'], band_dict['nir']+1), slice(0, None), slice(0, None))
-            sl2 = (slice(0, None), slice(band_dict['red'], band_dict['red']+1), slice(0, None), slice(0, None))
+            sl1 = (slice(0, None), slice(self.band_dict['nir'], self.band_dict['nir']+1), slice(0, None), slice(0, None))
+            sl2 = (slice(0, None), slice(self.band_dict['red'], self.band_dict['red']+1), slice(0, None), slice(0, None))
 
             # Calculate the NDVI
             vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
@@ -267,11 +272,11 @@ Generic vegetation indices with user arguments
             self.dtype = 'float64'
             self.bigtiff = 'YES'
 
-        def calculate(self, array, band_dict=None):
+        def calculate(self, array):
 
             # Set slice tuples for [time, bands, rows, columns]
-            sl1 = (slice(0, None), slice(band_dict[self.b2], band_dict[self.b2]+1), slice(0, None), slice(0, None))
-            sl2 = (slice(0, None), slice(band_dict[self.b1], band_dict[self.b1]+1), slice(0, None), slice(0, None))
+            sl1 = (slice(0, None), slice(self.band_dict[self.b2], self.band_dict[self.b2]+1), slice(0, None), slice(0, None))
+            sl2 = (slice(0, None), slice(self.band_dict[self.b1], self.band_dict[self.b1]+1), slice(0, None), slice(0, None))
 
             # Calculate the normalized index
             vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
@@ -293,4 +298,46 @@ Now we can create a pipeline with different band ratios.
                   'temporal_stack.tif',
                   band_list=['blue', 'green', 'red', 'nir', 'swir1', 'swir2'],
                   bands=-1,
+                  num_workers=4)
+
+Load and apply PyTorch models
+-----------------------------
+
+.. code:: python
+
+    import torch
+    import torch.nn.functional as F
+
+    class TorchModel(gw.TimeModule):
+
+        def __init__(self, model_file, model):
+
+            super(TorchModel, self).__init__()
+
+            checkpoint = torch.load(model_file)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.model.to('cuda:0')
+
+            self.count = 1
+            self.dtype = 'uint8'
+
+        def calculate(self, array):
+
+            torch.cuda.empty_cache()
+
+            logits = self.model(array)
+            probas = F.softmax(logits, dim=0).argmax(dim=0)
+
+            return probas.squeeze().detach().cpu().numpy()
+
+.. code:: python
+
+    with gw.series(filenames) as src:
+
+        # Read all bands
+        src.apply(TorchModel('model.cnn', CNN()),
+                  'temporal_stack.tif',
+                  gpu_lib='pytorch',
+                  band_list=['blue', 'green', 'red', 'nir'],
+                  bands=[1, 2, 3, 4],
                   num_workers=4)
