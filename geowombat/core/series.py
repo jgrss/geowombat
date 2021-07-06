@@ -25,7 +25,6 @@ except:
 
 try:
     import jax.numpy as jnp
-    from jax import device_put as jax_put
     JAX_INSTALLED = True
 except:
     JAX_INSTALLED = False
@@ -52,7 +51,7 @@ class TransferLib(object):
 
     @staticmethod
     def jax(array):
-        return jax_put(array)
+        return jnp.asarray(array, dtype='float32')
 
     @staticmethod
     def keras(array):
@@ -60,7 +59,7 @@ class TransferLib(object):
 
     @staticmethod
     def numpy(array):
-        return np.float64(array)
+        return np.asarray(array, dtype='float64')
 
     @staticmethod
     def pytorch(array):
@@ -306,9 +305,9 @@ class SeriesStats(TimeModule):
     def calculate(self, array):
 
         if isinstance(self.time_stats, str):
-            return getattr(self, self.time_stats)(array)
+            return np.asarray(getattr(self, self.time_stats)(array))
         else:
-            return self._stack(array, self.time_stats)
+            return np.asarray(self._stack(array, self.time_stats))
 
     @staticmethod
     def _scale_min_max(xv, mni, mxi, mno, mxo):

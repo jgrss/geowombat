@@ -58,6 +58,7 @@ In the example below, the mean over time is calculated on band 1.
 .. code:: python
 
     import geowombat as gw
+    import numpy as np
     import jax.numpy as jnp
 
     filenames = ['image1.tif', 'image2.tif', ...]
@@ -153,7 +154,7 @@ First, we add a ``count`` attribute that overrides the default of 1.
             self.count = 2
 
         def calculate(self, array):
-            return jnp.nanmean(array, axis=0).squeeze()
+            return np.asarray(jnp.nanmean(array, axis=0).squeeze())
 
 Then, all is needed is to read the desired bands.
 
@@ -178,6 +179,7 @@ one 4-band image.
 .. ipython:: python
 
     import geowombat as gw
+    import numpy as np
     import jax.numpy as jnp
 
     class TemporalMean(gw.TimeModule):
@@ -185,7 +187,7 @@ one 4-band image.
             super(TemporalMean, self).__init__()
             self.count = 2
         def calculate(self, array):
-            return jnp.nanmean(array, axis=0).squeeze()
+            return np.asarray(jnp.nanmean(array, axis=0).squeeze())
 
 .. ipython:: python
 
@@ -194,7 +196,7 @@ one 4-band image.
             super(TemporalMax, self).__init__()
             self.count = 2
         def calculate(self, array):
-            return jnp.nanmax(array, axis=0).squeeze()
+            return np.asarray(jnp.nanmax(array, axis=0).squeeze())
 
 Combine the two modules
 
@@ -260,7 +262,7 @@ The band dictionary attribute is available within a module if ``band_list`` is p
             # Scale x10000 (truncating values < 0)
             vi = (jnp.nanmean(array, axis=0) * 10000).astype('uint16')
 
-            return vi.squeeze()
+            return np.asarray(vi.squeeze())
 
 .. code:: python
 
@@ -300,7 +302,7 @@ Generic vegetation indices with user arguments
             # Calculate the normalized index
             vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
 
-            return jnp.nanmean(array, axis=0).squeeze()
+            return np.asarray(jnp.nanmean(array, axis=0).squeeze())
 
 Now we can create a pipeline with different band ratios.
 

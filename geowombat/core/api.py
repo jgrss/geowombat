@@ -1037,10 +1037,24 @@ class series(BaseSeries):
                 for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
 
                     with threading.Lock():
+                        self._write_window(dst, res, apply_func_.count, w)
 
-                        dst.write(res,
-                                  indexes=1 if apply_func_.count == 1 else range(1, apply_func_.count+1),
-                                  window=w[0] if self.padding else w)
+    def _write_window(self, dst_, out_data_, count, w):
+
+        if self.padding:
+
+            window_ = w[0]
+            padded_window_ = w[1]
+
+            # Get the non-padded array slice
+            row_diff = abs(window_.row_off - padded_window_.row_off)
+            col_diff = abs(window_.col_off - padded_window_.col_off)
+
+            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+
+        dst_.write(out_data_,
+                   indexes=1 if count == 1 else range(1, count+1),
+                   window=w[0] if self.padding else w)
 
     def __enter__(self):
         return self
