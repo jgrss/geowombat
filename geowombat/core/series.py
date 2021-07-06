@@ -2,13 +2,14 @@ from typing import Any, List
 from abc import abstractmethod
 import itertools
 
+from .windows import get_window_offsets
+
 import numpy as np
 from affine import Affine
 import rasterio as rio
 from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.windows import Window
 
 try:
     import torch
@@ -30,14 +31,36 @@ except:
     JAX_INSTALLED = False
 
 
-class GPULib(object):
+class TransferLib(object):
 
-    def __init__(self, gpu_lib):
-        self.gpu_lib = gpu_lib
+    """
+    Device transfers
+
+    Args:
+        transfer_lib (str): The device library to transfer to.
+            Choices are ['jax', 'keras', 'numpy', 'pytorch', 'tensorflow'].
+
+            'jax' -> GPU
+            'keras' -> GPU
+            'numpy' -> CPU
+            'pytorch' -> GPU
+            'tensorflow' -> GPU
+    """
+
+    def __init__(self, transfer_lib: str):
+        self.transfer_lib = transfer_lib
 
     @staticmethod
     def jax(array):
         return jax_put(array)
+
+    @staticmethod
+    def keras(array):
+        raise NotImplementedError
+
+    @staticmethod
+    def numpy(array):
+        return np.float64(array)
 
     @staticmethod
     def pytorch(array):
@@ -48,7 +71,7 @@ class GPULib(object):
         return tf.convert_to_tensor(array, tf.float64)
 
     def __call__(self, array):
-        return getattr(self, self.gpu_lib)
+        return getattr(self, self.transfer_lib)
 
 
 class _Warp(object):
@@ -61,7 +84,8 @@ class _Warp(object):
              nodata=None,
              warp_mem_limit=None,
              num_threads=None,
-             window_size=None):
+             window_size=None,
+             padding=None):
 
         if dst_crs is None:
             dst_crs = self.srcs_[0].crs
@@ -107,16 +131,12 @@ class _Warp(object):
 
         if window_size:
 
-            def adjust_window(pixel_index, block_size, rows_cols):
-                return block_size if (pixel_index + block_size) < rows_cols else rows_cols - pixel_index
-
-            self.windows_ = []
-
-            for row_off in range(0, dst_height, window_size[0]):
-                wheight = adjust_window(row_off, window_size[0], dst_height)
-                for col_off in range(0, dst_width, window_size[1]):
-                    wwidth = adjust_window(col_off, window_size[1], dst_width)
-                    self.windows_.append(Window(row_off=row_off, col_off=col_off, height=wheight, width=wwidth))
+            self.windows_ = get_window_offsets(dst_height,
+                                               dst_width,
+                                               window_size[0],
+                                               window_size[1],
+                                               return_as='list',
+                                               padding=padding)
 
         else:
             self.windows_ = [[w[1] for w in src.block_windows(1)] for src in self.vrts_][0]
@@ -157,6 +177,10 @@ class _SeriesProps(object):
         return len(self.windows_)
 
     @property
+    def nodata(self):
+        return self.vrts_[0].nodata
+
+    @property
     def band_dict(self):
         return dict(zip(self.band_names, range(0, self.count))) if self.band_names else None
 
@@ -183,10 +207,21 @@ class TimeModule(object):
         return w, self.calculate(array)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}():\n    self.dtype='{self.dtype}'\n    self.count={self.count}\n    self.compress='{self.compress}'\n    self.bigtiff='{self.bigtiff}'"
+
+        return f"{self.__class__.__name__}():\n    " \
+               f"self.dtype='{self.dtype}'\n    " \
+               f"self.count={self.count}\n    " \
+               f"self.compress='{self.compress}'\n    " \
+               f"self.bigtiff='{self.bigtiff}'"
 
     def __str__(self):
-        return "jax.numpy.DeviceArray()[bands x height x width]"
+
+        return f"{self.__class__.__name__}():\n    " \
+               f"self.dtype='{self.dtype}'\n    " \
+               f"self.count={self.count}\n    " \
+               f"self.compress='{self.compress}'\n    " \
+               f"self.bigtiff='{self.bigtiff}'\n    " \
+               f"-> Array(numpy.ndarray | jax.numpy.DeviceArray | torch.Tensor | tensorflow.Tensor)[bands x height x width]"
 
     def __add__(self, other):
 
@@ -197,6 +232,24 @@ class TimeModule(object):
 
     @abstractmethod
     def calculate(self, data: Any) -> Any:
+
+        """
+        Calculates the user function
+
+        Args:
+            data (``numpy.ndarray`` |
+                  ``jax.numpy.DeviceArray`` |
+                  ``torch.Tensor`` |
+                  ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].
+
+        Returns:
+            ``numpy.ndarray`` |
+            ``jax.numpy.DeviceArray`` |
+            ``torch.Tensor`` |
+            ``tensorflow.Tensor``:
+                Shaped (time|bands x rows x columns)
+        """
+
         raise NotImplementedError
 
 

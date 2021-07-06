@@ -14,12 +14,12 @@ from pathlib import Path
 import logging
 import threading
 from contextlib import contextmanager
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 import concurrent.futures
 
 from . import geoxarray
-from .series import BaseSeries, SeriesStats, GPULib
+from .series import BaseSeries, SeriesStats, TransferLib
 from .util import Chunks, get_file_extension, parse_wildcard
 from ..handler import add_handler
 from ..config import config, _set_defaults
@@ -36,12 +36,6 @@ from rasterio.coords import BoundingBox
 import dask
 import dask.array as da
 from tqdm.auto import tqdm
-
-try:
-    import jax.numpy as jnp
-    JAX_INSTALLED = True
-except:
-    JAX_INSTALLED = False
 
 
 logger = logging.getLogger(__name__)
@@ -731,6 +725,33 @@ def load(image_list,
     return real_proc_times, y
 
 
+class _ImportGPU(object):
+
+    try:
+        import jax.numpy as jnp
+        JAX_INSTALLED = True
+    except:
+        JAX_INSTALLED = False
+
+    try:
+        import torch
+        PYTORCH_INSTALLED = True
+    except:
+        PYTORCH_INSTALLED = False
+
+    try:
+        import tensorflow as tf
+        TENSORFLOW_INSTALLED = True
+    except:
+        TENSORFLOW_INSTALLED = False
+
+    try:
+        from tensorflow import keras
+        KERAS_INSTALLED = True
+    except:
+        KERAS_INSTALLED = False
+
+
 class series(BaseSeries):
 
     """
@@ -739,7 +760,8 @@ class series(BaseSeries):
     Args:
         filenames (list): The list of filenames to open.
         band_names (Optional[list]): The band associated names.
-        gpu_lib (Optional[str]): The GPU library. Choices are ['jax', 'pytorch', 'tensorflow'].
+        transfer_lib (Optional[str]): The library to transfer data to.
+            Choices are ['jax', 'keras', 'numpy', 'pytorch', 'tensorflow'].
         crs (Optional[str]): The coordinate reference system.
         res (Optional[list | tuple]): The cell resolution.
         bounds (Optional[object]): The coordinate bounds.
@@ -748,6 +770,10 @@ class series(BaseSeries):
         warp_mem_limit (Optional[int]): The ``rasterio`` warping memory limit (in MB).
         num_threads (Optional[int]): The number of ``rasterio`` warping threads.
         window_size (Optional[list | tuple]): The concurrent processing window size (height, width).
+        padding (Optional[list | tuple]): Padding for each window. ``padding`` should be given as a tuple
+            of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
+            a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
+            and w2 contains the padded window offsets.
 
     Requirement:
         > # CUDA 11.1
@@ -757,7 +783,7 @@ class series(BaseSeries):
     def __init__(self,
                  filenames: list,
                  band_names: list = None,
-                 gpu_lib: str = 'jax',
+                 transfer_lib: str = 'jax',
                  crs: str = None,
                  res: Union[list, tuple] = None,
                  bounds: Union[BoundingBox, list, tuple] = None,
@@ -765,11 +791,26 @@ class series(BaseSeries):
                  nodata: Union[float, int] = 0,
                  warp_mem_limit: int = 256,
                  num_threads: int = 1,
-                 window_size: Union[list, tuple] = None):
+                 window_size: Union[list, tuple] = None,
+                 padding: Union[list, tuple] = None):
 
-        if not JAX_INSTALLED:
-            logger.exception('Jax must be installed.')
-            raise ImportError('Jax must be installed.')
+        imports_ = _ImportGPU()
+
+        if not imports_.JAX_INSTALLED and (transfer_lib == 'jax'):
+            logger.exception('JAX must be installed.')
+            raise ImportError('JAX must be installed.')
+
+        if not imports_.PYTORCH_INSTALLED and (transfer_lib == 'pytorch'):
+            logger.exception('PyTorch must be installed.')
+            raise ImportError('PyTorch must be installed.')
+
+        if not imports_.TENSORFLOW_INSTALLED and (transfer_lib == 'tensorflow'):
+            logger.exception('Tensorflow must be installed.')
+            raise ImportError('Tensorflow must be installed.')
+
+        if not imports_.KERAS_INSTALLED and (transfer_lib == 'keras'):
+            logger.exception('Keras must be installed.')
+            raise ImportError('Keras must be installed.')
 
         self.filenames = filenames
         self.band_names = band_names
@@ -778,7 +819,16 @@ class series(BaseSeries):
         self.vrts_ = None
         self.windows_ = None
 
-        self.gpu_put = GPULib(gpu_lib)
+        if transfer_lib == 'jax':
+            self.out_array_type = imports_.jnp.DeviceArray
+        elif transfer_lib == 'numpy':
+            self.out_array_type = np.ndarray
+        elif transfer_lib == 'pytorch':
+            self.out_array_type = imports_.torch.Tensor
+        elif transfer_lib in ['keras', 'tensorflow']:
+            self.out_array_type = imports_.tf.Tensor
+
+        self.put = TransferLib(transfer_lib)
 
         self.open(filenames)
 
@@ -789,13 +839,14 @@ class series(BaseSeries):
                   nodata=nodata,
                   warp_mem_limit=warp_mem_limit,
                   num_threads=num_threads,
-                  window_size=window_size)
+                  window_size=window_size,
+                  padding=padding)
 
     def read(self,
              bands: Union[int, list],
              window: Window = None,
              gain: float = 1.0,
-             offset: Union[float, int] = 0.0) -> jnp.DeviceArray:
+             offset: Union[float, int] = 0.0) -> Any:
 
         """
         Reads a window
@@ -821,8 +872,7 @@ class series(BaseSeries):
 
             return array
 
-        return self.gpu_put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze()
-                                      for vrt in self.vrts_]))
+        return self.put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze() for vrt in self.vrts_]))
 
     @staticmethod
     def _create_file(filename, **profile):
@@ -967,6 +1017,7 @@ class series(BaseSeries):
                    'compress': apply_func_.compress,
                    'sharing': False,
                    'tiled': True,
+                   'nodata': self.nodata,
                    'blockxsize': self.blockxsize,
                    'blockysize': self.blockysize}
 
