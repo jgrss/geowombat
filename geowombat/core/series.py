@@ -71,7 +71,7 @@ class TransferLib(object):
         return tf.convert_to_tensor(array, tf.float64)
 
     def __call__(self, array):
-        return getattr(self, self.transfer_lib)
+        return getattr(self, self.transfer_lib)(array)
 
 
 class _Warp(object):
@@ -199,10 +199,11 @@ class TimeModule(object):
         self.count = 1
         self.compress = 'lzw'
         self.bigtiff = 'NO'
+        self.band_dict = None
 
-    def __call__(self, *args):
+    def __call__(self, w, array, band_dict):
 
-        w, array, self.band_dict = list(itertools.chain(*args))
+        self.band_dict = band_dict
 
         return w, self.calculate(array)
 
@@ -274,14 +275,12 @@ class TimeModulePipeline(object):
         else:
             return TimeModulePipeline(self.modules + [other])
 
-    def __call__(self, *args):
-
-        w, array, self.band_dict = list(itertools.chain(*args))
+    def __call__(self, w, array, band_dict):
 
         results = []
         for module in self.modules:
 
-            res = module(*args)[1]
+            res = module(w, array, band_dict)[1]
 
             if len(res.shape) == 2:
                 res = res[np.newaxis]
@@ -304,7 +303,7 @@ class SeriesStats(TimeModule):
         else:
             self.count = len(list(self.time_stats))
 
-    def calculate(self, array, band_dict=None):
+    def calculate(self, array):
 
         if isinstance(self.time_stats, str):
             return getattr(self, self.time_stats)(array)
@@ -327,6 +326,30 @@ class SeriesStats(TimeModule):
         # Fit a least squares solution to each sample
         return jnp.linalg.lstsq(jnp.c_[x, jnp.ones_like(x)], M, rcond=None)[0]
 
+    def abs_slope_q1(self, data):
+        """Calculates the absolute slope of the first quarter"""
+        b1 = self._lstsq(data[:int(0.25*data.shape[0])])[0]
+        b1[np.isnan(b1) | np.isinf(b1)] = 0
+        return self._scale_min_max(jnp.fabs(b1), 0.0, 0.05, 0.0, 1.0)
+
+    def abs_slope_q2(self, data):
+        """Calculates the absolute slope of the second quarter"""
+        b1 = self._lstsq(data[int(0.25*data.shape[0]):int(0.5*data.shape[0])])[0]
+        b1[np.isnan(b1) | np.isinf(b1)] = 0
+        return self._scale_min_max(jnp.fabs(b1), 0.0, 0.05, 0.0, 1.0)
+
+    def abs_slope_q3(self, data):
+        """Calculates the absolute slope of the third quarter"""
+        b1 = self._lstsq(data[int(0.5*data.shape[0]):int(0.75*data.shape[0])])[0]
+        b1[np.isnan(b1) | np.isinf(b1)] = 0
+        return self._scale_min_max(jnp.fabs(b1), 0.0, 0.05, 0.0, 1.0)
+
+    def abs_slope_q4(self, data):
+        """Calculates the absolute slope of the fourth quarter"""
+        b1 = self._lstsq(data[int(0.75*data.shape[0]):])[0]
+        b1[np.isnan(b1) | np.isinf(b1)] = 0
+        return self._scale_min_max(jnp.fabs(b1), 0.0, 0.05, 0.0, 1.0)
+
     @staticmethod
     def amp(array):
         """Calculates the amplitude"""
@@ -347,6 +370,11 @@ class SeriesStats(TimeModule):
         """Calculates the mean"""
         return jnp.nanmean(array, axis=0).squeeze()
 
+    @staticmethod
+    def median(array):
+        """Calculates the median"""
+        return jnp.nanmedian(array, axis=0).squeeze()
+
     def mean_abs_diff(self, array):
         """Calculates the mean absolute difference"""
         d = jnp.nanmean(jnp.fabs(jnp.diff(array, n=1, axis=0)), axis=0).squeeze()
@@ -362,6 +390,13 @@ class SeriesStats(TimeModule):
         """Calculates the normalized absolute energy"""
         return jnp.nansum(array**2, axis=0).squeeze() / (jnp.nanmax(array, axis=0)**2 * array.shape[0]).squeeze()
 
+    @staticmethod
+    def percentile(array, p):
+        """Calculates the nth percentile"""
+        return jnp.nanpercentile(array, p, axis=0).squeeze()
+
     def _stack(self, array, stats):
         """Calculates a stack of statistics"""
-        return jnp.vstack([getattr(self, stat)(array)[np.newaxis] for stat in stats]).squeeze()
+        return jnp.vstack([getattr(self, 'percentile')(array, int(stat[10:]))[np.newaxis] if
+                           stat.startswith('percentile') else
+                           getattr(self, stat)(array)[np.newaxis] for stat in stats]).squeeze()

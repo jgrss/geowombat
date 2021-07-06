@@ -402,3 +402,31 @@ Load and apply Tensorflow/Keras models
                   band_list=['blue', 'green', 'red', 'nir'],
                   bands=[1, 2, 3, 4],
                   num_workers=4)
+
+Generating time series file lists
+---------------------------------
+
+.. code:: python
+
+    from pathlib import Path
+    from geowombat.core import sort_images_by_date
+    import pandas as pd
+
+    file_path = Path('.')
+
+    image_dict = sort_images_by_date(file_path,
+                                     '*.tif',
+                                     date_pos=0,
+                                     date_start=0,
+                                     date_end=7,
+                                     split_by='_',
+                                     date_format='%Y%j')
+
+    image_names = list(image_dict.keys())
+    image_dates = list(image_dict.values())
+
+    # Create a DataFrame for time slicing
+    df = pd.DataFrame(data=image_names, columns=['name'], index=image_dates)
+
+    file_list = df.loc['2019-07-01':'2020-07-01'].name.values.tolist()
+

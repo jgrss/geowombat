@@ -814,6 +814,7 @@ class series(BaseSeries):
 
         self.filenames = filenames
         self.band_names = band_names
+        self.padding = padding
 
         self.srcs_ = None
         self.vrts_ = None
@@ -840,7 +841,7 @@ class series(BaseSeries):
                   warp_mem_limit=warp_mem_limit,
                   num_threads=num_threads,
                   window_size=window_size,
-                  padding=padding)
+                  padding=self.padding)
 
     def read(self,
              bands: Union[int, list],
@@ -1028,16 +1029,18 @@ class series(BaseSeries):
 
             with pool(num_workers) as executor:
 
-                data_gen = ((w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
+                data_gen = ((w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict) if
+                            self.padding else
+                            (w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
                             for w in self.windows_)
 
-                for w, res in tqdm_obj(executor.map(apply_func_, data_gen), total=self.nchunks):
+                for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
 
                     with threading.Lock():
 
                         dst.write(res,
                                   indexes=1 if apply_func_.count == 1 else range(1, apply_func_.count+1),
-                                  window=w)
+                                  window=w[0] if self.padding else w)
 
     def __enter__(self):
         return self
