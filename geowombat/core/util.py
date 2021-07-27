@@ -551,7 +551,10 @@ def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, f
                               crs=crs,
                               columns=[id_column, 'point'])
 
-    for col in other_cols:
-        fea_df.loc[:, col] = df_row[col]
+    if not fea_df.empty:
+        for col in other_cols:
+            fea_df.loc[:, col] = df_row[col]
+    else:
+        pass
 
     return fea_df
