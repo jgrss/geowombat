@@ -3,6 +3,8 @@ from pathlib import Path
 from getpass import getpass
 import math
 import logging
+import zipfile
+from retry import retry
 
 import requests
 import yaml
@@ -183,8 +185,22 @@ class NASAEarthdataDownloader(PassKey, BaseDownloader):
         if not outfile:
             outfile = f"NASADEM_HGT_{grid_id}.zip"
 
-        self.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{grid_id}.zip",
-                      outfile)
+        @retry(zipfile.BadZipfile, tries=10, delay=5)
+        def stream_zipfile():
+
+            try:
+
+                if Path(outfile).is_file():
+                    z = zipfile.ZipFile(outfile)
+
+                self.download(f"https://e4ftl01.cr.usgs.gov/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_{grid_id}.zip",
+                              outfile)
+
+            except zipfile.BadZipfile:
+                Path(outfile).unlink()
+                raise zipfile.BadZipfile
+
+        stream_zipfile()
 
     def download_aerosol(self, year, doy, outfile=None):
 
