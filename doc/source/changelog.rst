@@ -3,6 +3,14 @@
 Changelog
 =========
 
+1.7.3 (18 August 2021)
+----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added check for corrupted .zip files in NASA data downloader.
+
 1.7.2 (9 June 2021)
 -------------------
 
