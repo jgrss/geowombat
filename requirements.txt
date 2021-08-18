@@ -1,17 +1,17 @@
 cython>=0.29.0            # via -r requirements.in
-dask[array,dataframe]>=2.23.0  # via -r requirements.in, distributed
-distributed>=2.23.0       # via -r requirements.in
+dask[array,dataframe]>=2021.08.0
+distributed>=2021.08.0
 geopandas>=0.8.0          # via -r requirements.in
 joblib>=0.16.0            # via -r requirements.in, scikit-learn
 matplotlib>=3.3.0         # via -r requirements.in
 numpy>=1.19.0             # via -r requirements.in, dask, matplotlib, pandas, rasterio, scikit-learn, scipy, snuggs, xarray
-pandas>=1.1.0             # via -r requirements.in, dask, geopandas, xarray
+pandas>=1.2.0             # via -r requirements.in, dask, geopandas, xarray
 pyproj>=2.6.0             # via -r requirements.in, geopandas
-rasterio>=1.1.5           # via -r requirements.in
+rasterio>=1.2.0           # via -r requirements.in
 scikit-learn>=0.23.0      # via -r requirements.in
 scipy>=1.5.0              # via -r requirements.in, scikit-learn
 shapely>=1.7.0            # via -r requirements.in, geopandas
-tqdm>=4.48.0              # via -r requirements.in
-xarray>=0.15.0            # via -r requirements.in
+tqdm>=4.62.0              # via -r requirements.in
+xarray>=0.19.0            # via -r requirements.in
 cryptography
 
