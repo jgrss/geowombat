@@ -14,4 +14,6 @@ tqdm
 scipy
 scikit-learn
 cryptography
-
+retry
+requests
+opencv
