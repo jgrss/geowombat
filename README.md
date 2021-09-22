@@ -134,21 +134,28 @@ pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
 With `conda`
 
 ```shell script
+# Install the libspatialindex and GDAL libraries
+sudo apt install libspatialindex-dev libgdal-dev
+
 # Create a Python 3.7 virtual environment named gwenv
-conda create -n gwenv python=3.7 cython numpy -c conda-forge
+conda create -n gwenv python=3.7 cython numpy libspatialindex gdal -c conda-forge
 
 # Activate the virtual environment
 conda activate gwenv
 
-# Install the libspatialindex and GDAL libraries
-sudo apt install libspatialindex-dev libgdal-dev
-# Alternatively, use conda-forge
-# conda install -c conda-forge libspatialindex gdal
-
 # Install GeoWombat with all extra libraries
-pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+pip install git+https://github.com/jgrss/geowombat.git
 ```
+
+### Universal Install Via Docker
+If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
+Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
+
 
 ## Documentation
 
 For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).
+
+## Learning 
+
+If you are new to geospatial programming in Python please refer to [pygis.io](https://pygis.io)
