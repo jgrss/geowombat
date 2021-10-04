@@ -14,4 +14,5 @@ shapely>=1.7.0            # via -r requirements.in, geopandas
 tqdm>=4.62.0              # via -r requirements.in
 xarray>=0.17.0            # via -r requirements.in
 cryptography
+retry
 
