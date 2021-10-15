@@ -5,3 +5,4 @@ Authors
 * Leonardo Hardtke
 * Michael Mann
 * Robert Denham
+* Sharon Xu
