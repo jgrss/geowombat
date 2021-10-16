@@ -16,4 +16,5 @@ scikit-learn
 cryptography
 retry
 requests
-opencv
+opencv-python
+pip-tools

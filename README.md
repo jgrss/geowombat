@@ -151,6 +151,12 @@ pip install git+https://github.com/jgrss/geowombat.git
 If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
 Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
 
+### Development: Adding packages
+Add packages by adding them to requirements.in and running the following to compile requirements.txt:
+```
+pip-compile requirements.in
+```
+
 
 ## Documentation
 
