@@ -17,4 +17,3 @@ cryptography
 retry
 requests
 opencv-python
-pip-tools
