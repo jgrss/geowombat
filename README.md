@@ -97,6 +97,11 @@ cd geowombat/
 python setup.py build && pip install --upgrade . && rm -rf build/
 ```
 
+opencv requires libGL.so.1. In Ubuntu, this can be obtained by running:
+```
+apt-get update && apt-get install libgl1 -y
+```
+
 ### Update
 
 To update GeoWombat:
