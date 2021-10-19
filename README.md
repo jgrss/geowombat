@@ -1,7 +1,7 @@
 ![](data/logo.png)
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
-[![](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
+[![](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
 ![](https://img.shields.io/badge/version-1.7.3-blue.svg?cacheSeconds=2592000)
 
 ### GeoWombat: Utilities for geospatial data
@@ -97,6 +97,11 @@ cd geowombat/
 python setup.py build && pip install --upgrade . && rm -rf build/
 ```
 
+opencv requires libGL.so.1. In Ubuntu, this can be obtained by running:
+```
+apt-get update && apt-get install libgl1 -y
+```
+
 ### Update
 
 To update GeoWombat:
@@ -150,6 +155,12 @@ pip install git+https://github.com/jgrss/geowombat.git
 ### Universal Install Via Docker
 If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
 Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
+
+### Development: Adding packages
+Install pip-tools. Add packages to requirements.in and running the following to compile requirements.txt:
+```
+pip-compile requirements.in
+```
 
 
 ## Documentation
