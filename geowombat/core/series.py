@@ -1,6 +1,5 @@
 from typing import Any, List
 from abc import abstractmethod
-import itertools
 
 from .windows import get_window_offsets
 
@@ -10,6 +9,7 @@ import rasterio as rio
 from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
+from rasterio.windows import Window
 
 try:
     import torch
@@ -95,9 +95,10 @@ class _Warp(object):
         if dst_bounds is None:
             dst_bounds = self.srcs_[0].bounds
         else:
-
             if isinstance(dst_bounds, list) or isinstance(dst_bounds, tuple):
-                dst_bounds = BoundingBox(left=dst_bounds[0], bottom=dst_bounds[1], right=dst_bounds[2], top=dst_bounds[3])
+                dst_bounds = BoundingBox(
+                    left=dst_bounds[0], bottom=dst_bounds[1], right=dst_bounds[2], top=dst_bounds[3]
+                )
 
         if nodata is None:
             nodata = self.srcs_[0].nodata
@@ -108,34 +109,56 @@ class _Warp(object):
         if num_threads is None:
             num_threads = 1
 
+        # The destination transform
         dst_transform = Affine(dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top)
 
+        # The destination size
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
-        vrt_options = {'resampling': getattr(Resampling, resampling),
-                       'crs': dst_crs,
-                       'transform': dst_transform,
-                       'height': dst_height,
-                       'width': dst_width,
-                       'nodata': nodata,
-                       'warp_mem_limit': warp_mem_limit,
-                       'warp_extras': {'multi': True,
-                                       'warp_option': f'NUM_THREADS={num_threads}'}}
+        # The write parameters
+        vrt_options = {
+            'resampling': getattr(Resampling, resampling),
+            'crs': dst_crs,
+            'transform': dst_transform,
+            'height': dst_height,
+            'width': dst_width,
+            'nodata': nodata,
+            'warp_mem_limit': warp_mem_limit,
+            'warp_extras': {'multi': True,
+                            'warp_option': f'NUM_THREADS={num_threads}'}
+        }
 
-        self.vrts_ = [WarpedVRT(src,
-                                src_crs=src.crs,
-                                src_transform=src.transform,
-                                **vrt_options) for src in self.srcs_]
+        # Warp all inputs into virtual in-memory objects
+        self.vrts_ = [
+            WarpedVRT(
+                src,
+                src_crs=src.crs,
+                src_transform=src.transform,
+                **vrt_options)
+            for src in self.srcs_
+        ]
 
-        if window_size:
+        if window_size == -1:
+            self.windows_ = [
+                Window(
+                    row_off=0,
+                    col_off=0,
+                    height=dst_height,
+                    width=dst_width
+                )
+            ]
 
-            self.windows_ = get_window_offsets(dst_height,
-                                               dst_width,
-                                               window_size[0],
-                                               window_size[1],
-                                               return_as='list',
-                                               padding=padding)
+        elif window_size:
+            # Get a list of Window objects
+            self.windows_ = get_window_offsets(
+                dst_height,
+                dst_width,
+                window_size[0],
+                window_size[1],
+                return_as='list',
+                padding=padding
+            )
 
         else:
             self.windows_ = [[w[1] for w in src.block_windows(1)] for src in self.vrts_][0]

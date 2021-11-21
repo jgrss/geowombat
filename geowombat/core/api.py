@@ -769,7 +769,8 @@ class series(BaseSeries):
         nodata (Optional[float | int]): The 'no data' value.
         warp_mem_limit (Optional[int]): The ``rasterio`` warping memory limit (in MB).
         num_threads (Optional[int]): The number of ``rasterio`` warping threads.
-        window_size (Optional[list | tuple]): The concurrent processing window size (height, width).
+        window_size (Optional[int | list | tuple]): The concurrent processing window size (height, width)
+            or -1 (i.e., entire array).
         padding (Optional[list | tuple]): Padding for each window. ``padding`` should be given as a tuple
             of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
             a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
@@ -847,7 +848,10 @@ class series(BaseSeries):
              bands: Union[int, list],
              window: Window = None,
              gain: float = 1.0,
-             offset: Union[float, int] = 0.0) -> Any:
+             offset: Union[float, int] = 0.0,
+             pool: Any = None,
+             num_workers: int = None,
+             tqdm_obj: Any = None) -> Any:
 
         """
         Reads a window
@@ -873,7 +877,32 @@ class series(BaseSeries):
 
             return array
 
-        return self.put(np.array([np.stack([_read(vrt, band) for band in band_list]).squeeze() for vrt in self.vrts_]))
+        if pool is not None:
+            def _read_bands(vrt_):
+                return np.stack(
+                    [_read(vrt_, band) for band in band_list]
+                ).squeeze()
+
+            with pool(num_workers) as executor:
+                data_gen = (vrt for vrt in self.vrts_)
+
+                # for stack in tqdm_obj(executor.map(data_gen), total=self.nchunks):
+                futures = [executor.submit(_read_bands, c) for c in data_gen]
+
+                results = []
+                for f in tqdm_obj(concurrent.futures.as_completed(futures), total=len(self.vrts_)):
+                    results.append(f.result())
+
+            return self.put(np.array(results))
+
+        else:
+            return self.put(
+                np.array([
+                    np.stack([
+                        _read(vrt, band) for band in band_list
+                    ]).squeeze() for vrt in self.vrts_
+                ])
+            )
 
     @staticmethod
     def _create_file(filename, **profile):
@@ -886,13 +915,13 @@ class series(BaseSeries):
 
     def apply(self,
               func: Union[Callable, str, list, tuple],
-              outfile: Union[Path, str],
               bands: Union[list, int],
               gain: float = 1.0,
               offset: Union[float, int] = 0.0,
               processes: bool = False,
               num_workers: int = 1,
-              monitor_progress: bool = True):
+              monitor_progress: bool = True,
+              outfile: Union[Path, str] = None):
 
         """
         Applies a function concurrently over windows
@@ -900,16 +929,19 @@ class series(BaseSeries):
         Args:
             func (object | str | list | tuple): The function to apply. If ``func`` is a string,
                 choices are ['cv', 'max', 'mean', 'min'].
-            outfile (Path | str): The output file.
             bands (list | int): The bands to read.
             gain (Optional[float]): A gain factor to apply.
             offset (Optional[float | int]): An offset factor to apply.
             processes (Optional[bool]): Whether to use process workers, otherwise use threads.
             num_workers (Optional[int]): The number of concurrent workers.
             monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
+            outfile (Optional[Path | str]): The output file.
 
         Returns:
-            None, writes to ``outfile``
+            If outfile is None:
+                Window, array
+            If outfile is not None:
+                None, writes to ``outfile``
 
         Example:
             >>> import itertools
@@ -951,11 +983,11 @@ class series(BaseSeries):
             >>>                window_size=(1024, 1024)) as src:
             >>>
             >>>     src.apply(TemporalMean(),
-            >>>               outfile='vi_mean.tif',
             >>>               bands=-1,             # open all bands
             >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
             >>>               processes=False,      # use threads
-            >>>               num_workers=4)        # use 4 concurrent threads, one per window
+            >>>               num_workers=4,        # use 4 concurrent threads, one per window
+            >>>               outfile='vi_mean.tif')
             >>>
             >>> # Import a single-band image
             >>> from geowombat.data import l8_224078_20200518_B4
@@ -971,10 +1003,10 @@ class series(BaseSeries):
             >>>                window_size=(1024, 1024)) as src:
             >>>
             >>>     src.apply('mean',               # built-in function over single-band images
-            >>>               outfile='red_mean.tif',
             >>>               bands=1,              # open all bands
             >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
-            >>>               num_workers=4)        # use 4 concurrent threads, one per window
+            >>>               num_workers=4,        # use 4 concurrent threads, one per window
+            >>>               outfile='red_mean.tif')
             >>>
             >>> with gw.series([l8_224078_20200518_B4]*100,
             >>>                band_names=['red'],
@@ -986,10 +1018,10 @@ class series(BaseSeries):
             >>>                window_size=(1024, 1024)) as src:
             >>>
             >>>     src.apply(['mean', 'max', 'cv'],    # calculate multiple statistics
-            >>>               outfile='stack_mean.tif',
             >>>               bands=1,                  # open all bands
             >>>               gain=0.0001,              # scale from [0,10000] -> [0,1]
-            >>>               num_workers=4)            # use 4 concurrent threads, one per window
+            >>>               num_workers=4,            # use 4 concurrent threads, one per window
+            >>>               outfile='stack_mean.tif')
         """
 
         pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
@@ -997,9 +1029,7 @@ class series(BaseSeries):
         tqdm_obj = tqdm if monitor_progress else _tqdm
 
         if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
-
             if isinstance(bands, list) or isinstance(bands, tuple):
-
                 logger.exception('Only single-band images can be used with built-in functions.')
                 raise ValueError('Only single-band images can be used with built-in functions.')
 
@@ -1008,36 +1038,63 @@ class series(BaseSeries):
         else:
             apply_func_ = func
 
-        profile = {'count': apply_func_.count,
-                   'width': self.width,
-                   'height': self.height,
-                   'crs': self.crs,
-                   'transform': self.transform,
-                   'driver': 'GTiff',
-                   'dtype': apply_func_.dtype,
-                   'compress': apply_func_.compress,
-                   'sharing': False,
-                   'tiled': True,
-                   'nodata': self.nodata,
-                   'blockxsize': self.blockxsize,
-                   'blockysize': self.blockysize}
+        if outfile is not None:
 
-        # Create the file
-        self._create_file(outfile, **profile)
+            profile = {
+                'count': apply_func_.count,
+                'width': self.width,
+                'height': self.height,
+                'crs': self.crs,
+                'transform': self.transform,
+                'driver': 'GTiff',
+                'dtype': apply_func_.dtype,
+                'compress': apply_func_.compress,
+                'sharing': False,
+                'tiled': True,
+                'nodata': self.nodata,
+                'blockxsize': self.blockxsize,
+                'blockysize': self.blockysize
+            }
 
-        with rio.open(outfile, mode='r+', sharing=False) as dst:
+            # Create the file
+            self._create_file(outfile, **profile)
 
-            with pool(num_workers) as executor:
+        if outfile is not None:
+            with rio.open(outfile, mode='r+', sharing=False) as dst:
 
-                data_gen = ((w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict) if
-                            self.padding else
-                            (w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
-                            for w in self.windows_)
+                with pool(num_workers) as executor:
+                    data_gen = (
+                        (w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict)
+                        if self.padding
+                        else (w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
+                        for w in self.windows_
+                    )
 
-                for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
+                    for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
 
-                    with threading.Lock():
-                        self._write_window(dst, res, apply_func_.count, w)
+                        with threading.Lock():
+                            self._write_window(dst, res, apply_func_.count, w)
+        else:
+            if self.padding:
+                w, res = apply_func_(
+                    self.windows_[0],
+                    self.read(
+                        bands, window=self.windows_[0][1], gain=gain, offset=offset,
+                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                    ),
+                    self.band_dict
+                )
+            else:
+                w, res = apply_func_(
+                    self.windows_[0],
+                    self.read(
+                        bands, window=self.windows_[0], gain=gain, offset=offset,
+                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                    ),
+                    self.band_dict
+                )
+
+            return w, res
 
     def _write_window(self, dst_, out_data_, count, w):
 
