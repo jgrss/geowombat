@@ -1,6 +1,7 @@
 import typing as T
 from abc import abstractmethod
 from datetime import datetime
+import concurrent.futures
 
 import pandas as pd
 
@@ -131,18 +132,33 @@ class _Warp(object):
             'nodata': nodata,
             'warp_mem_limit': warp_mem_limit,
             'warp_extras': {'multi': True,
-                            'warp_option': f'NUM_THREADS={num_threads}'}
+                            'warp_option': f'NUM_THREADS=2'}
         }
 
+        def _warp_window(src_):
+            return WarpedVRT(
+                src_,
+                src_crs=src_.crs,
+                src_transform=src_.transform,
+                **vrt_options
+            )
+
         # Warp all inputs into virtual in-memory objects
-        self.vrts_ = [
-            WarpedVRT(
-                src,
-                src_crs=src.crs,
-                src_transform=src.transform,
-                **vrt_options)
-            for src in self.srcs_
-        ]
+        with concurrent.futures.ThreadPoolExecutor(int(num_threads/2)) as executor:
+            futures = [executor.submit(_warp_window, src) for src in self.srcs_]
+
+            self.vrts_ = []
+            for f in concurrent.futures.as_completed(futures):
+                self.vrts_.append(f.result())
+
+        # self.vrts_ = [
+        #     WarpedVRT(
+        #         src,
+        #         src_crs=src.crs,
+        #         src_transform=src.transform,
+        #         **vrt_options)
+        #     for src in self.srcs_
+        # ]
 
         if window_size == -1:
             self.windows_ = [
