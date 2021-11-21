@@ -1,15 +1,20 @@
-from typing import Any, List
+import typing as T
 from abc import abstractmethod
+from datetime import datetime
+
+import pandas as pd
 
 from .windows import get_window_offsets
 
 import numpy as np
+import pandas as pd
 from affine import Affine
 import rasterio as rio
 from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import Window
+import xarray as xr
 
 try:
     import torch
@@ -212,6 +217,54 @@ class BaseSeries(_SeriesProps, _Warp):
     def open(self, filenames):
         self.srcs_ = [rio.open(fn) for fn in filenames]
 
+    @staticmethod
+    def ndarray_to_darray(
+        data: np.ndarray,
+            image_dates: T.List[datetime],
+        band_names: T.List[str],
+        y: np.ndarray,
+        x: np.ndarray,
+        attrs: T.Optional[T.Dict] = None
+    ) -> xr.DataArray:
+
+        return xr.DataArray(data,
+                            dims=('time', 'band', 'y', 'x'),
+                            coords={'time': image_dates,
+                                    'band': band_names,
+                                    'y': y,
+                                    'x': x},
+                            attrs=attrs)
+
+    def group_dates(
+        self,
+        data: np.ndarray,
+        image_dates: T.List[datetime],
+        band_names: T.List[str]
+    ) -> T.Tuple[np.ndarray, T.List[datetime]]:
+        """Groups data by dates
+        """
+        time_df = pd.DataFrame(data=image_dates, columns=['date'])
+        dupe_dates = time_df.duplicated(keep='first')
+        if not dupe_dates.any():
+            return data, image_dates
+
+        # Convert the NumPy array to a DataArray
+        da = self.ndarray_to_darray(
+            data,
+            image_dates=image_dates,
+            band_names=band_names,
+            y=np.arange(data.shape[2]),
+            x=np.arange(data.shape[3])
+        )
+
+        # Group duplicated dates
+        da = (da
+              .where(lambda x: x != 0)
+              .groupby('time')
+              .mean('time', skipna=True))
+
+        return da.values, da.gw.pydatetime.tolist()
+
 
 class TimeModule(object):
 
@@ -254,7 +307,7 @@ class TimeModule(object):
             return TimeModulePipeline([self, other])
 
     @abstractmethod
-    def calculate(self, data: Any) -> Any:
+    def calculate(self, data: T.Any) -> T.Any:
 
         """
         Calculates the user function
@@ -278,7 +331,7 @@ class TimeModule(object):
 
 class TimeModulePipeline(object):
 
-    def __init__(self, module_list: List[TimeModule]):
+    def __init__(self, module_list: T.List[TimeModule]):
 
         self.modules = module_list
 

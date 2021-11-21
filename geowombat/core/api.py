@@ -783,6 +783,7 @@ class series(BaseSeries):
 
     def __init__(self,
                  filenames: list,
+                 time_names: list = None,
                  band_names: list = None,
                  transfer_lib: str = 'jax',
                  crs: str = None,
@@ -814,6 +815,7 @@ class series(BaseSeries):
             raise ImportError('Keras must be installed.')
 
         self.filenames = filenames
+        self.time_names = time_names
         self.band_names = band_names
         self.padding = padding
 
@@ -881,7 +883,7 @@ class series(BaseSeries):
             def _read_bands(vrt_):
                 return np.stack(
                     [_read(vrt_, band) for band in band_list]
-                ).squeeze()
+                )
 
             with pool(num_workers) as executor:
                 data_gen = (vrt for vrt in self.vrts_)
@@ -900,7 +902,7 @@ class series(BaseSeries):
                 np.array([
                     np.stack([
                         _read(vrt, band) for band in band_list
-                    ]).squeeze() for vrt in self.vrts_
+                    ]) for vrt in self.vrts_
                 ])
             )
 
@@ -939,7 +941,7 @@ class series(BaseSeries):
 
         Returns:
             If outfile is None:
-                Window, array
+                Window, array, [datetime, ...]
             If outfile is not None:
                 None, writes to ``outfile``
 
@@ -1094,7 +1096,10 @@ class series(BaseSeries):
                     self.band_dict
                 )
 
-            return w, res
+            # Group duplicate dates
+            res, image_dates = self.group_dates(res, self.time_names, self.band_names)
+
+            return w, res, image_dates
 
     def _write_window(self, dst_, out_data_, count, w):
 
