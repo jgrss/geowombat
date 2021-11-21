@@ -130,9 +130,7 @@ class _Warp(object):
             'height': dst_height,
             'width': dst_width,
             'nodata': nodata,
-            'warp_mem_limit': warp_mem_limit,
-            'warp_extras': {'multi': True,
-                            'warp_option': f'NUM_THREADS=2'}
+            'warp_mem_limit': warp_mem_limit
         }
 
         def _warp_window(src_):
@@ -144,7 +142,7 @@ class _Warp(object):
             )
 
         # Warp all inputs into virtual in-memory objects
-        with concurrent.futures.ThreadPoolExecutor(int(num_threads/2)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(num_threads) as executor:
             futures = [executor.submit(_warp_window, src) for src in self.srcs_]
 
             self.vrts_ = []
