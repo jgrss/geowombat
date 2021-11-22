@@ -846,14 +846,16 @@ class series(BaseSeries):
                   window_size=window_size,
                   padding=self.padding)
 
-    def read(self,
-             bands: Union[int, list],
-             window: Window = None,
-             gain: float = 1.0,
-             offset: Union[float, int] = 0.0,
-             pool: Any = None,
-             num_workers: int = None,
-             tqdm_obj: Any = None) -> Any:
+    def read(
+        self,
+        bands: Union[int, list],
+        window: Window = None,
+        gain: float = 1.0,
+        offset: Union[float, int] = 0.0,
+        pool: Any = None,
+        num_workers: int = None,
+        tqdm_obj: Any = None
+    ) -> Any:
 
         """
         Reads a window
@@ -888,12 +890,9 @@ class series(BaseSeries):
             with pool(num_workers) as executor:
                 data_gen = (vrt for vrt in self.vrts_)
 
-                # for stack in tqdm_obj(executor.map(data_gen), total=self.nchunks):
-                futures = [executor.submit(_read_bands, c) for c in data_gen]
-
                 results = []
-                for f in tqdm_obj(concurrent.futures.as_completed(futures), total=len(self.vrts_)):
-                    results.append(f.result())
+                for res in tqdm_obj(executor.map(_read_bands, data_gen), total=len(self.vrts_)):
+                    results.append(res)
 
             return self.put(np.array(results))
 

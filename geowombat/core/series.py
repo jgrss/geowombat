@@ -143,11 +143,11 @@ class _Warp(object):
 
         # Warp all inputs into virtual in-memory objects
         with concurrent.futures.ThreadPoolExecutor(num_threads) as executor:
-            futures = [executor.submit(_warp_window, src) for src in self.srcs_]
+            data_gen = (src for src in self.srcs_)
 
             self.vrts_ = []
-            for f in concurrent.futures.as_completed(futures):
-                self.vrts_.append(f.result())
+            for res in executor.map(_warp_window, data_gen):
+                self.vrts_.append(res)
 
         # self.vrts_ = [
         #     WarpedVRT(
