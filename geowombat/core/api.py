@@ -793,7 +793,7 @@ class series(BaseSeries):
                  nodata: Union[float, int] = 0,
                  warp_mem_limit: int = 256,
                  num_threads: int = 1,
-                 window_size: Union[list, tuple] = None,
+                 window_size: Union[int, list, tuple] = None,
                  padding: Union[list, tuple] = None):
 
         imports_ = _ImportGPU()
