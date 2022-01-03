@@ -66,7 +66,7 @@ class ClassifiersMixin(object):
         # Mask 'no data'
         labels = labels.where(labels != 0)
 
-        data.coords[targ_name] = (['time', 'y', 'x'], labels)
+        data.coords[targ_name] = (['time', 'y', 'x'], labels.data)
 
         return data
 
