@@ -219,7 +219,7 @@ def warp_open(filename,
     ref_kwargs = {'bounds': None,
                   'crs': None,
                   'res': None,
-                  'nodata': nodata,
+                  'nodata': nodata if config['nodata'] is None else config['nodata'],
                   'warp_mem_limit': warp_mem_limit,
                   'num_threads': num_threads,
                   'tap': tap,
@@ -269,42 +269,31 @@ def warp_open(filename,
                           **kwargs) if not filenames else warp_netcdf_vars() as src:
 
         if band_names:
-
             if len(band_names) > src.gw.nbands:
                 src.coords['band'] = band_names[:src.gw.nbands]
             else:
                 src.coords['band'] = band_names
 
         else:
-
             if src.gw.sensor:
-
                 if src.gw.sensor not in src.gw.avail_sensors:
-
                     if not src.gw.config['ignore_warnings']:
-
                         logger.warning('  The {} sensor is not currently supported.\nChoose from [{}].'.format(src.gw.sensor,
                                                                                                                ', '.join(src.gw.avail_sensors)))
 
                 else:
-
                     new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
-
                     # Avoid nested opens within a `config` context
                     if len(new_band_names) != len(src.band.values.tolist()):
-
                         if not src.gw.config['ignore_warnings']:
-
                             logger.warning('  The new bands, {}, do not match the sensor bands, {}.'.format(new_band_names,
                                                                                                             src.band.values.tolist()))
 
                     else:
-
                         src.coords['band'] = new_band_names
                         src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
 
         if return_windows:
-
             if isinstance(kwargs['chunks'], tuple):
                 chunksize = kwargs['chunks'][-1]
             else:
