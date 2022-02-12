@@ -388,20 +388,14 @@ class open(object):
                 ch.check_chunktype(kwargs['chunks'], output='3d')
 
         if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
-
             if 'chunks' not in kwargs:
-
                 if isinstance(filename, list):
-
                     with rio.open(filename[0]) as src_:
-
                         w = src_.block_window(1, 0, 0)
                         chunks = (1, w.height, w.width)
 
                 else:
-
                     with rio.open(filename) as src_:
-
                         w = src_.block_window(1, 0, 0)
                         chunks = (1, w.height, w.width)
 
@@ -420,22 +414,17 @@ class open(object):
             self.__filenames = [filename]
 
         else:
-
             if (isinstance(filename, str) and '*' in filename) or isinstance(filename, list):
-
                 # Build the filename list
                 if isinstance(filename, str):
                     filename = parse_wildcard(filename)
 
                 if 'chunks' not in kwargs:
-
                     with rio.open(filename[0]) as src:
-
                         w = src.block_window(1, 0, 0)
                         kwargs['chunks'] = (1, w.height, w.width)
 
                 if mosaic:
-
                     # Mosaic images over space
                     self.data = gw_mosaic(filename,
                                           overlap=overlap,
@@ -447,7 +436,6 @@ class open(object):
                                           **kwargs)
 
                 else:
-
                     # Stack images along the 'time' axis
                     self.data = gw_concat(filename,
                                           stack_dim=stack_dim,
@@ -467,24 +455,18 @@ class open(object):
                 self.__filenames = [str(fn) for fn in filename]
 
             else:
-
                 self.__filenames = [filename]
-
                 file_names = get_file_extension(filename)
 
                 if (file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']) and not \
                         filename.lower().startswith('netcdf:'):
-
                     logger.exception('  The file format is not recognized.')
                     raise OSError
 
                 if (file_names.f_ext.lower() in IO_DICT['rasterio']) or \
                         (filename.lower().startswith('netcdf:')):
-
                     if 'chunks' not in kwargs:
-
                         with rio.open(filename) as src:
-
                             w = src.block_window(1, 0, 0)
                             kwargs['chunks'] = (1, w.height, w.width)
 
@@ -493,10 +475,10 @@ class open(object):
                                           resampling=resampling,
                                           dtype=dtype,
                                           netcdf_vars=netcdf_vars,
+                                          nodata=nodata,
                                           **kwargs)
 
                 else:
-
                     if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
                         logger.exception('  The chunks should be a dictionary.')
                         raise TypeError
