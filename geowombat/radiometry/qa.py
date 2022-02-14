@@ -112,11 +112,19 @@ class QAMasker(object):
                                     self.fmask_dict[mask_item],
                                     mask)
 
-        mask = xr.DataArray(mask,
-                            dims=('y', 'x'),
-                            coords={'y': self.qa.y,
-                                    'x': self.qa.x},
-                            attrs=self.qa.attrs)
+        if self.qa.gw.has_time:
+            mask = xr.DataArray(mask,
+                                dims=('time', 'y', 'x'),
+                                coords={'time': self.qa.time,
+                                        'y': self.qa.y,
+                                        'x': self.qa.x},
+                                attrs=self.qa.attrs)
+        else:
+            mask = xr.DataArray(mask,
+                                dims=('y', 'x'),
+                                coords={'y': self.qa.y,
+                                        'x': self.qa.x},
+                                attrs=self.qa.attrs)
 
         mask = mask.expand_dims(dim='band')
         mask = mask.assign_coords(band=['mask'])

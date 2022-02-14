@@ -12,24 +12,31 @@ except:
 import warnings
 from pathlib import Path
 import logging
-import contextlib
 import threading
+from contextlib import contextmanager
+from typing import Any, Callable, Union
+
+import concurrent.futures
 
 from . import geoxarray
+from .series import BaseSeries, SeriesStats, TransferLib
+from .util import Chunks, get_file_extension, parse_wildcard
 from ..handler import add_handler
 from ..config import config, _set_defaults
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
 from ..backends.rasterio_ import check_src_crs
-from .util import Chunks, get_file_extension, parse_wildcard
 
 import numpy as np
 import xarray as xr
 import rasterio as rio
 from rasterio.windows import from_bounds, Window
+from rasterio.coords import BoundingBox
 import dask
 import dask.array as da
+from tqdm.auto import tqdm
+
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -55,6 +62,11 @@ IO_DICT = dict(rasterio=['.tif',
                          '.h5',
                          '.H5'],
                xarray=['.nc'])
+
+
+@contextmanager
+def _tqdm(*args, **kwargs):
+    yield None
 
 
 def get_attrs(src, **kwargs):
@@ -122,7 +134,7 @@ def read_delayed(fname, chunks, **kwargs):
         if single_band:
 
             # Expand to 1 band
-            data_slice = da.from_array(data_slice[np.newaxis, :, :],
+            data_slice = da.from_array(data_slice[np.newaxis],
                                        chunks=chunks_)
 
         else:
@@ -509,7 +521,7 @@ class open(object):
     def _reset(d):
         d = None
 
-    @contextlib.contextmanager
+    @contextmanager
     def _optional_lock(self, needs_lock):
         """Context manager for optionally acquiring a lock."""
         if needs_lock:
@@ -693,3 +705,407 @@ def load(image_list,
     ray.shutdown()
 
     return real_proc_times, y
+
+
+class _ImportGPU(object):
+
+    try:
+        import jax.numpy as jnp
+        JAX_INSTALLED = True
+    except:
+        JAX_INSTALLED = False
+
+    try:
+        import torch
+        PYTORCH_INSTALLED = True
+    except:
+        PYTORCH_INSTALLED = False
+
+    try:
+        import tensorflow as tf
+        TENSORFLOW_INSTALLED = True
+    except:
+        TENSORFLOW_INSTALLED = False
+
+    try:
+        from tensorflow import keras
+        KERAS_INSTALLED = True
+    except:
+        KERAS_INSTALLED = False
+
+
+class series(BaseSeries):
+
+    """
+    A class for time series concurrent processing on a GPU
+
+    Args:
+        filenames (list): The list of filenames to open.
+        band_names (Optional[list]): The band associated names.
+        transfer_lib (Optional[str]): The library to transfer data to.
+            Choices are ['jax', 'keras', 'numpy', 'pytorch', 'tensorflow'].
+        crs (Optional[str]): The coordinate reference system.
+        res (Optional[list | tuple]): The cell resolution.
+        bounds (Optional[object]): The coordinate bounds.
+        resampling (Optional[str]): The resampling method.
+        nodata (Optional[float | int]): The 'no data' value.
+        warp_mem_limit (Optional[int]): The ``rasterio`` warping memory limit (in MB).
+        num_threads (Optional[int]): The number of ``rasterio`` warping threads.
+        window_size (Optional[int | list | tuple]): The concurrent processing window size (height, width)
+            or -1 (i.e., entire array).
+        padding (Optional[list | tuple]): Padding for each window. ``padding`` should be given as a tuple
+            of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
+            a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
+            and w2 contains the padded window offsets.
+
+    Requirement:
+        > # CUDA 11.1
+        > pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    """
+
+    def __init__(self,
+                 filenames: list,
+                 time_names: list = None,
+                 band_names: list = None,
+                 transfer_lib: str = 'jax',
+                 crs: str = None,
+                 res: Union[list, tuple] = None,
+                 bounds: Union[BoundingBox, list, tuple] = None,
+                 resampling: str = 'nearest',
+                 nodata: Union[float, int] = 0,
+                 warp_mem_limit: int = 256,
+                 num_threads: int = 1,
+                 window_size: Union[int, list, tuple] = None,
+                 padding: Union[list, tuple] = None):
+
+        imports_ = _ImportGPU()
+
+        if not imports_.JAX_INSTALLED and (transfer_lib == 'jax'):
+            logger.exception('JAX must be installed.')
+            raise ImportError('JAX must be installed.')
+
+        if not imports_.PYTORCH_INSTALLED and (transfer_lib == 'pytorch'):
+            logger.exception('PyTorch must be installed.')
+            raise ImportError('PyTorch must be installed.')
+
+        if not imports_.TENSORFLOW_INSTALLED and (transfer_lib == 'tensorflow'):
+            logger.exception('Tensorflow must be installed.')
+            raise ImportError('Tensorflow must be installed.')
+
+        if not imports_.KERAS_INSTALLED and (transfer_lib == 'keras'):
+            logger.exception('Keras must be installed.')
+            raise ImportError('Keras must be installed.')
+
+        self.filenames = filenames
+        self.time_names = time_names
+        self.band_names = band_names
+        self.padding = padding
+
+        self.srcs_ = None
+        self.vrts_ = None
+        self.windows_ = None
+
+        if transfer_lib == 'jax':
+            self.out_array_type = imports_.jnp.DeviceArray
+        elif transfer_lib == 'numpy':
+            self.out_array_type = np.ndarray
+        elif transfer_lib == 'pytorch':
+            self.out_array_type = imports_.torch.Tensor
+        elif transfer_lib in ['keras', 'tensorflow']:
+            self.out_array_type = imports_.tf.Tensor
+
+        self.put = TransferLib(transfer_lib)
+
+        self.open(filenames)
+
+        self.warp(dst_crs=crs,
+                  dst_res=res,
+                  dst_bounds=bounds,
+                  resampling=resampling,
+                  nodata=nodata,
+                  warp_mem_limit=warp_mem_limit,
+                  num_threads=num_threads,
+                  window_size=window_size,
+                  padding=self.padding)
+
+    def read(
+        self,
+        bands: Union[int, list],
+        window: Window = None,
+        gain: float = 1.0,
+        offset: Union[float, int] = 0.0,
+        pool: Any = None,
+        num_workers: int = None,
+        tqdm_obj: Any = None
+    ) -> Any:
+
+        """
+        Reads a window
+        """
+
+        if isinstance(bands, int):
+
+            if bands == -1:
+                band_list = list(range(1, self.count+1))
+            else:
+                band_list = [bands]
+
+        else:
+            band_list = bands
+
+        def _read(vrt_ptr, bd):
+
+            array = vrt_ptr.read(bd, window=window)
+            mask = vrt_ptr.read_masks(bd, window=window)
+
+            array = array * gain + offset
+            array[mask == 0] = np.nan
+
+            return array
+
+        if pool is not None:
+            def _read_bands(vrt_):
+                return np.stack(
+                    [_read(vrt_, band) for band in band_list]
+                )
+
+            with pool(num_workers) as executor:
+                data_gen = (vrt for vrt in self.vrts_)
+
+                results = []
+                for res in tqdm_obj(executor.map(_read_bands, data_gen), total=len(self.vrts_)):
+                    results.append(res)
+
+            return self.put(np.array(results))
+
+        else:
+            return self.put(
+                np.array([
+                    np.stack([
+                        _read(vrt, band) for band in band_list
+                    ]) for vrt in self.vrts_
+                ])
+            )
+
+    @staticmethod
+    def _create_file(filename, **profile):
+
+        if Path(filename).is_file():
+            Path(filename).unlink()
+
+        with rio.open(filename, mode='w', **profile) as dst:
+            pass
+
+    def apply(self,
+              func: Union[Callable, str, list, tuple],
+              bands: Union[list, int],
+              gain: float = 1.0,
+              offset: Union[float, int] = 0.0,
+              processes: bool = False,
+              num_workers: int = 1,
+              monitor_progress: bool = True,
+              outfile: Union[Path, str] = None):
+
+        """
+        Applies a function concurrently over windows
+
+        Args:
+            func (object | str | list | tuple): The function to apply. If ``func`` is a string,
+                choices are ['cv', 'max', 'mean', 'min'].
+            bands (list | int): The bands to read.
+            gain (Optional[float]): A gain factor to apply.
+            offset (Optional[float | int]): An offset factor to apply.
+            processes (Optional[bool]): Whether to use process workers, otherwise use threads.
+            num_workers (Optional[int]): The number of concurrent workers.
+            monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
+            outfile (Optional[Path | str]): The output file.
+
+        Returns:
+            If outfile is None:
+                Window, array, [datetime, ...]
+            If outfile is not None:
+                None, writes to ``outfile``
+
+        Example:
+            >>> import itertools
+            >>> import geowombat as gw
+            >>> import rasterio as rio
+            >>>
+            >>> # Import an image with 3 bands
+            >>> from geowombat.data import l8_224078_20200518
+            >>>
+            >>> # Create a custom class
+            >>> class TemporalMean(gw.TimeModule):
+            >>>
+            >>>     def __init__(self):
+            >>>         super(TemporalMean, self).__init__()
+            >>>
+            >>>     # The main function
+            >>>     def calculate(self, array):
+            >>>
+            >>>         sl1 = (slice(0, None), slice(self.band_dict['red'], self.band_dict['red']+1), slice(0, None), slice(0, None))
+            >>>         sl2 = (slice(0, None), slice(self.band_dict['green'], self.band_dict['green']+1), slice(0, None), slice(0, None))
+            >>>
+            >>>         vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)
+            >>>
+            >>>         return vi.mean(axis=0).squeeze()
+            >>>
+            >>> with rio.open(l8_224078_20200518) as src:
+            >>>     res = src.res
+            >>>     bounds = src.bounds
+            >>>     nodata = 0
+            >>>
+            >>> # Open many files, each with 3 bands
+            >>> with gw.series([l8_224078_20200518]*100,
+            >>>                band_names=['blue', 'green', 'red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply(TemporalMean(),
+            >>>               bands=-1,             # open all bands
+            >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
+            >>>               processes=False,      # use threads
+            >>>               num_workers=4,        # use 4 concurrent threads, one per window
+            >>>               outfile='vi_mean.tif')
+            >>>
+            >>> # Import a single-band image
+            >>> from geowombat.data import l8_224078_20200518_B4
+            >>>
+            >>> # Open many files, each with 1 band
+            >>> with gw.series([l8_224078_20200518_B4]*100,
+            >>>                band_names=['red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply('mean',               # built-in function over single-band images
+            >>>               bands=1,              # open all bands
+            >>>               gain=0.0001,          # scale from [0,10000] -> [0,1]
+            >>>               num_workers=4,        # use 4 concurrent threads, one per window
+            >>>               outfile='red_mean.tif')
+            >>>
+            >>> with gw.series([l8_224078_20200518_B4]*100,
+            >>>                band_names=['red'],
+            >>>                crs='epsg:32621',
+            >>>                res=res,
+            >>>                bounds=bounds,
+            >>>                nodata=nodata,
+            >>>                num_threads=4,
+            >>>                window_size=(1024, 1024)) as src:
+            >>>
+            >>>     src.apply(['mean', 'max', 'cv'],    # calculate multiple statistics
+            >>>               bands=1,                  # open all bands
+            >>>               gain=0.0001,              # scale from [0,10000] -> [0,1]
+            >>>               num_workers=4,            # use 4 concurrent threads, one per window
+            >>>               outfile='stack_mean.tif')
+        """
+
+        pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
+
+        tqdm_obj = tqdm if monitor_progress else _tqdm
+
+        if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
+            if isinstance(bands, list) or isinstance(bands, tuple):
+                logger.exception('Only single-band images can be used with built-in functions.')
+                raise ValueError('Only single-band images can be used with built-in functions.')
+
+            apply_func_ = SeriesStats(func)
+
+        else:
+            apply_func_ = func
+
+        if outfile is not None:
+
+            profile = {
+                'count': apply_func_.count,
+                'width': self.width,
+                'height': self.height,
+                'crs': self.crs,
+                'transform': self.transform,
+                'driver': 'GTiff',
+                'dtype': apply_func_.dtype,
+                'compress': apply_func_.compress,
+                'sharing': False,
+                'tiled': True,
+                'nodata': self.nodata,
+                'blockxsize': self.blockxsize,
+                'blockysize': self.blockysize
+            }
+
+            # Create the file
+            self._create_file(outfile, **profile)
+
+        if outfile is not None:
+            with rio.open(outfile, mode='r+', sharing=False) as dst:
+
+                with pool(num_workers) as executor:
+                    data_gen = (
+                        (w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict)
+                        if self.padding
+                        else (w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
+                        for w in self.windows_
+                    )
+
+                    for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
+
+                        with threading.Lock():
+                            self._write_window(dst, res, apply_func_.count, w)
+        else:
+            if self.padding:
+                w, res = apply_func_(
+                    self.windows_[0],
+                    self.read(
+                        bands, window=self.windows_[0][1], gain=gain, offset=offset,
+                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                    ),
+                    self.band_dict
+                )
+            else:
+                w, res = apply_func_(
+                    self.windows_[0],
+                    self.read(
+                        bands, window=self.windows_[0], gain=gain, offset=offset,
+                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                    ),
+                    self.band_dict
+                )
+
+            # Group duplicate dates
+            res, image_dates = self.group_dates(res, self.time_names, self.band_names)
+
+            return w, res, image_dates
+
+    def _write_window(self, dst_, out_data_, count, w):
+
+        if self.padding:
+
+            window_ = w[0]
+            padded_window_ = w[1]
+
+            # Get the non-padded array slice
+            row_diff = abs(window_.row_off - padded_window_.row_off)
+            col_diff = abs(window_.col_off - padded_window_.col_off)
+
+            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+
+        dst_.write(out_data_,
+                   indexes=1 if count == 1 else range(1, count+1),
+                   window=w[0] if self.padding else w)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+
+        for src in self.srcs_:
+            src.close()
+
+        for vrt in self.vrts_:
+            vrt.close()
