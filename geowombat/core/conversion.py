@@ -745,6 +745,8 @@ class Converters(object):
 
         if col:
             shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
+            
+            # to do: throw error if dataframe[col] is character
             dtype = get_minimum_dtype(dataframe[col])
 
         else: 
