@@ -12,12 +12,11 @@ from sklearn_xarray.model_selection import CrossValidatorWrapper
 
 
 def wrapped_cls(cls):
-
     @functools.wraps(cls)
     def wrapper(self):
 
-        if self.__module__.split('.')[0] != 'sklearn_xarray':
-            self = wrap(self, reshapes='feature')
+        if self.__module__.split(".")[0] != "sklearn_xarray":
+            self = wrap(self, reshapes="feature")
 
         return self
 
@@ -30,20 +29,18 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
-
     @staticmethod
     def grid_search_cv(pipeline):
 
         # TODO: groupby arg
-        cv = CrossValidatorWrapper(GroupShuffleSplit(n_splits=1,
-                                                     test_size=0.5),
-                                   groupby=['time'])
+        cv = CrossValidatorWrapper(
+            GroupShuffleSplit(n_splits=1, test_size=0.5), groupby=["time"]
+        )
 
         # TODO: param_grid arg
-        clf = GridSearchCV(pipeline,
-                           cv=cv,
-                           verbose=1,
-                           param_grid={"pca__n_components": [5]})
+        clf = GridSearchCV(
+            pipeline, cv=cv, verbose=1, param_grid={"pca__n_components": [5]}
+        )
 
         return clf
 
@@ -56,17 +53,20 @@ class ClassifiersMixin(object):
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
-            data = data.assign_coords(coords={'time': 't1'})\
-                        .expand_dims(dim='time')\
-                        .transpose('time', 'band', 'y', 'x')
+            data = (
+                data.assign_coords(coords={"time": "t1"})
+                .expand_dims(dim="time")
+                .transpose("time", "band", "y", "x")
+            )
 
-        labels = xr.concat([labels] * data.gw.ntime, dim='band')\
-                    .assign_coords(coords={'band': data.time.values.tolist()})
+        labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
+            coords={"band": data.time.values.tolist()}
+        )
 
         # Mask 'no data'
         labels = labels.where(labels != 0)
 
-        data.coords[targ_name] = (['time', 'y', 'x'], labels.data)
+        data.coords[targ_name] = (["time", "y", "x"], labels.data)
 
         return data
 
@@ -74,8 +74,9 @@ class ClassifiersMixin(object):
     def _prepare_predictors(data, targ_name):
 
         # TODO: where are we importing Stackerizer from?
-        X = Stackerizer(stack_dims=('y', 'x', 'time'),
-                        direction='stack').fit_transform(data)
+        X = Stackerizer(stack_dims=("y", "x", "time"), direction="stack").fit_transform(
+            data
+        )
 
         # drop nans
         Xna = X[~X[targ_name].isnull()]
@@ -89,14 +90,16 @@ class ClassifiersMixin(object):
     def _prepare_classifiers(clf):
 
         if isinstance(clf, Pipeline):
-            clf = Pipeline([(clf_name, WrappedClassifier(clf_)) for clf_name, clf_ in clf.steps])
+            clf = Pipeline(
+                [(clf_name, WrappedClassifier(clf_)) for clf_name, clf_ in clf.steps]
+            )
         else:
             clf = WrappedClassifier(clf)
 
         return clf
 
     @staticmethod
-    def add_categorical(data, labels, col, variable_name='cat1'):
+    def add_categorical(data, labels, col, variable_name="cat1"):
 
         """
         Writes xarray bands to disk by band
@@ -125,33 +128,37 @@ class ClassifiersMixin(object):
 
         if not isinstance(labels, xr.DataArray):
             labels = polygon_to_array(labels, col=col, data=data)
-            labels['band'] = [variable_name]
+            labels["band"] = [variable_name]
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
-            data = data.assign_coords(coords={'time': 't1'})\
-                        .expand_dims(dim='time')\
-                        .transpose('time', 'band', 'y', 'x')
+            data = (
+                data.assign_coords(coords={"time": "t1"})
+                .expand_dims(dim="time")
+                .transpose("time", "band", "y", "x")
+            )
 
-        labels = xr.concat([labels] * data.gw.ntime, dim='time')\
-                    .assign_coords({'time': data.time.values.tolist()})
+        labels = xr.concat([labels] * data.gw.ntime, dim="time").assign_coords(
+            {"time": data.time.values.tolist()}
+        )
 
-        data = xr.concat([data, labels], dim='band')
+        data = xr.concat([data, labels], dim="band")
 
         return data
 
-    
-class Classifiers(ClassifiersMixin):
 
-    def fit(self,
-            data,
-            labels,
-            clf,
-            grid_search=False,
-            targ_name='targ',
-            targ_dim_name='sample',
-            col=None):
+class Classifiers(ClassifiersMixin):
+    def fit(
+        self,
+        data,
+        labels,
+        clf,
+        grid_search=False,
+        targ_name="targ",
+        targ_dim_name="sample",
+        col=None,
+    ):
 
         """
         Fits a classifier given class labels
@@ -206,22 +213,26 @@ class Classifiers(ClassifiersMixin):
             clf = self.grid_search_cv(clf)
 
         # TODO: should we be using lazy=True?
-        y = Target(coord=targ_name,
-                   transform_func=LabelEncoder().fit_transform,
-                   dim=targ_dim_name)(Xna)
+        y = Target(
+            coord=targ_name,
+            transform_func=LabelEncoder().fit_transform,
+            dim=targ_dim_name,
+        )(Xna)
 
         clf.fit(Xna, y)
 
         return X, clf
 
-    def fit_predict(self,
-                    data,
-                    labels,
-                    clf,
-                    grid_search=False,
-                    targ_name='targ',
-                    targ_dim_name='sample',
-                    col=None):
+    def fit_predict(
+        self,
+        data,
+        labels,
+        clf,
+        grid_search=False,
+        targ_name="targ",
+        targ_dim_name="sample",
+        col=None,
+    ):
 
         """
         Fits a classifier given class labels and predicts on a DataArray
@@ -273,16 +284,82 @@ class Classifiers(ClassifiersMixin):
             >>>     y.isel(time=1).sel(band='targ').gw.imshow()
         """
 
-        X, clf = self.fit(data,
-                          labels,
-                          clf,
-                          grid_search=grid_search,
-                          targ_name=targ_name,
-                          targ_dim_name=targ_dim_name,
-                          col=col)
+        X, clf = self.fit(
+            data,
+            labels,
+            clf,
+            grid_search=grid_search,
+            targ_name=targ_name,
+            targ_dim_name=targ_dim_name,
+            col=col,
+        )
 
-        return clf.predict(X)\
-                    .unstack(targ_dim_name)\
-                    .assign_coords(coords={'band': targ_name})\
-                    .expand_dims(dim='band')\
-                    .transpose('time', 'band', 'y', 'x')
+        return (
+            clf.predict(X)
+            .unstack(targ_dim_name)
+            .assign_coords(coords={"band": targ_name})
+            .expand_dims(dim="band")
+            .transpose("time", "band", "y", "x")
+        )
+
+    def predict(
+        self, X, clf, targ_name="targ", targ_dim_name="sample",
+    ):
+
+        """
+        Fits a classifier given class labels and predicts on a DataArray
+
+        Args:
+            data (DataArray): The data to predict on.
+            labels (str | Path | GeoDataFrame): Class labels as polygon geometry.
+            clf (object): The classifier or classification pipeline.
+            grid_search (Optional[bool]): Whether to use cross-validation.
+            targ_name (Optional[str]): The target name.
+            targ_dim_name (Optional[str]): The target coordinate name.
+            col (Optional[str]): The column in ``labels`` you want to assign values from.
+                If ``None``, creates a binary raster.
+
+        Returns:
+            ``xarray.DataArray``:
+
+                Predictions shaped ('time' x 'band' x 'y' x 'x')
+
+        Example:
+            >>> import geowombat as gw
+            >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
+            >>> from geowombat.ml import fit_predict
+            >>>
+            >>> import geopandas as gpd
+            >>> from sklearn_xarray.preprocessing import Featurizer
+            >>> from sklearn.pipeline import Pipeline
+            >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
+            >>> from sklearn.decomposition import PCA
+            >>> from sklearn.naive_bayes import GaussianNB
+            >>>
+            >>> le = LabelEncoder()
+            >>>
+            >>> labels = gpd.read_file(l8_224078_20200518_polygons)
+            >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
+            >>>
+            >>> # Use a data pipeline
+            >>> pl = Pipeline([('featurizer', Featurizer()),
+            >>>                ('scaler', StandardScaler()),
+            >>>                ('pca', PCA()),
+            >>>                ('clf', GaussianNB()))])
+            >>>
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y.isel(time=0).sel(band='targ').gw.imshow()
+            >>>
+            >>> with gw.open([l8_224078_20200518,l8_224078_20200518]) as src:
+            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y.isel(time=1).sel(band='targ').gw.imshow()
+        """
+
+        return (
+            clf.predict(X)
+            .unstack(targ_dim_name)
+            .assign_coords(coords={"band": targ_name})
+            .expand_dims(dim="band")
+            .transpose("time", "band", "y", "x")
+        )
