@@ -325,35 +325,37 @@ class Classifiers(ClassifiersMixin):
                 Predictions shaped ('time' x 'band' x 'y' x 'x')
 
         Example:
+           
             >>> import geowombat as gw
             >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
-            >>> from geowombat.ml import fit_predict
-            >>>
+            >>> from geowombat.ml import fit, predict
             >>> import geopandas as gpd
             >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
-            >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
+            >>> from sklearn.preprocessing import LabelEncoder, StandardScaler
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
-            >>>
+
             >>> le = LabelEncoder()
-            >>>
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
-            >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
-            >>>
+            >>> labels["lc"] = le.fit(labels.name).transform(labels.name)
+            
             >>> # Use a data pipeline
-            >>> pl = Pipeline([('featurizer', Featurizer()),
-            >>>                ('scaler', StandardScaler()),
-            >>>                ('pca', PCA()),
-            >>>                ('clf', GaussianNB()))])
-            >>>
-            >>> with gw.open(l8_224078_20200518) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
-            >>>     y.isel(time=0).sel(band='targ').gw.imshow()
-            >>>
-            >>> with gw.open([l8_224078_20200518,l8_224078_20200518]) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
-            >>>     y.isel(time=1).sel(band='targ').gw.imshow()
+            >>> pl = Pipeline(
+            >>>     [
+            >>>         ("featurizer", Featurizer()),
+            >>>         ("scaler", StandardScaler()),
+            >>>         ("pca", PCA()),
+            >>>         ("clf", GaussianNB()),
+            >>>     ]
+            >>> )
+
+            >>> # Fit and predict the classifier
+            >>> with gw.config.update(ref_res=100):
+            >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
+            >>>         X, clf = fit(src, labels, pl, col="lc")
+            >>>         y = predict(X, clf)
+            >>>         print(y)
         """
 
         return (
