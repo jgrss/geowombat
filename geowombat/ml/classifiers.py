@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
+from numpy import uint16
 
 
 def wrapped_cls(cls):
@@ -102,7 +103,8 @@ class ClassifiersMixin(object):
     def add_categorical(data, labels, col, variable_name="cat1"):
 
         """
-        Writes xarray bands to disk by band
+        Adds numeric categorical data to array based on polygon col values.
+        For multiple time periods, multiple copies are made, one for each time period.
 
         Args:
 
@@ -303,7 +305,12 @@ class Classifiers(ClassifiersMixin):
         )
 
     def predict(
-        self, X, clf, targ_name="targ", targ_dim_name="sample",
+        self,
+        data,
+        X,
+        clf,
+        targ_name="targ",
+        targ_dim_name="sample",
     ):
 
         """
@@ -325,7 +332,7 @@ class Classifiers(ClassifiersMixin):
                 Predictions shaped ('time' x 'band' x 'y' x 'x')
 
         Example:
-           
+
             >>> import geowombat as gw
             >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
             >>> from geowombat.ml import fit, predict
@@ -339,7 +346,7 @@ class Classifiers(ClassifiersMixin):
             >>> le = LabelEncoder()
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
             >>> labels["lc"] = le.fit(labels.name).transform(labels.name)
-            
+
             >>> # Use a data pipeline
             >>> pl = Pipeline(
             >>>     [
@@ -357,11 +364,11 @@ class Classifiers(ClassifiersMixin):
             >>>         y = predict(X, clf)
             >>>         print(y)
         """
-
-        return (
+        Y = (
             clf.predict(X)
             .unstack(targ_dim_name)
             .assign_coords(coords={"band": targ_name})
             .expand_dims(dim="band")
             .transpose("time", "band", "y", "x")
         )
+        return xr.concat([data, Y.astype(uint16)], dim="band")
