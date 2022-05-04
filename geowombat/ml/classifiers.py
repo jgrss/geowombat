@@ -12,6 +12,9 @@ from sklearn_xarray.model_selection import CrossValidatorWrapper
 from numpy import uint16
 
 
+from sklearn_xarray.preprocessing import Featurizer
+
+
 def wrapped_cls(cls):
     @functools.wraps(cls)
     def wrapper(self):
@@ -64,7 +67,7 @@ class ClassifiersMixin(object):
             coords={"band": data.time.values.tolist()}
         )
 
-        # Mask 'no data'
+        # Mask 'no data' outside training data
         labels = labels.where(labels != 0)
 
         data.coords[targ_name] = (["time", "y", "x"], labels.data)
@@ -91,9 +94,21 @@ class ClassifiersMixin(object):
     def _prepare_classifiers(clf):
 
         if isinstance(clf, Pipeline):
-            clf = Pipeline(
-                [(clf_name, WrappedClassifier(clf_)) for clf_name, clf_ in clf.steps]
+
+            cln = Pipeline(
+                [
+                    (clf_name, clf_)
+                    for clf_name, clf_ in clf.steps
+                    if not isinstance(clf_, Featurizer)
+                ]
             )
+
+            cln.steps.insert(0, ("featurizer", Featurizer()))
+
+            clf = Pipeline(
+                [(cln_name, WrappedClassifier(cln_)) for cln_name, cln_ in cln.steps]
+            )
+
         else:
             clf = WrappedClassifier(clf)
 
