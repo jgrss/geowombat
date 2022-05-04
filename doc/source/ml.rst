@@ -13,7 +13,6 @@ Fit a classifier
     from geowombat.ml import fit
 
     import geopandas as gpd
-    from sklearn_xarray.preprocessing import Featurizer
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import LabelEncoder, StandardScaler
     from sklearn.decomposition import PCA
@@ -26,8 +25,7 @@ Fit a classifier
     labels['lc'] = le.fit(labels.name).transform(labels.name)
 
     # Use a data pipeline
-    pl = Pipeline([('featurizer', Featurizer()),
-                   ('scaler', StandardScaler()),
+    pl = Pipeline([('scaler', StandardScaler()),
                    ('pca', PCA()),
                    ('clf', GaussianNB())])
 
@@ -69,7 +67,6 @@ Train a classifier and predict
     import geowombat as gw
     from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
     from geowombat.ml import fit, predict
-    from sklearn_xarray.preprocessing import Featurizer
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import LabelEncoder, StandardScaler
     from sklearn.decomposition import PCA
@@ -85,7 +82,6 @@ Train a classifier and predict
     # Use a data pipeline
     pl = Pipeline(
         [
-            ("featurizer", Featurizer()),
             ("scaler", StandardScaler()),
             ("pca", PCA()),
             ("clf", GaussianNB()),
