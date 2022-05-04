@@ -9,7 +9,8 @@ from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
-from numpy import uint16
+from numpy import uint16, nan
+from numpy import any as np_any
 
 
 from sklearn_xarray.preprocessing import Featurizer
@@ -164,6 +165,16 @@ class ClassifiersMixin(object):
 
         return data
 
+    # @staticmethod
+    # def _mask_nodata(y, x, src_nodata, dst_nodata=nan):
+
+    #     if len(x.shape) == 3:
+    #         mask = np_any((x == src_nodata).values, 0)
+
+    #         return xr.where(mask, dst_nodata, y)
+    #     else:
+    #         return
+
 
 class Classifiers(ClassifiersMixin):
     def fit(
@@ -213,8 +224,7 @@ class Classifiers(ClassifiersMixin):
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
             >>> # Use a data pipeline
-            >>> pl = Pipeline([('featurizer', Featurizer()),
-            >>>                ('scaler', StandardScaler()),
+            >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB())])
             >>>
@@ -287,8 +297,7 @@ class Classifiers(ClassifiersMixin):
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
             >>> # Use a data pipeline
-            >>> pl = Pipeline([('featurizer', Featurizer()),
-            >>>                ('scaler', StandardScaler()),
+            >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB()))])
             >>>
@@ -318,6 +327,10 @@ class Classifiers(ClassifiersMixin):
             .expand_dims(dim="band")
             .transpose("time", "band", "y", "x")
         )
+
+        # no point unit doesn't have nan
+        # Y = self._mask_nodata(Y, data, data.attrs["nodatavals"][0])
+
         return xr.concat([data, Y.astype(uint16)], dim="band").sel(band=targ_name)
 
     def predict(
@@ -361,14 +374,9 @@ class Classifiers(ClassifiersMixin):
             >>> labels["lc"] = le.fit(labels.name).transform(labels.name)
 
             >>> # Use a data pipeline
-            >>> pl = Pipeline(
-            >>>     [
-            >>>         ("featurizer", Featurizer()),
-            >>>         ("scaler", StandardScaler()),
-            >>>         ("pca", PCA()),
-            >>>         ("clf", GaussianNB()),
-            >>>     ]
-            >>> )
+            >>> pl = Pipeline([('scaler', StandardScaler()),
+            >>>                ('pca', PCA()),
+            >>>                ('clf', GaussianNB()))])
 
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
@@ -384,4 +392,9 @@ class Classifiers(ClassifiersMixin):
             .expand_dims(dim="band")
             .transpose("time", "band", "y", "x")
         )
+
+        # no point unit doesn't have nan
+        # Y = self._mask_nodata(Y, data, data.attrs["nodatavals"][0])
+
         return xr.concat([data, Y.astype(uint16)], dim="band").sel(band=targ_name)
+
