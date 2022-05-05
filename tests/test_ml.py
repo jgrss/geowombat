@@ -55,13 +55,24 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518) as src:
                 X, clf = fit(src, aoi_point, pl_w_feat, col="lc")
                 y1 = predict(src, X, clf)
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
+
                 y2 = fit_predict(src, aoi_point, pl_w_feat, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values))
+
+    def test_fitpredict_time_point(self):
+
+        with gw.config.update(
+            ref_res=300,
+        ):
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
+            ) as src:
+                y1 = fit_predict(
+                    src, aoi_point, pl_w_feat, col="lc", mask_nodataval=False
+                )
+
+        self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
 
     def test_w_wo_featurizer_point(self):
 
@@ -70,10 +81,7 @@ class TestConfig(unittest.TestCase):
         ):
             with gw.open(l8_224078_20200518) as src:
                 y1 = fit_predict(src, aoi_point, pl_w_feat, col="lc")
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
+
                 y2 = fit_predict(src, aoi_point, pl_wo_feat, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values))
@@ -86,10 +94,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518) as src:
                 X, clf = fit(src, aoi_poly, pl_w_feat, col="lc")
                 y1 = predict(src, X, clf)
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
+
                 y2 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values))
@@ -101,13 +106,39 @@ class TestConfig(unittest.TestCase):
         ):
             with gw.open(l8_224078_20200518) as src:
                 y1 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
                 y2 = fit_predict(src, aoi_poly, pl_wo_feat, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values))
+
+    def test_nodataval_replace(self):
+
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, chunks=128) as src:
+                y1 = fit_predict(
+                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=False
+                )
+                y2 = fit_predict(
+                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=True
+                )
+
+        self.assertTrue(np.all(y1 != y2))
+        self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
+        self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
+
+    def test_nodataval_replace(self):
+
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, chunks=128) as src:
+                y1 = fit_predict(
+                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=False
+                )
+                y2 = fit_predict(
+                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=True
+                )
+
+        self.assertTrue(np.all(y1 != y2))
+        self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
+        self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
 
 if __name__ == "__main__":
