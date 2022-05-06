@@ -42,10 +42,14 @@ Fit a classifier and predict on an array
 .. ipython:: python
 
     from geowombat.ml import fit_predict
+    import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(dpi=200)
 
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
             y = fit_predict(src, labels, pl, col='lc')
+            y.plot(robust=True, ax=ax)
             print(y)
 
 Fit a classifier with multiple dates
