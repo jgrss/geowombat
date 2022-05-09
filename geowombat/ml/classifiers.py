@@ -204,7 +204,7 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    y, Xna, clf = fit(src, labels, pl, grid_search=True, col='lc')
+            >>>   X, clf = fit(src, labels, pl, grid_search=True, col='lc')
         """
 
         data = self._prepare_labels(data, labels, col, targ_name)
@@ -223,7 +223,7 @@ class Classifiers(ClassifiersMixin):
 
         clf.fit(Xna, y)
 
-        return y, Xna, clf
+        return X, clf
 
     def fit_predict(
         self,

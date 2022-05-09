@@ -34,23 +34,9 @@ Fit a classifier
     # Fit the classifier
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
-           y, Xna, clf = fit(src, labels, pl, col='lc')
+           X, clf = fit(src, labels, pl, col='lc')
 
     print(clf)
-
-
-Cross validation of fitted model
---------------------------------
-We can leverage the fact that `predict` returns the target, features 
-(with missing data removed), and the fitted sklearn pipeline back to
-to an accuracy assessment.  
-
-from sklearn.model_selection import cross_val_score
-
-cv_score = cross_val_score(clf, Xna, y, 
-                cv=5)
-cv_score.mean()
-
 
 Fit a classifier and predict on an array
 ----------------------------------------
