@@ -1,3 +1,10 @@
+import sys
+
+sys.path.append("/")
+sys.path.append("/geowombat")
+import geowombat as gw
+
+
 import unittest
 
 import geowombat as gw
@@ -58,7 +65,7 @@ class TestConfig(unittest.TestCase):
 
                 y2 = fit_predict(src, aoi_point, pl_w_feat, col="lc")
 
-        self.assertTrue(np.allclose(y1.values, y2.values))
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
     def test_fitpredict_time_point(self):
 
@@ -84,7 +91,7 @@ class TestConfig(unittest.TestCase):
 
                 y2 = fit_predict(src, aoi_point, pl_wo_feat, col="lc")
 
-        self.assertTrue(np.allclose(y1.values, y2.values))
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
     def test_fitpredict_eq_fit_predict_poly(self):
 
@@ -97,7 +104,7 @@ class TestConfig(unittest.TestCase):
 
                 y2 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
 
-        self.assertTrue(np.allclose(y1.values, y2.values))
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
     def test_w_wo_featurizer_poly(self):
 
@@ -108,7 +115,7 @@ class TestConfig(unittest.TestCase):
                 y1 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
                 y2 = fit_predict(src, aoi_poly, pl_wo_feat, col="lc")
 
-        self.assertTrue(np.allclose(y1.values, y2.values))
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
     def test_nodataval_replace(self):
 
@@ -136,7 +143,7 @@ class TestConfig(unittest.TestCase):
                     src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=True
                 )
 
-        self.assertTrue(np.all(y1 != y2))
+        self.assertTrue(~np.all(y1.values != y2.values))
         self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
         self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
