@@ -159,7 +159,7 @@ Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/d
 ### Development: Adding packages
 Install pip-tools. Add packages to requirements.in and running the following to compile requirements.txt:
 ```
-pip-compile requirements.txt
+pip-compile requirements.in
 ```
 
 

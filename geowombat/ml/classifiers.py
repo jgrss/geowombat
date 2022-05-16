@@ -11,8 +11,6 @@ from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
 from numpy import uint16, nan
 from numpy import any as np_any
-
-
 from sklearn_xarray.preprocessing import Featurizer
 
 
@@ -188,6 +186,7 @@ class ClassifiersMixin(object):
             return xr.where(mask, dst_nodata, y)
 
 
+
 class Classifiers(ClassifiersMixin):
     def fit(
         self,
@@ -214,9 +213,11 @@ class Classifiers(ClassifiersMixin):
                 If ``None``, creates a binary raster.
 
         Returns:
-            ``xarray.DataArray``, ``object``:
+            y (sklearn_xarray):  Target Data
+            Xna (xarray.DataArray): Reshaped feature data with NAs removed
+            y, (sklearn pipeline): Fitted pipeline object
 
-                    Reshaped `data`, classifier object
+
 
         Example:
             >>> import geowombat as gw
@@ -241,7 +242,7 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>     X, clf = fit(src, labels, pl, grid_search=True, col='lc')
+            >>>   X, clf = fit(src, labels, pl, grid_search=True, col='lc')
         """
 
         data = self._prepare_labels(data, labels, col, targ_name)
@@ -342,6 +343,7 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         col=None,
         mask_nodataval=True,
+
     ):
 
         """
@@ -408,3 +410,4 @@ class Classifiers(ClassifiersMixin):
         Y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
 
         return Y
+

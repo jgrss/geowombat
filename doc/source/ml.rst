@@ -32,7 +32,7 @@ Fit a classifier
     # Fit the classifier
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
-            X, clf = fit(src, labels, pl, col='lc')
+           X, clf = fit(src, labels, pl, col='lc')
 
     print(clf)
 
