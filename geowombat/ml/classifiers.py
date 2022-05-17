@@ -13,6 +13,8 @@ from sklearn_xarray.preprocessing import Featurizer
 import numpy as np
 from geopandas.geodataframe import GeoDataFrame
 
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+
 
 def wrapped_cls(cls):
     @functools.wraps(cls)
@@ -32,6 +34,7 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
+
     # @staticmethod
     # def grid_search_cv(pipeline):
 
@@ -254,7 +257,7 @@ class Classifiers(ClassifiersMixin):
 
         # TO DO: Use     pl._estimator_type to differentiate paths
         if clf._estimator_type == "clusterer":
-            print("test")
+
             data = self._add_time_dim(data)
             X = self._stack_it(data)
             clf = self._prepare_classifiers(clf)
@@ -276,6 +279,7 @@ class Classifiers(ClassifiersMixin):
             )(Xna)
 
             clf.fit(Xna, y)
+            self.classes_ = np.unique(y)
 
         return X, clf
 
@@ -335,6 +339,8 @@ class Classifiers(ClassifiersMixin):
             >>>         y = predict(X, clf)
             >>>         print(y)
         """
+        check_is_fitted(clf)
+
         Y = (
             clf.predict(X)
             .unstack(targ_dim_name)
