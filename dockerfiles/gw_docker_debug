@@ -1,0 +1,36 @@
+
+FROM ubuntu:20.04
+USER root
+
+RUN apt update -y && apt upgrade -y && \
+    apt install -y software-properties-common && \
+    add-apt-repository ppa:ubuntugis/ppa && \
+    apt update -y && apt install -y \
+    gdal-bin \
+    geotiff-bin \
+    git \
+    libgdal-dev \
+    libgl1 \
+    libspatialindex-dev \ 
+    wget \
+    python-is-python3 \
+    pip \
+    g++ 
+
+RUN pip install Cython numpy  
+
+RUN git clone https://github.com/jgrss/geowombat.git
+
+RUN pip install -r /geowombat/requirements.txt
+
+RUN  pip install sklearn-xarray  pip-tools rtree ipykernel
+
+RUN python -c "import geowombat as gw"
+RUN python -c "import rasterio;from rasterio.crs import CRS; cc = CRS.from_epsg(4326)"
+
+RUN echo ' # %% \n\ 
+    import sys \n\  
+    sys.path.append("/") \n\ 
+    sys.path.append("/geowombat") \n\ 
+    import geowombat as gw \n # %%' > /geowombat/debug_script.py
+
