@@ -11,6 +11,7 @@ from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
 from sklearn_xarray.preprocessing import Featurizer
 import numpy as np
+from geopandas.geodataframe import GeoDataFrame
 
 
 def wrapped_cls(cls):
@@ -31,6 +32,8 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
+
+
     @staticmethod
     def grid_search_cv(pipeline):
 
@@ -49,7 +52,7 @@ class ClassifiersMixin(object):
     @staticmethod
     def _prepare_labels(data, labels, col, targ_name):
 
-        if not isinstance(labels, xr.DataArray):
+        if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
             labels = polygon_to_array(labels, col=col, data=data)
 
         # TODO: is this sufficient for single dates?
@@ -189,8 +192,8 @@ class Classifiers(ClassifiersMixin):
     def fit(
         self,
         data,
-        labels,
         clf,
+        labels=None,
         grid_search=False,
         targ_name="targ",
         targ_dim_name="sample",
@@ -202,8 +205,8 @@ class Classifiers(ClassifiersMixin):
 
         Args:
             data (DataArray): The data to predict on.
-            labels (str | Path | GeoDataFrame): Class labels as polygon geometry.
             clf (object): The classifier or classification pipeline.
+            labels (Optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.
             grid_search (Optional[bool]): Whether to use cross-validation.
             targ_name (Optional[str]): The target name.
             targ_dim_name (Optional[str]): The target coordinate name.
@@ -243,9 +246,13 @@ class Classifiers(ClassifiersMixin):
             >>>   X, clf = fit(src, labels, pl, grid_search=True, col='lc')
         """
 
-        data = self._prepare_labels(data, labels, col, targ_name)
-        X, Xna = self._prepare_predictors(data, targ_name)
-        clf = self._prepare_classifiers(clf)
+        # TO DO: Use     pl._estimator_type to differentiate paths
+        if clf._estimator_type == 'clusterer':
+
+        else:
+            data = self._prepare_labels(data, labels, col, targ_name)
+            X, Xna = self._prepare_predictors(data, targ_name)
+            clf = self._prepare_classifiers(clf)
 
         if grid_search:
             clf = self.grid_search_cv(clf)
