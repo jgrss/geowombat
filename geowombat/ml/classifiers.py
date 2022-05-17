@@ -32,22 +32,28 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
+    # @staticmethod
+    # def grid_search_cv(pipeline):
 
+    #     # TODO: groupby arg
+    #     cv = CrossValidatorWrapper(
+    #         GroupShuffleSplit(n_splits=1, test_size=0.5), groupby=["time"]
+    #     )
+
+    #     # TODO: param_grid arg
+    #     clf = GridSearchCV(
+    #         pipeline, cv=cv, verbose=1, param_grid={"pca__n_components": [5]}
+    #     )
+
+    #     return clf
 
     @staticmethod
-    def grid_search_cv(pipeline):
-
-        # TODO: groupby arg
-        cv = CrossValidatorWrapper(
-            GroupShuffleSplit(n_splits=1, test_size=0.5), groupby=["time"]
+    def _add_time_dim(data):
+        return (
+            data.assign_coords(coords={"time": "t1"})
+            .expand_dims(dim="time")
+            .transpose("time", "band", "y", "x")
         )
-
-        # TODO: param_grid arg
-        clf = GridSearchCV(
-            pipeline, cv=cv, verbose=1, param_grid={"pca__n_components": [5]}
-        )
-
-        return clf
 
     @staticmethod
     def _prepare_labels(data, labels, col, targ_name):
@@ -58,11 +64,7 @@ class ClassifiersMixin(object):
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
-            data = (
-                data.assign_coords(coords={"time": "t1"})
-                .expand_dims(dim="time")
-                .transpose("time", "band", "y", "x")
-            )
+            data = self._add_time_dim(data)
 
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
             coords={"band": data.time.values.tolist()}
@@ -76,12 +78,16 @@ class ClassifiersMixin(object):
         return data
 
     @staticmethod
+    def _stack_it(data):
+        # TODO: where are we importing Stackerizer from?
+        return Stackerizer(
+            stack_dims=("y", "x", "time"), direction="stack"
+        ).fit_transform(data)
+
+    @staticmethod
     def _prepare_predictors(data, targ_name):
 
-        # TODO: where are we importing Stackerizer from?
-        X = Stackerizer(stack_dims=("y", "x", "time"), direction="stack").fit_transform(
-            data
-        )
+        X = self._stack_it(data)
 
         # drop nans
         Xna = X[~X[targ_name].isnull()]
@@ -247,24 +253,29 @@ class Classifiers(ClassifiersMixin):
         """
 
         # TO DO: Use     pl._estimator_type to differentiate paths
-        if clf._estimator_type == 'clusterer':
+        if clf._estimator_type == "clusterer":
+            print("test")
+            data = self._add_time_dim(data)
+            X = self._stack_it(data)
+            clf = self._prepare_classifiers(clf)
+            clf.fit(X)
 
         else:
             data = self._prepare_labels(data, labels, col, targ_name)
             X, Xna = self._prepare_predictors(data, targ_name)
             clf = self._prepare_classifiers(clf)
 
-        if grid_search:
-            clf = self.grid_search_cv(clf)
+            # if grid_search:
+            #     clf = self.grid_search_cv(clf)
 
-        # TODO: should we be using lazy=True?
-        y = Target(
-            coord=targ_name,
-            transform_func=LabelEncoder().fit_transform,
-            dim=targ_dim_name,
-        )(Xna)
+            # TODO: should we be using lazy=True?
+            y = Target(
+                coord=targ_name,
+                transform_func=LabelEncoder().fit_transform,
+                dim=targ_dim_name,
+            )(Xna)
 
-        clf.fit(Xna, y)
+            clf.fit(Xna, y)
 
         return X, clf
 
