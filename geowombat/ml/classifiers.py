@@ -9,9 +9,8 @@ from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
-from numpy import uint16, nan
-from numpy import any as np_any
 from sklearn_xarray.preprocessing import Featurizer
+import numpy as np
 
 
 def wrapped_cls(cls):
@@ -164,7 +163,7 @@ class ClassifiersMixin(object):
         return data
 
     @staticmethod
-    def _mask_nodata(y, x, src_nodata=None, dst_nodata=nan):
+    def _mask_nodata(y, x, src_nodata=None, dst_nodata=np.nan):
         """
         Remove missing data value and replace with another.
 
@@ -179,12 +178,11 @@ class ClassifiersMixin(object):
             src_nodata = x.attrs["nodatavals"][0]
 
         if len(x.shape) == 3:
-            mask = np_any((x == src_nodata).values, 0)
+            mask = np.any((x == src_nodata).values, 0)
             return xr.where(mask, dst_nodata, y)
         else:
-            mask = np_any((x == src_nodata).values, 1, keepdims=True)
+            mask = np.any((x == src_nodata).values, 1, keepdims=True)
             return xr.where(mask, dst_nodata, y)
-
 
 
 class Classifiers(ClassifiersMixin):
@@ -343,7 +341,6 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         col=None,
         mask_nodataval=True,
-
     ):
 
         """
@@ -410,4 +407,3 @@ class Classifiers(ClassifiersMixin):
         Y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
 
         return Y
-
