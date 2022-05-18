@@ -187,10 +187,10 @@ class Classifiers(ClassifiersMixin):
         data,
         clf,
         labels=None,
+        col=None,
         grid_search=False,
         targ_name="targ",
         targ_dim_name="sample",
-        col=None,
     ):
 
         """
@@ -200,11 +200,11 @@ class Classifiers(ClassifiersMixin):
             data (DataArray): The data to predict on.
             clf (object): The classifier or classification pipeline.
             labels (Optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.
-            grid_search (Optional[bool]): Whether to use cross-validation.
-            targ_name (Optional[str]): The target name.
-            targ_dim_name (Optional[str]): The target coordinate name.
             col (Optional[str]): The column in ``labels`` you want to assign values from.
                 If ``None``, creates a binary raster.
+            targ_name (Optional[str]): The target name.
+            targ_dim_name (Optional[str]): The target coordinate name.
+
 
         Returns:
             y (sklearn_xarray):  Target Data
@@ -340,12 +340,12 @@ class Classifiers(ClassifiersMixin):
     def fit_predict(
         self,
         data,
-        labels,
         clf,
+        labels=None,
+        col=None,
         grid_search=False,
         targ_name="targ",
         targ_dim_name="sample",
-        col=None,
         mask_nodataval=True,
     ):
 
@@ -354,13 +354,12 @@ class Classifiers(ClassifiersMixin):
 
         Args:
             data (DataArray): The data to predict on.
-            labels (str | Path | GeoDataFrame): Class labels as polygon geometry.
             clf (object): The classifier or classification pipeline.
-            grid_search (Optional[bool]): Whether to use cross-validation.
-            targ_name (Optional[str]): The target name.
-            targ_dim_name (Optional[str]): The target coordinate name.
+            labels (optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.
             col (Optional[str]): The column in ``labels`` you want to assign values from.
                 If ``None``, creates a binary raster.
+            targ_name (Optional[str]): The target name.
+            targ_dim_name (Optional[str]): The target coordinate name.
             mask_nodataval (Optional[Bool]): If true, data.attrs["nodatavals"][0]
                 are replaced with np.nan and the array is returned as type float
 

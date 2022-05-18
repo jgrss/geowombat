@@ -1,3 +1,9 @@
+import sys
+
+sys.path.append("/")
+sys.path.append("/geowombat")
+import geowombat as gw
+
 import unittest
 
 import geowombat as gw
@@ -16,6 +22,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.naive_bayes import GaussianNB
+from sklearn.cluster import KMeans
 
 
 aoi_point = gpd.read_file(l8_224078_20200518_points)
@@ -44,6 +51,12 @@ pl_w_feat = Pipeline(
         ("clf", GaussianNB()),
     ]
 )
+cl_w_feat = Pipeline(
+    [
+        ("pca", PCA()),
+        ("clf", KMeans()),
+    ]
+)
 
 
 class TestConfig(unittest.TestCase):
@@ -53,10 +66,10 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                X, clf = fit(src, aoi_point, pl_w_feat, col="lc")
+                X, clf = fit(src, pl_w_feat, aoi_point, col="lc")
                 y1 = predict(src, X, clf)
 
-                y2 = fit_predict(src, aoi_point, pl_w_feat, col="lc")
+                y2 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
@@ -69,7 +82,7 @@ class TestConfig(unittest.TestCase):
                 [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
             ) as src:
                 y1 = fit_predict(
-                    src, aoi_point, pl_w_feat, col="lc", mask_nodataval=False
+                    src, pl_w_feat, aoi_point, col="lc", mask_nodataval=False
                 )
 
         self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
@@ -80,9 +93,9 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                y1 = fit_predict(src, aoi_point, pl_w_feat, col="lc")
+                y1 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
 
-                y2 = fit_predict(src, aoi_point, pl_wo_feat, col="lc")
+                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
@@ -92,10 +105,10 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                X, clf = fit(src, aoi_poly, pl_w_feat, col="lc")
+                X, clf = fit(src, pl_w_feat, aoi_poly, col="lc")
                 y1 = predict(src, X, clf)
 
-                y2 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
+                y2 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
@@ -105,8 +118,8 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                y1 = fit_predict(src, aoi_poly, pl_w_feat, col="lc")
-                y2 = fit_predict(src, aoi_poly, pl_wo_feat, col="lc")
+                y1 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
+                y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
@@ -115,10 +128,10 @@ class TestConfig(unittest.TestCase):
         with gw.config.update(ref_res=300):
             with gw.open(l8_224078_20200518, chunks=128) as src:
                 y1 = fit_predict(
-                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=False
+                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
                 )
                 y2 = fit_predict(
-                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=True
+                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
                 )
 
         self.assertTrue(np.all(y1 != y2))
@@ -130,15 +143,29 @@ class TestConfig(unittest.TestCase):
         with gw.config.update(ref_res=300):
             with gw.open(l8_224078_20200518, chunks=128) as src:
                 y1 = fit_predict(
-                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=False
+                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
                 )
                 y2 = fit_predict(
-                    src, aoi_poly, pl_wo_feat, col="lc", mask_nodataval=True
+                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
                 )
 
         self.assertTrue(~np.all(y1.values != y2.values))
         self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
         self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
+
+
+def test_fitpredict_eq_fit_predict_cluster(self):
+
+    with gw.config.update(
+        ref_res=300,
+    ):
+        with gw.open(l8_224078_20200518) as src:
+            X, clf = fit(src, cl_w_feat)
+            y1 = predict(src, X, clf)
+
+            y2 = fit_predict(src, aoi_poly, cl_w_feat, col="lc")
+
+    self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
 
 if __name__ == "__main__":
