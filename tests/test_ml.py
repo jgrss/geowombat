@@ -54,7 +54,7 @@ pl_w_feat = Pipeline(
 cl_w_feat = Pipeline(
     [
         ("pca", PCA()),
-        ("clf", KMeans()),
+        ("clf", KMeans(3, random_state=0)),
     ]
 )
 
@@ -163,7 +163,7 @@ def test_fitpredict_eq_fit_predict_cluster(self):
             X, clf = fit(src, cl_w_feat)
             y1 = predict(src, X, clf)
 
-            y2 = fit_predict(src, aoi_poly, cl_w_feat, col="lc")
+            y2 = fit_predict(src, cl_w_feat)
 
     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 

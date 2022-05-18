@@ -5,7 +5,6 @@ from .transformers import Stackerizer
 
 import xarray as xr
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
@@ -188,7 +187,6 @@ class Classifiers(ClassifiersMixin):
         clf,
         labels=None,
         col=None,
-        grid_search=False,
         targ_name="targ",
         targ_dim_name="sample",
     ):
@@ -205,13 +203,10 @@ class Classifiers(ClassifiersMixin):
             targ_name (Optional[str]): The target name.
             targ_dim_name (Optional[str]): The target coordinate name.
 
-
         Returns:
             y (sklearn_xarray):  Target Data
             Xna (xarray.DataArray): Reshaped feature data with NAs removed
             y, (sklearn pipeline): Fitted pipeline object
-
-
 
         Example:
             >>> import geowombat as gw
@@ -236,7 +231,7 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>   X, clf = fit(src, labels, pl, grid_search=True, col='lc')
+            >>>   X, clf = fit(src, pl, labels, col='lc')
         """
 
         # TO DO: Use     pl._estimator_type to differentiate paths
@@ -317,9 +312,14 @@ class Classifiers(ClassifiersMixin):
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
             >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
-            >>>         X, clf = fit(src, labels, pl, col="lc")
+            >>>         X, clf = fit(src, pl, labels, col="lc")
             >>>         y = predict(X, clf)
             >>>         print(y)
+
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     y2 = predict(src, cl)
         """
         check_is_fitted(clf)
 
@@ -343,7 +343,6 @@ class Classifiers(ClassifiersMixin):
         clf,
         labels=None,
         col=None,
-        grid_search=False,
         targ_name="targ",
         targ_dim_name="sample",
         mask_nodataval=True,
@@ -379,6 +378,7 @@ class Classifiers(ClassifiersMixin):
             >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
+            >>> from sklearn.cluster import KMeans
             >>>
             >>> le = LabelEncoder()
             >>>
@@ -391,22 +391,26 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB()))])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=0).sel(band='targ').gw.imshow()
             >>>
             >>> with gw.open([l8_224078_20200518,l8_224078_20200518]) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=1).sel(band='targ').gw.imshow()
+            >>>
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     y2 = fit_predict(src, cl)
         """
 
         X, clf = self.fit(
             data,
-            labels,
             clf,
-            grid_search=grid_search,
+            labels,
+            col=col,
             targ_name=targ_name,
             targ_dim_name=targ_dim_name,
-            col=col,
         )
 
         Y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
