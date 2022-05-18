@@ -268,7 +268,6 @@ class Classifiers(ClassifiersMixin):
             # Xna, y = check_X_y(Xna, y)
 
             clf.fit(Xna, y)
-            self.classes_ = np.unique(y)
 
         return X, clf
 

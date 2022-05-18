@@ -100,7 +100,7 @@ Train a supervised classifier and predict
             print(y)
 
 
-Train a unsupervised classifier and predict 
+Train an unsupervised classifier and predict 
 ------------------------------
 Unsupervised classifiers can also be used in a pipeline
 
