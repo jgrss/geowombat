@@ -1,9 +1,3 @@
-import sys
-
-sys.path.append("/")
-sys.path.append("/geowombat")
-import geowombat as gw
-
 import unittest
 
 import geowombat as gw

@@ -234,12 +234,15 @@ class Classifiers(ClassifiersMixin):
             >>>   X, clf = fit(src, pl, labels, col='lc')
         """
 
-        # TO DO: Use     pl._estimator_type to differentiate paths
         if clf._estimator_type == "clusterer":
 
             data = self._add_time_dim(data)
             X = self._stack_it(data)
             clf = self._prepare_classifiers(clf)
+
+            # TO DO: Validation checks
+            # check_array(X)
+
             clf.fit(X)
 
         else:
@@ -254,6 +257,9 @@ class Classifiers(ClassifiersMixin):
                 transform_func=LabelEncoder().fit_transform,
                 dim=targ_dim_name,
             )(Xna)
+
+            # TO DO: Validation checks
+            # Xna, y = check_X_y(Xna, y)
 
             clf.fit(Xna, y)
             self.classes_ = np.unique(y)
