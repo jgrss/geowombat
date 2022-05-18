@@ -225,13 +225,19 @@ class Classifiers(ClassifiersMixin):
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
-            >>> # Use a data pipeline
+            >>> # Use supervised classification pipeline
             >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
             >>>   X, clf = fit(src, pl, labels, col='lc')
+
+            >>> # Fit an unsupervised classifier
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>    X, clf = fit(src, cl_w_feat)
         """
 
         if clf._estimator_type == "clusterer":
@@ -322,10 +328,12 @@ class Classifiers(ClassifiersMixin):
             >>>         y = predict(X, clf)
             >>>         print(y)
 
+            >>> # Fit and predict a unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>     y2 = predict(src, cl)
+            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    y1 = predict(src, X, clf)
         """
         check_is_fitted(clf)
 
