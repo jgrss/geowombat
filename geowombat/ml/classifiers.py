@@ -34,22 +34,6 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
-
-    # @staticmethod
-    # def grid_search_cv(pipeline):
-
-    #     # TODO: groupby arg
-    #     cv = CrossValidatorWrapper(
-    #         GroupShuffleSplit(n_splits=1, test_size=0.5), groupby=["time"]
-    #     )
-
-    #     # TODO: param_grid arg
-    #     clf = GridSearchCV(
-    #         pipeline, cv=cv, verbose=1, param_grid={"pca__n_components": [5]}
-    #     )
-
-    #     return clf
-
     @staticmethod
     def _add_time_dim(data):
         return (
@@ -58,8 +42,8 @@ class ClassifiersMixin(object):
             .transpose("time", "band", "y", "x")
         )
 
-    @staticmethod
-    def _prepare_labels(data, labels, col, targ_name):
+    # @staticmethod
+    def _prepare_labels(self, data, labels, col, targ_name):
 
         if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
             labels = polygon_to_array(labels, col=col, data=data)
@@ -87,8 +71,8 @@ class ClassifiersMixin(object):
             stack_dims=("y", "x", "time"), direction="stack"
         ).fit_transform(data)
 
-    @staticmethod
-    def _prepare_predictors(data, targ_name):
+    # @staticmethod
+    def _prepare_predictors(self, data, targ_name):
 
         X = self._stack_it(data)
 
@@ -264,12 +248,10 @@ class Classifiers(ClassifiersMixin):
             clf.fit(X)
 
         else:
+
             data = self._prepare_labels(data, labels, col, targ_name)
             X, Xna = self._prepare_predictors(data, targ_name)
             clf = self._prepare_classifiers(clf)
-
-            # if grid_search:
-            #     clf = self.grid_search_cv(clf)
 
             # TODO: should we be using lazy=True?
             y = Target(
