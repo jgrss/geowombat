@@ -96,7 +96,7 @@ Train a supervised classifier and predict
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
             X, clf = fit(src, pl, labels, col="lc")
-            y = predict(X, clf)
+            y = predict(src, X, clf)
             print(y)
 
 
@@ -122,7 +122,7 @@ Unsupervised classifiers can also be used in a pipeline
     # fit and predict unsupervised classifier
     with gw.config.update(ref_res=300):
     with gw.open(l8_224078_20200518) as src:
-         X, clf = fit(data=src, clf= pl)
-         y = predict(data=src, X= X, clf=clf)
+         X, clf = fit(src, pl)
+         y = predict(src, X, clf)
          y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)

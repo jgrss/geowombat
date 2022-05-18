@@ -349,13 +349,31 @@ class Classifiers(ClassifiersMixin):
         """
         check_is_fitted(clf)
 
-        Y = (
-            clf.predict(X)
-            .unstack(targ_dim_name)
-            .assign_coords(coords={"band": targ_name})
-            .expand_dims(dim="band")
-            .transpose("time", "band", "y", "x")
-        )
+        try:
+            Y = (
+                clf.predict(X)
+                .unstack(targ_dim_name)
+                .assign_coords(coords={"band": targ_name})
+                .expand_dims(dim="band")
+                .transpose("time", "band", "y", "x")
+            )
+
+        except AttributeError as e:
+            if str(e) != "'numpy.ndarray' object has no attribute 'unstack'":
+                print(str(e))
+                raise
+            else:
+                # data = self._prepare_labels(data, labels, col, targ_name)
+                # X2, X2na = self._prepare_predictors(data, targ_name)
+                # clf = self._prepare_classifiers(clf)
+
+                Y = (
+                    clf.predict(X)
+                    .unstack(targ_dim_name)
+                    .assign_coords(coords={"band": targ_name})
+                    .expand_dims(dim="band")
+                    .transpose("time", "band", "y", "x")
+                )
 
         # no point unit doesn't have nan
         if mask_nodataval:
