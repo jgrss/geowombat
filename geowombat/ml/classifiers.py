@@ -5,12 +5,14 @@ from .transformers import Stackerizer
 
 import xarray as xr
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, GroupShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
 from sklearn_xarray.model_selection import CrossValidatorWrapper
 from sklearn_xarray.preprocessing import Featurizer
 import numpy as np
+from geopandas.geodataframe import GeoDataFrame
+
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 
 
 def wrapped_cls(cls):
@@ -32,34 +34,23 @@ class WrappedClassifier(object):
 
 class ClassifiersMixin(object):
     @staticmethod
-    def grid_search_cv(pipeline):
-
-        # TODO: groupby arg
-        cv = CrossValidatorWrapper(
-            GroupShuffleSplit(n_splits=1, test_size=0.5), groupby=["time"]
+    def _add_time_dim(data):
+        return (
+            data.assign_coords(coords={"time": "t1"})
+            .expand_dims(dim="time")
+            .transpose("time", "band", "y", "x")
         )
 
-        # TODO: param_grid arg
-        clf = GridSearchCV(
-            pipeline, cv=cv, verbose=1, param_grid={"pca__n_components": [5]}
-        )
+    # @staticmethod
+    def _prepare_labels(self, data, labels, col, targ_name):
 
-        return clf
-
-    @staticmethod
-    def _prepare_labels(data, labels, col, targ_name):
-
-        if not isinstance(labels, xr.DataArray):
+        if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
             labels = polygon_to_array(labels, col=col, data=data)
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
-            data = (
-                data.assign_coords(coords={"time": "t1"})
-                .expand_dims(dim="time")
-                .transpose("time", "band", "y", "x")
-            )
+            data = self._add_time_dim(data)
 
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
             coords={"band": data.time.values.tolist()}
@@ -73,12 +64,16 @@ class ClassifiersMixin(object):
         return data
 
     @staticmethod
-    def _prepare_predictors(data, targ_name):
-
+    def _stack_it(data):
         # TODO: where are we importing Stackerizer from?
-        X = Stackerizer(stack_dims=("y", "x", "time"), direction="stack").fit_transform(
-            data
-        )
+        return Stackerizer(
+            stack_dims=("y", "x", "time"), direction="stack"
+        ).fit_transform(data)
+
+    # @staticmethod
+    def _prepare_predictors(self, data, targ_name):
+
+        X = self._stack_it(data)
 
         # drop nans
         Xna = X[~X[targ_name].isnull()]
@@ -189,12 +184,11 @@ class Classifiers(ClassifiersMixin):
     def fit(
         self,
         data,
-        labels,
         clf,
-        grid_search=False,
+        labels=None,
+        col=None,
         targ_name="targ",
         targ_dim_name="sample",
-        col=None,
     ):
 
         """
@@ -202,20 +196,17 @@ class Classifiers(ClassifiersMixin):
 
         Args:
             data (DataArray): The data to predict on.
-            labels (str | Path | GeoDataFrame): Class labels as polygon geometry.
             clf (object): The classifier or classification pipeline.
-            grid_search (Optional[bool]): Whether to use cross-validation.
-            targ_name (Optional[str]): The target name.
-            targ_dim_name (Optional[str]): The target coordinate name.
+            labels (Optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.
             col (Optional[str]): The column in ``labels`` you want to assign values from.
                 If ``None``, creates a binary raster.
+            targ_name (Optional[str]): The target name.
+            targ_dim_name (Optional[str]): The target coordinate name.
 
         Returns:
             y (sklearn_xarray):  Target Data
             Xna (xarray.DataArray): Reshaped feature data with NAs removed
             y, (sklearn pipeline): Fitted pipeline object
-
-
 
         Example:
             >>> import geowombat as gw
@@ -234,30 +225,49 @@ class Classifiers(ClassifiersMixin):
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
-            >>> # Use a data pipeline
+            >>> # Use supervised classification pipeline
             >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>   X, clf = fit(src, labels, pl, grid_search=True, col='lc')
+            >>>   X, clf = fit(src, pl, labels, col='lc')
+
+            >>> # Fit an unsupervised classifier
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>    X, clf = fit(src, cl_w_feat)
         """
 
-        data = self._prepare_labels(data, labels, col, targ_name)
-        X, Xna = self._prepare_predictors(data, targ_name)
-        clf = self._prepare_classifiers(clf)
+        if clf._estimator_type == "clusterer":
 
-        if grid_search:
-            clf = self.grid_search_cv(clf)
+            data = self._add_time_dim(data)
+            X = self._stack_it(data)
+            clf = self._prepare_classifiers(clf)
 
-        # TODO: should we be using lazy=True?
-        y = Target(
-            coord=targ_name,
-            transform_func=LabelEncoder().fit_transform,
-            dim=targ_dim_name,
-        )(Xna)
+            # TO DO: Validation checks
+            # check_array(X)
 
-        clf.fit(Xna, y)
+            clf.fit(X)
+
+        else:
+
+            data = self._prepare_labels(data, labels, col, targ_name)
+            X, Xna = self._prepare_predictors(data, targ_name)
+            clf = self._prepare_classifiers(clf)
+
+            # TODO: should we be using lazy=True?
+            y = Target(
+                coord=targ_name,
+                transform_func=LabelEncoder().fit_transform,
+                dim=targ_dim_name,
+            )(Xna)
+
+            # TO DO: Validation checks
+            # Xna, y = check_X_y(Xna, y)
+
+            clf.fit(Xna, y)
 
         return X, clf
 
@@ -313,10 +323,19 @@ class Classifiers(ClassifiersMixin):
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
             >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
-            >>>         X, clf = fit(src, labels, pl, col="lc")
+            >>>         X, clf = fit(src, pl, labels, col="lc")
             >>>         y = predict(X, clf)
             >>>         print(y)
+
+            >>> # Fit and predict a unsupervised classifier
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    y1 = predict(src, X, clf)
         """
+        check_is_fitted(clf)
+
         Y = (
             clf.predict(X)
             .unstack(targ_dim_name)
@@ -334,12 +353,11 @@ class Classifiers(ClassifiersMixin):
     def fit_predict(
         self,
         data,
-        labels,
         clf,
-        grid_search=False,
+        labels=None,
+        col=None,
         targ_name="targ",
         targ_dim_name="sample",
-        col=None,
         mask_nodataval=True,
     ):
 
@@ -348,13 +366,12 @@ class Classifiers(ClassifiersMixin):
 
         Args:
             data (DataArray): The data to predict on.
-            labels (str | Path | GeoDataFrame): Class labels as polygon geometry.
             clf (object): The classifier or classification pipeline.
-            grid_search (Optional[bool]): Whether to use cross-validation.
-            targ_name (Optional[str]): The target name.
-            targ_dim_name (Optional[str]): The target coordinate name.
+            labels (optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.
             col (Optional[str]): The column in ``labels`` you want to assign values from.
                 If ``None``, creates a binary raster.
+            targ_name (Optional[str]): The target name.
+            targ_dim_name (Optional[str]): The target coordinate name.
             mask_nodataval (Optional[Bool]): If true, data.attrs["nodatavals"][0]
                 are replaced with np.nan and the array is returned as type float
 
@@ -374,6 +391,7 @@ class Classifiers(ClassifiersMixin):
             >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
             >>> from sklearn.decomposition import PCA
             >>> from sklearn.naive_bayes import GaussianNB
+            >>> from sklearn.cluster import KMeans
             >>>
             >>> le = LabelEncoder()
             >>>
@@ -386,22 +404,26 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB()))])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=0).sel(band='targ').gw.imshow()
             >>>
             >>> with gw.open([l8_224078_20200518,l8_224078_20200518]) as src:
-            >>>     y = fit_predict(src, labels, pl, col='lc')
+            >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=1).sel(band='targ').gw.imshow()
+            >>>
+            >>> cl = Pipeline([('pca', PCA()),
+            >>>                ('cst', KMeans()))])
+            >>> with gw.open(l8_224078_20200518) as src:
+            >>>     y2 = fit_predict(src, cl)
         """
 
         X, clf = self.fit(
             data,
-            labels,
             clf,
-            grid_search=grid_search,
+            labels,
+            col=col,
             targ_name=targ_name,
             targ_dim_name=targ_dim_name,
-            col=col,
         )
 
         Y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)

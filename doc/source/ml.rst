@@ -32,7 +32,7 @@ Fit a classifier
     # Fit the classifier
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
-           X, clf = fit(src, labels, pl, col='lc')
+           X, clf = fit(src, pl, labels, col='lc')
 
     print(clf)
 
@@ -48,7 +48,7 @@ Fit a classifier and predict on an array
 
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
-            y = fit_predict(src, labels, pl, col='lc')
+            y = fit_predict(src, pl, labels, col='lc')
             y.plot(robust=True, ax=ax)
             print(y)
 
@@ -59,10 +59,10 @@ Fit a classifier with multiple dates
 
     with gw.config.update(ref_res=100):
         with gw.open([l8_224078_20200518, l8_224078_20200518], time_names=['t1', 't2'], stack_dim='time', chunks=128) as src:
-            y = fit_predict(src, labels, pl, col='lc')
+            y = fit_predict(src, pl, labels, col='lc')
             print(y)
 
-Train a classifier and predict 
+Train a supervised classifier and predict 
 ------------------------------
 
 
@@ -95,6 +95,34 @@ Train a classifier and predict
     # Fit the classifier
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518, chunks=128) as src:
-            X, clf = fit(src, labels, pl, col="lc")
+            X, clf = fit(src, pl, labels, col="lc")
             y = predict(X, clf)
             print(y)
+
+
+Train an unsupervised classifier and predict 
+------------------------------
+Unsupervised classifiers can also be used in a pipeline
+
+.. ipython:: python
+
+    fig, ax = plt.subplots(dpi=200,figsize=(5,5))
+
+    cl = Pipeline([ ('scaler', StandardScaler()),
+                    ('pca', PCA()),
+                    ('clf', KMeans(n_clusters=3, random_state=0))])
+
+    # Fit_predict unsupervised classifier
+    with gw.config.update(ref_res=300):
+        with gw.open(l8_224078_20200518) as src:
+            y= fit_predict(src, cl)
+            y.plot(robust=True, ax=ax)
+    plt.tight_layout(pad=1)
+
+    # fit and predict unsupervised classifier
+    with gw.config.update(ref_res=300):
+    with gw.open(l8_224078_20200518) as src:
+         X, clf = fit(data=src, clf= pl)
+         y = predict(data=src, X= X, clf=clf)
+         y.plot(robust=True, ax=ax)
+    plt.tight_layout(pad=1)
