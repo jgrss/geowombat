@@ -251,7 +251,7 @@ class Classifiers(ClassifiersMixin):
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, Xy, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl)
         """
 
         if clf._estimator_type == "clusterer":
@@ -347,7 +347,7 @@ class Classifiers(ClassifiersMixin):
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, Xy, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl)
             >>>    y1 = predict(src, X, clf)
         """
         check_is_fitted(clf)
