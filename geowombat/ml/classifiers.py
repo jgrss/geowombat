@@ -217,9 +217,10 @@ class Classifiers(ClassifiersMixin):
             targ_dim_name (Optional[str]): The target coordinate name.
 
         Returns:
-            y (sklearn_xarray):  Target Data
-            Xna (xarray.DataArray): Reshaped feature data with NAs removed
-            y, (sklearn pipeline): Fitted pipeline object
+            X (xarray.DataArray): Original DataArray augmented to accept prediction dimension
+            Xna if unsupervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data without NAs removed, y:None
+            Xna if supervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data with NAs removed, y:Array holding target data
+            clf, (sklearn pipeline): Fitted pipeline object
 
         Example:
             >>> import geowombat as gw
@@ -244,13 +245,13 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>   X, clf = fit(src, pl, labels, col='lc')
+            >>>   X, Xy, clf = fit(src, pl, labels, col='lc')
 
             >>> # Fit an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl_w_feat)
         """
 
         if clf._estimator_type == "clusterer":
@@ -263,6 +264,8 @@ class Classifiers(ClassifiersMixin):
             # check_array(X)
 
             clf.fit(X)
+
+            return X, (X, None), clf
 
         else:
 
@@ -282,7 +285,7 @@ class Classifiers(ClassifiersMixin):
 
             clf.fit(Xna, y)
 
-        return X, (Xna, y), clf
+            return X, (Xna, y), clf
 
     def predict(
         self,
@@ -336,44 +339,44 @@ class Classifiers(ClassifiersMixin):
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
             >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
-            >>>         X, clf = fit(src, pl, labels, col="lc")
-            >>>         y = predict(X, clf)
+            >>>         X, Xy, clf = fit(src, pl, labels, col="lc")
+            >>>         y = predict(src, X, clf)
             >>>         print(y)
 
             >>> # Fit and predict an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl_w_feat)
             >>>    y1 = predict(src, X, clf)
         """
         check_is_fitted(clf)
 
-        try:
-            Y = (
-                clf.predict(X)
-                .unstack(targ_dim_name)
-                .assign_coords(coords={"band": targ_name})
-                .expand_dims(dim="band")
-                .transpose("time", "band", "y", "x")
-            )
+        # try:
+        Y = (
+            clf.predict(X)
+            .unstack(targ_dim_name)
+            .assign_coords(coords={"band": targ_name})
+            .expand_dims(dim="band")
+            .transpose("time", "band", "y", "x")
+        )
 
-        except AttributeError as e:
-            if str(e) != "'numpy.ndarray' object has no attribute 'unstack'":
-                print(str(e))
-                raise
-            else:
-                # data = self._prepare_labels(data, labels, col, targ_name)
-                # X2, X2na = self._prepare_predictors(data, targ_name)
-                # clf = self._prepare_classifiers(clf)
+        # except AttributeError as e:
+        #     if str(e) != "'numpy.ndarray' object has no attribute 'unstack'":
+        #         print(str(e))
+        #         raise
+        #     else:
+        #         # data = self._prepare_labels(data, labels, col, targ_name)
+        #         # X2, X2na = self._prepare_predictors(data, targ_name)
+        #         # clf = self._prepare_classifiers(clf)
 
-                Y = (
-                    clf.predict(X)
-                    .unstack(targ_dim_name)
-                    .assign_coords(coords={"band": targ_name})
-                    .expand_dims(dim="band")
-                    .transpose("time", "band", "y", "x")
-                )
+        #         Y = (
+        #             clf.predict(X)
+        #             .unstack(targ_dim_name)
+        #             .assign_coords(coords={"band": targ_name})
+        #             .expand_dims(dim="band")
+        #             .transpose("time", "band", "y", "x")
+        #         )
 
         # no point unit doesn't have nan
         if mask_nodataval:
@@ -449,7 +452,7 @@ class Classifiers(ClassifiersMixin):
             >>>     y2 = fit_predict(src, cl)
         """
 
-        X, clf = self.fit(
+        X, Xy, clf = self.fit(
             data,
             clf,
             labels,
