@@ -126,3 +126,29 @@ Unsupervised classifiers can also be used in a pipeline
          y = predict(src, X, clf)
          y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
+
+
+Predict with cross validation and parameter tuning
+------------------------------
+
+.. ipython:: python
+
+    from sklearn.model_selection import GridSearchCV, KFold
+    from sklearn_xarray.model_selection import CrossValidatorWrapper
+
+    cv = CrossValidatorWrapper(KFold())
+    gridsearch = GridSearchCV(pl, cv=cv, param_grid={"pca__n_components": [1, 2, 3]})
+
+    with gw.config.update(ref_res=300):
+        with gw.open(l8_224078_20200518) as src:
+            # fit a model to get Xy used to train model
+            X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+
+            # fit cross valiation and parameter tuning
+            gridsearch.fit(*Xy)
+
+            # get set tuned parameters
+            # Note: predict(gridsearch.best_model_) not currently supported 
+            clf.set_params(**gridsearch.best_params_)
+            y1 = predict(src, X, clf)
+ 
