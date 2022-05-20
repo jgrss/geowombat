@@ -1,5 +1,6 @@
 # This docker file automatically builds an image that can be used for debugging geowombat ie it install dependancies but not geowombat itself. 
 # it also creates a file called debug_script.py that can be used to import geowombat from the directory. 
+# AVAILABLE: docker pull mmann1123/gw_debug
 
 # NOTE: this currently doesn't handle submodules (eg moving) that require building with cython. Comment out references to .moving for now. 
 
