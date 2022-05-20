@@ -3,6 +3,19 @@
 Changelog
 =========
 
+1.7.5 (20 May 2022)
+----------------------
+
+Enhancements
+~~~~~~~~~~~~
+- ML - added ability to train unsupervised sklearn predictors
+- ML - Added ability to do Crossvalidation and hyperparameter tuning with sklearn predictors
+
+Bug fixes
+~~~~~~~~~
+- resolved `.data` errors
+- added fix to handle missing data in ML pipeline for prediction
+
 1.7.3 (18 August 2021)
 ----------------------
 
