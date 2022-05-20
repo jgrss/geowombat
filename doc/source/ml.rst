@@ -127,7 +127,8 @@ Crossvalidation and parameter tuning is now possible
             # fit a model to get Xy used to train model
             X, Xy, clf = fit(src, pl, labels, col="lc")
 
-            # fit cross valiation and parameter tuning
+            # fit cross valiation and parameter tuning 
+            # NOTE: must unpack * object Xy
             gridsearch.fit(*Xy)
             print(gridsearch.best_params_)
             print(gridsearch.best_score_)
