@@ -111,6 +111,7 @@ Unsupervised classifiers can also be used in a pipeline
 Predict with cross validation and parameter tuning
 ------------------------------
 Crossvalidation and parameter tuning is now possible 
+
 .. ipython:: python
 
     from sklearn.model_selection import GridSearchCV, KFold
