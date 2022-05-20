@@ -38,3 +38,4 @@ RUN echo ' # %% \n\
     sys.path.append("/geowombat") \n\ 
     import geowombat as gw \n # %%' > /geowombat/debug_script.py
 
+CMD cd geowombat && git pull && python
