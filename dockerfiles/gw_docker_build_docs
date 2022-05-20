@@ -1,3 +1,6 @@
+# This docker file creates a image that automatically installs geowombat and builds the documentation from the lastest version. 
+# it currently doesn't automatically push the changes to git, please augment the CMD line if you want it to commit and push. 
+
 
 FROM ubuntu:20.04
 USER root
