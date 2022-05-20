@@ -147,19 +147,38 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
         self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
+    def test_fitpredict_eq_fit_predict_cluster(self):
 
-def test_fitpredict_eq_fit_predict_cluster(self):
+        with gw.config.update(
+            ref_res=300,
+        ):
+            with gw.open(l8_224078_20200518) as src:
+                X, clf = fit(src, cl_w_feat)
+                y1 = predict(src, X, clf)
 
-    with gw.config.update(
-        ref_res=300,
-    ):
-        with gw.open(l8_224078_20200518) as src:
-            X, clf = fit(src, cl_w_feat)
-            y1 = predict(src, X, clf)
+                y2 = fit_predict(src, cl_w_feat)
 
-            y2 = fit_predict(src, cl_w_feat)
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    def test_fitpredict_eq_fit_predict_cluster(self):
+
+        from sklearn.model_selection import GridSearchCV, KFold
+        from sklearn_xarray.model_selection import CrossValidatorWrapper
+
+        cv = CrossValidatorWrapper(KFold())
+        gridsearch = GridSearchCV(
+            pl, cv=cv, param_grid={"pca__n_components": [1, 2, 3]}
+        )
+
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, chunks=128) as src:
+                X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+                gridsearch.fit(*Xy)
+
+                clf.set_params(**gridsearch.best_params_)
+                y1 = predict(src, X, clf)
+
+        self.assertEqual(y1.gw.nbands, 3)
 
 
 if __name__ == "__main__":
