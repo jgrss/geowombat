@@ -76,8 +76,8 @@ jobs:
 
   release:
     description: Release a new version
-    executor:
-      name: node/default
+    docker:
+      - image: cimg/python:3.8.12
     steps:
       - checkout
       - restore_cache:
