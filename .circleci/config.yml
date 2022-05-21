@@ -52,11 +52,11 @@ jobs:
               pip install Cython numpy
               pip install .[coreg,ml,perf]
       - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}
           paths:
               - gwenv
       - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}
       - run:
           name: Run tests
           working_directory: ~/project/tests/
@@ -81,7 +81,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}
       - run:
           command: |
             . /home/circleci/project/gwenv/bin/activate
