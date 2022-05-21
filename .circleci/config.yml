@@ -42,7 +42,7 @@ jobs:
               sudo add-apt-repository ppa:ubuntugis/ppa 
               sudo apt update -y 
               sudo apt install -y
-              sudo apt install gdal-bin geotiff-bin libgdal-bin libgl1 libspatialindex-dev 
+              sudo apt install gdal-bin geotiff-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev 
               pip install -U pip
               pip install Cython numpy
               pip install -r requirements.txt .
