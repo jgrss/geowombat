@@ -62,7 +62,7 @@ jobs:
           name: Run tests
           working_directory: ~/project/tests/
           command: |
-              . gwenv/bin/activate
+              . /home/circleci/project/gwenv/bin/activate
               python3 -m unittest discover
 
 # Invoke jobs via workflows
