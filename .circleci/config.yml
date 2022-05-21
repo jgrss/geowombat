@@ -93,4 +93,3 @@ workflows:
   sample:
     jobs:
       - build-and-test
-      - release
