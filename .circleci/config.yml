@@ -39,8 +39,9 @@ jobs:
               # Install GDAL
               sudo apt install software-properties-common -y 
               sudo add-apt-repository ppa:ubuntugis/ppa 
-              sudo apt update && sudo apt install -y 
-              sudo apt install default-libmysqlclient-dev gdal-bin libgdal-dev libspatialindex-dev g++ -y
+              sudo apt update && sudo apt install -y
+              suod apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+              sudo apt install gdal-bin libgdal-dev libspatialindex-dev g++ -y
               export CPLUS_INCLUDE_PATH=/usr/include/gdal
               export C_INCLUDE_PATH=/usr/include/gdal
               export LD_LIBRARY_PATH=/usr/local/lib 
