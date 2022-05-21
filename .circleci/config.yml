@@ -21,7 +21,7 @@ jobs:
     # The executor is the environment in which the steps below will be executed - below will use a python 3.10.2 container
     # Change the version below to your required version of python
     docker:
-      - image: cimg/python:3.10.2
+      - image: cimg/python:3.8.12
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
     # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
@@ -36,16 +36,17 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-              python3 -m venv gwenv
-              . gwenv/bin/activate
+              # Install GDAL
               sudo apt install software-properties-common -y 
               sudo add-apt-repository ppa:ubuntugis/ppa 
               sudo apt update && sudo apt install -y 
-              sudo apt install gdal-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev -y
-              sudo apt install g++ -y
+              sudo apt install gdal-bin libgdal-dev libspatialindex-dev g++ -y
               export CPLUS_INCLUDE_PATH=/usr/include/gdal
               export C_INCLUDE_PATH=/usr/include/gdal
               export LD_LIBRARY_PATH=/usr/local/lib 
+              # Install GeoWombat
+              python3 -m venv gwenv
+              . gwenv/bin/activate
               pip install -U pip
               pip install Cython numpy
               pip install -r requirements.txt .
