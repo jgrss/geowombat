@@ -51,6 +51,7 @@ jobs:
               . gwenv/bin/activate
               pip install -U pip
               pip install Cython numpy
+              python setup.py build
               pip install -r requirements.txt .
               pip install sklearn-xarray rtree
       - run:
