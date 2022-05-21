@@ -18,6 +18,7 @@ import geopandas as gpd
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
 from rasterio.crs import CRS
+from rasterio.dtypes import get_minimum_dtype
 from shapely.geometry import Polygon, MultiPolygon
 from affine import Affine
 import pyproj
@@ -744,6 +745,10 @@ class Converters(object):
 
         if col:
             shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
+            
+            # to do: throw error if dataframe[col] is character
+            dtype = get_minimum_dtype(dataframe[col])
+
         else: 
             shapes = dataframe.geometry.values
             
