@@ -63,6 +63,7 @@ jobs:
           working_directory: ~/project/tests/
           command: |
               . /home/circleci/project/gwenv/bin/activate
+              pip install testfixtures
               python3 -m unittest discover
 
 # Invoke jobs via workflows
