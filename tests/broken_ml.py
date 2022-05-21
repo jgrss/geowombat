@@ -167,7 +167,7 @@ class TestConfig(unittest.TestCase):
 
         cv = CrossValidatorWrapper(KFold())
         gridsearch = GridSearchCV(
-            pl, cv=cv, param_grid={"pca__n_components": [1, 2, 3]}
+            pl_wo_feat, cv=cv, param_grid={"pca__n_components": [1, 2, 3]}
         )
 
         with gw.config.update(ref_res=300):

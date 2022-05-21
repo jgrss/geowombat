@@ -1,4 +1,5 @@
 import setuptools
+import platform
 from pathlib import Path
 from distutils.core import setup
 from distutils.extension import Extension
@@ -104,26 +105,34 @@ def get_package_data():
                           'bin/*.tar.gz']}
 
 
+compile_args = ['-fopenmp']
+link_args = ['-fopenmp']
+
+if platform.system().lower() == 'darwin':
+    compile_args.insert(0, '-Xpreprocessor')
+    link_args = ['-lomp']
+
+
 def get_extensions():
 
     extensions = [Extension('*',
                             sources=['geowombat/moving/_moving.pyx'],
-                            extra_compile_args=['-fopenmp'],
-                            extra_link_args=['-fopenmp'])]
+                            extra_compile_args=compile_args,
+                            extra_link_args=link_args)]
 
     if Path('geowombat/moving/_test.pyx').is_file():
 
         extensions += [Extension('*',
                                  sources=['geowombat/moving/_test.pyx'],
-                                 extra_compile_args=['-fopenmp'],
-                                 extra_link_args=['-fopenmp'])]
+                                 extra_compile_args=compile_args,
+                                 extra_link_args=link_args)]
 
     if Path('geowombat/radiometry/_fusion.pyx').is_file():
 
         extensions += [Extension('*',
                                  sources=['geowombat/radiometry/_fusion.pyx'],
-                                 extra_compile_args=['-fopenmp'],
-                                 extra_link_args=['-fopenmp'])]
+                                 extra_compile_args=compile_args,
+                                 extra_link_args=link_args)]
 
     return extensions
 

@@ -363,8 +363,22 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
+        # Calculate the NDVI
         result = self.norm_diff_math(data, red, nir, 'kndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        # Calculate the kNDVI
         result = xr.ufuncs.tanh(result**2)
+
+        # This snippet is the same as above, but allows for different kernels
+        # if band_variable == 'wavelength':
+        #
+        #     sigma = (data.sel(wavelength='red') + data.sel(wavelength='nir')) * 0.5
+        #     knr = xr.ufuncs.exp(-(data.sel(wavelength='nir') - data.sel(wavelength='red'))**2 / (2.0*sigma**2))
+        #     result = (1.0 - knr) / (1.0 + knr)
+        #
+        # else:
+        #     sigma = (data.sel(band='red') + data.sel(band='nir')) * 0.5
+        #     knr = xr.ufuncs.exp(-(data.sel(band='nir') - data.sel(band='red'))**2 / (2.0*sigma**2))
+        #     result = (1.0 - knr) / (1.0 + knr)
 
         return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'kndvi', mask, -1, 1, scale_factor, sensor)
 
