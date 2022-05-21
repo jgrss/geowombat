@@ -38,11 +38,10 @@ jobs:
           command: |
               python3 -m venv gwenv
               . gwenv/bin/activate
-              sudo apt install -y software-properties-common 
+              sudo apt install software-properties-common -y 
               sudo add-apt-repository ppa:ubuntugis/ppa 
-              sudo apt update -y 
-              sudo apt install -y
-              sudo apt install gdal-bin geotiff-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev 
+              sudo apt update && sudo apt install -y 
+              sudo apt install gdal-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev -y 
               pip install -U pip
               pip install Cython numpy
               pip install -r requirements.txt .
