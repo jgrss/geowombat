@@ -1,3 +1,6 @@
+__path__: str = __import__('pkgutil').extend_path(__path__, __name__)
+__version__ = '1.7.5'
+
 from . import config
 from .core.api import open
 from .core.api import load
@@ -36,8 +39,6 @@ from .core import indices_to_coords
 from .core import bounds_to_coords
 from .core import lonlat_to_xy
 from .core import xy_to_lonlat
-
-from .version import __version__
 
 __all__ = ['config',
            'open',

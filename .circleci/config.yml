@@ -45,12 +45,18 @@ jobs:
               export CPLUS_INCLUDE_PATH=/usr/include/gdal
               export C_INCLUDE_PATH=/usr/include/gdal
               export LD_LIBRARY_PATH=/usr/local/lib 
+              # Install Python GDAL
+              GVAR=$(gdalinfo --version)
+              GVAR2=$(echo $GVAR | sed 's/GDAL //')
+              COMMA_POS=$(echo $GVAR2 | sed 's/GDAL //' | grep -b -o , | awk 'BEGIN {FS=":"}{print $1}')
+              GDAL_VERSION=$(echo ${GVAR2:0:$COMMA_POS})
+              pip install GDAL==$GDAL_VERSION
               # Install GeoWombat
               python3 -m venv gwenv
               . gwenv/bin/activate
               pip install -U pip
               pip install Cython numpy
-              pip install -r requirements.txt .
+              pip install .
               pip install sklearn-xarray rtree
       - save_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
@@ -66,10 +72,32 @@ jobs:
               pip install testfixtures
               python3 -m unittest discover
 
+  release:
+    description: Release a new version
+    parameters:
+      python-version:
+        description: Python version to use
+        type: string
+        default: "3.8.12"
+      cache-version:
+        description: A cache version that may be used for cache busting
+        type: string
+        default: "v1"
+    executor:
+      name: python
+      version: <<parameters.python-version>>
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          command: |
+            . /home/circleci/project/gwenv/bin/activate
+            semantic-release publish
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  sample:
     jobs:
       - build-and-test
