@@ -50,13 +50,15 @@ jobs:
             GVAR2=$(echo $GVAR | sed 's/GDAL //')
             COMMA_POS=$(echo $GVAR2 | grep -b -o , | awk 'BEGIN {FS=":"}{print $1}')
             GDAL_VERSION=$(echo ${GVAR2:0:$COMMA_POS})
-            pip install GDAL==$GDAL_VERSION
-            # Install GeoWombat
+            # Create and activate a virtual environment
             python3 -m venv gwenv
             . gwenv/bin/activate
             pip install -U pip
+            # Install pre-geowombat libraries
             # This shouldn't be necessary with pyproject.toml
             pip install Cython numpy
+            pip install GDAL==$GDAL_VERSION
+            # Install GeoWombat
             pip install .
             # We should be able to install these as extras (i.e., .[ml])
             pip install sklearn-xarray rtree
@@ -72,9 +74,12 @@ jobs:
           command: |
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
-              python3 -m unittest discover
+              python -m unittest discover
 
   release:
+    needs: build-and-test
+    # https://github.community/t/how-do-i-specify-job-dependency-running-in-another-workflow/16482
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
     description: Release a new version
     docker:
       - image: cimg/python:3.8.12
@@ -85,6 +90,7 @@ jobs:
       - run:
           command: |
             . /home/circleci/project/gwenv/bin/activate
+            pip install python-semantic-release
             semantic-release publish
 
 # Invoke jobs via workflows
