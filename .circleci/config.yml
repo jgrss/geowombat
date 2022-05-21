@@ -45,6 +45,12 @@ jobs:
               export CPLUS_INCLUDE_PATH=/usr/include/gdal
               export C_INCLUDE_PATH=/usr/include/gdal
               export LD_LIBRARY_PATH=/usr/local/lib 
+              # Install Python GDAL
+              GVAR=$(gdalinfo --version)
+              GVAR2=$(echo $GVAR | sed 's/GDAL //')
+              COMMA_POS=$(echo $GVAR2 | sed 's/GDAL //' | grep -b -o , | awk 'BEGIN {FS=":"}{print $1}')
+              GDAL_VERSION=$(echo ${GVAR2:0:$COMMA_POS})
+              pip install GDAL==$GDAL_VERSION
               # Install GeoWombat
               python3 -m venv gwenv
               . gwenv/bin/activate
@@ -65,6 +71,7 @@ jobs:
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
               python3 -m unittest discover
+
   release:
     description: Release a new version
     parameters:

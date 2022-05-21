@@ -2,7 +2,6 @@ import platform
 from pathlib import Path
 from distutils.core import setup
 from distutils.extension import Extension
-import subprocess
 
 try:
     from Cython.Build import cythonize
@@ -14,17 +13,6 @@ try:
 except:
     raise ImportError('NumPy must be installed to build GeoWombat.')
 
-
-# Attempt to get the GDAL binary version
-try:
-    process = subprocess.Popen(['gdalinfo', '--version'], stdout=subprocess.PIPE, stderr=None)
-    gdal_version = str(process.communicate()[0]).split(',')[0].split(' ')[1].strip()
-except:
-    gdal_version = None
-
-if gdal_version:
-    required_packages = []
-    required_packages.append('GDAL=={GDAL_VERSION}\n'.format(GDAL_VERSION=gdal_version))
 
 compile_args = ['-fopenmp']
 link_args = ['-fopenmp']
@@ -64,7 +52,6 @@ def get_extensions():
 def setup_package():
     metadata = dict(
         ext_modules=cythonize(get_extensions()),
-        install_requires=required_packages,
         include_dirs=[np.get_include()]
     )
 
