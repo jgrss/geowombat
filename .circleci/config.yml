@@ -53,8 +53,11 @@ jobs:
               pip install -r requirements.txt .
               pip install sklearn-xarray rtree
       - save_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
-              - "gwenv"
+              - gwenv
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Run tests
           working_directory: ~/project/tests/
