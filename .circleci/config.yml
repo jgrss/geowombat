@@ -41,14 +41,20 @@ jobs:
               sudo apt install software-properties-common -y 
               sudo add-apt-repository ppa:ubuntugis/ppa 
               sudo apt update && sudo apt install -y 
-              sudo apt install gdal-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev -y 
+              sudo apt install gdal-bin libgdal-bin libgdal-dev libgl1 libspatialindex-dev -y
+              sudo apt install g++ -y
+              export CPLUS_INCLUDE_PATH=/usr/include/gdal
+              export C_INCLUDE_PATH=/usr/include/gdal
+              export LD_LIBRARY_PATH=/usr/local/lib 
               pip install -U pip
               pip install Cython numpy
               pip install -r requirements.txt .
               pip install sklearn-xarray rtree
       - run:
           name: Run tests
-          command: python -m unittest
+          command: |
+              . gwenv/bin/activate
+              python -m unittest
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
