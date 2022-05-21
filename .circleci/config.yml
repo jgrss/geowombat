@@ -37,7 +37,6 @@ jobs:
           name: Install dependencies
           command: |
               # Install GDAL
-              sudo apt clean all -y
               sudo apt install software-properties-common -y 
               sudo add-apt-repository ppa:ubuntugis/ppa 
               sudo apt update && sudo apt install -y
@@ -47,17 +46,15 @@ jobs:
               export C_INCLUDE_PATH=/usr/include/gdal
               export LD_LIBRARY_PATH=/usr/local/lib 
               # Install GeoWombat
-              python3 -m venv gwenv
-              . gwenv/bin/activate
+              #python3 -m venv gwenv
+              #. gwenv/bin/activate
               pip install -U pip
               pip install Cython numpy
-              python setup.py build
               pip install -r requirements.txt .
               pip install sklearn-xarray rtree
       - run:
           name: Run tests
           command: |
-              . gwenv/bin/activate
               python -m unittest
 
 # Invoke jobs via workflows
