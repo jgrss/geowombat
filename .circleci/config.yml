@@ -32,11 +32,24 @@ jobs:
       - python/install-packages:
           pkg-manager: pip
           # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
+          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements
+      - run:
+          name: Install dependencies
+          command: |
+              python3 -m venv gwenv
+              . gwenv/bin/activate
+              sudo apt install -y software-properties-common 
+              sudo add-apt-repository ppa:ubuntugis/ppa 
+              sudo apt update -y 
+              sudo apt install -y
+              sudo apt install gdal-bin geotiff-bin libgdal-bin libgl1 libspatialindex-dev 
+              pip install -U pip
+              pip install Cython numpy
+              pip install -r requirements.txt .
+              pip install sklearn-xarray rtree
       - run:
           name: Run tests
-          # This assumes pytest is installed via the install-package step above
-          command: pytest
+          command: python -m unittest
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
