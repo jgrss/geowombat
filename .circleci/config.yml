@@ -10,6 +10,7 @@ orbs:
   # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@2.0.3
+  gh: circleci/github-cli@1.0
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -78,10 +79,14 @@ jobs:
   new-release:
     docker:
       - image: cimg/python:3.8.12
+    context:
+      - GITHUB_CREDENTIALS
+    filters:
+      branches:
+        only:
+          - main
     steps:
       - checkout
-      - env
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
