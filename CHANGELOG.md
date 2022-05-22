@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.1 (2022-05-22)
+### Fix
+* Added wheel ([#107](https://github.com/jgrss/geowombat/issues/107)) ([`ce86863`](https://github.com/jgrss/geowombat/commit/ce8686389a4a6f94cc441d35c523c8db68057791))
+
 ## v1.8.0 (2022-05-22)
 ### Feature
 * Merge pull request #98 from jgrss/semantic-release ([`25aa5f3`](https://github.com/jgrss/geowombat/commit/25aa5f3c0920ae8591578f30998d4aa65010b43a))
