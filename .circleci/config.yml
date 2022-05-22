@@ -101,7 +101,8 @@ workflows:
   release_workflow:
       jobs:
         - new_release
-          requires: build_and_test
+          requires:
+          build_and_test
           filters:
             branches:
               only: main
