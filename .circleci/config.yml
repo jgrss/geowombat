@@ -78,6 +78,10 @@ jobs:
   new-release:
     docker:
       - image: cimg/python:3.8.12
+    parameters:
+      release-bool:
+        type: string
+        default: \"true\"
     steps:
       - checkout
       - restore_cache:
@@ -99,6 +103,6 @@ workflows:
     when:
       and:
         - equal: [ main, << pipeline.git.branch >> ]
-        - equal: [ CIRCLECI, << true >> ]
+        - equal: [ CIRCLECI, << parameters.release-bool >> ]
     jobs:
       - new-release
