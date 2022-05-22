@@ -101,9 +101,11 @@ workflows:
   build-workflow:
     jobs:
       - build-and-test
-  release-workflow:
-    when:
-      and:
-        - equal: [ main, << pipeline.git.branch >> ]
-    jobs:
-      - new-release
+      - new-release:
+          requires:
+            - build-and-test
+          when:
+            and:
+              - equal: [ main, << pipeline.git.branch >> ]
+          jobs:
+            - new-release
