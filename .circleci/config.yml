@@ -84,6 +84,12 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Release new version
+          context:
+            - GITHUB_CREDENTIALS
+          filters:
+            branches:
+              only:
+                - main
           command: |
             . /home/circleci/project/gwenv/bin/activate
             pip install python-semantic-release
