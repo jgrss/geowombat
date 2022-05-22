@@ -14,7 +14,7 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build-and-test: # This is the name of the job, feel free to change it to better match what you're trying to do!
+  build_and_test: # This is the name of the job, feel free to change it to better match what you're trying to do!
     # These next lines defines a Docker executors: https://circleci.com/docs/2.0/executor-types/
     # You can specify an image from Dockerhub or use one of the convenience images from CircleCI's Developer Hub
     # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
@@ -75,36 +75,36 @@ jobs:
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
               python -m unittest discover
-  new-release:
+  new_release:
     docker:
       - image: cimg/python:3.8.12
     steps:
-      - checkout
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-      - run:
-          name: Release new version
-          context:
-            - GITHUB_CREDENTIALS
-          filters:
-            branches:
-              only:
-                - main
-          command: |
-            . /home/circleci/project/gwenv/bin/activate
-            pip install python-semantic-release
-            semantic-release publish
+      - when:
+        condition:
+          - equal: [ main, << pipeline.git.branch >> ]
+        steps:
+          - checkout
+          - restore_cache:
+              key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          - run:
+              name: Release new version
+              context:
+                - GITHUB_CREDENTIALS
+              filters:
+                branches:
+                  only:
+                    - main
+              command: |
+                . /home/circleci/project/gwenv/bin/activate
+                pip install python-semantic-release
+                semantic-release publish
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   build-workflow:
     jobs:
-      - build-and-test
-  release-workflow:
-    when:
-      equal: [ main, << pipeline.git.branch >> ]
-    jobs:
-      - new-release
+      - build_and_test
+      - new_release
       requires:
-        - build-and-test
+        - build_and_test
