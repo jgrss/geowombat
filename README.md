@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://lbesson.mit-license.org/)
 [![](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
-![](https://img.shields.io/badge/version-1.7.4-blue.svg?cacheSeconds=2592000)
+![](https://img.shields.io/badge/version-1.7.5-blue.svg?cacheSeconds=2592000)
 [![CircleCI](https://circleci.com/gh/jgrss/geowombat/tree/main.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/jgrss/geowombat)
 
 ### GeoWombat: Utilities for geospatial data
