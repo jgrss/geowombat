@@ -80,6 +80,8 @@ jobs:
       - image: cimg/python:3.8.12
     steps:
       - checkout
+      - env
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
