@@ -97,6 +97,7 @@ jobs:
             git config user.name "CircleCI"
             # Bump version
             semantic-release publish
+            exit 0
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
