@@ -78,6 +78,9 @@ jobs:
   new-release:
     docker:
       - image: cimg/python:3.8.12
+    when:
+      condition:
+        - equal: [ main, << pipeline.git.branch >> ]
     steps:
       - checkout
       - restore_cache:
@@ -104,8 +107,3 @@ workflows:
       - new-release:
           requires:
             - build-and-test
-          when:
-            and:
-              - equal: [ main, << pipeline.git.branch >> ]
-          jobs:
-            - new-release
