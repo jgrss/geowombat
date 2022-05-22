@@ -80,6 +80,9 @@ jobs:
       - image: cimg/python:3.8.12
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+              - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
@@ -91,7 +94,7 @@ jobs:
             pip install python-semantic-release
             # Add credentials
             git config user.email "jgrss@users.noreply.github.com"
-            git config user.name "jgrss"
+            git config user.name "CircleCI"
             # Bump version
             semantic-release publish
 
