@@ -7,9 +7,9 @@ version: 2.1
 orbs:
   # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
   # Orb commands and jobs help you with common scripting around a language/tool
-  # so you dont have to copy and paste it everywhere.
+  # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.5.0
+  python: circleci/python@2.0.3
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -36,28 +36,32 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-              # Install GDAL
-              sudo apt install software-properties-common -y 
-              sudo add-apt-repository ppa:ubuntugis/ppa 
-              sudo apt update && sudo apt install -y
-              sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
-              sudo apt install gdal-bin libgdal-dev libspatialindex-dev g++ -y
-              export CPLUS_INCLUDE_PATH=/usr/include/gdal
-              export C_INCLUDE_PATH=/usr/include/gdal
-              export LD_LIBRARY_PATH=/usr/local/lib 
-              # Install Python GDAL
-              GVAR=$(gdalinfo --version)
-              GVAR2=$(echo $GVAR | sed 's/GDAL //')
-              COMMA_POS=$(echo $GVAR2 | sed 's/GDAL //' | grep -b -o , | awk 'BEGIN {FS=":"}{print $1}')
-              GDAL_VERSION=$(echo ${GVAR2:0:$COMMA_POS})
-              pip install GDAL==$GDAL_VERSION
-              # Install GeoWombat
-              python3 -m venv gwenv
-              . gwenv/bin/activate
-              pip install -U pip
-              pip install Cython numpy
-              pip install .
-              pip install sklearn-xarray rtree
+            # Install GDAL
+            sudo apt install software-properties-common -y 
+            sudo add-apt-repository ppa:ubuntugis/ppa 
+            sudo apt update && sudo apt install -y
+            sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+            sudo apt install gdal-bin libgdal-dev libspatialindex-dev g++ -y
+            export CPLUS_INCLUDE_PATH=/usr/include/gdal
+            export C_INCLUDE_PATH=/usr/include/gdal
+            export LD_LIBRARY_PATH=/usr/local/lib 
+            # Install Python GDAL
+            GVAR=$(gdalinfo --version)
+            GVAR2=$(echo $GVAR | sed 's/GDAL //')
+            COMMA_POS=$(echo $GVAR2 | grep -b -o , | awk 'BEGIN {FS=":"}{print $1}')
+            GDAL_VERSION=$(echo ${GVAR2:0:$COMMA_POS})
+            # Create and activate a virtual environment
+            python3 -m venv gwenv
+            . gwenv/bin/activate
+            pip install -U pip
+            # Install pre-geowombat libraries
+            # This shouldn't be necessary with pyproject.toml
+            pip install Cython numpy
+            pip install GDAL==$GDAL_VERSION
+            # Install GeoWombat
+            pip install .
+            # We should be able to install these as extras (i.e., .[ml])
+            pip install sklearn-xarray rtree
       - save_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
@@ -70,34 +74,30 @@ jobs:
           command: |
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
-              python3 -m unittest discover
-
-  release:
-    description: Release a new version
-    parameters:
-      python-version:
-        description: Python version to use
-        type: string
-        default: "3.8.12"
-      cache-version:
-        description: A cache version that may be used for cache busting
-        type: string
-        default: "v1"
-    executor:
-      name: python
-      version: <<parameters.python-version>>
+              python -m unittest discover
+  new-release:
+    docker:
+      - image: cimg/python:3.8.12
     steps:
       - checkout
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
+          name: Release new version
           command: |
             . /home/circleci/project/gwenv/bin/activate
+            pip install python-semantic-release
             semantic-release publish
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  sample:
+  build-workflow:
     jobs:
       - build-and-test
+  release-workflow:
+    when:
+      and:
+        - equal: [ main, << pipeline.git.branch >> ]
+    jobs:
+      - new-release
