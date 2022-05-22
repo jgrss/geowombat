@@ -99,6 +99,6 @@ workflows:
     when:
       and:
         - equal: [ main, << pipeline.git.branch >> ]
-        - equal: [ CIRCLECI, << 'true' >> ]
+        - equal: [ CIRCLECI, << true >> ]
     jobs:
       - new-release
