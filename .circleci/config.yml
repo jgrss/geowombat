@@ -53,7 +53,7 @@ jobs:
             # Create and activate a virtual environment
             python3 -m venv gwenv
             . gwenv/bin/activate
-            pip install -U pip
+            pip install -U pip setuptools wheel
             # Install pre-geowombat libraries
             # This shouldn't be necessary with pyproject.toml
             pip install Cython numpy
