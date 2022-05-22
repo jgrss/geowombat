@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.2 (2022-05-22)
+### Fix
+* Added exit ([#108](https://github.com/jgrss/geowombat/issues/108)) ([`000d6fd`](https://github.com/jgrss/geowombat/commit/000d6fd35828ea1625e068b3343a23bd98743987))
+
 ## v1.8.1 (2022-05-22)
 ### Fix
 * Added wheel ([#107](https://github.com/jgrss/geowombat/issues/107)) ([`ce86863`](https://github.com/jgrss/geowombat/commit/ce8686389a4a6f94cc441d35c523c8db68057791))
