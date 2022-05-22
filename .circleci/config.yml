@@ -7,9 +7,9 @@ version: 2.1
 orbs:
   # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
   # Orb commands and jobs help you with common scripting around a language/tool
-  # so you dont have to copy and paste it everywhere.
+  # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.5.0
+  python: circleci/python@2.0.3
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -75,12 +75,7 @@ jobs:
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
               python -m unittest discover
-
-  release:
-    needs: build-and-test
-    # https://github.community/t/how-do-i-specify-job-dependency-running-in-another-workflow/16482
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
-    description: Release a new version
+  new-release:
     docker:
       - image: cimg/python:3.8.12
     steps:
@@ -88,6 +83,7 @@ jobs:
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
+          name: Release new version
           command: |
             . /home/circleci/project/gwenv/bin/activate
             pip install python-semantic-release
@@ -96,7 +92,13 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  sample:
+  build-workflow:
     jobs:
       - build-and-test
-      - release
+  release-workflow:
+    when:
+      and:
+        - equal: [ main, << pipeline.git.branch >> ]
+        - equal: [ CIRCLECI << 'true' >>]
+    jobs:
+      - new-release
