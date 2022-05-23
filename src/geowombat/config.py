@@ -51,16 +51,18 @@ def _set_bool(d):
 
 
 class update(object):
+    """Updates the global configuration parameters. See config.ini for parameter options and defaults.
 
-    """
-    >>> with gw.config.update(sensor='l8'):
-    >>>
-    >>>     with gw.open('image.tif') as ds:
-    >>>         print(ds.gw.config)
-    """
+    Note that `nodata` is only used/applied as a value setter during array warping. I.e., the `nodata` argument
+    is not the input 'no data' value itself. Rather, it is used to replace 'no data' values in the opened,
+    warped array.
 
+    Example:
+        >>> with gw.config.update(sensor='l8'):
+        >>>     with gw.open('image.tif') as ds:
+        >>>         print(ds.gw.config)
+    """
     def __init__(self, config=config, **kwargs):
-
         self.config = config
         self.__set_defaults(config)
 
