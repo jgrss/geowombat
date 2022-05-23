@@ -1,0 +1,30 @@
+# This docker file creates a image that automatically installs geowombat and builds the documentation from the lastest version. 
+# it currently doesn't automatically push the changes to git, please augment the CMD line if you want it to commit and push. 
+
+
+FROM ubuntu:20.04
+USER root
+
+RUN apt update -y && apt upgrade -y && \
+    apt install -y software-properties-common && \
+    add-apt-repository ppa:ubuntugis/ppa && \
+    apt update -y && apt install -y \
+    gdal-bin=3.3.2+dfsg-2~focal2 \
+    geotiff-bin=1.7.0-2~focal0 \
+    git=1:2.25.1-1ubuntu3.4 \
+    libgdal-dev=3.3.2+dfsg-2~focal2 \
+    libgl1=1.3.2-1~ubuntu0.20.04.2 \
+    libspatialindex-dev=1.9.3-1build1  \ 
+    wget=1.20.3-1ubuntu2 \
+    python-is-python3=3.8.2-4 \
+    pip \
+    g++=4:9.3.0-1ubuntu2 \
+    locales=2.31-0ubuntu9.7
+
+RUN pip install Cython numpy  
+RUN pip install git+https://github.com/jgrss/geowombat
+RUN pip install sklearn-xarray  pip-tools rtree ipykernel sphinx graphviz numpydoc sphinx_automodapi sphinxcontrib.bibtex==1.0
+
+CMD pip install --upgrade git+https://github.com/jgrss/geowombat && git clone https://github.com/jgrss/geowombat.git && cd geowombat/doc && make html
+
+
