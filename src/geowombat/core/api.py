@@ -254,9 +254,7 @@ data_ = None
 
 
 class open(object):
-
-    """
-    Opens one or more raster files
+    """Opens one or more raster files
 
     Args:
         filename (str or list): The file name, search string, or a list of files to open.
@@ -267,22 +265,30 @@ class open(object):
         stack_dim (Optional[str]): The stack dimension. Choices are ['time', 'band'].
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
-        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and ``mosaic`` = ``False``.
-            Choices are ['intersection', 'union', 'reference'].
-
-            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in the ``filename`` list is used.
+        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and
+            ``mosaic`` = ``False``. Choices are ['intersection', 'union', 'reference'].
+            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in
+                the ``filename`` list is used.
             * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
             * union: Use the union (i.e., maximum extent) of all the image bounds
 
-        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
-            Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are
+            ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss',
+            'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``DataArray`` attributes.
             By default, ``persist_filenames=False`` to avoid storing large file lists.
         netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
-        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames`` is a ``list``.
-            Choices are ['min', 'max', 'mean'].
+        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames``
+            is a ``list``. Choices are ['min', 'max', 'mean'].
         nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
+            The 'no data' value is only used under these conditions:
+                1. if a ``geowombat.config.update`` context is used
+                2. if ``filename`` is a list or search string
+            Otherwise, if ``geowombat.open`` is used to open a single image without a config context then no
+            warping will be applied and, therefore, `nodata` will not apply.
+
+            See Examples: below for use of ``geowombat.config.update``.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
@@ -309,7 +315,6 @@ class open(object):
         >>>
         >>> # Use a context manager to handle images of difference sizes and projections
         >>> with gw.config.update(ref_image='image1.tif'):
-        >>>
         >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
         >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
         >>>
@@ -327,14 +332,12 @@ class open(object):
         >>>
         >>> # Mix configuration keywords
         >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
-        >>>
         >>>     # The ``bounds_by`` keyword overrides the extent bounds
         >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
         >>>         print(ds)
         >>>
         >>> # Resample an image to 10m x 10m cell size
         >>> with gw.config.update(ref_crs=(10, 10)):
-        >>>
         >>>     with gw.open('image.tif', resampling='cubic') as ds:
         >>>         print(ds)
         >>>
@@ -360,24 +363,24 @@ class open(object):
         >>> with gw.open('netcdf:image.nc', netcdf_vars=['blue', 'green', 'red']) as src:
         >>>     print(src)
     """
-
-    def __init__(self,
-                 filename,
-                 band_names=None,
-                 time_names=None,
-                 stack_dim='time',
-                 bounds=None,
-                 bounds_by='reference',
-                 resampling='nearest',
-                 persist_filenames=False,
-                 netcdf_vars=None,
-                 mosaic=False,
-                 overlap='max',
-                 nodata=0,
-                 dtype=None,
-                 num_workers=1,
-                 **kwargs):
-
+    def __init__(
+        self,
+        filename,
+        band_names=None,
+        time_names=None,
+        stack_dim='time',
+        bounds=None,
+        bounds_by='reference',
+        resampling='nearest',
+        persist_filenames=False,
+        netcdf_vars=None,
+        mosaic=False,
+        overlap='max',
+        nodata=0,
+        dtype=None,
+        num_workers=1,
+        **kwargs
+    ):
         if not isinstance(nodata, int) and not isinstance(nodata, float):
             logger.exception("  The 'nodata' keyword argument must be an integer or a float.")
             raise TypeError
@@ -415,13 +418,15 @@ class open(object):
                 chunks = kwargs['chunks']
                 del kwargs['chunks']
 
-            self.data = read(filename,
-                             band_names=band_names,
-                             time_names=time_names,
-                             bounds=bounds,
-                             chunks=chunks,
-                             num_workers=num_workers,
-                             **kwargs)
+            self.data = read(
+                filename,
+                band_names=band_names,
+                time_names=time_names,
+                bounds=bounds,
+                chunks=chunks,
+                num_workers=num_workers,
+                **kwargs
+            )
 
             self.__filenames = [filename]
 
@@ -438,28 +443,32 @@ class open(object):
 
                 if mosaic:
                     # Mosaic images over space
-                    self.data = gw_mosaic(filename,
-                                          overlap=overlap,
-                                          bounds_by=bounds_by,
-                                          resampling=resampling,
-                                          band_names=band_names,
-                                          nodata=nodata,
-                                          dtype=dtype,
-                                          **kwargs)
+                    self.data = gw_mosaic(
+                        filename,
+                        overlap=overlap,
+                        bounds_by=bounds_by,
+                        resampling=resampling,
+                        band_names=band_names,
+                        nodata=nodata,
+                        dtype=dtype,
+                        **kwargs
+                    )
 
                 else:
                     # Stack images along the 'time' axis
-                    self.data = gw_concat(filename,
-                                          stack_dim=stack_dim,
-                                          bounds_by=bounds_by,
-                                          resampling=resampling,
-                                          time_names=time_names,
-                                          band_names=band_names,
-                                          nodata=nodata,
-                                          overlap=overlap,
-                                          dtype=dtype,
-                                          netcdf_vars=netcdf_vars,
-                                          **kwargs)
+                    self.data = gw_concat(
+                        filename,
+                        stack_dim=stack_dim,
+                        bounds_by=bounds_by,
+                        resampling=resampling,
+                        time_names=time_names,
+                        band_names=band_names,
+                        nodata=nodata,
+                        overlap=overlap,
+                        dtype=dtype,
+                        netcdf_vars=netcdf_vars,
+                        **kwargs
+                    )
                     
                     self.__data_are_stacked = True
 
@@ -475,20 +484,21 @@ class open(object):
                     logger.exception('  The file format is not recognized.')
                     raise OSError
 
-                if (file_names.f_ext.lower() in IO_DICT['rasterio']) or \
-                        (filename.lower().startswith('netcdf:')):
+                if (file_names.f_ext.lower() in IO_DICT['rasterio']) or filename.lower().startswith('netcdf:'):
                     if 'chunks' not in kwargs:
                         with rio.open(filename) as src:
                             w = src.block_window(1, 0, 0)
                             kwargs['chunks'] = (1, w.height, w.width)
 
-                    self.data = warp_open(filename,
-                                          band_names=band_names,
-                                          resampling=resampling,
-                                          dtype=dtype,
-                                          netcdf_vars=netcdf_vars,
-                                          nodata=nodata,
-                                          **kwargs)
+                    self.data = warp_open(
+                        filename,
+                        band_names=band_names,
+                        resampling=resampling,
+                        dtype=dtype,
+                        netcdf_vars=netcdf_vars,
+                        nodata=nodata,
+                        **kwargs
+                    )
 
                 else:
                     if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
