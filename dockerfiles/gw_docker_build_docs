@@ -25,9 +25,6 @@ RUN pip install Cython numpy
 RUN pip install git+https://github.com/jgrss/geowombat
 RUN pip install sklearn-xarray  pip-tools rtree ipykernel sphinx graphviz numpydoc sphinx_automodapi sphinxcontrib.bibtex==1.0
 
-RUN python -c "import geowombat as gw"
-RUN python -c "import rasterio;from rasterio.crs import CRS; cc = CRS.from_epsg(4326)"
-
 CMD pip install --upgrade git+https://github.com/jgrss/geowombat && git clone https://github.com/jgrss/geowombat.git && cd geowombat/doc && make html
 
 
