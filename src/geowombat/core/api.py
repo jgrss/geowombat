@@ -273,7 +273,8 @@ class open(object):
             * union: Use the union (i.e., maximum extent) of all the image bounds
 
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are
-        ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
+            ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss',
+            'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
         persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``DataArray`` attributes.
             By default, ``persist_filenames=False`` to avoid storing large file lists.
         netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
@@ -282,10 +283,12 @@ class open(object):
             is a ``list``. Choices are ['min', 'max', 'mean'].
         nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
             The 'no data' value is only used under these conditions:
-                1. if a `geowombat.config.update` context is used
-                2. if `filename` is a list or search string
-            Otherwise, if `geowombat.open` is used to open a single image without a config context then no warping will
-            be applied and, therefore, `nodata` will not apply.
+                1. if a ``geowombat.config.update`` context is used
+                2. if ``filename`` is a list or search string
+            Otherwise, if ``geowombat.open`` is used to open a single image without a config context then no
+            warping will be applied and, therefore, `nodata` will not apply.
+
+            See Examples: below for use of ``geowombat.config.update``.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
@@ -312,7 +315,6 @@ class open(object):
         >>>
         >>> # Use a context manager to handle images of difference sizes and projections
         >>> with gw.config.update(ref_image='image1.tif'):
-        >>>
         >>>     # Use 'time' names to stack and mosaic non-aligned images with identical dates
         >>>     with gw.open(['image1.tif', 'image2.tif', 'image3.tif'],
         >>>
@@ -330,14 +332,12 @@ class open(object):
         >>>
         >>> # Mix configuration keywords
         >>> with gw.config.update(ref_crs='image1.tif', ref_res='image1.tif', ref_bounds='image2.tif'):
-        >>>
         >>>     # The ``bounds_by`` keyword overrides the extent bounds
         >>>     with gw.open(['image1.tif', 'image2.tif'], bounds_by='union') as ds:
         >>>         print(ds)
         >>>
         >>> # Resample an image to 10m x 10m cell size
         >>> with gw.config.update(ref_crs=(10, 10)):
-        >>>
         >>>     with gw.open('image.tif', resampling='cubic') as ds:
         >>>         print(ds)
         >>>
