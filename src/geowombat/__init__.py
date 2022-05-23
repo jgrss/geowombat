@@ -1,6 +1,12 @@
+__path__: str = __import__('pkgutil').extend_path(__path__, __name__)
+__version__ = '1.8.2'
+
 from . import config
 from .core.api import open
 from .core.api import load
+from .core.api import series
+from .core.series import TimeModulePipeline
+from .core.series import TimeModule
 from .core import extract
 from .core import sample
 from .core import calc_area
@@ -34,11 +40,12 @@ from .core import bounds_to_coords
 from .core import lonlat_to_xy
 from .core import xy_to_lonlat
 
-from .version import __version__
-
 __all__ = ['config',
            'open',
            'load',
+           'series',
+           'TimeModulePipeline',
+           'TimeModule',
            'extract',
            'sample',
            'calc_area',

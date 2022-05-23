@@ -1,4 +1,5 @@
 import functools
+import logging
 
 from .. import polygon_to_array
 from .transformers import Stackerizer
@@ -13,6 +14,8 @@ import numpy as np
 from geopandas.geodataframe import GeoDataFrame
 
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+
+logger = logging.getLogger(__name__)
 
 
 def wrapped_cls(cls):
@@ -43,6 +46,16 @@ class ClassifiersMixin(object):
 
     # @staticmethod
     def _prepare_labels(self, data, labels, col, targ_name):
+
+        if labels[col].dtype != np.int:
+            le = LabelEncoder()
+            labels[col] = le.fit_transform(labels.name)
+            logger.warning(
+                "target labels were not integers, applying LabelEncoder. Classes:",
+                le.classes_,
+                "Code:",
+                le.transform(le.classes_),
+            )
 
         if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
             labels = polygon_to_array(labels, col=col, data=data)
@@ -204,9 +217,10 @@ class Classifiers(ClassifiersMixin):
             targ_dim_name (Optional[str]): The target coordinate name.
 
         Returns:
-            y (sklearn_xarray):  Target Data
-            Xna (xarray.DataArray): Reshaped feature data with NAs removed
-            y, (sklearn pipeline): Fitted pipeline object
+            X (xarray.DataArray): Original DataArray augmented to accept prediction dimension
+            Xna if unsupervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data without NAs removed, y:None
+            Xna if supervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data with NAs removed, y:Array holding target data
+            clf, (sklearn pipeline): Fitted pipeline object
 
         Example:
             >>> import geowombat as gw
@@ -231,13 +245,13 @@ class Classifiers(ClassifiersMixin):
             >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>   X, clf = fit(src, pl, labels, col='lc')
+            >>>   X, Xy, clf = fit(src, pl, labels, col='lc')
 
             >>> # Fit an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl)
         """
 
         if clf._estimator_type == "clusterer":
@@ -250,6 +264,8 @@ class Classifiers(ClassifiersMixin):
             # check_array(X)
 
             clf.fit(X)
+
+            return X, (X, None), clf
 
         else:
 
@@ -269,7 +285,7 @@ class Classifiers(ClassifiersMixin):
 
             clf.fit(Xna, y)
 
-        return X, clf
+            return X, (Xna, y), clf
 
     def predict(
         self,
@@ -323,19 +339,20 @@ class Classifiers(ClassifiersMixin):
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
             >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
-            >>>         X, clf = fit(src, pl, labels, col="lc")
-            >>>         y = predict(X, clf)
+            >>>         X, Xy, clf = fit(src, pl, labels, col="lc")
+            >>>         y = predict(src, X, clf)
             >>>         print(y)
 
-            >>> # Fit and predict a unsupervised classifier
+            >>> # Fit and predict an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
-            >>>    X, clf = fit(src, cl_w_feat)
+            >>>    X, Xy, clf = fit(src, cl)
             >>>    y1 = predict(src, X, clf)
         """
         check_is_fitted(clf)
 
+        # try:
         Y = (
             clf.predict(X)
             .unstack(targ_dim_name)
@@ -398,7 +415,7 @@ class Classifiers(ClassifiersMixin):
             >>> labels = gpd.read_file(l8_224078_20200518_polygons)
             >>> labels['lc'] = le.fit(labels.name).transform(labels.name)
             >>>
-            >>> # Use a data pipeline
+            >>> # Use a supervised classification pipeline
             >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB()))])
@@ -411,13 +428,14 @@ class Classifiers(ClassifiersMixin):
             >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=1).sel(band='targ').gw.imshow()
             >>>
+            >>> # Use an unsupervised classification pipeline
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
             >>> with gw.open(l8_224078_20200518) as src:
             >>>     y2 = fit_predict(src, cl)
         """
 
-        X, clf = self.fit(
+        X, Xy, clf = self.fit(
             data,
             clf,
             labels,

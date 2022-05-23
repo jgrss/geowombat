@@ -35,6 +35,7 @@ numpy>=1.18.*             # via -r requirements.in (line 2), cftime, dask, h5py,
 opencv-python>=4.2.*      # via -r requirements.in (line 14)
 pandas>=0.25.*            # via -r requirements.in (line 4), dask, geopandas, xarray
 partd>=1.1.0              # via dask
+pre-commit>=2.19.0
 psutil>=5.7.0             # via distributed
 pyparsing>=2.4.6          # via matplotlib, snuggs
 pyproj>=2.5.0             # via -r requirements.in (line 6), geopandas
@@ -68,3 +69,5 @@ sphinx-automodapi
 sphinxcontrib-bibtex==1.0.0  # 2.0.0 is incompatible
 graphviz
 sklearn-xarray
+jax
+jaxlib
