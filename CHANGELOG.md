@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.4 (2022-05-23)
+### Fix
+* Changed upload to PyPI to GitHub releases ([#113](https://github.com/jgrss/geowombat/issues/113)) ([`378f8ec`](https://github.com/jgrss/geowombat/commit/378f8ecd6671c6451d87e7d1949967a29f448be0))
+
 ## v1.8.3 (2022-05-23)
 ### Fix
 * Added documentation describing how nodata is applied ([#110](https://github.com/jgrss/geowombat/issues/110)) ([`8bd7d3d`](https://github.com/jgrss/geowombat/commit/8bd7d3dc8cd6c1d8a3a3d8dbc391300ad7602a99))
