@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.3 (2022-05-23)
+### Fix
+* Added documentation describing how nodata is applied ([#110](https://github.com/jgrss/geowombat/issues/110)) ([`8bd7d3d`](https://github.com/jgrss/geowombat/commit/8bd7d3dc8cd6c1d8a3a3d8dbc391300ad7602a99))
+
+### Documentation
+* Replaced version badge ([#109](https://github.com/jgrss/geowombat/issues/109)) ([`537386d`](https://github.com/jgrss/geowombat/commit/537386df4daa4c8cfc567b75db12b555a957d5e8))
+
 ## v1.8.2 (2022-05-22)
 ### Fix
 * Added exit ([#108](https://github.com/jgrss/geowombat/issues/108)) ([`000d6fd`](https://github.com/jgrss/geowombat/commit/000d6fd35828ea1625e068b3343a23bd98743987))
