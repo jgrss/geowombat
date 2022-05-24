@@ -10,6 +10,7 @@ orbs:
   # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@2.0.3
+  # Third-party orb
   github-release: h-matsuo/github-release@0.1.1
 
 # Define a job to be invoked later in a workflow.
