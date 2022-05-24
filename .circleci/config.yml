@@ -99,7 +99,19 @@ jobs:
             git config user.name "CircleCI"
             # Bump version
             semantic-release publish
-            GW_VERSION=$(python -c "import geowombat as gw;print(gw.__version__)")
+            exit 0
+  get_release:
+    docker:
+      - image: cimg/python:3.8.12
+    steps:
+      - run:
+          name: Get version
+          context:
+          command: |
+            wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
+            VERSION_LINE=$(sed -n '2p' __init__.py)
+            GW_VERSION=$(echo $VERSION_LINE | sed 's/__version__ = //')
+            mkdir workspace
             echo "export LIB_VERSION=$GW_VERSION" >> workspace/env_vars
             exit 0
   publish_github_release:
@@ -116,8 +128,8 @@ jobs:
       - run:
           name: Get latest version
           command: |
-            cat workspace/env_vars >> GW_VERSION
-            echo 'export LIB_VERSION="v$GW_VERSION"' >> $BASH_ENV
+            GW_VERSION=$(cat workspace/env_vars)
+            echo $GW_VERSION >> $BASH_ENV
       - run:
           name: Publish a new GitHub release
           context:
