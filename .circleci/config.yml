@@ -10,8 +10,6 @@ orbs:
   # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@2.0.3
-  # Third-party orb
-  github-release: h-matsuo/github-release@0.1.1
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -101,7 +99,8 @@ jobs:
             semantic-release publish
             exit 0
   publish_github_release:
-    executor: github-release/default
+    docker:
+      - image: circleci/golang:1.8
     steps:
       - checkout
       - add_ssh_keys:
@@ -114,6 +113,8 @@ jobs:
           context:
             - GITHUB_CREDENTIALS
           command: |
+            # Get GHR
+            go get github.com/tcnksm/ghr
             # Get the version file after the new release
             wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
             # Get the version line
@@ -124,11 +125,18 @@ jobs:
             GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
             # Remove quotes
             GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
-            export LIB_VERSION="v${GW_VERSION3}"
-      - github-release/create:
-          tag: $LIB_VERSION
-          title: Version $LIB_VERSION
-          description: Release version $LIB_VERSION.
+            LIB_VERSION='v${GW_VERSION3}'
+            # Publish the release
+            ghr -debug \
+            -t ${GITHUB_TOKEN} \
+            -n Version ${LIB_VERSION} \
+            -u ${CIRCLE_PROJECT_USERNAME} \
+            -r ${CIRCLE_PROJECT_REPONAME} \
+            -c ${CIRCLE_SHA1} \
+            -b Release version ${LIB_VERSION} \
+            -delete ${LIB_VERSION} \
+            -replace \
+            ${LIB_VERSION}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
