@@ -109,10 +109,10 @@ jobs:
             - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
       - attach_workspace:
           at: ./artifacts
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
-          name: Get latest version
+          name: Get and publish latest version
+          context:
+            - GITHUB_CREDENTIALS
           command: |
             # Get the version file after the new release
             wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
@@ -124,18 +124,11 @@ jobs:
             GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
             # Remove quotes
             GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
-            LIB_VERSION="v${GW_VERSION3}"
-      - run:
-          name: Publish a new GitHub release
-          context:
-            - GITHUB_CREDENTIALS
-          command: |
-            echo dummy > ./artifacts/file
+            export LIB_VERSION="v${GW_VERSION3}"
       - github-release/create:
           tag: $LIB_VERSION
           title: Version $LIB_VERSION
-          description: This release is version $LIB_VERSION.
-          file-path: ./artifacts/file
+          description: Release version $LIB_VERSION.
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
