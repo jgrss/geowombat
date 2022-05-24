@@ -10,6 +10,7 @@ orbs:
   # so you don't have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@2.0.3
+  github-release: h-matsuo/github-release@0.1.1
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -99,18 +100,33 @@ jobs:
             semantic-release publish
             exit 0
   publish_github_release:
-    docker:
-      - image: cibuilds/github:0.10
+    executor: github-release/default
     steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
       - attach_workspace:
           at: ./artifacts
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Get latest version
+          command: |
+            . /home/circleci/project/gwenv/bin/activate
+            GW_VERSION=$(python -c "import geowombat as gw;print(gw.__version__)")
+            echo 'export LIB_VERSION="v$GW_VERSION"' >> $BASH_ENV
       - run:
           name: Publish a new GitHub release
           context:
             - GITHUB_CREDENTIALS
           command: |
-            VERSION=$(my-binary --version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+            echo dummy > ./artifacts/file
+      - github-release/create:
+          tag: $LIB_VERSION
+          title: Version $LIB_VERSION
+          description: This release is version $LIB_VERSION.
+          file-path: ./artifacts/file
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
