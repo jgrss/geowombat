@@ -100,20 +100,6 @@ jobs:
             # Bump version
             semantic-release publish
             exit 0
-  get_release:
-    docker:
-      - image: cimg/python:3.8.12
-    steps:
-      - run:
-          name: Get version
-          context:
-          command: |
-            wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
-            VERSION_LINE=$(sed -n '2p' __init__.py)
-            GW_VERSION=$(echo $VERSION_LINE | sed 's/__version__ = //')
-            mkdir workspace
-            echo "export LIB_VERSION=$GW_VERSION" >> workspace/env_vars
-            exit 0
   publish_github_release:
     executor: github-release/default
     steps:
@@ -128,13 +114,23 @@ jobs:
       - run:
           name: Get latest version
           command: |
-            GW_VERSION=$(cat workspace/env_vars)
-            echo $GW_VERSION >> $BASH_ENV
+            # Get the version file after the new release
+            wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
+            # Get the version line
+            VERSION_LINE=$(sed -n '2p' __init__.py)
+            # Get the version number
+            GW_VERSION=$(echo $VERSION_LINE | sed 's/__version__ = //')
+            # Strip whitespace
+            GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
+            # Remove quotes
+            GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
+            LIB_VERSION="v${GW_VERSION3}"
       - run:
           name: Publish a new GitHub release
           context:
             - GITHUB_CREDENTIALS
           command: |
+            mkdir artifacts
             echo dummy > ./artifacts/file
       - github-release/create:
           tag: $LIB_VERSION
