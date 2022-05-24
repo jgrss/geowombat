@@ -130,7 +130,6 @@ jobs:
           context:
             - GITHUB_CREDENTIALS
           command: |
-            mkdir artifacts
             echo dummy > ./artifacts/file
       - github-release/create:
           tag: $LIB_VERSION
