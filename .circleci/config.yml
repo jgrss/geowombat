@@ -106,7 +106,7 @@ jobs:
           name: Install OpenSSH 8.1p1
           command: |
             sudo apt update && sudo apt install -y
-            sudo apt install libz-dev libcrypto++6 -y
+            sudo apt install libz-dev libssl-dev -y
             mkdir ~/tempdownload; cd ~/tempdownload; wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.1p1.tar.gz; tar zxvf openssh-8.1p1.tar.gz; cd openssh-8.1p1 && ./configure && make && sudo make install
       - checkout
       - add_ssh_keys:
