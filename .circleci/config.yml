@@ -87,8 +87,6 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Release new version
-          context:
-            - GITHUB_CREDENTIALS
           command: |
             . /home/circleci/project/gwenv/bin/activate
             pip install python-semantic-release
@@ -111,12 +109,8 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Get and publish latest version
-          context:
-            - GITHUB_CREDENTIALS
           command: |
             # Get GHR
             go get -u github.com/tcnksm/ghr
@@ -144,12 +138,15 @@ workflows:
     jobs:
       - build_and_test
       - new_release:
+          context: GITHUB_CREDENTIALS
           requires:
             - build_and_test
           filters:
             branches:
               only: main
       - publish_github_release:
+          # contains GITHUB_TOKEN
+          context: GITHUB_CREDENTIALS
           requires:
             - new_release
           filters:
