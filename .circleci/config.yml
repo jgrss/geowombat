@@ -99,10 +99,14 @@ jobs:
             semantic-release publish
             exit 0
   publish_github_release:
-    machine:
-      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
-      image: ubuntu-2204:2022.04.1
+    docker:
+      - image: circleci/golang:1.8
     steps:
+      - run:
+          name: Install OpenSSH 8.1p1
+          command: |
+            sudo apt-get update
+            mkdir ~/tempdownload; cd ~/tempdownload; wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.1p1.tar.gz; tar zxvf openssh-8.1p1.tar.gz; cd openssh-8.1p1 && ./configure && make && sudo make install
       - checkout
       - add_ssh_keys:
           fingerprints:
