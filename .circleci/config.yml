@@ -124,11 +124,13 @@ jobs:
             GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
             # Remove quotes
             GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
-            LIB_VERSION='v${GW_VERSION3}'
+            LIB_VERSION="v${GW_VERSION3}"
+            echo $GW_VERSION3
+            echo $LIB_VERSION
             git clone https://github.com/jgrss/geowombat.git
             cd geowombat/
             # Publish the release
-            ghr -t "${GITHUB_TOKEN}" -u "${CIRCLE_PROJECT_USERNAME}" -r "${CIRCLE_PROJECT_REPONAME}" -c "${CIRCLE_SHA1}" "${LIB_VERSION}"
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${LIB_VERSION}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
