@@ -100,7 +100,7 @@ jobs:
             exit 0
   publish_github_release:
     docker:
-      - image: circleci/golang:1.8
+      - image: circleci/golang:1.10
     steps:
       - run:
           name: Install OpenSSH 8.1p1
