@@ -99,8 +99,9 @@ jobs:
             semantic-release publish
             exit 0
   publish_github_release:
-    docker:
-      - image: circleci/golang:1.8
+    machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      image: ubuntu-2204:2022.04.1
     steps:
       - checkout
       - add_ssh_keys:
@@ -114,7 +115,7 @@ jobs:
             - GITHUB_CREDENTIALS
           command: |
             # Get GHR
-            go get github.com/tcnksm/ghr
+            go get -u github.com/tcnksm/ghr
             # Get the version file after the new release
             wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
             # Get the version line
