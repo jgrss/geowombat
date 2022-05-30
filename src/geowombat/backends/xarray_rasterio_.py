@@ -342,9 +342,9 @@ def open_rasterio(
         # If CRS is not None, we convert it back to a PROJ4 string using
         # rasterio itself
         try:
-            attrs["crs"] = riods.crs.to_proj4()
-        except AttributeError:
             attrs["crs"] = riods.crs.to_string()
+        except AttributeError:
+            attrs["crs"] = riods.crs.to_proj4().replace('+init=', '')
     if hasattr(riods, "res"):
         # (width, height) tuple of pixels in units of CRS
         attrs["res"] = riods.res
