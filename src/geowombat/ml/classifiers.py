@@ -47,7 +47,7 @@ class ClassifiersMixin(object):
     # @staticmethod
     def _prepare_labels(self, data, labels, col, targ_name):
 
-        if labels[col].dtype != np.int:
+        if labels[col].dtype != int:
             le = LabelEncoder()
             labels[col] = le.fit_transform(labels.name)
             logger.warning(
@@ -78,7 +78,6 @@ class ClassifiersMixin(object):
 
     @staticmethod
     def _stack_it(data):
-        # TODO: where are we importing Stackerizer from?
         return Stackerizer(
             stack_dims=("y", "x", "time"), direction="stack"
         ).fit_transform(data)
