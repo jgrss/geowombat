@@ -52,6 +52,13 @@ class TestConfig(unittest.TestCase):
         with gw.open(l8_224078_20200518) as src:
             self.assertFalse(src.gw.config['with_config'])
 
+    def test_config_crs(self):
+        with gw.config.update(ref_crs='epsg:3857', ref_res=100):
+            with gw.open(l8_224078_20200518) as src:
+                self.assertTrue(src.resampling, 'nearest')
+                self.assertTrue(src.crs.lower(), 'epsg:3857')
+                self.assertTrue(src.res, (100.0, 100.0))
+
     def test_warnings_ignore(self):
         with LogCapture() as log:
             with gw.config.update(sensor='l7', ignore_warnings=True):
