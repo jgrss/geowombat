@@ -55,13 +55,11 @@ jobs:
             . gwenv/bin/activate
             pip install -U pip setuptools wheel
             # Install pre-geowombat libraries
-            # This shouldn't be necessary with pyproject.toml
-            pip install Cython numpy
+            # This shouldn't be necessary with pyproject.toml but we need numpy for GDAL
+            pip install -U numpy>=1.19.0,<=1.21.0
             pip install GDAL==$GDAL_VERSION
             # Install GeoWombat
-            pip install .
-            # We should be able to install these as extras (i.e., .[ml])
-            pip install sklearn-xarray rtree
+            pip install .[perf,ml]
       - save_cache:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
@@ -74,7 +72,7 @@ jobs:
           command: |
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
-              python -m unittest discover
+              python -m unittest
   new_release:
     docker:
       - image: cimg/python:3.8.12
