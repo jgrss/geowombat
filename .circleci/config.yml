@@ -61,11 +61,11 @@ jobs:
             # Install GeoWombat
             pip install .[perf,ml]
       - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
           paths:
               - gwenv
       - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
       - run:
           name: Run tests
           working_directory: ~/project/tests/
@@ -82,7 +82,7 @@ jobs:
           fingerprints:
               - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
       - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
       - run:
           name: Release new version
           command: |
