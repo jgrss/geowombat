@@ -3,7 +3,8 @@ Source:
     https://github.com/pydata/xarray/blob/main/xarray/backends/rasterio_.py
 
 Modifications:
-    Removed deprecation warnings
+    - Removed deprecation warnings in docstring and in code
+    - Reversed CRS string translation in lines 345-348
 """
 
 import os
