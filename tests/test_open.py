@@ -64,7 +64,7 @@ class TestOpen(unittest.TestCase):
 
     def test_crs(self):
         with gw.open(l8_224078_20200518) as src:
-            self.assertEqual(src.crs, '+init=epsg:32621')
+            self.assertEqual(src.crs, 'epsg:32621')
 
     def test_time_chunks(self):
         with gw.open(l8_224078_20200518) as src:
