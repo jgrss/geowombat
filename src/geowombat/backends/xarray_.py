@@ -328,17 +328,18 @@ def warp_open(
         else:
             return src
 
-
-def mosaic(filenames,
-           overlap='max',
-           bounds_by='reference',
-           resampling='nearest',
-           band_names=None,
-           nodata=0,
-           dtype=None,
-           warp_mem_limit=512,
-           num_threads=1,
-           **kwargs):
+def mosaic(
+    filenames,
+    overlap='max',
+    bounds_by='reference',
+    resampling='nearest',
+    band_names=None,
+    nodata=0,
+    dtype=None,
+    warp_mem_limit=512,
+    num_threads=1,
+    **kwargs
+):
     """Mosaics a list of images
 
     Args:
@@ -486,21 +487,22 @@ def mosaic(filenames,
         else:
             return darray
 
-
-def concat(filenames,
-           stack_dim='time',
-           bounds_by='reference',
-           resampling='nearest',
-           time_names=None,
-           band_names=None,
-           nodata=0,
-           dtype=None,
-           netcdf_vars=None,
-           overlap='max',
-           warp_mem_limit=512,
-           num_threads=1,
-           tap=False,
-           **kwargs):
+def concat(
+    filenames,
+    stack_dim='time',
+    bounds_by='reference',
+    resampling='nearest',
+    time_names=None,
+    band_names=None,
+    nodata=0,
+    dtype=None,
+    netcdf_vars=None,
+    overlap='max',
+    warp_mem_limit=512,
+    num_threads=1,
+    tap=False,
+    **kwargs
+):
     """Concatenates a list of images
 
     Args:
@@ -697,18 +699,20 @@ def concat(filenames,
         return src
 
 
-def transform_crs(data_src,
-                  dst_crs=None,
-                  dst_res=None,
-                  dst_width=None,
-                  dst_height=None,
-                  dst_bounds=None,
-                  src_nodata=None,
-                  dst_nodata=None,
-                  coords_only=False,
-                  resampling='nearest',
-                  warp_mem_limit=512,
-                  num_threads=1):
+def transform_crs(
+    data_src,
+    dst_crs=None,
+    dst_res=None,
+    dst_width=None,
+    dst_height=None,
+    dst_bounds=None,
+    src_nodata=None,
+    dst_nodata=None,
+    coords_only=False,
+    resampling='nearest',
+    warp_mem_limit=512,
+    num_threads=1
+):
     """Transforms a DataArray to a new coordinate reference system
 
     Args:
