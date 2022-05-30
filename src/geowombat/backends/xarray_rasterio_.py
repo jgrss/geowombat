@@ -1,3 +1,11 @@
+"""
+Source:
+    https://github.com/pydata/xarray/blob/main/xarray/backends/rasterio_.py
+
+Modifications:
+    Removed deprecation warnings
+"""
+
 import os
 import warnings
 
