@@ -32,9 +32,7 @@ logger = add_handler(logger)
 
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
-
-    """
-    Updates keyword arguments for global config parameters
+    """Updates keyword arguments for global config parameters
 
     Args:
         ref_obj (str or object)
@@ -68,9 +66,7 @@ def _get_raster_coords(filename):
 
 
 def _check_config_globals(filenames, bounds_by, ref_kwargs):
-
-    """
-    Checks global configuration parameters
+    """Checks global configuration parameters
 
     Args:
         filenames (str or str list)
@@ -199,9 +195,7 @@ def warp_open(filename,
               num_threads=1,
               tap=False,
               **kwargs):
-
-    """
-    Warps and opens a file
+    """Warps and opens a file
 
     Args:
         filename (str): The file to open.
@@ -220,15 +214,16 @@ def warp_open(filename,
     Returns:
         ``xarray.DataArray``
     """
-
-    ref_kwargs = {'bounds': None,
-                  'crs': None,
-                  'res': None,
-                  'nodata': nodata if config['nodata'] is None else config['nodata'],
-                  'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads,
-                  'tap': tap,
-                  'tac': None}
+    ref_kwargs = {
+        'bounds': None,
+        'crs': None,
+        'res': None,
+        'nodata': nodata if config['nodata'] is None else config['nodata'],
+        'warp_mem_limit': warp_mem_limit,
+        'num_threads': num_threads,
+        'tap': tap,
+        'tac': None
+    }
 
     ref_kwargs_netcdf_stack = ref_kwargs.copy()
     ref_kwargs_netcdf_stack['bounds_by'] = 'union'
@@ -342,9 +337,7 @@ def mosaic(filenames,
            warp_mem_limit=512,
            num_threads=1,
            **kwargs):
-
-    """
-    Mosaics a list of images
+    """Mosaics a list of images
 
     Args:
         filenames (list): A list of file names to mosaic.
@@ -368,7 +361,6 @@ def mosaic(filenames,
     Returns:
         ``xarray.DataArray``
     """
-
     if overlap not in ['min', 'max', 'mean']:
         logger.exception("  The overlap argument must be one of ['min', 'max', 'mean'].")
 
@@ -507,9 +499,7 @@ def concat(filenames,
            num_threads=1,
            tap=False,
            **kwargs):
-
-    """
-    Concatenates a list of images
+    """Concatenates a list of images
 
     Args:
         filenames (list): A list of file names to concatenate.
@@ -537,7 +527,6 @@ def concat(filenames,
     Returns:
         ``xarray.DataArray``
     """
-
     if stack_dim.lower() not in ['band', 'time']:
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
@@ -718,9 +707,7 @@ def transform_crs(data_src,
                   resampling='nearest',
                   warp_mem_limit=512,
                   num_threads=1):
-
-    """
-    Transforms a DataArray to a new coordinate reference system
+    """Transforms a DataArray to a new coordinate reference system
 
     Args:
         data_src (DataArray): The data to transform.
