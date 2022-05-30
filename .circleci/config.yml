@@ -56,7 +56,7 @@ jobs:
             pip install -U pip setuptools wheel
             # Install pre-geowombat libraries
             # This shouldn't be necessary with pyproject.toml but we need numpy for GDAL
-            pip install -U numpy>=1.19.0,<=1.21.0
+            pip install -U numpy
             pip install GDAL==$GDAL_VERSION
             # Install GeoWombat
             pip install .[perf,ml]
