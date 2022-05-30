@@ -184,17 +184,19 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
     return ref_kwargs
 
 
-def warp_open(filename,
-              band_names=None,
-              resampling='nearest',
-              dtype=None,
-              netcdf_vars=None,
-              nodata=0,
-              return_windows=False,
-              warp_mem_limit=512,
-              num_threads=1,
-              tap=False,
-              **kwargs):
+def warp_open(
+    filename,
+    band_names=None,
+    resampling='nearest',
+    dtype=None,
+    netcdf_vars=None,
+    nodata=0,
+    return_windows=False,
+    warp_mem_limit=512,
+    num_threads=1,
+    tap=False,
+    **kwargs
+):
     """Warps and opens a file
 
     Args:
