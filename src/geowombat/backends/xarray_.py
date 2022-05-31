@@ -7,8 +7,15 @@ from ..handler import add_handler
 from ..core.windows import get_window_offsets
 from ..core.util import parse_filename_dates
 from ..config import config
-from .rasterio_ import get_ref_image_meta, warp, warp_images, get_file_bounds, window_to_bounds, unpack_bounding_box, unpack_window
+from .rasterio_ import get_ref_image_meta
+from .rasterio_ import warp
+from .rasterio_ import warp_images
+from .rasterio_ import get_file_bounds
+from .rasterio_ import window_to_bounds
+from .rasterio_ import unpack_bounding_box
+from .rasterio_ import unpack_window
 from .rasterio_ import transform_crs as rio_transform_crs
+from .xarray_rasterio_ import open_rasterio
 
 import numpy as np
 from rasterio import open as rio_open
@@ -25,9 +32,7 @@ logger = add_handler(logger)
 
 
 def _update_kwarg(ref_obj, ref_kwargs, key):
-
-    """
-    Updates keyword arguments for global config parameters
+    """Updates keyword arguments for global config parameters
 
     Args:
         ref_obj (str or object)
@@ -53,9 +58,7 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
 
 
 def _get_raster_coords(filename):
-
-    with xr.open_rasterio(filename) as src:
-
+    with open_rasterio(filename) as src:
         x = src.x.values - src.res[0] / 2.0
         y = src.y.values + src.res[1] / 2.0
 
@@ -63,9 +66,7 @@ def _get_raster_coords(filename):
 
 
 def _check_config_globals(filenames, bounds_by, ref_kwargs):
-
-    """
-    Checks global configuration parameters
+    """Checks global configuration parameters
 
     Args:
         filenames (str or str list)
@@ -183,20 +184,20 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
     return ref_kwargs
 
 
-def warp_open(filename,
-              band_names=None,
-              resampling='nearest',
-              dtype=None,
-              netcdf_vars=None,
-              nodata=0,
-              return_windows=False,
-              warp_mem_limit=512,
-              num_threads=1,
-              tap=False,
-              **kwargs):
-
-    """
-    Warps and opens a file
+def warp_open(
+    filename,
+    band_names=None,
+    resampling='nearest',
+    dtype=None,
+    netcdf_vars=None,
+    nodata=0,
+    return_windows=False,
+    warp_mem_limit=512,
+    num_threads=1,
+    tap=False,
+    **kwargs
+):
+    """Warps and opens a file
 
     Args:
         filename (str): The file to open.
@@ -210,20 +211,21 @@ def warp_open(filename,
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         tap (Optional[bool]): Whether to target align pixels.
-        kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
+        kwargs (Optional[dict]): Keyword arguments passed to ``open_rasterio``.
 
     Returns:
         ``xarray.DataArray``
     """
-
-    ref_kwargs = {'bounds': None,
-                  'crs': None,
-                  'res': None,
-                  'nodata': nodata if config['nodata'] is None else config['nodata'],
-                  'warp_mem_limit': warp_mem_limit,
-                  'num_threads': num_threads,
-                  'tap': tap,
-                  'tac': None}
+    ref_kwargs = {
+        'bounds': None,
+        'crs': None,
+        'res': None,
+        'nodata': nodata if config['nodata'] is None else config['nodata'],
+        'warp_mem_limit': warp_mem_limit,
+        'num_threads': num_threads,
+        'tap': tap,
+        'tac': None
+    }
 
     ref_kwargs_netcdf_stack = ref_kwargs.copy()
     ref_kwargs_netcdf_stack['bounds_by'] = 'union'
@@ -253,21 +255,26 @@ def warp_open(filename,
 
     @contextlib.contextmanager
     def warp_netcdf_vars():
-
         # Warp all images to the same grid.
         warped_objects = warp_images(filenames,
                                      resampling=resampling,
                                      **ref_kwargs_netcdf_stack)
 
-        yield xr.concat((xr.open_rasterio(wobj, **kwargs)\
-                            .assign_coords(band=[band_names[wi]] if band_names else [netcdf_vars[wi]])
-                         for wi, wobj in enumerate(warped_objects)), dim='band')
+        yield xr.concat(
+            (
+                open_rasterio(wobj, **kwargs).assign_coords(band=[band_names[wi]]
+                if band_names else [netcdf_vars[wi]])
+                for wi, wobj in enumerate(warped_objects)
+             ), dim='band'
+        )
 
-    with xr.open_rasterio(warp(filename,
-                               resampling=resampling,
-                               **ref_kwargs),
-                          **kwargs) if not filenames else warp_netcdf_vars() as src:
-
+    with open_rasterio(
+            warp(
+                filename,
+                resampling=resampling,
+                **ref_kwargs
+            ), **kwargs
+    ) if not filenames else warp_netcdf_vars() as src:
         if band_names:
             if len(band_names) > src.gw.nbands:
                 src.coords['band'] = band_names[:src.gw.nbands]
@@ -321,20 +328,19 @@ def warp_open(filename,
         else:
             return src
 
-
-def mosaic(filenames,
-           overlap='max',
-           bounds_by='reference',
-           resampling='nearest',
-           band_names=None,
-           nodata=0,
-           dtype=None,
-           warp_mem_limit=512,
-           num_threads=1,
-           **kwargs):
-
-    """
-    Mosaics a list of images
+def mosaic(
+    filenames,
+    overlap='max',
+    bounds_by='reference',
+    resampling='nearest',
+    band_names=None,
+    nodata=0,
+    dtype=None,
+    warp_mem_limit=512,
+    num_threads=1,
+    **kwargs
+):
+    """Mosaics a list of images
 
     Args:
         filenames (list): A list of file names to mosaic.
@@ -353,12 +359,11 @@ def mosaic(filenames,
             from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
-        kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
+        kwargs (Optional[dict]): Keyword arguments passed to ``open_rasterio``.
 
     Returns:
         ``xarray.DataArray``
     """
-
     if overlap not in ['min', 'max', 'mean']:
         logger.exception("  The overlap argument must be one of ['min', 'max', 'mean'].")
 
@@ -384,19 +389,16 @@ def mosaic(filenames,
         tags = src_.tags()
 
     # Combine the data
-    with xr.open_rasterio(warped_objects[0], **kwargs) as darray:
-
+    with open_rasterio(warped_objects[0], **kwargs) as darray:
         attrs = darray.attrs.copy()
 
         # Get the original bounds, unsampled
-        with xr.open_rasterio(filenames[0], **kwargs) as src_:
+        with open_rasterio(filenames[0], **kwargs) as src_:
             footprints.append(src_.gw.geometry)
 
         for fidx, fn in enumerate(warped_objects[1:]):
-
-            with xr.open_rasterio(fn, **kwargs) as darrayb:
-
-                with xr.open_rasterio(filenames[fidx+1], **kwargs) as src_:
+            with open_rasterio(fn, **kwargs) as darrayb:
+                with open_rasterio(filenames[fidx+1], **kwargs) as src_:
                     footprints.append(src_.gw.geometry)
                 src_ = None
 
@@ -485,24 +487,23 @@ def mosaic(filenames,
         else:
             return darray
 
-
-def concat(filenames,
-           stack_dim='time',
-           bounds_by='reference',
-           resampling='nearest',
-           time_names=None,
-           band_names=None,
-           nodata=0,
-           dtype=None,
-           netcdf_vars=None,
-           overlap='max',
-           warp_mem_limit=512,
-           num_threads=1,
-           tap=False,
-           **kwargs):
-
-    """
-    Concatenates a list of images
+def concat(
+    filenames,
+    stack_dim='time',
+    bounds_by='reference',
+    resampling='nearest',
+    time_names=None,
+    band_names=None,
+    nodata=0,
+    dtype=None,
+    netcdf_vars=None,
+    overlap='max',
+    warp_mem_limit=512,
+    num_threads=1,
+    tap=False,
+    **kwargs
+):
+    """Concatenates a list of images
 
     Args:
         filenames (list): A list of file names to concatenate.
@@ -525,12 +526,11 @@ def concat(filenames,
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         tap (Optional[bool]): Whether to target align pixels.
-        kwargs (Optional[dict]): Keyword arguments passed to ``xarray.open_rasterio``.
+        kwargs (Optional[dict]): Keyword arguments passed to ``open_rasterio``.
 
     Returns:
         ``xarray.DataArray``
     """
-
     if stack_dim.lower() not in ['band', 'time']:
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
@@ -699,21 +699,21 @@ def concat(filenames,
         return src
 
 
-def transform_crs(data_src,
-                  dst_crs=None,
-                  dst_res=None,
-                  dst_width=None,
-                  dst_height=None,
-                  dst_bounds=None,
-                  src_nodata=None,
-                  dst_nodata=None,
-                  coords_only=False,
-                  resampling='nearest',
-                  warp_mem_limit=512,
-                  num_threads=1):
-
-    """
-    Transforms a DataArray to a new coordinate reference system
+def transform_crs(
+    data_src,
+    dst_crs=None,
+    dst_res=None,
+    dst_width=None,
+    dst_height=None,
+    dst_bounds=None,
+    src_nodata=None,
+    dst_nodata=None,
+    coords_only=False,
+    resampling='nearest',
+    warp_mem_limit=512,
+    num_threads=1
+):
+    """Transforms a DataArray to a new coordinate reference system
 
     Args:
         data_src (DataArray): The data to transform.

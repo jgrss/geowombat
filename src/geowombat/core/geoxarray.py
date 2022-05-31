@@ -940,12 +940,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Example:
             >>> import geowombat as gw
-            >>> import xarray as xr
             >>>
             >>> def user_func(ds_):
             >>>     return ds_.max(axis=0)
             >>>
-            >>> with xr.open_rasterio('image.tif', chunks=(1, 512, 512)) as ds:
+            >>> with gw.open('image.tif', chunks=512) as ds:
             >>>     ds.gw.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 

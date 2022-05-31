@@ -45,7 +45,7 @@ Setup a task and visualize the steps
 
     open_args = {'chunks': 512}
     config_args = {'sensor': 'bgr', 'nodata': 0, 'scale_factor': 0.0001}
-    out_args = {
+    out_args = {}
 
     # Setup the task object
     task_mean = GeoTask(inputs,

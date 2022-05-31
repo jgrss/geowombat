@@ -138,11 +138,11 @@ class TestConfig(unittest.TestCase):
                     src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
                 )
 
-        self.assertTrue(np.all(y1 != y2))
+        self.assertFalse(np.allclose(y1.values, y2.values))
         self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
         self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
-    def test_nodataval_replace(self):
+    def test_nodataval_replace2(self):
 
         with gw.config.update(ref_res=300):
             with gw.open(l8_224078_20200518, chunks=128) as src:
@@ -170,7 +170,7 @@ class TestConfig(unittest.TestCase):
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    def test_fitpredict_eq_fit_predict_cluster(self):
+    def test_fitpredict_eq_fit_predict_cluster2(self):
 
         cv = CrossValidatorWrapper(KFold())
         gridsearch = GridSearchCV(
