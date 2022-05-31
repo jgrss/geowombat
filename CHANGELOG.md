@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.5 (2022-05-31)
+### Fix
+* Jgrss/dependencies ([#134](https://github.com/jgrss/geowombat/issues/134)) ([`342bb2b`](https://github.com/jgrss/geowombat/commit/342bb2b518350ac1617dcca3329b9645862c17c9))
+
 ## v1.8.4 (2022-05-23)
 ### Fix
 * Changed upload to PyPI to GitHub releases ([#113](https://github.com/jgrss/geowombat/issues/113)) ([`378f8ec`](https://github.com/jgrss/geowombat/commit/378f8ecd6671c6451d87e7d1949967a29f448be0))
