@@ -1,5 +1,8 @@
 .. _changelog:
 
+.. note::
+    This page is deprecated. Please refer to `CHANGELOG.md <https://github.com/jgrss/geowombat/blob/main/CHANGELOG.md>`_ at https://github.com/jgrss/geowombat/ for changes >=1.8.0.
+
 Changelog
 =========
 
