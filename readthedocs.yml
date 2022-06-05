@@ -13,6 +13,6 @@ python:
       extra_requirements:
         - docs
     - method: setuptools
-      path: package
+      path: .
 sphinx:
   configuration: doc/source/conf.py
