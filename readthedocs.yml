@@ -12,6 +12,8 @@ python:
       path: .
       extra_requirements:
         - docs
+        - perf
+        - ml
     - method: setuptools
       path: .
 sphinx:
