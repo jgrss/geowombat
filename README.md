@@ -5,6 +5,7 @@
 [![GitHub version](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
 [![CircleCI](https://circleci.com/gh/jgrss/geowombat/tree/main.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/jgrss/geowombat)
 [![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
+[![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
 
 ### GeoWombat: Utilities for geospatial data
 
