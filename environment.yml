@@ -2,13 +2,14 @@ name: gwenv
 channels:
 - defaults
 dependencies:
-- python=3.7.*
-- cython
-- numpy
+- python=3.8.12
+- Cython>=0.29.*
+- numpy>=1.19.0
+- setuptools>=59.5.0
 - ipython
 - libspatialindex
-- libgdal=2.3.3
-- gdal=2.3.3
+- libgdal=3.0.2
+- gdal=3.0.2
 - pip
 - pip:
   - -r file:doc/requirements.txt
