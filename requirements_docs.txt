@@ -16,12 +16,12 @@ shapely>=1.7.0
 tqdm>=4.62.0
 xarray>=0.17.0
 cryptography
-setuptools>=59.5.0;python_version>='3.8.12'
+setuptools>=59.5.0
 gdal==3.0.2
 numpydoc
 sphinx
 sphinx-automodapi
-sphinxcontrib-bibtex==1.0.0  # 2.0.0 is incompatible
+sphinxcontrib-bibtex<2.0.0  # 2.0.0 is incompatible
 graphviz
 sklearn-xarray
 jax
