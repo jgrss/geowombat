@@ -1,15 +1,18 @@
+version: 2
+
 build:
-    image: latest
+  image: latest
 conda:
-    file: environment.yml
+  environment: environment.yml
 python:
-    version: 3.7
-    pip_install: true
-    install:
-      - requirements: doc/requirements.txt
-      - method: pip
-        extra_requirements:
-            - docs
-      - method: setuptools
+  version: "3.8"
+  install:
+    - requirements: doc/requirements.txt
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
+    - method: setuptools
+      path: package
 sphinx:
-    configuration: doc/source/conf.py
+  configuration: doc/source/conf.py
