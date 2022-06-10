@@ -22,6 +22,7 @@ numpydoc
 sphinx
 sphinx-automodapi
 sphinxcontrib-bibtex<2.0.0  # 2.0.0 is incompatible
+sphinx_tabs
 graphviz
 sklearn-xarray
 jax
