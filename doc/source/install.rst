@@ -10,6 +10,150 @@ Install with pip from the GitHub repository::
 
     pip install git+https://github.com/jgrss/geowombat
 
+
+Detailed Install
+----------------
+
+.. tabs::
+
+   .. tab:: OSx
+
+      .. tabs::
+
+         .. tab:: Dependencies
+
+            Installing on a mac takes a few extra steps. In particular you will need to install `gcc` to compile and `gdal`. Both of these are easiest to install via homebrew: `homebrew Install <https://docs.brew.sh/Installation>`_.
+            
+            From the terminal window, update brew and install::
+
+                brew update
+                brew upgrade
+                brew install gdal openssl gcc
+
+         .. tab:: Envrionments
+
+            **Virtual environments with virtualenv**
+
+            Install the `virtualenv` Python package::
+
+                pip install virtualenv
+
+            Create a virtual environment with a specific Python version::
+
+                virtualenv -p python3.7 gwenv
+
+            Activate the virtual environment::
+
+                source gwenv/bin/activate
+
+            Install geowombat requirements::
+
+                pip install cython numpy
+
+
+            **Virtual environments with Conda**
+
+            Install Conda following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
+
+            Create a virtual Conda environment with a specific Python version::
+
+                conda create --name gwenv python=3.8 cython numpy
+
+            Activate the virtual environment::
+
+                conda activate gwenv
+            
+            Install geowombat requirements via conda-forge::
+
+                conda config --env --add channels conda-forge
+                conda config --env --set channel_priority strict
+                conda install cython gdal numpy -y
+
+            **Using the virtual environment**
+
+            With an environment activated, the command line should look something like::
+
+                (gwenv) $
+
+         .. tab:: Geowombat
+            **Install GeoWombat**
+
+            Install the latest version from GitHub.com::
+
+                pip install git+https://github.com/jgrss/geowombat
+
+         .. tab:: Extras
+
+            **Install optional extras**
+            
+            Geowombat has a lot of additional capabilities, some of which you may or may not want to use. For this reason we allow the user to decide which dependencies they want to install. 
+
+            Install GeoWombat with libraries for building sphinx docs::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[docs]
+
+            Install GeoWombat with libraries for co-registration::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
+
+            Install GeoWombat with libraries for savings zarr files::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[zarr]
+
+            Install GeoWombat with libraries for machine learning and classification::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[ml]
+
+            Install GeoWombat with libraries for pygeos, opencv, netcdf and ray support::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[perf]
+
+            Install GeoWombat with libraries for parsing dates automatically::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[time]
+
+            Install GeoWombat with libraries with mapping making dependencies::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]
+            
+            Install GeoWombat with libraries for accessing hosted data::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[web]
+
+            Install GeoWombat with libraries for co-registration and geo-performance enhancements::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+
+            Install GeoWombat with all extra libraries::
+
+                pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+
+        
+
+   .. tab:: Linux
+
+      .. tabs::
+
+         .. tab:: Dependencies
+
+            Orbits the Earth
+
+         .. tab:: Titan
+
+            Orbits Jupiter
+   .. tab:: Windows
+
+      .. tabs::
+
+         .. tab:: Dependencies
+
+            Orbits the Earth
+
+         .. tab:: Titan
+
+            Orbits Jupiter
+
+
 Install dependencies
 --------------------
 
