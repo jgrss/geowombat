@@ -350,6 +350,8 @@ Detailed Install
 
                 pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
 
+   .. tab:: Docker
+        It is also possible to pull or build an image with geowombat already install from Dockerhub. Please refer to the `online instructions <https://pygis.io/docs/b_conda_started.html#docker-for-spatial-python-gdal-included>`_.
 
 
 Test the installation
