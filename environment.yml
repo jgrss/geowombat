@@ -12,4 +12,4 @@ dependencies:
 - gdal=3.0.2
 - pip
 - pip:
-  - -r file:doc/requirements.txt
+  - -r requirements_docs.txt
