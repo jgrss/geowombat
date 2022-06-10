@@ -121,6 +121,33 @@ git pull origin master
 python setup.py build && pip install --upgrade . && rm -rf build/
 ```
 
+### Mac Install 
+
+Installing on a mac takes a few extra steps. In particular you will need to install `gcc` to compile and `gdal`. Both of these are easiest to install via homebrew
+
+Install homebrew
+[https://docs.brew.sh/Installation](https://docs.brew.sh/Installation)
+
+From the terminal window, update brew and install 
+
+```shell script
+brew update
+brew upgrade
+brew install gdal openssl gcc
+```
+
+Create a conda environment, prereqs and geowombat:
+
+```shell script
+conda create -n gw_env python=3.8
+conda activate gw_env
+conda config --env --add channels conda-forge
+conda config --env --set channel_priority strict
+conda install geopandas cython gdal numpy -y
+
+pip install git+https://github.com/jgrss/geowombat
+```
+
 ### (Optional) Install into a virtual environment on Linux
 
 With `virtualenv`
