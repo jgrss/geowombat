@@ -143,7 +143,7 @@ conda create -n gw_env python=3.8
 conda activate gw_env
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
-conda install geopandas cython gdal numpy -y
+conda install cython gdal numpy -y
 
 pip install git+https://github.com/jgrss/geowombat
 ```
