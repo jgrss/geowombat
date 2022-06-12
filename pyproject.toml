@@ -5,17 +5,3 @@ requires = [
     'Cython>=0.29.*',
     'numpy>=1.19.0'
 ]
-
-[tool.poetry]
-name = 'geowombat'
-version = '1.8.5'
-
-[tool.semantic_release]
-version_variable = [
-    'src/geowombat/__init__.py:__version__',
-    'pyproject.toml:version'
-]
-branch = 'main'
-upload_to_pypi = false
-upload_to_release = true
-build_command = 'pip install poetry && poetry build'
