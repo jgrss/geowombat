@@ -144,13 +144,4 @@ workflows:
           filters:
             branches:
               only: main
-      - publish_github_release:
-          # contains GITHUB_TOKEN
-          context: GITHUB_CREDENTIALS
-          requires:
-            - new_release
-          filters:
-            branches:
-              only: main
-            tags:
-              only: /^\d+\.\d+\.\d+$/
+      
