@@ -39,36 +39,42 @@ jobs:
 #    needs: Quality
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8.12
-    - name: Install
-      run: |
-        # Install GDAL
-        sudo apt update && sudo apt upgrade -y && sudo apt install -y
-        sudo apt install software-properties-common -y 
-        sudo add-apt-repository ppa:ubuntugis/ppa 
-        sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
-        sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
-        export CPLUS_INCLUDE_PATH=/usr/include/gdal
-        export C_INCLUDE_PATH=/usr/include/gdal
-        export LD_LIBRARY_PATH=/usr/local/lib         
-        # Create and activate a virtual environment
-        python3 -m venv gwenv
-        . gwenv/bin/activate
-        # Install Python GDAL
-        pip install -U pip setuptools wheel
-        pip install Cython>=0.29.* numpy>=1.19.0
-        GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
-        pip install GDAL==$GDAL_VERSION --no-binary=gdal        
-        # Install GeoWombat
-        pip install .[perf,ml]
-    - name: Unittest
-      run: |
-        . /home/circleci/project/gwenv/bin/activate
-        pip install testfixtures
-        python -m unittest
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+      - uses: syphar/restore-virtualenv@v1
+        id: gwenv
+        with:
+          requirement_files: setup.cfg
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.gwenv.outputs.cache-hit != 'true'
+      - name: Install GDAL binaries
+        run: |
+          # Install GDAL
+          sudo apt update && sudo apt upgrade -y && sudo apt install -y
+          sudo apt install software-properties-common -y 
+          sudo add-apt-repository ppa:ubuntugis/ppa 
+          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+          sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
+          export CPLUS_INCLUDE_PATH=/usr/include/gdal
+          export C_INCLUDE_PATH=/usr/include/gdal
+          export LD_LIBRARY_PATH=/usr/local/lib
+      - name: Install Python packages
+        run: |
+          # Install Python GDAL
+          pip install -U pip setuptools wheel
+          pip install Cython>=0.29.* numpy>=1.19.0
+          GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
+          pip install GDAL==$GDAL_VERSION --no-binary=gdal
+      - name: Install GeoWombat
+        run: |
+          pip install .[perf,ml]
+        if: steps.gwenv.outputs.cache-hit != 'true'
+      - name: Unittests
+        run: |
+          pip install testfixtures
+          python -m unittest
 
   Version:
     needs: Tests
