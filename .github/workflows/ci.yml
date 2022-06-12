@@ -1,0 +1,73 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+#  Quality:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.8
+#    - name: Install Python Poetry
+#      uses: abatilo/actions-poetry@v2.1.0
+#      with:
+#        poetry-version: 1.1.13
+#    - name: Configure poetry
+#      shell: bash
+#      run: python -m poetry config virtualenvs.in-project true
+#    - name: View poetry version
+#      run: poetry --version
+#    - name: Install dependencies
+#      run: |
+#        python -m poetry install
+#    - name: Lint with flake8
+#      run: |
+#        # stop the build if there are Python syntax errors or undefined names
+#        python -m poetry run flake8 . --exclude .venv --count --select=E9,F63,F7,F82 --show-source --statistics
+#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#    - name: Test with pytest
+#      run: |
+#        python -m poetry run python -m pytest -v tests
+
+  Version:
+#    needs: Quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Semantic Release
+        run: |
+          pip install python-semantic-release
+          # Add credentials
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          # Bump version
+          semantic-release publish
+
+  # https://github.com/fnkr/github-action-ghr
+  release:
+    needs: Version
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
+    name: Upload release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: fnkr/github-action-ghr@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GHR_PATH: .
+          GHR_COMPRESS: gz
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
