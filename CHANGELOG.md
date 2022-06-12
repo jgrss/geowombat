@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.6 (2022-06-12)
+### Fix
+* Added token ([#148](https://github.com/jgrss/geowombat/issues/148)) ([`79b0243`](https://github.com/jgrss/geowombat/commit/79b0243df5765865ef913ab42b911960649ec511))
+* Removed semantic version header ([#147](https://github.com/jgrss/geowombat/issues/147)) ([`529b02b`](https://github.com/jgrss/geowombat/commit/529b02bcf128ab31eecf52a7f2067626461cc6b7))
+* Test github action release ([#146](https://github.com/jgrss/geowombat/issues/146)) ([`f99f6de`](https://github.com/jgrss/geowombat/commit/f99f6de714dcf355dca3cb82126c7fa4ff65952a))
+* Pin min requests version ([#143](https://github.com/jgrss/geowombat/issues/143)) ([`98ad33a`](https://github.com/jgrss/geowombat/commit/98ad33aa15474d88f7396c32f765a33d7265021f))
+
 ## v1.8.5 (2022-05-31)
 ### Fix
 * Jgrss/dependencies ([#134](https://github.com/jgrss/geowombat/issues/134)) ([`342bb2b`](https://github.com/jgrss/geowombat/commit/342bb2b518350ac1617dcca3329b9645862c17c9))

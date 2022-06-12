@@ -1,0 +1,128 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+#  Quality:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.8
+#    - name: Install Python Poetry
+#      uses: abatilo/actions-poetry@v2.1.0
+#      with:
+#        poetry-version: 1.1.13
+#    - name: Configure poetry
+#      shell: bash
+#      run: python -m poetry config virtualenvs.in-project true
+#    - name: View poetry version
+#      run: poetry --version
+#    - name: Install dependencies
+#      run: |
+#        python -m poetry install
+#    - name: Lint with flake8
+#      run: |
+#        # stop the build if there are Python syntax errors or undefined names
+#        python -m poetry run flake8 . --exclude .venv --count --select=E9,F63,F7,F82 --show-source --statistics
+#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  Tests:
+#    needs: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+      - uses: syphar/restore-virtualenv@v1
+        id: gwenv
+        with:
+          requirement_files: setup.cfg
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.gwenv.outputs.cache-hit != 'true'
+      - name: Install GDAL binaries
+        run: |
+          # Install GDAL
+          sudo apt update && sudo apt upgrade -y && sudo apt install -y
+          sudo apt install software-properties-common -y 
+          sudo add-apt-repository ppa:ubuntugis/ppa 
+          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+          sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
+          export CPLUS_INCLUDE_PATH=/usr/include/gdal
+          export C_INCLUDE_PATH=/usr/include/gdal
+          export LD_LIBRARY_PATH=/usr/local/lib
+      - name: Install Python packages
+        run: |
+          # Install Python GDAL
+          pip install -U pip setuptools wheel
+          pip install Cython>=0.29.* numpy>=1.19.0
+          GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
+          pip install GDAL==$GDAL_VERSION --no-binary=gdal
+      - name: Install GeoWombat
+        run: |
+          pip install .[perf,ml]
+        if: steps.gwenv.outputs.cache-hit != 'true'
+      - name: Unittests
+        run: |
+          pip install testfixtures
+          python -m unittest
+
+  Version:
+    needs: Tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    concurrency: release
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+      - name: Python Semantic Release
+        run: |
+          python -m pip install python-semantic-release
+          # Add credentials
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          # Bump GeoWombat version
+          semantic-release publish
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  # https://github.com/fnkr/github-action-ghr
+  Release:
+    needs: Version
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Upload release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+      - uses: syphar/restore-virtualenv@v1
+        id: gwenv
+        with:
+          requirement_files: setup.cfg
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.gwenv.outputs.cache-hit != 'true'
+      - name: Checkout
+        uses: fnkr/github-action-ghr@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GHR_PATH: .
+          GHR_COMPRESS: gz
+          GHR_DELETE: true
+          GHR_REPLACE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
