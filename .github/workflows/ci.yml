@@ -91,6 +91,8 @@ jobs:
           python-version: 3.8.12
       - name: Python Semantic Release
         run: |
+          pip install -U pip setuptools wheel
+          pip install Cython>=0.29.* numpy>=1.19.0
           python -m pip install python-semantic-release
           # Add credentials
           git config user.name "github-actions"
@@ -107,6 +109,7 @@ jobs:
     name: Upload release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8.12
@@ -122,4 +125,6 @@ jobs:
         env:
           GHR_PATH: .
           GHR_COMPRESS: gz
+          GHR_DELETE: true
+          GHR_REPLACE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

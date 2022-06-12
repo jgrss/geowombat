@@ -2,8 +2,8 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://github.com/jgrss/geowombat/blob/main/LICENSE.txt)
 [![](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
-[![GitHub version](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
-[![CircleCI](https://circleci.com/gh/jgrss/geowombat/tree/main.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/jgrss/geowombat)
+[![](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
+[![](https://github.com/jgrss/geowombat/actions/workflows/ci.yml/badge.svg)](https://github.com/jgrss/geowombat/actions?query=workflow%3ACI)
 [![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
 [![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
 
@@ -86,7 +86,10 @@ Computation scales easily over large datasets with minimal changes to the code.
 
 ## Installation
 
-GeoWombat is not on PyPi, but it can be installed with `pip`. Most dependencies will be automatically installed. However, the exception is GDAL, which needs to be installed prior to executing the `pip` command below. See [the installation documentation](https://geowombat.readthedocs.io/en/latest/install.html) for details on installing GDAL. With GDAL installed, GeoWombat can be installed like:
+GeoWombat is not on PyPi, but it can be installed with `pip`. Most dependencies will be automatically installed. However, the exception is GDAL, which needs to be installed prior to executing the `pip` command below. See [the installation documentation](https://geowombat.readthedocs.io/en/latest/install.html) for details on installing GDAL. 
+
+### Example Install 
+With GDAL and a few other dependencies installed, GeoWombat can be installed like:
 
 ```commandline
 pip install git+https://github.com/jgrss/geowombat
@@ -99,12 +102,7 @@ git clone https://github.com/jgrss/geowombat.git
 cd geowombat/
 python setup.py build && pip install --upgrade . && rm -rf build/
 ```
-
-opencv requires libGL.so.1. In Ubuntu, this can be obtained by running:
-```
-apt-get update && apt-get install libgl1 -y
-```
-
+ 
 ### Update
 
 To update GeoWombat:
@@ -121,40 +119,6 @@ git pull origin master
 python setup.py build && pip install --upgrade . && rm -rf build/
 ```
 
-### (Optional) Install into a virtual environment on Linux
-
-With `virtualenv`
-
-```shell script
-# Create a Python 3.7 virtual environment named gwenv
-virtualenv -p python=3.7 gwenv
-
-# Activate the virtual environment
-source gwenv/bin/activate
-
-# Install the libspatialindex and GDAL libraries
-sudo apt install libspatialindex-dev libgdal-dev
-
-# Install GeoWombat with all extra libraries
-pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
-```
-
-With `conda`
-
-```shell script
-# Install the libspatialindex and GDAL libraries
-sudo apt install libspatialindex-dev libgdal-dev
-
-# Create a Python 3.7 virtual environment named gwenv
-conda create -n gwenv python=3.7 cython numpy libspatialindex gdal -c conda-forge
-
-# Activate the virtual environment
-conda activate gwenv
-
-# Install GeoWombat with all extra libraries
-pip install git+https://github.com/jgrss/geowombat.git
-```
-
 ### Universal Install Via Docker
 If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
 Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
@@ -164,7 +128,6 @@ Install pip-tools. Add packages to requirements.in and running the following to 
 ```
 pip-compile requirements.in
 ```
-
 
 ## Documentation
 
