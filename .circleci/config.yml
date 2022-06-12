@@ -80,7 +80,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-              - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
+              - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
       - run:
@@ -106,7 +106,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "1c:2f:26:72:77:69:09:fe:53:14:49:0d:9c:42:0f:7c"
+            - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
       - run:
           name: Get and publish latest version
           command: |
@@ -144,4 +144,13 @@ workflows:
           filters:
             branches:
               only: main
-      
+      - publish_github_release:
+          # contains GITHUB_TOKEN
+          context: GITHUB_CREDENTIALS
+          requires:
+            - new_release
+          filters:
+            branches:
+              only: main
+            tags:
+              only: /^\d+\.\d+\.\d+$/
