@@ -80,20 +80,25 @@ jobs:
     needs: Tests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
+    concurrency: release
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8.12
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Semantic Release
+      - name: Python Semantic Release
         run: |
-          pip install python-semantic-release
+          python -m pip install python-semantic-release
           # Add credentials
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           # Bump version
           semantic-release publish
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   # https://github.com/fnkr/github-action-ghr
   Release:
