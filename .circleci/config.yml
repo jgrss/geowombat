@@ -73,62 +73,62 @@ jobs:
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
               python -m unittest
-  new_release:
-    docker:
-      - image: cimg/python:3.8.12
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-              - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
-      - run:
-          name: Release new version
-          command: |
-            . /home/circleci/project/gwenv/bin/activate
-            pip install python-semantic-release
-            # Add credentials
-            git config user.email "jgrss@users.noreply.github.com"
-            git config user.name "CircleCI"
-            # Bump version
-            semantic-release publish
-  publish_github_release:
-    docker:
-      - image: circleci/golang:1.10
-    steps:
-      - run:
-          name: Install OpenSSH 8.1p1
-          command: |
-            sudo apt update && sudo apt install -y
-            sudo apt install libz-dev libssl-dev -y
-            mkdir ~/tempdownload; cd ~/tempdownload; wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.1p1.tar.gz; tar zxvf openssh-8.1p1.tar.gz; cd openssh-8.1p1 && ./configure && make && sudo make install
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
-      - run:
-          name: Get and publish latest version
-          command: |
-            # Get GHR
-            go get -u github.com/tcnksm/ghr
-            # Get the version file after the new release
-            wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
-            # Get the version line
-            VERSION_LINE=$(sed -n '2p' __init__.py)
-            # Get the version number
-            GW_VERSION=$(echo $VERSION_LINE | sed 's/__version__ = //')
-            # Strip whitespace
-            GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
-            # Remove quotes
-            GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
-            LIB_VERSION="v${GW_VERSION3}"
-            echo $GW_VERSION3
-            echo $LIB_VERSION
-            git clone https://github.com/jgrss/geowombat.git
-            cd geowombat/
-            # Publish the release
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${LIB_VERSION}
+#  new_release:
+#    docker:
+#      - image: cimg/python:3.8.12
+#    steps:
+#      - checkout
+#      - add_ssh_keys:
+#          fingerprints:
+#              - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
+#      - restore_cache:
+#          key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
+#      - run:
+#          name: Release new version
+#          command: |
+#            . /home/circleci/project/gwenv/bin/activate
+#            pip install python-semantic-release
+#            # Add credentials
+#            git config user.email "jgrss@users.noreply.github.com"
+#            git config user.name "CircleCI"
+#            # Bump version
+#            semantic-release publish
+#  publish_github_release:
+#    docker:
+#      - image: circleci/golang:1.10
+#    steps:
+#      - run:
+#          name: Install OpenSSH 8.1p1
+#          command: |
+#            sudo apt update && sudo apt install -y
+#            sudo apt install libz-dev libssl-dev -y
+#            mkdir ~/tempdownload; cd ~/tempdownload; wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.1p1.tar.gz; tar zxvf openssh-8.1p1.tar.gz; cd openssh-8.1p1 && ./configure && make && sudo make install
+#      - checkout
+#      - add_ssh_keys:
+#          fingerprints:
+#            - "42:90:b6:2c:91:fe:77:31:ba:84:81:e5:7c:40:89:08"
+#      - run:
+#          name: Get and publish latest version
+#          command: |
+#            # Get GHR
+#            go get -u github.com/tcnksm/ghr
+#            # Get the version file after the new release
+#            wget https://raw.githubusercontent.com/jgrss/geowombat/main/src/geowombat/__init__.py
+#            # Get the version line
+#            VERSION_LINE=$(sed -n '2p' __init__.py)
+#            # Get the version number
+#            GW_VERSION=$(echo $VERSION_LINE | sed 's/__version__ = //')
+#            # Strip whitespace
+#            GW_VERSION2=$(echo $GW_VERSION | sed 's/ *$//g')
+#            # Remove quotes
+#            GW_VERSION3=$(echo $GW_VERSION2 | sed -e "s/'//g")
+#            LIB_VERSION="v${GW_VERSION3}"
+#            echo $GW_VERSION3
+#            echo $LIB_VERSION
+#            git clone https://github.com/jgrss/geowombat.git
+#            cd geowombat/
+#            # Publish the release
+#            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${LIB_VERSION}
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -137,20 +137,20 @@ workflows:
   build_workflow:
     jobs:
       - build_and_test
-      - new_release:
-          context: GITHUB_CREDENTIALS
-          requires:
-            - build_and_test
-          filters:
-            branches:
-              only: main
-      - publish_github_release:
-          # contains GITHUB_TOKEN
-          context: GITHUB_CREDENTIALS
-          requires:
-            - new_release
-          filters:
-            branches:
-              only: main
-            tags:
-              only: /^\d+\.\d+\.\d+$/
+#      - new_release:
+#          context: GITHUB_CREDENTIALS
+#          requires:
+#            - build_and_test
+#          filters:
+#            branches:
+#              only: main
+#      - publish_github_release:
+#          # contains GITHUB_TOKEN
+#          context: GITHUB_CREDENTIALS
+#          requires:
+#            - new_release
+#          filters:
+#            branches:
+#              only: main
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
