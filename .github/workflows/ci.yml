@@ -103,10 +103,11 @@ jobs:
   # https://github.com/fnkr/github-action-ghr
   Release:
     needs: Version
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Upload release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8.12
@@ -122,4 +123,6 @@ jobs:
         env:
           GHR_PATH: .
           GHR_COMPRESS: gz
+          GHR_DELETE: true
+          GHR_REPLACE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
