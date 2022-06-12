@@ -96,7 +96,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           # Bump version
-          semantic-release --verbosity=DEBUG publish
+          semantic-release publish
         env:
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
