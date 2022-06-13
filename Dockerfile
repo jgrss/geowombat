@@ -20,6 +20,7 @@ RUN apt update -y && \
     libgeos-dev \
     libgeos-doc \
     libspatialindex-dev \
+    python-is-python3 \
     git \
     g++ -y
 
