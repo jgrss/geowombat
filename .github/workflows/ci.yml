@@ -103,7 +103,7 @@ jobs:
   # https://github.com/fnkr/github-action-ghr
   Release:
     needs: Version
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
     name: Upload release
     runs-on: ubuntu-latest
     steps:

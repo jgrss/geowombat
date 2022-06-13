@@ -10,6 +10,7 @@ cimport cython
 
 import numpy as np
 cimport numpy as np
+np._import_array
 
 from ..util cimport percentiles
 
