@@ -50,7 +50,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinxcontrib.bibtex",
     "sphinx_tabs.tabs",
-     "numpydoc",
+    "numpydoc",
 ]
 
 # mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
