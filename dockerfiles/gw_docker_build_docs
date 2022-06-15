@@ -23,7 +23,8 @@ RUN apt update -y && apt upgrade -y && \
 
 RUN pip install Cython numpy  
 RUN pip install git+https://github.com/jgrss/geowombat
-RUN pip install sklearn-xarray  pip-tools rtree ipykernel sphinx graphviz numpydoc sphinx_automodapi sphinxcontrib.bibtex==1.0
+RUN pip install sklearn-xarray  pip-tools rtree ipykernel sphinx graphviz numpydoc sphinx_automodapi sphinx_tabs ipython 'sphinxcontrib-bibtex<2.0.0' jaxjaxlib
+
 
 CMD pip install --upgrade git+https://github.com/jgrss/geowombat && git clone https://github.com/jgrss/geowombat.git && cd geowombat/doc && make html
 
