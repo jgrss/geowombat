@@ -6,7 +6,7 @@ Installation
 Quick install
 -------------
 
-Install with pip from the GitHub repository::
+Install the latest version from the GitHub repository::
 
     pip install git+https://github.com/jgrss/geowombat
 
@@ -435,4 +435,11 @@ Installation Notes
  
 
  
+.. toctree::
+   :maxdepth: 2
 
+   install_gdal
+   install_pip
+   install_conda
+   install_docker
+   install_post

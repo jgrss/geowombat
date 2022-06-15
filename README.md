@@ -2,8 +2,8 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://github.com/jgrss/geowombat/blob/main/LICENSE.txt)
 [![](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)
-[![GitHub version](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
-[![CircleCI](https://circleci.com/gh/jgrss/geowombat/tree/main.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/jgrss/geowombat)
+[![](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
+[![](https://github.com/jgrss/geowombat/actions/workflows/ci.yml/badge.svg)](https://github.com/jgrss/geowombat/actions?query=workflow%3ACI)
 [![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
 [![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
 
