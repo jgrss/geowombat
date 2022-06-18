@@ -2,6 +2,8 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.1 (2022-06-18)
+
 ## v1.8.6 (2022-06-12)
 ### Fix
 * Added token ([#148](https://github.com/jgrss/geowombat/issues/148)) ([`79b0243`](https://github.com/jgrss/geowombat/commit/79b0243df5765865ef913ab42b911960649ec511))
