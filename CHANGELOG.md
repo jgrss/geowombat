@@ -3,6 +3,7 @@
 <!--next-version-placeholder-->
 
 ## v1.9.1 (2022-06-18)
+* Added support for Landsat 9
 
 ## v1.8.6 (2022-06-12)
 ### Fix
