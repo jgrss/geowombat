@@ -100,7 +100,7 @@ jobs:
           # Bump GeoWombat version
           semantic-release publish
         env:
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # https://github.com/fnkr/github-action-ghr
   Release:
