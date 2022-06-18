@@ -91,6 +91,8 @@ jobs:
           python-version: 3.8.12
       - name: Python Semantic Release
         run: |
+          pip install -U pip setuptools wheel
+          pip install Cython>=0.29.* numpy>=1.19.0
           python -m pip install python-semantic-release
           # Add credentials
           git config user.name "github-actions"
