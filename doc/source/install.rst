@@ -25,7 +25,7 @@ or with `mamba`::
 Quick Install
 -------------
 
-If you system already has all the core dependencies installed. Install the latest version from the GitHub repository::
+If you system already has all the core dependencies installed, install the latest version from the GitHub repository::
 
     pip install git+https://github.com/jgrss/geowombat
 
