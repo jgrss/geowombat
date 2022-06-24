@@ -19,7 +19,7 @@ Once the `conda-forge` channel has been enabled, `geowombat` can be installed wi
 
 or with `mamba`::
 
-    mamba install geowombat
+    mamba install geowombat 
 
 
 Quick Install
