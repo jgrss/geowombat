@@ -1,12 +1,31 @@
 .. _install:
 
-Installation
-============
+Installing geowombat
+====================
 
-Quick install
+Easiest Install
+---------------
+
+Conda provides an easy and consistent installation method regardless of operating system. 
+
+Installing `geowombat` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with::
+
+    conda config --add channels conda-forge
+    conda config --set channel_priority strict
+
+Once the `conda-forge` channel has been enabled, `geowombat` can be installed with `conda`::
+
+    conda install geowombat
+
+or with `mamba`::
+
+    mamba install geowombat 
+
+
+Quick Install
 -------------
 
-Install the latest version from the GitHub repository::
+If you system already has all the core dependencies installed, install the latest version from the GitHub repository::
 
     pip install git+https://github.com/jgrss/geowombat
 
