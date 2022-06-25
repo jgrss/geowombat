@@ -14,7 +14,7 @@ from pathlib import Path
 import logging
 import threading
 from contextlib import contextmanager
-from typing import Any, Callable, Union
+import typing as T
 
 import concurrent.futures
 
@@ -44,24 +44,28 @@ warnings.filterwarnings('ignore')
 
 ch = Chunks()
 
-IO_DICT = dict(rasterio=['.tif',
-                         '.tiff',
-                         '.TIF',
-                         '.TIFF',
-                         '.img',
-                         '.IMG',
-                         '.kea',
-                         '.vrt',
-                         '.VRT',
-                         '.jp2',
-                         '.JP2',
-                         '.hgt',
-                         '.HGT',
-                         '.hdf',
-                         '.HDF',
-                         '.h5',
-                         '.H5'],
-               xarray=['.nc'])
+IO_DICT = dict(
+    rasterio=[
+        '.tif',
+        '.tiff',
+        '.TIF',
+        '.TIFF',
+        '.img',
+        '.IMG',
+        '.kea',
+        '.vrt',
+        '.VRT',
+        '.jp2',
+        '.JP2',
+        '.hgt',
+        '.HGT',
+        '.hdf',
+        '.HDF',
+        '.h5',
+        '.H5'
+    ],
+    xarray=['.nc']
+)
 
 
 @contextmanager
@@ -70,7 +74,6 @@ def _tqdm(*args, **kwargs):
 
 
 def get_attrs(src, **kwargs):
-
     cellxh = src.res[0] / 2.0
     cellyh = src.res[1] / 2.0
 
@@ -80,14 +83,11 @@ def get_attrs(src, **kwargs):
     xcoords = np.arange(left_, left_ + kwargs['window'].width * src.res[0], src.res[0])
     ycoords = np.arange(top_, top_ - kwargs['window'].height * src.res[1], -src.res[1])
 
-    attrs = dict()
-
+    attrs = {}
     attrs['transform'] = src.gw.transform if hasattr(src, 'gw') else src.transform
 
     if hasattr(src, 'crs'):
-
         src_crs = check_src_crs(src)
-
         try:
             attrs['crs'] = src_crs.to_proj4()
         except:
@@ -119,11 +119,8 @@ def get_attrs(src, **kwargs):
 
 @dask.delayed
 def read_delayed(fname, chunks, **kwargs):
-
     with rio.open(fname) as src:
-
         data_slice = src.read(**kwargs)
-
         single_band = True if len(data_slice.shape) == 2 else False
 
         if isinstance(chunks, int):
@@ -132,15 +129,10 @@ def read_delayed(fname, chunks, **kwargs):
             chunks_ = (1,) + chunks if len(chunks) < 3 else chunks
 
         if single_band:
-
             # Expand to 1 band
-            data_slice = da.from_array(data_slice[np.newaxis],
-                                       chunks=chunks_)
-
+            data_slice = da.from_array(data_slice[np.newaxis], chunks=chunks_)
         else:
-
-            data_slice = da.from_array(data_slice,
-                                       chunks=chunks)
+            data_slice = da.from_array(data_slice, chunks=chunks)
 
         return data_slice
 
@@ -149,16 +141,16 @@ def read_list(file_list, chunks, **kwargs):
     return [read_delayed(fn, chunks, **kwargs) for fn in file_list]
 
 
-def read(filename,
-         band_names=None,
-         time_names=None,
-         bounds=None,
-         chunks=256,
-         num_workers=1,
-         **kwargs):
-
-    """
-    Reads a window slice in-memory
+def read(
+    filename,
+    band_names=None,
+    time_names=None,
+    bounds=None,
+    chunks=256,
+    num_workers=1,
+    **kwargs
+):
+    """Reads a window slice in-memory
 
     Args:
         filename (str or list): A file name or list of file names to open read.
@@ -173,15 +165,12 @@ def read(filename,
     Returns:
         ``xarray.DataArray``
     """
-
     # Cannot pass 'chunks' to rasterio
     if 'chunks' in kwargs:
         del kwargs['chunks']
 
     if isinstance(filename, str):
-
         with rio.open(filename) as src:
-
             src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
 
             if bounds and ('window' not in kwargs):
@@ -189,10 +178,14 @@ def read(filename,
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
-        data = dask.compute(read_delayed(filename,
-                                         chunks,
-                                         **kwargs),
-                            num_workers=num_workers)[0]
+        data = dask.compute(
+            read_delayed(
+                filename,
+                chunks,
+                **kwargs
+            ),
+            num_workers=num_workers
+        )[0]
 
         if not band_names:
             band_names = np.arange(1, data.shape[0]+1)
@@ -201,29 +194,36 @@ def read(filename,
             logger.exception('  The band names do not match the output dimensions.')
             raise ValueError
 
-        data = xr.DataArray(data,
-                            dims=('band', 'y', 'x'),
-                            coords={'band': band_names,
-                                    'y': ycoords[:data.shape[-2]],
-                                    'x': xcoords[:data.shape[-1]]},
-                            attrs=attrs)
+        data = xr.DataArray(
+            data,
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': band_names,
+                'y': ycoords[:data.shape[-2]],
+                'x': xcoords[:data.shape[-1]]
+            },
+            attrs=attrs
+        )
 
     else:
-
         with rio.open(filename[0]) as src:
-
             src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
-
             if bounds and ('window' not in kwargs):
                 kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
             ycoords, xcoords, attrs = get_attrs(src, **kwargs)
 
-        data = da.concatenate(dask.compute(read_list(filename,
-                                                     chunks,
-                                                     **kwargs),
-                                           num_workers=num_workers),
-                              axis=0)
+        data = da.concatenate(
+            dask.compute(
+                read_list(
+                    filename,
+                    chunks,
+                    **kwargs
+                ),
+                num_workers=num_workers
+            ),
+            axis=0
+        )
 
         if not band_names:
             band_names = np.arange(1, data.shape[-3]+1)
@@ -239,13 +239,17 @@ def read(filename,
             logger.exception('  The time names do not match the output dimensions.')
             raise ValueError
 
-        data = xr.DataArray(data,
-                            dims=('time', 'band', 'y', 'x'),
-                            coords={'time': time_names,
-                                    'band': band_names,
-                                    'y': ycoords[:data.shape[-2]],
-                                    'x': xcoords[:data.shape[-1]]},
-                            attrs=attrs)
+        data = xr.DataArray(
+            data,
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': time_names,
+                'band': band_names,
+                'y': ycoords[:data.shape[-2]],
+                'x': xcoords[:data.shape[-1]]
+            },
+            attrs=attrs
+        )
 
     return data
 
@@ -519,7 +523,6 @@ class open(object):
         return self.data
 
     def __exit__(self, *args, **kwargs):
-
         if not self.data.gw.config['with_config']:
             _set_defaults(config)
 
@@ -541,9 +544,7 @@ class open(object):
             yield
 
     def close(self):
-
         if hasattr(self, 'data'):
-
             if hasattr(self.data, 'gw'):
                 if hasattr(self.data.gw, '_obj'):
                     self.data.gw._obj = None
@@ -552,27 +553,26 @@ class open(object):
                 self.data.close()
 
         if 'gw' in self.data._cache:
-
             with self._optional_lock(True):
                 file = self.data._cache.pop('gw', None)
 
         self.data = None
 
 
-def load(image_list,
-         time_names,
-         band_names,
-         chunks=512,
-         nodata=65535,
-         in_range=None,
-         out_range=None,
-         data_slice=None,
-         num_workers=1,
-         src=None,
-         scheduler='ray'):
-
-    """
-    Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
+def load(
+    image_list,
+    time_names,
+    band_names,
+    chunks=512,
+    nodata=65535,
+    in_range=None,
+    out_range=None,
+    data_slice=None,
+    num_workers=1,
+    src=None,
+    scheduler='ray'
+):
+    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
     alignments and CRSs. It assumes each image in ``image_list`` has the same y and x dimensions and
     that the coordinates align.
 
@@ -617,7 +617,6 @@ def load(image_list,
         >>>                    data_slice=data_slice,
         >>>                    num_workers=4)
     """
-
     netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):
@@ -638,12 +637,13 @@ def load(image_list,
 
     if src is None:
 
-        with open(f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
-                  time_names=time_names[0],
-                  band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
-                  netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
-                  chunks=chunks) as src:
-
+        with open(
+            f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
+            time_names=time_names[0],
+            band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
+            netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
+            chunks=chunks
+        ) as src:
             pass
 
     attrs = src.attrs.copy()
@@ -653,55 +653,60 @@ def load(image_list,
     xcoords = src.x
 
     if not data_slice:
-
-        data_slice = (slice(0, None),
-                      slice(0, None),
-                      slice(0, None),
-                      slice(0, None))
+        data_slice = (
+            slice(0, None),
+            slice(0, None),
+            slice(0, None),
+            slice(0, None)
+        )
 
     def expand_time(dataset):
-
+        """`open_mfdataset` preprocess function
         """
-        `open_mfdataset` preprocess function
-        """
-
         # Convert the Dataset into a DataArray,
         # rename the band coordinate,
         # select the required VI bands,
         # assign y/x coordinates from a reference,
         # add the time coordiante, and
         # get the sub-array slice
-        darray = dataset.to_array()\
-                        .rename({'variable': 'band'})[:, :nrows, :ncols]\
-                        .sel(band=band_names)\
-                        .assign_coords(y=ycoords, x=xcoords)\
-                        .expand_dims(dim='time')\
-                        .clip(0, max(in_range[1], nodata))[data_slice]
+        darray = (
+            dataset.to_array()
+            .rename({'variable': 'band'})[:, :nrows, :ncols]
+            .sel(band=band_names)
+            .assign_coords(y=ycoords, x=xcoords)
+            .expand_dims(dim='time')
+            .clip(0, max(in_range[1], nodata))[data_slice]
+        )
 
         # Scale from [0-10000] -> [0,1]
         darray = xr.where(darray == nodata, 0, darray*scale_factor).astype('float64')
 
-        return darray.where(xr.ufuncs.isfinite(darray))\
-                        .fillna(0)\
-                        .clip(min=out_range[0], max=out_range[1])
+        return (
+            darray.where(xr.ufuncs.isfinite(darray))
+            .fillna(0)
+            .clip(min=out_range[0], max=out_range[1])
+        )
 
     ray.shutdown()
     ray.init(num_cpus=num_workers)
 
     with dask.config.set(scheduler=ray_dask_get):
-
         # Open all arrays
-        ds = xr.open_mfdataset(image_list,
-                               concat_dim='time',
-                               chunks={'y': chunks, 'x': chunks},
-                               combine='nested',
-                               engine='h5netcdf',
-                               preprocess=expand_time,
-                               parallel=True)\
-                    .assign_coords(time=time_names)\
-                    .groupby('time.date').max()\
-                    .rename({'date': 'time'})\
-                    .assign_attrs(**attrs)
+        ds = (
+            xr.open_mfdataset(
+                image_list,
+                concat_dim='time',
+                chunks={'y': chunks, 'x': chunks},
+                combine='nested',
+                engine='h5netcdf',
+                preprocess=expand_time,
+                parallel=True
+            )
+            .assign_coords(time=time_names)
+            .groupby('time.date').max()
+            .rename({'date': 'time'})
+            .assign_attrs(**attrs)
+        )
 
         # Get the time series dates after grouping
         real_proc_times = ds.gw.pydatetime
@@ -745,9 +750,7 @@ class _ImportGPU(object):
 
 
 class series(BaseSeries):
-
-    """
-    A class for time series concurrent processing on a GPU
+    """A class for time series concurrent processing on a GPU
 
     Args:
         filenames (list): The list of filenames to open.
@@ -772,22 +775,22 @@ class series(BaseSeries):
         > # CUDA 11.1
         > pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     """
-
-    def __init__(self,
-                 filenames: list,
-                 time_names: list = None,
-                 band_names: list = None,
-                 transfer_lib: str = 'jax',
-                 crs: str = None,
-                 res: Union[list, tuple] = None,
-                 bounds: Union[BoundingBox, list, tuple] = None,
-                 resampling: str = 'nearest',
-                 nodata: Union[float, int] = 0,
-                 warp_mem_limit: int = 256,
-                 num_threads: int = 1,
-                 window_size: Union[int, list, tuple] = None,
-                 padding: Union[list, tuple] = None):
-
+    def __init__(
+        self,
+        filenames: list,
+        time_names: list = None,
+        band_names: list = None,
+        transfer_lib: str = 'jax',
+        crs: str = None,
+        res: T.Union[list, tuple] = None,
+        bounds: T.Union[BoundingBox, list, tuple] = None,
+        resampling: str = 'nearest',
+        nodata: T.Union[float, int] = 0,
+        warp_mem_limit: int = 256,
+        num_threads: int = 1,
+        window_size: T.Union[int, list, tuple] = None,
+        padding: T.Union[list, tuple] = None
+    ):
         imports_ = _ImportGPU()
 
         if not imports_.JAX_INSTALLED and (transfer_lib == 'jax'):
@@ -828,33 +831,31 @@ class series(BaseSeries):
 
         self.open(filenames)
 
-        self.warp(dst_crs=crs,
-                  dst_res=res,
-                  dst_bounds=bounds,
-                  resampling=resampling,
-                  nodata=nodata,
-                  warp_mem_limit=warp_mem_limit,
-                  num_threads=num_threads,
-                  window_size=window_size,
-                  padding=self.padding)
+        self.warp(
+            dst_crs=crs,
+            dst_res=res,
+            dst_bounds=bounds,
+            resampling=resampling,
+            nodata=nodata,
+            warp_mem_limit=warp_mem_limit,
+            num_threads=num_threads,
+            window_size=window_size,
+            padding=self.padding
+        )
 
     def read(
         self,
-        bands: Union[int, list],
+        bands: T.Union[int, list],
         window: Window = None,
         gain: float = 1.0,
-        offset: Union[float, int] = 0.0,
-        pool: Any = None,
+        offset: T.Union[float, int] = 0.0,
+        pool: T.Any = None,
         num_workers: int = None,
-        tqdm_obj: Any = None
-    ) -> Any:
-
+        tqdm_obj: T.Any = None
+    ) -> T.Any:
+        """Reads a window
         """
-        Reads a window
-        """
-
         if isinstance(bands, int):
-
             if bands == -1:
                 band_list = list(range(1, self.count+1))
             else:
@@ -864,7 +865,6 @@ class series(BaseSeries):
             band_list = bands
 
         def _read(vrt_ptr, bd):
-
             array = vrt_ptr.read(bd, window=window)
             mask = vrt_ptr.read_masks(bd, window=window)
 
@@ -899,25 +899,24 @@ class series(BaseSeries):
 
     @staticmethod
     def _create_file(filename, **profile):
-
         if Path(filename).is_file():
             Path(filename).unlink()
 
         with rio.open(filename, mode='w', **profile) as dst:
             pass
 
-    def apply(self,
-              func: Union[Callable, str, list, tuple],
-              bands: Union[list, int],
-              gain: float = 1.0,
-              offset: Union[float, int] = 0.0,
-              processes: bool = False,
-              num_workers: int = 1,
-              monitor_progress: bool = True,
-              outfile: Union[Path, str] = None):
-
-        """
-        Applies a function concurrently over windows
+    def apply(
+        self,
+        func: T.Union[T.Callable, str, list, tuple],
+        bands: T.Union[list, int],
+        gain: float = 1.0,
+        offset: T.Union[float, int] = 0.0,
+        processes: bool = False,
+        num_workers: int = 1,
+        monitor_progress: bool = True,
+        outfile: T.Union[Path, str] = None
+    ):
+        """Applies a function concurrently over windows
 
         Args:
             func (object | str | list | tuple): The function to apply. If ``func`` is a string,
@@ -1016,7 +1015,6 @@ class series(BaseSeries):
             >>>               num_workers=4,            # use 4 concurrent threads, one per window
             >>>               outfile='stack_mean.tif')
         """
-
         pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
 
         tqdm_obj = tqdm if monitor_progress else _tqdm
@@ -1032,7 +1030,6 @@ class series(BaseSeries):
             apply_func_ = func
 
         if outfile is not None:
-
             profile = {
                 'count': apply_func_.count,
                 'width': self.width,
@@ -1054,7 +1051,6 @@ class series(BaseSeries):
 
         if outfile is not None:
             with rio.open(outfile, mode='r+', sharing=False) as dst:
-
                 with pool(num_workers) as executor:
                     data_gen = (
                         (w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict)
@@ -1093,9 +1089,7 @@ class series(BaseSeries):
             return w, res, image_dates
 
     def _write_window(self, dst_, out_data_, count, w):
-
         if self.padding:
-
             window_ = w[0]
             padded_window_ = w[1]
 
@@ -1105,17 +1099,119 @@ class series(BaseSeries):
 
             out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
 
-        dst_.write(out_data_,
-                   indexes=1 if count == 1 else range(1, count+1),
-                   window=w[0] if self.padding else w)
+        dst_.write(
+            out_data_,
+            indexes=1 if count == 1 else range(1, count+1),
+            window=w[0] if self.padding else w
+        )
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args, **kwargs):
-
         for src in self.srcs_:
             src.close()
 
         for vrt in self.vrts_:
             vrt.close()
+
+
+import enum
+import geopandas as gpd
+import pyproj
+from pystac_client import Client
+from pystac import ItemCollection
+import stackstac
+import planetary_computer as pc
+
+
+class STACCatalogs(enum.Enum):
+    element84 = 'https://earth-search.aws.element84.com/v0'
+    google = 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
+    microsoft = 'https://planetarycomputer.microsoft.com/api/stac/v1'
+
+
+class STACCollections(enum.Enum):
+    # All Landsat, Collection 2, Level 2 (surface reflectance)
+    landsat_c2_l2 = {
+        STACCatalogs.microsoft.name: 'landsat-c2-l2',
+    }
+    # Sentinel-2, Level 2A (surface reflectance)
+    sentinel_s2_l2a = {
+        STACCatalogs.microsoft.name: 'sentinel-2-l2a',
+        STACCatalogs.element84.name: 'sentinel-s2-l2a-cogs'
+    }
+    # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
+    landsat_l8_c2_l2 = {
+        STACCatalogs.google.name: 'LANDSAT_LC08_C02_T1_SR'
+    }
+
+
+def open_stac(
+    stac_catalog: str = 'microsoft',
+    bounds: T.Union[str, Path, gpd.GeoDataFrame] = None,
+    start_date: str = '2020-07-01',
+    end_date: str = '2020-08-01',
+    cloud_cover_perc: T.Union[int, float] = 50,
+    collections: T.List[str] = None,
+    bands: T.Sequence[str] = None,
+    chunksize: int = 256
+):
+    """
+    Example:
+        >>> import geowombat as gw
+        >>>
+        >>> data = gw.open_stac(
+        >>>     stac_catalog='microsoft',
+        >>>     bounds='map.geojson',
+        >>>     collections=['landsat_c2_l2'],
+        >>>     bands=['red', 'green', 'blue']
+        >>> )
+    """
+    if collections is None:
+        raise NameError('A collection must be given.')
+    # collections = ['sentinel-s2-l2a-cogs']
+    # collections = ['landsat-c2-l2']
+    # collections = ['LANDSAT_LC08_C01_T2_SR']
+
+    catalog_collections = [
+        getattr(STACCollections, collection).value[getattr(STACCatalogs, stac_catalog).name]
+        for collection in collections
+    ]
+
+    stac_catalog_url = getattr(STACCatalogs, stac_catalog)
+    # Open the STAC catalog
+    catalog = Client.open(stac_catalog_url.value)
+    # Date range
+    date_range = f"{start_date}/{end_date}"
+    # Search bounding box
+    if not isinstance(bounds, gpd.GeoDataFrame):
+        bounds_df = gpd.read_file(bounds)
+        assert bounds_df.crs == pyproj.CRS.from_epsg(4326), 'The CRS should be WGS84/latlon (EPSG=4326)'
+        bounds = bounds_df.bounds.values.flatten().tolist()
+    # Search the STAC
+    search = catalog.search(
+        collections=catalog_collections,
+        bbox=bounds,
+        datetime=date_range,
+        query={"eo:cloud_cover": {"lt": cloud_cover_perc}},
+    )
+    if list(search.get_items()):
+        if stac_catalog == stac_catalog_url.name:
+            items = pc.sign(search)
+        else:
+            items = ItemCollection(items=list(search.items()))
+        data = stackstac.stack(
+            items,
+            bounds_latlon=bounds,
+            assets=bands,
+            chunksize=chunksize
+        )
+        if hasattr(data, 'common_name'):
+            data = data.assign_coords(
+                band=lambda x: x.common_name.rename('band')
+            )
+
+        return data
+
+    return None
