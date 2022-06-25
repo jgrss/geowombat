@@ -1170,9 +1170,6 @@ def open_stac(
     """
     if collections is None:
         raise NameError('A collection must be given.')
-    # collections = ['sentinel-s2-l2a-cogs']
-    # collections = ['landsat-c2-l2']
-    # collections = ['LANDSAT_LC08_C01_T2_SR']
 
     catalog_collections = [
         getattr(STACCollections, collection).value[getattr(STACCatalogs, stac_catalog).name]
@@ -1207,6 +1204,7 @@ def open_stac(
             assets=bands,
             chunksize=chunksize
         )
+        data = data.assign_attrs(res=(data.resolution, data.resolution))
         if hasattr(data, 'common_name'):
             data = data.assign_coords(
                 band=lambda x: x.common_name.rename('band')
