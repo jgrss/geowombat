@@ -1117,16 +1117,20 @@ class series(BaseSeries):
 
 
 import enum
+
+from ..radiometry import QABits
+
 import geopandas as gpd
 import pyproj
 from pystac_client import Client
 from pystac import ItemCollection
+from pystac.extensions.eo import EOExtension as eo
 import stackstac
 import planetary_computer as pc
 
 
 class STACCatalogs(enum.Enum):
-    element84 = 'https://earth-search.aws.element84.com/v0'
+    element84 = 'https://earth-search.aws.element84.com/v1'
     google = 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
     microsoft = 'https://planetarycomputer.microsoft.com/api/stac/v1'
 
@@ -1147,33 +1151,104 @@ class STACCollections(enum.Enum):
     }
 
 
+def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataArray:
+    name = data.collection
+    for darray in other:
+        name += f'+{darray.collection}'
+    collections = [data.collection]*data.gw.ntime
+    for darray in other:
+        collections += [darray.collection]*darray.gw.ntime
+
+    stack = (
+        xr.DataArray(
+            da.concatenate((data.data, *(darray.data for darray in other)), axis=0),
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': np.concatenate(
+                    (data.time.values, *(darray.time.values for darray in other))
+                ),
+                'band': data.band.values,
+                'y': data.y.values,
+                'x': data.x.values
+            },
+            attrs=data.attrs,
+            name=name
+        )
+        .assign_attrs(collection=None)
+        .sortby('time')
+    )
+
+    return stack
+
+
 def open_stac(
     stac_catalog: str = 'microsoft',
+    collection: str = None,
     bounds: T.Union[str, Path, gpd.GeoDataFrame] = None,
     start_date: str = '2020-07-01',
     end_date: str = '2020-08-01',
-    cloud_cover_perc: T.Union[int, float] = 50,
-    collections: T.List[str] = None,
+    cloud_cover_perc: T.Union[float, int] = 50,
     bands: T.Sequence[str] = None,
-    chunksize: int = 256
-):
-    """
+    chunksize: int = 256,
+    mask_items: T.Sequence[str] = None,
+    mask_data: T.Optional[bool] = False,
+    epsg: T.Optional[int] = None,
+    resolution: T.Optional[T.Union[float, int]] = None
+) -> xr.DataArray:
+    """Opens a collection from a spatio-temporal asset catalog (STAC).
+
+    Args:
+        stac_catalog (str): Choices are ['element84', 'google', 'microsoft'].
+        collection (str): The STAC collection to open.
+        bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
+            configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``)
+        start_date (str): The start search date (yyyy-mm-dd).
+        end_date (str): The end search date (yyyy-mm-dd).
+        cloud_cover_perc (float | int): The maximum percentage cloud cover.
+        bands (sequence): The bands to open.
+        chunksize (int): The dask chunk size.
+        mask_items (sequence): The items to mask.
+        mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
+        epsg (Optional[int]): An EPSG code to warp to.
+        resolution (Optional[float | int]): The cell resolution to resample to.
+
+    Returns:
+        xarray.DataArray
+
     Example:
         >>> import geowombat as gw
         >>>
-        >>> data = gw.open_stac(
+        >>> data_l = gw.open_stac(
         >>>     stac_catalog='microsoft',
+        >>>     collection='landsat_c2_l2',
         >>>     bounds='map.geojson',
-        >>>     collections=['landsat_c2_l2'],
-        >>>     bands=['red', 'green', 'blue']
+        >>>     bands=['red', 'green', 'blue', 'qa_pixel']
+        >>> )
+        >>>
+        >>> from rasterio.enums import Resampling
+        >>>
+        >>> data_s2 = gw.open_stac(
+        >>>     stac_catalog='microsoft',
+        >>>     collection='sentinel_s2_l2a',
+        >>>     bounds='map.geojson',
+        >>>     bands=['B04', 'B03', 'B02'],
+        >>>     resolution=30,
+        >>>     resampling=Resampling.cubic,
+        >>>     epsg=32621
+        >>> )
+        >>>
+        >>> # Merge two temporal stacks
+        >>> stack = (
+        >>>     gw.merge_stac(data_l, data_s2)
+        >>>     .sel(band='red')
+        >>>     .mean(dim='time')
         >>> )
     """
-    if collections is None:
+    if collection is None:
         raise NameError('A collection must be given.')
 
     catalog_collections = [
         getattr(STACCollections, collection).value[getattr(STACCatalogs, stac_catalog).name]
-        for collection in collections
     ]
 
     stac_catalog_url = getattr(STACCatalogs, stac_catalog)
@@ -1182,6 +1257,9 @@ def open_stac(
     # Date range
     date_range = f"{start_date}/{end_date}"
     # Search bounding box
+    if bounds is None:
+        bounds = config['ref_bounds']
+    assert bounds is not None, 'The bounds must be given in some format.'
     if not isinstance(bounds, gpd.GeoDataFrame):
         bounds_df = gpd.read_file(bounds)
         assert bounds_df.crs == pyproj.CRS.from_epsg(4326), 'The CRS should be WGS84/latlon (EPSG=4326)'
@@ -1198,17 +1276,42 @@ def open_stac(
             items = pc.sign(search)
         else:
             items = ItemCollection(items=list(search.items()))
+        selected_item = min(items, key=lambda item: eo.ext(item).cloud_cover)
+        max_key_length = len(max(selected_item.assets, key=len))
+        for key, asset in selected_item.assets.items():
+            print(f"{key.rjust(max_key_length)}: {asset.title}")
         data = stackstac.stack(
             items,
             bounds_latlon=bounds,
             assets=bands,
-            chunksize=chunksize
+            chunksize=chunksize,
+            epsg=epsg,
+            resolution=resolution
         )
-        data = data.assign_attrs(res=(data.resolution, data.resolution))
+        data = data.assign_attrs(
+            res=(data.resolution, data.resolution),
+            collection=collection
+        )
         if hasattr(data, 'common_name'):
             data = data.assign_coords(
                 band=lambda x: x.common_name.rename('band')
             )
+
+        if mask_data:
+            if mask_items is None:
+                mask_items = ['fill', 'dilated_cloud', 'cirrus', 'cloud', 'cloud_shadow', 'snow']
+            mask_bitfields = [getattr(QABits, collection).value[mask_item] for mask_item in mask_items]
+            # Source: https://stackstac.readthedocs.io/en/v0.3.0/examples/gif.html
+            bitmask = 0
+            for field in mask_bitfields:
+                bitmask |= 1 << field
+            # TODO: get qa_pixel name for different sensors
+            qa = data.sel(band='qa_pixel').astype('uint16')
+            mask = qa & bitmask
+            data = data.sel(band=[band for band in bands if band != 'qa_pixel']).where(mask == 0)
+
+        if not data.gw.config['with_config']:
+            _set_defaults(config)
 
         return data
 
