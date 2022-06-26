@@ -2,9 +2,7 @@ from dask.distributed import Client, LocalCluster
 
 
 class Cluster(object):
-
-    """
-    Wrapper for ``dask`` clients
+    """Wrapper for ``dask`` clients
 
     Best practices:
 
@@ -37,38 +35,36 @@ class Cluster(object):
 
     Examples:
         >>> # I/O-heavy task with 8 nodes
-        >>> cluster = Cluster(n_workers=4,
-        >>>                   threads_per_worker=2,
-        >>>                   scheduler_port=0,
-        >>>                   processes=False)
+        >>> cluster = Cluster(
+        >>>     n_workers=4,
+        >>>     threads_per_worker=2,
+        >>>     scheduler_port=0,
+        >>>     processes=False
+        >>> )
         >>>
         >>> # Task with little need of the GIL with 16 nodes
-        >>> cluster = Cluster(n_workers=2,
-        >>>                   threads_per_worker=8,
-        >>>                   scheduler_port=0,
-        >>>                   processes=False)
+        >>> cluster = Cluster(
+        >>>     n_workers=2,
+        >>>     threads_per_worker=8,
+        >>>     scheduler_port=0,
+        >>>     processes=False
+        >>> )
     """
-
     def __init__(self, **kwargs):
-
         self.kwargs = kwargs
         self.cluster = None
         self.client = None
 
     def start(self):
-
         self.cluster = LocalCluster(**self.kwargs)
         self.client = Client(self.cluster)
 
     def restart(self):
-
         self.client.restart()
         print(self.client)    
         
     def stop(self):
-
         self.client.close()
         self.cluster.close()
-
         self.client = None
         self.cluster = None

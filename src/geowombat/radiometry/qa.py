@@ -1,12 +1,30 @@
+import enum
+
 import numpy as np
 import xarray as xr
 import dask.array as da
 
 
-class QAMasker(object):
+class QABits(enum.Enum):
+    """QA bits
 
+    Reference:
+        https://www.usgs.gov/landsat-missions/landsat-project-documents
     """
-    A class for masking bit-packed quality flags
+    landsat_c2_l2 = {
+        'fill': 0,
+        'dilated_cloud': 1,
+        'cirrus': 2,
+        'cloud': 3,
+        'cloud_shadow': 4,
+        'snow': 5,
+        'clear': 6,
+        'water': 7
+    }
+
+
+class QAMasker(object):
+    """A class for masking bit-packed quality flags
 
     Args:
         qa (DataArray): The band quality array.

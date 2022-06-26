@@ -4,6 +4,7 @@ __version__ = '1.9.1'
 from . import config
 from .core.api import open
 from .core.api import open_stac
+from .core.api import merge_stac
 from .core.api import load
 from .core.api import series
 from .core.series import TimeModulePipeline
@@ -44,6 +45,8 @@ from .core import xy_to_lonlat
 __all__ = [
     'config',
     'open',
+    'open_stac',
+    'merge_stac',
     'load',
     'series',
     'TimeModulePipeline',

@@ -33,11 +33,8 @@ def _iter_func(a):
 
 
 class Converters(object):
-
     def bounds_to_coords(self, bounds, dst_crs):
-
-        """
-        Converts bounds from longitude and latitude to native map coordinates
+        """Converts bounds from longitude and latitude to native map coordinates
 
         Args:
             bounds (``tuple`` | ``rasterio.coords.BoundingBox``): The lat/lon bounds to transform.
@@ -60,9 +57,7 @@ class Converters(object):
 
     @staticmethod
     def lonlat_to_xy(lon, lat, dst_crs):
-
-        """
-        Converts from longitude and latitude to native map coordinates
+        """Converts from longitude and latitude to native map coordinates
 
         Args:
             lon (float): The longitude to convert.
@@ -93,9 +88,7 @@ class Converters(object):
 
     @staticmethod
     def xy_to_lonlat(x, y, dst_crs):
-
-        """
-        Converts from native map coordinates to longitude and latitude
+        """Converts from native map coordinates to longitude and latitude
 
         Args:
             x (float): The x coordinate to convert.
@@ -126,9 +119,7 @@ class Converters(object):
 
     @staticmethod
     def indices_to_coords(col_index, row_index, transform):
-
-        """
-        Converts array indices to map coordinates
+        """Converts array indices to map coordinates
 
         Args:
             col_index (float or 1d array): The column index.
@@ -163,9 +154,7 @@ class Converters(object):
 
     @staticmethod
     def coords_to_indices(x, y, transform):
-
-        """
-        Converts map coordinates to array indices
+        """Converts map coordinates to array indices
 
         Args:
             x (float or 1d array): The x coordinates.
@@ -201,12 +190,8 @@ class Converters(object):
         return np.int64(col_index), np.int64(row_index)
 
     @staticmethod
-    def dask_to_xarray(data,
-                       dask_data,
-                       band_names):
-
-        """
-        Converts a Dask array to an Xarray DataArray
+    def dask_to_xarray(data, dask_data, band_names):
+        """Converts a Dask array to an Xarray DataArray
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -220,25 +205,29 @@ class Converters(object):
         if len(dask_data.shape) == 2:
             dask_data = dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1])
 
-        return xr.DataArray(dask_data,
-                            dims=('band', 'y', 'x'),
-                            coords={'band': band_names,
-                                    'y': data.y,
-                                    'x': data.x},
-                            attrs=data.attrs)
+        return xr.DataArray(
+            dask_data,
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': band_names,
+                'y': data.y,
+                'x': data.x
+            },
+            attrs=data.attrs
+        )
 
     @staticmethod
-    def ndarray_to_xarray(data,
-                          numpy_data,
-                          band_names,
-                          row_chunks=None,
-                          col_chunks=None,
-                          y=None,
-                          x=None,
-                          attrs=None):
-
-        """
-        Converts a NumPy array to an Xarray DataArray
+    def ndarray_to_xarray(
+        data,
+        numpy_data,
+        band_names,
+        row_chunks=None,
+        col_chunks=None,
+        y=None,
+        x=None,
+        attrs=None
+    ):
+        """Converts a NumPy array to an Xarray DataArray
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -253,7 +242,6 @@ class Converters(object):
         Returns:
             ``xarray.DataArray``
         """
-
         if len(numpy_data.shape) == 2:
             numpy_data = numpy_data[np.newaxis, :, :]
 
@@ -272,15 +260,15 @@ class Converters(object):
                             attrs=data_attrs)
 
     @staticmethod
-    def xarray_to_xdataset(data_array,
-                           band_names,
-                           time_names,
-                           ycoords=None,
-                           xcoords=None,
-                           attrs=None):
-
-        """
-        Converts an Xarray DataArray to a Xarray Dataset
+    def xarray_to_xdataset(
+        data_array,
+        band_names,
+        time_names,
+        ycoords=None,
+        xcoords=None,
+        attrs=None
+    ):
+        """Converts an Xarray DataArray to a Xarray Dataset
 
         Args:
             data_array (DataArray)
@@ -436,9 +424,7 @@ class Converters(object):
                            id_column='id',
                            n_jobs=1,
                            **kwargs):
-
-        """
-        Converts polygons to points
+        """Converts polygons to points
 
         Args:
             data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
@@ -495,9 +481,7 @@ class Converters(object):
 
     @staticmethod
     def array_to_polygon(data, mask=None, connectivity=4, num_workers=1):
-
-        """
-        Converts an ``xarray.DataArray` to a ``geopandas.GeoDataFrame``
+        """Converts an ``xarray.DataArray` to a ``geopandas.GeoDataFrame``
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to convert.
@@ -574,9 +558,7 @@ class Converters(object):
                          sindex=None,
                          tap=False,
                          bounds_by='intersection'):
-
-        """
-        Converts a polygon geometry to an ``xarray.DataArray``.
+        """Converts a polygon geometry to an ``xarray.DataArray``.
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
