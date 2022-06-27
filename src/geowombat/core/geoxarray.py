@@ -340,9 +340,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return out.astype(self._obj.dtype.name).assign_attrs(**self._obj.attrs.copy())
 
     def replace(self, to_replace):
-
-        """
-        Replace values given in to_replace with value.
+        """Replace values given in to_replace with value.
 
         Args:
             to_replace (dict): How to find the values to replace. Dictionary mappings should be given
@@ -357,17 +355,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``xarray.DataArray``
         """
+        return replace(self._obj, to_replace)
 
-        return replace(self._obj,
-                       to_replace)
-
-    def recode(self,
-               polygon,
-               to_replace,
-               num_workers=1):
-
-        """
-        Recodes a DataArray with polygon mappings
+    def recode(self, polygon, to_replace, num_workers=1):
+        """Recodes a DataArray with polygon mappings
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.

@@ -202,9 +202,7 @@ class Classifiers(ClassifiersMixin):
         targ_name="targ",
         targ_dim_name="sample",
     ):
-
-        """
-        Fits a classifier given class labels
+        """Fits a classifier given class labels
 
         Args:
             data (DataArray): The data to predict on.
@@ -252,16 +250,13 @@ class Classifiers(ClassifiersMixin):
             >>> with gw.open(l8_224078_20200518) as src:
             >>>    X, Xy, clf = fit(src, cl)
         """
-
         if clf._estimator_type == "clusterer":
-
             data = self._add_time_dim(data)
             X = self._stack_it(data)
             clf = self._prepare_classifiers(clf)
 
-            # TO DO: Validation checks
+            # TODO: Validation checks
             # check_array(X)
-
             clf.fit(X)
 
             return X, (X, None), clf
@@ -295,9 +290,7 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         mask_nodataval=True,
     ):
-
-        """
-        Fits a classifier given class labels and predicts on a DataArray
+        """Fits a classifier given class labels and predicts on a DataArray
 
         Args:
             data (DataArray): The data to predict on.
@@ -352,7 +345,7 @@ class Classifiers(ClassifiersMixin):
         check_is_fitted(clf)
 
         # try:
-        Y = (
+        y = (
             clf.predict(X)
             .unstack(targ_dim_name)
             .assign_coords(coords={"band": targ_name})
@@ -362,9 +355,9 @@ class Classifiers(ClassifiersMixin):
 
         # no point unit doesn't have nan
         if mask_nodataval:
-            Y = self._mask_nodata(y=Y, x=data)
+            y = self._mask_nodata(y=y, x=data)
 
-        return xr.concat([data, Y], dim="band").sel(band=targ_name)
+        return xr.concat([data, y], dim="band").sel(band=targ_name)
 
     def fit_predict(
         self,
@@ -376,9 +369,7 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         mask_nodataval=True,
     ):
-
-        """
-        Fits a classifier given class labels and predicts on a DataArray
+        """Fits a classifier given class labels and predicts on a DataArray
 
         Args:
             data (DataArray): The data to predict on.
@@ -443,6 +434,6 @@ class Classifiers(ClassifiersMixin):
             targ_dim_name=targ_dim_name,
         )
 
-        Y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
+        y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
 
-        return Y
+        return y

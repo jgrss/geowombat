@@ -86,19 +86,18 @@ def estimate_shadows(data,
 
 
 class CloudShadowMasker(object):
-
     @staticmethod
-    def mask_s2(data,
-                solar_za,
-                solar_az,
-                cloud_heights=None,
-                nodata=None,
-                scale_factor=1,
-                num_workers=1,
-                **kwargs):
-
-        """
-        Masks Sentinel 2 data
+    def mask_s2(
+        data,
+        solar_za,
+        solar_az,
+        cloud_heights=None,
+        nodata=None,
+        scale_factor=1,
+        num_workers=1,
+        **kwargs
+    ):
+        """Masks Sentinel 2 data
 
         Args:
             data (DataArray): The Sentinel 2 data to mask.
@@ -158,31 +157,37 @@ class CloudShadowMasker(object):
             scale_factor = data.gw.scale_factor
 
         if S2CLOUDLESS_INSTALLED:
-
             if not kwargs:
-
-                kwargs = dict(threshold=0.4,
-                              average_over=4,
-                              dilation_size=5,
-                              all_bands=False)
+                kwargs = dict(
+                    threshold=0.4,
+                    average_over=4,
+                    dilation_size=5,
+                    all_bands=False
+                )
 
             cloud_detector = S2PixelCloudDetector(**kwargs)
 
             # Get the S2Cloudless bands
-            data_cloudless = data.sel(band=['coastal',
-                                            'blue',
-                                            'red',
-                                            'nir1',
-                                            'nir',
-                                            'rededge',
-                                            'water',
-                                            'cirrus',
-                                            'swir1',
-                                            'swir2'])
+            data_cloudless = data.sel(
+                band=[
+                    'coastal',
+                    'blue',
+                    'red',
+                    'nir1',
+                    'nir',
+                    'rededge',
+                    'water',
+                    'cirrus',
+                    'swir1',
+                    'swir2'
+                ]
+            )
 
             # Scale from 0-10000 to 0-1
             if isinstance(nodata, int) or isinstance(nodata, float):
-                data_cloudless = xr.where(data_cloudless != nodata, data_cloudless * scale_factor, nodata).clip(0, 1).astype('float64')
+                data_cloudless = xr.where(
+                    data_cloudless != nodata, data_cloudless * scale_factor, nodata
+                ).clip(0, 1).astype('float64')
             else:
                 data_cloudless = (data_cloudless * scale_factor).clip(0, 1).astype('float64')
 
@@ -215,14 +220,16 @@ class CloudShadowMasker(object):
             rad_saa = xr.ufuncs.deg2rad(saa)
 
             # non-shadow=0, shadows=1
-            shadow_mask = estimate_shadows(data,
-                                           cloud_mask,
-                                           rad_sza,
-                                           rad_saa,
-                                           cloud_heights,
-                                           nodata,
-                                           scale_factor,
-                                           num_workers)
+            shadow_mask = estimate_shadows(
+                data,
+                cloud_mask,
+                rad_sza,
+                rad_saa,
+                cloud_heights,
+                nodata,
+                scale_factor,
+                num_workers
+            )
 
             # Recode for final output
             mask = xr.where(cloud_mask.sel(band=1) == 1, 4,
@@ -231,22 +238,20 @@ class CloudShadowMasker(object):
 
             mask = mask.assign_coords(coords={'band': ['mask']})
 
-            new_attrs['nodatavals'] = (255)
-            new_attrs['scales'] = (1.0)
-            new_attrs['offsets'] = (0.0)
+            new_attrs['nodatavals'] = (255,)
+            new_attrs['scales'] = (1.0,)
+            new_attrs['offsets'] = (0.0,)
             new_attrs['pre-scaling'] = scale_factor
             new_attrs['sensor'] = 's2'
-            new_attrs['clearval'] = (0)
-            new_attrs['shadowval'] = (2)
-            new_attrs['cloudval'] = (4)
-            new_attrs['fillval'] = (255)
+            new_attrs['clearval'] = (0,)
+            new_attrs['shadowval'] = (2,)
+            new_attrs['cloudval'] = (4,)
+            new_attrs['fillval'] = (255,)
 
             mask = mask.assign_attrs(**new_attrs)
 
         else:
-
             logger.warning('  S2Cloudless is not installed.')
-
             mask = None
 
         return mask
