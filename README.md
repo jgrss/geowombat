@@ -84,54 +84,44 @@ Computation scales easily over large datasets with minimal changes to the code.
 >>>                              compress='lzw')
 ```
 
+
+## Documentation
+
+For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).
+
 ## Installation
 
-GeoWombat is not on PyPi, but it can be installed with `pip`. Most dependencies will be automatically installed. However, the exception is GDAL, which needs to be installed prior to executing the `pip` command below. See [the installation documentation](https://geowombat.readthedocs.io/en/latest/install.html) for details on installing GDAL. 
+### Conda Install
+To allow easy installation and build of all dependencies we recommend installing via conda-forge: 
 
-### Example Install 
-With GDAL and a few other dependencies installed, GeoWombat can be installed like:
+Installing geowombat from the conda-forge channel can be achieved by adding conda-forge to your channels with:
 
-```commandline
-pip install git+https://github.com/jgrss/geowombat
+``` commandline
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+```
+Once the conda-forge channel has been enabled, geowombat can be installed with conda:
+
+``` commandline
+conda install geowombat
 ```
 
-Alternatively, use `git` to clone and build the repository like:
+or faster with mamba:
 
-```commandline
-git clone https://github.com/jgrss/geowombat.git
-cd geowombat/
-python setup.py build && pip install --upgrade . && rm -rf build/
+``` commandline
+mamba install geowombat
 ```
+
+
+### Pip Install
+GeoWombat is not on PyPi, but it can be installed with `pip`. The due to a number of dependencies we provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html)
  
-### Update
-
-To update GeoWombat:
-
-```shell script
-pip install --upgrade git+https://github.com/jgrss/geowombat
-```
-
-Or, to update a cloned repository:
-
-```shell script
-cd geowombat/
-git pull origin master
-python setup.py build && pip install --upgrade . && rm -rf build/
-```
 
 ### Universal Install Via Docker
 If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
 Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
 
-### Development: Adding packages
-Install pip-tools. Add packages to requirements.in and running the following to compile requirements.txt:
-```
-pip-compile requirements.in
-```
-
-## Documentation
-
-For more details, see [https://geowombat.readthedocs.io](https://geowombat.readthedocs.io).
+ 
 
 ## Learning 
 

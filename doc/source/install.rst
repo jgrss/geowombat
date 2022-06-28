@@ -105,6 +105,14 @@ Detailed Install
 
                 pip install git+https://github.com/jgrss/geowombat
 
+         .. tab:: (Update)
+            **Updating Geowombat**
+
+            To update GeoWombat::
+            
+                pip install --upgrade git+https://github.com/jgrss/geowombat
+         
+
          .. tab:: (Extras)
 
             **Install optional extras**
@@ -233,6 +241,14 @@ Detailed Install
 
                 pip install git+https://github.com/jgrss/geowombat
 
+         .. tab:: (Update)
+            **Updating Geowombat**
+
+            To update GeoWombat::
+            
+                pip install --upgrade git+https://github.com/jgrss/geowombat
+         
+
          .. tab:: (Extras)
 
             **Install optional extras**
@@ -322,6 +338,14 @@ Detailed Install
             Install the latest version from GitHub.com::
 
                 pip install git+https://github.com/jgrss/geowombat
+
+         .. tab:: (Update)
+            **Updating Geowombat**
+
+            To update GeoWombat::
+            
+                pip install --upgrade git+https://github.com/jgrss/geowombat
+         
 
          .. tab:: (Extras)
 
