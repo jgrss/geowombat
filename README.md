@@ -114,7 +114,7 @@ mamba install geowombat
 
 
 ### Pip Install
-GeoWombat is not on PyPi, but it can be installed with `pip`. The due to a number of dependencies we provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html)
+GeoWombat is not on PyPi, but it can be installed with `pip`. The due to a number of dependencies we provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html).
  
 
 ### Universal Install Via Docker
