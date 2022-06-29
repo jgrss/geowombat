@@ -73,7 +73,7 @@ jobs:
         if: steps.gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
-          pip install testfixtures
+          pip install -U testfixtures
           python -m unittest
 
   Version:
