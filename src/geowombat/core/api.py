@@ -1144,8 +1144,12 @@ class STACNames(enum.Enum):
 
 
 class STACCollectionTypes(enum.Enum):
-    landsat = 'LANDSAT'
-    landsat_c2_l2 = 'LANDSAT'
+    landsat = 'landsat'
+    landsat_c2_l2 = 'landsat'
+    landsat_l8_c2_l2 = 'landsat'
+    sentinel2 = 'sentinel2'
+    sentinel_s2_l2a = 'sentinel2'
+    sentinel_s2_l1c = 'sentinel2'
 
 
 @dataclass
@@ -1176,7 +1180,8 @@ class STACCollections:
     }
     # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
     landsat_l8_c2_l2 = {
-        STACNames.google.value: 'LC08_C02_T1_L2'
+        STACNames.google.value: 'LC08_C02_T1_L2',
+        STACNames.microsoft.value: 'landsat-8-c2-l2'
     }
 
 
@@ -1231,12 +1236,13 @@ def open_stac(
     stac_catalog: str = 'microsoft',
     collection: str = None,
     bounds: T.Union[str, Path, gpd.GeoDataFrame] = None,
-    start_date: str = '2020-07-01',
-    end_date: str = '2020-08-01',
+    start_date: str = None,
+    end_date: str = None,
     cloud_cover_perc: T.Union[float, int] = 50,
     bands: T.Sequence[str] = None,
     chunksize: int = 256,
     mask_items: T.Sequence[str] = None,
+    bounds_query: T.Optional[str] = None,
     mask_data: T.Optional[bool] = False,
     epsg: T.Optional[int] = None,
     resolution: T.Optional[T.Union[float, int]] = None,
@@ -1259,6 +1265,7 @@ def open_stac(
         bands (sequence): The bands to open.
         chunksize (int): The dask chunk size.
         mask_items (sequence): The items to mask.
+        bounds_query (Optional[str]): A query to select bounds from the ``GeoDataFrame``.
         mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
@@ -1313,9 +1320,11 @@ def open_stac(
         bounds = config['ref_bounds']
     assert bounds is not None, 'The bounds must be given in some format.'
     if not isinstance(bounds, gpd.GeoDataFrame):
-        bounds_df = gpd.read_file(bounds)
-        assert bounds_df.crs == pyproj.CRS.from_epsg(4326), 'The CRS should be WGS84/latlon (EPSG=4326)'
-        bounds = bounds_df.bounds.values.flatten().tolist()
+        bounds = gpd.read_file(bounds)
+        assert bounds.crs == pyproj.CRS.from_epsg(4326), 'The CRS should be WGS84/latlon (EPSG=4326)'
+    if bounds_query is not None:
+        bounds = bounds.query(bounds_query)
+    bounds = bounds.bounds.values.flatten().tolist()
 
     stac_catalog_url = getattr(STACCatalogs, stac_catalog)
     # Open the STAC catalog
@@ -1383,7 +1392,7 @@ def open_stac(
                     df_dict[extra] = str(out_name)
                     if not out_name.is_file():
                         wget.download(url, out=str(out_name), bar=None)
-                    df = df.append(df_dict, ignore_index=True)
+                df = df.append(df_dict, ignore_index=True)
 
         data = stackstac.stack(
             items,
@@ -1398,13 +1407,13 @@ def open_stac(
             res=(data.resolution, data.resolution),
             collection=collection
         )
-        if (
-                hasattr(data, 'common_name')
-                and (getattr(STACCollectionTypes, collection) is not STACCollectionTypes.landsat)
-        ):
-            data = data.assign_coords(
-                band=lambda x: x.common_name.rename('band')
-            )
+        # if (
+        #     hasattr(data, 'common_name')
+        #     and (getattr(STACCollectionTypes, collection) is not STACCollectionTypes.landsat)
+        # ):
+        #     data = data.assign_coords(
+        #         band=lambda x: x.common_name.rename('band')
+        #     )
 
         if mask_data:
             if mask_items is None:

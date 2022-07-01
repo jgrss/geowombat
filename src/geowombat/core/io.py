@@ -26,19 +26,19 @@ import numpy as np
 from osgeo import gdal
 
 import xarray as xr
+import dask
 import dask.array as da
 from dask import is_dask_collection
 from dask.diagnostics import ProgressBar
-from dask.distributed import Client, LocalCluster
-
+from dask.distributed import Client, LocalCluster, progress
 import rasterio as rio
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
 from rasterio.enums import Resampling
 from rasterio import shutil as rio_shutil
-
 from affine import Affine
 from tqdm import tqdm
+from tqdm.dask import TqdmCallback
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -912,7 +912,7 @@ def to_raster(
             ) as cluster:
                 cluster_address = address if address else cluster
 
-                with client_object(address=cluster_address) as client:
+                with client_object(address=cluster_address):
                     with WriteDaskArray(
                         filename,
                         overwrite=overwrite,
@@ -937,10 +937,10 @@ def to_raster(
                         # *Note that the progress bar will
                         #   not work with a client.
                         if use_client:
-                            res.compute(num_workers=n_jobs)
+                            dask.compute(progress(res))
                         else:
-                            with ProgressBar():
-                                res.compute(num_workers=n_jobs)
+                            with TqdmCallback(desc='Write chunks'):
+                                dask.compute(res, num_workers=n_jobs)
 
                         if verbose > 0:
                             logger.info('  Finished writing data to file.')
