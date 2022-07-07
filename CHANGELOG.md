@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v1.10.1 (2022-07-07)
+* Removed imports from `geowombat.__init__`
+
 ## v1.10.0 (2022-07-07)
 * Add STAC API to read Landsat and Sentinel-2 time series
 
