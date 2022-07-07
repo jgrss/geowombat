@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v1.10.0 (2022-07-07)
+* Add STAC API to read Landsat and Sentinel-2 time series
+
 ## v1.9.1 (2022-06-18)
 * Added support for Landsat 9
 
