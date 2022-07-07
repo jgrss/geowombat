@@ -43,8 +43,6 @@ from .core import xy_to_lonlat
 __all__ = [
     'config',
     'open',
-    'open_stac',
-    'merge_stac',
     'load',
     'series',
     'TimeModulePipeline',
