@@ -3,8 +3,6 @@ __version__ = '1.9.1'
 
 from . import config
 from .core.api import open
-from .core.stac import open_stac
-from .core.stac import merge_stac
 from .core.api import load
 from .core.api import series
 from .core.series import TimeModulePipeline
