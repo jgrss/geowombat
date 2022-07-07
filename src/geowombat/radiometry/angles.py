@@ -235,6 +235,9 @@ def get_sentinel_sensor(metadata):
 def parse_sentinel_angles(metadata, proc_angles, nodata):
     """Gets the Sentinel-2 solar angles from metadata
 
+    Reference:
+        https://github.com/hevgyrt/safe_to_netcdf/blob/master/s2_reader_and_NetCDF_converter.py
+
     Args:
         metadata (str): The metadata file.
         proc_angles (str): The angles to parse. Choices are ['solar', 'view'].
@@ -243,31 +246,32 @@ def parse_sentinel_angles(metadata, proc_angles, nodata):
     Returns:
         zenith and azimuth angles as a ``tuple`` of 2d ``numpy`` arrays
     """
-    if proc_angles == 'view':
-        zenith_values = np.zeros((13, 23, 23), dtype='float64') + nodata
-        azimuth_values = np.zeros((13, 23, 23), dtype='float64') + nodata
-    else:
-        zenith_values = np.zeros((23, 23), dtype='float64') + nodata
-        azimuth_values = np.zeros((23, 23), dtype='float64') + nodata
-
-    view_tag = 'Sun_Angles_Grid' if proc_angles == 'solar' else 'Viewing_Incidence_Angles_Grids'
-
     # Parse the XML file
     tree = ET.parse(metadata)
     root = tree.getroot()
 
+    angles_view_list = root.findall('.//Tile_Angles')[0]
+    row_step = float(root.findall('.//ROW_STEP')[0].text)
+    col_step = float(root.findall('.//COL_STEP')[0].text)
+    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'
+    nrows_str = base_str + '/NROWS'
+    ncols_str = base_str + '/NCOLS'
+    nrows = float(root.findall(nrows_str)[0].text)
+    ncols = float(root.findall(ncols_str)[0].text)
+    angle_nrows = int(np.ceil(nrows * 10.0 / row_step)) + 1
+    angle_ncols = int(np.ceil(ncols * 10.0 / col_step)) + 1
+
+    if proc_angles == 'view':
+        zenith_array = np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
+        azimuth_array = np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
+    else:
+        zenith_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
+        azimuth_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
+
+    view_tag = 'Sun_Angles_Grid' if proc_angles == 'solar' else 'Viewing_Incidence_Angles_Grids'
+
     # Find the angles
-    for child in root:
-
-        if child.tag.split('}')[-1] == 'Geometric_Info':
-            geoinfo = child
-            break
-
-    for segment in geoinfo:
-        if segment.tag == 'Tile_Angles':
-            angles = segment
-
-    for angle in angles:
+    for angle in angles_view_list:
         if angle.tag == view_tag:
             if proc_angles == 'view':
                 band_id = int(angle.attrib['bandId'])
@@ -280,31 +284,26 @@ def parse_sentinel_angles(metadata, proc_angles, nodata):
 
             for field in zenith:
                 if field.tag == 'Values_List':
-                    zvallist = field
+                    zenith_values_list = field
 
             for field in azimuth:
                 if field.tag == 'Values_List':
-                    avallist = field
+                    azimuth_values_list = field
 
-            for rindex in range(len(zvallist)):
-                zvalrow = zvallist[rindex]
-                avalrow = avallist[rindex]
-                zvalues = zvalrow.text.split(' ')
-                avalues = avalrow.text.split(' ')
-                values = list(zip(zvalues, avalues))
+            for ridx, zenith_values in enumerate(zenith_values_list):
+                zenith_values_array = np.array([float(i) for i in zenith_values.text.split()])
+                if proc_angles == 'view':
+                    zenith_array[band_id, ridx] = zenith_values_array
+                else:
+                    zenith_array[ridx] = zenith_values_array
+            for ridx, azimuth_values in enumerate(azimuth_values_list):
+                azimuth_values_array = np.array([float(i) for i in azimuth_values.text.split()])
+                if proc_angles == 'view':
+                    azimuth_array[band_id, ridx] = azimuth_values_array
+                else:
+                    azimuth_array[ridx] = azimuth_values_array
 
-                for cindex in range(len(values)):
-                    if (values[cindex][0].lower() != 'nan') and (values[cindex][1].lower() != 'nan'):
-                        ze = float(values[cindex][0])
-                        az = float(values[cindex][1])
-                        if proc_angles == 'view':
-                            zenith_values[band_id, rindex, cindex] = ze
-                            azimuth_values[band_id, rindex, cindex] = az
-                        else:
-                            zenith_values[rindex, cindex] = ze
-                            azimuth_values[rindex, cindex] = az
-
-    return zenith_values, azimuth_values
+    return zenith_array, azimuth_array
 
 
 def landsat_pixel_angles(angles_file,
