@@ -583,6 +583,7 @@ def to_raster(
     processes=False,
     padding=None,
     tags=None,
+    tqdm_kwargs=None,
     **kwargs
 ):
     """Writes a ``dask`` array to a raster file
@@ -625,6 +626,7 @@ def to_raster(
             a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
             and w2 contains the padded window offsets.
         tags (Optional[dict]): Image tags to write to file.
+        tqdm_kwargs (Optional[dict]): Additional keyword arguments to pass to ``tqdm``.
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
@@ -871,17 +873,25 @@ def to_raster(
                                      filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 if n_workers == 1:
-                    for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice):
+                    for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice, **tqdm_kwargs):
                         pass
 
                 else:
                     with pool_executor(n_workers) as executor:
                         if scheduler == 'mpool':
-                            for __ in tqdm(executor.imap_unordered(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(
+                                executor.imap_unordered(_write_xarray, data_gen),
+                                total=n_windows_slice,
+                                **tqdm_kwargs
+                            ):
                                 pass
 
                         else:
-                            for __ in tqdm(executor.map(_write_xarray, data_gen), total=n_windows_slice):
+                            for __ in tqdm(
+                                executor.map(_write_xarray, data_gen),
+                                total=n_windows_slice,
+                                **tqdm_kwargs
+                            ):
                                 pass
 
             # if overviews:
@@ -939,7 +949,7 @@ def to_raster(
                         if use_client:
                             dask.compute(progress(res))
                         else:
-                            with TqdmCallback(desc='Write chunks'):
+                            with TqdmCallback(**tqdm_kwargs):
                                 dask.compute(res, num_workers=n_jobs)
 
                         if verbose > 0:
@@ -984,7 +994,11 @@ def to_raster(
                                 # Submit all the tasks as futures
                                 futures = [executor.submit(_block_read_func, f, g, t) for f, g, t in data_gen]
 
-                                for f in tqdm(concurrent.futures.as_completed(futures), total=n_windows_slice):
+                                for f in tqdm(
+                                    concurrent.futures.as_completed(futures),
+                                    total=n_windows_slice,
+                                    **tqdm_kwargs
+                                ):
                                     out_window, out_indexes, out_block = f.result()
                                     dst_.write(
                                         out_block,
@@ -1037,20 +1051,20 @@ def _arg_gen(arg_, iter_):
         yield arg_
 
 
-def apply(infile,
-          outfile,
-          block_func,
-          args=None,
-          count=1,
-          scheduler='processes',
-          gdal_cache=512,
-          n_jobs=4,
-          overwrite=False,
-          tags=None,
-          **kwargs):
-
-    """
-    Applies a function and writes results to file
+def apply(
+    infile,
+    outfile,
+    block_func,
+    args=None,
+    count=1,
+    scheduler='processes',
+    gdal_cache=512,
+    n_jobs=4,
+    overwrite=False,
+    tags=None,
+    **kwargs
+):
+    """Applies a function and writes results to file
 
     Args:
         infile (str): The input file to process.
