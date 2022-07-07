@@ -188,31 +188,36 @@ def open_stac(
         xarray.DataArray
 
     Example:
-        >>> import geowombat as gw
+        >>> from geowombat.core.stac import open_stac, merge_stac
         >>>
-        >>> data_l = gw.open_stac(
+        >>> data_l, df_l = open_stac(
         >>>     stac_catalog='microsoft',
         >>>     collection='landsat_c2_l2',
+        >>>     start_date='2020-01-01',
+        >>>     end_date='2021-01-01',
         >>>     bounds='map.geojson',
         >>>     bands=['red', 'green', 'blue', 'qa_pixel'],
-        >>>     mask_data=True
+        >>>     mask_data=True,
+        >>>     extra_assets=['ang', 'mtl.txt', 'mtl.xml']
         >>> )
         >>>
         >>> from rasterio.enums import Resampling
         >>>
-        >>> data_s2 = gw.open_stac(
-        >>>     stac_catalog='microsoft',
+        >>> data_s2, df_s2 = open_stac(
+        >>>     stac_catalog='element84',
         >>>     collection='sentinel_s2_l2a',
+        >>>     start_date='2020-01-01',
+        >>>     end_date='2021-01-01',
         >>>     bounds='map.geojson',
         >>>     bands=['B04', 'B03', 'B02'],
-        >>>     resolution=30,
         >>>     resampling=Resampling.cubic,
-        >>>     epsg=32621
+        >>>     epsg=int(data_l.epsg.values),
+        >>>     extra_assets=['metadata']
         >>> )
         >>>
         >>> # Merge two temporal stacks
         >>> stack = (
-        >>>     gw.merge_stac(data_l, data_s2)
+        >>>     merge_stac(data_l, data_s2)
         >>>     .sel(band='red')
         >>>     .mean(dim='time')
         >>> )
