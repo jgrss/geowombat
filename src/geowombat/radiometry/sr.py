@@ -290,13 +290,9 @@ class MetaData(object):
 
 
 class LinearAdjustments(object):
-
+    """A class for linear bandpass adjustments
     """
-    A class for linear bandpass adjustments
-    """
-
     def __init__(self):
-
         self.coefficients = dict(s2a=dict(l5=None,
                                           l7=None,
                                           l8=dict(alphas=dict(coastal=-0.0002,
@@ -362,17 +358,17 @@ class LinearAdjustments(object):
                                                             pan=0.9717)),
                                          s2=None))
 
-    def bandpass(self,
-                 data,
-                 sensor=None,
-                 to='l8',
-                 band_names=None,
-                 scale_factor=1,
-                 src_nodata=0,
-                 dst_nodata=0):
-
-        """
-        Applies a bandpass adjustment by applying a linear function to surface reflectance values
+    def bandpass(
+        self,
+        data,
+        sensor=None,
+        to='l8',
+        band_names=None,
+        scale_factor=1,
+        src_nodata=0,
+        dst_nodata=0
+    ):
+        """Applies a bandpass adjustment by applying a linear function to surface reflectance values
 
         Args:
             data (DataArray): The data to adjust.
@@ -409,7 +405,6 @@ class LinearAdjustments(object):
             >>>     with gw.open('sentinel-2.tif') as ds:
             >>>         ds_adjusted = la.bandpass(ds, to='l8')
         """
-
         attrs = data.attrs.copy()
 
         # Set 'no data' as nans
@@ -434,13 +429,17 @@ class LinearAdjustments(object):
         alphas = np.array([coeff_dict['alphas'][bd] for bd in band_names], dtype='float64')
         betas = np.array([coeff_dict['betas'][bd] for bd in band_names], dtype='float64')
 
-        alphas = xr.DataArray(data=alphas,
-                              coords={'band': band_names},
-                              dims='band')
+        alphas = xr.DataArray(
+            data=alphas,
+            coords={'band': band_names},
+            dims='band'
+        )
 
-        betas = xr.DataArray(data=betas,
-                             coords={'band': band_names},
-                             dims='band')
+        betas = xr.DataArray(
+            data=betas,
+            coords={'band': band_names},
+            dims='band'
+        )
 
         # Apply the linear bandpass adjustment
         data = alphas + betas * data

@@ -6,7 +6,6 @@ from ..config import config
 from ..handler import add_handler
 from ..backends.rasterio_ import check_crs
 from ..backends.xarray_ import _check_config_globals
-from ..backends import transform_crs
 from .util import sample_feature
 from .util import lazy_wombat
 
@@ -33,11 +32,8 @@ def _iter_func(a):
 
 
 class Converters(object):
-
     def bounds_to_coords(self, bounds, dst_crs):
-
-        """
-        Converts bounds from longitude and latitude to native map coordinates
+        """Converts bounds from longitude and latitude to native map coordinates
 
         Args:
             bounds (``tuple`` | ``rasterio.coords.BoundingBox``): The lat/lon bounds to transform.
@@ -50,9 +46,7 @@ class Converters(object):
 
                 (left, bottom, right, top)
         """
-
         left, bottom, right, top = bounds
-
         left, bottom = self.lonlat_to_xy(left, bottom, dst_crs)
         right, top = self.lonlat_to_xy(left, top, dst_crs)
 
@@ -60,9 +54,7 @@ class Converters(object):
 
     @staticmethod
     def lonlat_to_xy(lon, lat, dst_crs):
-
-        """
-        Converts from longitude and latitude to native map coordinates
+        """Converts from longitude and latitude to native map coordinates
 
         Args:
             lon (float): The longitude to convert.
@@ -85,7 +77,6 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>     x, y = lonlat_to_xy(lon, lat, src)
         """
-
         if isinstance(dst_crs, xr.DataArray):
             dst_crs = dst_crs.crs
 
@@ -93,9 +84,7 @@ class Converters(object):
 
     @staticmethod
     def xy_to_lonlat(x, y, dst_crs):
-
-        """
-        Converts from native map coordinates to longitude and latitude
+        """Converts from native map coordinates to longitude and latitude
 
         Args:
             x (float): The x coordinate to convert.
@@ -118,7 +107,6 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>     lon, lat = xy_to_lonlat(x, y, src)
         """
-
         if isinstance(dst_crs, xr.DataArray):
             dst_crs = dst_crs.crs
 
@@ -126,9 +114,7 @@ class Converters(object):
 
     @staticmethod
     def indices_to_coords(col_index, row_index, transform):
-
-        """
-        Converts array indices to map coordinates
+        """Converts array indices to map coordinates
 
         Args:
             col_index (float or 1d array): The column index.
@@ -148,9 +134,7 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>     x, y = indices_to_coords(j, i, src)
         """
-
         if not isinstance(transform, Affine):
-
             if isinstance(transform, tuple):
                 transform = Affine(*transform)
             elif isinstance(transform, xr.DataArray):
@@ -163,9 +147,7 @@ class Converters(object):
 
     @staticmethod
     def coords_to_indices(x, y, transform):
-
-        """
-        Converts map coordinates to array indices
+        """Converts map coordinates to array indices
 
         Args:
             x (float or 1d array): The x coordinates.
@@ -185,9 +167,7 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>     j, i = coords_to_indices(x, y, src)
         """
-
         if not isinstance(transform, Affine):
-
             if isinstance(transform, tuple):
                 transform = Affine(*transform)
             elif isinstance(transform, xr.DataArray):
@@ -201,12 +181,8 @@ class Converters(object):
         return np.int64(col_index), np.int64(row_index)
 
     @staticmethod
-    def dask_to_xarray(data,
-                       dask_data,
-                       band_names):
-
-        """
-        Converts a Dask array to an Xarray DataArray
+    def dask_to_xarray(data, dask_data, band_names):
+        """Converts a Dask array to an Xarray DataArray
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -216,29 +192,32 @@ class Converters(object):
         Returns:
             ``xarray.DataArray``
         """
-
         if len(dask_data.shape) == 2:
             dask_data = dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1])
 
-        return xr.DataArray(dask_data,
-                            dims=('band', 'y', 'x'),
-                            coords={'band': band_names,
-                                    'y': data.y,
-                                    'x': data.x},
-                            attrs=data.attrs)
+        return xr.DataArray(
+            dask_data,
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': band_names,
+                'y': data.y,
+                'x': data.x
+            },
+            attrs=data.attrs
+        )
 
     @staticmethod
-    def ndarray_to_xarray(data,
-                          numpy_data,
-                          band_names,
-                          row_chunks=None,
-                          col_chunks=None,
-                          y=None,
-                          x=None,
-                          attrs=None):
-
-        """
-        Converts a NumPy array to an Xarray DataArray
+    def ndarray_to_xarray(
+        data,
+        numpy_data,
+        band_names,
+        row_chunks=None,
+        col_chunks=None,
+        y=None,
+        x=None,
+        attrs=None
+    ):
+        """Converts a NumPy array to an Xarray DataArray
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -253,7 +232,6 @@ class Converters(object):
         Returns:
             ``xarray.DataArray``
         """
-
         if len(numpy_data.shape) == 2:
             numpy_data = numpy_data[np.newaxis, :, :]
 
@@ -263,24 +241,30 @@ class Converters(object):
         data_x = x if isinstance(x, np.ndarray) else data.x
         data_attrs = attrs if isinstance(attrs, dict) else data.attrs
 
-        return xr.DataArray(da.from_array(numpy_data,
-                                          chunks=(1, data_row_chunks, data_col_chunks)),
-                            dims=('band', 'y', 'x'),
-                            coords={'band': band_names,
-                                    'y': data_y,
-                                    'x': data_x},
-                            attrs=data_attrs)
+        return xr.DataArray(
+            da.from_array(
+                numpy_data,
+                chunks=(1, data_row_chunks, data_col_chunks)
+            ),
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': band_names,
+                'y': data_y,
+                 'x': data_x
+            },
+            attrs=data_attrs
+        )
 
     @staticmethod
-    def xarray_to_xdataset(data_array,
-                           band_names,
-                           time_names,
-                           ycoords=None,
-                           xcoords=None,
-                           attrs=None):
-
-        """
-        Converts an Xarray DataArray to a Xarray Dataset
+    def xarray_to_xdataset(
+        data_array,
+        band_names,
+        time_names,
+        ycoords=None,
+        xcoords=None,
+        attrs=None
+    ):
+        """Converts an Xarray DataArray to a Xarray Dataset
 
         Args:
             data_array (DataArray)
@@ -293,7 +277,6 @@ class Converters(object):
         Returns:
             Dataset
         """
-
         if len(data_array.shape) == 2:
             data_array = data_array.expand_dims('band')
 
@@ -303,47 +286,55 @@ class Converters(object):
             n_bands = data_array.shape[0]
 
         if not band_names:
-
             if n_bands == 1:
                 band_names = ['1']
             else:
                 band_names = list(map(str, range(1, n_bands + 1)))
 
         if time_names:
-
-            return xr.Dataset({'bands': (['date', 'band', 'y', 'x'], data_array)},
-                              coords={'date': time_names,
-                                      'band': band_names,
-                                      'y': ('y', ycoords),
-                                      'x': ('x', xcoords)},
-                              attrs=attrs)
+            return xr.Dataset(
+                {
+                    'bands': (['date', 'band', 'y', 'x'], data_array)
+                },
+                coords={
+                    'date': time_names,
+                    'band': band_names,
+                    'y': ('y', ycoords),
+                    'x': ('x', xcoords)
+                },
+                attrs=attrs
+            )
 
         else:
+            return xr.Dataset(
+                {
+                    'bands': (['band', 'y', 'x'], data_array.data)
+                },
+                coords={
+                    'band': band_names,
+                    'y': ('y', data_array.y),
+                    'x': ('x', data_array.x)
+                },
+                attrs=data_array.attrs
+            )
 
-            return xr.Dataset({'bands': (['band', 'y', 'x'], data_array.data)},
-                              coords={'band': band_names,
-                                      'y': ('y', data_array.y),
-                                      'x': ('x', data_array.x)},
-                              attrs=data_array.attrs)
-
-    def prepare_points(self,
-                       data,
-                       aoi,
-                       frac=1.0,
-                       min_frac_area=None,
-                       all_touched=False,
-                       id_column='id',
-                       mask=None,
-                       n_jobs=8,
-                       verbose=0,
-                       **kwargs):
-
+    def prepare_points(
+        self,
+        data,
+        aoi,
+        frac=1.0,
+        min_frac_area=None,
+        all_touched=False,
+        id_column='id',
+        mask=None,
+        n_jobs=8,
+        verbose=0,
+        **kwargs
+    ):
         if isinstance(aoi, gpd.GeoDataFrame):
             df = aoi
         else:
-
             if isinstance(aoi, str):
-
                 if not os.path.isfile(aoi):
                     logger.exception('  The AOI file does not exist.')
                     raise OSError
@@ -375,22 +366,22 @@ class Converters(object):
 
         # Remove data outside of the image bounds
         if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
-
-            df = gpd.overlay(df,
-                             gpd.GeoDataFrame(data=[0],
-                                              geometry=[data.gw.geometry],
-                                              crs=df_crs),
-                             how='intersection').drop(columns=[0])
+            df = gpd.overlay(
+                df,
+                gpd.GeoDataFrame(
+                    data=[0],
+                    geometry=[data.gw.geometry],
+                    crs=df_crs
+                ),
+                how='intersection'
+            ).drop(columns=[0])
 
         else:
-
             # Clip points to the image bounds
             df = df[df.geometry.intersects(data.gw.geometry)]
 
         if isinstance(mask, Polygon) or isinstance(mask, MultiPolygon) or isinstance(mask, gpd.GeoDataFrame):
-
             if isinstance(mask, gpd.GeoDataFrame):
-
                 if CRS.from_dict(mask.crs).to_proj4() != df_crs:
                     mask = mask.to_crs(df_crs)
 
@@ -404,41 +395,40 @@ class Converters(object):
                 raise LookupError
 
         if not df.empty:
-
             # Convert polygons to points
             if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
-
                 if verbose > 0:
                     logger.info('  Converting polygons to points ...')
 
-                df = self.polygons_to_points(data,
-                                             df,
-                                             frac=frac,
-                                             min_frac_area=min_frac_area,
-                                             all_touched=all_touched,
-                                             id_column=id_column,
-                                             n_jobs=n_jobs,
-                                             **kwargs)
+                df = self.polygons_to_points(
+                    data,
+                    df,
+                    frac=frac,
+                    min_frac_area=min_frac_area,
+                    all_touched=all_touched,
+                    id_column=id_column,
+                    n_jobs=n_jobs,
+                    **kwargs
+                )
 
             if not df.empty:
-
                 # Ensure a unique index
                 df.index = list(range(0, df.shape[0]))
 
         return df
 
     @staticmethod
-    def polygons_to_points(data,
-                           df,
-                           frac=1.0,
-                           min_frac_area=None,
-                           all_touched=False,
-                           id_column='id',
-                           n_jobs=1,
-                           **kwargs):
-
-        """
-        Converts polygons to points
+    def polygons_to_points(
+        data,
+        df,
+        frac=1.0,
+        min_frac_area=None,
+        all_touched=False,
+        id_column='id',
+        n_jobs=1,
+        **kwargs
+    ):
+        """Converts polygons to points
 
         Args:
             data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
@@ -454,37 +444,31 @@ class Converters(object):
         Returns:
             ``geopandas.GeoDataFrame``
         """
-
         meta = data.gw.meta
-
         dataframes = []
-
         df_columns = df.columns.tolist()
-
         with multi.Pool(processes=n_jobs) as pool:
-
             for i in pool.imap(_iter_func, range(0, df.shape[0]), **kwargs):
-
                 # Get the current feature's geometry
                 dfrow = df.iloc[i]
 
-                point_df = sample_feature(dfrow,
-                                          id_column,
-                                          df_columns,
-                                          data.crs,
-                                          data.res,
-                                          all_touched,
-                                          meta,
-                                          frac,
-                                          min_frac_area)
+                point_df = sample_feature(
+                    dfrow,
+                    id_column,
+                    df_columns,
+                    data.crs,
+                    data.res,
+                    all_touched,
+                    meta,
+                    frac,
+                    min_frac_area
+                )
 
                 if not point_df.empty:
                     dataframes.append(point_df)
 
         if dataframes:
-
             dataframes = pd.concat(dataframes, axis=0)
-
             # Make the points unique
             dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
 
@@ -495,9 +479,7 @@ class Converters(object):
 
     @staticmethod
     def array_to_polygon(data, mask=None, connectivity=4, num_workers=1):
-
-        """
-        Converts an ``xarray.DataArray` to a ``geopandas.GeoDataFrame``
+        """Converts an ``xarray.DataArray` to a ``geopandas.GeoDataFrame``
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to convert.
@@ -522,7 +504,6 @@ class Converters(object):
             >>>                              mask='source',
             >>>                              num_workers=8)
         """
-
         if not hasattr(data.gw, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
             raise AttributeError
@@ -532,51 +513,53 @@ class Converters(object):
             raise AttributeError
 
         if isinstance(mask, str):
-
             if mask == 'source':
                 mask = data.astype('uint8').data.compute(num_workers=num_workers)
 
-        poly_objects = shapes(data.data.compute(num_workers=num_workers),
-                              mask=mask,
-                              connectivity=connectivity,
-                              transform=data.gw.transform)
+        poly_objects = shapes(
+            data.data.compute(num_workers=num_workers),
+            mask=mask,
+            connectivity=connectivity,
+            transform=data.gw.transform
+        )
 
         poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
 
         if poly_data:
-
             poly_geom = list(list(zip(*poly_data))[0])
             poly_values = list(list(zip(*poly_data))[1])
 
-            return gpd.GeoDataFrame(data=poly_values,
-                                    columns=['value'],
-                                    geometry=poly_geom,
-                                    crs=data.crs)
+            return gpd.GeoDataFrame(
+                data=poly_values,
+                columns=['value'],
+                geometry=poly_geom,
+                crs=data.crs
+            )
 
         else:
             return gpd.GeoDataFrame([], crs=data.crs)
 
     @lazy_wombat
-    def polygon_to_array(self,
-                         polygon,
-                         col=None,
-                         data=None,
-                         cellx=None,
-                         celly=None,
-                         band_name=None,
-                         row_chunks=512,
-                         col_chunks=512,
-                         src_res=None,
-                         fill=0,
-                         default_value=1,
-                         all_touched=True,
-                         dtype='uint8',
-                         sindex=None,
-                         tap=False,
-                         bounds_by='intersection'):
-
-        """
-        Converts a polygon geometry to an ``xarray.DataArray``.
+    def polygon_to_array(
+        self,
+        polygon,
+        col=None,
+        data=None,
+        cellx=None,
+        celly=None,
+        band_name=None,
+        row_chunks=512,
+        col_chunks=512,
+        src_res=None,
+        fill=0,
+        default_value=1,
+        all_touched=True,
+        dtype='uint8',
+        sindex=None,
+        tap=False,
+        bounds_by='intersection'
+    ):
+        """Converts a polygon geometry to an ``xarray.DataArray``.
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
@@ -621,66 +604,75 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>     data = gw.polygon_to_array(df, data=src)
         """
-
         if not band_name:
             band_name = [1]
 
         if isinstance(polygon, gpd.GeoDataFrame):
             dataframe = polygon
         else:
-
             if os.path.isfile(polygon):
                 dataframe = gpd.read_file(polygon)
             else:
                 logger.exception('  The polygon file does not exist.')
                 raise OSError
 
-        ref_kwargs = {'bounds': None,
-                      'crs': None,
-                      'res': None,
-                      'tap': tap,
-                      'tac': None}
+        ref_kwargs = {
+            'bounds': None,
+            'crs': None,
+            'res': None,
+            'tap': tap,
+            'tac': None
+        }
 
         if config['with_config'] and not isinstance(data, xr.DataArray):
-
-            ref_kwargs = _check_config_globals(data.filename if isinstance(data, xr.DataArray) else None,
-                                               bounds_by,
-                                               ref_kwargs)
+            ref_kwargs = _check_config_globals(
+                data.filename if isinstance(data, xr.DataArray) else None,
+                bounds_by,
+                ref_kwargs
+            )
 
         if isinstance(data, xr.DataArray):
-
             if dataframe.crs != data.crs:
-
                 # Transform the geometry
                 dataframe = dataframe.to_crs(data.crs)
 
             if not sindex:
-
                 # Get the R-tree spatial index
                 sindex = dataframe.sindex
 
             # Get intersecting features
-            int_idx = sorted(list(sindex.intersection(tuple(data.gw.geodataframe.total_bounds.flatten()))))
+            int_idx = sorted(
+                list(
+                    sindex.intersection(
+                        tuple(data.gw.geodataframe.total_bounds.flatten())
+                    )
+                )
+            )
 
             if not int_idx:
-
-                return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                                          chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name),
-                                           band_names=band_name)
+                return self.dask_to_xarray(
+                    data, da.zeros(
+                        (1, data.gw.nrows, data.gw.ncols),
+                        chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                        dtype=data.dtype.name
+                    ),
+                    band_names=band_name
+                )
 
             # Subset to the intersecting features
             dataframe = dataframe.iloc[int_idx]
-
             # Clip the geometry
             dataframe = gpd.clip(dataframe, data.gw.geodataframe)
 
             if dataframe.empty:
-
-                return self.dask_to_xarray(data, da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                                          chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                                          dtype=data.dtype.name),
-                                           band_names=band_name)
+                return self.dask_to_xarray(
+                    data, da.zeros(
+                        (1, data.gw.nrows, data.gw.ncols),
+                        chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+                        dtype=data.dtype.name
+                    ),
+                    band_names=band_name
+                )
 
             cellx = data.gw.cellx
             celly = data.gw.celly
@@ -689,11 +681,8 @@ class Converters(object):
             src_res = None
 
             if ref_kwargs['bounds']:
-
                 left, bottom, right, top = ref_kwargs['bounds']
-
                 if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
-
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
                     elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
@@ -707,13 +696,9 @@ class Converters(object):
                 left, bottom, right, top = data.gw.bounds
 
         else:
-
             if ref_kwargs['bounds']:
-
                 left, bottom, right, top = ref_kwargs['bounds']
-
                 if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
-
                     if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
                         cellx, celly = ref_kwargs['res']
                     elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
@@ -728,49 +713,47 @@ class Converters(object):
 
         dst_height = int((top - bottom) / abs(celly))
         dst_width = int((right - left) / abs(cellx))
-
         dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
         if src_res:
-
-            dst_transform = aligned_target(dst_transform,
-                                           dst_width,
-                                           dst_height,
-                                           src_res)[0]
+            dst_transform = aligned_target(
+                dst_transform,
+                dst_width,
+                dst_height,
+                src_res
+            )[0]
 
             left = dst_transform[2]
             top = dst_transform[5]
-
             dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
         if col:
             shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
-            
-            # to do: throw error if dataframe[col] is character
+            # TODO: throw error if dataframe[col] is character
             dtype = get_minimum_dtype(dataframe[col])
 
-        else: 
+        else:
             shapes = dataframe.geometry.values
-            
-        varray = rasterize(shapes,
-                           out_shape=(dst_height, dst_width),
-                           transform=dst_transform,
-                           fill=fill,
-                           default_value=default_value,
-                           all_touched=all_touched,
-                           dtype=dtype)
-        
+
+        varray = rasterize(
+            shapes,
+            out_shape=(dst_height, dst_width),
+            transform=dst_transform,
+            fill=fill,
+            default_value=default_value,
+            all_touched=all_touched,
+            dtype=dtype
+        )
+
         cellxh = abs(cellx) / 2.0
         cellyh = abs(celly) / 2.0
 
         if isinstance(data, xr.DataArray):
-
             # Ensure the coordinates align
             xcoords = data.x.values
             ycoords = data.y.values
 
         else:
-
             xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
             ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
 
@@ -780,15 +763,22 @@ class Converters(object):
         if ycoords.shape[0] > dst_height:
             ycoords = ycoords[:dst_height]
 
-        attrs = {'transform': dst_transform[:6],
-                 'crs': dataframe.crs,
-                 'res': (cellx, celly),
-                 'is_tiled': 1}
+        attrs = {
+            'transform': dst_transform[:6],
+            'crs': dataframe.crs,
+            'res': (cellx, celly),
+            'is_tiled': 1
+        }
 
-        return xr.DataArray(data=da.from_array(varray[np.newaxis, :, :],
-                                               chunks=(1, row_chunks, col_chunks)),
-                            coords={'band': band_name,
-                                    'y': ycoords,
-                                    'x': xcoords},
-                            dims=('band', 'y', 'x'),
-                            attrs=attrs)
+        return xr.DataArray(
+            data=da.from_array(
+                varray[np.newaxis, :, :], chunks=(1, row_chunks, col_chunks)
+            ),
+            coords={
+                'band': band_name,
+                'y': ycoords,
+                'x': xcoords
+            },
+            dims=('band', 'y', 'x'),
+            attrs=attrs
+        )

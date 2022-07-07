@@ -126,18 +126,18 @@ def parse_wildcard(string):
     return matches
 
 
-def sort_images_by_date(image_path,
-                        image_wildcard,
-                        date_pos=None,
-                        date_start=None,
-                        date_end=None,
-                        split_by='_',
-                        date_format='%Y%m%d',
-                        file_list=None,
-                        prepend_str=None):
-
-    """
-    Sorts images by date
+def sort_images_by_date(
+    image_path,
+    image_wildcard,
+    date_pos=None,
+    date_start=None,
+    date_end=None,
+    split_by='_',
+    date_format='%Y%m%d',
+    file_list=None,
+    prepend_str=None
+):
+    """Sorts images by date
 
     Args:
         image_path (Path): The image directory.

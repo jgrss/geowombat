@@ -3,14 +3,17 @@ from .brdf import BRDF
 from .topo import Topo
 from .sr import LinearAdjustments, RadTransforms, DOS
 from .sixs import SixS
-from .qa import QAMasker
+from .qa import QAMasker, QABits
 
-__all__ = ['landsat_pixel_angles',
-           'sentinel_pixel_angles',
-           'BRDF',
-           'Topo',
-           'LinearAdjustments',
-           'RadTransforms',
-           'DOS',
-           'SixS',
-           'QAMasker']
+__all__ = [
+    'landsat_pixel_angles',
+    'sentinel_pixel_angles',
+    'BRDF',
+    'Topo',
+    'LinearAdjustments',
+    'RadTransforms',
+    'DOS',
+    'SixS',
+    'QAMasker',
+    'QABits'
+]

@@ -44,11 +44,11 @@ jobs:
         with:
           python-version: 3.8.12
       - uses: syphar/restore-virtualenv@v1
-        id: gwenv
+        id: cache-gwenv
         with:
           requirement_files: setup.cfg
       - uses: syphar/restore-pip-download-cache@v1
-        if: steps.gwenv.outputs.cache-hit != 'true'
+        if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Install GDAL binaries
         run: |
           # Install GDAL
@@ -70,9 +70,10 @@ jobs:
       - name: Install GeoWombat
         run: |
           pip install .[perf,ml]
-        if: steps.gwenv.outputs.cache-hit != 'true'
+        if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
+          pip install -U numpy
           pip install -U testfixtures
           python -m unittest
 
@@ -118,7 +119,7 @@ jobs:
         with:
           requirement_files: setup.cfg
       - uses: syphar/restore-pip-download-cache@v1
-        if: steps.gwenv.outputs.cache-hit != 'true'
+        if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Checkout
         uses: fnkr/github-action-ghr@v1
         if: startsWith(github.ref, 'refs/tags/')
