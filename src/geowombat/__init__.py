@@ -1,5 +1,5 @@
 __path__: str = __import__('pkgutil').extend_path(__path__, __name__)
-__version__ = '1.10.1'
+__version__ = '1.11.0'
 
 from . import config
 from .core.api import open
