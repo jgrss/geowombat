@@ -22,6 +22,7 @@ import rasterio
 from rasterio.vrt import WarpedVRT
 from dask.base import tokenize
 import pyproj
+from affine import Affine
 
 
 # TODO: should this be GDAL_LOCK instead?
@@ -308,14 +309,20 @@ def open_rasterio(
     coords["band"] = np.asarray(riods.indexes)
 
     # Get coordinates
+    riods_transform = riods.transform
     if riods.transform.is_rectilinear:
         # 1d coordinates
         parse = True if parse_coordinates is None else parse_coordinates
         if parse:
             nx, ny = riods.width, riods.height
+            # a, b, c, d, e, f = riods.transform
+            if riods.transform.a < 0:
+                riods_transform = Affine(
+                    *((abs(riods_transform.a),) + tuple(riods_transform)[1:6])
+                )
             # xarray coordinates are pixel centered
-            x, _ = riods.transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5)
-            _, y = riods.transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5)
+            x, __ = riods_transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5)
+            __, y = riods_transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5)
             coords["y"] = y
             coords["x"] = x
     else:
@@ -338,7 +345,7 @@ def open_rasterio(
     # For serialization store as tuple of 6 floats, the last row being
     # always (0, 0, 1) per definition (see
     # https://github.com/sgillies/affine)
-    attrs["transform"] = tuple(riods.transform)[:6]
+    attrs["transform"] = tuple(riods_transform)[:6]
     if hasattr(riods, "crs") and riods.crs:
         # CRS is a dict-like object specific to rasterio
         # If CRS is not None, we convert it back to a PROJ4 string using
