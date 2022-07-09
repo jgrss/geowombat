@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.1 (2022-07-09)
+* Fixed CRS translation error of certain EPSG codes ([#177](https://github.com/jgrss/geowombat/pull/177))
+
 ## v1.11.0 (2022-07-09)
 * Added Landsat 9 to metadata lookup
 
