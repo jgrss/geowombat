@@ -21,6 +21,7 @@ from xarray.backends.locks import SerializableLock
 import rasterio
 from rasterio.vrt import WarpedVRT
 from dask.base import tokenize
+import pyproj
 
 
 # TODO: should this be GDAL_LOCK instead?
@@ -342,10 +343,14 @@ def open_rasterio(
         # CRS is a dict-like object specific to rasterio
         # If CRS is not None, we convert it back to a PROJ4 string using
         # rasterio itself
-        try:
-            attrs["crs"] = riods.crs.to_string()
-        except AttributeError:
-            attrs["crs"] = riods.crs.to_proj4().replace('+init=', '')
+        riods_crs = pyproj.CRS.from_user_input(riods.crs)
+        crs = riods_crs.to_epsg()
+        if crs is None:
+            try:
+                crs = riods_crs.to_proj4().replace('+init=', '')
+            except AttributeError:
+                crs = riods_crs.to_string()
+        attrs["crs"] = crs
     if hasattr(riods, "res"):
         # (width, height) tuple of pixels in units of CRS
         attrs["res"] = riods.res
