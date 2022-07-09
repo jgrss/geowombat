@@ -7,6 +7,7 @@ from geowombat.data import l8_224078_20200518
 import dask
 import xarray as xr
 import rasterio as rio
+from pyproj import CRS
 
 
 class TestOpen(unittest.TestCase):
@@ -64,7 +65,7 @@ class TestOpen(unittest.TestCase):
 
     def test_crs(self):
         with gw.open(l8_224078_20200518) as src:
-            self.assertEqual(src.crs.lower(), 'epsg:32621')
+            self.assertEqual(src.crs, 32621)
 
     def test_time_chunks(self):
         with gw.open(l8_224078_20200518) as src:
@@ -103,11 +104,16 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.ncols, rsrc.width)
 
     def test_transform(self):
+        test_crs = CRS.from_user_input('epsg:4326')
         with gw.open(l8_224078_20200518) as src:
-            self.assertEqual('epsg:4326', src.gw.transform_crs(dst_crs=4326,
-                                                               dst_width=src.gw.ncols,
-                                                               dst_height=src.gw.nrows,
-                                                               coords_only=True).crs.to_string().lower())
+            result = src.gw.transform_crs(
+                dst_crs=4326,
+                dst_width=src.gw.ncols,
+                dst_height=src.gw.nrows,
+                coords_only=True
+            )
+            self.assertEqual(test_crs, result.crs)
+            self.assertEqual(test_crs, result.gw.crs_to_pyproj)
 
 
 if __name__ == '__main__':
