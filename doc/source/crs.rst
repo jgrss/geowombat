@@ -35,7 +35,9 @@ Other formats supported by `rasterio` can be used.
 
 .. ipython:: python
 
-    with gw.config.update(ref_crs=proj4):
+    crs = 'epsg:32618'
+
+    with gw.config.update(ref_crs=crs):
         with gw.open(rgbn) as src:
             print(src.transform)
             print(src.crs)
