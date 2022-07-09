@@ -95,21 +95,29 @@ def s_atm(r):
 
 
 def _format_coeff(dataframe, sensor, key):
-
-    bands_dict = dict(l5={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'th', '7': 'swir2'},
-                      l7={'1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
-                          '6VCID2': 'th2', '7': 'swir2', '8': 'pan'},
-                      l8={'1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
-                          '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'})
+    bands_dict = dict(
+        l5={
+            '1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'th', '7': 'swir2'
+        },
+        l7={
+            '1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
+            '6VCID2': 'th2', '7': 'swir2', '8': 'pan'
+        },
+        l8={
+            '1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
+            '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'
+        },
+        l9={
+            '1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
+            '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'
+        }
+    )
 
     sensor_dict = bands_dict[sensor]
-
     dataframe_ = dataframe[dataframe.iloc[:, 0].str.startswith(key)].values
-
     pairs = {}
 
     for di in range(dataframe_.shape[0]):
-
         bd = dataframe_[di, 0]
         cf = dataframe_[di, 1]
 
@@ -117,7 +125,6 @@ def _format_coeff(dataframe, sensor, key):
         band_name = ''.join(bd.split('_')[3:])
 
         if band_name in sensor_dict:
-
             var_band = sensor_dict[band_name]
             pairs[var_band] = float(cf)
 
@@ -128,16 +135,11 @@ def _format_coeff(dataframe, sensor, key):
 
 
 class MetaData(object):
-
+    """A class for sensor metadata
     """
-    A class for sensor metadata
-    """
-
     @staticmethod
     def get_landsat_coefficients(meta_file):
-
-        """
-        Gets coefficients from a Landsat metadata file
+        """Gets coefficients from a Landsat metadata file
 
         Args:
             meta_file (str): The text metadata file.
@@ -148,12 +150,17 @@ class MetaData(object):
 
                 sensor, m_l, a_l, m_p, a_p, date_acquired, sza
         """
+        associations = {
+            'LANDSAT_5': 'l5',
+            'LANDSAT_7': 'l7',
+            'LANDSAT_8': 'l8',
+            'LANDSAT_9': 'l9'
+        }
 
-        associations = {'LANDSAT_5': 'l5',
-                        'LANDSAT_7': 'l7',
-                        'LANDSAT_8': 'l8'}
-
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor m_l a_l m_p a_p date_acquired sza left bottom right top')
+        MetaCoeffs = namedtuple(
+            'MetaCoeffs',
+            'sensor m_l a_l m_p a_p date_acquired sza left bottom right top'
+        )
 
         df = pd.read_csv(meta_file, sep='=')
 
@@ -197,17 +204,19 @@ class MetaData(object):
 
         date_acquired = dtime(year, month, day, hour, tzinfo=datetime.timezone.utc)
 
-        return MetaCoeffs(sensor=sensor,
-                          m_l=m_l,
-                          a_l=a_l,
-                          m_p=m_p,
-                          a_p=a_p,
-                          date_acquired=date_acquired,
-                          sza=solar_zenith,
-                          left=left,
-                          bottom=bottom,
-                          right=right,
-                          top=top)
+        return MetaCoeffs(
+            sensor=sensor,
+            m_l=m_l,
+            a_l=a_l,
+            m_p=m_p,
+            a_p=a_p,
+            date_acquired=date_acquired,
+            sza=solar_zenith,
+            left=left,
+            bottom=bottom,
+            right=right,
+            top=top
+        )
 
     @staticmethod
     def get_sentinel_coefficients(meta_file):
