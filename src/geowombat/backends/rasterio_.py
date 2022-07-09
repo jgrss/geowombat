@@ -958,7 +958,7 @@ def transform_crs(
             dst_height = data_src.gw.nrows
 
     dst_transform, dst_width_, dst_height_ = calculate_default_transform(
-        data_src.crs,
+        data_src.gw.crs_to_pyproj,
         dst_crs,
         data_src.gw.ncols,
         data_src.gw.nrows,
