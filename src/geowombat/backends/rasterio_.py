@@ -380,7 +380,7 @@ def check_crs(crs):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UserWarning)
 
-            if isinstance(crs, CRS):
+            if isinstance(crs, (CRS, rio.CRS)):
                 dst_crs = CRS.from_proj4(crs.to_proj4())
             elif isinstance(crs, CRS):
                 dst_crs = crs
@@ -1020,12 +1020,11 @@ def transform_crs(
         destination = np.zeros(
             (dst_height, dst_width), dtype=data_src.dtype
         )
-
         data_dst, dst_transform = reproject(
             data_src[band, :, :].data.compute(num_workers=num_threads),
             destination,
             src_transform=data_src.gw.transform,
-            src_crs=data_src.crs,
+            src_crs=data_src.gw.crs_to_pyproj,
             dst_transform=dst_transform,
             dst_crs=dst_crs,
             src_nodata=src_nodata,
