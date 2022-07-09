@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.0 (2022-07-09)
+* Added Landsat 9 to metadata lookup
+
 ## v1.10.1 (2022-07-07)
 * Removed imports from `geowombat.__init__`
 
