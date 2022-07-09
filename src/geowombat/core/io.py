@@ -29,7 +29,6 @@ import xarray as xr
 import dask
 import dask.array as da
 from dask import is_dask_collection
-from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster, progress
 import rasterio as rio
 from rasterio.windows import Window
@@ -39,6 +38,7 @@ from rasterio import shutil as rio_shutil
 from affine import Affine
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
+import pyproj
 
 try:
     MKL_LIB = ctypes.CDLL('libmkl_rt.so')
@@ -663,7 +663,8 @@ def to_raster(
     if scheduler.lower() == 'mpool':
         pool_executor = multi.Pool
     else:
-        pool_executor = concurrent.futures.ProcessPoolExecutor if scheduler.lower() == 'processes' else concurrent.futures.ThreadPoolExecutor
+        pool_executor = concurrent.futures.ProcessPoolExecutor \
+            if scheduler.lower() == 'processes' else concurrent.futures.ThreadPoolExecutor
 
     if overwrite:
         if pfile.is_file():
@@ -769,15 +770,26 @@ def to_raster(
     if 'height' not in kwargs:
         kwargs['height'] = data.gw.nrows
 
-    if 'crs' not in kwargs:
-        kwargs['crs'] = data.crs
-
     if 'transform' not in kwargs:
         kwargs['transform'] = data.gw.transform
 
     if 'num_threads' in kwargs:
         if isinstance(kwargs['num_threads'], str):
             kwargs['num_threads'] = 'all_cpus'
+
+    if 'crs' in kwargs:
+        crs = kwargs['crs']
+    else:
+        crs = data.crs
+
+    if str(crs).lower().startswith('epsg:'):
+        kwargs['crs'] = pyproj.CRS.from_user_input(crs)
+    else:
+        try:
+            kwargs['crs'] = pyproj.CRS.from_epsg(int(crs))
+        except ValueError:
+            kwargs['crs'] = pyproj.CRS.from_user_input(crs)
+    kwargs['crs'] = kwargs['crs'].to_wkt()
 
     root = None
 

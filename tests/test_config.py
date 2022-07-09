@@ -3,6 +3,7 @@ import unittest
 import geowombat as gw
 from geowombat.data import l8_224077_20200518_B2, l8_224078_20200518
 
+from pyproj import CRS
 from testfixtures import LogCapture
 
 
@@ -49,14 +50,40 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518) as src:
                 self.assertTrue(src.gw.config['with_config'])
 
+        test_crs = CRS.from_user_input('epsg:32621')
         with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(src.crs, 32621)
+            self.assertTrue(test_crs, src.gw.crs_to_pyproj)
             self.assertFalse(src.gw.config['with_config'])
 
-    def test_config_crs(self):
+    def test_config_crs_3857(self):
+        """Test warp to Pseudo-Mercator / EPSG:3857
+        """
+        test_crs = CRS.from_user_input('epsg:3857')
         with gw.config.update(ref_crs='epsg:3857', ref_res=100):
             with gw.open(l8_224078_20200518) as src:
                 self.assertTrue(src.resampling, 'nearest')
-                self.assertTrue(src.crs.lower(), 'epsg:3857')
+                self.assertTrue(src.crs, 3857)
+                self.assertTrue(test_crs, src.gw.crs_to_pyproj)
+                self.assertTrue(src.res, (100.0, 100.0))
+
+    def test_config_crs_8858(self):
+        """Test warp to Equal Earth Americas / EPSG:8858
+        """
+        test_crs = CRS.from_user_input('epsg:8858')
+        with gw.config.update(ref_crs='epsg:8858', ref_res=100):
+            with gw.open(l8_224078_20200518) as src:
+                self.assertTrue(src.resampling, 'nearest')
+                self.assertTrue(src.crs, 8858)
+                self.assertTrue(test_crs, src.gw.crs_to_pyproj)
+                self.assertTrue(src.res, (100.0, 100.0))
+
+        test_crs = CRS.from_user_input('+proj=eqearth')
+        with gw.config.update(ref_crs='+proj=eqearth', ref_res=100):
+            with gw.open(l8_224078_20200518) as src:
+                self.assertTrue(src.resampling, 'nearest')
+                self.assertTrue(src.crs, 8858)
+                self.assertTrue(test_crs, src.gw.crs_to_pyproj)
                 self.assertTrue(src.res, (100.0, 100.0))
 
     def test_warnings_ignore(self):

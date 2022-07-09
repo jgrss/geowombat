@@ -9,6 +9,7 @@ from rasterio.coords import BoundingBox
 from affine import Affine
 import shapely
 from shapely.geometry import Polygon
+from pyproj import CRS
 
 
 # TODO: convert to enumerated classes
@@ -1006,6 +1007,10 @@ class DataProperties(object):
     def cellxh(self):
         """Get the half width of the cell size in the x direction"""
         return self.cellx / 2.0
+
+    @property
+    def crs_to_pyproj(self) -> CRS:
+        return CRS.from_user_input(self._obj.crs)
 
     @property
     def pydatetime(self):

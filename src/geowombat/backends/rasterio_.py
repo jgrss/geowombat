@@ -4,6 +4,7 @@ from pathlib import Path
 from collections import namedtuple
 import threading
 import logging
+import warnings
 
 import affine
 
@@ -11,7 +12,6 @@ import geowombat as gw
 
 import numpy as np
 import rasterio as rio
-from rasterio.crs import CRS
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
@@ -19,7 +19,7 @@ from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 import xarray as xr
-import pyproj
+from pyproj import CRS
 from affine import Affine
 
 
@@ -98,7 +98,10 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
                               width=window.width,
                               height=window.height)
 
-        for item in ['with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path']:
+        for item in [
+            'with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs',
+            'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path'
+        ]:
             if item in kwargs_copy:
                 del kwargs_copy[item]
 
@@ -353,9 +356,7 @@ def check_res(res):
 
 
 def check_src_crs(src):
-
-    """
-    Checks a rasterio open() instance
+    """Checks a rasterio open() instance
 
     Args:
         src (object): A `rasterio.open` instance.
@@ -363,31 +364,23 @@ def check_src_crs(src):
     Returns:
         ``rasterio.crs.CRS``
     """
-
     return src.crs if src.crs else src.gcps[1]
 
 
 def check_crs(crs):
-
-    """
-    Checks a CRS instance
+    """Checks a CRS instance
 
     Args:
         crs (``CRS`` | int | dict | str): The CRS instance.
 
     Returns:
-        ``rasterio.crs.CRS``
+        ``pyproj.CRS``
     """
-
-    import warnings
-
     with rio.Env():
-
         with warnings.catch_warnings():
-
             warnings.simplefilter('ignore', UserWarning)
 
-            if isinstance(crs, pyproj.crs.crs.CRS):
+            if isinstance(crs, CRS):
                 dst_crs = CRS.from_proj4(crs.to_proj4())
             elif isinstance(crs, CRS):
                 dst_crs = crs
@@ -396,11 +389,13 @@ def check_crs(crs):
             elif isinstance(crs, dict):
                 dst_crs = CRS.from_dict(crs)
             elif isinstance(crs, str):
-
                 if crs.startswith('+proj'):
                     dst_crs = CRS.from_proj4(crs)
                 else:
-                    dst_crs = CRS.from_string(crs.replace('+init=', ''))
+                    try:
+                        dst_crs = CRS.from_user_input(crs.replace('+init=', ''))
+                    except ValueError:
+                        dst_crs = CRS.from_string(crs.replace('+init=', ''))
 
             else:
                 logger.exception('  The CRS was not understood.')
@@ -410,9 +405,7 @@ def check_crs(crs):
 
 
 def check_file_crs(filename):
-
-    """
-    Checks a file CRS
+    """Checks a file CRS
 
     Args:
         filename (Path | str): The file to open.
@@ -420,23 +413,17 @@ def check_file_crs(filename):
     Returns:
         ``object`` or ``string``
     """
-
     # rasterio does not read the CRS from a .nc file
     if '.nc' in str(filename).lower():
-
         # rasterio does not open and read metadata from NetCDF files
         if str(filename).lower().startswith('netcdf:'):
-
             with xr.open_dataset(filename.split(':')[1], chunks=256) as src:
                 src_crs = src.crs
-
         else:
-
             with xr.open_dataset(filename, chunks=256) as src:
                 src_crs = src.crs
 
     else:
-
         with rio.open(filename) as src:
             src_crs = check_src_crs(src)
 
@@ -444,9 +431,7 @@ def check_file_crs(filename):
 
 
 def unpack_bounding_box(bounds):
-
-    """
-    Unpacks a BoundBox() string
+    """Unpacks a BoundBox() string
 
     Args:
         bounds (object)
@@ -472,9 +457,7 @@ def unpack_bounding_box(bounds):
 
 
 def unpack_window(bounds):
-
-    """
-    Unpacks a Window() string
+    """Unpacks a Window() string
 
     Args:
         bounds (object)
@@ -482,7 +465,6 @@ def unpack_window(bounds):
     Returns:
         ``object``
     """
-
     bounds_str = bounds.replace('Window(', '').split(',')
 
     for str_ in bounds_str:
@@ -500,9 +482,7 @@ def unpack_window(bounds):
 
 
 def window_to_bounds(filenames, w):
-
-    """
-    Transforms a rasterio Window() object to image bounds
+    """Transforms a rasterio Window() object to image bounds
 
     Args:
         filenames (str or str list)
@@ -511,7 +491,6 @@ def window_to_bounds(filenames, w):
     Returns:
         ``tuple``
     """
-
     if isinstance(filenames, str):
         src = rio.open(filenames)
     else:
@@ -528,9 +507,7 @@ def window_to_bounds(filenames, w):
 
 
 def align_bounds(minx, miny, maxx, maxy, res):
-
-    """
-    Aligns bounds to resolution
+    """Aligns bounds to resolution
 
     Args:
         minx (float)
@@ -542,7 +519,6 @@ def align_bounds(minx, miny, maxx, maxy, res):
     Returns:
         ``affine.Affine``, ``int``, ``int``
     """
-
     xres, yres = res
 
     new_height = (maxy - miny) / yres
@@ -553,14 +529,14 @@ def align_bounds(minx, miny, maxx, maxy, res):
     return aligned_target(new_transform, new_width, new_height, res)
 
 
-def get_file_bounds(filenames,
-                    bounds_by='union',
-                    crs=None,
-                    res=None,
-                    return_bounds=False):
-
-    """
-    Gets the union of all files
+def get_file_bounds(
+    filenames,
+    bounds_by='union',
+    crs=None,
+    res=None,
+    return_bounds=False
+):
+    """Gets the union of all files
 
     Args:
         filenames (list): The file names to mosaic.
@@ -572,7 +548,6 @@ def get_file_bounds(filenames,
     Returns:
         transform, width, height
     """
-
     if filenames[0].lower().startswith('netcdf:'):
 
         with rio.open(filenames[0]) as src:
@@ -582,7 +557,7 @@ def get_file_bounds(filenames,
 
     else:
 
-        if crs:
+        if crs is not None:
             dst_crs = check_crs(crs)
         else:
             dst_crs = check_file_crs(filenames[0])
@@ -599,13 +574,15 @@ def get_file_bounds(filenames,
                 dst_res = src_info.src_res
 
             # Transform the extent to the reference CRS
-            bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(src_crs,
-                                                                                    dst_crs,
-                                                                                    src_info.src_bounds.left,
-                                                                                    src_info.src_bounds.bottom,
-                                                                                    src_info.src_bounds.right,
-                                                                                    src_info.src_bounds.top,
-                                                                                    densify_pts=21)
+            bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(
+                src_crs,
+                dst_crs,
+                src_info.src_bounds.left,
+                src_info.src_bounds.bottom,
+                src_info.src_bounds.right,
+                src_info.src_bounds.top,
+                densify_pts=21
+            )
 
         if bounds_by.lower() in ['union', 'intersection']:
 
@@ -618,13 +595,15 @@ def get_file_bounds(filenames,
                     src_info = get_file_info(src)
 
                     # Transform the extent to the reference CRS
-                    left, bottom, right, top = transform_bounds(src_crs,
-                                                                dst_crs,
-                                                                src_info.src_bounds.left,
-                                                                src_info.src_bounds.bottom,
-                                                                src_info.src_bounds.right,
-                                                                src_info.src_bounds.top,
-                                                                densify_pts=21)
+                    left, bottom, right, top = transform_bounds(
+                        src_crs,
+                        dst_crs,
+                        src_info.src_bounds.left,
+                        src_info.src_bounds.bottom,
+                        src_info.src_bounds.right,
+                        src_info.src_bounds.top,
+                        densify_pts=21
+                    )
 
                 # Update the mosaic bounds
                 if bounds_by.lower() == 'union':
@@ -642,23 +621,26 @@ def get_file_bounds(filenames,
                     bounds_top = min(bounds_top, top)
 
             # Align the cells
-            bounds_transform, bounds_width, bounds_height = align_bounds(bounds_left,
-                                                                         bounds_bottom,
-                                                                         bounds_right,
-                                                                         bounds_top,
-                                                                         dst_res)
+            bounds_transform, bounds_width, bounds_height = align_bounds(
+                bounds_left,
+                bounds_bottom,
+                bounds_right,
+                bounds_top,
+                dst_res
+            )
 
         else:
-
             bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
             bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
-            bounds_transform = from_bounds(bounds_left,
-                                           bounds_bottom,
-                                           bounds_right,
-                                           bounds_top,
-                                           bounds_width,
-                                           bounds_height)
+            bounds_transform = from_bounds(
+                bounds_left,
+                bounds_bottom,
+                 bounds_right,
+                 bounds_top,
+                 bounds_width,
+                 bounds_height
+            )
 
         if return_bounds:
             return array_bounds(bounds_height, bounds_width, bounds_transform)
@@ -676,9 +658,7 @@ def warp_images(filenames,
                 warp_mem_limit=512,
                 num_threads=1,
                 tac=None):
-
-    """
-    Transforms a list of images to a common grid
+    """Transforms a list of images to a common grid
 
     Args:
         filenames (list): The file names to mosaic.
@@ -696,18 +676,19 @@ def warp_images(filenames,
     Returns:
         ``list`` of ``rasterio.vrt.WarpedVRT`` objects
     """
-
     if resampling not in [rmethod for rmethod in dir(Resampling) if not rmethod.startswith('__')]:
         logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
         resampling = 'nearest'
 
-    warp_kwargs = {'resampling': resampling,
-                   'crs': crs,
-                   'res': res,
-                   'nodata': nodata,
-                   'warp_mem_limit': warp_mem_limit,
-                   'num_threads': num_threads,
-                   'tac': tac}
+    warp_kwargs = {
+        'resampling': resampling,
+        'crs': crs,
+        'res': res,
+        'nodata': nodata,
+        'warp_mem_limit': warp_mem_limit,
+        'num_threads': num_threads,
+        'tac': tac
+    }
 
     if bounds:
         warp_kwargs['bounds'] = bounds
@@ -715,11 +696,13 @@ def warp_images(filenames,
 
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
-        warp_kwargs['bounds'] = get_file_bounds(filenames,
-                                                bounds_by=bounds_by,
-                                                crs=crs,
-                                                res=res,
-                                                return_bounds=True)
+        warp_kwargs['bounds'] = get_file_bounds(
+            filenames,
+            bounds_by=bounds_by,
+            crs=crs,
+            res=res,
+            return_bounds=True
+        )
 
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
@@ -758,9 +741,7 @@ def warp(filename,
          num_threads=1,
          tap=False,
          tac=None):
-
-    """
-    Warps an image to a VRT object
+    """Warps an image to a VRT object
 
     Args:
         filename (str): The input file name.
@@ -778,8 +759,7 @@ def warp(filename,
     Returns:
         ``rasterio.vrt.WarpedVRT``
     """
-
-    if crs:
+    if crs is not None:
         dst_crs = check_crs(crs)
     else:
         dst_crs = check_file_crs(filename)
@@ -787,7 +767,6 @@ def warp(filename,
     src_crs = check_file_crs(filename)
 
     with rio.open(filename) as src:
-
         src_info = get_file_info(src)
 
         if res:
@@ -800,24 +779,27 @@ def warp(filename,
 
             if crs:
 
-                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(src_crs,
-                                                                                    dst_crs,
-                                                                                    src_info.src_bounds.left,
-                                                                                    src_info.src_bounds.bottom,
-                                                                                    src_info.src_bounds.right,
-                                                                                    src_info.src_bounds.top,
-                                                                                    densify_pts=21)
+                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(
+                    src_crs,
+                    dst_crs,
+                    src_info.src_bounds.left,
+                    src_info.src_bounds.bottom,
+                    src_info.src_bounds.right,
+                    src_info.src_bounds.top,
+                    densify_pts=21
+                )
 
-                dst_bounds = BoundingBox(left=left_coord,
-                                         bottom=bottom_coord,
-                                         right=right_coord,
-                                         top=top_coord)
+                dst_bounds = BoundingBox(
+                    left=left_coord,
+                    bottom=bottom_coord,
+                    right=right_coord,
+                    top=top_coord
+                )
 
             else:
                 dst_bounds = src_info.src_bounds
 
         else:
-
             # Ensure that the user bounds object is a ``BoundingBox``
             if isinstance(bounds, BoundingBox):
                 dst_bounds = bounds
@@ -829,21 +811,24 @@ def warp(filename,
                     logger.exception('  The bounds were not accepted.')
                     raise TypeError
 
-                dst_bounds = BoundingBox(left=left_coord,
-                                         bottom=bottom_coord,
-                                         right=right_coord,
-                                         top=top_coord)
+                dst_bounds = BoundingBox(
+                    left=left_coord,
+                    bottom=bottom_coord,
+                    right=right_coord,
+                    top=top_coord
+                )
 
             elif isinstance(bounds, tuple) or isinstance(bounds, list) or isinstance(bounds, np.ndarray):
-
-                dst_bounds = BoundingBox(left=bounds[0],
-                                         bottom=bounds[1],
-                                         right=bounds[2],
-                                         top=bounds[3])
+                dst_bounds = BoundingBox(
+                    left=bounds[0],
+                    bottom=bounds[1],
+                    right=bounds[2],
+                    top=bounds[3]
+                )
 
             else:
-
-                logger.exception(f'  The bounds type was not understood. Bounds should be given as a rasterio.coords.BoundingBox, tuple, or ndarray, not a {type(bounds)}.')
+                logger.exception(f'  The bounds type was not understood. Bounds should be given as a '
+                                 f'rasterio.coords.BoundingBox, tuple, or ndarray, not a {type(bounds)}.')
                 raise TypeError
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
@@ -875,22 +860,28 @@ def warp(filename,
             if tap:
 
                 # Align the cells to the resolution
-                dst_transform, dst_width, dst_height = aligned_target(dst_transform,
-                                                                      dst_width,
-                                                                      dst_height,
-                                                                      dst_res)
+                dst_transform, dst_width, dst_height = aligned_target(
+                    dst_transform,
+                    dst_width,
+                    dst_height,
+                    dst_res
+                )
 
-            vrt_options = {'resampling': getattr(Resampling, resampling),
-                           'src_crs': src_crs,
-                           'crs': dst_crs,
-                           'src_transform': src_transform,
-                           'transform': dst_transform,
-                           'height': dst_height,
-                           'width': dst_width,
-                           'nodata': nodata,
-                           'warp_mem_limit': warp_mem_limit,
-                           'warp_extras': {'multi': True,
-                                           'warp_option': f'NUM_THREADS={num_threads}'}}
+            vrt_options = {
+                'resampling': getattr(Resampling, resampling),
+                'src_crs': src_crs,
+                 'crs': dst_crs,
+                 'src_transform': src_transform,
+                 'transform': dst_transform,
+                 'height': dst_height,
+                 'width': dst_width,
+                 'nodata': nodata,
+                 'warp_mem_limit': warp_mem_limit,
+                 'warp_extras': {
+                     'multi': True,
+                     'warp_option': f'NUM_THREADS={num_threads}'
+                 }
+            }
 
             with WarpedVRT(src, **vrt_options) as vrt:
                 output = vrt
@@ -898,21 +889,21 @@ def warp(filename,
     return output
 
 
-def transform_crs(data_src,
-                  dst_crs=None,
-                  dst_res=None,
-                  dst_width=None,
-                  dst_height=None,
-                  dst_bounds=None,
-                  src_nodata=None,
-                  dst_nodata=None,
-                  coords_only=False,
-                  resampling='nearest',
-                  warp_mem_limit=512,
-                  num_threads=1):
-
-    """
-    Transforms a DataArray to a new coordinate reference system.
+def transform_crs(
+    data_src,
+    dst_crs=None,
+    dst_res=None,
+    dst_width=None,
+    dst_height=None,
+    dst_bounds=None,
+    src_nodata=None,
+    dst_nodata=None,
+    coords_only=False,
+    resampling='nearest',
+    warp_mem_limit=512,
+    num_threads=1
+):
+    """Transforms a DataArray to a new coordinate reference system.
 
     Args:
         data_src (DataArray): The data to transform.
@@ -943,21 +934,18 @@ def transform_crs(data_src,
         If ``coords_only`` = ``False``:
             ``numpy.ndarray`` ``tuple`` ``CRS``
     """
-
     if dst_crs:
         dst_crs = check_crs(dst_crs)
     else:
         dst_crs = data_src.crs
 
     if isinstance(dst_res, int) or isinstance(dst_res, float) or isinstance(dst_res, tuple):
-
         dst_res = check_res(dst_res)
 
         dst_width = None
         dst_height = None
 
     else:
-
         if not isinstance(dst_width, int) and not isinstance(dst_height, int):
             dst_res = data_src.res
 
@@ -969,27 +957,25 @@ def transform_crs(data_src,
         if not dst_height:
             dst_height = data_src.gw.nrows
 
-    dst_transform, dst_width_, dst_height_ = calculate_default_transform(data_src.crs,
-                                                                         dst_crs,
-                                                                         data_src.gw.ncols,
-                                                                         data_src.gw.nrows,
-                                                                         left=data_src.gw.left,
-                                                                         bottom=data_src.gw.bottom,
-                                                                         right=data_src.gw.right,
-                                                                         top=data_src.gw.top,
-                                                                         dst_width=dst_width,
-                                                                         dst_height=dst_height,
-                                                                         resolution=dst_res)
+    dst_transform, dst_width_, dst_height_ = calculate_default_transform(
+        data_src.gw.crs_to_pyproj,
+        dst_crs,
+        data_src.gw.ncols,
+        data_src.gw.nrows,
+        left=data_src.gw.left,
+        bottom=data_src.gw.bottom,
+        right=data_src.gw.right,
+        top=data_src.gw.top,
+        dst_width=dst_width,
+        dst_height=dst_height,
+        resolution=dst_res
+    )
 
     if coords_only:
-
         if isinstance(dst_width, int) and isinstance(dst_height, int):
-
             xs = (dst_transform * (np.arange(0, dst_width) + 0.5, np.arange(0, dst_width) + 0.5))[0]
             ys = (dst_transform * (np.arange(0, dst_height) + 0.5, np.arange(0, dst_height) + 0.5))[1]
-
         else:
-
             xs = (dst_transform * (np.arange(0, dst_width_) + 0.5, np.arange(0, dst_width_) + 0.5))[0]
             ys = (dst_transform * (np.arange(0, dst_height_) + 0.5, np.arange(0, dst_height_) + 0.5))[1]
 
@@ -1005,7 +991,6 @@ def transform_crs(data_src,
         dst_height = data_src.gw.nrows
 
     if not dst_bounds:
-
         dst_left = dst_transform[2]
         dst_top = dst_transform[5]
         dst_right = dst_left + (dst_width*dst_transform[0])
@@ -1014,17 +999,16 @@ def transform_crs(data_src,
         dst_bounds = (dst_left, dst_bottom, dst_right, dst_top)
 
     if not isinstance(dst_bounds, BoundingBox):
-
-        dst_bounds = BoundingBox(left=dst_bounds[0],
-                                 bottom=dst_bounds[1],
-                                 right=dst_bounds[2],
-                                 top=dst_bounds[3])
+        dst_bounds = BoundingBox(
+            left=dst_bounds[0],
+            bottom=dst_bounds[1],
+            right=dst_bounds[2],
+            top=dst_bounds[3]
+        )
 
     if not dst_res:
-
         cellx = (dst_bounds.right - dst_bounds.left) / dst_width
         celly = (dst_bounds.top - dst_bounds.bottom) / dst_height
-
         dst_res = (cellx, celly)
 
     # Ensure the final transform is set based on adjusted bounds
@@ -1033,22 +1017,24 @@ def transform_crs(data_src,
     transformed_array = []
 
     for band in range(0, data_src.gw.nbands):
+        destination = np.zeros(
+            (dst_height, dst_width), dtype=data_src.dtype
+        )
 
-        destination = np.zeros((dst_height,
-                                dst_width), dtype=data_src.dtype)
-
-        data_dst, dst_transform = reproject(data_src[band, :, :].data.compute(num_workers=num_threads),
-                                            destination,
-                                            src_transform=data_src.gw.transform,
-                                            src_crs=data_src.crs,
-                                            dst_transform=dst_transform,
-                                            dst_crs=dst_crs,
-                                            src_nodata=src_nodata,
-                                            dst_nodata=dst_nodata,
-                                            resampling=getattr(Resampling, resampling),
-                                            dst_resolution=dst_res,
-                                            warp_mem_limit=warp_mem_limit,
-                                            num_threads=num_threads)
+        data_dst, dst_transform = reproject(
+            data_src[band, :, :].data.compute(num_workers=num_threads),
+            destination,
+            src_transform=data_src.gw.transform,
+            src_crs=data_src.crs,
+            dst_transform=dst_transform,
+            dst_crs=dst_crs,
+            src_nodata=src_nodata,
+            dst_nodata=dst_nodata,
+            resampling=getattr(Resampling, resampling),
+            dst_resolution=dst_res,
+            warp_mem_limit=warp_mem_limit,
+            num_threads=num_threads
+        )
 
         transformed_array.append(data_dst)
 
