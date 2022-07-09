@@ -114,13 +114,14 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8.12
+          token: ${{ secrets.GW_TOKEN }}
       - uses: syphar/restore-virtualenv@v1
-        id: gwenv
+        id: cache-gwenv
         with:
           requirement_files: setup.cfg
       - uses: syphar/restore-pip-download-cache@v1
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
-      - name: Checkout
+      - name: Release version
         uses: fnkr/github-action-ghr@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
