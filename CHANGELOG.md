@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.3 (2022-07-10)
+* Added user proj bounds to return more specific bbox ([#180](https://github.com/jgrss/geowombat/issues/180))
+
 ## v1.11.2 (2022-07-10)
 * Fixed CRS errors generated from the readthedocs build ([#178](https://github.com/jgrss/geowombat/issues/178))
 
