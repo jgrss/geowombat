@@ -136,7 +136,8 @@ def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataA
 def open_stac(
     stac_catalog: str = 'microsoft',
     collection: str = None,
-    bounds: T.Union[str, Path, gpd.GeoDataFrame] = None,
+    bounds: T.Union[T.Sequence[float], str, Path, gpd.GeoDataFrame] = None,
+    proj_bounds: T.Sequence[float] = None,
     start_date: str = None,
     end_date: str = None,
     cloud_cover_perc: T.Union[float, int] = 50,
@@ -163,6 +164,9 @@ def open_stac(
         collection (str): The STAC collection to open.
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``)
+        proj_bounds (sequence): The projected bounds to return data. If ``None`` (default), the returned bounds
+            are the union of all collection scenes. See ``bounds`` in
+            https://github.com/gjoseph92/stackstac/blob/main/stackstac/stack.py for details.
         start_date (str): The start search date (yyyy-mm-dd).
         end_date (str): The end search date (yyyy-mm-dd).
         cloud_cover_perc (float | int): The maximum percentage cloud cover.
@@ -292,7 +296,8 @@ def open_stac(
 
         data = stackstac.stack(
             items,
-            bounds_latlon=bounds,
+            bounds=proj_bounds,
+            bounds_latlon=None if proj_bounds is not None else bounds,
             assets=bands,
             chunksize=chunksize,
             epsg=epsg,
