@@ -9,9 +9,10 @@ import threading
 import random
 import string
 import logging
+import typing as T
 
 from ..handler import add_handler
-from ..backends.rasterio_ import to_gtiff, WriteDaskArray
+from ..backends.rasterio_ import to_gtiff, WriteDaskArray, RasterioStore
 from .windows import get_window_offsets
 from .base import _client_dummy, _cluster_dummy
 
@@ -34,6 +35,7 @@ import rasterio as rio
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
 from rasterio.enums import Resampling
+from rasterio.drivers import driver_from_extension
 from rasterio import shutil as rio_shutil
 from affine import Affine
 from tqdm import tqdm
@@ -558,6 +560,53 @@ def to_netcdf(data, filename, *args, **kwargs):
                        engine='h5netcdf',
                        encoding=encodings,
                        compute=True)
+
+
+def save(
+    data: xr.DataArray,
+    filename: T.Union[str, Path],
+    overwrite: bool = False,
+    tags: T.Optional[dict] = None,
+    compression: T.Optional[str] = 'none',
+    num_workers: T.Optional[int] = 1
+):
+    if Path(filename).is_file():
+        if overwrite:
+            Path(filename).unlink()
+        else:
+            logger.warning(f'The file {str(filename)} already exists.')
+            return
+
+    kwargs = dict(
+        driver=driver_from_extension(filename),
+        width=data.gw.ncols,
+        height=data.gw.nrows,
+        count=data.gw.nbands,
+        dtype=data.dtype,
+        nodata=data.nodatavals[0],
+        blockxsize=data.gw.col_chunks,
+        blockysize=data.gw.row_chunks,
+        crs=data.gw.crs_to_pyproj,
+        transform=data.gw.transform,
+        compress=compression,
+        tiled=True,
+        sharing=False
+    )
+
+    with RasterioStore(
+        filename,
+        tags=tags,
+        **kwargs
+    ) as dst:
+        # Store the data and return a lazy evaluator
+        res = da.store(
+            da.squeeze(data.data),
+            dst,
+            lock=True,
+            compute=False
+        )
+        with TqdmCallback():
+            dask.compute(res, num_workers=num_workers)
 
 
 def to_raster(
