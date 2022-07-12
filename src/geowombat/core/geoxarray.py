@@ -39,6 +39,7 @@ from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
+from dask.distributed import Client
 import dask.array as da
 from rasterio.windows import Window as _Window
 from shapely.geometry import Polygon as _Polygon
@@ -694,17 +695,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         self,
         filename: T.Union[str, Path],
         overwrite: bool = False,
+        client: T.Optional[Client] = None,
         tags: T.Optional[dict] = None,
         compression: T.Optional[str] = 'none',
-        num_workers: T.Optional[int] = 1
+        num_workers: T.Optional[int] = 1,
+        tqdm_kwargs: T.Optional[dict] = None
     ):
         save(
             self._obj,
             filename=filename,
             overwrite=overwrite,
+            client=client,
             tags=tags,
             compression=compression,
-            num_workers=num_workers
+            num_workers=num_workers,
+            tqdm_kwargs=tqdm_kwargs
         )
 
     def to_raster(self,

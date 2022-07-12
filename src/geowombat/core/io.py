@@ -566,9 +566,11 @@ def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
     overwrite: bool = False,
+    client: T.Optional[Client] = None,
     tags: T.Optional[dict] = None,
     compression: T.Optional[str] = 'none',
-    num_workers: T.Optional[int] = 1
+    num_workers: T.Optional[int] = 1,
+    tqdm_kwargs: T.Optional[dict] = None
 ):
     if Path(filename).is_file():
         if overwrite:
@@ -592,6 +594,8 @@ def save(
         tiled=True,
         sharing=False
     )
+    if tqdm_kwargs is None:
+        tqdm_kwargs = {}
 
     with RasterioStore(
         filename,
@@ -605,8 +609,13 @@ def save(
             lock=True,
             compute=False
         )
-        with TqdmCallback():
-            dask.compute(res, num_workers=num_workers)
+        if client is not None:
+            results = client.persist(res)
+            progress(results)
+            dask.compute(results)
+        else:
+            with TqdmCallback(**tqdm_kwargs):
+                dask.compute(res, num_workers=num_workers)
 
 
 def to_raster(
@@ -756,6 +765,9 @@ def to_raster(
         readysize = data.gw.row_chunks
 
     chunksize = (data.gw.row_chunks, data.gw.col_chunks)
+
+    if tqdm_kwargs is None:
+        tqdm_kwargs = {}
 
     # Force tiled outputs with no file sharing
     kwargs['sharing'] = False
