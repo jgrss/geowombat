@@ -1,6 +1,24 @@
+import typing as T
+from pathlib import Path
+
 from ..config import config
 
-from . import to_raster, to_netcdf, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
+from . import (
+    save,
+    to_raster,
+    to_netcdf,
+    to_vrt,
+    array_to_polygon,
+    moving,
+    extract,
+    sample,
+    calc_area,
+    subset,
+    clip,
+    mask,
+    replace,
+    recode
+)
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
@@ -671,6 +689,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         to_netcdf(self._obj, filename, *args, **kwargs)
+
+    def save(
+        self,
+        filename: T.Union[str, Path],
+        overwrite: bool = False,
+        tags: T.Optional[dict] = None,
+        compression: T.Optional[str] = 'none',
+        num_workers: T.Optional[int] = 1
+    ):
+        save(
+            self._obj,
+            filename=filename,
+            overwrite=overwrite,
+            tags=tags,
+            compression=compression,
+            num_workers=num_workers
+        )
 
     def to_raster(self,
                   filename,
