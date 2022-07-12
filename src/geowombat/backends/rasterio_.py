@@ -5,6 +5,7 @@ from collections import namedtuple
 import threading
 import logging
 import warnings
+import typing as T
 
 import affine
 
@@ -137,16 +138,53 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
                            indexes=indexes)
 
 
-class WriteDaskArray(object):
+class RasterioStore(object):
+    def __init__(self, filename: T.Union[str, Path], tags: dict = None, **kwargs):
+        self.filename = filename
+        self.tags = tags
+        self.kwargs = kwargs
+        self.dst = None
 
-    """
-    ``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
+    def __setitem__(self, key, item):
+        if len(key) == 3:
+            index_range, y, x = key
+            indexes = list(range(index_range.start+1, index_range.stop+1, index_range.step or 1))
+        else:
+            indexes = 1
+            y, x = key
+
+        w = Window(
+            col_off=x.start,
+            row_off=y.start,
+            width=x.stop - x.start,
+            height=y.stop - y.start
+        )
+
+        self.dst.write(
+            item,
+            window=w,
+            indexes=indexes
+        )
+
+    def __enter__(self):
+        self.dst = rio.open(self.filename, mode='w', **self.kwargs)
+        if self.tags is not None:
+            self.dst.update_tags(**self.tags)
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.dst.close()
+
+
+class WriteDaskArray(object):
+    """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
 
     Args:
         filename (str): The file to write to.
         overwrite (Optional[bool]): Whether to overwrite an existing output file.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to the same file.
-        out_block_type (Optional[str]): The output block type. Choices are ['GTiff', 'zarr'].
+        out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
             *Only used if ``separate`` = ``True``.
         keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
             *Only used if ``separate`` = ``True``.
@@ -159,16 +197,16 @@ class WriteDaskArray(object):
     Returns:
         None
     """
-
-    def __init__(self,
-                 filename,
-                 overwrite=False,
-                 separate=False,
-                 out_block_type='zarr',
-                 keep_blocks=False,
-                 gdal_cache=512,
-                 **kwargs):
-
+    def __init__(
+        self,
+        filename: T.Union[str, Path],
+        overwrite: bool = False,
+        separate: bool = False,
+        out_block_type: str = 'gtiff',
+        keep_blocks: bool = False,
+        gdal_cache: int = 512,
+        **kwargs
+    ):
         if out_block_type == 'zarr':
             if not ZARR_INSTALLED:
                 logger.exception('Zarr and numcodecs must be installed.')
