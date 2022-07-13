@@ -572,6 +572,8 @@ def save(
     num_workers: T.Optional[int] = 1,
     tqdm_kwargs: T.Optional[dict] = None
 ):
+    """Saves a DataArray to raster using rasterio/dask
+    """
     if Path(filename).is_file():
         if overwrite:
             Path(filename).unlink()
@@ -591,7 +593,7 @@ def save(
         crs=data.gw.crs_to_pyproj,
         transform=data.gw.transform,
         compress=compression,
-        tiled=True,
+        tiled=True if max(data.gw.row_chunks, data.gw.col_chunks) >= 16 else False,
         sharing=False
     )
     if tqdm_kwargs is None:
