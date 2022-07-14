@@ -17,6 +17,8 @@ class AnglePaths:
 
 
 def extract_espa_tools(out_path: T.Union[str, Path]) -> AnglePaths:
+    """Extracts the USGS ESPA angle creation tools
+    """
     with tarfile.open(espa_tarball) as f:
         f.extractall(str(out_path))
 

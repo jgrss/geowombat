@@ -565,7 +565,7 @@ def to_netcdf(data, filename, *args, **kwargs):
 def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
-    overwrite: bool = False,
+    overwrite: T.Optional[bool] = False,
     client: T.Optional[Client] = None,
     tags: T.Optional[dict] = None,
     compression: T.Optional[str] = 'none',
@@ -574,6 +574,28 @@ def save(
     tqdm_kwargs: T.Optional[dict] = None
 ):
     """Saves a DataArray to raster using rasterio/dask
+
+    Args:
+        data (DataArray): data (DataArray): The ``xarray.DataArray`` to save to file.
+        filename (str | Path): The output file name to write to.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+        client (Optional[Client object]): A client object to persist data. Default is None.
+        tags (Optional[dict]): Metadata tags to write to file. Default is None.
+        compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+        num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
+            Default is 1.
+        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
+        tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+
+    Returns:
+        ``None``, writes to ``filename``
+
+    Example:
+        >>> import geowombat as gw
+        >>>
+        >>> with gw.open('file.tif') as src:
+        >>>     result = ...
+        >>>     gw.save(result, 'output.tif', compression='lzw', num_workers=8)
     """
     if Path(filename).is_file():
         if overwrite:
