@@ -650,17 +650,19 @@ def sentinel_pixel_angles(
 
     AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
 
-    crs, transform, nrows, ncols = get_sentinel_crs_transform(metadata, resample_res=resample_res)
+    # Get the CRS, transform, and image size of the full S-2 footprint
+    crs, transform, nrows, ncols = get_sentinel_crs_transform(
+        metadata, resample_res=resample_res
+    )
+    # Get the angle arrays
     sza, saa = parse_sentinel_angles(metadata, 'solar', nodata)
     vza, vaa = parse_sentinel_angles(metadata, 'view', nodata)
     sensor_name = get_sentinel_sensor(metadata)
-
-    # Create an array that is a representation of the full S-2 image
+    # Create coordinates that are a representation of the full S-2 image
     xcoords = (transform * (np.arange(ncols) + 0.5, np.zeros(ncols) + 0.5))[0]
     ycoords = (transform * (np.zeros(nrows) + 0.5, np.arange(nrows) + 0.5))[1]
 
     ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
-
     opath = Path(outdir)
     opath.mkdir(parents=True, exist_ok=True)
 
@@ -717,24 +719,31 @@ def sentinel_pixel_angles(
                     'nodatavals': (nodata,)
                 }
             )
-            # Save the full image to file
-            angle_array_resamp.gw.save(
-                full_image_file,
-                num_workers=num_workers,
-                overwrite=True,
-                log_progress=True if verbose > 0 else False
-            )
-            # Save the angle image to file using the reference bounds
-            with gw.config.update(ref_image=ref_file):
-                with gw.open(full_image_file, chunks=256, resample=resampling) as src:
-                    src = src.fillna(nodata).astype('int16')
-                    src = src.assign_attrs(nodatavals=(nodata,)*src.gw.nbands)
-                    src.gw.save(
-                        angle_file,
-                        overwrite=True,
-                        num_workers=num_workers,
-                        log_progress=True if verbose > 0 else False
-                    )
+            with gw.open (ref_file, chunks=256) as src:
+                angle_array_resamp = transform_crs(
+                    angle_array_resamp,
+                    dst_crs=src.gw.crs_to_pyproj,
+                    dst_width=src.gw.ncols,
+                    dst_height=src.gw.nrows,
+                    dst_bounds=src.gw.bounds,
+                    src_nodata=nodata,
+                    dst_nodata=nodata,
+                    resampling=resampling,
+                    num_threads=num_workers
+                )
+                # Save the angle image to file
+                angle_array_resamp = (
+                    angle_array_resamp
+                    .fillna(nodata)
+                    .astype('int16')
+                    .assign_attrs(nodatavals=(nodata,))
+                )
+                angle_array_resamp.gw.save(
+                    angle_file,
+                    overwrite=True,
+                    num_workers=num_workers,
+                    log_progress=True if verbose > 0 else False
+                )
 
     return AngleInfo(
         vaa=str(sensor_azimuth_file),
