@@ -699,6 +699,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         tags: T.Optional[dict] = None,
         compression: T.Optional[str] = 'none',
         num_workers: T.Optional[int] = 1,
+        log_progress: T.Optional[bool] = True,
         tqdm_kwargs: T.Optional[dict] = None
     ):
         save(
@@ -709,6 +710,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             tags=tags,
             compression=compression,
             num_workers=num_workers,
+            log_progress=log_progress,
             tqdm_kwargs=tqdm_kwargs
         )
 
