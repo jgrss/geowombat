@@ -570,6 +570,7 @@ def save(
     tags: T.Optional[dict] = None,
     compression: T.Optional[str] = 'none',
     num_workers: T.Optional[int] = 1,
+    log_progress: T.Optional[bool] = True,
     tqdm_kwargs: T.Optional[dict] = None
 ):
     """Saves a DataArray to raster using rasterio/dask
@@ -613,10 +614,14 @@ def save(
         )
         if client is not None:
             results = client.persist(res)
-            progress(results)
+            if log_progress:
+                progress(results)
             dask.compute(results)
         else:
-            with TqdmCallback(**tqdm_kwargs):
+            if log_progress:
+                with TqdmCallback(**tqdm_kwargs):
+                    dask.compute(res, num_workers=num_workers)
+            else:
                 dask.compute(res, num_workers=num_workers)
 
 
