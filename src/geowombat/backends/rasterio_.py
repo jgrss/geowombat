@@ -6,6 +6,7 @@ import threading
 import logging
 import warnings
 import typing as T
+from contextlib import contextmanager
 
 import affine
 
@@ -19,6 +20,7 @@ from rasterio.warp import aligned_target, calculate_default_transform, transform
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
+import dask.array as da
 import xarray as xr
 from pyproj import CRS
 from affine import Affine
@@ -139,8 +141,15 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
 
 
 class RasterioStore(object):
-    def __init__(self, filename: T.Union[str, Path], tags: dict = None, **kwargs):
+    def __init__(
+        self,
+        filename: T.Union[str, Path],
+        data: xr.DataArray,
+        tags: dict = None,
+        **kwargs
+    ):
         self.filename = filename
+        self.data = data
         self.tags = tags
         self.kwargs = kwargs
         self.dst = None
@@ -166,14 +175,28 @@ class RasterioStore(object):
             indexes=indexes
         )
 
-    def __enter__(self):
+    def __enter__(self) -> 'RasterioStore':
+        return self.open()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def open(self) -> 'RasterioStore':
         self.dst = rio.open(self.filename, mode='w', **self.kwargs)
         if self.tags is not None:
             self.dst.update_tags(**self.tags)
 
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def write(self):
+        return da.store(
+            da.squeeze(self.data.data),
+            self,
+            lock=True,
+            compute=False
+        )
+
+    def close(self):
         self.dst.close()
 
 
