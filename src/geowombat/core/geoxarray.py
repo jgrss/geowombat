@@ -696,6 +696,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         filename: T.Union[str, Path],
         overwrite: bool = False,
         client: T.Optional[Client] = None,
+        compute: T.Optional[bool] = True,
         tags: T.Optional[dict] = None,
         compression: T.Optional[str] = 'none',
         num_workers: T.Optional[int] = 1,
@@ -708,6 +709,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             filename (str | Path): The output file name to write to.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
             client (Optional[Client object]): A client object to persist data. Default is None.
+            compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+                the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
             num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
@@ -725,11 +728,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     result = ...
             >>>     result.gw.save('output.tif', compression='lzw', num_workers=8)
         """
-        save(
+        return save(
             self._obj,
             filename=filename,
             overwrite=overwrite,
             client=client,
+            compute=compute,
             tags=tags,
             compression=compression,
             num_workers=num_workers,

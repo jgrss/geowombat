@@ -567,6 +567,7 @@ def save(
     filename: T.Union[str, Path],
     overwrite: T.Optional[bool] = False,
     client: T.Optional[Client] = None,
+    compute: T.Optional[bool] = True,
     tags: T.Optional[dict] = None,
     compression: T.Optional[str] = 'none',
     num_workers: T.Optional[int] = 1,
@@ -578,13 +579,15 @@ def save(
     Args:
         data (DataArray): data (DataArray): The ``xarray.DataArray`` to save to file.
         filename (str | Path): The output file name to write to.
-        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
-        client (Optional[Client object]): A client object to persist data. Default is None.
-        tags (Optional[dict]): Metadata tags to write to file. Default is None.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is ``False``.
+        client (Optional[Client object]): A client object to persist data. Default is ``None``.
+        compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+            the ``dask`` task graph. Default is ``True``.
+        tags (Optional[dict]): Metadata tags to write to file. Default is ``None``.
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
         num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
             Default is 1.
-        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
+        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is ``True``.
         tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
 
     Returns:
@@ -596,6 +599,12 @@ def save(
         >>> with gw.open('file.tif') as src:
         >>>     result = ...
         >>>     gw.save(result, 'output.tif', compression='lzw', num_workers=8)
+        >>>
+        >>> # Retain laziness and compute later
+        >>> tasks = [gw.save(array, 'output.tif', compute=False) for array in array_list]
+        >>> dask.compute((task.write() for task in tasks), num_workers=8)
+        >>> # Close image files
+        >>> [task.close() for task in tasks]
     """
     if Path(filename).is_file():
         if overwrite:
@@ -622,29 +631,37 @@ def save(
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
 
-    with RasterioStore(
-        filename,
-        tags=tags,
-        **kwargs
-    ) as dst:
-        # Store the data and return a lazy evaluator
-        res = da.store(
-            da.squeeze(data.data),
-            dst,
-            lock=True,
-            compute=False
-        )
-        if client is not None:
-            results = client.persist(res)
-            if log_progress:
-                progress(results)
-            dask.compute(results)
-        else:
-            if log_progress:
-                with TqdmCallback(**tqdm_kwargs):
-                    dask.compute(res, num_workers=num_workers)
+    if not compute:
+        return RasterioStore(
+            filename,
+            data,
+            tags=tags,
+            **kwargs
+        ).open()
+
+    else:
+        with RasterioStore(
+            filename,
+            data,
+            tags=tags,
+            **kwargs
+        ) as rio_store:
+            # Store the data and return a lazy evaluator
+            res = rio_store.write()
+
+            if client is not None:
+                results = client.persist(res)
+                if log_progress:
+                    progress(results)
+                dask.compute(results)
             else:
-                dask.compute(res, num_workers=num_workers)
+                if log_progress:
+                    with TqdmCallback(**tqdm_kwargs):
+                        dask.compute(res, num_workers=num_workers)
+                else:
+                    dask.compute(res, num_workers=num_workers)
+
+    return None
 
 
 def to_raster(
