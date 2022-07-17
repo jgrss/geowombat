@@ -6,7 +6,6 @@ import threading
 import logging
 import warnings
 import typing as T
-from contextlib import contextmanager
 
 import affine
 
@@ -144,12 +143,10 @@ class RasterioStore(object):
     def __init__(
         self,
         filename: T.Union[str, Path],
-        data: xr.DataArray,
         tags: dict = None,
         **kwargs
     ):
         self.filename = filename
-        self.data = data
         self.tags = tags
         self.kwargs = kwargs
         self.dst = None
@@ -188,9 +185,9 @@ class RasterioStore(object):
 
         return self
 
-    def write(self):
+    def write(self, data: xr.DataArray):
         return da.store(
-            da.squeeze(self.data.data),
+            da.squeeze(data.data),
             self,
             lock=True,
             compute=False
@@ -198,6 +195,8 @@ class RasterioStore(object):
 
     def close(self):
         self.dst.close()
+
+        return self
 
 
 class WriteDaskArray(object):
