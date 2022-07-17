@@ -634,7 +634,6 @@ def save(
     if not compute:
         return RasterioStore(
             filename,
-            data,
             tags=tags,
             **kwargs
         ).open()
@@ -642,12 +641,11 @@ def save(
     else:
         with RasterioStore(
             filename,
-            data,
             tags=tags,
             **kwargs
         ) as rio_store:
             # Store the data and return a lazy evaluator
-            res = rio_store.write()
+            res = rio_store.write(data)
 
             if client is not None:
                 results = client.persist(res)
