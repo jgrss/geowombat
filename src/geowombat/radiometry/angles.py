@@ -5,12 +5,16 @@ import subprocess
 from collections import namedtuple
 import tarfile
 import logging
+import typing as T
+from dataclasses import dataclass
 
 import geowombat as gw
 from ..handler import add_handler
 from ..backends import transform_crs
 
 import numpy as np
+import dask
+from dask.delayed import Delayed, DelayedAttr, DelayedLeaf
 import dask.array as da
 import xarray as xr
 import rasterio as rio
@@ -27,6 +31,14 @@ except:
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
+
+
+@dataclass
+class AngleInfo:
+    vza: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
+    vaa: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
+    sza: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
+    saa: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
 
 
 def shift_objects(
@@ -148,7 +160,13 @@ def estimate_cloud_shadows(
     return data
 
 
-def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
+def scattering_angle(
+    cos_sza: xr.DataArray,
+    cos_vza: xr.DataArray,
+    sin_sza: xr.DataArray,
+    sin_vza: xr.DataArray,
+    cos_raa: xr.DataArray
+) -> xr.DataArray:
     """Calculates the scattering angle
 
     Args:
@@ -180,13 +198,12 @@ def scattering_angle(cos_sza, cos_vza, sin_sza, sin_vza, cos_raa):
     Returns:
         Scattering angle (in radians) as an ``xarray.DataArray``
     """
-
     scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
 
     return xr.ufuncs.cos(scattering_angle) ** 2
 
 
-def relative_azimuth(saa, vaa):
+def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
     """Calculates the relative azimuth angle
 
     Args:
@@ -199,7 +216,6 @@ def relative_azimuth(saa, vaa):
     Returns:
         Relative azimuth (in degrees) as an ``xarray.DataArray``
     """
-
     # Relative azimuth (in radians)
     raa = xr.ufuncs.deg2rad(saa - vaa)
 
@@ -207,38 +223,46 @@ def relative_azimuth(saa, vaa):
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
     raa_minus = xr.where(raa < 0, 1, 0)
 
-    # raa = xr.where(raa_plus == 1, raa + (2.0*np.pi), raa)
-    # raa = xr.where(raa_minus == 1, raa - (2.0*np.pi), raa)
-
     raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
     raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
 
     return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
 
 
-def get_sentinel_sensor(metadata):
-    # Parse the XML file
-    tree = ET.parse(metadata)
+def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
+    """Gets the Sentinel sensor from metadata
+
+    Args:
+        metadata (str | Path): The Sentinel metadata XML file path.
+    """
+    tree = ET.parse(str(metadata))
     root = tree.getroot()
 
     for child in root:
-
         if 'general_info' in child.tag[-14:].lower():
             general_info = child
 
     for ginfo in general_info:
-
         if ginfo.tag == 'TILE_ID':
             file_name = ginfo.text
 
     return file_name[:3].lower()
 
 
-def get_sentinel_crs_transform(metadata, resample_res = 10.0):
-    tree = ET.parse(metadata)
+def get_sentinel_crs_transform(
+    metadata: T.Union[str, Path], resample_res = 10.0, level: str = 'Level-2A'
+) -> tuple:
+    """Gets the Sentinel scene transformation information
+
+    Args:
+        metadata (str | Path): The Sentinel metadata XML file path.
+        resample_res (float | int): The cell resample resolution. Default is 10.0.
+        level (str): The Sentinel processing level. Default is 'Level-2A'.
+    """
+    tree = ET.parse(str(metadata))
     root = tree.getroot()
 
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/'
+    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_{level}_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/'.format(level=level)
     crs = base_str + '/HORIZONTAL_CS_CODE'
     left = base_str + '/Geoposition[@resolution="10"]/ULX'
     top = base_str + '/Geoposition[@resolution="10"]/ULY'
@@ -257,14 +281,43 @@ def get_sentinel_crs_transform(metadata, resample_res = 10.0):
     return crs, transform, nrows, ncols
 
 
-def parse_sentinel_angles(metadata, proc_angles, nodata):
+def get_sentinel_angle_shape(
+    metadata: T.Union[str, Path], level: str = 'Level-2A'
+) -> tuple:
+    """Gets the Sentinel scene angle array shape
+
+    Args:
+        metadata (str | Path): The Sentinel metadata XML file path.
+        level (str): The Sentinel processing level. Default is 'Level-2A'.
+    """
+    # Parse the XML file
+    tree = ET.parse(str(metadata))
+    root = tree.getroot()
+
+    angles_view_list = root.findall('.//Tile_Angles')[0]
+    row_step = float(root.findall('.//ROW_STEP')[0].text)
+    col_step = float(root.findall('.//COL_STEP')[0].text)
+    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_{level}_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'.format(level=level)
+    nrows_str = base_str + '/NROWS'
+    ncols_str = base_str + '/NCOLS'
+    nrows = int(root.findall(nrows_str)[0].text)
+    ncols = int(root.findall(ncols_str)[0].text)
+    angle_nrows = int(np.ceil(nrows * 10.0 / row_step)) + 1
+    angle_ncols = int(np.ceil(ncols * 10.0 / col_step)) + 1
+
+    return angles_view_list, angle_nrows, angle_ncols
+
+
+def parse_sentinel_angles(
+    metadata: T.Union[str, Path], proc_angles: str, nodata: T.Union[float, int]
+):
     """Gets the Sentinel-2 solar angles from metadata
 
     Reference:
         https://github.com/hevgyrt/safe_to_netcdf/blob/master/s2_reader_and_NetCDF_converter.py
 
     Args:
-        metadata (str): The metadata file.
+        metadata (str | Path): The Sentinel metadata XML file path.
         proc_angles (str): The angles to parse. Choices are ['solar', 'view'].
         nodata (int or float): The 'no data' value.
 
@@ -272,19 +325,10 @@ def parse_sentinel_angles(metadata, proc_angles, nodata):
         zenith and azimuth angles as a ``tuple`` of 2d ``numpy`` arrays
     """
     # Parse the XML file
-    tree = ET.parse(metadata)
+    tree = ET.parse(str(metadata))
     root = tree.getroot()
 
-    angles_view_list = root.findall('.//Tile_Angles')[0]
-    row_step = float(root.findall('.//ROW_STEP')[0].text)
-    col_step = float(root.findall('.//COL_STEP')[0].text)
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'
-    nrows_str = base_str + '/NROWS'
-    ncols_str = base_str + '/NCOLS'
-    nrows = int(root.findall(nrows_str)[0].text)
-    ncols = int(root.findall(ncols_str)[0].text)
-    angle_nrows = int(np.ceil(nrows * 10.0 / row_step)) + 1
-    angle_ncols = int(np.ceil(ncols * 10.0 / col_step)) + 1
+    angles_view_list, angle_nrows, angle_ncols = get_sentinel_angle_shape(metadata)
 
     if proc_angles == 'view':
         zenith_array = np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
@@ -331,18 +375,149 @@ def parse_sentinel_angles(metadata, proc_angles, nodata):
     return zenith_array, azimuth_array
 
 
+def run_espa_command(
+    ref_angle_file: T.Union[str, Path],
+    angles_file: T.Union[str, Path],
+    sensor: str,
+    l57_angles_path: T.Union[str, Path],
+    l8_angles_path: T.Union[str, Path],
+    subsample: T.Union[float, int],
+    out_dir: T.Union[str, Path],
+    verbose: int
+) -> namedtuple:
+    AnglePaths = namedtuple('AnglePaths', 'sensor solar out_order')
+
+    angle_paths = AnglePaths(
+        sensor=None,
+        solar=None,
+        out_order=None
+    )
+
+    if not Path(ref_angle_file).is_file():
+        # Setup the command.
+        if sensor.lower() in ['l5', 'l7']:
+            angle_command = '{PATH} {META} -s {SUBSAMP:d} -b 1'.format(
+                PATH=str(Path(l57_angles_path).joinpath('landsat_angles')),
+                META=angles_file,
+                SUBSAMP=subsample
+            )
+
+            # 1=zenith, 2=azimuth
+            out_order = dict(azimuth=2, zenith=1)
+            # out_order = [2, 1, 2, 1]
+
+        else:
+            angle_command = '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(
+                PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
+                META=angles_file,
+                SUBSAMP=subsample
+            )
+
+            # 1=azimuth, 2=zenith
+            out_order = dict(azimuth=1, zenith=2)
+            # out_order = [1, 2, 1, 2]
+
+        os.chdir(str(out_dir))
+
+        if verbose > 0:
+            logger.info('  Generating pixel angles ...')
+
+        # Create the angle files.
+        subprocess.call(angle_command, shell=True)
+
+        # Get angle data from 1 band.
+        sensor_angle_file = fnmatch.filter(os.listdir(str(out_dir)), '*sensor_B04.img')[0]
+        solar_angles_file = fnmatch.filter(os.listdir(str(out_dir)), '*solar_B04.img')[0]
+
+        sensor_angles_path = str(Path(out_dir).joinpath(sensor_angle_file))
+        solar_angles_path = str(Path(out_dir).joinpath(solar_angles_file))
+
+        angle_paths = AnglePaths(
+            sensor=sensor_angles_path,
+            solar=solar_angles_path,
+            out_order=out_order
+        )
+
+    return angle_paths
+
+
+def postprocess_espa_angles(
+    ref_file: T.Union[str, Path],
+    angle_paths_in: namedtuple,
+    angle_paths_out: namedtuple,
+    subsample: int,
+    resampling: str,
+    num_workers: int,
+    verbose: int
+) -> AngleInfo:
+    if angle_paths_in.sensor is not None:
+        with rio.open(ref_file) as src:
+            ref_res = src.res
+
+        # Convert the data
+        for in_angle, out_angle, band_pos in zip(
+            [
+                angle_paths_in.sensor,
+                angle_paths_in.sensor,
+                angle_paths_in.solar,
+                angle_paths_in.solar
+            ],
+            [
+                angle_paths_out.vaa,
+                angle_paths_out.vza,
+                angle_paths_out.saa,
+                angle_paths_out.sza
+            ],
+            [
+                'azimuth',
+                'zenith',
+                'azimuth',
+                'zenith'
+            ]
+        ):
+            new_res = subsample*ref_res[0]
+            # Update the .hdr file
+            with open(in_angle + '.hdr', mode='r') as txt:
+                lines = txt.readlines()
+                for lidx, line in enumerate(lines):
+                    if line.startswith('map info'):
+                        lines[lidx] = line.replace('30.000, 30.000', f'{new_res:.3f}, {new_res:.3f}')
+
+            Path(in_angle + '.hdr').unlink()
+            with open(in_angle + '.hdr', mode='w') as txt:
+                txt.writelines(lines)
+
+            with gw.config.update(ref_image=ref_file):
+                with gw.open(in_angle, chunks=256, resampling=resampling) as src:
+                    src = src.sel(band=angle_paths_in.out_order[band_pos]).fillna(-32768).astype('int16')
+                    src = src.assign_attrs(nodatavals=(-32768,)*src.gw.nbands)
+                    src.gw.save(
+                        out_angle,
+                        overwrite=True,
+                        num_workers=num_workers,
+                        log_progress=True if verbose > 0 else False
+                    )
+
+    return AngleInfo(
+        vaa=str(angle_paths_out.vaa),
+        vza=str(angle_paths_out.vza),
+        saa=str(angle_paths_out.saa),
+        sza=str(angle_paths_out.sza)
+    )
+
+
 def landsat_pixel_angles(
-    angles_file,
-    ref_file,
-    out_dir,
-    sensor,
-    l57_angles_path=None,
-    l8_angles_path=None,
-    subsample=1,
-    resampling='bilinear',
-    num_workers=1,
-    verbose=0
-):
+    angles_file: T.Union[str, Path],
+    ref_file: T.Union[str, Path],
+    out_dir: T.Union[str, Path],
+    sensor: str,
+    l57_angles_path: T.Union[str, Path] = None,
+    l8_angles_path: T.Union[str, Path] = None,
+    subsample: int = 1,
+    resampling: str = 'bilinear',
+    num_workers: int = 1,
+    verbose: int = 0
+) -> AngleInfo:
     """Generates Landsat pixel angle files
 
     Args:
@@ -373,268 +548,127 @@ def landsat_pixel_angles(
         l57_angles_path = Path(gw_out).joinpath('ESPA/landsat_angles').as_posix()
         l8_angles_path = Path(gw_out).joinpath('ESPA/l8_angles').as_posix()
 
-    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa')
-
     # Setup the angles name.
     # example file = LE07_L1TP_225098_20160911_20161008_01_T1_sr_band1.tif
 
-    with rio.open(ref_file) as src:
-        ref_res = src.res
-
     ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
-    opath = Path(out_dir)
-    opath.mkdir(parents=True, exist_ok=True)
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
 
     # Set output angle file names.
-    sensor_azimuth_file = opath.joinpath(ref_base + '_sensor_azimuth.tif').as_posix()
-    sensor_zenith_file = opath.joinpath(ref_base + '_sensor_zenith.tif').as_posix()
-    solar_azimuth_file = opath.joinpath(ref_base + '_solar_azimuth.tif').as_posix()
-    solar_zenith_file = opath.joinpath(ref_base + '_solar_zenith.tif').as_posix()
+    sensor_azimuth_path = str(out_path.joinpath(ref_base + '_sensor_azimuth.tif'))
+    sensor_zenith_path = str(out_path.joinpath(ref_base + '_sensor_zenith.tif'))
+    solar_azimuth_path = str(out_path.joinpath(ref_base + '_solar_azimuth.tif'))
+    solar_zenith_path = str(out_path.joinpath(ref_base + '_solar_zenith.tif'))
 
-    if not Path(sensor_azimuth_file).is_file():
-        # Setup the command.
-        if sensor.lower() in ['l5', 'l7']:
-            angle_command = '{PATH} {META} -s {SUBSAMP:d} -b 1'.format(
-                PATH=str(Path(l57_angles_path).joinpath('landsat_angles')),
-                META=angles_file,
-                SUBSAMP=subsample
-            )
+    AnglePathsOut = namedtuple('AnglePathsOut', 'vaa vza saa sza')
+    angle_paths_out = AnglePathsOut(
+        vaa=sensor_azimuth_path,
+        vza=sensor_zenith_path,
+        saa=solar_azimuth_path,
+        sza=solar_zenith_path
+    )
 
-            # 1=zenith, 2=azimuth
-            out_order = dict(azimuth=2, zenith=1)
-            # out_order = [2, 1, 2, 1]
-
-        else:
-            angle_command = '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(
-                PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
-                META=angles_file,
-                SUBSAMP=subsample
-            )
-
-            # 1=azimuth, 2=zenith
-            out_order = dict(azimuth=1, zenith=2)
-            # out_order = [1, 2, 1, 2]
-
-        os.chdir(out_dir)
-
-        if verbose > 0:
-            logger.info('  Generating pixel angles ...')
-
-        # Create the angle files.
-        subprocess.call(angle_command, shell=True)
-
-        # Get angle data from 1 band.
-        sensor_angles = fnmatch.filter(os.listdir(out_dir), '*sensor_B04.img')[0]
-        solar_angles = fnmatch.filter(os.listdir(out_dir), '*solar_B04.img')[0]
-
-        sensor_angles_fn_in = opath.joinpath(sensor_angles).as_posix()
-        solar_angles_fn_in = opath.joinpath(solar_angles).as_posix()
-
-        # Convert the data
-        for in_angle, out_angle, band_pos in zip(
-            [
-                sensor_angles_fn_in,
-                sensor_angles_fn_in,
-                solar_angles_fn_in,
-                solar_angles_fn_in
-            ],
-            [
-                sensor_azimuth_file,
-                sensor_zenith_file,
-                solar_azimuth_file,
-                solar_zenith_file
-            ],
-            [
-                'azimuth',
-                'zenith',
-                'azimuth',
-                'zenith'
-            ]
-        ):
-            new_res = subsample*ref_res[0]
-
-            # Update the .hdr file
-            with open(in_angle + '.hdr', mode='r') as txt:
-                lines = txt.readlines()
-
-                for lidx, line in enumerate(lines):
-                    if line.startswith('map info'):
-                        lines[lidx] = line.replace('30.000, 30.000', f'{new_res:.3f}, {new_res:.3f}')
-
-            Path(in_angle + '.hdr').unlink()
-
-            with open(in_angle + '.hdr', mode='w') as txt:
-                txt.writelines(lines)
-
-            with gw.config.update(ref_image=ref_file):
-                with gw.open(in_angle, chunks=256, resampling=resampling) as src:
-                    src = src.sel(band=out_order[band_pos]).fillna(-32768).astype('int16')
-                    src = src.assign_attrs(nodatavals=(-32768,)*src.gw.nbands)
-                    src.gw.save(
-                        out_angle,
-                        overwrite=True,
-                        num_workers=num_workers,
-                        log_progress=True if verbose > 0 else False
-                    )
+    angle_paths_in = dask.delayed(run_espa_command)(
+        angle_paths_out.vaa,
+        angles_file,
+        sensor,
+        l57_angles_path,
+        l8_angles_path,
+        subsample,
+        out_path,
+        verbose
+    )
+    angle_info = dask.delayed(postprocess_espa_angles)(
+        ref_file,
+        angle_paths_in,
+        angle_paths_out,
+        subsample,
+        resampling,
+        num_workers,
+        verbose
+    )
 
     os.chdir(os.path.expanduser('~'))
 
-    return AngleInfo(
-        vaa=str(sensor_azimuth_file),
-        vza=str(sensor_zenith_file),
-        saa=str(solar_azimuth_file),
-        sza=str(solar_zenith_file)
+    return angle_info
+
+
+def resample_angles(
+    angle_array: np.ndarray,
+    nrows: int,
+    ncols: int,
+    data_shape: T.Tuple[int, int],
+    chunksize: T.Tuple[int, int]
+) -> da.Array:
+    """Resamples an angle array
+    """
+    data = np.int16(
+        cv2.resize(
+            angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
+            (0, 0),
+            fy=nrows / data_shape[0],
+            fx=ncols / data_shape[1],
+            interpolation=cv2.INTER_LINEAR
+        ) / 0.01
+    )[None]
+
+    return da.from_array(
+        data,
+        chunks=(1,) + chunksize
     )
 
 
-# Potentially useful for angle creation
-# https://github.com/gee-community/gee_tools/blob/master/geetools/algorithms.py
+def transform_angles(
+    ref_file: T.Union[str, Path],
+    data: xr.DataArray,
+    nodata: T.Union[float, int],
+    resampling: str,
+    num_workers: int,
+    angle_array_dict: dict,
+    angle_name: str
+) -> dict:
+    """Transforms angles to a new CRS
+    """
+    with gw.open(ref_file, chunks=256) as src:
+        angle_array_resamp_da_transform = transform_crs(
+            data,
+            dst_crs=src.gw.crs_to_pyproj,
+            dst_width=src.gw.ncols,
+            dst_height=src.gw.nrows,
+            dst_bounds=src.gw.bounds,
+            src_nodata=nodata,
+            dst_nodata=nodata,
+            resampling=resampling,
+            num_threads=num_workers
+        )
+        # Save the angle image to file
+        angle_array_resamp_da_transform = (
+            angle_array_resamp_da_transform
+            .fillna(nodata)
+            .astype('int16')
+            .assign_attrs(nodatavals=(nodata,))
+        )
+        angle_array_dict[angle_name] = angle_array_resamp_da_transform
 
-# def slope_between(a, b):
-#     return (a[1] - b[1]) / (a[0] - b[0])
-#
-#
-# @nb.jit
-# def _calc_sensor_angles(data,
-#                         zenith_angles,
-#                         azimuth_angles,
-#                         yvalues,
-#                         xvalues,
-#                         celly,
-#                         cellx,
-#                         satellite_height,
-#                         nodata,
-#                         acquisition_date):
-#
-#     """
-#     Calculates sensor zenith and azimuth angles
-#     """
-#
-#     slope = slope_between(np.array([data.gw.meta.right + ((data.gw.ncols/2.0)*data.gw.cellx), data.gw.meta.top]),
-#                           np.array([data.gw.meta.left, data.gw.meta.top - ((data.gw.nrows / 2.0) * data.gw.celly)]))
-#
-#     slope_perc = -1.0 / slope
-#
-#     view_az = (math.pi / 2.0) - math.arctan(slope_perc)
-#
-#     for i in range(0, yvalues.shape[0]):
-#
-#         for j in range(0, xvalues.shape[0]):
-#
-#             if data_band[i, j] != nodata:
-#
-#                 # TODO: calculate satellite drift angle
-#                 dist_from_nadir = None
-#
-#                 # Calculate the distance from the current location to the satellite
-#                 dist_to_satellite = np.hypot(satellite_height, dist_from_nadir)
-#
-#                 # Calculate the view angle
-#
-#                 zenith_angles[i, j]
-#
-#                 # Solar zenith angle = 90 - elevation angle scaled to integer range
-#                 zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-#
-#                 # Solar azimuth angle
-#                 azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-#
-#     return zenith_angles, azimuth_angles
-
-
-# @nb.jit
-# def _calc_solar_angles(data_band, zenith_angles, azimuth_angles, yvalues, xvalues, nodata, acquisition_date):
-#
-#     """
-#     Calculates solar zenith and azimuth angles
-#     """
-#
-#     for i in range(0, yvalues):
-#
-#         for j in range(0, xvalues):
-#
-#             if data_band[i, j] != nodata:
-#
-#                 # Solar zenith angle = 90 - elevation angle scaled to integer range
-#                 zenith_angles[i, j] = (90.0 - get_altitude_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-#
-#                 # Solar azimuth angle
-#                 azimuth_angles[i, j] = float(get_azimuth_fast(xvalues[j], yvalues[i], acquisition_date)) / 0.01
-#
-#     return zenith_angles, azimuth_angles
-
-
-# def pixel_angles(data, band, nodata, meta):
-#
-#     """
-#     Generates pixel zenith and azimuth angles
-#
-#     Args:
-#         data (Xarray): The data with coordinate and transform attributes.
-#         band (int or str): The ``data`` band to use for masking.
-#         nodata (int or float): The 'no data' value in ``data``.
-#         meta (namedtuple): The metadata file. Should have image acquisition year, month, day and hour attributes.
-#     """
-#
-#     acquisition_date = dtime(meta.year, meta.month, meta.day, meta.hour, 0, 0, 0, tzinfo=datetime.timezone.utc)
-#
-#     yvalues = data.y.values
-#     xvalues = data.x.values
-#
-#     data_band = data.sel(band=band).data.compute()
-#     sze = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
-#     saa = np.zeros((data.gw.nrows, data.gw.ncols), dtype='int16') - 32768
-#
-#     sze, saa = _calc_solar_angles(data_band, sze, saa, yvalues, xvalues, nodata, acquisition_date)
-#
-#     sze_attrs = data.attrs.copy()
-#     saa_attrs = data.attrs.copy()
-#
-#     sze_attrs['values'] = 'Solar zenith angle'
-#     sze_attrs['scale_factor'] = 0.01
-#
-#     saa_attrs['values'] = 'Solar azimuth angle'
-#     sze_attrs['scale_factor'] = 0.01
-#
-#     szex = xr.DataArray(data=da.from_array(sze[np.newaxis, :, :],
-#                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
-#                         coords={'band': 'sze',
-#                                 'y': data.y,
-#                                 'x': data.x},
-#                         dims=('band', 'y', 'x'),
-#                         attrs=sze_attrs)
-#
-#     saax = xr.DataArray(data=da.from_array(saa[np.newaxis, :, :],
-#                                            chunks=(1, data.gw.row_chunks, data.gw.col_chunks)),
-#                         coords={'band': 'saa',
-#                                 'y': data.y,
-#                                 'x': data.x},
-#                         dims=('band', 'y', 'x'),
-#                         attrs=saa_attrs)
-#
-#     return szex, saax
+    return angle_array_dict
 
 
 def sentinel_pixel_angles(
-    metadata,
-    ref_file,
-    outdir='.',
-    nodata=-32768,
-    overwrite=False,
-    resampling='bilinear',
-    verbose=0,
-    num_workers=1,
-    resample_res=60.0
-):
+    metadata: T.Union[str, Path],
+    ref_file: T.Union[str, Path],
+    nodata: T.Union[float, int] = -32768,
+    resampling: str = 'bilinear',
+    num_workers: int = 1,
+    resample_res: T.Union[float, int] = 60.0,
+    chunksize: T.Tuple[int, int] = None
+) -> AngleInfo:
     """Generates Sentinel pixel angle files
 
     Args:
         metadata (str): The metadata file.
         ref_file (str): A reference image to use for geo-information.
-        outdir (Optional[str])): The output directory to save the angle files to.
         nodata (Optional[int or float]): The 'no data' value.
-        overwrite (Optional[bool]): Whether to overwrite existing angle files.
-        verbose (Optional[int]): The verbosity level.
         num_workers (Optional[int]): The maximum number of concurrent workers.
         resample_res (Optional[float]): The resolution to resample to.
 
@@ -648,107 +682,63 @@ def sentinel_pixel_angles(
     if not OPENCV_INSTALLED:
         logger.exception('OpenCV must be installed.')
 
-    AngleInfo = namedtuple('AngleInfo', 'vza vaa sza saa sensor')
-
+    if not chunksize:
+        chunksize = (256, 256)
     # Get the CRS, transform, and image size of the full S-2 footprint
     crs, transform, nrows, ncols = get_sentinel_crs_transform(
         metadata, resample_res=resample_res
     )
     # Get the angle arrays
-    sza, saa = parse_sentinel_angles(metadata, 'solar', nodata)
-    vza, vaa = parse_sentinel_angles(metadata, 'view', nodata)
-    sensor_name = get_sentinel_sensor(metadata)
+    angle_nrows, angle_ncols = get_sentinel_angle_shape(metadata)[1:]
+    solar_angles = dask.delayed(parse_sentinel_angles)(metadata, 'solar', nodata)
+    view_angles = dask.delayed(parse_sentinel_angles)(metadata, 'view', nodata)
     # Create coordinates that are a representation of the full S-2 image
     xcoords = (transform * (np.arange(ncols) + 0.5, np.zeros(ncols) + 0.5))[0]
     ycoords = (transform * (np.zeros(nrows) + 0.5, np.arange(nrows) + 0.5))[1]
 
-    ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
-    opath = Path(outdir)
-    opath.mkdir(parents=True, exist_ok=True)
+    angle_array_dict = {}
 
-    # Set output angle file names.
-    sensor_azimuth_file = opath.joinpath(ref_base + '_sensor_azimuth.tif').as_posix()
-    sensor_zenith_file = opath.joinpath(ref_base + '_sensor_zenith.tif').as_posix()
-    solar_azimuth_file = opath.joinpath(ref_base + '_solar_azimuth.tif').as_posix()
-    solar_zenith_file = opath.joinpath(ref_base + '_solar_zenith.tif').as_posix()
-    full_image_file = opath.joinpath(ref_base + '_full.tif').as_posix()
-
-    for angle_array, angle_file in zip(
-            [vaa, vza, saa, sza],
-            [
-                sensor_azimuth_file,
-                sensor_zenith_file,
-                solar_azimuth_file,
-                solar_zenith_file
-            ]
+    for angle_name, angle_array in zip(
+        ['vza', 'vaa', 'sza', 'saa'],
+        [view_angles[0], view_angles[1], solar_angles[0], solar_angles[1]]
     ):
-        pfile = Path(angle_file)
-        if overwrite:
-            if pfile.is_file():
-                pfile.unlink()
-
-        if not pfile.is_file():
-            # TODO: write data for each band?
-            if len(angle_array.shape) > 2:
-                angle_array = angle_array.mean(axis=0)
-
-            # Resample and scale to the full image size
-            angle_array_resamp = np.int16(cv2.resize(
-                angle_array,
-                (0, 0),
-                fy=nrows / saa.shape[0],
-                fx=ncols / saa.shape[1],
-                interpolation=cv2.INTER_LINEAR
-            ) / 0.01)
-            # Create a DataArray to write to file
-            angle_array_resamp = xr.DataArray(
-                da.from_array(
-                    angle_array_resamp[None],
-                    chunks=(1, 256, 256)
-                ),
-                dims=('band', 'y', 'x'),
-                coords={
-                    'band': [1],
-                    'y': ycoords,
-                    'x': xcoords
-                },
-                attrs={
-                    'transform': transform,
-                    'crs': crs,
-                    'res': (resample_res, resample_res),
-                    'nodatavals': (nodata,)
-                }
-            )
-            with gw.open (ref_file, chunks=256) as src:
-                angle_array_resamp = transform_crs(
-                    angle_array_resamp,
-                    dst_crs=src.gw.crs_to_pyproj,
-                    dst_width=src.gw.ncols,
-                    dst_height=src.gw.nrows,
-                    dst_bounds=src.gw.bounds,
-                    src_nodata=nodata,
-                    dst_nodata=nodata,
-                    resampling=resampling,
-                    num_threads=num_workers
-                )
-                # Save the angle image to file
-                angle_array_resamp = (
-                    angle_array_resamp
-                    .fillna(nodata)
-                    .astype('int16')
-                    .assign_attrs(nodatavals=(nodata,))
-                )
-                angle_array_resamp.gw.save(
-                    angle_file,
-                    overwrite=True,
-                    num_workers=num_workers,
-                    log_progress=True if verbose > 0 else False
-                )
+        # Resample and scale to the full image size
+        angle_array_resamp = dask.delayed(resample_angles)(
+            angle_array, nrows, ncols, (angle_nrows, angle_ncols), chunksize
+        )
+        # Create a DataArray to write to file
+        angle_array_resamp_da = xr.DataArray(
+            da.from_delayed(
+                angle_array_resamp,
+                shape=(1, nrows, ncols),
+                dtype='float32'
+            ).rechunk((1,) + chunksize),
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': [1],
+                'y': ycoords,
+                'x': xcoords
+            },
+            attrs={
+                'transform': transform,
+                'crs': crs,
+                'res': (resample_res, resample_res),
+                'nodatavals': (nodata,)
+            }
+        )
+        angle_array_dict = dask.delayed(transform_angles)(
+            ref_file,
+            angle_array_resamp_da,
+            nodata,
+            resampling,
+            num_workers,
+            angle_array_dict,
+            angle_name
+        )
 
     return AngleInfo(
-        vaa=str(sensor_azimuth_file),
-        vza=str(sensor_zenith_file),
-        saa=str(solar_azimuth_file),
-        sza=str(solar_zenith_file),
-        sensor=sensor_name
+        vaa=angle_array_dict['vaa'],
+        vza=angle_array_dict['vza'],
+        saa=angle_array_dict['saa'],
+        sza=angle_array_dict['sza']
     )
