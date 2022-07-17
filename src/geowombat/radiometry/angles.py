@@ -250,19 +250,18 @@ def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
 
 
 def get_sentinel_crs_transform(
-    metadata: T.Union[str, Path], resample_res = 10.0, level: str = 'Level-2A'
+    metadata: T.Union[str, Path], resample_res = 10.0
 ) -> tuple:
     """Gets the Sentinel scene transformation information
 
     Args:
         metadata (str | Path): The Sentinel metadata XML file path.
         resample_res (float | int): The cell resample resolution. Default is 10.0.
-        level (str): The Sentinel processing level. Default is 'Level-2A'.
     """
     tree = ET.parse(str(metadata))
     root = tree.getroot()
 
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_{level}_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/'.format(level=level)
+    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/'
     crs = base_str + '/HORIZONTAL_CS_CODE'
     left = base_str + '/Geoposition[@resolution="10"]/ULX'
     top = base_str + '/Geoposition[@resolution="10"]/ULY'
@@ -281,14 +280,11 @@ def get_sentinel_crs_transform(
     return crs, transform, nrows, ncols
 
 
-def get_sentinel_angle_shape(
-    metadata: T.Union[str, Path], level: str = 'Level-2A'
-) -> tuple:
+def get_sentinel_angle_shape(metadata: T.Union[str, Path]) -> tuple:
     """Gets the Sentinel scene angle array shape
 
     Args:
         metadata (str | Path): The Sentinel metadata XML file path.
-        level (str): The Sentinel processing level. Default is 'Level-2A'.
     """
     # Parse the XML file
     tree = ET.parse(str(metadata))
@@ -297,7 +293,7 @@ def get_sentinel_angle_shape(
     angles_view_list = root.findall('.//Tile_Angles')[0]
     row_step = float(root.findall('.//ROW_STEP')[0].text)
     col_step = float(root.findall('.//COL_STEP')[0].text)
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_{level}_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'.format(level=level)
+    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'
     nrows_str = base_str + '/NROWS'
     ncols_str = base_str + '/NCOLS'
     nrows = int(root.findall(nrows_str)[0].text)
