@@ -148,7 +148,7 @@ class RasterioStore(object):
         tags: dict = None,
         **kwargs
     ):
-        self.filename = filename
+        self.filename = Path(filename)
         self.tags = tags
         self.kwargs = kwargs
         self.dst = None
@@ -192,10 +192,6 @@ class RasterioStore(object):
     def update_tags(self):
         if self.tags is not None:
             self.dst.update_tags(**self.tags)
-
-    @dask.delayed
-    def open_delayed(self):
-        return self.open()
 
     def write_delayed(self, data: xr.DataArray):
         store = da.store(
