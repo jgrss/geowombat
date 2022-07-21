@@ -492,14 +492,21 @@ def to_vrt(data,
         ds = None
 
 
-def to_netcdf(data, filename, *args, **kwargs):
-
-    """
-    Writes an Xarray DataArray to a NetCDF file
+def to_netcdf(
+    data: xr.DataArray,
+    filename: T.Union[str, Path],
+    overwrite: T.Optional[bool] = False,
+    compute: T.Optional[bool] = True,
+    *args, **kwargs
+):
+    """Writes an Xarray DataArray to a NetCDF file
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is ``False``.
+        compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+            the ``dask`` task graph. Default is ``True``.
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
 
@@ -527,39 +534,63 @@ def to_netcdf(data, filename, *args, **kwargs):
         >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
         >>>     src = ds.to_array(dim='band')
     """
+    if Path(filename).is_file():
+        if overwrite:
+            Path(filename).unlink()
+        else:
+            logger.warning(f'The file {str(filename)} already exists.')
+            return
 
     encodings = {}
+    chunksize = min(data.gw.row_chunks, data.gw.col_chunks)
 
     for band_name in data.band.values.tolist():
-
-        encode_dict = {'chunksizes': (data.gw.row_chunks, data.gw.col_chunks),
-                       'dtype': data.dtype}
-
+        encode_dict = {
+            'chunksizes': (chunksize, chunksize),
+            'dtype': data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
+        }
         encode_dict.update(**kwargs)
         encodings[band_name] = encode_dict
 
-    res = data
-
     for other_data in args:
-
+        chunksize = min(other_data.gw.row_chunks, other_data.gw.col_chunks)
         for band_name in other_data.band.values.tolist():
-
-            encode_dict = {'chunksizes': (other_data.gw.row_chunks, other_data.gw.col_chunks),
-                           'dtype': other_data.dtype}
-
+            encode_dict = {
+                'chunksizes': (chunksize, chunksize),
+                'dtype': other_data.dtype.name if isinstance(other_data.dtype, np.dtype) else other_data.dtype
+            }
             encode_dict.update(**kwargs)
             encodings[band_name] = encode_dict
 
-        res = xr.concat((res, other_data), dim='band')
+        data = xr.concat((data, other_data), dim='band')
 
-    res.to_dataset(dim='band')\
-            .assign_attrs(**data.attrs)\
-            .to_netcdf(path=filename,
-                       mode='w',
-                       format='NETCDF4',
-                       engine='h5netcdf',
-                       encoding=encodings,
-                       compute=True)
+    attrs = data.attrs.copy()
+    attrs['crs'] = f"epsg:{data.gw.crs_to_pyproj.to_epsg()}"
+    ds = data.to_dataset(dim='band').assign_attrs(**attrs)
+    if compute:
+        (
+            ds
+            .to_netcdf(
+                path=filename,
+                mode='w',
+                format='NETCDF4',
+                engine='h5netcdf',
+                encoding=encodings,
+                compute=True
+            )
+        )
+    else:
+        return (
+            ds
+            .to_netcdf(
+                path=filename,
+                mode='w',
+                format='NETCDF4',
+                engine='h5netcdf',
+                encoding=encodings,
+                compute=False
+            )
+        )
 
 
 def save(
@@ -618,7 +649,7 @@ def save(
         width=data.gw.ncols,
         height=data.gw.nrows,
         count=data.gw.nbands,
-        dtype=data.dtype,
+        dtype=data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype,
         nodata=data.nodatavals[0],
         blockxsize=data.gw.col_chunks,
         blockysize=data.gw.row_chunks,
@@ -636,7 +667,7 @@ def save(
             filename,
             tags=tags,
             **kwargs
-        ).open()
+        ).write_delayed(data)
 
     else:
         with RasterioStore(
