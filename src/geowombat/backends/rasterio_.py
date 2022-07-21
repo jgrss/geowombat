@@ -19,6 +19,8 @@ from rasterio.warp import aligned_target, calculate_default_transform, transform
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
+import dask
+from dask.delayed import Delayed
 import dask.array as da
 import xarray as xr
 from pyproj import CRS
@@ -179,24 +181,43 @@ class RasterioStore(object):
         self.close()
 
     def open(self) -> 'RasterioStore':
-        self.dst = rio.open(self.filename, mode='w', **self.kwargs)
-        if self.tags is not None:
-            self.dst.update_tags(**self.tags)
+        self.dst = self.rio_open()
+        self.update_tags()
 
         return self
 
-    def write(self, data: xr.DataArray):
-        return da.store(
-            da.squeeze(data.data),
+    def rio_open(self):
+        return rio.open(self.filename, mode='w', **self.kwargs)
+
+    def update_tags(self):
+        if self.tags is not None:
+            self.dst.update_tags(**self.tags)
+
+    def write_delayed(self, data: xr.DataArray):
+        self = self.open()
+        store = da.store(
+            data.transpose('band', 'y', 'x').squeeze().data,
             self,
             lock=True,
             compute=False
         )
 
+        return self.close_delayed(store)
+
+    @dask.delayed
+    def close_delayed(self, store):
+        return self.close()
+
+    def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
+        return da.store(
+            da.squeeze(data.data),
+            self,
+            lock=True,
+            compute=compute
+        )
+
     def close(self):
         self.dst.close()
-
-        return self
 
 
 class WriteDaskArray(object):
