@@ -667,7 +667,7 @@ def save(
             filename,
             tags=tags,
             **kwargs
-        ).write_delayed(data)
+        ).open_delayed().write_delayed(data)
 
     else:
         with RasterioStore(
