@@ -42,7 +42,7 @@ import xarray as xr
 from dask.distributed import Client
 import dask.array as da
 from rasterio.windows import Window as _Window
-from shapely.geometry import Polygon as _Polygon
+from shapely.geometry import Polygon as _Polygon, box
 import joblib
 
 
@@ -433,14 +433,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if isinstance(bounds, _Polygon):
             return getattr(self._obj.gw.geometry, how)(bounds)
         else:
-
-            left, bottom, right, top = bounds
-
-            poly = _Polygon([(left, bottom),
-                             (left, top),
-                             (right, top),
-                             (right, bottom),
-                             (left, bottom)])
+            poly = box(*bounds)
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
