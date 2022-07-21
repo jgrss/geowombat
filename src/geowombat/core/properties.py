@@ -8,7 +8,7 @@ import geopandas as gpd
 from rasterio.coords import BoundingBox
 from affine import Affine
 import shapely
-from shapely.geometry import Polygon
+from shapely.geometry import box
 from pyproj import CRS
 
 
@@ -1035,12 +1035,7 @@ class DataProperties(object):
                 j_csize = n_rows_cols(j, self.col_chunks, self.ncols)
                 right = left + (j_csize * abs(self.cellx))
 
-                geom = Polygon([(left, bottom),
-                                (left, top),
-                                (right, top),
-                                (right, bottom),
-                                (left, bottom)])
-
+                geom = box(left, bottom, right, top)
                 geometries.append(geom)
 
                 left += self.col_chunks * abs(self.cellx)
@@ -1067,15 +1062,7 @@ class DataProperties(object):
     def geometry(self):
         """Get the polygon geometry of the array bounding box
         """
-        return Polygon(
-            [
-                (self.left, self.bottom),
-                (self.left, self.top),
-                (self.right, self.top),
-                (self.right, self.bottom),
-                (self.left, self.bottom)
-            ]
-        )
+        return box(self.left, self.bottom, self.right, self.top)
 
     @property
     def has_band_coord(self):
