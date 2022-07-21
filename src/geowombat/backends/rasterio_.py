@@ -193,8 +193,11 @@ class RasterioStore(object):
         if self.tags is not None:
             self.dst.update_tags(**self.tags)
 
+    @dask.delayed
+    def open_delayed(self):
+        return self.open()
+
     def write_delayed(self, data: xr.DataArray):
-        self = self.open()
         store = da.store(
             data.transpose('band', 'y', 'x').squeeze().data,
             self,
