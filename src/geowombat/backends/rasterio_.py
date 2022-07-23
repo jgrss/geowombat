@@ -1019,18 +1019,15 @@ def transform_crs(
     else:
         dst_crs = data_src.crs
 
-    if isinstance(dst_res, int) or isinstance(dst_res, float) or isinstance(dst_res, tuple):
+    if isinstance(dst_res, (int, float, tuple)):
         dst_res = check_res(dst_res)
-
         dst_width = None
         dst_height = None
-
     else:
         if not isinstance(dst_width, int) and not isinstance(dst_height, int):
             dst_res = data_src.res
 
-    if not dst_res:
-
+    if dst_res is None:
         if not dst_width:
             dst_width = data_src.gw.ncols
 
