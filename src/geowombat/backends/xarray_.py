@@ -23,8 +23,6 @@ from rasterio.windows import Window
 from rasterio.coords import BoundingBox
 import dask.array as da
 import xarray as xr
-from xarray.ufuncs import maximum as xr_maximum
-from xarray.ufuncs import minimum as xr_mininum
 
 
 logger = logging.getLogger(__name__)
@@ -408,10 +406,10 @@ def mosaic(
 
                         darray = xr.where((darray.mean(dim='band') == nodata) & (darrayb.mean(dim='band') != nodata), darrayb,
                                       xr.where((darray.mean(dim='band') != nodata) & (darrayb.mean(dim='band') == nodata), darray,
-                                               xr_mininum(darray, darrayb)))
+                                               np.mininum(darray, darrayb)))
 
                     else:
-                        darray = xr_mininum(darray, darrayb)
+                        darray = np.mininum(darray, darrayb)
 
                 elif overlap == 'max':
 
@@ -419,10 +417,10 @@ def mosaic(
 
                         darray = xr.where((darray.mean(dim='band') == nodata) & (darrayb.mean(dim='band') != nodata), darrayb,
                                       xr.where((darray.mean(dim='band') != nodata) & (darrayb.mean(dim='band') == nodata), darray,
-                                               xr_maximum(darray, darrayb)))
+                                               np.maximum(darray, darrayb)))
 
                     else:
-                        darray = xr_maximum(darray, darrayb)
+                        darray = np.maximum(darray, darrayb)
 
                 elif overlap == 'mean':
 

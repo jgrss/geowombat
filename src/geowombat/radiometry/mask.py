@@ -50,12 +50,12 @@ def estimate_shadows(data,
 
     for cloud_height in cloud_heights:
 
-        shadow_vector = xr.ufuncs.tan(solar_zenith.sel(band=1)) * cloud_height
+        shadow_vector = np.tan(solar_zenith.sel(band=1)) * cloud_height
 
         # x and y components of shadow vector length
         # TODO: check if correct
-        y = int(((xr.ufuncs.cos(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
-        x = -int(((xr.ufuncs.sin(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
+        y = int(((np.cos(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
+        x = -int(((np.sin(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
 
         # affine translation of clouds
         cloud_shift = cloud_mask.shift({'x': x, 'y': y}, fill_value=0)
@@ -216,8 +216,8 @@ class CloudShadowMasker(object):
             saa.coords['band'] = [1]
 
             # Convert to radians
-            rad_sza = xr.ufuncs.deg2rad(sza)
-            rad_saa = xr.ufuncs.deg2rad(saa)
+            rad_sza = np.deg2rad(sza)
+            rad_saa = np.deg2rad(saa)
 
             # non-shadow=0, shadows=1
             shadow_mask = estimate_shadows(

@@ -201,9 +201,9 @@ def scattering_angle(
     Returns:
         Scattering angle (in radians) as an ``xarray.DataArray``
     """
-    scattering_angle = xr.ufuncs.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+    scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
 
-    return xr.ufuncs.cos(scattering_angle) ** 2
+    return np.cos(scattering_angle) ** 2
 
 
 def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
@@ -220,7 +220,7 @@ def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
         Relative azimuth (in degrees) as an ``xarray.DataArray``
     """
     # Relative azimuth (in radians)
-    raa = xr.ufuncs.deg2rad(saa - vaa)
+    raa = np.deg2rad(saa - vaa)
 
     # Create masks
     raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
@@ -229,7 +229,7 @@ def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
     raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
     raa = xr.where(raa_minus == 1, raa + (2.0 * np.pi), raa)
 
-    return xr.ufuncs.fabs(xr.ufuncs.rad2deg(raa))
+    return np.fabs(np.rad2deg(raa))
 
 
 def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
