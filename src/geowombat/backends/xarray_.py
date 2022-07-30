@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import logging
 import contextlib
+import typing as T
 
 from ..handler import add_handler
 from ..core.windows import get_window_offsets
@@ -21,6 +22,7 @@ import numpy as np
 from rasterio import open as rio_open
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
+from dask.delayed import Delayed
 import dask.array as da
 import xarray as xr
 
@@ -180,6 +182,28 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                     logger.warning('  The target aligned raster must be an image.')
 
     return ref_kwargs
+
+
+def delayed_to_xarray(
+    delayed_data: Delayed,
+    shape: tuple,
+    dtype: T.Union[str, np.dtype],
+    chunks: tuple,
+    coords: dict,
+    attrs: dict
+) -> xr.DataArray:
+    """Converts a dask.Delayed array to a Xarray DataArray
+    """
+    return xr.DataArray(
+        da.from_delayed(
+            delayed_data,
+            shape=shape,
+            dtype=dtype
+        ).rechunk(chunks),
+        dims=('band', 'y', 'x'),
+        coords=coords,
+        attrs=attrs
+    )
 
 
 def warp_open(
@@ -737,65 +761,76 @@ def transform_crs(
     Returns:
         ``xarray.DataArray``
     """
+    # Transform the input
+    data_dict = rio_transform_crs(
+        data_src,
+        dst_crs=dst_crs,
+        dst_res=dst_res,
+        dst_width=dst_width,
+        dst_height=dst_height,
+        dst_bounds=dst_bounds,
+        src_nodata=src_nodata,
+        dst_nodata=dst_nodata,
+        coords_only=coords_only,
+        resampling=resampling,
+        warp_mem_limit=warp_mem_limit,
+        num_threads=num_threads,
+        return_as_dict=True,
+        delayed_array=True
+    )
+    dst_transform = data_dict['transform']
+    dst_crs = data_dict['crs']
+    dst_height = data_dict['height']
+    dst_width = data_dict['width']
 
-    data_dst, dst_transform, dst_crs = rio_transform_crs(data_src,
-                                                         dst_crs=dst_crs,
-                                                         dst_res=dst_res,
-                                                         dst_width=dst_width,
-                                                         dst_height=dst_height,
-                                                         dst_bounds=dst_bounds,
-                                                         src_nodata=src_nodata,
-                                                         dst_nodata=dst_nodata,
-                                                         coords_only=coords_only,
-                                                         resampling=resampling,
-                                                         warp_mem_limit=warp_mem_limit,
-                                                         num_threads=num_threads)
+    # Get the transformed coordinates
+    left = dst_transform[2]
+    cellx = abs(dst_transform[0])
+    x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * dst_width), cellx)[:dst_width]
+    top = dst_transform[5]
+    celly = abs(dst_transform[4])
+    y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * dst_height), -celly)[:dst_height]
+
+    attrs = data_src.attrs.copy()
 
     if coords_only:
+        attrs.update(
+            {
+                'crs': dst_crs,
+                'transform': dst_transform[:6],
+                'res': (cellx, celly)
+            }
+        )
 
-        cellx = abs(dst_transform[0])
-        celly = abs(dst_transform[4])
-
-        attrs = data_src.attrs.copy()
-
-        attrs['crs'] = dst_crs
-        attrs['transform'] = dst_transform[:6]
-        attrs['res'] = (cellx, celly)
-
-        return data_src.assign_coords(x=data_dst.xs, y=data_dst.ys).assign_attrs(**attrs)
+        return data_src.assign_coords(x=x, y=y).assign_attrs(**attrs)
 
     else:
-
-        nrows, ncols = data_dst.shape[-2], data_dst.shape[-1]
-
-        left = dst_transform[2]
-        cellx = abs(dst_transform[0])
-        x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * ncols), cellx)[:ncols]
-
-        top = dst_transform[5]
-        celly = abs(dst_transform[4])
-        y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * nrows), -celly)[:nrows]
+        # The transformed array is a dask Delayed object
+        data_dst = data_dict['array']
 
         if not dst_res:
             dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
 
-        data_dst = xr.DataArray(data=da.from_array(data_dst,
-                                                   chunks=data_src.data.chunksize),
-                                coords={'band': data_src.band.values.tolist(),
-                                        'y': y,
-                                        'x': x},
-                                dims=('band', 'y', 'x'),
-                                attrs=data_src.attrs)
-
-        data_dst.attrs['transform'] = tuple(dst_transform)[:6]
-        data_dst.attrs['crs'] = dst_crs
-        data_dst.attrs['res'] = dst_res
-        data_dst.attrs['resampling'] = resampling
-
-        if 'sensor' in data_src.attrs:
-            data_dst.attrs['sensor'] = data_src.attrs['sensor']
-
-        if 'filename' in data_src.attrs:
-            data_dst.attrs['filename'] = data_src.attrs['filename']
+        attrs.update(
+            {
+                'transform': tuple(dst_transform)[:6],
+                'crs': dst_crs,
+                'res': dst_res,
+                'resampling': resampling
+            }
+        )
+        # Get the DataArray from the delayed object
+        data_dst = delayed_to_xarray(
+            data_dst,
+            shape=(data_src.gw.nbands, dst_height, dst_width),
+            dtype=data_src.dtype,
+            chunks=data_src.data.chunksize,
+            coords={
+                'band': data_src.band.values.tolist(),
+                'y': y,
+                'x': x
+            },
+            attrs=attrs
+        )
 
         return data_dst

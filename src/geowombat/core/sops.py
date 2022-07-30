@@ -790,17 +790,17 @@ class SpatialOperations(_PropertyMixin):
         if query:
             df = df.query(query)
 
-        df_crs_ = df.crs.to_proj4().strip() if hasattr(df.crs, 'to_proj4') else df.crs
+        df_crs_ = df.crs.to_wkt().strip() if hasattr(df.crs, 'to_wkt') else df.crs
 
         # Re-project the DataFrame to match the image CRS
         try:
 
-            if data.crs.strip() != CRS.from_dict(df_crs_).to_proj4().strip():
+            if data.crs.strip() != CRS.from_dict(df_crs_).to_wkt().strip():
                 df = df.to_crs(data.crs)
 
         except:
 
-            if data.crs.strip() != CRS.from_proj4(df_crs_).to_proj4().strip():
+            if data.crs.strip() != CRS.from_wkt(df_crs_).to_wkt().strip():
                 df = df.to_crs(data.crs)
 
         row_chunks = data.gw.row_chunks
@@ -889,18 +889,18 @@ class SpatialOperations(_PropertyMixin):
         if query:
             dataframe = dataframe.query(query)
 
-        df_crs_ = dataframe.crs.to_proj4().strip() if hasattr(dataframe.crs, 'to_proj4') else dataframe.crs
+        df_crs_ = dataframe.crs.to_wkt().strip() if hasattr(dataframe.crs, 'to_wkt') else dataframe.crs
 
         try:
 
-            if data.crs.strip() != CRS.from_dict(df_crs_).to_proj4().strip():
+            if data.crs.strip() != CRS.from_dict(df_crs_).to_wkt().strip():
 
                 # Re-project the DataFrame to match the image CRS
                 dataframe = dataframe.to_crs(data.crs)
 
         except:
 
-            if data.crs.strip() != CRS.from_proj4(df_crs_).to_proj4().strip():
+            if data.crs.strip() != CRS.from_wkt(df_crs_).to_wkt().strip():
                 dataframe = dataframe.to_crs(data.crs)
 
         # Rasterize the geometry and store as a DataArray

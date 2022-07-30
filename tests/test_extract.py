@@ -24,16 +24,13 @@ l8_224078_20200518_values = np.array([[7966, 8030, 7561, 8302, 8277, 7398],
 
 
 class TestConfig(unittest.TestCase):
-
     def test_single_image_single_band(self):
-
         with gw.open(l8_224078_20200518_B2) as src:
             df = gw.extract(src, aoi, band_names=['blue'])
 
         self.assertTrue(np.allclose(df.blue.values, l8_224078_20200518_B2_values))
 
     def test_single_image_multi_band(self):
-
         with gw.open(l8_224078_20200518) as src:
             df = gw.extract(src, aoi, band_names=['blue', 'green', 'red'])
 
@@ -42,7 +39,6 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(np.allclose(df.red.values, l8_224078_20200518_values[2, :]))
 
     def test_multi_image_single_band(self):
-
         with gw.open([l8_224078_20200518_B2, l8_224078_20200518_B2]) as src:
             df = gw.extract(src, aoi, band_names=['blue'])
 
@@ -50,7 +46,6 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(np.allclose(df.t2_blue.values, l8_224078_20200518_B2_values))
 
     def test_multi_image_multi_band(self):
-
         with gw.open([l8_224078_20200518, l8_224078_20200518]) as src:
             df = gw.extract(src, aoi, band_names=['blue', 'green', 'red'])
 

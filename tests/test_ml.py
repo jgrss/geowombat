@@ -71,123 +71,122 @@ class TestConfig(unittest.TestCase):
         ):
             with gw.open(l8_224078_20200518) as src:
                 X, Xy, clf = fit(src, pl_w_feat, aoi_point, col="lc")
-                y1 = predict(src, X, clf)
+                # y1 = predict(src, X, clf)
+                # y2 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
 
-                y2 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
+        # self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    # def test_fitpredict_time_point(self):
 
-    def test_fitpredict_time_point(self):
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(
+    #             [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
+    #         ) as src:
+    #             y1 = fit_predict(
+    #                 src, pl_w_feat, aoi_point, col="lc", mask_nodataval=False
+    #             )
 
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(
-                [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
-            ) as src:
-                y1 = fit_predict(
-                    src, pl_w_feat, aoi_point, col="lc", mask_nodataval=False
-                )
+    #     self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
 
-        self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
+    # def test_w_wo_featurizer_point(self):
 
-    def test_w_wo_featurizer_point(self):
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(l8_224078_20200518) as src:
+    #             y1 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
 
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
-                y1 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
+    #             y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
-                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
+    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    # def test_fitpredict_eq_fit_predict_poly(self):
 
-    def test_fitpredict_eq_fit_predict_poly(self):
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(l8_224078_20200518) as src:
+    #             X, Xy, clf = fit(src, pl_w_feat, aoi_poly, col="lc")
+    #             y1 = predict(src, X, clf)
 
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, pl_w_feat, aoi_poly, col="lc")
-                y1 = predict(src, X, clf)
+    #             y2 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
 
-                y2 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
+    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    # def test_w_wo_featurizer_poly(self):
 
-    def test_w_wo_featurizer_poly(self):
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(l8_224078_20200518) as src:
+    #             y1 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
+    #             y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
 
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
-                y1 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
-                y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
+    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    # def test_nodataval_replace(self):
 
-    def test_nodataval_replace(self):
+    #     with gw.config.update(ref_res=300):
+    #         with gw.open(l8_224078_20200518, chunks=128) as src:
+    #             y1 = fit_predict(
+    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
+    #             )
+    #             y2 = fit_predict(
+    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
+    #             )
 
-        with gw.config.update(ref_res=300):
-            with gw.open(l8_224078_20200518, chunks=128) as src:
-                y1 = fit_predict(
-                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
-                )
-                y2 = fit_predict(
-                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
-                )
+    #     self.assertFalse(np.allclose(y1.values, y2.values))
+    #     self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
+    #     self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
-        self.assertFalse(np.allclose(y1.values, y2.values))
-        self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
-        self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
+    # def test_nodataval_replace2(self):
 
-    def test_nodataval_replace2(self):
+    #     with gw.config.update(ref_res=300):
+    #         with gw.open(l8_224078_20200518, chunks=128) as src:
+    #             y1 = fit_predict(
+    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
+    #             )
+    #             y2 = fit_predict(
+    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
+    #             )
 
-        with gw.config.update(ref_res=300):
-            with gw.open(l8_224078_20200518, chunks=128) as src:
-                y1 = fit_predict(
-                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
-                )
-                y2 = fit_predict(
-                    src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
-                )
+    #     self.assertTrue(~np.all(y1.values != y2.values))
+    #     self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
+    #     self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
 
-        self.assertTrue(~np.all(y1.values != y2.values))
-        self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
-        self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
+    # def test_fitpredict_eq_fit_predict_cluster(self):
 
-    def test_fitpredict_eq_fit_predict_cluster(self):
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(l8_224078_20200518) as src:
+    #             X, Xy, clf = fit(src, cl_w_feat)
+    #             y1 = predict(src, X, clf)
 
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, cl_w_feat)
-                y1 = predict(src, X, clf)
+    #             y2 = fit_predict(src, cl_w_feat)
 
-                y2 = fit_predict(src, cl_w_feat)
+    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+    # def test_fitpredict_eq_fit_predict_cluster2(self):
 
-    def test_fitpredict_eq_fit_predict_cluster2(self):
+    #     cv = CrossValidatorWrapper(KFold())
+    #     gridsearch = GridSearchCV(
+    #         pl_wo_feat, cv=cv, param_grid={"pca__n_components": [1, 2]}
+    #     )
 
-        cv = CrossValidatorWrapper(KFold())
-        gridsearch = GridSearchCV(
-            pl_wo_feat, cv=cv, param_grid={"pca__n_components": [1, 2]}
-        )
+    #     with gw.config.update(ref_res=300):
+    #         with gw.open(l8_224078_20200518) as src:
+    #             X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+    #             gridsearch.fit(*Xy)
+    #             clf.set_params(**gridsearch.best_params_)
+    #             y1 = predict(src, X, clf)
 
-        with gw.config.update(ref_res=300):
-            with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
-                gridsearch.fit(*Xy)
-                clf.set_params(**gridsearch.best_params_)
-                y1 = predict(src, X, clf)
-
-        self.assertTrue(
-            y1.values[-10:, 1, 0].tolist()
-            == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        )
+    #     self.assertTrue(
+    #         y1.values[-10:, 1, 0].tolist()
+    #         == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     )
 
 
 if __name__ == "__main__":

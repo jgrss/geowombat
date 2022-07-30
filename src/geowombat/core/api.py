@@ -473,7 +473,7 @@ class open(object):
                         netcdf_vars=netcdf_vars,
                         **kwargs
                     )
-                    
+
                     self.__data_are_stacked = True
 
                 self.__data_are_separate = True

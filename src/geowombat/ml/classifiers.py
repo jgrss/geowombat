@@ -8,7 +8,6 @@ import xarray as xr
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
-from sklearn_xarray.model_selection import CrossValidatorWrapper
 from sklearn_xarray.preprocessing import Featurizer
 import numpy as np
 from geopandas.geodataframe import GeoDataFrame
@@ -62,7 +61,6 @@ class ClassifiersMixin(object):
 
         # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
-
             data = self._add_time_dim(data)
 
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(

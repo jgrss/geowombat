@@ -588,21 +588,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                         connectivity=connectivity)\
                 .to_file(filename)
 
-    def transform_crs(self,
-                      dst_crs=None,
-                      dst_res=None,
-                      dst_width=None,
-                      dst_height=None,
-                      dst_bounds=None,
-                      src_nodata=None,
-                      dst_nodata=None,
-                      coords_only=False,
-                      resampling='nearest',
-                      warp_mem_limit=512,
-                      num_threads=1):
-
-        """
-        Transforms a DataArray to a new coordinate reference system
+    def transform_crs(
+        self,
+        dst_crs=None,
+        dst_res=None,
+        dst_width=None,
+        dst_height=None,
+        dst_bounds=None,
+        src_nodata=None,
+        dst_nodata=None,
+        coords_only=False,
+        resampling='nearest',
+        warp_mem_limit=512,
+        num_threads=1
+    ):
+        """Transforms a DataArray to a new coordinate reference system
 
         Args:
             dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
@@ -634,18 +634,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     dst = src.gw.transform_crs(4326)
         """
 
-        return _transform_crs(self._obj,
-                              dst_crs=dst_crs,
-                              dst_res=dst_res,
-                              dst_width=dst_width,
-                              dst_height=dst_height,
-                              dst_bounds=dst_bounds,
-                              src_nodata=src_nodata,
-                              dst_nodata=dst_nodata,
-                              coords_only=coords_only,
-                              resampling=resampling,
-                              warp_mem_limit=warp_mem_limit,
-                              num_threads=num_threads)
+        return _transform_crs(
+            self._obj,
+            dst_crs=dst_crs,
+            dst_res=dst_res,
+            dst_width=dst_width,
+            dst_height=dst_height,
+            dst_bounds=dst_bounds,
+            src_nodata=src_nodata,
+            dst_nodata=dst_nodata,
+            coords_only=coords_only,
+            resampling=resampling,
+            warp_mem_limit=warp_mem_limit,
+            num_threads=num_threads
+        )
 
     def to_netcdf(self, filename, *args, **kwargs):
 

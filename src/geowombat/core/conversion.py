@@ -250,7 +250,7 @@ class Converters(object):
             coords={
                 'band': band_names,
                 'y': data_y,
-                 'x': data_x
+                'x': data_x
             },
             attrs=data_attrs
         )
@@ -348,8 +348,8 @@ class Converters(object):
         if id_column not in df.columns.tolist():
             df.loc[:, id_column] = df.index.values
 
-        df_crs = check_crs(df.crs).to_proj4()
-        data_crs = check_crs(data.crs).to_proj4()
+        df_crs = check_crs(df.crs).to_wkt()
+        data_crs = check_crs(data.crs).to_wkt()
 
         # Re-project the data to match the image CRS
         if data_crs != df_crs:
@@ -382,7 +382,7 @@ class Converters(object):
 
         if isinstance(mask, Polygon) or isinstance(mask, MultiPolygon) or isinstance(mask, gpd.GeoDataFrame):
             if isinstance(mask, gpd.GeoDataFrame):
-                if CRS.from_dict(mask.crs).to_proj4() != df_crs:
+                if CRS.from_dict(mask.crs).to_wkt() != df_crs:
                     mask = mask.to_crs(df_crs)
 
             if verbose > 0:
