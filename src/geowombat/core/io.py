@@ -596,6 +596,7 @@ def to_netcdf(
 def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
+    mode: T.Optional[str] = 'w',
     overwrite: T.Optional[bool] = False,
     client: T.Optional[Client] = None,
     compute: T.Optional[bool] = True,
@@ -610,6 +611,7 @@ def save(
     Args:
         data (DataArray): data (DataArray): The ``xarray.DataArray`` to save to file.
         filename (str | Path): The output file name to write to.
+        mode (Optional[str]): The file mode. Default is 'w'.
         overwrite (Optional[bool]): Whether to overwrite an existing file. Default is ``False``.
         client (Optional[Client object]): A client object to persist data. Default is ``None``.
         compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
@@ -665,6 +667,7 @@ def save(
     if not compute:
         return RasterioStore(
             filename,
+            mode=mode,
             tags=tags,
             **kwargs
         ).open().write_delayed(data)
@@ -672,6 +675,7 @@ def save(
     else:
         with RasterioStore(
             filename,
+            mode=mode,
             tags=tags,
             **kwargs
         ) as rio_store:
