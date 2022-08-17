@@ -143,10 +143,12 @@ class RasterioStore(object):
     def __init__(
         self,
         filename: T.Union[str, Path],
+        mode: str = 'w',
         tags: dict = None,
         **kwargs
     ):
         self.filename = Path(filename)
+        self.mode = mode
         self.tags = tags
         self.kwargs = kwargs
         self.dst = None
@@ -185,7 +187,7 @@ class RasterioStore(object):
         return self
 
     def rio_open(self):
-        return rio.open(self.filename, mode='w', **self.kwargs)
+        return rio.open(self.filename, mode=self.mode, **self.kwargs)
 
     def update_tags(self):
         if self.tags is not None:
