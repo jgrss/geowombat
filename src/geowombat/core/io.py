@@ -708,6 +708,9 @@ def to_raster(
 
     chunksize = (data.gw.row_chunks, data.gw.col_chunks)
 
+    if tqdm_kwargs is None:
+        tqdm_kwargs = {}
+
     # Force tiled outputs with no file sharing
     kwargs['sharing'] = False
 
