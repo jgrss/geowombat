@@ -110,11 +110,11 @@ class TestConfig(unittest.TestCase):
                         overwrite=True
                     )
                 ]
-                dask.compute(tasks, num_workers=2)
-                with gw.open(out_path) as tmp_src:
-                    self.assertTrue(src.equals(tmp_src))
-                    self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
-                    self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+            dask.compute(tasks, num_workers=2)
+            with gw.open(out_path) as tmp_src:
+                self.assertTrue(src.equals(tmp_src))
+                self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
+                self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
 
 
 if __name__ == '__main__':
