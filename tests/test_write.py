@@ -4,6 +4,7 @@ from pathlib import Path
 
 import geowombat as gw
 from geowombat.data import l8_224078_20200518, l8_224077_20200518_B2, l8_224077_20200518_B3
+import dask
 
 
 class TestConfig(unittest.TestCase):
@@ -83,6 +84,33 @@ class TestConfig(unittest.TestCase):
                         num_workers=2
                     )
                 )
+                with gw.open(out_path) as tmp_src:
+                    self.assertTrue(src.equals(tmp_src))
+                    self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
+                    self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+
+    def test_delayed_save(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / 'test.tif'
+            with gw.open(l8_224078_20200518) as src:
+                src = (
+                    src
+                    .fillna(32768)
+                    .assign_attrs(nodatavals=(32768,))
+                    .astype('uint16')
+                )
+                tasks = [
+                    gw.save(
+                        src,
+                        filename=out_path,
+                        tags={'TEST_METADATA': 'TEST_VALUE'},
+                        compression='lzw',
+                        num_workers=2,
+                        compute=False,
+                        overwrite=True
+                    )
+                ]
+                dask.compute(tasks, num_workers=2)
                 with gw.open(out_path) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
                     self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
