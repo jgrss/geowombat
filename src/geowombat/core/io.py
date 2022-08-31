@@ -633,11 +633,10 @@ def save(
         >>>     result = ...
         >>>     gw.save(result, 'output.tif', compression='lzw', num_workers=8)
         >>>
-        >>> # Retain laziness and compute later
+        >>> # Create delayed write tasks and compute later
         >>> tasks = [gw.save(array, 'output.tif', compute=False) for array in array_list]
-        >>> dask.compute((task.write() for task in tasks), num_workers=8)
-        >>> # Close image files
-        >>> [task.close() for task in tasks]
+        >>> # Write and close files
+        >>> dask.compute(tasks, num_workers=8)
     """
     if Path(filename).is_file():
         if overwrite:
