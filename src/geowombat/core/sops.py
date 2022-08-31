@@ -23,7 +23,6 @@ import xarray as xr
 import dask
 import dask.array as da
 from dask.distributed import Client, LocalCluster
-from rasterio.crs import CRS
 from rasterio import features
 from affine import Affine
 
@@ -794,12 +793,8 @@ class SpatialOperations(_PropertyMixin):
         df_crs_ = check_crs(df.crs)
 
         # Re-project the DataFrame to match the image CRS
-        try:
-            if data_crs_ != df_crs_:
-                df = df.to_crs(data_crs_)
-        except:
-            if data_crs_ != df_crs_:
-                df = df.to_crs(data_crs_)
+        if data_crs_ != df_crs_:
+            df = df.to_crs(data_crs_)
 
         row_chunks = data.gw.row_chunks
         col_chunks = data.gw.col_chunks
@@ -899,19 +894,11 @@ class SpatialOperations(_PropertyMixin):
         if query:
             dataframe = dataframe.query(query)
 
-        df_crs_ = dataframe.crs.to_wkt().strip() if hasattr(dataframe.crs, 'to_wkt') else dataframe.crs
+        data_crs_ = check_crs(data.crs)
+        df_crs_ = check_crs(dataframe.crs)
 
-        try:
-
-            if data.crs.strip() != CRS.from_dict(df_crs_).to_wkt().strip():
-
-                # Re-project the DataFrame to match the image CRS
-                dataframe = dataframe.to_crs(data.crs)
-
-        except:
-
-            if data.crs.strip() != CRS.from_wkt(df_crs_).to_wkt().strip():
-                dataframe = dataframe.to_crs(data.crs)
+        if data_crs_ != df_crs_:
+            dataframe = dataframe.to_crs(data_crs_)
 
         # Rasterize the geometry and store as a DataArray
         mask = xr.DataArray(data=da.from_array(features.rasterize(list(dataframe.geometry.values),
