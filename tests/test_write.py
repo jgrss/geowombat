@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 import geowombat as gw
-from geowombat.data import l8_224078_20200518
+from geowombat.data import l8_224078_20200518, l8_224077_20200518_B2, l8_224077_20200518_B3
 
 
 class TestConfig(unittest.TestCase):
@@ -44,6 +44,27 @@ class TestConfig(unittest.TestCase):
                     self.assertTrue(src.equals(tmp_src))
                     self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
                     self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+
+    def test_to_raster_multi(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / 'test.tif'
+            with gw.open(
+                [l8_224077_20200518_B2, l8_224077_20200518_B3],
+                stack_dim='band',
+                band_names=['B2', 'B3']
+            ) as src:
+                # Xarray drops attributes
+                attrs = src.attrs.copy()
+                # Apply operations on the DataArray
+                src = src * 10.0
+                # Write the data to a GeoTiff
+                src.assign_attrs(**attrs).gw.to_raster(
+                    out_path,
+                    overwrite=True
+                )
+                self.assertTrue(out_path.is_file())
+                with gw.open(out_path, band_names=['B2', 'B3']) as tmp_src:
+                    self.assertTrue(src.equals(tmp_src))
 
     def test_save(self):
         with tempfile.TemporaryDirectory() as tmp:
