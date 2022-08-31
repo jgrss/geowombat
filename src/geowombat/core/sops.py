@@ -7,7 +7,7 @@ import logging
 import multiprocessing as multi
 
 from ..handler import add_handler
-from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target
+from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target, check_crs
 from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
 from .util import lazy_wombat
@@ -790,18 +790,16 @@ class SpatialOperations(_PropertyMixin):
         if query:
             df = df.query(query)
 
-        df_crs_ = df.crs.to_wkt().strip() if hasattr(df.crs, 'to_wkt') else df.crs
+        data_crs_ = check_crs(data.crs)
+        df_crs_ = check_crs(df.crs)
 
         # Re-project the DataFrame to match the image CRS
         try:
-
-            if data.crs.strip() != CRS.from_dict(df_crs_).to_wkt().strip():
-                df = df.to_crs(data.crs)
-
+            if data_crs_ != df_crs_:
+                df = df.to_crs(data_crs_)
         except:
-
-            if data.crs.strip() != CRS.from_wkt(df_crs_).to_wkt().strip():
-                df = df.to_crs(data.crs)
+            if data_crs_ != df_crs_:
+                df = df.to_crs(data_crs_)
 
         row_chunks = data.gw.row_chunks
         col_chunks = data.gw.col_chunks
@@ -809,46 +807,58 @@ class SpatialOperations(_PropertyMixin):
         left, bottom, right, top = df.total_bounds
 
         # Align the geometry array grid
-        align_transform, align_width, align_height = align_bounds(left,
-                                                                  bottom,
-                                                                  right,
-                                                                  top,
-                                                                  data.res)
+        align_transform, align_width, align_height = align_bounds(
+            left,
+            bottom,
+            right,
+            top,
+            data.res
+        )
 
         # Get the new bounds
-        new_left, new_bottom, new_right, new_top = array_bounds(align_height,
-                                                                align_width,
-                                                                align_transform)
+        new_left, new_bottom, new_right, new_top = array_bounds(
+            align_height,
+            align_width,
+            align_transform
+        )
 
         if expand_by > 0:
-
             new_left -= data.gw.cellx*expand_by
             new_bottom -= data.gw.celly*expand_by
             new_right += data.gw.cellx*expand_by
             new_top += data.gw.celly*expand_by
 
         # Subset the array
-        data = self.subset(data,
-                           left=new_left,
-                           bottom=new_bottom,
-                           right=new_right,
-                           top=new_top)
+        data = self.subset(
+            data,
+            left=new_left,
+            bottom=new_bottom,
+            right=new_right,
+            top=new_top
+        )
 
         if mask_data:
-
             # Rasterize the geometry and store as a DataArray
-            mask = xr.DataArray(data=da.from_array(features.rasterize(list(df.geometry.values),
-                                                                      out_shape=(align_height, align_width),
-                                                                      transform=align_transform,
-                                                                      fill=0,
-                                                                      out=None,
-                                                                      all_touched=True,
-                                                                      default_value=1,
-                                                                      dtype='int32'),
-                                                   chunks=(row_chunks, col_chunks)),
-                                dims=['y', 'x'],
-                                coords={'y': data.y.values,
-                                        'x': data.x.values})
+            mask = xr.DataArray(
+                data=da.from_array(
+                    features.rasterize(
+                        list(df.geometry.values),
+                        out_shape=(align_height, align_width),
+                        transform=align_transform,
+                        fill=0,
+                        out=None,
+                        all_touched=True,
+                        default_value=1,
+                        dtype='int32'
+                    ),
+                    chunks=(row_chunks, col_chunks)
+                ),
+                dims=['y', 'x'],
+                coords={
+                    'y': data.y.values,
+                    'x': data.x.values
+                }
+            )
 
             # Return the clipped array
             return data.where(mask == 1)
@@ -1008,18 +1018,18 @@ class SpatialOperations(_PropertyMixin):
         return xr.where(poly_array == 1, self.replace(data, to_replace), data).assign_attrs(**attrs).astype(dtype)
 
     @staticmethod
-    def subset(data,
-               left=None,
-               top=None,
-               right=None,
-               bottom=None,
-               rows=None,
-               cols=None,
-               center=False,
-               mask_corners=False):
-
-        """
-        Subsets a DataArray
+    def subset(
+        data,
+        left=None,
+        top=None,
+        right=None,
+        bottom=None,
+        rows=None,
+        cols=None,
+        center=False,
+        mask_corners=False
+    ):
+        """Subsets a DataArray
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
@@ -1071,18 +1081,19 @@ class SpatialOperations(_PropertyMixin):
             y_idx += ((rows / 2.0) * abs(data.gw.celly))
             x_idx -= ((cols / 2.0) * abs(data.gw.cellx))
 
-        ds_sub = data.sel(y=y_idx,
-                          x=x_idx,
-                          method='nearest')
+        ds_sub = data.sel(
+            y=y_idx,
+            x=x_idx,
+            method='nearest'
+        )
 
         if mask_corners:
-
             if PYMORPH_INSTALLED:
-
                 try:
-
-                    disk = da.from_array(pymorph.sedisk(r=int(rows/2.0))[:rows, :cols],
-                                         chunks=ds_sub.data.chunksize).astype('uint8')
+                    disk = da.from_array(
+                        pymorph.sedisk(r=int(rows/2.0))[:rows, :cols],
+                        chunks=ds_sub.data.chunksize
+                    ).astype('uint8')
                     ds_sub = ds_sub.where(disk == 1)
 
                 except:
@@ -1098,10 +1109,12 @@ class SpatialOperations(_PropertyMixin):
         transform[5] = y_idx[0]
 
         # Align the coordinates to the target grid
-        dst_transform, dst_width, dst_height = aligned_target(Affine(*transform),
-                                                              ds_sub.shape[1],
-                                                              ds_sub.shape[0],
-                                                              data.res)
+        dst_transform, dst_width, dst_height = aligned_target(
+            Affine(*transform),
+            ds_sub.shape[1],
+            ds_sub.shape[0],
+            data.res
+        )
 
         ds_sub.attrs['transform'] = dst_transform
 
