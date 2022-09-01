@@ -53,9 +53,9 @@ jobs:
         run: |
           # Install GDAL
           sudo apt update && sudo apt upgrade -y && sudo apt install -y
-          sudo apt install software-properties-common -y 
-          sudo add-apt-repository ppa:ubuntugis/ppa 
-          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+          sudo apt install software-properties-common -y
+          sudo add-apt-repository ppa:ubuntugis/ppa
+          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y
           sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
           export CPLUS_INCLUDE_PATH=/usr/include/gdal
           export C_INCLUDE_PATH=/usr/include/gdal
@@ -74,7 +74,7 @@ jobs:
       - name: Unittests
         run: |
           pip install -U numpy
-          pip install -U testfixtures
+          pip install -U testfixtures jax
           python -m unittest
 
   Version:
