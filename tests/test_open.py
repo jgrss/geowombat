@@ -4,6 +4,7 @@ from pathlib import Path
 import geowombat as gw
 from geowombat.data import l8_224078_20200518, l3b_s2b_00390821jxn0l2a_20210319_20220730_c01
 
+import numpy as np
 import dask
 import xarray as xr
 import rasterio as rio
@@ -17,6 +18,12 @@ class TestOpen(unittest.TestCase):
             chunks={'band': -1, 'y': 256, 'x': 256}
         ) as src:
             self.assertEqual(src.shape, (6, 668, 668))
+            with xr.open_dataset(
+                l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
+                chunks={'band': -1, 'y': 256, 'x': 256}
+            ) as ds:
+                self.assertTrue(np.allclose(src.y.values, ds.y.values))
+                self.assertTrue(np.allclose(src.x.values, ds.x.values))
 
     def test_open(self):
         with gw.open(l8_224078_20200518) as src:
