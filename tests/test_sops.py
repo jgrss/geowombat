@@ -20,3 +20,12 @@ class TestSOPs(unittest.TestCase):
             src_r = gw.replace(src, replace)
             self.assertIn(7581, src.drop_duplicates('band').values)
             self.assertNotIn(7581, src_r.drop_duplicates('band').values)
+
+    def test_subset(self):
+        left = 717600.0
+        top = -2777000.0
+        dims = 128
+        with gw.open(l8_224078_20200518) as src:
+            dst = gw.subset(src, left=left, top=top, rows=dims, cols=dims)
+            self.assertEqual(dst.gw.nrows, dims)
+            self.assertEqual(dst.gw.ncols, dims)

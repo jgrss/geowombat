@@ -937,14 +937,14 @@ class SpatialOperations(_PropertyMixin):
         return data.assign_attrs(**attrs).astype(dtype)
 
     @lazy_wombat
-    def recode(self,
-               data,
-               polygon,
-               to_replace,
-               num_workers=1):
-
-        """
-        Recodes a DataArray with polygon mappings
+    def recode(
+        self,
+        data,
+        polygon,
+        to_replace,
+        num_workers=1
+    ):
+        """Recodes a DataArray with polygon mappings
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to recode.
@@ -963,7 +963,6 @@ class SpatialOperations(_PropertyMixin):
         Returns:
             ``xarray.DataArray``
         """
-
         dtype = data.dtype.name
         attrs = data.attrs.copy()
 
@@ -1022,7 +1021,6 @@ class SpatialOperations(_PropertyMixin):
             >>>                        rows=2048,
             >>>                        cols=2048)
         """
-
         if isinstance(right, int) or isinstance(right, float):
             cols = int((right - left) / data.gw.celly)
 
@@ -1043,7 +1041,6 @@ class SpatialOperations(_PropertyMixin):
         y_idx = np.linspace(math.ceil(top), math.ceil(top) - (rows * abs(data.gw.celly)), rows) - abs(data.gw.cellyh)
 
         if center:
-
             y_idx += ((rows / 2.0) * abs(data.gw.celly))
             x_idx -= ((cols / 2.0) * abs(data.gw.cellx))
 
@@ -1087,12 +1084,8 @@ class SpatialOperations(_PropertyMixin):
         return ds_sub
 
     @staticmethod
-    def coregister(target,
-                   reference,
-                   **kwargs):
-
-        """
-        Co-registers an image, or images, using AROSICS.
+    def coregister(target, reference, **kwargs):
+        """Co-registers an image, or images, using AROSICS.
 
         While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
         Therefore, memory usage is constrained to the size of the input data. Dask is not used for any of the
@@ -1120,7 +1113,6 @@ class SpatialOperations(_PropertyMixin):
             >>>
             >>> results = gw.coregister('target.tif', 'reference.tif', q=True, ws=(512, 512), max_shift=3, CPUs=4)
         """
-
         import geowombat as gw_
 
         if not AROSICS_INSTALLED:
