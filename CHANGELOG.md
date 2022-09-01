@@ -2,8 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2022-09-01)
+* Added `geowombat.save()` method ([#189](https://github.com/jgrss/geowombat/pull/189))
+* Warping methods now return `dask.Delayed` objects ([#189](https://github.com/jgrss/geowombat/pull/189))
+* Better CRS checks ([#189](https://github.com/jgrss/geowombat/pull/189))
+
 ## v1.11.4 (2022-08-31)
-* Fixed `to_raster()` [#187](https://github.com/jgrss/geowombat/pull/187)
+* Fixed `to_raster()` ([#187](https://github.com/jgrss/geowombat/pull/187))
 
 ## v1.11.3 (2022-07-10)
 * Added user proj bounds to return more specific bbox ([#180](https://github.com/jgrss/geowombat/issues/180))
