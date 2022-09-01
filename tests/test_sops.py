@@ -29,3 +29,7 @@ class TestSOPs(unittest.TestCase):
             dst = gw.subset(src, left=left, top=top, rows=dims, cols=dims)
             self.assertEqual(dst.gw.nrows, dims)
             self.assertEqual(dst.gw.ncols, dims)
+
+
+if __name__ == '__main__':
+    unittest.main()

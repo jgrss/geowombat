@@ -13,3 +13,7 @@ class TestClip(unittest.TestCase):
         ) as src:
             src_clip = gw.clip(src, l8_224078_20200518_polygons)
             self.assertEqual(src_clip.crs, src.crs)
+
+
+if __name__ == '__main__':
+    unittest.main()
