@@ -22,6 +22,7 @@ from dask.delayed import Delayed
 import dask.array as da
 import xarray as xr
 from pyproj import CRS
+from pyproj.exceptions import CRSError
 from affine import Affine
 
 
@@ -444,7 +445,7 @@ def check_src_crs(src):
     return src.crs if src.crs else src.gcps[1]
 
 
-def check_crs(crs):
+def check_crs(crs) -> CRS:
     """Checks a CRS instance
 
     Args:
@@ -458,8 +459,11 @@ def check_crs(crs):
             warnings.simplefilter('ignore', UserWarning)
             if isinstance(crs, (CRS, rio.CRS)):
                 dst_crs = CRS.from_wkt(crs.to_wkt())
-            elif isinstance(crs, int):
-                dst_crs = CRS.from_epsg(crs)
+            elif isinstance(crs, (int, np.number)):
+                try:
+                    dst_crs = CRS.from_epsg(crs)
+                except CRSError:
+                    dst_crs = CRS.from_user_input(f"epsg:{crs}")
             elif isinstance(crs, dict):
                 dst_crs = CRS.from_dict(crs)
             elif isinstance(crs, str):
@@ -479,7 +483,7 @@ def check_crs(crs):
     return dst_crs
 
 
-def check_file_crs(filename):
+def check_file_crs(filename) -> CRS:
     """Checks a file CRS
 
     Args:
@@ -502,7 +506,7 @@ def check_file_crs(filename):
         with rio.open(filename) as src:
             src_crs = check_src_crs(src)
 
-    return src_crs
+    return check_crs(src_crs)
 
 
 def unpack_bounding_box(bounds):
@@ -938,19 +942,18 @@ def warp(
             vrt_options = {
                 'resampling': getattr(Resampling, resampling),
                 'src_crs': src_crs,
-                 'crs': dst_crs,
-                 'src_transform': src_transform,
-                 'transform': dst_transform,
-                 'height': dst_height,
-                 'width': dst_width,
-                 'nodata': nodata,
-                 'warp_mem_limit': warp_mem_limit,
-                 'warp_extras': {
-                     'multi': True,
-                     'warp_option': f'NUM_THREADS={num_threads}'
-                 }
+                'crs': dst_crs,
+                'src_transform': src_transform,
+                'transform': dst_transform,
+                'height': dst_height,
+                'width': dst_width,
+                'nodata': nodata,
+                'warp_mem_limit': warp_mem_limit,
+                'warp_extras': {
+                    'multi': True,
+                    'warp_option': f'NUM_THREADS={num_threads}'
+                }
             }
-
             with WarpedVRT(src, **vrt_options) as vrt:
                 output = vrt
 

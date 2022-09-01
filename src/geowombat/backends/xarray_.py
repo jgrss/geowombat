@@ -278,9 +278,11 @@ def warp_open(
     @contextlib.contextmanager
     def warp_netcdf_vars():
         # Warp all images to the same grid.
-        warped_objects = warp_images(filenames,
-                                     resampling=resampling,
-                                     **ref_kwargs_netcdf_stack)
+        warped_objects = warp_images(
+            filenames,
+            resampling=resampling,
+            **ref_kwargs_netcdf_stack
+        )
 
         yield xr.concat(
             (

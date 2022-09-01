@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 import geowombat as gw
-from geowombat.data import l8_224078_20200518
+from geowombat.data import l8_224078_20200518, l3b_s2b_00390821jxn0l2a_20210319_20220730_c01
 
 import dask
 import xarray as xr
@@ -11,6 +11,13 @@ from pyproj import CRS
 
 
 class TestOpen(unittest.TestCase):
+    def test_open_netcdf(self):
+        with gw.open(
+            l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
+            chunks={'band': -1, 'y': 256, 'x': 256}
+        ) as src:
+            self.assertEqual(src.shape, (6, 668, 668))
+
     def test_open(self):
         with gw.open(l8_224078_20200518) as src:
             self.assertEqual(src.gw.nbands, 3)
