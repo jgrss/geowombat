@@ -505,18 +505,18 @@ def save(
     """Saves a DataArray to raster using rasterio/dask
 
     Args:
-        data (DataArray): data (DataArray): The ``xarray.DataArray`` to save to file.
         filename (str | Path): The output file name to write to.
-        mode (Optional[str]): The file mode. Default is 'w'.
-        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is ``False``.
-        client (Optional[Client object]): A client object to persist data. Default is ``None``.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+        client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
+            Default is None.
         compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
-            the ``dask`` task graph. Default is ``True``.
-        tags (Optional[dict]): Metadata tags to write to file. Default is ``None``.
+            the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
+            return the ``dask`` task graph. Default is ``True``.
+        tags (Optional[dict]): Metadata tags to write to file. Default is None.
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
         num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
             Default is 1.
-        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is ``True``.
+        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
         tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
 
     Returns:

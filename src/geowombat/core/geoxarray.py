@@ -703,9 +703,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             filename (str | Path): The output file name to write to.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
-            client (Optional[Client object]): A client object to persist data. Default is None.
+            client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
+                Default is None.
             compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
-                the ``dask`` task graph. Default is ``True``.
+                the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
+                return the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
             num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
