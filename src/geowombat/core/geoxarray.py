@@ -736,43 +736,38 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             tqdm_kwargs=tqdm_kwargs
         )
 
-    def to_raster(self,
-                  filename,
-                  readxsize=None,
-                  readysize=None,
-                  separate=False,
-                  use_dask_store=False,
-                  out_block_type='gtiff',
-                  keep_blocks=False,
-                  verbose=0,
-                  overwrite=False,
-                  gdal_cache=512,
-                  scheduler='processes',
-                  n_jobs=1,
-                  n_workers=None,
-                  n_threads=None,
-                  n_chunks=None,
-                  overviews=False,
-                  resampling='nearest',
-                  use_client=False,
-                  address=None,
-                  total_memory=48,
-                  driver='GTiff',
-                  nodata=None,
-                  blockxsize=512,
-                  blockysize=512,
-                  tags=None,
-                  **kwargs):
-
-        """
-        Writes an Xarray DataArray to a raster file
+    def to_raster(
+        self,
+        filename,
+        readxsize=None,
+        readysize=None,
+        separate=False,
+        out_block_type='gtiff',
+        keep_blocks=False,
+        verbose=0,
+        overwrite=False,
+        gdal_cache=512,
+        scheduler='processes',
+        n_jobs=1,
+        n_workers=None,
+        n_threads=None,
+        n_chunks=None,
+        overviews=False,
+        resampling='nearest',
+        driver='GTiff',
+        nodata=None,
+        blockxsize=512,
+        blockysize=512,
+        tags=None,
+        **kwargs
+    ):
+        """Writes an Xarray DataArray to a raster file
 
         Args:
             filename (str): The output file name to write to.
             readxsize (Optional[int]): The size of column chunks to read. If not given, ``readxsize`` defaults to Dask chunk size.
             readysize (Optional[int]): The size of row chunks to read. If not given, ``readysize`` defaults to Dask chunk size.
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-            use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
             out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
                 Only used if ``separate`` = ``True``.
             keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
@@ -787,9 +782,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             overviews (Optional[bool or list]): Whether to build overview layers.
             resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-            use_client (Optional[bool]): Whether to use a ``dask`` client.
-            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
-            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
             blockxsize (Optional[int]): The output x block size. Ignored if ``separate`` = ``True``.
@@ -822,11 +814,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The DataArray does not have a `transform` attribute.')
 
-        kwargs = self._update_kwargs(nodata=nodata,
-                                     driver=driver,
-                                     blockxsize=blockxsize,
-                                     blockysize=blockysize,
-                                     **kwargs)
+        kwargs = self._update_kwargs(
+            nodata=nodata,
+            driver=driver,
+            blockxsize=blockxsize,
+            blockysize=blockysize,
+            **kwargs
+        )
 
         # Keywords for rasterio profile
         if 'crs' not in kwargs:
@@ -847,29 +841,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if 'dtype' not in kwargs:
             kwargs['dtype'] = self._obj.data.dtype.name
 
-        to_raster(self._obj,
-                  filename,
-                  readxsize=readxsize,
-                  readysize=readysize,
-                  use_dask_store=use_dask_store,
-                  separate=separate,
-                  out_block_type=out_block_type,
-                  keep_blocks=keep_blocks,
-                  verbose=verbose,
-                  overwrite=overwrite,
-                  gdal_cache=gdal_cache,
-                  scheduler=scheduler,
-                  n_jobs=n_jobs,
-                  n_workers=n_workers,
-                  n_threads=n_threads,
-                  n_chunks=n_chunks,
-                  overviews=overviews,
-                  resampling=resampling,
-                  use_client=use_client,
-                  address=address,
-                  total_memory=total_memory,
-                  tags=tags,
-                  **kwargs)
+        to_raster(
+            self._obj,
+            filename,
+            readxsize=readxsize,
+            readysize=readysize,
+            separate=separate,
+            out_block_type=out_block_type,
+            keep_blocks=keep_blocks,
+            verbose=verbose,
+            overwrite=overwrite,
+            gdal_cache=gdal_cache,
+            scheduler=scheduler,
+            n_jobs=n_jobs,
+            n_workers=n_workers,
+            n_threads=n_threads,
+            n_chunks=n_chunks,
+            overviews=overviews,
+            resampling=resampling,
+            tags=tags,
+            **kwargs
+        )
 
     def to_vrt(self,
                filename,
