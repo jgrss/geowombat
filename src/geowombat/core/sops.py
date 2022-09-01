@@ -97,21 +97,20 @@ def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cel
 
 
 class SpatialOperations(_PropertyMixin):
-
     @staticmethod
-    def calc_area(data,
-                  values,
-                  op='eq',
-                  units='km2',
-                  row_chunks=None,
-                  col_chunks=None,
-                  n_workers=1,
-                  n_threads=1,
-                  scheduler='threads',
-                  n_chunks=100):
-
-        """
-        Calculates the area of data values
+    def calc_area(
+        data,
+        values,
+        op='eq',
+        units='km2',
+        row_chunks=None,
+        col_chunks=None,
+        n_workers=1,
+        n_threads=1,
+        scheduler='threads',
+        n_chunks=100
+    ):
+        """Calculates the area of data values
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to calculate area.
@@ -146,9 +145,7 @@ class SpatialOperations(_PropertyMixin):
             >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
             >>>                       col_chunks=1024)
         """
-
         def area_func(*args):
-
             data_chunk, window_id, uvalues, area_units, n_threads = list(itertools.chain(*args))
 
             sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
@@ -157,22 +154,24 @@ class SpatialOperations(_PropertyMixin):
             data_totals_ = defaultdict(float)
 
             for value in uvalues:
-
-                chunk_value_total = data_chunk.gw.compare(op, value, return_binary=True) \
-                                                            .sum(skipna=True) \
-                                                            .data.compute(scheduler='threads',
-                                                                          num_workers=n_threads)
+                chunk_value_total = (
+                    data_chunk.gw.compare(op, value, return_binary=True)
+                    .sum(skipna=True)
+                    .data.compute(scheduler='threads',num_workers=n_threads)
+                )
 
                 data_totals_[value] += (chunk_value_total * sqm) * area_conversion
 
             return dict(data_totals_)
 
-        pt = ParallelTask(data,
-                          row_chunks=row_chunks,
-                          col_chunks=col_chunks,
-                          scheduler=scheduler,
-                          n_workers=n_workers,
-                          n_chunks=n_chunks)
+        pt = ParallelTask(
+            data,
+            row_chunks=row_chunks,
+            col_chunks=col_chunks,
+            scheduler=scheduler,
+            n_workers=n_workers,
+            n_chunks=n_chunks
+        )
 
         futures = pt.map(area_func, values, units, n_threads)
 
@@ -190,21 +189,21 @@ class SpatialOperations(_PropertyMixin):
 
         return df
 
-    def sample(self,
-               data,
-               method='random',
-               band=None,
-               n=None,
-               strata=None,
-               spacing=None,
-               min_dist=None,
-               max_attempts=10,
-               num_workers=1,
-               verbose=1,
-               **kwargs):
-
-        """
-        Generates samples from a raster
+    def sample(
+        self,
+        data,
+        method='random',
+        band=None,
+        n=None,
+        strata=None,
+        spacing=None,
+        min_dist=None,
+        max_attempts=10,
+        num_workers=1,
+        verbose=1,
+        **kwargs
+    ):
+        """Generates samples from a raster
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to extract data from.
@@ -251,7 +250,6 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as src:
             >>>     df = gw.sample(src, band=1, n=100, min_dist=1000, strata=strata)
         """
-
         if method.strip().lower() not in ['random', 'systematic']:
             raise NameError("The method must be 'random' or 'systematic'.")
 
@@ -286,16 +284,20 @@ class SpatialOperations(_PropertyMixin):
                 y_samples = np.array(y_samples, dtype='int64')
 
                 # Convert the map indices to map coordinates
-                x_coords, y_coords = _transform_and_shift(data.gw.meta.affine,
-                                                          x_samples,
-                                                          y_samples,
-                                                          data.gw.cellxh,
-                                                          data.gw.cellyh)
+                x_coords, y_coords = _transform_and_shift(
+                    data.gw.meta.affine,
+                    x_samples,
+                    y_samples,
+                    data.gw.cellxh,
+                    data.gw.cellyh
+                )
 
-                df = gpd.GeoDataFrame(data=range(0, x_coords.shape[0]),
-                                      geometry=gpd.points_from_xy(x_coords, y_coords),
-                                      crs=data.crs,
-                                      columns=['point'])
+                df = gpd.GeoDataFrame(
+                    data=range(0, x_coords.shape[0]),
+                    geometry=gpd.points_from_xy(x_coords, y_coords),
+                    crs=data.crs,
+                    columns=['point']
+                )
 
             else:
 
@@ -304,9 +306,7 @@ class SpatialOperations(_PropertyMixin):
                 attempts = 0
 
                 while True:
-
                     if attempts >= max_attempts:
-
                         if verbose > 0:
                             logger.warning('  Max attempts reached. Try relaxing the distance threshold.')
 
@@ -521,31 +521,31 @@ class SpatialOperations(_PropertyMixin):
         else:
             return None
 
-    def extract(self,
-                data,
-                aoi,
-                bands=None,
-                time_names=None,
-                band_names=None,
-                frac=1.0,
-                min_frac_area=None,
-                all_touched=False,
-                id_column='id',
-                time_format='%Y%m%d',
-                mask=None,
-                n_jobs=8,
-                verbose=0,
-                n_workers=1,
-                n_threads=-1,
-                use_client=False,
-                address=None,
-                total_memory=24,
-                processes=False,
-                pool_kwargs=None,
-                **kwargs):
-
-        """
-        Extracts data within an area or points of interest. Projections do not need to match,
+    def extract(
+        self,
+        data,
+        aoi,
+        bands=None,
+        time_names=None,
+        band_names=None,
+        frac=1.0,
+        min_frac_area=None,
+        all_touched=False,
+        id_column='id',
+        time_format='%Y%m%d',
+        mask=None,
+        n_jobs=8,
+        verbose=0,
+        n_workers=1,
+        n_threads=-1,
+        use_client=False,
+        address=None,
+        total_memory=24,
+        processes=False,
+        pool_kwargs=None,
+        **kwargs
+    ):
+        """Extracts data within an area or points of interest. Projections do not need to match,
         as they are handled 'on-the-fly'.
 
         Args:
@@ -598,7 +598,6 @@ class SpatialOperations(_PropertyMixin):
             >>>     with gw.open('image.tif') as src:
             >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
         """
-
         if not pool_kwargs:
             pool_kwargs = {}
 
@@ -644,16 +643,18 @@ class SpatialOperations(_PropertyMixin):
             if id_column not in aoi.columns.tolist():
                 aoi['id'] = aoi.index.values
 
-        df = converters.prepare_points(data,
-                                       aoi,
-                                       frac=frac,
-                                       min_frac_area=min_frac_area,
-                                       all_touched=all_touched,
-                                       id_column=id_column,
-                                       mask=mask,
-                                       n_jobs=n_jobs,
-                                       verbose=verbose,
-                                       **pool_kwargs)
+        df = converters.prepare_points(
+            data,
+            aoi,
+            frac=frac,
+            min_frac_area=min_frac_area,
+            all_touched=all_touched,
+            id_column=id_column,
+            mask=mask,
+            n_jobs=n_jobs,
+            verbose=verbose,
+            **pool_kwargs
+        )
 
         if df.empty:
             return df
@@ -676,44 +677,26 @@ class SpatialOperations(_PropertyMixin):
             y = y[idx_nonnull]
             x = x[idx_nonnull]
 
-        # vidx = (y.tolist(), x.tolist())
-        #
-        # if shape_len > 2:
-        #
-        #     vidx = (bands_idx,) + vidx
-        #
-        #     if shape_len > 3:
-        #
-        #         # The first 3 dimensions are (bands, rows, columns)
-        #         for b in range(0, shape_len - 3):
-        #             vidx = (slice(0, None),) + vidx
-
-        # yidx = xr.DataArray(vidx[-2], dims='z')
-        # xidx = xr.DataArray(vidx[-1], dims='z')
-
         yidx = xr.DataArray(y, dims='z')
         xidx = xr.DataArray(x, dims='z')
 
         # Get the raster values for each point
         # TODO: allow neighbor indexing
         if use_client:
-
-            with cluster_object(n_workers=n_workers,
-                                threads_per_worker=n_threads,
-                                scheduler_port=0,
-                                processes=processes,
-                                memory_limit=f'{mem_per_core}GB') as cluster:
-
+            with cluster_object(
+                n_workers=n_workers,
+                threads_per_worker=n_threads,
+                scheduler_port=0,
+                processes=processes,
+                memory_limit=f'{mem_per_core}GB'
+            ) as cluster:
                 cluster_address = address if address else cluster
-
                 with client_object(address=cluster_address) as client:
-
                     res = client.gather(client.compute(data.isel(band=bands_idx,
                                                                  y=yidx,
                                                                  x=xidx).data))
 
         else:
-
             res = data.isel(band=bands_idx,
                             y=yidx,
                             x=xidx).gw.compute(**kwargs)
@@ -751,15 +734,15 @@ class SpatialOperations(_PropertyMixin):
 
         return df
 
-    def clip(self,
-             data,
-             df,
-             query=None,
-             mask_data=False,
-             expand_by=0):
-
-        """
-        Clips a DataArray by vector polygon geometry
+    def clip(
+        self,
+        data,
+        df,
+        query=None,
+        mask_data=False,
+        expand_by=0
+    ):
+        """Clips a DataArray by vector polygon geometry
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
@@ -782,7 +765,6 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.clip(df, query="Id == 1")
         """
-
         if isinstance(df, str) and os.path.isfile(df):
             df = gpd.read_file(df)
 
@@ -863,13 +845,13 @@ class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     @lazy_wombat
-    def mask(data,
-             dataframe,
-             query=None,
-             keep='in'):
-
-        """
-        Masks a DataArray by vector polygon geometry
+    def mask(
+        data,
+        dataframe,
+        query=None,
+        keep='in'
+    ):
+        """Masks a DataArray by vector polygon geometry
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to mask.
@@ -887,7 +869,6 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.mask(df)
         """
-
         if isinstance(dataframe, str) and os.path.isfile(dataframe):
             dataframe = gpd.read_file(dataframe)
 
@@ -922,9 +903,7 @@ class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     def replace(data, to_replace):
-
-        """
-        Replace values given in to_replace with value.
+        """Replace values given in to_replace with value.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to recode.

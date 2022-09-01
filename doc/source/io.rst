@@ -259,27 +259,41 @@ Write to a VRT file.
             # Write the data to a VRT
             src.gw.to_vrt('lat_lon_file.vrt')
 
-Write to a raster file.
+Write to a raster file using `concurrent.futures` and the `geowombat` :func:`to_raster` function.
 
 .. code:: python
 
     import geowombat as gw
 
     with gw.open(l8_224077_20200518_B4, chunks=1024) as src:
-
         # Xarray drops attributes
         attrs = src.attrs.copy()
-
         # Apply operations on the DataArray
-        src = src * 10.0
-
-        src.attrs = attrs
-
+        src = (src * 10.0).assign_attrs(**attrs)
         # Write the data to a GeoTiff
-        src.gw.to_raster('output.tif',
-                         verbose=1,
-                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
-                         n_threads=2,    # number of thread workers sent to ``dask.compute``
-                         n_chunks=200)   # number of window chunks to send as concurrent futures
+        src.gw.to_raster(
+            'output.tif',
+            verbose=1,
+            n_workers=4,    # number of process workers sent to ``concurrent.futures``
+            n_threads=2,    # number of thread workers sent to ``dask.compute``
+            n_chunks=200    # number of window chunks to send as concurrent futures
+        )
+
+Write to a raster file using `Dask` and the `geowombat` :func:`save` function.
+
+.. code:: python
+
+    import geowombat as gw
+
+    with gw.open(l8_224077_20200518_B4, chunks=1024) as src:
+        # Xarray drops attributes
+        attrs = src.attrs.copy()
+        # Apply operations on the DataArray
+        src = (src * 10.0).assign_attrs(**attrs)
+        # Write the data to a GeoTiff
+        src.gw.save(
+            'output.tif',
+            num_workers=4
+        )
 
 See :ref:`io-distributed` for more examples describing concurrent file writing with GeoWombat.
