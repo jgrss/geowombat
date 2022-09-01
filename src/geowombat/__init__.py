@@ -19,6 +19,7 @@ from .core import coregister
 from .core import polygons_to_points
 from .core import apply
 from .core import transform_crs
+from .core import save
 from .core import to_raster
 from .core import to_netcdf
 from .core import to_vrt
@@ -59,6 +60,7 @@ __all__ = [
     'polygons_to_points',
     'apply',
     'transform_crs',
+    'save',
     'to_raster',
     'to_netcdf',
     'to_vrt',

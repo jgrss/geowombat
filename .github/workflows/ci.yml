@@ -53,9 +53,9 @@ jobs:
         run: |
           # Install GDAL
           sudo apt update && sudo apt upgrade -y && sudo apt install -y
-          sudo apt install software-properties-common -y 
-          sudo add-apt-repository ppa:ubuntugis/ppa 
-          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y 
+          sudo apt install software-properties-common -y
+          sudo add-apt-repository ppa:ubuntugis/ppa
+          sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y
           sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
           export CPLUS_INCLUDE_PATH=/usr/include/gdal
           export C_INCLUDE_PATH=/usr/include/gdal
@@ -69,12 +69,11 @@ jobs:
           pip install GDAL==$GDAL_VERSION --no-binary=gdal
       - name: Install GeoWombat
         run: |
-          pip install .[perf,ml]
+          pip install .[perf,ml,tests]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
           pip install -U numpy
-          pip install -U testfixtures
           python -m unittest
 
   Version:

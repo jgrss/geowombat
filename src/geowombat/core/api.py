@@ -73,7 +73,7 @@ def _tqdm(*args, **kwargs):
     yield None
 
 
-def get_attrs(src, **kwargs):
+def _get_attrs(src, **kwargs):
     cellxh = src.res[0] / 2.0
     cellyh = src.res[1] / 2.0
 
@@ -176,7 +176,7 @@ def read(
             if bounds and ('window' not in kwargs):
                 kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
-            ycoords, xcoords, attrs = get_attrs(src, **kwargs)
+            ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
         data = dask.compute(
             read_delayed(
@@ -211,7 +211,7 @@ def read(
             if bounds and ('window' not in kwargs):
                 kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
-            ycoords, xcoords, attrs = get_attrs(src, **kwargs)
+            ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
         data = da.concatenate(
             dask.compute(
@@ -473,7 +473,7 @@ class open(object):
                         netcdf_vars=netcdf_vars,
                         **kwargs
                     )
-                    
+
                     self.__data_are_stacked = True
 
                 self.__data_are_separate = True
@@ -617,6 +617,11 @@ def load(
         >>>                    data_slice=data_slice,
         >>>                    num_workers=4)
     """
+    import dask
+    from dask.diagnostics import ProgressBar
+    import ray
+    from ray.util.dask import ray_dask_get
+    
     netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):
@@ -630,15 +635,9 @@ def load(
 
     scale_factor = float(out_range[1]) / float(in_range[1])
 
-    import dask
-    from dask.diagnostics import ProgressBar
-    import ray
-    from ray.util.dask import ray_dask_get
-
     if src is None:
-
         with open(
-            f'netcdf:{image_list[0]}' if str(image_list[0]).endswith('.nc') else image_list[0],
+            image_list[0],
             time_names=time_names[0],
             band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
             netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
@@ -652,7 +651,7 @@ def load(
     ycoords = src.y
     xcoords = src.x
 
-    if not data_slice:
+    if data_slice is None:
         data_slice = (
             slice(0, None),
             slice(0, None),
@@ -682,7 +681,7 @@ def load(
         darray = xr.where(darray == nodata, 0, darray*scale_factor).astype('float64')
 
         return (
-            darray.where(xr.ufuncs.isfinite(darray))
+            darray.where(np.isfinite(darray))
             .fillna(0)
             .clip(min=out_range[0], max=out_range[1])
         )
@@ -696,7 +695,7 @@ def load(
             xr.open_mfdataset(
                 image_list,
                 concat_dim='time',
-                chunks={'y': chunks, 'x': chunks},
+                chunks=chunks,
                 combine='nested',
                 engine='h5netcdf',
                 preprocess=expand_time,
@@ -716,6 +715,7 @@ def load(
         # with performance_report(filename='dask-report.html'):
         with ProgressBar():
             y = ds.data.compute()
+        ds.close()
 
     ray.shutdown()
 

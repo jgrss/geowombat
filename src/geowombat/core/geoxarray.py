@@ -1,6 +1,24 @@
+import typing as T
+from pathlib import Path
+
 from ..config import config
 
-from . import to_raster, to_netcdf, to_vrt, array_to_polygon, moving, extract, sample, calc_area, subset, clip, mask, replace, recode
+from . import (
+    save,
+    to_raster,
+    to_netcdf,
+    to_vrt,
+    array_to_polygon,
+    moving,
+    extract,
+    sample,
+    calc_area,
+    subset,
+    clip,
+    mask,
+    replace,
+    recode
+)
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
 from . import avi as gw_avi
@@ -21,9 +39,10 @@ from ..radiometry import BRDF as _BRDF
 
 import numpy as np
 import xarray as xr
+from dask.distributed import Client
 import dask.array as da
 from rasterio.windows import Window as _Window
-from shapely.geometry import Polygon as _Polygon
+from shapely.geometry import Polygon as _Polygon, box
 import joblib
 
 
@@ -414,14 +433,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if isinstance(bounds, _Polygon):
             return getattr(self._obj.gw.geometry, how)(bounds)
         else:
-
-            left, bottom, right, top = bounds
-
-            poly = _Polygon([(left, bottom),
-                             (left, top),
-                             (right, top),
-                             (right, bottom),
-                             (left, bottom)])
+            poly = box(*bounds)
 
             return getattr(self._obj.gw.geometry, how)(poly)
 
@@ -576,21 +588,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                         connectivity=connectivity)\
                 .to_file(filename)
 
-    def transform_crs(self,
-                      dst_crs=None,
-                      dst_res=None,
-                      dst_width=None,
-                      dst_height=None,
-                      dst_bounds=None,
-                      src_nodata=None,
-                      dst_nodata=None,
-                      coords_only=False,
-                      resampling='nearest',
-                      warp_mem_limit=512,
-                      num_threads=1):
-
-        """
-        Transforms a DataArray to a new coordinate reference system
+    def transform_crs(
+        self,
+        dst_crs=None,
+        dst_res=None,
+        dst_width=None,
+        dst_height=None,
+        dst_bounds=None,
+        src_nodata=None,
+        dst_nodata=None,
+        coords_only=False,
+        resampling='nearest',
+        warp_mem_limit=512,
+        num_threads=1
+    ):
+        """Transforms a DataArray to a new coordinate reference system
 
         Args:
             dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
@@ -622,18 +634,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     dst = src.gw.transform_crs(4326)
         """
 
-        return _transform_crs(self._obj,
-                              dst_crs=dst_crs,
-                              dst_res=dst_res,
-                              dst_width=dst_width,
-                              dst_height=dst_height,
-                              dst_bounds=dst_bounds,
-                              src_nodata=src_nodata,
-                              dst_nodata=dst_nodata,
-                              coords_only=coords_only,
-                              resampling=resampling,
-                              warp_mem_limit=warp_mem_limit,
-                              num_threads=num_threads)
+        return _transform_crs(
+            self._obj,
+            dst_crs=dst_crs,
+            dst_res=dst_res,
+            dst_width=dst_width,
+            dst_height=dst_height,
+            dst_bounds=dst_bounds,
+            src_nodata=src_nodata,
+            dst_nodata=dst_nodata,
+            coords_only=coords_only,
+            resampling=resampling,
+            warp_mem_limit=warp_mem_limit,
+            num_threads=num_threads
+        )
 
     def to_netcdf(self, filename, *args, **kwargs):
 
@@ -672,43 +686,90 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         to_netcdf(self._obj, filename, *args, **kwargs)
 
-    def to_raster(self,
-                  filename,
-                  readxsize=None,
-                  readysize=None,
-                  separate=False,
-                  use_dask_store=False,
-                  out_block_type='gtiff',
-                  keep_blocks=False,
-                  verbose=0,
-                  overwrite=False,
-                  gdal_cache=512,
-                  scheduler='processes',
-                  n_jobs=1,
-                  n_workers=None,
-                  n_threads=None,
-                  n_chunks=None,
-                  overviews=False,
-                  resampling='nearest',
-                  use_client=False,
-                  address=None,
-                  total_memory=48,
-                  driver='GTiff',
-                  nodata=None,
-                  blockxsize=512,
-                  blockysize=512,
-                  tags=None,
-                  **kwargs):
+    def save(
+        self,
+        filename: T.Union[str, Path],
+        overwrite: bool = False,
+        client: T.Optional[Client] = None,
+        compute: T.Optional[bool] = True,
+        tags: T.Optional[dict] = None,
+        compression: T.Optional[str] = 'none',
+        num_workers: T.Optional[int] = 1,
+        log_progress: T.Optional[bool] = True,
+        tqdm_kwargs: T.Optional[dict] = None
+    ):
+        """Saves a DataArray to raster using rasterio/dask
 
+        Args:
+            filename (str | Path): The output file name to write to.
+            overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+            client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
+                Default is None.
+            compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+                the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
+                return the ``dask`` task graph. Default is ``True``.
+            tags (Optional[dict]): Metadata tags to write to file. Default is None.
+            compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+            num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
+                Default is 1.
+            log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
+            tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+
+        Returns:
+            ``None``, writes to ``filename``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('file.tif') as src:
+            >>>     result = ...
+            >>>     result.gw.save('output.tif', compression='lzw', num_workers=8)
         """
-        Writes an Xarray DataArray to a raster file
+        return save(
+            self._obj,
+            filename=filename,
+            overwrite=overwrite,
+            client=client,
+            compute=compute,
+            tags=tags,
+            compression=compression,
+            num_workers=num_workers,
+            log_progress=log_progress,
+            tqdm_kwargs=tqdm_kwargs
+        )
+
+    def to_raster(
+        self,
+        filename,
+        readxsize=None,
+        readysize=None,
+        separate=False,
+        out_block_type='gtiff',
+        keep_blocks=False,
+        verbose=0,
+        overwrite=False,
+        gdal_cache=512,
+        scheduler='processes',
+        n_jobs=1,
+        n_workers=None,
+        n_threads=None,
+        n_chunks=None,
+        overviews=False,
+        resampling='nearest',
+        driver='GTiff',
+        nodata=None,
+        blockxsize=512,
+        blockysize=512,
+        tags=None,
+        **kwargs
+    ):
+        """Writes an Xarray DataArray to a raster file
 
         Args:
             filename (str): The output file name to write to.
             readxsize (Optional[int]): The size of column chunks to read. If not given, ``readxsize`` defaults to Dask chunk size.
             readysize (Optional[int]): The size of row chunks to read. If not given, ``readysize`` defaults to Dask chunk size.
             separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-            use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
             out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
                 Only used if ``separate`` = ``True``.
             keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
@@ -723,9 +784,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             overviews (Optional[bool or list]): Whether to build overview layers.
             resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-            use_client (Optional[bool]): Whether to use a ``dask`` client.
-            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
-            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             driver (Optional[str]): The raster driver.
             nodata (Optional[int]): A 'no data' value.
             blockxsize (Optional[int]): The output x block size. Ignored if ``separate`` = ``True``.
@@ -758,11 +816,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The DataArray does not have a `transform` attribute.')
 
-        kwargs = self._update_kwargs(nodata=nodata,
-                                     driver=driver,
-                                     blockxsize=blockxsize,
-                                     blockysize=blockysize,
-                                     **kwargs)
+        kwargs = self._update_kwargs(
+            nodata=nodata,
+            driver=driver,
+            blockxsize=blockxsize,
+            blockysize=blockysize,
+            **kwargs
+        )
 
         # Keywords for rasterio profile
         if 'crs' not in kwargs:
@@ -783,29 +843,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if 'dtype' not in kwargs:
             kwargs['dtype'] = self._obj.data.dtype.name
 
-        to_raster(self._obj,
-                  filename,
-                  readxsize=readxsize,
-                  readysize=readysize,
-                  use_dask_store=use_dask_store,
-                  separate=separate,
-                  out_block_type=out_block_type,
-                  keep_blocks=keep_blocks,
-                  verbose=verbose,
-                  overwrite=overwrite,
-                  gdal_cache=gdal_cache,
-                  scheduler=scheduler,
-                  n_jobs=n_jobs,
-                  n_workers=n_workers,
-                  n_threads=n_threads,
-                  n_chunks=n_chunks,
-                  overviews=overviews,
-                  resampling=resampling,
-                  use_client=use_client,
-                  address=address,
-                  total_memory=total_memory,
-                  tags=tags,
-                  **kwargs)
+        to_raster(
+            self._obj,
+            filename,
+            readxsize=readxsize,
+            readysize=readysize,
+            separate=separate,
+            out_block_type=out_block_type,
+            keep_blocks=keep_blocks,
+            verbose=verbose,
+            overwrite=overwrite,
+            gdal_cache=gdal_cache,
+            scheduler=scheduler,
+            n_jobs=n_jobs,
+            n_workers=n_workers,
+            n_threads=n_threads,
+            n_chunks=n_chunks,
+            overviews=overviews,
+            resampling=resampling,
+            tags=tags,
+            **kwargs
+        )
 
     def to_vrt(self,
                filename,

@@ -2,18 +2,17 @@ import os
 from pathlib import Path
 import shutil
 import itertools
-import ctypes
 import concurrent.futures
 import multiprocessing as multi
 import threading
 import random
 import string
 import logging
+import typing as T
 
 from ..handler import add_handler
-from ..backends.rasterio_ import to_gtiff, WriteDaskArray
+from ..backends.rasterio_ import to_gtiff, RasterioStore
 from .windows import get_window_offsets
-from .base import _client_dummy, _cluster_dummy
 
 try:
     from ..backends.zarr_ import to_zarr
@@ -27,23 +26,19 @@ from osgeo import gdal
 
 import xarray as xr
 import dask
-import dask.array as da
 from dask import is_dask_collection
-from dask.distributed import Client, LocalCluster, progress
+from dask.distributed import Client, progress
 import rasterio as rio
 from rasterio.windows import Window
 from rasterio.vrt import WarpedVRT
 from rasterio.enums import Resampling
+from rasterio.drivers import driver_from_extension
 from rasterio import shutil as rio_shutil
 from affine import Affine
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
 import pyproj
-
-try:
-    MKL_LIB = ctypes.CDLL('libmkl_rt.so')
-except:
-    MKL_LIB = None
+from threadpoolctl import threadpool_limits
 
 
 logger = logging.getLogger(__name__)
@@ -51,15 +46,11 @@ logger = add_handler(logger)
 
 
 def get_norm_indices(n_bands, window_slice, indexes_multi):
-
     # Prepend the band position index to the window slice
     if n_bands == 1:
-
         window_slice = tuple([slice(0, 1)] + list(window_slice))
         indexes = 1
-
     else:
-
         window_slice = tuple([slice(0, n_bands)] + list(window_slice))
         indexes = indexes_multi
 
@@ -67,20 +58,13 @@ def get_norm_indices(n_bands, window_slice, indexes_multi):
 
 
 def _window_worker(w):
-
-    """
-    Helper to return window slice
-    """
-
+    """Helper to return window slice"""
     return slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width)
 
 
 def _window_worker_time(w, n_bands, tidx, n_time):
-
+    """Helper to return window slice
     """
-    Helper to return window slice
-    """
-
     window_slice = (slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width))
 
     # Prepend the band position index to the window slice
@@ -92,77 +76,25 @@ def _window_worker_time(w, n_bands, tidx, n_time):
     return window_slice
 
 
-# def _compressor(*args):
-#
-#     w_, b_, f_, o_ = list(itertools.chain(*args))
-#
-#     with rio.open(f_, mode='r+', sharing=False) as dst_:
-#
-#         dst_.write(np.squeeze(b_),
-#                    window=w_,
-#                    indexes=o_)
-
-
-# def _block_write_func(*args):
-#
-#     ofn_, fn_, g_, t_ = list(itertools.chain(*args))
-#
-#     if t_ == 'zarr':
-#
-#         group_node = zarr.open(fn_, mode='r')[g_]
-#
-#         w_ = Window(row_off=group_node.attrs['row_off'],
-#                     col_off=group_node.attrs['col_off'],
-#                     height=group_node.attrs['height'],
-#                     width=group_node.attrs['width'])
-#
-#         out_data_ = np.squeeze(group_node['data'][:])
-#
-#     else:
-#
-#         w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
-#                     col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
-#                     height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
-#                     width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
-#
-#         with rio.open(fn_) as src_:
-#             out_data_ = np.squeeze(src_.read(window=w_))
-#
-#     out_indexes_ = 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1))
-#
-#     with rio.open(ofn_, mode='r+', sharing=False) as dst_:
-#
-#         dst_.write(out_data_,
-#                    window=w_,
-#                    indexes=out_indexes_)
-
-
 def _block_read_func(fn_, g_, t_):
-
+    """Function for block writing with ``concurrent.futures``
     """
-    Function for block writing with ``concurrent.futures``
-    """
-
-    # fn_, g_, t_ = list(itertools.chain(*args))
-
     if t_ == 'zarr':
-
         group_node = zarr.open(fn_, mode='r')[g_]
-
-        w_ = Window(row_off=group_node.attrs['row_off'],
-                    col_off=group_node.attrs['col_off'],
-                    height=group_node.attrs['height'],
-                    width=group_node.attrs['width'])
-
+        w_ = Window(
+            row_off=group_node.attrs['row_off'],
+            col_off=group_node.attrs['col_off'],
+            height=group_node.attrs['height'],
+            width=group_node.attrs['width']
+        )
         out_data_ = np.squeeze(group_node['data'][:])
-
     else:
-
-        w_ = Window(row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
-                    col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
-                    height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
-                    width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]))
-
+        w_ = Window(
+            row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
+            col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
+            height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
+            width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:])
+        )
         out_data_ = np.squeeze(rio.open(fn_).read(window=w_))
 
     out_indexes_ = 1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0]+1))
@@ -171,7 +103,6 @@ def _block_read_func(fn_, g_, t_):
 
 
 def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_):
-
     # Check if the data were read at larger
     # extents than the write bounds.
 
@@ -219,10 +150,8 @@ def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, 
     return out_data_, window_
 
 
-def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, oleft, otop, ocols, orows):
-
-    """
-    Computes a DataArray window block of data
+def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
+    """Computes a DataArray window block of data
 
     Args:
         block (DataArray): The ``xarray.DataArray`` to compute.
@@ -239,16 +168,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
     Returns:
         ``numpy.ndarray``, ``rasterio.windows.Window``, ``int`` | ``list``
     """
-
-    # The geo-transform is needed on the block
-    # left_, top_ = Affine(*block.transform) * (window_.col_off, window_.row_off)
-
     out_data_ = None
-
     if 'apply' in block.attrs:
-
         attrs = block.attrs.copy()
-
         # Update the block transform
         attrs['transform'] = Affine(*block.gw.transform)
         attrs['window_id'] = wid
@@ -256,7 +178,6 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
         block = block.assign_attrs(**attrs)
 
     if ('apply' in block.attrs) and hasattr(block.attrs['apply'], 'wombat_func_'):
-
         if padded_window_:
             logger.warning('  Padding is not supported with lazy functions.')
 
@@ -278,22 +199,15 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
             logger.exception('  The lazy wombat function is turned off.')
 
     else:
-
-        ###############################
         # Get the data as a NumPy array
-        ###############################
-
         if n_workers == 1:
             out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
         else:
-
             with threading.Lock():
                 out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
 
         if ('apply' in block.attrs) and not hasattr(block.attrs['apply'], 'wombat_func_'):
-
             if padded_window_:
-
                 # Add extra padding on the image borders
                 rspad = padded_window_.height - window_.height if window_.row_off == 0 else 0
                 cspad = padded_window_.width - window_.width if window_.col_off == 0 else 0
@@ -322,11 +236,7 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
                 out_data_ = block.attrs['apply'](out_data_)
 
             if padded_window_:
-
-                ##########################
                 # Remove the extra padding
-                ##########################
-
                 dshape = out_data_.shape
 
                 if len(dshape) == 2:
@@ -338,10 +248,7 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
 
                 dshape = out_data_.shape
 
-                ####################
                 # Remove the padding
-                ####################
-
                 # Get the non-padded array slice
                 row_diff = abs(window_.row_off - padded_window_.row_off)
                 col_diff = abs(window_.col_off - padded_window_.col_off)
@@ -354,7 +261,6 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
                     out_data_ = out_data_[:, :, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
 
         else:
-
             if padded_window_:
                 logger.warning('  Padding is only supported with user functions.')
 
@@ -374,10 +280,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers, 
     return out_data_, indexes_, window_
 
 
+@threadpool_limits.wrap(limits=1, user_api='blas')
 def _write_xarray(*args):
-
-    """
-    Writes a DataArray to file
+    """Writes a DataArray to file
 
     Args:
         args (iterable): A tuple from the window generator.
@@ -388,12 +293,9 @@ def _write_xarray(*args):
     Returns:
         ``str`` | None
     """
-
     zarr_file = None
-
     block, filename, wid, block_window, padded_window, n_workers, n_threads, separate, chunks, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs = list(itertools.chain(*args))
-
-    output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads, oleft, otop, ocols, orows)
+    output, out_indexes, block_window = _compute_block(block, wid, block_window, padded_window, n_workers, n_threads)
 
     if separate and (out_block_type.lower() == 'zarr'):
         zarr_file = to_zarr(filename, output, block_window, chunks, root=root)
@@ -403,16 +305,16 @@ def _write_xarray(*args):
     return zarr_file
 
 
-def to_vrt(data,
-           filename,
-           overwrite=False,
-           resampling=None,
-           nodata=None,
-           init_dest_nodata=True,
-           warp_mem_limit=128):
-
-    """
-    Writes a file to a VRT file
+def to_vrt(
+    data,
+    filename,
+    overwrite=False,
+    resampling=None,
+    nodata=None,
+    init_dest_nodata=True,
+    warp_mem_limit=128
+):
+    """Writes a file to a VRT file
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
@@ -441,9 +343,7 @@ def to_vrt(data,
         >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
         >>>         gw.to_vrt(src, 'output.vrt')
     """
-
     if Path(filename).is_file():
-
         if overwrite:
             Path(filename).unlink()
         else:
@@ -454,50 +354,55 @@ def to_vrt(data,
         resampling = Resampling.nearest
 
     if isinstance(data.attrs['filename'], str) or isinstance(data.attrs['filename'], Path):
-
         # Open the input file on disk
         with rio.open(data.attrs['filename']) as src:
-
-            with WarpedVRT(src,
-                           src_crs=src.crs,                         # the original CRS
-                           crs=data.crs,                            # the transformed CRS
-                           src_transform=src.gw.transform,             # the original transform
-                           transform=data.gw.transform,                # the new transform
-                           dtype=data.dtype,
-                           resampling=resampling,
-                           nodata=nodata,
-                           init_dest_nodata=init_dest_nodata,
-                           warp_mem_limit=warp_mem_limit) as vrt:
-
+            with WarpedVRT(
+                src,
+                src_crs=src.crs,                         # the original CRS
+                crs=data.crs,                            # the transformed CRS
+                src_transform=src.gw.transform,             # the original transform
+                transform=data.gw.transform,                # the new transform
+                dtype=data.dtype,
+                resampling=resampling,
+                nodata=nodata,
+                init_dest_nodata=init_dest_nodata,
+                warp_mem_limit=warp_mem_limit
+            ) as vrt:
                 rio_shutil.copy(vrt, filename, driver='VRT')
 
     else:
-
         if not data.gw.filenames:
             logger.exception('  The data filenames attribute is empty. Use gw.open(..., persist_filenames=True).')
             raise KeyError
 
         separate = True if data.gw.data_are_separate and data.gw.data_are_stacked else False
 
-        vrt_options = gdal.BuildVRTOptions(outputBounds=data.gw.bounds,
-                                           xRes=data.gw.cellx,
-                                           yRes=data.gw.celly,
-                                           separate=separate,
-                                           outputSRS=data.crs)
-
+        vrt_options = gdal.BuildVRTOptions(
+            outputBounds=data.gw.bounds,
+            xRes=data.gw.cellx,
+            yRes=data.gw.celly,
+            separate=separate,
+            outputSRS=data.crs
+        )
         ds = gdal.BuildVRT(filename, data.gw.filenames, options=vrt_options)
-
         ds = None
 
 
-def to_netcdf(data, filename, *args, **kwargs):
-
-    """
-    Writes an Xarray DataArray to a NetCDF file
+def to_netcdf(
+    data: xr.DataArray,
+    filename: T.Union[str, Path],
+    overwrite: T.Optional[bool] = False,
+    compute: T.Optional[bool] = True,
+    *args, **kwargs
+):
+    """Writes an Xarray DataArray to a NetCDF file
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is ``False``.
+        compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+            the ``dask`` task graph. Default is ``True``.
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
 
@@ -525,39 +430,166 @@ def to_netcdf(data, filename, *args, **kwargs):
         >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
         >>>     src = ds.to_array(dim='band')
     """
+    if Path(filename).is_file():
+        if overwrite:
+            Path(filename).unlink()
+        else:
+            logger.warning(f'The file {str(filename)} already exists.')
+            return
 
     encodings = {}
+    chunksize = min(data.gw.row_chunks, data.gw.col_chunks)
 
     for band_name in data.band.values.tolist():
-
-        encode_dict = {'chunksizes': (data.gw.row_chunks, data.gw.col_chunks),
-                       'dtype': data.dtype}
-
+        encode_dict = {
+            'chunksizes': (chunksize, chunksize),
+            'dtype': data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
+        }
         encode_dict.update(**kwargs)
         encodings[band_name] = encode_dict
 
-    res = data
-
     for other_data in args:
-
+        chunksize = min(other_data.gw.row_chunks, other_data.gw.col_chunks)
         for band_name in other_data.band.values.tolist():
-
-            encode_dict = {'chunksizes': (other_data.gw.row_chunks, other_data.gw.col_chunks),
-                           'dtype': other_data.dtype}
-
+            encode_dict = {
+                'chunksizes': (chunksize, chunksize),
+                'dtype': other_data.dtype.name if isinstance(other_data.dtype, np.dtype) else other_data.dtype
+            }
             encode_dict.update(**kwargs)
             encodings[band_name] = encode_dict
 
-        res = xr.concat((res, other_data), dim='band')
+        data = xr.concat((data, other_data), dim='band')
 
-    res.to_dataset(dim='band')\
-            .assign_attrs(**data.attrs)\
-            .to_netcdf(path=filename,
-                       mode='w',
-                       format='NETCDF4',
-                       engine='h5netcdf',
-                       encoding=encodings,
-                       compute=True)
+    attrs = data.attrs.copy()
+    attrs['crs'] = f"epsg:{data.gw.crs_to_pyproj.to_epsg()}"
+    ds = data.to_dataset(dim='band').assign_attrs(**attrs)
+    if compute:
+        (
+            ds
+            .to_netcdf(
+                path=filename,
+                mode='w',
+                format='NETCDF4',
+                engine='h5netcdf',
+                encoding=encodings,
+                compute=True
+            )
+        )
+    else:
+        return (
+            ds
+            .to_netcdf(
+                path=filename,
+                mode='w',
+                format='NETCDF4',
+                engine='h5netcdf',
+                encoding=encodings,
+                compute=False
+            )
+        )
+
+
+def save(
+    data: xr.DataArray,
+    filename: T.Union[str, Path],
+    mode: T.Optional[str] = 'w',
+    overwrite: T.Optional[bool] = False,
+    client: T.Optional[Client] = None,
+    compute: T.Optional[bool] = True,
+    tags: T.Optional[dict] = None,
+    compression: T.Optional[str] = 'none',
+    num_workers: T.Optional[int] = 1,
+    log_progress: T.Optional[bool] = True,
+    tqdm_kwargs: T.Optional[dict] = None
+):
+    """Saves a DataArray to raster using rasterio/dask
+
+    Args:
+        filename (str | Path): The output file name to write to.
+        overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+        client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
+            Default is None.
+        compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
+            the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
+            return the ``dask`` task graph. Default is ``True``.
+        tags (Optional[dict]): Metadata tags to write to file. Default is None.
+        compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+        num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
+            Default is 1.
+        log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
+        tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+
+    Returns:
+        ``None``, writes to ``filename``
+
+    Example:
+        >>> import geowombat as gw
+        >>>
+        >>> with gw.open('file.tif') as src:
+        >>>     result = ...
+        >>>     gw.save(result, 'output.tif', compression='lzw', num_workers=8)
+        >>>
+        >>> # Create delayed write tasks and compute later
+        >>> tasks = [gw.save(array, 'output.tif', compute=False) for array in array_list]
+        >>> # Write and close files
+        >>> dask.compute(tasks, num_workers=8)
+    """
+    if Path(filename).is_file():
+        if overwrite:
+            Path(filename).unlink()
+        else:
+            logger.warning(f'The file {str(filename)} already exists.')
+            return
+
+    kwargs = dict(
+        driver=driver_from_extension(filename),
+        width=data.gw.ncols,
+        height=data.gw.nrows,
+        count=data.gw.nbands,
+        dtype=data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype,
+        nodata=data.nodatavals[0],
+        blockxsize=data.gw.col_chunks,
+        blockysize=data.gw.row_chunks,
+        crs=data.gw.crs_to_pyproj,
+        transform=data.gw.transform,
+        compress=compression,
+        tiled=True if max(data.gw.row_chunks, data.gw.col_chunks) >= 16 else False,
+        sharing=False
+    )
+    if tqdm_kwargs is None:
+        tqdm_kwargs = {}
+
+    if not compute:
+        return RasterioStore(
+            filename,
+            mode=mode,
+            tags=tags,
+            **kwargs
+        ).open().write_delayed(data)
+
+    else:
+        with RasterioStore(
+            filename,
+            mode=mode,
+            tags=tags,
+            **kwargs
+        ) as rio_store:
+            # Store the data and return a lazy evaluator
+            res = rio_store.write(data)
+
+            if client is not None:
+                results = client.persist(res)
+                if log_progress:
+                    progress(results)
+                dask.compute(results)
+            else:
+                if log_progress:
+                    with TqdmCallback(**tqdm_kwargs):
+                        dask.compute(res, num_workers=num_workers)
+                else:
+                    dask.compute(res, num_workers=num_workers)
+
+    return None
 
 
 def to_raster(
@@ -565,7 +597,6 @@ def to_raster(
     filename,
     readxsize=None,
     readysize=None,
-    use_dask_store=False,
     separate=False,
     out_block_type='gtiff',
     keep_blocks=False,
@@ -577,10 +608,6 @@ def to_raster(
     n_workers=None,
     n_threads=None,
     n_chunks=None,
-    use_client=False,
-    address=None,
-    total_memory=24,
-    processes=False,
     padding=None,
     tags=None,
     tqdm_kwargs=None,
@@ -596,7 +623,6 @@ def to_raster(
         readysize (Optional[int]): The size of row chunks to read. If not given, ``readysize`` defaults to Dask
             chunk size.
         separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to a single file.
-        use_dask_store (Optional[bool]): Whether to use ``dask.array.store`` to save with Dask task graphs.
         out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
             Only used if ``separate`` = ``True``.
         keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk. Only used if ``separate`` = ``True``.
@@ -616,11 +642,6 @@ def to_raster(
         overviews (Optional[bool or list]): Whether to build overview layers.
         resampling (Optional[str]): The resampling method for overviews when ``overviews`` is ``True`` or a ``list``.
             Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-        use_client (Optional[bool]): Whether to use a ``dask`` client.
-        address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
-        total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
-        processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client. Only applies
-            when ``use_client`` = ``True``.
         padding (Optional[tuple]): Padding for each window. ``padding`` should be given as a tuple
             of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain
             a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets
@@ -651,9 +672,6 @@ def to_raster(
         >>> with gw.open('input.tif') as ds:
         >>>     gw.to_raster(ds, 'output.tif', n_jobs=8, overviews=True, compress='lzw')
     """
-    if MKL_LIB:
-        __ = MKL_LIB.MKL_Set_Num_Threads(n_threads)
-
     if separate and not ZARR_INSTALLED and (out_block_type.lower() == 'zarr'):
         logger.exception('  zarr must be installed to write separate blocks.')
         raise ImportError
@@ -677,25 +695,11 @@ def to_raster(
     if not is_dask_collection(data.data):
         logger.exception('  The data should be a dask array.')
 
-    if use_client:
-        if address:
-            cluster_object = _cluster_dummy
-        else:
-            cluster_object = LocalCluster
-
-        client_object = Client
-
-    else:
-        cluster_object = _cluster_dummy
-        client_object = _client_dummy
-
     if isinstance(n_workers, int) and isinstance(n_threads, int):
         n_jobs = n_workers * n_threads
     else:
         n_workers = n_jobs
         n_threads = 1
-
-    mem_per_core = int(total_memory / n_workers)
 
     if not isinstance(n_chunks, int):
         n_chunks = n_workers * 50
@@ -724,11 +728,7 @@ def to_raster(
                 compress = False
             else:
                 if 'num_threads' in kwargs:
-                    if use_dask_store:
-                        compress = True
-                    else:
-                        compress = False
-
+                    compress = False
                 else:
                     compress = True
 
@@ -816,164 +816,97 @@ def to_raster(
         logger.info('  Writing data to file ...\n')
 
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
-        if not use_dask_store:
-            windows = get_window_offsets(
-                data.gw.nrows,
-                data.gw.ncols,
-                readysize,
-                readxsize,
-                return_as='list',
-                padding=padding
-            )
+        windows = get_window_offsets(
+            data.gw.nrows,
+            data.gw.ncols,
+            readysize,
+            readxsize,
+            return_as='list',
+            padding=padding
+        )
 
-            n_windows = len(windows)
+        n_windows = len(windows)
 
-            oleft, otop = kwargs['transform'][2], kwargs['transform'][5]
-            ocols, orows = kwargs['width'], kwargs['height']
+        oleft, otop = kwargs['transform'][2], kwargs['transform'][5]
+        ocols, orows = kwargs['width'], kwargs['height']
 
-            # Iterate over the windows in chunks
-            for wchunk in range(0, n_windows, n_chunks):
-                window_slice = windows[wchunk:wchunk+n_chunks]
-                n_windows_slice = len(window_slice)
+        # Iterate over the windows in chunks
+        for wchunk in range(0, n_windows, n_chunks):
+            window_slice = windows[wchunk:wchunk+n_chunks]
+            n_windows_slice = len(window_slice)
 
-                if verbose > 0:
-                    logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
-                                                                             wchunk+n_windows_slice,
-                                                                             n_windows))
+            if verbose > 0:
+                logger.info('  Windows {:,d}--{:,d} of {:,d} ...'.format(wchunk+1,
+                                                                            wchunk+n_windows_slice,
+                                                                            n_windows))
 
-                if padding:
-                    # Read the padded window
-                    if len(data.shape) == 2:
-                        data_gen = (
-                            (
-                                data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                filename,
-                                widx+wchunk,
-                                w[0],
-                                w[1],
-                                n_workers,
-                                n_threads,
-                                separate,
-                                chunksize,
-                                root,
-                                out_block_type,
-                                tags,
-                                oleft,
-                                otop,
-                                ocols,
-                                orows,
-                                kwargs
-                            ) for widx, w in enumerate(window_slice)
-                        )
+            if padding:
+                # Read the padded window
+                if len(data.shape) == 2:
+                    data_gen = (
+                        (
+                            data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                            filename,
+                            widx+wchunk,
+                            w[0],
+                            w[1],
+                            n_workers,
+                            n_threads,
+                            separate,
+                            chunksize,
+                            root,
+                            out_block_type,
+                            tags,
+                            oleft,
+                            otop,
+                            ocols,
+                            orows,
+                            kwargs
+                        ) for widx, w in enumerate(window_slice)
+                    )
 
-                    elif len(data.shape) == 3:
-                        data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx+wchunk, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
-
-                    else:
-                        data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
-                                     filename, widx+wchunk, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
+                elif len(data.shape) == 3:
+                    data_gen = ((data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                                    filename, widx+wchunk, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 else:
-                    if len(data.shape) == 2:
-                        data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
+                    data_gen = ((data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width],
+                                    filename, widx+wchunk, w[0], w[1], n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
-                    elif len(data.shape) == 3:
-                        data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
+            else:
+                if len(data.shape) == 2:
+                    data_gen = ((data[w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                    filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
-                    else:
-                        data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
-                                     filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
-
-                if n_workers == 1:
-                    for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice, **tqdm_kwargs):
-                        pass
+                elif len(data.shape) == 3:
+                    data_gen = ((data[:, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                    filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
                 else:
-                    with pool_executor(n_workers) as executor:
-                        if scheduler == 'mpool':
-                            for __ in tqdm(
-                                executor.imap_unordered(_write_xarray, data_gen),
-                                total=n_windows_slice,
-                                **tqdm_kwargs
-                            ):
-                                pass
+                    data_gen = ((data[:, :, w.row_off:w.row_off + w.height, w.col_off:w.col_off + w.width],
+                                    filename, widx+wchunk, w, None, n_workers, n_threads, separate, chunksize, root, out_block_type, tags, oleft, otop, ocols, orows, kwargs) for widx, w in enumerate(window_slice))
 
-                        else:
-                            for __ in tqdm(
-                                executor.map(_write_xarray, data_gen),
-                                total=n_windows_slice,
-                                **tqdm_kwargs
-                            ):
-                                pass
+            if n_workers == 1:
+                for __ in tqdm(map(_write_xarray, data_gen), total=n_windows_slice, **tqdm_kwargs):
+                    pass
 
-            # if overviews:
-            #
-            #     if not isinstance(overviews, list):
-            #         overviews = [2, 4, 8, 16]
-            #
-            #     if resampling not in ['average', 'bilinear', 'cubic', 'cubic_spline',
-            #                           'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest']:
-            #
-            #         logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
-            #
-            #         resampling = 'nearest'
-            #
-            #     if verbose > 0:
-            #         logger.info('  Building pyramid overviews ...')
-            #
-            #     rio_dst.build_overviews(overviews, getattr(Resampling, resampling))
-            #     rio_dst.update_tags(ns='overviews', resampling=resampling)
+            else:
+                with pool_executor(n_workers) as executor:
+                    if scheduler == 'mpool':
+                        for __ in tqdm(
+                            executor.imap_unordered(_write_xarray, data_gen),
+                            total=n_windows_slice,
+                            **tqdm_kwargs
+                        ):
+                            pass
 
-        else:
-            with cluster_object(
-                n_workers=n_workers,
-                threads_per_worker=n_threads,
-                scheduler_port=0,
-                processes=processes,
-                memory_limit=f'{mem_per_core}GB'
-            ) as cluster:
-                cluster_address = address if address else cluster
-
-                with client_object(address=cluster_address):
-                    with WriteDaskArray(
-                        filename,
-                        overwrite=overwrite,
-                        separate=separate,
-                        out_block_type=out_block_type,
-                        keep_blocks=keep_blocks,
-                        gdal_cache=gdal_cache,
-                        **kwargs
-                    ) as dst:
-                        # Store the data and return a lazy evaluator
-                        res = da.store(
-                            da.squeeze(data.data),
-                            dst,
-                            lock=False,
-                            compute=False
-                        )
-                        if verbose > 0:
-                            logger.info('  Writing data to file ...')
-
-                        # Send the data to file
-                        #
-                        # *Note that the progress bar will
-                        #   not work with a client.
-                        if use_client:
-                            dask.compute(progress(res))
-                        else:
-                            with TqdmCallback(**tqdm_kwargs):
-                                dask.compute(res, num_workers=n_jobs)
-
-                        if verbose > 0:
-                            logger.info('  Finished writing data to file.')
-
-                        out_block_type = dst.out_block_type
-                        keep_blocks = dst.keep_blocks
-                        zarr_file = dst.zarr_file
-                        sub_dir = dst.sub_dir
+                    else:
+                        for __ in tqdm(
+                            executor.map(_write_xarray, data_gen),
+                            total=n_windows_slice,
+                            **tqdm_kwargs
+                        ):
+                            pass
 
         if compress:
             if separate:
@@ -1134,15 +1067,11 @@ def apply(
     kwargs['tiled'] = True
 
     io_mode = 'r+' if os.path.isfile(outfile) else 'w'
-
     out_indexes = 1 if count == 1 else list(range(1, count+1))
-
     futures_executor = concurrent.futures.ThreadPoolExecutor if scheduler == 'threads' else concurrent.futures.ProcessPoolExecutor
 
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
-
         with rio.open(infile) as src:
-
             profile = src.profile.copy()
 
             if 'dtype' not in kwargs:
@@ -1160,80 +1089,47 @@ def apply(
             # Create a destination dataset based on source params. The
             # destination will be tiled, and we'll process the tiles
             # concurrently.
-            profile.update(count=count,
-                           **kwargs)
+            profile.update(count=count, **kwargs)
 
             with rio.open(outfile, io_mode, **profile) as dst:
-
                 if tags:
                     dst.update_tags(**tags)
-
-                # Materialize a list of destination block windowsmode == 'w'
-                # that we will use in several statements below.
-                # windows = get_window_offsets(src.height,
-                #                              src.width,
-                #                              blockysize,
-                #                              blockxsize, return_as='list')
 
                 # This generator comprehension gives us raster data
                 # arrays for each window. Later we will zip a mapping
                 # of it with the windows list to get (window, result)
                 # pairs.
-                # if nbands == 1:
                 data_gen = (src.read(window=w, out_dtype=profile['dtype']) for ij, w in src.block_windows(1))
-                # else:
-                #
-                #     data_gen = (np.array([rio.open(fn).read(window=w,
-                #                                             out_dtype=dtype) for fn in infile], dtype=dtype)
-                #                 for ij, w in src.block_windows(1))
 
                 if args:
                     args = [_arg_gen(arg, src.block_windows(1)) for arg in args]
 
                 with futures_executor(max_workers=n_jobs) as executor:
-
                     # Submit all of the tasks as futures
-                    futures = [executor.submit(block_func,
-                                               iter_[0][1],    # window object
-                                               *iter_[1:])     # other arguments
-                               for iter_ in zip(list(src.block_windows(1)), data_gen, *args)]
+                    futures = [
+                        executor.submit(
+                            block_func,
+                            iter_[0][1],
+                            *iter_[1:]
+                        ) for iter_ in zip(list(src.block_windows(1)), data_gen, *args)
+                    ]
 
                     for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
-
                         out_window, out_block = f.result()
-
-                        dst.write(np.squeeze(out_block),
-                                  window=out_window,
-                                  indexes=out_indexes)
-
-                    # We map the block_func() function over the raster
-                    # data generator, zip the resulting iterator with
-                    # the windows list, and as pairs come back we
-                    # write data to the destination dataset.
-                    # for window_tuple, result in tqdm(zip(list(src.block_windows(1)),
-                    #                                      executor.map(block_func,
-                    #                                                   data_gen,
-                    #                                                   *args)),
-                    #                                  total=n_windows):
-                    #
-                    #     dst.write(result,
-                    #               window=window_tuple[1],
-                    #               indexes=out_indexes)
+                        dst.write(
+                            np.squeeze(out_block),
+                            window=out_window,
+                            indexes=out_indexes
+                        )
 
 
 def _compress_dummy(w, block, dummy):
-
-    """
-    Dummy function to pass to concurrent writing
-    """
-
+    """Dummy function to pass to concurrent writing"""
     return w, block
 
 
 def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw', tags=None):
-
-    """
-    Compresses a raster file
+    """Compresses a raster file
 
     Args:
         infile (str): The file to compress.
@@ -1246,25 +1142,23 @@ def compress_raster(infile, outfile, n_jobs=1, gdal_cache=512, compress='lzw', t
     Returns:
         None
     """
-
     with rio.open(infile) as src:
-
         profile = src.profile.copy()
-
         profile.update(compress=compress)
-
-        apply(infile,
-              outfile,
-              _compress_dummy,
-              scheduler='processes',
-              args=(None,),
-              gdal_cache=gdal_cache,
-              n_jobs=n_jobs,
-              tags=tags,
-              count=src.count,
-              dtype=src.profile['dtype'],
-              nodata=src.profile['nodata'],
-              tiled=src.profile['tiled'],
-              blockxsize=src.profile['blockxsize'],
-              blockysize=src.profile['blockysize'],
-              compress=compress)
+        apply(
+            infile,
+            outfile,
+            _compress_dummy,
+            scheduler='processes',
+            args=(None,),
+            gdal_cache=gdal_cache,
+            n_jobs=n_jobs,
+            tags=tags,
+            count=src.count,
+            dtype=src.profile['dtype'],
+            nodata=src.profile['nodata'],
+            tiled=src.profile['tiled'],
+            blockxsize=src.profile['blockxsize'],
+            blockysize=src.profile['blockysize'],
+            compress=compress
+        )

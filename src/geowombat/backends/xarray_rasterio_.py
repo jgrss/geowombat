@@ -314,10 +314,8 @@ def open_rasterio(
         if parse:
             nx, ny = riods.width, riods.height
             # xarray coordinates are pixel centered
-            x, _ = riods.transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5)
-            _, y = riods.transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5)
-            coords["y"] = y
-            coords["x"] = x
+            coords['x'] = (riods.transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5))[0]
+            coords['y'] = (riods.transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5))[1]
     else:
         # 2d coordinates
         parse = False if (parse_coordinates is None) else parse_coordinates

@@ -2,7 +2,7 @@ import unittest
 
 import geowombat as gw
 from geowombat.data import l8_224078_20200518
-from geowombat.data import l8_224077_20200518_B2, l8_224077_20200518_B3, l8_224077_20200518_B4
+from geowombat.data import l8_224077_20200518_B2
 from geowombat.data import rgbn
 
 from pyproj import CRS
@@ -36,7 +36,9 @@ class TestConfig(unittest.TestCase):
             for config_default in ['with_config', 'ignore_warnings']:
                 self.assertFalse(src.gw.config[config_default])
 
-            for config_default in ['sensor', 'nodata', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'compress']:
+            for config_default in [
+                'sensor', 'nodata', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'compress'
+            ]:
                 self.assertIsNone(src.gw.config[config_default])
 
     def test_config_set_res(self):
@@ -102,10 +104,15 @@ class TestConfig(unittest.TestCase):
 
     def test_unique_crs(self):
         proj4 = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"
-        with gw.open(rgbn) as src:
+        with gw.open(rgbn, chunks={'band': -1, 'y': 64, 'x': 64}) as src:
             dst = src.gw.transform_crs(proj4, dst_res=(10, 10), resampling='bilinear')
             self.assertEqual(dst.crs, proj4)
             self.assertEqual(dst.gw.crs_to_pyproj, proj4)
+            self.assertEqual(dst.data.chunksize, (src.gw.nbands, 64, 64))
+            self.assertEqual(dst.gw.celly, 10.0)
+            dst = dst.gw.transform_crs(src.crs, dst_res=(5, 5), resampling='bilinear')
+            self.assertEqual(dst.gw.celly, 5.0)
+            self.assertEqual(dst.gw.crs_to_pyproj, src.crs)
 
     def test_warnings_ignore(self):
         with LogCapture() as log:

@@ -281,9 +281,7 @@ class BaseSeries(_SeriesProps, _Warp):
 
 
 class TimeModule(object):
-
     def __init__(self):
-
         self.dtype = 'float64'
         self.count = 1
         self.compress = 'lzw'
@@ -291,13 +289,11 @@ class TimeModule(object):
         self.band_dict = None
 
     def __call__(self, w, array, band_dict):
-
         self.band_dict = band_dict
 
         return w, self.calculate(array)
 
     def __repr__(self):
-
         return f"{self.__class__.__name__}():\n    " \
                f"self.dtype='{self.dtype}'\n    " \
                f"self.count={self.count}\n    " \
@@ -305,7 +301,6 @@ class TimeModule(object):
                f"self.bigtiff='{self.bigtiff}'"
 
     def __str__(self):
-
         return f"{self.__class__.__name__}():\n    " \
                f"self.dtype='{self.dtype}'\n    " \
                f"self.count={self.count}\n    " \
@@ -314,7 +309,6 @@ class TimeModule(object):
                f"-> Array(numpy.ndarray | jax.numpy.DeviceArray | torch.Tensor | tensorflow.Tensor)[bands x height x width]"
 
     def __add__(self, other):
-
         if isinstance(other, TimeModulePipeline):
             return TimeModulePipeline([self] + other.modules)
         else:
@@ -322,9 +316,7 @@ class TimeModule(object):
 
     @abstractmethod
     def calculate(self, data: T.Any) -> T.Any:
-
-        """
-        Calculates the user function
+        """Calculates the user function
 
         Args:
             data (``numpy.ndarray`` |
@@ -339,7 +331,6 @@ class TimeModule(object):
             ``tensorflow.Tensor``:
                 Shaped (time|bands x rows x columns)
         """
-
         raise NotImplementedError
 
 
