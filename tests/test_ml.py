@@ -31,7 +31,6 @@ aoi_poly = aoi_poly.drop(columns=["name"])
 
 pl_wo_feat = Pipeline(
     [
-        # ("featurizer", Featurizer()),
         ("scaler", StandardScaler()),
         ("pca", PCA()),
         ("clf", GaussianNB()),
@@ -39,26 +38,9 @@ pl_wo_feat = Pipeline(
 )
 pl_wo_feat_pca1 = Pipeline(
     [
-        # ("featurizer", Featurizer()),
         ("scaler", StandardScaler()),
         ("pca", PCA(n_components=1)),
         ("clf", GaussianNB()),
-    ]
-)
-
-
-pl_w_feat = Pipeline(
-    [
-        ("featurizer", Featurizer()),
-        ("scaler", StandardScaler()),
-        ("pca", PCA()),
-        ("clf", GaussianNB()),
-    ]
-)
-cl_w_feat = Pipeline(
-    [
-        ("pca", PCA()),
-        ("clf", KMeans(3, random_state=0)),
     ]
 )
 
@@ -70,61 +52,25 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, pl_w_feat, aoi_point, col="lc")
-                # y1 = predict(src, X, clf)
-                # y2 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
+                X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
+                y1 = predict(src, X, clf)
+                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
-        # self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+        self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    # def test_fitpredict_time_point(self):
+    def test_fitpredict_time_point(self):
 
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(
-    #             [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
-    #         ) as src:
-    #             y1 = fit_predict(
-    #                 src, pl_w_feat, aoi_point, col="lc", mask_nodataval=False
-    #             )
+        with gw.config.update(
+            ref_res=300,
+        ):
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
+            ) as src:
+                y1 = fit_predict(
+                    src, pl_wo_feat, aoi_point, col="lc", mask_nodataval=False
+                )
 
-    #     self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
-
-    # def test_w_wo_featurizer_point(self):
-
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(l8_224078_20200518) as src:
-    #             y1 = fit_predict(src, pl_w_feat, aoi_point, col="lc")
-
-    #             y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
-
-    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
-
-    # def test_fitpredict_eq_fit_predict_poly(self):
-
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(l8_224078_20200518) as src:
-    #             X, Xy, clf = fit(src, pl_w_feat, aoi_poly, col="lc")
-    #             y1 = predict(src, X, clf)
-
-    #             y2 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
-
-    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
-
-    # def test_w_wo_featurizer_poly(self):
-
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(l8_224078_20200518) as src:
-    #             y1 = fit_predict(src, pl_w_feat, aoi_poly, col="lc")
-    #             y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
-
-    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
+        self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
 
     # def test_nodataval_replace(self):
 
@@ -155,19 +101,6 @@ class TestConfig(unittest.TestCase):
     #     self.assertTrue(~np.all(y1.values != y2.values))
     #     self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
     #     self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
-
-    # def test_fitpredict_eq_fit_predict_cluster(self):
-
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(l8_224078_20200518) as src:
-    #             X, Xy, clf = fit(src, cl_w_feat)
-    #             y1 = predict(src, X, clf)
-
-    #             y2 = fit_predict(src, cl_w_feat)
-
-    #     self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
     # def test_fitpredict_eq_fit_predict_cluster2(self):
 
