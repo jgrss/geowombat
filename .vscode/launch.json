@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Module",
+            "type": "python",
+            "request": "launch",
+            "module": "geowombat",
+            "justMyCode": false,
+            "env": {
+                "PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT": "250",
+                "PYDEVD_THREAD_DUMP_ON_WARN_EVALUATION_TIMEOUT": "false",
+            }
+        },
+        {
+            "name": "Python: Module",
+            "type": "python",
+            "request": "launch",
+            "module": "geowombat",
+            "justMyCode": false,
+            "env": {
+                "PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT": "250",
+                "PYDEVD_THREAD_DUMP_ON_WARN_EVALUATION_TIMEOUT": "false",
+            }
+        },
+    ]
+}
