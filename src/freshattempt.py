@@ -37,8 +37,8 @@ with gw.open(
     band_names=["blue", "green", "red", "nir"],
     time_names=["t1", "t2", "t3"],
 ) as srcs:
-    srcs.load()
-
+    # srcs.load()
+    print(srcs)
 land_use = np.tile(
     "water", (srcs.sizes["time"], srcs.sizes["y"], srcs.sizes["x"])
 ).astype(object)
@@ -63,15 +63,34 @@ ys = Target(coord="land_use", transform_func=LabelEncoder().fit_transform)(Xna)
 from sklearn_xarray import wrap
 from sklearn_xarray.preprocessing import Sanitizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+
 
 wrapper = Pipeline(
-    [("san", Sanitizer()), ("cls", wrap(LogisticRegression(), reshapes="band"))]
+    [("cls", wrap(GaussianNB(), reshapes="band"))]  # ("san", Sanitizer()),
 )
 
 wrapper.fit(Xna, ys)
 #%%
 yp = wrapper.predict(Xs)
 yp
+
+
+y = (
+    wrapper.predict(Xs)
+    .unstack("sample")
+    .assign_coords(coords={"band": "land_use"})
+    .expand_dims(dim="band")
+    .transpose("time", "band", "y", "x")
+)
+
+# %%
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(dpi=200, figsize=(5, 5))
+
+y.sel(time="t1").plot(robust=True, ax=ax)
+plt.tight_layout(pad=1)
 
 
 #%%

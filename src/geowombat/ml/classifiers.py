@@ -42,18 +42,22 @@ class WrappedClassifier(object):
 class ClassifiersMixin(object):
     @staticmethod
     def _add_time_dim(data):
-        return (
-            data.assign_coords(coords={"time": "t1"})
-            .expand_dims(dim="time")
-            .transpose("time", "band", "y", "x")
-        )
+        if not hasattr(srcs, "time"):
+
+            return (
+                data.assign_coords(coords={"time": "t1"})
+                .expand_dims(dim="time")
+                .transpose("time", "band", "y", "x")
+            )
+        else:
+            return data
 
     # @staticmethod
     def _prepare_labels(self, data, labels, col, targ_name):
 
         if labels[col].dtype != int:
             le = LabelEncoder()
-            labels[col] = le.fit_transform(labels.name)
+            labels[col] = le.fit_transform(labels.name) + 1
             logger.warning(
                 "target labels were not integers, applying LabelEncoder. Classes:",
                 le.classes_,
@@ -71,6 +75,7 @@ class ClassifiersMixin(object):
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
             coords={"band": data.time.values.tolist()}
         )
+
         # Mask 'no data' outside training data (does'nt work remove class 0)
         # labels = labels.where(labels != 0)
 
@@ -80,9 +85,7 @@ class ClassifiersMixin(object):
 
     @staticmethod
     def _stack_it(data):
-        return Stackerizer(
-            stack_dims=("y", "x", "time"), direction="stack"
-        ).fit_transform(data)
+        return data.stack(sample=("x", "y", "time")).T
 
     # @staticmethod
     def _prepare_predictors(self, data, targ_name):
@@ -101,34 +104,35 @@ class ClassifiersMixin(object):
     @staticmethod
     def _prepare_classifiers(clf):
 
-        if isinstance(clf, Pipeline):
+        # ideally need to add wrap(clf, reshapes='band')
+        # if isinstance(clf, Pipeline):
 
-            cln = Pipeline(
-                [
-                    (clf_name, clf_)
-                    for clf_name, clf_ in clf.steps
-                    if not isinstance(clf_, Featurizer)
-                ]
-            )
-            cln = Pipeline(
-                [
-                    (clf_name, clf_)
-                    for clf_name, clf_ in cln.steps
-                    if not isinstance(clf_, Sanitizer)
-                ]
-            )  # sanitizer
-            cln.steps.insert(0, ("sanitizer", Sanitizer()))  # sanitizer
-            cln.steps.insert(1, ("featurizer", Featurizer()))
+        #     cln = Pipeline(
+        #         [
+        #             (clf_name, clf_)
+        #             for clf_name, clf_ in clf.steps
+        #             if not isinstance(clf_, Featurizer)
+        #         ]
+        #     )
+        #     cln = Pipeline(
+        #         [
+        #             (clf_name, clf_)
+        #             for clf_name, clf_ in cln.steps
+        #             if not isinstance(clf_, Sanitizer)
+        #         ]
+        #     )  # sanitizer
+        #     cln.steps.insert(0, ("sanitizer", Sanitizer()))  # sanitizer
+        #     cln.steps.insert(1, ("featurizer", Featurizer()))
 
-            clf = Pipeline(
-                [
-                    (cln_name, wrap(cln_, reshapes="band"))
-                    for cln_name, cln_ in cln.steps
-                ]
-            )  # ISSUE: WarppedClassifier sets reshapes = 'feature'
+        #     clf = Pipeline(
+        #         [
+        #             (cln_name, wrap(cln_, reshapes="band"))
+        #             for cln_name, cln_ in cln.steps
+        #         ]
+        #     )  # ISSUE: WarppedClassifier sets reshapes = 'feature'
 
-        else:
-            clf = WrappedClassifier(clf)
+        # else:
+        #     clf = WrappedClassifier(clf)
 
         return clf
 
@@ -275,6 +279,7 @@ class Classifiers(ClassifiersMixin):
             return X, (X, None), clf
 
         else:
+            data = self._add_time_dim(data)
 
             data, labels = self._prepare_labels(data, labels, col, targ_name)
             # X, Xna = self._prepare_predictors(data, targ_name) sanitizer
@@ -290,9 +295,6 @@ class Classifiers(ClassifiersMixin):
                 X
             )  # (Xna)
 
-            print(y)
-            print(X)
-            print(type(X))
             # TO DO: Validation checks
             # Xna, y = check_X_y(Xna, y)
 
