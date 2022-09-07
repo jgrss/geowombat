@@ -1,9 +1,7 @@
 import functools
 import logging
-from os import XATTR_SIZE_MAX
 
 from .. import polygon_to_array
-from .transformers import Stackerizer
 
 # from .transformers import Featurizer_GW as Featurizer
 
@@ -71,9 +69,6 @@ class ClassifiersMixin(object):
             coords={"band": data.time.values.tolist()}
         )
 
-        # Mask 'no data' outside training data
-        labels = labels.where(labels != 0)
-
         data.coords[targ_name] = (["time", "y", "x"], labels.data)
 
         return data, labels
@@ -104,29 +99,12 @@ class ClassifiersMixin(object):
         # ideally need to add wrap(clf, reshapes='band')
         if isinstance(clf, Pipeline):
 
-            # cln = Pipeline(
-            #     [
-            #         (clf_name, clf_)
-            #         for clf_name, clf_ in clf.steps
-            #         if not isinstance(clf_, Featurizer)
-            #     ]
-            # )
-            # cln = Pipeline(
-            #     [
-            #         (clf_name, clf_)
-            #         for clf_name, clf_ in cln.steps
-            #         if not isinstance(clf_, Sanitizer)
-            #     ]
-            # )  # sanitizer
-            # cln.steps.insert(0, ("sanitizer", Sanitizer()))  # sanitizer
-            # cln.steps.insert(1, ("featurizer", Featurizer()))
-
             clf = Pipeline(
                 [
                     (cln_name, wrap(cln_, reshapes="band"))
                     for cln_name, cln_ in clf.steps
                 ]
-            )  # ISSUE: WarppedClassifier sets reshapes = 'feature'
+            )
 
         else:
             clf = WrappedClassifier(clf)
@@ -166,7 +144,6 @@ class ClassifiersMixin(object):
             labels = polygon_to_array(labels, col=col, data=data)
             labels["band"] = [variable_name]
 
-        # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
             data = (
@@ -286,8 +263,6 @@ class Classifiers(ClassifiersMixin):
             # TODO: should we be using lazy=True?
             y = Target(
                 coord=targ_name,
-                # transform_func=LabelEncoder().fit_transform
-                # dim=targ_dim_name, sanitizer
             )(Xna)
 
             # TO DO: Validation checks
@@ -360,7 +335,6 @@ class Classifiers(ClassifiersMixin):
         """
         check_is_fitted(clf)
 
-        # try:
         y = (
             clf.predict(X)
             .unstack(targ_dim_name)
@@ -369,14 +343,12 @@ class Classifiers(ClassifiersMixin):
             .transpose("time", "band", "y", "x")
         )
 
-        # no point unit doesn't have nan
         if mask_nodataval:
             y = self._mask_nodata(y=y, x=data)
 
         if y.gw.ntime == 1:
             y = y.sel(time="t1")
 
-        # return xr.concat([data, y], dim="band").sel(band=targ_name)
         return y
 
     def fit_predict(
