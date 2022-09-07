@@ -36,30 +36,29 @@ with gw.open(
     [rgbn_20160101, rgbn_20160401, rgbn_20160517],
     band_names=["blue", "green", "red", "nir"],
     time_names=["t1", "t2", "t3"],
-) as src:
-    src.load()
+) as srcs:
+    srcs.load()
 
-land_use = np.tile("water", (src.sizes["time"], src.sizes["y"], src.sizes["x"])).astype(
-    object
-)
-land_use[src.sel(band="green").values > 128] = 1
-land_use[src.sel(band="green").values < 88] = np.NaN
+land_use = np.tile(
+    "water", (srcs.sizes["time"], srcs.sizes["y"], srcs.sizes["x"])
+).astype(object)
+land_use[srcs.sel(band="green").values > 128] = 1
+land_use[srcs.sel(band="green").values < 88] = np.NaN
 
 land_use = land_use.astype(str)
-src.coords["land_use"] = (["time", "y", "x"], land_use)
+srcs.coords["land_use"] = (["time", "y", "x"], land_use)
 
 
-X = src.stack(sample=("x", "y", "time")).T
-X
+Xs = srcs.stack(sample=("x", "y", "time")).T
+
 #%%
 from sklearn_xarray import Target
 from sklearn.preprocessing import LabelEncoder
 
-Xna = X[~X["land_use"].isnull()]
+Xna = Xs[~Xs["land_use"].isnull()]
 
-y = Target(coord="land_use", transform_func=LabelEncoder().fit_transform)(Xna)
-print(y)
-print(X)
+ys = Target(coord="land_use", transform_func=LabelEncoder().fit_transform)(Xna)
+
 #%%
 from sklearn_xarray import wrap
 from sklearn_xarray.preprocessing import Sanitizer
@@ -69,9 +68,9 @@ wrapper = Pipeline(
     [("san", Sanitizer()), ("cls", wrap(LogisticRegression(), reshapes="band"))]
 )
 
-wrapper.fit(X, y)
+wrapper.fit(Xna, ys)
 #%%
-yp = wrapper.predict(X)
+yp = wrapper.predict(Xs)
 yp
 
 

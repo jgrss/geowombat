@@ -1,4 +1,4 @@
-#%%
+#%% WORKING
 
 import sys
 
@@ -27,6 +27,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.cluster import KMeans
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn_xarray.model_selection import CrossValidatorWrapper
+from geopandas.geodataframe import GeoDataFrame
+from geowombat import polygon_to_array
+from sklearn_xarray import wrap, Target
 
 aoi_point = gpd.read_file(l8_224078_20200518_points)
 aoi_point["lc"] = LabelEncoder().fit_transform(aoi_point.name)
@@ -68,9 +71,35 @@ if labels[col].dtype != int:
 if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
     labels = polygon_to_array(labels, col=col, data=data)
 
+data.load()
 #%%
-labels
+data = (
+            data.assign_coords(coords={"time": "t1"})
+            .expand_dims(dim="time")
+            .transpose("time", "band", "y", "x")
+        )
+data
+#%%
+data.coords["targ"] = (["time", "y", "x"], labels.values)
+#%%
+X = data.stack(sample=("x", "y", "time")).T
+X
 
+#%%
+y = Target(coord="targ", transform_func=LabelEncoder().fit_transform)(X)
+y
+#%%
+
+
+
+wrapper = Pipeline(
+    [("san", Sanitizer()), ("cls", wrap(GaussianNB(), reshapes="band"))]
+)
+
+wrapper.fit(X, y)
+#%%
+yp = wrapper.predict(X)
+yp
 
 
 
@@ -217,10 +246,16 @@ wrapper.fit(X, y)
 #%%
 yp = wrapper.predict(X)
 yp
+#%%
+y = (
+            wrapper.predict(X)
+            .unstack(targ_dim_name)
+            .assign_coords(coords={"band": targ_name})
+            .expand_dims(dim="band")
+            .transpose("time", "band", "y", "x")
+        )
 
-
-
-
+#%%
 
 
 
