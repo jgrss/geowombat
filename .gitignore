@@ -36,7 +36,8 @@ geowombat/models/
 logo/
 bin/ESPA/
 
-geowombat/data/lut
+src/geowombat/data/lut
+src/geowombat/data/*.properties
 
 # dev
 geowombat/moving/*test*
