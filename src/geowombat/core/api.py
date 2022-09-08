@@ -511,6 +511,7 @@ class open(object):
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
+                        self.data.attrs['filename'] = filename
 
         self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
         self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)
@@ -621,7 +622,7 @@ def load(
     from dask.diagnostics import ProgressBar
     import ray
     from ray.util.dask import ray_dask_get
-    
+
     netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):
