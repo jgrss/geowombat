@@ -49,7 +49,6 @@ class ClassifiersMixin(object):
         else:
             return data
 
-    # @staticmethod
     def _prepare_labels(self, data, labels, col, targ_name):
 
         if (labels[col].dtype != int) or (labels[col].min() == 0):
