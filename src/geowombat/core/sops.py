@@ -1104,7 +1104,7 @@ class SpatialOperations(_PropertyMixin):
         Args:
             target (DataArray or str): The target ``xarray.DataArray`` or file name to co-register to ``reference``.
             reference (DataArray or str): The reference ``xarray.DataArray`` or file name used to co-register ``target``.
-            wkt_version (Optional[str]): The WKT version to use with ``to_wkt()``. 
+            wkt_version (Optional[str]): The WKT version to use with ``to_wkt()``.
             kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
         Reference:
@@ -1171,8 +1171,8 @@ class SpatialOperations(_PropertyMixin):
                 tar_src.gw.save(tar_path, overwrite=True)
 
             cr = arosics.COREG(
-                GeoArray(str(ref_path), projection=ref_src.crs),
-                GeoArray(str(tar_path), projection=tar_src.crs),
+                GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
+                GeoArray(GeoArray(str(tar_path)), projection=tar_src.crs),
                 **kwargs
             )
 
