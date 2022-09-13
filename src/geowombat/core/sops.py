@@ -29,6 +29,7 @@ from dask.distributed import Client, LocalCluster
 import rasterio as rio
 from rasterio import features
 from affine import Affine
+from pyproj.enums import WktVersion
 
 try:
     import arosics
@@ -1146,29 +1147,36 @@ class SpatialOperations(_PropertyMixin):
             with gw_.open(target) as target:
                 pass
 
+        if wkt_version is None:
+            wkt_version = WktVersion.WKT2_2019.value
+        elif isinstance(wkt_version, str):
+            try:
+                wkt_version = WktVersion[wkt_version].value
+            except KeyError as e:
+                logger.exception(e)
+                raise KeyError
+
         with tempfile.TemporaryDirectory() as tmp:
             ref_path = Path(tmp) / '_reference.tif'
             tar_path = Path(tmp) / '_target.tif'
             with gw_.open(reference.filename, chunks={'band': -1, 'y': 256, 'x': 256}) as ref_src:
-                if wkt_version is not None:
-                    ref_src = ref_src.assign_attrs(
-                        {
-                            'crs': ref_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
-                        }
-                    )
+                ref_src = ref_src.assign_attrs(
+                    {
+                        'crs': ref_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
+                    }
+                )
                 if 'nodata' in kwargs:
                     ref_src = ref_src.assign_attrs({'nodatavals': (kwargs['nodata'][0],)}).fillna(kwargs['nodata'][0])
-                ref_src.gw.save(ref_path, overwrite=True)
+                ref_src.gw.save(ref_path, overwrite=True, log_progress=False)
             with gw_.open(target.filename, chunks={'band': -1, 'y': 256, 'x': 256}) as tar_src:
-                if wkt_version is not None:
-                    tar_src = tar_src.assign_attrs(
-                        {
-                            'crs': tar_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
-                        }
-                    )
+                tar_src = tar_src.assign_attrs(
+                    {
+                        'crs': tar_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
+                    }
+                )
                 if 'nodata' in kwargs:
                     tar_src = tar_src.assign_attrs({'nodatavals': (kwargs['nodata'][1],)}).fillna(kwargs['nodata'][1])
-                tar_src.gw.save(tar_path, overwrite=True)
+                tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
             cr = arosics.COREG(
                 GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
