@@ -70,6 +70,7 @@ class TestOpen(unittest.TestCase):
     def test_open_path(self):
         with gw.open(Path(l8_224078_20200518)) as src:
             self.assertEqual(src.gw.nbands, 3)
+            self.assertEqual(src.gw.band_chunks, 3)
 
     def test_open_type_xarray(self):
         with gw.open(l8_224078_20200518) as src:
