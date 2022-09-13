@@ -416,21 +416,22 @@ class open(object):
         self.__data_are_stacked = False
         self.__filenames = []
 
+        band_chunks = -1
         if 'chunks' in kwargs:
-            if kwargs['chunks']:
-                ch.check_chunktype(kwargs['chunks'], output='3d')
+            if kwargs['chunks'] is not None:
+                kwargs['chunks'] = ch.check_chunktype(kwargs['chunks'], output='3d')
 
         if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
             if 'chunks' not in kwargs:
                 if isinstance(filename, list):
                     with rio.open(filename[0]) as src_:
                         w = src_.block_window(1, 0, 0)
-                        chunks = (1, w.height, w.width)
+                        chunks = (band_chunks, w.height, w.width)
 
                 else:
                     with rio.open(filename) as src_:
                         w = src_.block_window(1, 0, 0)
-                        chunks = (1, w.height, w.width)
+                        chunks = (band_chunks, w.height, w.width)
 
             else:
                 chunks = kwargs['chunks']
@@ -457,7 +458,7 @@ class open(object):
                 if 'chunks' not in kwargs:
                     with rio.open(filename[0]) as src:
                         w = src.block_window(1, 0, 0)
-                        kwargs['chunks'] = (1, w.height, w.width)
+                        kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                 if mosaic:
                     # Mosaic images over space
@@ -506,7 +507,7 @@ class open(object):
                     if 'chunks' not in kwargs:
                         with rio.open(filename) as src:
                             w = src.block_window(1, 0, 0)
-                            kwargs['chunks'] = (1, w.height, w.width)
+                            kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                     self.data = warp_open(
                         filename,
