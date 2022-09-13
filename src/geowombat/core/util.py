@@ -306,15 +306,13 @@ def n_rows_cols(pixel_index, block_size, rows_cols):
 
 
 class Chunks(object):
-
     @staticmethod
     def get_chunk_dim(chunksize):
         return '{:d}d'.format(len(chunksize))
 
     def check_chunktype(self, chunksize, output='3d'):
-
         if isinstance(chunksize, int):
-            chunksize = (1, chunksize, chunksize)
+            chunksize = (-1, chunksize, chunksize)
 
         chunk_len = len(chunksize)
         output_len = int(output[0])
