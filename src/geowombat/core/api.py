@@ -350,17 +350,31 @@ class open(object):
         >>> w = Window(row_off=0, col_off=0, height=100, width=100)
         >>>
         >>> # Stack two images, opening band 3
-        >>> with gw.open(['image1.tif', 'image2.tif'],
-        >>>              band_names=['date1', 'date2'],
-        >>>              num_workers=8,
-        >>>              indexes=3,
-        >>>              window=w,
-        >>>              dtype='float32') as ds:
-        >>>
+        >>> with gw.open(
+        >>>     ['image1.tif', 'image2.tif'],
+        >>>     band_names=['date1', 'date2'],
+        >>>     num_workers=8,
+        >>>     indexes=3,
+        >>>     window=w,
+        >>>     dtype='float32'
+        >>> ) as ds:
         >>>     print(ds)
         >>>
         >>> # Open a NetCDF variable
         >>> with gw.open('netcdf:image.nc:blue') as src:
+        >>>     print(src)
+        >>>
+        >>> # Open a NetCDF image without access to transforms
+        >>> # NOTE: This will be faster than the above method
+        >>> # as it uses ``xarray.open_dataset`` and bypasses CRS checks.
+        >>> # NOTE: The chunks must be provided by the user.
+        >>> # NOTE: Providing band names will ensure the correct order when reading from a NetCDF dataset.
+        >>> with gw.open(
+        >>>     'image.nc',
+        >>>     chunks={'band': -1, 'y': 256, 'x': 256},
+        >>>     band_names=['blue', 'green', 'red', 'nir', 'swir1', 'swir2'],
+        >>>     engine='h5netcdf'
+        >>> ) as src:
         >>>     print(src)
         >>>
         >>> # Open multiple NetCDF variables as an array stack
