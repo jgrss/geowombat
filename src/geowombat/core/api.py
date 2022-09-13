@@ -511,7 +511,19 @@ class open(object):
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
-                        self.data.attrs['filename'] = filename
+                    if band_names is not None:
+                        if len(band_names) != self.data['band'].shape[0]:
+                            raise ValueError('The length of band_names must match the length of the band coordinate.')
+                        band_names_new = []
+                        band_names_old = []
+                        for bname_new, bname_old in zip(band_names, self.data['band'].values):
+                            band_names_new.append(bname_new)
+                            if bname_new in self.data['band'].values:
+                                band_names_old.append(bname_new)
+                            else:
+                                band_names_old.append(bname_old)
+                        self.data = self.data.sel(band=band_names_old)
+                        self.data = self.data.assign_coords(**{'band': band_names_new})
 
         self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
         self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)
