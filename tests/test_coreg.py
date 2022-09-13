@@ -26,10 +26,9 @@ class TestCOREG(unittest.TestCase):
             self.assertTrue(reference.shape == data.shape)
 
     def test_coreg_transform(self):
-        chunks = {'band': -1, 'y': 512, 'x': 512}
         with gw.config.update(ref_crs="epsg:8858"):
-            with gw.open(l8_224077_20200518_B2, chunks=chunks) as target, \
-                gw.open(l8_224077_20200518_B4, chunks=chunks) as reference:
+            with gw.open(l8_224077_20200518_B2, chunks=512) as target, \
+                gw.open(l8_224077_20200518_B4, chunks=512) as reference:
                 data = gw.coregister(
                     target=target,
                     reference=reference,
