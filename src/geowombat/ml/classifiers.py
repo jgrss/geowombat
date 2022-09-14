@@ -2,13 +2,15 @@ import functools
 import logging
 
 from .. import polygon_to_array
-from .transformers import Stackerizer
+
+# from .transformers import Featurizer_GW as Featurizer
 
 import xarray as xr
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
 from sklearn_xarray import wrap, Target
-from sklearn_xarray.preprocessing import Featurizer
+
+
 import numpy as np
 from geopandas.geodataframe import GeoDataFrame
 
@@ -22,7 +24,7 @@ def wrapped_cls(cls):
     def wrapper(self):
 
         if self.__module__.split(".")[0] != "sklearn_xarray":
-            self = wrap(self, reshapes="feature")
+            self = wrap(self, reshapes="band")
 
         return self
 
@@ -37,20 +39,22 @@ class WrappedClassifier(object):
 class ClassifiersMixin(object):
     @staticmethod
     def _add_time_dim(data):
-        return (
-            data.assign_coords(coords={"time": "t1"})
-            .expand_dims(dim="time")
-            .transpose("time", "band", "y", "x")
-        )
+        if not hasattr(data, "time"):
 
-    # @staticmethod
+            return (
+                data.assign_coords(coords={"time": "t1"})
+                .expand_dims(dim="time")
+                .transpose("time", "band", "y", "x")
+            )
+        else:
+            return data
+
     def _prepare_labels(self, data, labels, col, targ_name):
-
-        if labels[col].dtype != int:
+        if (labels[col].dtype != int) or (labels[col].min() == 0):
             le = LabelEncoder()
-            labels[col] = le.fit_transform(labels.name)
+            labels[col] = le.fit_transform(labels[col]) + 1
             logger.warning(
-                "target labels were not integers, applying LabelEncoder. Classes:",
+                "target labels were not integers or min class is 0 (conflicts with missing), applying LabelEncoder and adding 1. Classes:",
                 le.classes_,
                 "Code:",
                 le.transform(le.classes_),
@@ -59,26 +63,17 @@ class ClassifiersMixin(object):
         if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
             labels = polygon_to_array(labels, col=col, data=data)
 
-        # TODO: is this sufficient for single dates?
-        if not data.gw.has_time_coord:
-            data = self._add_time_dim(data)
-
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
             coords={"band": data.time.values.tolist()}
         )
 
-        # Mask 'no data' outside training data
-        labels = labels.where(labels != 0)
+        data.coords[targ_name] = (["time", "y", "x"], labels.values)
 
-        data.coords[targ_name] = (["time", "y", "x"], labels.data)
-
-        return data
+        return data, labels
 
     @staticmethod
     def _stack_it(data):
-        return Stackerizer(
-            stack_dims=("y", "x", "time"), direction="stack"
-        ).fit_transform(data)
+        return data.stack(sample=("x", "y", "time")).T
 
     # @staticmethod
     def _prepare_predictors(self, data, targ_name):
@@ -86,7 +81,10 @@ class ClassifiersMixin(object):
         X = self._stack_it(data)
 
         # drop nans
-        Xna = X[~X[targ_name].isnull()]
+        try:
+            Xna = X[~X[targ_name].isnull()]
+        except KeyError:
+            Xna = X
 
         # TODO: groupby as a user option?
         # Xgp = Xna.groupby(targ_name).mean('sample')
@@ -96,20 +94,14 @@ class ClassifiersMixin(object):
     @staticmethod
     def _prepare_classifiers(clf):
 
+        # ideally need to add wrap(clf, reshapes='band')
         if isinstance(clf, Pipeline):
 
-            cln = Pipeline(
-                [
-                    (clf_name, clf_)
-                    for clf_name, clf_ in clf.steps
-                    if not isinstance(clf_, Featurizer)
-                ]
-            )
-
-            cln.steps.insert(0, ("featurizer", Featurizer()))
-
             clf = Pipeline(
-                [(cln_name, WrappedClassifier(cln_)) for cln_name, cln_ in cln.steps]
+                [
+                    (cln_name, wrap(cln_, reshapes="band"))
+                    for cln_name, cln_ in clf.steps
+                ]
             )
 
         else:
@@ -150,7 +142,6 @@ class ClassifiersMixin(object):
             labels = polygon_to_array(labels, col=col, data=data)
             labels["band"] = [variable_name]
 
-        # TODO: is this sufficient for single dates?
         if not data.gw.has_time_coord:
 
             data = (
@@ -250,32 +241,33 @@ class Classifiers(ClassifiersMixin):
         """
         if clf._estimator_type == "clusterer":
             data = self._add_time_dim(data)
-            X = self._stack_it(data)
+            X, Xna = self._prepare_predictors(data, targ_name)
+
             clf = self._prepare_classifiers(clf)
 
             # TODO: Validation checks
             # check_array(X)
             clf.fit(X)
+            setattr(clf, 'fitted_', True)
 
             return X, (X, None), clf
 
         else:
+            data = self._add_time_dim(data)
 
-            data = self._prepare_labels(data, labels, col, targ_name)
+            data, labels = self._prepare_labels(data, labels, col, targ_name)
             X, Xna = self._prepare_predictors(data, targ_name)
             clf = self._prepare_classifiers(clf)
 
             # TODO: should we be using lazy=True?
             y = Target(
                 coord=targ_name,
-                transform_func=LabelEncoder().fit_transform,
-                dim=targ_dim_name,
             )(Xna)
 
             # TO DO: Validation checks
             # Xna, y = check_X_y(Xna, y)
-
             clf.fit(Xna, y)
+            setattr(clf, 'fitted_', True)
 
             return X, (Xna, y), clf
 
@@ -342,7 +334,6 @@ class Classifiers(ClassifiersMixin):
         """
         check_is_fitted(clf)
 
-        # try:
         y = (
             clf.predict(X)
             .unstack(targ_dim_name)
@@ -351,11 +342,13 @@ class Classifiers(ClassifiersMixin):
             .transpose("time", "band", "y", "x")
         )
 
-        # no point unit doesn't have nan
         if mask_nodataval:
             y = self._mask_nodata(y=y, x=data)
 
-        return xr.concat([data, y], dim="band").sel(band=targ_name)
+        if y.gw.ntime == 1:
+            y = y.sel(time="t1")
+
+        return y
 
     def fit_predict(
         self,
@@ -426,7 +419,7 @@ class Classifiers(ClassifiersMixin):
         X, Xy, clf = self.fit(
             data,
             clf,
-            labels,
+            labels=labels,
             col=col,
             targ_name=targ_name,
             targ_dim_name=targ_dim_name,

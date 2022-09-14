@@ -55,6 +55,7 @@ jobs:
           sudo apt update && sudo apt upgrade -y && sudo apt install -y
           sudo apt install software-properties-common -y
           sudo add-apt-repository ppa:ubuntugis/ppa
+          sudo apt update -y && sudo apt install -y
           sudo apt install libmysqlclient-dev default-libmysqlclient-dev -y
           sudo apt install gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ -y
           export CPLUS_INCLUDE_PATH=/usr/include/gdal
@@ -63,7 +64,7 @@ jobs:
       - name: Install Python packages
         run: |
           # Install Python GDAL
-          pip install -U pip setuptools wheel
+          pip install -U pip setuptools>=59.5.0 wheel
           pip install Cython>=0.29.* numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
           pip install GDAL==$GDAL_VERSION --no-binary=gdal
@@ -73,7 +74,6 @@ jobs:
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
-          pip install -U numpy
           python -m unittest
 
   Version:
