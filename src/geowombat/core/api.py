@@ -350,17 +350,31 @@ class open(object):
         >>> w = Window(row_off=0, col_off=0, height=100, width=100)
         >>>
         >>> # Stack two images, opening band 3
-        >>> with gw.open(['image1.tif', 'image2.tif'],
-        >>>              band_names=['date1', 'date2'],
-        >>>              num_workers=8,
-        >>>              indexes=3,
-        >>>              window=w,
-        >>>              dtype='float32') as ds:
-        >>>
+        >>> with gw.open(
+        >>>     ['image1.tif', 'image2.tif'],
+        >>>     band_names=['date1', 'date2'],
+        >>>     num_workers=8,
+        >>>     indexes=3,
+        >>>     window=w,
+        >>>     dtype='float32'
+        >>> ) as ds:
         >>>     print(ds)
         >>>
         >>> # Open a NetCDF variable
         >>> with gw.open('netcdf:image.nc:blue') as src:
+        >>>     print(src)
+        >>>
+        >>> # Open a NetCDF image without access to transforms
+        >>> # NOTE: This will be faster than the above method
+        >>> # as it uses ``xarray.open_dataset`` and bypasses CRS checks.
+        >>> # NOTE: The chunks must be provided by the user.
+        >>> # NOTE: Providing band names will ensure the correct order when reading from a NetCDF dataset.
+        >>> with gw.open(
+        >>>     'image.nc',
+        >>>     chunks={'band': -1, 'y': 256, 'x': 256},
+        >>>     band_names=['blue', 'green', 'red', 'nir', 'swir1', 'swir2'],
+        >>>     engine='h5netcdf'
+        >>> ) as src:
         >>>     print(src)
         >>>
         >>> # Open multiple NetCDF variables as an array stack
@@ -402,21 +416,22 @@ class open(object):
         self.__data_are_stacked = False
         self.__filenames = []
 
+        band_chunks = -1
         if 'chunks' in kwargs:
-            if kwargs['chunks']:
-                ch.check_chunktype(kwargs['chunks'], output='3d')
+            if kwargs['chunks'] is not None:
+                kwargs['chunks'] = ch.check_chunktype(kwargs['chunks'], output='3d')
 
         if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
             if 'chunks' not in kwargs:
                 if isinstance(filename, list):
                     with rio.open(filename[0]) as src_:
                         w = src_.block_window(1, 0, 0)
-                        chunks = (1, w.height, w.width)
+                        chunks = (band_chunks, w.height, w.width)
 
                 else:
                     with rio.open(filename) as src_:
                         w = src_.block_window(1, 0, 0)
-                        chunks = (1, w.height, w.width)
+                        chunks = (band_chunks, w.height, w.width)
 
             else:
                 chunks = kwargs['chunks']
@@ -443,7 +458,7 @@ class open(object):
                 if 'chunks' not in kwargs:
                     with rio.open(filename[0]) as src:
                         w = src.block_window(1, 0, 0)
-                        kwargs['chunks'] = (1, w.height, w.width)
+                        kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                 if mosaic:
                     # Mosaic images over space
@@ -492,7 +507,7 @@ class open(object):
                     if 'chunks' not in kwargs:
                         with rio.open(filename) as src:
                             w = src.block_window(1, 0, 0)
-                            kwargs['chunks'] = (1, w.height, w.width)
+                            kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                     self.data = warp_open(
                         filename,
@@ -511,6 +526,19 @@ class open(object):
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
+                    if band_names is not None:
+                        if len(band_names) != self.data['band'].shape[0]:
+                            raise ValueError('The length of band_names must match the length of the band coordinate.')
+                        band_names_new = []
+                        band_names_old = []
+                        for bname_new, bname_old in zip(band_names, self.data['band'].values):
+                            band_names_new.append(bname_new)
+                            if bname_new in self.data['band'].values:
+                                band_names_old.append(bname_new)
+                            else:
+                                band_names_old.append(bname_old)
+                        self.data = self.data.sel(band=band_names_old)
+                        self.data = self.data.assign_coords(**{'band': band_names_new})
 
         self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
         self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)
@@ -621,7 +649,7 @@ def load(
     from dask.diagnostics import ProgressBar
     import ray
     from ray.util.dask import ray_dask_get
-    
+
     netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):

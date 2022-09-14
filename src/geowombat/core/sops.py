@@ -5,6 +5,9 @@ from datetime import datetime
 from collections import defaultdict
 import logging
 import multiprocessing as multi
+from pathlib import Path
+import tempfile
+import typing as T
 
 from ..handler import add_handler
 from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target, check_crs
@@ -23,11 +26,14 @@ import xarray as xr
 import dask
 import dask.array as da
 from dask.distributed import Client, LocalCluster
+import rasterio as rio
 from rasterio import features
 from affine import Affine
+from pyproj.enums import WktVersion
 
 try:
     import arosics
+    from geoarray import GeoArray
     AROSICS_INSTALLED = True
 except:
     AROSICS_INSTALLED = False
@@ -1084,7 +1090,12 @@ class SpatialOperations(_PropertyMixin):
         return ds_sub
 
     @staticmethod
-    def coregister(target, reference, **kwargs):
+    def coregister(
+        target,
+        reference,
+        wkt_version: T.Optional[str] = None,
+        **kwargs
+    ):
         """Co-registers an image, or images, using AROSICS.
 
         While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
@@ -1094,6 +1105,7 @@ class SpatialOperations(_PropertyMixin):
         Args:
             target (DataArray or str): The target ``xarray.DataArray`` or file name to co-register to ``reference``.
             reference (DataArray or str): The reference ``xarray.DataArray`` or file name used to co-register ``target``.
+            wkt_version (Optional[str]): The WKT version to use with ``to_wkt()``.
             kwargs (Optional[dict]): Keyword arguments passed to ``arosics``.
 
         Reference:
@@ -1116,14 +1128,11 @@ class SpatialOperations(_PropertyMixin):
         import geowombat as gw_
 
         if not AROSICS_INSTALLED:
-
             logger.exception('\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details')
             raise NameError
 
         if isinstance(reference, str):
-
             if not os.path.isfile(reference):
-
                 logger.exception('  The reference file does not exist.')
                 raise OSError
 
@@ -1131,51 +1140,98 @@ class SpatialOperations(_PropertyMixin):
                 pass
 
         if isinstance(target, str):
-
             if not os.path.isfile(target):
-
                 logger.exception('  The target file does not exist.')
                 raise OSError
 
             with gw_.open(target) as target:
                 pass
 
-        cr = arosics.COREG(reference.filename,
-                           target.filename,
-                           **kwargs)
+        if wkt_version is None:
+            wkt_version = WktVersion.WKT2_2019.value
+        elif isinstance(wkt_version, str):
+            try:
+                wkt_version = WktVersion[wkt_version].value
+            except KeyError as e:
+                logger.exception(e)
+                raise KeyError
 
-        try:
-            cr.calculate_spatial_shifts()
-        except:
+        with tempfile.TemporaryDirectory() as tmp:
+            ref_path = Path(tmp) / '_reference.tif'
+            tar_path = Path(tmp) / '_target.tif'
+            with gw_.open(reference.filename, chunks={'band': -1, 'y': 256, 'x': 256}) as ref_src:
+                ref_src = ref_src.assign_attrs(
+                    {
+                        'crs': ref_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
+                    }
+                )
+                if 'nodata' in kwargs:
+                    ref_src = ref_src.assign_attrs({'nodatavals': (kwargs['nodata'][0],)}).fillna(kwargs['nodata'][0])
+                ref_src.gw.save(ref_path, overwrite=True, log_progress=False)
+            with gw_.open(target.filename, chunks={'band': -1, 'y': 256, 'x': 256}) as tar_src:
+                tar_src = tar_src.assign_attrs(
+                    {
+                        'crs': tar_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)
+                    }
+                )
+                if 'nodata' in kwargs:
+                    tar_src = tar_src.assign_attrs({'nodatavals': (kwargs['nodata'][1],)}).fillna(kwargs['nodata'][1])
+                tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
-            logger.warning('  Could not co-register the data.')
-            return target
+            cr = arosics.COREG(
+                GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
+                GeoArray(GeoArray(str(tar_path)), projection=tar_src.crs),
+                **kwargs
+            )
 
-        shift_info = cr.correct_shifts()
+            try:
+                cr.calculate_spatial_shifts()
+            except:
+                logger.warning('  Could not co-register the data.')
+                return target
+
+            # Apply spatial shifts
+            shift_info = cr.correct_shifts()
 
         left = shift_info['updated geotransform'][0]
         top = shift_info['updated geotransform'][3]
-
+        # Update the transform
         transform = (target.gw.cellx, 0.0, left, 0.0, -target.gw.celly, top)
-
         target.attrs['transform'] = transform
 
-        data = shift_info['arr_shifted'].transpose(2, 0, 1)
+        # Check if multi-band
+        if len(shift_info['arr_shifted'].shape) > 2:
+            data = shift_info['arr_shifted'].transpose(2, 0, 1)
+        else:
+            data = shift_info['arr_shifted'][np.newaxis]
+        yidx = 1
+        xidx = 2
+        # Get the updated coordinates
+        ycoords = np.linspace(
+            top-target.gw.cellyh,
+            top-target.gw.cellyh-(data.shape[yidx] * target.gw.celly),
+            data.shape[yidx]
+        )
+        xcoords = np.linspace(
+            left+target.gw.cellxh,
+            left+target.gw.cellxh+(data.shape[xidx] * target.gw.cellx),
+            data.shape[xidx]
+        )
 
-        ycoords = np.linspace(top-target.gw.cellyh,
-                              top-target.gw.cellyh-(data.shape[1] * target.gw.celly),
-                              data.shape[1])
-
-        xcoords = np.linspace(left+target.gw.cellxh,
-                              left+target.gw.cellxh+(data.shape[2] * target.gw.cellx),
-                              data.shape[2])
-
-        return xr.DataArray(data=da.from_array(data,
-                                               chunks=(target.gw.band_chunks,
-                                                       target.gw.row_chunks,
-                                                       target.gw.col_chunks)),
-                            dims=('band', 'y', 'x'),
-                            coords={'band': target.band.values.tolist(),
-                                    'y': ycoords,
-                                    'x': xcoords},
-                            attrs=target.attrs)
+        return xr.DataArray(
+            data=da.from_array(
+                data,
+                chunks=(
+                    target.gw.band_chunks,
+                    target.gw.row_chunks,
+                    target.gw.col_chunks
+                )
+            ),
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': target.band.values.tolist(),
+                'y': ycoords,
+                'x': xcoords
+            },
+            attrs=target.attrs
+        )

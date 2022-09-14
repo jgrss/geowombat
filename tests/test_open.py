@@ -15,12 +15,14 @@ class TestOpen(unittest.TestCase):
     def test_open_netcdf(self):
         with gw.open(
             l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
-            chunks={'band': -1, 'y': 256, 'x': 256}
+            chunks={'band': -1, 'y': 256, 'x': 256},
+            engine='h5netcdf'
         ) as src:
             self.assertEqual(src.shape, (6, 668, 668))
             with xr.open_dataset(
                 l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
-                chunks={'band': -1, 'y': 256, 'x': 256}
+                chunks={'band': -1, 'y': 256, 'x': 256},
+                engine='h5netcdf'
             ) as ds:
                 self.assertTrue(np.allclose(src.y.values, ds.y.values))
                 self.assertTrue(np.allclose(src.x.values, ds.x.values))
@@ -68,6 +70,7 @@ class TestOpen(unittest.TestCase):
     def test_open_path(self):
         with gw.open(Path(l8_224078_20200518)) as src:
             self.assertEqual(src.gw.nbands, 3)
+            self.assertEqual(src.gw.band_chunks, 3)
 
     def test_open_type_xarray(self):
         with gw.open(l8_224078_20200518) as src:

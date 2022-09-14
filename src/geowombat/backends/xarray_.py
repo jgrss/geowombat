@@ -262,14 +262,11 @@ def warp_open(
         filenames = (f'{filename}:' + f',{filename}:'.join(netcdf_vars)).split(',')
 
     if filenames:
-
         ref_kwargs_netcdf_stack = _check_config_globals(filenames[0], 'reference', ref_kwargs_netcdf_stack)
-
         with rio_open(filenames[0]) as src:
             tags = src.tags()
 
     else:
-
         ref_kwargs_netcdf_stack = _check_config_globals(filename, 'reference', ref_kwargs_netcdf_stack)
 
         with rio_open(filename) as src:
@@ -293,11 +290,11 @@ def warp_open(
         )
 
     with open_rasterio(
-            warp(
-                filename,
-                resampling=resampling,
-                **ref_kwargs
-            ), **kwargs
+        warp(
+            filename,
+            resampling=resampling,
+            **ref_kwargs
+        ), **kwargs
     ) if not filenames else warp_netcdf_vars() as src:
         if band_names:
             if len(band_names) > src.gw.nbands:
