@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.1 (2022-09-13)
+* Fixed ML tests ([#198](https://github.com/jgrss/geowombat/pull/198))
+
 ## v2.0.0 (2022-09-01)
 * Added `geowombat.save()` method ([#189](https://github.com/jgrss/geowombat/pull/189))
 * Warping methods now return `dask.Delayed` objects ([#189](https://github.com/jgrss/geowombat/pull/189))
