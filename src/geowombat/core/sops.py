@@ -1330,8 +1330,8 @@ class SpatialOperations(_PropertyMixin):
 
             try:
                 cr.calculate_spatial_shifts()
-            except:
-                logger.warning("  Could not co-register the data.")
+            except RuntimeError as e:
+                logger.warning(f"  Could not co-register the data because -> {e}")
                 return target
 
             # Apply spatial shifts
