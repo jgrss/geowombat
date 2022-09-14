@@ -49,9 +49,7 @@ class ClassifiersMixin(object):
         else:
             return data
 
-    # @staticmethod
     def _prepare_labels(self, data, labels, col, targ_name):
-
         if (labels[col].dtype != int) or (labels[col].min() == 0):
             le = LabelEncoder()
             labels[col] = le.fit_transform(labels[col]) + 1
@@ -69,7 +67,7 @@ class ClassifiersMixin(object):
             coords={"band": data.time.values.tolist()}
         )
 
-        data.coords[targ_name] = (["time", "y", "x"], labels.data)
+        data.coords[targ_name] = (["time", "y", "x"], labels.values)
 
         return data, labels
 
@@ -250,6 +248,7 @@ class Classifiers(ClassifiersMixin):
             # TODO: Validation checks
             # check_array(X)
             clf.fit(X)
+            setattr(clf, 'fitted_', True)
 
             return X, (X, None), clf
 
@@ -267,8 +266,8 @@ class Classifiers(ClassifiersMixin):
 
             # TO DO: Validation checks
             # Xna, y = check_X_y(Xna, y)
-
             clf.fit(Xna, y)
+            setattr(clf, 'fitted_', True)
 
             return X, (Xna, y), clf
 
