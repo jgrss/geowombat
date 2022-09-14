@@ -54,3 +54,5 @@ notebooks/land_cover_strata.ipynb
 notebooks/stac*.py
 
 dask-worker-space/
+.vscode/
+
