@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.2 (2022-09-13)
+* Added CRS to WKT transformation for co-registration ([#199](https://github.com/jgrss/geowombat/pull/199))
+
 ## v2.0.1 (2022-09-13)
 * Fixed ML tests ([#198](https://github.com/jgrss/geowombat/pull/198))
 
