@@ -668,8 +668,8 @@ class SpatialOperations(_PropertyMixin):
         pool_kwargs=None,
         **kwargs,
     ):
-        """Extracts data within an area or points of interest. Projections do not need
-        to match, as they are handled 'on-the-fly'.
+        """Extracts data within an area or points of interest. Projections do
+        not need to match, as they are handled 'on-the-fly'.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to extract data from.
@@ -1356,9 +1356,9 @@ class SpatialOperations(_PropertyMixin):
             data.shape[xidx],
         )
         target_attrs = target.attrs.copy()
-        if 'x_shift_px' in cr:
+        if hasattr(cr, 'x_shift_px'):
             target_attrs['x_shift_px'] = cr.x_shift_px
-        if 'y_shift_px' in cr:
+        if hasattr(cr, 'y_shift_px'):
             target_attrs['y_shift_px'] = cr.y_shift_px
 
         return xr.DataArray(
