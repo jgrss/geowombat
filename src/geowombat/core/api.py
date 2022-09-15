@@ -46,7 +46,7 @@ ch = Chunks()
 
 IO_DICT = dict(
     rasterio=[
-        ".tif",
+        '.tif',
         ".tiff",
         ".TIF",
         ".TIFF",
