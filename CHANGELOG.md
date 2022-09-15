@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.4 (2022-09-15)
+* Fixed 'filename' attribute when opening a NetCDF file ([#201](https://github.com/jgrss/geowombat/pull/201))
+
 ## v2.0.3 (2022-09-14)
 * Pinned Python >= 3.8 in `setup.cfg` ([#200](https://github.com/jgrss/geowombat/pull/200))
 
