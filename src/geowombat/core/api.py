@@ -40,31 +40,31 @@ from tqdm.auto import tqdm
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
 ch = Chunks()
 
 IO_DICT = dict(
     rasterio=[
         '.tif',
-        ".tiff",
-        ".TIF",
-        ".TIFF",
-        ".img",
-        ".IMG",
-        ".kea",
-        ".vrt",
-        ".VRT",
-        ".jp2",
-        ".JP2",
-        ".hgt",
-        ".HGT",
-        ".hdf",
-        ".HDF",
-        ".h5",
-        ".H5",
+        '.tiff',
+        '.TIF',
+        '.TIFF',
+        '.img',
+        '.IMG',
+        '.kea',
+        '.vrt',
+        '.VRT',
+        '.jp2',
+        '.JP2',
+        '.hgt',
+        '.HGT',
+        '.hdf',
+        '.HDF',
+        '.h5',
+        '.H5',
     ],
-    xarray=[".nc"],
+    xarray=['.nc'],
 )
 
 
@@ -77,44 +77,44 @@ def _get_attrs(src, **kwargs):
     cellxh = src.res[0] / 2.0
     cellyh = src.res[1] / 2.0
 
-    left_ = src.bounds.left + (kwargs["window"].col_off * src.res[0]) + cellxh
-    top_ = src.bounds.top - (kwargs["window"].row_off * src.res[1]) - cellyh
+    left_ = src.bounds.left + (kwargs['window'].col_off * src.res[0]) + cellxh
+    top_ = src.bounds.top - (kwargs['window'].row_off * src.res[1]) - cellyh
 
-    xcoords = np.arange(left_, left_ + kwargs["window"].width * src.res[0], src.res[0])
-    ycoords = np.arange(top_, top_ - kwargs["window"].height * src.res[1], -src.res[1])
+    xcoords = np.arange(left_, left_ + kwargs['window'].width * src.res[0], src.res[0])
+    ycoords = np.arange(top_, top_ - kwargs['window'].height * src.res[1], -src.res[1])
 
     attrs = {}
-    attrs["transform"] = src.gw.transform if hasattr(src, "gw") else src.transform
+    attrs['transform'] = src.gw.transform if hasattr(src, 'gw') else src.transform
 
-    if hasattr(src, "crs"):
+    if hasattr(src, 'crs'):
         src_crs = check_src_crs(src)
         try:
-            attrs["crs"] = src_crs.to_proj4()
+            attrs['crs'] = src_crs.to_proj4()
         except:
-            attrs["crs"] = src_crs.to_string()
+            attrs['crs'] = src_crs.to_string()
 
-    if hasattr(src, "res"):
-        attrs["res"] = src.res
+    if hasattr(src, 'res'):
+        attrs['res'] = src.res
 
-    if hasattr(src, "is_tiled"):
-        attrs["is_tiled"] = np.uint8(src.is_tiled)
+    if hasattr(src, 'is_tiled'):
+        attrs['is_tiled'] = np.uint8(src.is_tiled)
 
-    if hasattr(src, "nodatavals"):
-        attrs["nodatavals"] = tuple(
+    if hasattr(src, 'nodatavals'):
+        attrs['nodatavals'] = tuple(
             np.nan if nodataval is None else nodataval for nodataval in src.nodatavals
         )
 
-    if hasattr(src, "offsets"):
-        attrs["offsets"] = src.scales
+    if hasattr(src, 'offsets'):
+        attrs['offsets'] = src.scales
 
-    if hasattr(src, "offsets"):
-        attrs["offsets"] = src.offsets
+    if hasattr(src, 'offsets'):
+        attrs['offsets'] = src.offsets
 
-    if hasattr(src, "descriptions") and any(src.descriptions):
-        attrs["descriptions"] = src.descriptions
+    if hasattr(src, 'descriptions') and any(src.descriptions):
+        attrs['descriptions'] = src.descriptions
 
-    if hasattr(src, "units") and any(src.units):
-        attrs["units"] = src.units
+    if hasattr(src, 'units') and any(src.units):
+        attrs['units'] = src.units
 
     return ycoords, xcoords, attrs
 
@@ -168,15 +168,15 @@ def read(
         ``xarray.DataArray``
     """
     # Cannot pass 'chunks' to rasterio
-    if "chunks" in kwargs:
-        del kwargs["chunks"]
+    if 'chunks' in kwargs:
+        del kwargs['chunks']
 
     if isinstance(filename, str):
         with rio.open(filename) as src:
-            src_transform = src.gw.transform if hasattr(src, "gw") else src.transform
+            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
 
-            if bounds and ("window" not in kwargs):
-                kwargs["window"] = from_bounds(*bounds, transform=src_transform)
+            if bounds and ('window' not in kwargs):
+                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
             ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
@@ -188,25 +188,25 @@ def read(
             band_names = np.arange(1, data.shape[0] + 1)
 
         if len(band_names) != data.shape[0]:
-            logger.exception("  The band names do not match the output dimensions.")
+            logger.exception('  The band names do not match the output dimensions.')
             raise ValueError
 
         data = xr.DataArray(
             data,
-            dims=("band", "y", "x"),
+            dims=('band', 'y', 'x'),
             coords={
-                "band": band_names,
-                "y": ycoords[: data.shape[-2]],
-                "x": xcoords[: data.shape[-1]],
+                'band': band_names,
+                'y': ycoords[: data.shape[-2]],
+                'x': xcoords[: data.shape[-1]],
             },
             attrs=attrs,
         )
 
     else:
         with rio.open(filename[0]) as src:
-            src_transform = src.gw.transform if hasattr(src, "gw") else src.transform
-            if bounds and ("window" not in kwargs):
-                kwargs["window"] = from_bounds(*bounds, transform=src_transform)
+            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
+            if bounds and ('window' not in kwargs):
+                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
 
             ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
@@ -221,24 +221,24 @@ def read(
             band_names = np.arange(1, data.shape[-3] + 1)
 
         if len(band_names) != data.shape[-3]:
-            logger.exception("  The band names do not match the output dimensions.")
+            logger.exception('  The band names do not match the output dimensions.')
             raise ValueError
 
         if not time_names:
             time_names = np.arange(1, len(filename) + 1)
 
         if len(time_names) != data.shape[-4]:
-            logger.exception("  The time names do not match the output dimensions.")
+            logger.exception('  The time names do not match the output dimensions.')
             raise ValueError
 
         data = xr.DataArray(
             data,
-            dims=("time", "band", "y", "x"),
+            dims=('time', 'band', 'y', 'x'),
             coords={
-                "time": time_names,
-                "band": band_names,
-                "y": ycoords[: data.shape[-2]],
-                "x": xcoords[: data.shape[-1]],
+                'time': time_names,
+                'band': band_names,
+                'y': ycoords[: data.shape[-2]],
+                'x': xcoords[: data.shape[-1]],
             },
             attrs=attrs,
         )
@@ -379,14 +379,14 @@ class open(object):
         filename,
         band_names=None,
         time_names=None,
-        stack_dim="time",
+        stack_dim='time',
         bounds=None,
-        bounds_by="reference",
-        resampling="nearest",
+        bounds_by='reference',
+        resampling='nearest',
         persist_filenames=False,
         netcdf_vars=None,
         mosaic=False,
-        overlap="max",
+        overlap='max',
         nodata=0,
         dtype=None,
         num_workers=1,
@@ -398,7 +398,7 @@ class open(object):
             )
             raise TypeError
 
-        if stack_dim not in ["band", "time"]:
+        if stack_dim not in ['band', 'time']:
             logger.exception(
                 f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}"
             )
@@ -414,12 +414,12 @@ class open(object):
         self.__filenames = []
 
         band_chunks = -1
-        if "chunks" in kwargs:
-            if kwargs["chunks"] is not None:
-                kwargs["chunks"] = ch.check_chunktype(kwargs["chunks"], output="3d")
+        if 'chunks' in kwargs:
+            if kwargs['chunks'] is not None:
+                kwargs['chunks'] = ch.check_chunktype(kwargs['chunks'], output='3d')
 
-        if bounds or ("window" in kwargs and isinstance(kwargs["window"], Window)):
-            if "chunks" not in kwargs:
+        if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
+            if 'chunks' not in kwargs:
                 if isinstance(filename, list):
                     with rio.open(filename[0]) as src_:
                         w = src_.block_window(1, 0, 0)
@@ -431,8 +431,8 @@ class open(object):
                         chunks = (band_chunks, w.height, w.width)
 
             else:
-                chunks = kwargs["chunks"]
-                del kwargs["chunks"]
+                chunks = kwargs['chunks']
+                del kwargs['chunks']
 
             self.data = read(
                 filename,
@@ -447,17 +447,17 @@ class open(object):
             self.__filenames = [filename]
 
         else:
-            if (isinstance(filename, str) and "*" in filename) or isinstance(
+            if (isinstance(filename, str) and '*' in filename) or isinstance(
                 filename, list
             ):
                 # Build the filename list
                 if isinstance(filename, str):
                     filename = parse_wildcard(filename)
 
-                if "chunks" not in kwargs:
+                if 'chunks' not in kwargs:
                     with rio.open(filename[0]) as src:
                         w = src.block_window(1, 0, 0)
-                        kwargs["chunks"] = (band_chunks, w.height, w.width)
+                        kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                 if mosaic:
                     # Mosaic images over space
@@ -499,18 +499,18 @@ class open(object):
 
                 if (
                     file_names.f_ext.lower()
-                    not in IO_DICT["rasterio"] + IO_DICT["xarray"]
-                ) and not filename.lower().startswith("netcdf:"):
-                    logger.exception("  The file format is not recognized.")
+                    not in IO_DICT['rasterio'] + IO_DICT['xarray']
+                ) and not filename.lower().startswith('netcdf:'):
+                    logger.exception('  The file format is not recognized.')
                     raise OSError
 
                 if (
-                    file_names.f_ext.lower() in IO_DICT["rasterio"]
-                ) or filename.lower().startswith("netcdf:"):
-                    if "chunks" not in kwargs:
+                    file_names.f_ext.lower() in IO_DICT['rasterio']
+                ) or filename.lower().startswith('netcdf:'):
+                    if 'chunks' not in kwargs:
                         with rio.open(filename) as src:
                             w = src.block_window(1, 0, 0)
-                            kwargs["chunks"] = (band_chunks, w.height, w.width)
+                            kwargs['chunks'] = (band_chunks, w.height, w.width)
 
                     self.data = warp_open(
                         filename,
@@ -523,48 +523,48 @@ class open(object):
                     )
 
                 else:
-                    if "chunks" in kwargs and not isinstance(kwargs["chunks"], dict):
-                        logger.exception("  The chunks should be a dictionary.")
+                    if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
+                        logger.exception('  The chunks should be a dictionary.')
                         raise TypeError
 
                     with xr.open_dataset(filename, **kwargs) as src:
-                        self.data = src.to_array(dim="band")
+                        self.data = src.to_array(dim='band')
                     # Ensure the filename attribute gets updated as the NetCDF file
-                    self.data = self.data.assign_attrs(**{"filename": str(filename)})
+                    self.data = self.data.assign_attrs(**{'filename': str(filename)})
                     # Order bands from the NetCDF dataset
                     if band_names is not None:
-                        if len(band_names) != self.data["band"].shape[0]:
+                        if len(band_names) != self.data['band'].shape[0]:
                             raise ValueError(
-                                "The length of band_names must match the length of the band coordinate."
+                                'The length of band_names must match the length of the band coordinate.'
                             )
                         band_names_new = []
                         band_names_old = []
                         for bname_new, bname_old in zip(
-                            band_names, self.data["band"].values
+                            band_names, self.data['band'].values
                         ):
                             band_names_new.append(bname_new)
-                            if bname_new in self.data["band"].values:
+                            if bname_new in self.data['band'].values:
                                 band_names_old.append(bname_new)
                             else:
                                 band_names_old.append(bname_old)
                         self.data = self.data.sel(band=band_names_old)
-                        self.data = self.data.assign_coords(**{"band": band_names_new})
+                        self.data = self.data.assign_coords(**{'band': band_names_new})
 
         self.data = self.data.assign_attrs(
             {
-                "data_are_separate": int(self.__data_are_separate),
-                "data_are_stacked": int(self.__data_are_stacked),
+                'data_are_separate': int(self.__data_are_separate),
+                'data_are_stacked': int(self.__data_are_stacked),
             }
         )
         if persist_filenames:
-            self.data = self.data.assign_attrs(**{"filenames": self.__filenames})
+            self.data = self.data.assign_attrs(**{'filenames': self.__filenames})
 
     def __enter__(self):
         self.__is_context_manager = True
         return self.data
 
     def __exit__(self, *args, **kwargs):
-        if not self.data.gw.config["with_config"]:
+        if not self.data.gw.config['with_config']:
             _set_defaults(config)
 
         self.close()
@@ -585,17 +585,17 @@ class open(object):
             yield
 
     def close(self):
-        if hasattr(self, "data"):
-            if hasattr(self.data, "gw"):
-                if hasattr(self.data.gw, "_obj"):
+        if hasattr(self, 'data'):
+            if hasattr(self.data, 'gw'):
+                if hasattr(self.data.gw, '_obj'):
                     self.data.gw._obj = None
 
-            if hasattr(self.data, "close"):
+            if hasattr(self.data, 'close'):
                 self.data.close()
 
-        if "gw" in self.data._cache:
+        if 'gw' in self.data._cache:
             with self._optional_lock(True):
-                file = self.data._cache.pop("gw", None)
+                file = self.data._cache.pop('gw', None)
 
         self.data = None
 
@@ -611,7 +611,7 @@ def load(
     data_slice=None,
     num_workers=1,
     src=None,
-    scheduler="ray",
+    scheduler='ray',
 ):
     """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
     alignments and CRSs. It assumes each image in ``image_list`` has the same y and x dimensions and
@@ -663,11 +663,11 @@ def load(
     import ray
     from ray.util.dask import ray_dask_get
 
-    netcdf_prepend = [True for fn in image_list if str(fn).startswith("netcdf:")]
+    netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):
         raise NameError(
-            "The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`."
+            'The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.'
         )
 
     if not in_range:
@@ -682,8 +682,8 @@ def load(
         with open(
             image_list[0],
             time_names=time_names[0],
-            band_names=band_names if not str(image_list[0]).endswith(".nc") else None,
-            netcdf_vars=band_names if str(image_list[0]).endswith(".nc") else None,
+            band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
+            netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
             chunks=chunks,
         ) as src:
             pass
@@ -707,15 +707,15 @@ def load(
         # get the sub-array slice
         darray = (
             dataset.to_array()
-            .rename({"variable": "band"})[:, :nrows, :ncols]
+            .rename({'variable': 'band'})[:, :nrows, :ncols]
             .sel(band=band_names)
             .assign_coords(y=ycoords, x=xcoords)
-            .expand_dims(dim="time")
+            .expand_dims(dim='time')
             .clip(0, max(in_range[1], nodata))[data_slice]
         )
 
         # Scale from [0-10000] -> [0,1]
-        darray = xr.where(darray == nodata, 0, darray * scale_factor).astype("float64")
+        darray = xr.where(darray == nodata, 0, darray * scale_factor).astype('float64')
 
         return (
             darray.where(np.isfinite(darray))
@@ -731,17 +731,17 @@ def load(
         ds = (
             xr.open_mfdataset(
                 image_list,
-                concat_dim="time",
+                concat_dim='time',
                 chunks=chunks,
-                combine="nested",
-                engine="h5netcdf",
+                combine='nested',
+                engine='h5netcdf',
                 preprocess=expand_time,
                 parallel=True,
             )
             .assign_coords(time=time_names)
-            .groupby("time.date")
+            .groupby('time.date')
             .max()
-            .rename({"date": "time"})
+            .rename({'date': 'time'})
             .assign_attrs(**attrs)
         )
 
@@ -823,11 +823,11 @@ class series(BaseSeries):
         filenames: list,
         time_names: list = None,
         band_names: list = None,
-        transfer_lib: str = "jax",
+        transfer_lib: str = 'jax',
         crs: str = None,
         res: T.Union[list, tuple] = None,
         bounds: T.Union[BoundingBox, list, tuple] = None,
-        resampling: str = "nearest",
+        resampling: str = 'nearest',
         nodata: T.Union[float, int] = 0,
         warp_mem_limit: int = 256,
         num_threads: int = 1,
@@ -836,21 +836,21 @@ class series(BaseSeries):
     ):
         imports_ = _ImportGPU()
 
-        if not imports_.JAX_INSTALLED and (transfer_lib == "jax"):
-            logger.exception("JAX must be installed.")
-            raise ImportError("JAX must be installed.")
+        if not imports_.JAX_INSTALLED and (transfer_lib == 'jax'):
+            logger.exception('JAX must be installed.')
+            raise ImportError('JAX must be installed.')
 
-        if not imports_.PYTORCH_INSTALLED and (transfer_lib == "pytorch"):
-            logger.exception("PyTorch must be installed.")
-            raise ImportError("PyTorch must be installed.")
+        if not imports_.PYTORCH_INSTALLED and (transfer_lib == 'pytorch'):
+            logger.exception('PyTorch must be installed.')
+            raise ImportError('PyTorch must be installed.')
 
-        if not imports_.TENSORFLOW_INSTALLED and (transfer_lib == "tensorflow"):
-            logger.exception("Tensorflow must be installed.")
-            raise ImportError("Tensorflow must be installed.")
+        if not imports_.TENSORFLOW_INSTALLED and (transfer_lib == 'tensorflow'):
+            logger.exception('Tensorflow must be installed.')
+            raise ImportError('Tensorflow must be installed.')
 
-        if not imports_.KERAS_INSTALLED and (transfer_lib == "keras"):
-            logger.exception("Keras must be installed.")
-            raise ImportError("Keras must be installed.")
+        if not imports_.KERAS_INSTALLED and (transfer_lib == 'keras'):
+            logger.exception('Keras must be installed.')
+            raise ImportError('Keras must be installed.')
 
         self.filenames = filenames
         self.time_names = time_names
@@ -861,13 +861,13 @@ class series(BaseSeries):
         self.vrts_ = None
         self.windows_ = None
 
-        if transfer_lib == "jax":
+        if transfer_lib == 'jax':
             self.out_array_type = imports_.jnp.DeviceArray
-        elif transfer_lib == "numpy":
+        elif transfer_lib == 'numpy':
             self.out_array_type = np.ndarray
-        elif transfer_lib == "pytorch":
+        elif transfer_lib == 'pytorch':
             self.out_array_type = imports_.torch.Tensor
-        elif transfer_lib in ["keras", "tensorflow"]:
+        elif transfer_lib in ['keras', 'tensorflow']:
             self.out_array_type = imports_.tf.Tensor
 
         self.put = TransferLib(transfer_lib)
@@ -946,7 +946,7 @@ class series(BaseSeries):
         if Path(filename).is_file():
             Path(filename).unlink()
 
-        with rio.open(filename, mode="w", **profile) as dst:
+        with rio.open(filename, mode='w', **profile) as dst:
             pass
 
     def apply(
@@ -1070,10 +1070,10 @@ class series(BaseSeries):
         if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
             if isinstance(bands, list) or isinstance(bands, tuple):
                 logger.exception(
-                    "Only single-band images can be used with built-in functions."
+                    'Only single-band images can be used with built-in functions.'
                 )
                 raise ValueError(
-                    "Only single-band images can be used with built-in functions."
+                    'Only single-band images can be used with built-in functions.'
                 )
 
             apply_func_ = SeriesStats(func)
@@ -1083,26 +1083,26 @@ class series(BaseSeries):
 
         if outfile is not None:
             profile = {
-                "count": apply_func_.count,
-                "width": self.width,
-                "height": self.height,
-                "crs": self.crs,
-                "transform": self.transform,
-                "driver": "GTiff",
-                "dtype": apply_func_.dtype,
-                "compress": apply_func_.compress,
-                "sharing": False,
-                "tiled": True,
-                "nodata": self.nodata,
-                "blockxsize": self.blockxsize,
-                "blockysize": self.blockysize,
+                'count': apply_func_.count,
+                'width': self.width,
+                'height': self.height,
+                'crs': self.crs,
+                'transform': self.transform,
+                'driver': 'GTiff',
+                'dtype': apply_func_.dtype,
+                'compress': apply_func_.compress,
+                'sharing': False,
+                'tiled': True,
+                'nodata': self.nodata,
+                'blockxsize': self.blockxsize,
+                'blockysize': self.blockysize,
             }
 
             # Create the file
             self._create_file(outfile, **profile)
 
         if outfile is not None:
-            with rio.open(outfile, mode="r+", sharing=False) as dst:
+            with rio.open(outfile, mode='r+', sharing=False) as dst:
                 with pool(num_workers) as executor:
                     data_gen = (
                         (
