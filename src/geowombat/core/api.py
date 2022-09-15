@@ -62,9 +62,9 @@ IO_DICT = dict(
         '.hdf',
         '.HDF',
         '.h5',
-        '.H5'
+        '.H5',
     ],
-    xarray=['.nc']
+    xarray=['.nc'],
 )
 
 
@@ -100,7 +100,9 @@ def _get_attrs(src, **kwargs):
         attrs['is_tiled'] = np.uint8(src.is_tiled)
 
     if hasattr(src, 'nodatavals'):
-        attrs['nodatavals'] = tuple(np.nan if nodataval is None else nodataval for nodataval in src.nodatavals)
+        attrs['nodatavals'] = tuple(
+            np.nan if nodataval is None else nodataval for nodataval in src.nodatavals
+        )
 
     if hasattr(src, 'offsets'):
         attrs['offsets'] = src.scales
@@ -148,9 +150,9 @@ def read(
     bounds=None,
     chunks=256,
     num_workers=1,
-    **kwargs
+    **kwargs,
 ):
-    """Reads a window slice in-memory
+    """Reads a window slice in-memory.
 
     Args:
         filename (str or list): A file name or list of file names to open read.
@@ -179,16 +181,11 @@ def read(
             ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
         data = dask.compute(
-            read_delayed(
-                filename,
-                chunks,
-                **kwargs
-            ),
-            num_workers=num_workers
+            read_delayed(filename, chunks, **kwargs), num_workers=num_workers
         )[0]
 
         if not band_names:
-            band_names = np.arange(1, data.shape[0]+1)
+            band_names = np.arange(1, data.shape[0] + 1)
 
         if len(band_names) != data.shape[0]:
             logger.exception('  The band names do not match the output dimensions.')
@@ -199,10 +196,10 @@ def read(
             dims=('band', 'y', 'x'),
             coords={
                 'band': band_names,
-                'y': ycoords[:data.shape[-2]],
-                'x': xcoords[:data.shape[-1]]
+                'y': ycoords[: data.shape[-2]],
+                'x': xcoords[: data.shape[-1]],
             },
-            attrs=attrs
+            attrs=attrs,
         )
 
     else:
@@ -215,25 +212,20 @@ def read(
 
         data = da.concatenate(
             dask.compute(
-                read_list(
-                    filename,
-                    chunks,
-                    **kwargs
-                ),
-                num_workers=num_workers
+                read_list(filename, chunks, **kwargs), num_workers=num_workers
             ),
-            axis=0
+            axis=0,
         )
 
         if not band_names:
-            band_names = np.arange(1, data.shape[-3]+1)
+            band_names = np.arange(1, data.shape[-3] + 1)
 
         if len(band_names) != data.shape[-3]:
             logger.exception('  The band names do not match the output dimensions.')
             raise ValueError
 
         if not time_names:
-            time_names = np.arange(1, len(filename)+1)
+            time_names = np.arange(1, len(filename) + 1)
 
         if len(time_names) != data.shape[-4]:
             logger.exception('  The time names do not match the output dimensions.')
@@ -245,10 +237,10 @@ def read(
             coords={
                 'time': time_names,
                 'band': band_names,
-                'y': ycoords[:data.shape[-2]],
-                'x': xcoords[:data.shape[-1]]
+                'y': ycoords[: data.shape[-2]],
+                'x': xcoords[: data.shape[-1]],
             },
-            attrs=attrs
+            attrs=attrs,
         )
 
     return data
@@ -258,7 +250,7 @@ data_ = None
 
 
 class open(object):
-    """Opens one or more raster files
+    """Opens one or more raster files.
 
     Args:
         filename (str or list): The file name, search string, or a list of files to open.
@@ -381,6 +373,7 @@ class open(object):
         >>> with gw.open('netcdf:image.nc', netcdf_vars=['blue', 'green', 'red']) as src:
         >>>     print(src)
     """
+
     def __init__(
         self,
         filename,
@@ -397,14 +390,18 @@ class open(object):
         nodata=0,
         dtype=None,
         num_workers=1,
-        **kwargs
+        **kwargs,
     ):
         if not isinstance(nodata, int) and not isinstance(nodata, float):
-            logger.exception("  The 'nodata' keyword argument must be an integer or a float.")
+            logger.exception(
+                "  The 'nodata' keyword argument must be an integer or a float."
+            )
             raise TypeError
 
         if stack_dim not in ['band', 'time']:
-            logger.exception(f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}")
+            logger.exception(
+                f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}"
+            )
             raise NameError
 
         if isinstance(filename, Path):
@@ -444,13 +441,15 @@ class open(object):
                 bounds=bounds,
                 chunks=chunks,
                 num_workers=num_workers,
-                **kwargs
+                **kwargs,
             )
 
             self.__filenames = [filename]
 
         else:
-            if (isinstance(filename, str) and '*' in filename) or isinstance(filename, list):
+            if (isinstance(filename, str) and '*' in filename) or isinstance(
+                filename, list
+            ):
                 # Build the filename list
                 if isinstance(filename, str):
                     filename = parse_wildcard(filename)
@@ -470,7 +469,7 @@ class open(object):
                         band_names=band_names,
                         nodata=nodata,
                         dtype=dtype,
-                        **kwargs
+                        **kwargs,
                     )
 
                 else:
@@ -486,7 +485,7 @@ class open(object):
                         overlap=overlap,
                         dtype=dtype,
                         netcdf_vars=netcdf_vars,
-                        **kwargs
+                        **kwargs,
                     )
 
                     self.__data_are_stacked = True
@@ -498,12 +497,16 @@ class open(object):
                 self.__filenames = [filename]
                 file_names = get_file_extension(filename)
 
-                if (file_names.f_ext.lower() not in IO_DICT['rasterio'] + IO_DICT['xarray']) and not \
-                        filename.lower().startswith('netcdf:'):
+                if (
+                    file_names.f_ext.lower()
+                    not in IO_DICT['rasterio'] + IO_DICT['xarray']
+                ) and not filename.lower().startswith('netcdf:'):
                     logger.exception('  The file format is not recognized.')
                     raise OSError
 
-                if (file_names.f_ext.lower() in IO_DICT['rasterio']) or filename.lower().startswith('netcdf:'):
+                if (
+                    file_names.f_ext.lower() in IO_DICT['rasterio']
+                ) or filename.lower().startswith('netcdf:'):
                     if 'chunks' not in kwargs:
                         with rio.open(filename) as src:
                             w = src.block_window(1, 0, 0)
@@ -516,7 +519,7 @@ class open(object):
                         dtype=dtype,
                         netcdf_vars=netcdf_vars,
                         nodata=nodata,
-                        **kwargs
+                        **kwargs,
                     )
 
                 else:
@@ -526,12 +529,19 @@ class open(object):
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
+                    # Ensure the filename attribute gets updated as the NetCDF file
+                    self.data = self.data.assign_attrs(**{'filename': str(filename)})
+                    # Order bands from the NetCDF dataset
                     if band_names is not None:
                         if len(band_names) != self.data['band'].shape[0]:
-                            raise ValueError('The length of band_names must match the length of the band coordinate.')
+                            raise ValueError(
+                                'The length of band_names must match the length of the band coordinate.'
+                            )
                         band_names_new = []
                         band_names_old = []
-                        for bname_new, bname_old in zip(band_names, self.data['band'].values):
+                        for bname_new, bname_old in zip(
+                            band_names, self.data['band'].values
+                        ):
                             band_names_new.append(bname_new)
                             if bname_new in self.data['band'].values:
                                 band_names_old.append(bname_new)
@@ -540,11 +550,14 @@ class open(object):
                         self.data = self.data.sel(band=band_names_old)
                         self.data = self.data.assign_coords(**{'band': band_names_new})
 
-        self.data.attrs['data_are_separate'] = int(self.__data_are_separate)
-        self.data.attrs['data_are_stacked'] = int(self.__data_are_stacked)
-
+        self.data = self.data.assign_attrs(
+            {
+                'data_are_separate': int(self.__data_are_separate),
+                'data_are_stacked': int(self.__data_are_stacked),
+            }
+        )
         if persist_filenames:
-            self.data.attrs['filenames'] = self.__filenames
+            self.data = self.data.assign_attrs(**{'filenames': self.__filenames})
 
     def __enter__(self):
         self.__is_context_manager = True
@@ -598,11 +611,12 @@ def load(
     data_slice=None,
     num_workers=1,
     src=None,
-    scheduler='ray'
+    scheduler='ray',
 ):
-    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
-    alignments and CRSs. It assumes each image in ``image_list`` has the same y and x dimensions and
-    that the coordinates align.
+    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This
+    function does not check data alignments and CRSs. It assumes each image in
+    ``image_list`` has the same y and x dimensions and that the coordinates
+    align.
 
     The `load` function cannot be used if `dataclasses` was pip installed.
 
@@ -653,7 +667,9 @@ def load(
     netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
 
     if any(netcdf_prepend):
-        raise NameError('The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.')
+        raise NameError(
+            'The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.'
+        )
 
     if not in_range:
         in_range = (0, 10000)
@@ -669,7 +685,7 @@ def load(
             time_names=time_names[0],
             band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
             netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
-            chunks=chunks
+            chunks=chunks,
         ) as src:
             pass
 
@@ -680,16 +696,10 @@ def load(
     xcoords = src.x
 
     if data_slice is None:
-        data_slice = (
-            slice(0, None),
-            slice(0, None),
-            slice(0, None),
-            slice(0, None)
-        )
+        data_slice = (slice(0, None), slice(0, None), slice(0, None), slice(0, None))
 
     def expand_time(dataset):
-        """`open_mfdataset` preprocess function
-        """
+        """``open_mfdataset`` preprocess function."""
         # Convert the Dataset into a DataArray,
         # rename the band coordinate,
         # select the required VI bands,
@@ -706,7 +716,7 @@ def load(
         )
 
         # Scale from [0-10000] -> [0,1]
-        darray = xr.where(darray == nodata, 0, darray*scale_factor).astype('float64')
+        darray = xr.where(darray == nodata, 0, darray * scale_factor).astype('float64')
 
         return (
             darray.where(np.isfinite(darray))
@@ -727,10 +737,11 @@ def load(
                 combine='nested',
                 engine='h5netcdf',
                 preprocess=expand_time,
-                parallel=True
+                parallel=True,
             )
             .assign_coords(time=time_names)
-            .groupby('time.date').max()
+            .groupby('time.date')
+            .max()
             .rename({'date': 'time'})
             .assign_attrs(**attrs)
         )
@@ -754,31 +765,35 @@ class _ImportGPU(object):
 
     try:
         import jax.numpy as jnp
+
         JAX_INSTALLED = True
     except:
         JAX_INSTALLED = False
 
     try:
         import torch
+
         PYTORCH_INSTALLED = True
     except:
         PYTORCH_INSTALLED = False
 
     try:
         import tensorflow as tf
+
         TENSORFLOW_INSTALLED = True
     except:
         TENSORFLOW_INSTALLED = False
 
     try:
         from tensorflow import keras
+
         KERAS_INSTALLED = True
     except:
         KERAS_INSTALLED = False
 
 
 class series(BaseSeries):
-    """A class for time series concurrent processing on a GPU
+    """A class for time series concurrent processing on a GPU.
 
     Args:
         filenames (list): The list of filenames to open.
@@ -803,6 +818,7 @@ class series(BaseSeries):
         > # CUDA 11.1
         > pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     """
+
     def __init__(
         self,
         filenames: list,
@@ -817,7 +833,7 @@ class series(BaseSeries):
         warp_mem_limit: int = 256,
         num_threads: int = 1,
         window_size: T.Union[int, list, tuple] = None,
-        padding: T.Union[list, tuple] = None
+        padding: T.Union[list, tuple] = None,
     ):
         imports_ = _ImportGPU()
 
@@ -868,7 +884,7 @@ class series(BaseSeries):
             warp_mem_limit=warp_mem_limit,
             num_threads=num_threads,
             window_size=window_size,
-            padding=self.padding
+            padding=self.padding,
         )
 
     def read(
@@ -879,13 +895,12 @@ class series(BaseSeries):
         offset: T.Union[float, int] = 0.0,
         pool: T.Any = None,
         num_workers: int = None,
-        tqdm_obj: T.Any = None
+        tqdm_obj: T.Any = None,
     ) -> T.Any:
-        """Reads a window
-        """
+        """Reads a window."""
         if isinstance(bands, int):
             if bands == -1:
-                band_list = list(range(1, self.count+1))
+                band_list = list(range(1, self.count + 1))
             else:
                 band_list = [bands]
 
@@ -902,27 +917,29 @@ class series(BaseSeries):
             return array
 
         if pool is not None:
+
             def _read_bands(vrt_):
-                return np.stack(
-                    [_read(vrt_, band) for band in band_list]
-                )
+                return np.stack([_read(vrt_, band) for band in band_list])
 
             with pool(num_workers) as executor:
                 data_gen = (vrt for vrt in self.vrts_)
 
                 results = []
-                for res in tqdm_obj(executor.map(_read_bands, data_gen), total=len(self.vrts_)):
+                for res in tqdm_obj(
+                    executor.map(_read_bands, data_gen), total=len(self.vrts_)
+                ):
                     results.append(res)
 
             return self.put(np.array(results))
 
         else:
             return self.put(
-                np.array([
-                    np.stack([
-                        _read(vrt, band) for band in band_list
-                    ]) for vrt in self.vrts_
-                ])
+                np.array(
+                    [
+                        np.stack([_read(vrt, band) for band in band_list])
+                        for vrt in self.vrts_
+                    ]
+                )
             )
 
     @staticmethod
@@ -942,9 +959,9 @@ class series(BaseSeries):
         processes: bool = False,
         num_workers: int = 1,
         monitor_progress: bool = True,
-        outfile: T.Union[Path, str] = None
+        outfile: T.Union[Path, str] = None,
     ):
-        """Applies a function concurrently over windows
+        """Applies a function concurrently over windows.
 
         Args:
             func (object | str | list | tuple): The function to apply. If ``func`` is a string,
@@ -1043,14 +1060,22 @@ class series(BaseSeries):
             >>>               num_workers=4,            # use 4 concurrent threads, one per window
             >>>               outfile='stack_mean.tif')
         """
-        pool = concurrent.futures.ProcessPoolExecutor if processes else concurrent.futures.ThreadPoolExecutor
+        pool = (
+            concurrent.futures.ProcessPoolExecutor
+            if processes
+            else concurrent.futures.ThreadPoolExecutor
+        )
 
         tqdm_obj = tqdm if monitor_progress else _tqdm
 
         if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
             if isinstance(bands, list) or isinstance(bands, tuple):
-                logger.exception('Only single-band images can be used with built-in functions.')
-                raise ValueError('Only single-band images can be used with built-in functions.')
+                logger.exception(
+                    'Only single-band images can be used with built-in functions.'
+                )
+                raise ValueError(
+                    'Only single-band images can be used with built-in functions.'
+                )
 
             apply_func_ = SeriesStats(func)
 
@@ -1071,7 +1096,7 @@ class series(BaseSeries):
                 'tiled': True,
                 'nodata': self.nodata,
                 'blockxsize': self.blockxsize,
-                'blockysize': self.blockysize
+                'blockysize': self.blockysize,
             }
 
             # Create the file
@@ -1081,13 +1106,24 @@ class series(BaseSeries):
             with rio.open(outfile, mode='r+', sharing=False) as dst:
                 with pool(num_workers) as executor:
                     data_gen = (
-                        (w, self.read(bands, window=w[1], gain=gain, offset=offset), self.band_dict)
+                        (
+                            w,
+                            self.read(bands, window=w[1], gain=gain, offset=offset),
+                            self.band_dict,
+                        )
                         if self.padding
-                        else (w, self.read(bands, window=w, gain=gain, offset=offset), self.band_dict)
+                        else (
+                            w,
+                            self.read(bands, window=w, gain=gain, offset=offset),
+                            self.band_dict,
+                        )
                         for w in self.windows_
                     )
 
-                    for w, res in tqdm_obj(executor.map(lambda f: apply_func_(*f), data_gen), total=self.nchunks):
+                    for w, res in tqdm_obj(
+                        executor.map(lambda f: apply_func_(*f), data_gen),
+                        total=self.nchunks,
+                    ):
 
                         with threading.Lock():
                             self._write_window(dst, res, apply_func_.count, w)
@@ -1096,19 +1132,29 @@ class series(BaseSeries):
                 w, res = apply_func_(
                     self.windows_[0],
                     self.read(
-                        bands, window=self.windows_[0][1], gain=gain, offset=offset,
-                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                        bands,
+                        window=self.windows_[0][1],
+                        gain=gain,
+                        offset=offset,
+                        pool=pool,
+                        num_workers=num_workers,
+                        tqdm_obj=tqdm_obj,
                     ),
-                    self.band_dict
+                    self.band_dict,
                 )
             else:
                 w, res = apply_func_(
                     self.windows_[0],
                     self.read(
-                        bands, window=self.windows_[0], gain=gain, offset=offset,
-                        pool=pool, num_workers=num_workers, tqdm_obj=tqdm_obj
+                        bands,
+                        window=self.windows_[0],
+                        gain=gain,
+                        offset=offset,
+                        pool=pool,
+                        num_workers=num_workers,
+                        tqdm_obj=tqdm_obj,
                     ),
-                    self.band_dict
+                    self.band_dict,
                 )
 
             # Group duplicate dates
@@ -1125,12 +1171,16 @@ class series(BaseSeries):
             row_diff = abs(window_.row_off - padded_window_.row_off)
             col_diff = abs(window_.col_off - padded_window_.col_off)
 
-            out_data_ = out_data_[:, row_diff:row_diff+window_.height, col_diff:col_diff+window_.width]
+            out_data_ = out_data_[
+                :,
+                row_diff : row_diff + window_.height,
+                col_diff : col_diff + window_.width,
+            ]
 
         dst_.write(
             out_data_,
-            indexes=1 if count == 1 else range(1, count+1),
-            window=w[0] if self.padding else w
+            indexes=1 if count == 1 else range(1, count + 1),
+            window=w[0] if self.padding else w,
         )
 
     def __enter__(self):

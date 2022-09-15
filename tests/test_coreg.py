@@ -7,8 +7,9 @@ from geowombat.data import l8_224077_20200518_B4
 
 class TestCOREG(unittest.TestCase):
     def test_coreg(self):
-        # with gw.config.update(ref_crs="epsg:8858"):
-        with gw.open(l8_224077_20200518_B2) as target, gw.open(l8_224077_20200518_B4) as reference:
+        with gw.open(l8_224077_20200518_B2) as target, gw.open(
+            l8_224077_20200518_B4
+        ) as reference:
             data = gw.coregister(
                 target=target,
                 reference=reference,
@@ -20,15 +21,16 @@ class TestCOREG(unittest.TestCase):
                 resamp_alg_calc='cubic',
                 out_gsd=[30.0, 30.0],
                 q=True,
-                nodata=(0, 0),  # reference, data to be shifted
-                CPUs=1
+                nodata=(0, 0),
+                CPUs=1,
             )
             self.assertTrue(reference.shape == data.shape)
 
     def test_coreg_transform(self):
-        with gw.config.update(ref_crs="epsg:8858"):
-            with gw.open(l8_224077_20200518_B2, chunks=512) as target, \
-                gw.open(l8_224077_20200518_B4, chunks=512) as reference:
+        with gw.config.update(ref_crs='epsg:8858'):
+            with gw.open(l8_224077_20200518_B2, chunks=512) as target, gw.open(
+                l8_224077_20200518_B4, chunks=512
+            ) as reference:
                 data = gw.coregister(
                     target=target,
                     reference=reference,
@@ -41,8 +43,8 @@ class TestCOREG(unittest.TestCase):
                     resamp_alg_calc='cubic',
                     out_gsd=[30.0, 30.0],
                     q=True,
-                    nodata=(0, 0),  # reference, data to be shifted
-                    CPUs=1
+                    nodata=(0, 0),
+                    CPUs=1,
                 )
                 self.assertTrue(reference.shape == data.shape)
 

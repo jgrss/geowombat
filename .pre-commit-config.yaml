@@ -1,6 +1,18 @@
 repos:
--   repo: https://github.com/ambv/black
+  - repo: https://github.com/ambv/black
     rev: 22.3.0
     hooks:
     - id: black
       language_version: python3
+      args: [--skip-string-normalization]
+  - repo: https://github.com/myint/docformatter
+    rev: v1.4
+    hooks:
+    - id: docformatter
+      args: [
+        --in-place,
+        --wrap-summaries,
+        '79',
+        --wrap-descriptions,
+        '79',
+      ]
