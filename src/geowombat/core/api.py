@@ -698,7 +698,7 @@ def load(
         data_slice = (slice(0, None), slice(0, None), slice(0, None), slice(0, None))
 
     def expand_time(dataset):
-        """`open_mfdataset` preprocess function"""
+        """``open_mfdataset`` preprocess function"""
         # Convert the Dataset into a DataArray,
         # rename the band coordinate,
         # select the required VI bands,
