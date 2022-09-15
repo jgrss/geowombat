@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.3 (2022-09-14)
+* Pinned Python >= 3.8 in `setup.cfg` ([#200](https://github.com/jgrss/geowombat/pull/200))
+
 ## v2.0.2 (2022-09-13)
 * Added CRS to WKT transformation for co-registration ([#199](https://github.com/jgrss/geowombat/pull/199))
 
