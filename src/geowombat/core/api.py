@@ -152,7 +152,7 @@ def read(
     num_workers=1,
     **kwargs,
 ):
-    """Reads a window slice in-memory
+    """Reads a window slice in-memory.
 
     Args:
         filename (str or list): A file name or list of file names to open read.
@@ -250,7 +250,7 @@ data_ = None
 
 
 class open(object):
-    """Opens one or more raster files
+    """Opens one or more raster files.
 
     Args:
         filename (str or list): The file name, search string, or a list of files to open.
@@ -613,9 +613,10 @@ def load(
     src=None,
     scheduler='ray',
 ):
-    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This function does not check data
-    alignments and CRSs. It assumes each image in ``image_list`` has the same y and x dimensions and
-    that the coordinates align.
+    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This
+    function does not check data alignments and CRSs. It assumes each image in
+    ``image_list`` has the same y and x dimensions and that the coordinates
+    align.
 
     The `load` function cannot be used if `dataclasses` was pip installed.
 
@@ -698,7 +699,7 @@ def load(
         data_slice = (slice(0, None), slice(0, None), slice(0, None), slice(0, None))
 
     def expand_time(dataset):
-        """``open_mfdataset`` preprocess function"""
+        """``open_mfdataset`` preprocess function."""
         # Convert the Dataset into a DataArray,
         # rename the band coordinate,
         # select the required VI bands,
@@ -792,7 +793,7 @@ class _ImportGPU(object):
 
 
 class series(BaseSeries):
-    """A class for time series concurrent processing on a GPU
+    """A class for time series concurrent processing on a GPU.
 
     Args:
         filenames (list): The list of filenames to open.
@@ -896,7 +897,7 @@ class series(BaseSeries):
         num_workers: int = None,
         tqdm_obj: T.Any = None,
     ) -> T.Any:
-        """Reads a window"""
+        """Reads a window."""
         if isinstance(bands, int):
             if bands == -1:
                 band_list = list(range(1, self.count + 1))
@@ -960,7 +961,7 @@ class series(BaseSeries):
         monitor_progress: bool = True,
         outfile: T.Union[Path, str] = None,
     ):
-        """Applies a function concurrently over windows
+        """Applies a function concurrently over windows.
 
         Args:
             func (object | str | list | tuple): The function to apply. If ``func`` is a string,
