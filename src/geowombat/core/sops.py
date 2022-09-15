@@ -1361,6 +1361,11 @@ class SpatialOperations(_PropertyMixin):
             left + target.gw.cellxh + (data.shape[xidx] * target.gw.cellx),
             data.shape[xidx],
         )
+        target_attrs = target.attrs.copy()
+        if 'x_shift_px' in cr:
+            target_attrs['x_shift_px'] = cr.x_shift_px
+        if 'y_shift_px' in cr:
+            target_attrs['y_shift_px'] = cr.y_shift_px
 
         return xr.DataArray(
             data=da.from_array(
@@ -1373,5 +1378,5 @@ class SpatialOperations(_PropertyMixin):
             ),
             dims=("band", "y", "x"),
             coords={"band": target.band.values.tolist(), "y": ycoords, "x": xcoords},
-            attrs=target.attrs,
+            attrs=target_attrs,
         )
