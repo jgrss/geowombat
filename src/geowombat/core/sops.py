@@ -52,9 +52,7 @@ logger = add_handler(logger)
 
 
 def _remove_near_points(dataframe, r):
-
-    """
-    Removes points less than a specified distance to another point
+    """Removes points less than a specified distance to another point.
 
     Args:
         dataframe (GeoDataFrame): The ``GeoDataFrame`` with point geometry.
@@ -63,7 +61,6 @@ def _remove_near_points(dataframe, r):
     Returns:
         ``geopandas.GeoDataFrame``
     """
-
     # Setup a KD tree
     tree = cKDTree(np.c_[dataframe.geometry.x, dataframe.geometry.y])
 
@@ -81,9 +78,7 @@ def _remove_near_points(dataframe, r):
 
 
 def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cellyh):
-
-    """
-    Transforms indices to coordinates and applies a half pixel shift
+    """Transforms indices to coordinates and applies a half pixel shift.
 
     Args:
         affine_transform (object): The affine transform.
@@ -95,7 +90,6 @@ def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cel
     Returns:
         ``numpy.ndarray``, ``numpy.ndarray``
     """
-
     x_coords, y_coords = affine_transform * (col_indices, row_indices)
 
     x_coords += abs(cellxh)
@@ -118,7 +112,7 @@ class SpatialOperations(_PropertyMixin):
         scheduler='threads',
         n_chunks=100,
     ):
-        """Calculates the area of data values
+        """Calculates the area of data values.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to calculate area.
@@ -214,7 +208,7 @@ class SpatialOperations(_PropertyMixin):
         verbose=1,
         **kwargs,
     ):
-        """Generates samples from a raster
+        """Generates samples from a raster.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to extract data from.
@@ -674,8 +668,8 @@ class SpatialOperations(_PropertyMixin):
         pool_kwargs=None,
         **kwargs,
     ):
-        """Extracts data within an area or points of interest. Projections do not need to match,
-        as they are handled 'on-the-fly'.
+        """Extracts data within an area or points of interest. Projections do not need
+        to match, as they are handled 'on-the-fly'.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to extract data from.
@@ -870,7 +864,7 @@ class SpatialOperations(_PropertyMixin):
         return df
 
     def clip(self, data, df, query=None, mask_data=False, expand_by=0):
-        """Clips a DataArray by vector polygon geometry
+        """Clips a DataArray by vector polygon geometry.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
@@ -961,7 +955,7 @@ class SpatialOperations(_PropertyMixin):
     @staticmethod
     @lazy_wombat
     def mask(data, dataframe, query=None, keep='in'):
-        """Masks a DataArray by vector polygon geometry
+        """Masks a DataArray by vector polygon geometry.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to mask.
@@ -1055,7 +1049,7 @@ class SpatialOperations(_PropertyMixin):
 
     @lazy_wombat
     def recode(self, data, polygon, to_replace, num_workers=1):
-        """Recodes a DataArray with polygon mappings
+        """Recodes a DataArray with polygon mappings.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to recode.
@@ -1113,7 +1107,7 @@ class SpatialOperations(_PropertyMixin):
         center=False,
         mask_corners=False,
     ):
-        """Subsets a DataArray
+        """Subsets a DataArray.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
