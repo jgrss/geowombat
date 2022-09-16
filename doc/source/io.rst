@@ -180,7 +180,7 @@ Setup a plot function
 .. ipython:: python
 
     def plot(bounds_by, ref_image=None, cmap='viridis'):
-        fig, ax = plt.subplots(dpi=200)
+        fig, ax = plt.subplots(figsize=(10, 7), dpi=200)
         with gw.config.update(ref_image=ref_image):
             with gw.open(
                 [l8_224077_20200518_B4, l8_224078_20200518_B4],
@@ -224,7 +224,7 @@ Setup a plot function
         title = f'Image {bounds_by}' if bounds_by else str(Path(ref_image).name.split('.')[0]) + ' as reference'
         size = 12 if bounds_by else 8
         ax.set_title(title, size=size)
-        plt.tight_layout(pad=1)
+        #plt.tight_layout(pad=1)
 
 Mosaic by the union of images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,11 +275,11 @@ image file.
     any large overhead but also negated the efficiency of ``Dask`` as the underlying 'delayed'
     array. The :func:`to_raster` can be used on data of any size, but comes with its own overhead.
     For example, when working with arrays that fit into memory, such as a standard satellite scene,
-    ``Dask`` works quite well. To give an example, instead of slicing a ``DataArray`` chunk and
-    writing/computing that chunk (i.e., :func:`to_raster` approach), we can also compute the entire
-    ``DataArray`` using ``Dask`` and let ``Dask`` handle the concurrency. This is where :func:`save`
-    comes in to play. The ``geowombat.save`` method (or also ``DataArray.gw.save``) submits the data
-    to ``Dask.array.store`` and each chunk is written to file using ``rasterio``.
+    ``Dask`` (i.e., :func:`save`) works quite well. To give an example, instead of slicing a ``DataArray``
+    chunk and writing/computing that chunk (i.e., :func:`to_raster` approach), we can also compute the entire
+    ``DataArray`` using ``Dask`` (i.e., :func:`save`) and let ``Dask`` handle the concurrency. This is
+    where :func:`save` comes in to play. The ``geowombat.save`` method (or also ``DataArray.gw.save``)
+    submits the data to ``Dask.array.store`` and each chunk is written to file using ``rasterio``.
 
     The recommended method to use for saving raster files is :func:`save`. We welcome feedback for
     both methods, particularly if :func:`save` is determined to be more efficient than :func:`to_raster`,
@@ -328,7 +328,7 @@ Write to a VRT file
 ~~~~~~~~~~~~~~~~~~~
 
 The GDAL VRT file format is a nice way to save data to file as a lightweight pointer to data
-on disk. A VRT file is a XML file that contains information about the image file, or files,
+on disk. A VRT file is an XML file that contains information about the image file, or files,
 needed to transform and display data (e.g., in a GIS).
 
 .. note::

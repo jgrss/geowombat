@@ -12,8 +12,8 @@ GeoWombat: Utilities for geospatial data
             background-color: #0c5085;
             margin: auto;
             text-align: center;
-            padding-top: 1px;
-            padding-bottom: 1px;
+            padding-top: 4px;
+            padding-bottom: 4px;
             border-radius: 5px;
         }
 
@@ -29,7 +29,7 @@ GeoWombat: Utilities for geospatial data
 Raster & Remotely Sensed Data Made Easy
 #######################################
 
-GeoWombat provides utilities to process geospatial and time series of raster data at scale. Easily process Landsat, Sentinel, Planetscope or RGB data and others. 
+GeoWombat provides utilities to process geospatial and time series of raster data at scale. Easily process Landsat, Sentinel, Planetscope or RGB data and others.
 
 **Common Remote Sensing Uses**
 
@@ -41,7 +41,7 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 * Band math (NDVI, Tasseled cap, EVI etc)
 * Image classification and regression
 * Radiometry (BRDF normalization)
-* Distributed processing 
+* Distributed processing
 
 **Mosaic Images Example**
 
@@ -78,21 +78,19 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
 .. code:: python
 
     # Set a reference image to align to
-    with gw.config.update(ref_image='image_a.tif'):
-
+    with gw.config.update(ref_image='image_a.tif', sensor='l7'):
         # Open images as Xarray DataArrays
-        with gw.open('image_a.tif') as srca, \
-            gw.open('image_b.tif') as srcb:
-
-            # The size of srca, srcb, and results are determined by the configuration context
-            results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
-
-            # Initiate computation by writing the results to file.
-            # Mix process and thread workers to execute the task in parallel.
-            results.gw.to_raster('output.tif',
-                                 n_workers=4,
-                                 n_threads=4,
-                                 compress='lzw')
+        with gw.open('image_a.tif') as srca, gw.open('image_b.tif') as srcb:
+            # The size of srca, srcb, and results are determined
+            # by the configuration context
+            vis_mean = srcb.sel(band=['blue', 'green', 'red']).mean(dim='band')
+            results = srca.sel(band='blue') * vis_mean
+            # Initiate computation by writing the results to file
+            results.gw.save(
+                'output.tif',
+                num_workers=4,
+                compress='lzw'
+            )
 
 For more details, see the `tutorials <tutorial.html>`_ and `examples <examples.html>`_.
 
