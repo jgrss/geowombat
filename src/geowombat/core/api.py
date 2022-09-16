@@ -443,8 +443,7 @@ class open(object):
                 num_workers=num_workers,
                 **kwargs,
             )
-
-            self.__filenames = [filename]
+            self.__filenames = [str(filename)]
 
         else:
             if (isinstance(filename, str) and '*' in filename) or isinstance(
@@ -487,14 +486,13 @@ class open(object):
                         netcdf_vars=netcdf_vars,
                         **kwargs,
                     )
-
                     self.__data_are_stacked = True
 
                 self.__data_are_separate = True
                 self.__filenames = [str(fn) for fn in filename]
 
             else:
-                self.__filenames = [filename]
+                self.__filenames = [str(filename)]
                 file_names = get_file_extension(filename)
 
                 if (
@@ -531,6 +529,7 @@ class open(object):
                         self.data = src.to_array(dim='band')
                     # Ensure the filename attribute gets updated as the NetCDF file
                     self.data = self.data.assign_attrs(**{'filename': str(filename)})
+                    self.__filenames = [str(filename)]
                     # Order bands from the NetCDF dataset
                     if band_names is not None:
                         if len(band_names) != self.data['band'].shape[0]:

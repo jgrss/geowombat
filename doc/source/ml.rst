@@ -63,8 +63,8 @@ Fit a classifier with multiple dates
             y = fit_predict(src, pl, labels, col='lc')
             print(y)
 
-Train a supervised classifier and predict 
-------------------------------
+Train a supervised classifier and predict
+-----------------------------------------
 
 
 .. ipython:: python
@@ -78,8 +78,9 @@ Train a supervised classifier and predict
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
 
-Train an unsupervised classifier and predict 
-------------------------------
+Train an unsupervised classifier and predict
+--------------------------------------------
+
 Unsupervised classifiers can also be used in a pipeline
 
 .. ipython:: python
@@ -109,8 +110,9 @@ Unsupervised classifiers can also be used in a pipeline
 
 
 Predict with cross validation and parameter tuning
-------------------------------
-Crossvalidation and parameter tuning is now possible 
+--------------------------------------------------
+
+Cross-validation and parameter tuning is now possible
 
 .. ipython:: python
 
@@ -128,14 +130,14 @@ Crossvalidation and parameter tuning is now possible
             # fit a model to get Xy used to train model
             X, Xy, clf = fit(src, pl, labels, col="lc")
 
-            # fit cross valiation and parameter tuning 
+            # fit cross valiation and parameter tuning
             # NOTE: must unpack * object Xy
             gridsearch.fit(*Xy)
             print(gridsearch.best_params_)
             print(gridsearch.best_score_)
 
             # get set tuned parameters
-            # Note: predict(gridsearch.best_model_) not currently supported 
+            # Note: predict(gridsearch.best_model_) not currently supported
             clf.set_params(**gridsearch.best_params_)
             y1 = predict(src, X, clf)
             y.plot(robust=True, ax=ax)

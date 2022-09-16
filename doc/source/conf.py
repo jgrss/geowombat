@@ -77,9 +77,14 @@ html_theme_options = {
     "sidebar_width": "20%",
     "head_font_family": "Helvetica",
     "font_size": "1.1em",
-    "font_family": "Helvetica",
-    "code_font_family": "Noto Mono",
-    "code_font_size": "0.8em",
+    "font_family": 'Helvetica',
+    "code_font_family": [
+        'Consolas',
+        'Menlo',
+        'DejaVu Sans Mono',
+        'Bitstream Vera Sans Mono',
+    ],
+    "code_font_size": "0.9em",
     "note_bg": "#cccccc",
     "note_border": "#c0c3e2",
     "fixed_sidebar": False,
@@ -110,4 +115,3 @@ latex_elements = {
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '\\usepackage{amsmath}',
 }
-
