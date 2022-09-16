@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.5 (2022-09-16)
+* Fixed attribute lookup when co-registration is applied ([#203](https://github.com/jgrss/geowombat/pull/203))
+
 ## v2.0.4 (2022-09-15)
 * Fixed 'filename' attribute when opening a NetCDF file ([#201](https://github.com/jgrss/geowombat/pull/201))
 
