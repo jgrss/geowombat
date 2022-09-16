@@ -819,19 +819,22 @@ class DataProperties(object):
             )
         import geowombat as gw_
 
-        geometries = []
-        for fn in self._obj.filenames:
-            kwargs = {'engine': 'h5netcdf'} if fn.lower().endswith('.nc') else {}
-            with gw_.open(
-                fn,
-                chunks={
-                    'band': self._obj.gw.band_chunks,
-                    'y': self._obj.gw.row_chunks,
-                    'x': self._obj.gw.col_chunks,
-                },
-                **kwargs
-            ) as src:
-                geometries.append(src.gw.geometry)
+        if hasattr(self._obj, 'geometries'):
+            geometries = self._obj.geometries
+        else:
+            geometries = []
+            for fn in self._obj.filenames:
+                kwargs = {'engine': 'h5netcdf'} if fn.lower().endswith('.nc') else {}
+                with gw_.open(
+                    fn,
+                    chunks={
+                        'band': self._obj.gw.band_chunks,
+                        'y': self._obj.gw.row_chunks,
+                        'x': self._obj.gw.col_chunks,
+                    },
+                    **kwargs
+                ) as src:
+                    geometries.append(src.gw.geometry)
 
         return gpd.GeoDataFrame(
             data=self._obj.filenames,
