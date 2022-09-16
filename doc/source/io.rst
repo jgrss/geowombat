@@ -267,12 +267,12 @@ image file.
     background.
 
     In the early days of ``geowombat`` development, direct computation calls using
-    ``Dask`` (more on that with :func:`save`) were initially tested on large raster files
+    ``Dask`` (more on that with :func:`save`) were tested on large raster files
     (i.e., width and height on the order of tens of thousands). It was determined that the overhead
-    of generating the Dask task graph was too large and outweighted the actual computation. To
+    of generating the Dask task graph was too large and outweighed the actual computation. To
     address this, the :func:`to_raster` method was designed to iterate over raster chunks/blocks
     using ``concurrent.futures``, reading and computing each block when requested. This removed
-    any large overhead but also negated the efficiency of ``Dask`` as the underlying ``delayed``
+    any large overhead but also negated the efficiency of ``Dask`` as the underlying 'delayed'
     array. The :func:`to_raster` can be used on data of any size, but comes with its own overhead.
     For example, when working with arrays that fit into memory, such as a standard satellite scene,
     ``Dask`` works quite well. To give an example, instead of slicing a ``DataArray`` chunk and
