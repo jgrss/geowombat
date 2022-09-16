@@ -27,6 +27,7 @@ __pycache__/
 old/
 envs/
 doc/*.log
+doc/build/
 doc/source/*.log
 geowombat/moving/*.c
 geowombat/moving/*.so
