@@ -42,16 +42,13 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     Returns:
         ``dict``
     """
-
     if isinstance(ref_obj, str) and Path(ref_obj).is_file():
-
         # Get the metadata from the reference image
         ref_meta = get_ref_image_meta(ref_obj)
         ref_kwargs[key] = getattr(ref_meta, key)
 
     else:
-
-        if ref_obj:
+        if ref_obj is not None:
             ref_kwargs[key] = ref_obj
 
     return ref_kwargs
@@ -73,28 +70,23 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
         bounds_by (str)
         ref_kwargs (dict)
     """
-
+    if config['nodata'] is not None:
+        ref_kwargs = _update_kwarg(config['nodata'], ref_kwargs, 'nodata')
     # Check if there is a reference image
     if config['ref_image']:
-
         if isinstance(config['ref_image'], str) and os.path.isfile(config['ref_image']):
-
             # Get the metadata from the reference image
             ref_meta = get_ref_image_meta(config['ref_image'])
-
             ref_kwargs['bounds'] = ref_meta.bounds
             ref_kwargs['crs'] = ref_meta.crs
             ref_kwargs['res'] = ref_meta.res
 
         else:
-
             if not config['ignore_warnings']:
                 logger.warning('  The reference image does not exist')
 
     else:
-
         if config['ref_bounds']:
-
             if isinstance(config['ref_bounds'], str) and config[
                 'ref_bounds'
             ].startswith('Window'):
@@ -122,9 +114,7 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             ref_kwargs = _update_kwarg(ref_bounds_, ref_kwargs, 'bounds')
 
         else:
-
             if isinstance(filenames, str) or isinstance(filenames, Path):
-
                 # Use the bounds of the image
                 ref_kwargs['bounds'] = get_file_bounds(
                     [filenames],
@@ -135,10 +125,8 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                 )
 
             else:
-
                 # Replace the bounds keyword, if needed
                 if bounds_by.lower() == 'intersection':
-
                     # Get the intersecting bounds of all images
                     ref_kwargs['bounds'] = get_file_bounds(
                         filenames,
@@ -149,7 +137,6 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                     )
 
                 elif bounds_by.lower() == 'union':
-
                     # Get the union bounds of all images
                     ref_kwargs['bounds'] = get_file_bounds(
                         filenames,
@@ -160,7 +147,6 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                     )
 
                 elif bounds_by.lower() == 'reference':
-
                     # Use the bounds of the first image
                     ref_kwargs['bounds'] = get_file_bounds(
                         filenames,
@@ -177,16 +163,14 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
 
                 config['ref_bounds'] = ref_kwargs['bounds']
 
-        if config['ref_crs']:
+        if config['ref_crs'] is not None:
             ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
-        if config['ref_res']:
+        if config['ref_res'] is not None:
             ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
-        if config['ref_tar']:
-
+        if config['ref_tar'] is not None:
             if isinstance(config['ref_tar'], str):
-
                 if os.path.isfile(config['ref_tar']):
                     ref_kwargs = _update_kwarg(
                         _get_raster_coords(config['ref_tar']), ref_kwargs, 'tac'
@@ -197,7 +181,6 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
                         logger.warning('  The target aligned raster does not exist.')
 
             else:
-
                 if not config['ignore_warnings']:
                     logger.warning('  The target aligned raster must be an image.')
 
@@ -227,7 +210,7 @@ def warp_open(
     resampling='nearest',
     dtype=None,
     netcdf_vars=None,
-    nodata=0,
+    nodata=None,
     return_windows=False,
     warp_mem_limit=512,
     num_threads=1,
@@ -243,7 +226,7 @@ def warp_open(
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``.
         return_windows (Optional[bool]): Whether to return block windows.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
@@ -257,7 +240,7 @@ def warp_open(
         'bounds': None,
         'crs': None,
         'res': None,
-        'nodata': nodata if config['nodata'] is None else config['nodata'],
+        'nodata': nodata,
         'warp_mem_limit': warp_mem_limit,
         'num_threads': num_threads,
         'tap': tap,
@@ -269,7 +252,6 @@ def warp_open(
     del ref_kwargs_netcdf_stack['tap']
 
     ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
-
     filenames = None
 
     # Create a list of variables to open
@@ -300,7 +282,9 @@ def warp_open(
 
         yield xr.concat(
             (
-                open_rasterio(wobj, **kwargs).assign_coords(
+                open_rasterio(
+                    wobj, nodata=ref_kwargs['nodata'], **kwargs
+                ).assign_coords(
                     band=[band_names[wi]] if band_names else [netcdf_vars[wi]]
                 )
                 for wi, wobj in enumerate(warped_objects)
@@ -309,7 +293,9 @@ def warp_open(
         )
 
     with open_rasterio(
-        warp(filename, resampling=resampling, **ref_kwargs), **kwargs
+        warp(filename, resampling=resampling, **ref_kwargs),
+        nodata=ref_kwargs['nodata'],
+        **kwargs,
     ) if not filenames else warp_netcdf_vars() as src:
         if band_names:
             if len(band_names) > src.gw.nbands:
@@ -339,8 +325,10 @@ def warp_open(
                             )
 
                     else:
-                        src.coords['band'] = new_band_names
-                        src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
+                        src = src.assign_coords(**{'band': new_band_names})
+                        src = src.assign_attrs(
+                            **{'sensor': src.gw.sensor_names[src.gw.sensor]}
+                        )
 
         if return_windows:
             if isinstance(kwargs['chunks'], tuple):
@@ -352,8 +340,7 @@ def warp_open(
                 src.shape[-2], src.shape[-1], chunksize, chunksize, return_as='list'
             )
 
-        src.attrs['filename'] = filename
-        src.attrs['resampling'] = resampling
+        src = src.assign_attrs(**{'filename': filename, 'resampling': resampling})
 
         if tags:
             attrs = src.attrs.copy()
@@ -375,7 +362,7 @@ def mosaic(
     bounds_by='reference',
     resampling='nearest',
     band_names=None,
-    nodata=0,
+    nodata=None,
     dtype=None,
     warp_mem_limit=512,
     num_threads=1,
@@ -395,7 +382,7 @@ def mosaic(
 
         resampling (Optional[str]): The resampling method.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
@@ -433,30 +420,34 @@ def mosaic(
         tags = src_.tags()
 
     # Combine the data
-    with open_rasterio(warped_objects[0], **kwargs) as darray:
+    with open_rasterio(
+        warped_objects[0], nodata=ref_kwargs['nodata'], **kwargs
+    ) as darray:
         attrs = darray.attrs.copy()
 
         # Get the original bounds, unsampled
-        with open_rasterio(filenames[0], **kwargs) as src_:
+        with open_rasterio(filenames[0], nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
         for fidx, fn in enumerate(warped_objects[1:]):
-            with open_rasterio(fn, **kwargs) as darrayb:
-                with open_rasterio(filenames[fidx + 1], **kwargs) as src_:
+            with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as darrayb:
+                with open_rasterio(
+                    filenames[fidx + 1], nodata=ref_kwargs['nodata'], **kwargs
+                ) as src_:
                     geometries.append(src_.gw.geometry)
                 src_ = None
 
                 if overlap == 'min':
-
-                    if isinstance(nodata, float) or isinstance(nodata, int):
-
+                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
+                        ref_kwargs['nodata'], int
+                    ):
                         darray = xr.where(
-                            (darray.mean(dim='band') == nodata)
-                            & (darrayb.mean(dim='band') != nodata),
+                            (darray.mean(dim='band') == ref_kwargs['nodata'])
+                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != nodata)
-                                & (darrayb.mean(dim='band') == nodata),
+                                (darray.mean(dim='band') != ref_kwargs['nodata'])
+                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
                                 darray,
                                 np.mininum(darray, darrayb),
                             ),
@@ -466,16 +457,16 @@ def mosaic(
                         darray = np.mininum(darray, darrayb)
 
                 elif overlap == 'max':
-
-                    if isinstance(nodata, float) or isinstance(nodata, int):
-
+                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
+                        ref_kwargs['nodata'], int
+                    ):
                         darray = xr.where(
-                            (darray.mean(dim='band') == nodata)
-                            & (darrayb.mean(dim='band') != nodata),
+                            (darray.mean(dim='band') == ref_kwargs['nodata'])
+                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != nodata)
-                                & (darrayb.mean(dim='band') == nodata),
+                                (darray.mean(dim='band') != ref_kwargs['nodata'])
+                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
                                 darray,
                                 np.maximum(darray, darrayb),
                             ),
@@ -485,16 +476,17 @@ def mosaic(
                         darray = np.maximum(darray, darrayb)
 
                 elif overlap == 'mean':
-
-                    if isinstance(nodata, float) or isinstance(nodata, int):
+                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
+                        ref_kwargs['nodata'], int
+                    ):
 
                         darray = xr.where(
-                            (darray.mean(dim='band') == nodata)
-                            & (darrayb.mean(dim='band') != nodata),
+                            (darray.mean(dim='band') == ref_kwargs['nodata'])
+                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != nodata)
-                                & (darrayb.mean(dim='band') == nodata),
+                                (darray.mean(dim='band') != ref_kwargs['nodata'])
+                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
                                 darray,
                                 (darray + darrayb) / 2.0,
                             ),
@@ -565,7 +557,7 @@ def concat(
     resampling='nearest',
     time_names=None,
     band_names=None,
-    nodata=0,
+    nodata=None,
     dtype=None,
     netcdf_vars=None,
     overlap='max',
@@ -588,7 +580,7 @@ def concat(
         resampling (Optional[str]): The resampling method.
         time_names (Optional[1d array-like]): A list of names to give the time dimension.
         band_names (Optional[1d array-like]): A list of names to give the band dimension.
-        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``.
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
@@ -604,19 +596,6 @@ def concat(
     """
     if stack_dim.lower() not in ['band', 'time']:
         logger.exception("  The stack dimension should be 'band' or 'time'.")
-
-    # ref_kwargs = {'bounds': None,
-    #               'crs': None,
-    #               'res': None,
-    #               'nodata': nodata,
-    #               'warp_mem_limit': warp_mem_limit,
-    #               'num_threads': num_threads,
-    #               'tap': tap,
-    #               'tac': None}
-
-    # ref_kwargs = _check_config_globals(f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames,
-    #                                    bounds_by,
-    #                                    ref_kwargs)
 
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
@@ -635,13 +614,6 @@ def concat(
 
     src_.close()
     src_ = None
-
-    # Keep a copy of the transformed attributes.
-    # with xr.open_rasterio(warp(filenames[0],
-    #                            resampling=resampling,
-    #                            **ref_kwargs), **kwargs) as src_:
-    #
-    #     attrs = src_.attrs.copy()
 
     if time_names and not (str(filenames[0]).lower().startswith('netcdf:')):
 
@@ -702,14 +674,6 @@ def concat(
         )
 
     else:
-
-        # Warp all images and concatenate along
-        #   the 'time' axis into a DataArray.
-        # src = xr.concat([xr.open_rasterio(warp(fn,
-        #                                        resampling=resampling,
-        #                                        **ref_kwargs), **kwargs)
-        #                  for fn in filenames], dim=stack_dim.lower())
-
         src = xr.concat(
             [
                 warp_open(
@@ -727,7 +691,7 @@ def concat(
             dim=stack_dim.lower(),
         )
 
-    src.attrs['filename'] = [Path(fn).name for fn in filenames]
+    src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
 
     if tags:
         attrs = src.attrs.copy()
@@ -750,20 +714,15 @@ def concat(
                 pass
 
         else:
-
             if not time_names:
                 src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
         src.coords['band'] = band_names
     else:
-
         if src.gw.sensor:
-
             if src.gw.sensor not in src.gw.avail_sensors:
-
                 if not src.gw.config['ignore_warnings']:
-
                     logger.warning(
                         '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
                             src.gw.sensor, ', '.join(src.gw.avail_sensors)
@@ -771,13 +730,9 @@ def concat(
                     )
 
             else:
-
                 new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
-
                 if len(new_band_names) != len(src.band.values.tolist()):
-
                     if not src.gw.config['ignore_warnings']:
-
                         logger.warning(
                             '  The new bands, {}, do not match the sensor bands, {}.'.format(
                                 new_band_names, src.band.values.tolist()
@@ -785,12 +740,12 @@ def concat(
                         )
 
                 else:
-
-                    src.coords['band'] = new_band_names
-                    src.attrs['sensor'] = src.gw.sensor_names[src.gw.sensor]
+                    src = src.assign_coords(**{'band': new_band_names})
+                    src = src.assign_attrs(
+                        **{'sensor': src.gw.sensor_names[src.gw.sensor]}
+                    )
 
     if dtype:
-
         attrs = src.attrs.copy()
         return src.astype(dtype).assign_attrs(**attrs)
 
