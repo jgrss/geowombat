@@ -363,6 +363,8 @@ def open_rasterio(
     if hasattr(riods, 'nodatavals'):
         # The nodata values for the raster bands
         nodatavals = (nodata,) * riods.count if nodata is not None else riods.nodatavals
+        if None in nodatavals:
+            nodatavals = (np.nan,) * len(nodatavals)
         attrs['nodatavals'] = tuple(
             np.nan if nodataval is None else nodataval for nodataval in nodatavals
         )
