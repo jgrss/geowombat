@@ -362,12 +362,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             return self._obj.data.compute(**kwargs)
 
-    def mask_nodata(self):
+    def mask_nodata(self) -> xr.DataArray:
         """Masks 'no data' values with nans."""
-        if '_FillValue' not in self._obj.attrs:
+        if hasattr(self._obj.attrs, '_FillValue'):
+            nodata_value = self._obj['_FillValue']
+        elif hasattr(self._obj.attrs, 'nodatavals'):
+            nodata_value = self._obj['nodatavals']
+        else:
             raise ValueError("The DataArray does not have a 'no data' value.")
 
-        return self._obj.astype('float64').where(lambda x: x != self._obj._FillValue)
+        if isinstance(nodata_value, (float, np.nan)):
+            dtype = 'float64'
+        else:
+            dtype = self._obj.dtype
+
+        return self._obj.astype(dtype).where(lambda x: x != nodata_value)
+
+    def assign_nodata_attrs(self, nodata: T.Union[float, int]) -> xr.DataArray:
+        """Assigns 'no data' attributes."""
+        return self._obj.assign_attrs(
+            **{'nodatavals': (nodata,) * self._obj.gw.nbands, '_FillValue': nodata}
+        )
 
     def match_data(self, data, band_names):
 
