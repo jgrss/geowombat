@@ -765,6 +765,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def save(
         self,
         filename: T.Union[str, Path],
+        mode: T.Optional[str] = 'w',
+        nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
         client: T.Optional[Client] = None,
         compute: T.Optional[bool] = True,
@@ -778,6 +780,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str | Path): The output file name to write to.
+            mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
+            nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
+                value is taken from the ``DataArray`` metadata.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
             client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
                 Default is None.
@@ -804,6 +809,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return save(
             self._obj,
             filename=filename,
+            mode=mode,
+            nodata=nodata,
             overwrite=overwrite,
             client=client,
             compute=compute,
@@ -1396,7 +1403,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def set_nodata(
         self, src_nodata, dst_nodata, out_range=None, dtype=None, scale_factor=None
     ):
-
         """Sets 'no data' values in the DataArray.
 
         Args:
@@ -1415,37 +1421,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>     src = src.gw.set_nodata(0, 65535, out_range=(0, 10000), dtype='uint16')
         """
-
-        if dtype:
+        if dtype is None:
             dtype = self._obj.dtype
 
         if not isinstance(scale_factor, float):
             scale_factor = 1.0
 
         attrs = self._obj.attrs.copy()
-
-        # Create a 'no data' mask
-        mask = (
-            self._obj.where(lambda x: x.band != src_nodata)
-            .count(dim='band')
-            .astype('uint8')
-        )
-
-        if self._obj.gw.has_time_coord:
-            mask = mask.transpose('time', 'y', 'x')
-
         # Mask the data
-        if out_range:
-
-            data = xr.where(
-                mask < self._obj.gw.nbands, dst_nodata, self._obj * scale_factor
-            ).clip(out_range[0], out_range[1])
-
-        else:
-
-            data = xr.where(
-                mask < self._obj.gw.nbands, dst_nodata, self._obj * scale_factor
-            )
+        data = xr.where(self._obj == src_nodata, dst_nodata, self._obj * scale_factor)
+        if out_range is not None:
+            data = data.clip(out_range[0], out_range[1])
 
         if self._obj.gw.has_time_coord:
             data = data.transpose('time', 'band', 'y', 'x').astype(dtype)
@@ -1453,6 +1439,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             data = data.transpose('band', 'y', 'x').astype(dtype)
 
         attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
+        attrs['_FillValue'] = dst_nodata
 
         return data.assign_attrs(**attrs)
 
