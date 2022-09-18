@@ -364,14 +364,14 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def mask_nodata(self) -> xr.DataArray:
         """Masks 'no data' values with nans."""
-        if hasattr(self._obj.attrs, '_FillValue'):
-            nodata_value = self._obj['_FillValue']
-        elif hasattr(self._obj.attrs, 'nodatavals'):
-            nodata_value = self._obj['nodatavals']
+        if hasattr(self._obj, '_FillValue'):
+            nodata_value = self._obj.attrs['_FillValue']
+        elif hasattr(self._obj, 'nodatavals'):
+            nodata_value = self._obj.attrs['nodatavals']
         else:
             raise ValueError("The DataArray does not have a 'no data' value.")
 
-        if isinstance(nodata_value, (float, np.nan)):
+        if isinstance(nodata_value, float):
             dtype = 'float64'
         else:
             dtype = self._obj.dtype
