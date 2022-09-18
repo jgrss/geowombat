@@ -665,13 +665,17 @@ def save(
                 raise AttributeError(
                     "The DataArray does not have any 'no data' attributes."
                 )
+    dtype = data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
+    if isinstance(nodata, float):
+        if dtype != 'float32':
+            dtype = 'float64'
 
     kwargs = dict(
         driver=driver_from_extension(filename),
         width=data.gw.ncols,
         height=data.gw.nrows,
         count=data.gw.nbands,
-        dtype=data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype,
+        dtype=dtype,
         nodata=nodata,
         blockxsize=data.gw.col_chunks,
         blockysize=data.gw.row_chunks,
