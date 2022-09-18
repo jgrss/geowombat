@@ -129,9 +129,9 @@ demonstrated by the example below.
 Setting 'no data' values with scaling
 -------------------------------------
 
-In GeoWombat, we use :func:`xarray.where` and :func:`xarray.DataArray.where` along with optional
-scaling in the :func:`set_nodata` function. In this example, we set zeros as 65535 and scale all
-other values from a [0,10000] range to [0,1].
+In GeoWombat, we use :func:`xarray.DataArray.where` along with optional
+scaling in the :func:`DataArray.gw.set_nodata` function. In this example, we set zeros as
+``nan`` and scale all other values from a [0,10000] range to [0,1] (i.e., x 1e-4).
 
 .. ipython:: python
 
