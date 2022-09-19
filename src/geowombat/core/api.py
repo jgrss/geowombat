@@ -277,14 +277,15 @@ class open(object):
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames``
             is a ``list``. Choices are ['min', 'max', 'mean'].
-        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``.
-            If ``nodata`` is ``None``, the 'no data' value is set from the file metadata. If ``nodata`` is given,
-            then the file 'no data' value is overridden.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``. If ``nodata`` is ``None``,
+            the 'no data' value is set from the file metadata. If ``nodata`` is given, then the file 'no data'
+            value is overridden. See docstring examples for use of ``nodata`` in ``geowombat.config.update``.
 
             .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
-                to ``geowombat.config.update`` not ``None`` > ``nodata`` not ``None`` > file 'no data'.
-
-            See Examples: below for use of ``geowombat.config.update``.
+                in the following order:
+                    1. ``geowombat.config.update`` not ``None``
+                    2. ``nodata`` not ``None``
+                    3. file 'no data' value from metadata
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
