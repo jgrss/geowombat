@@ -1,7 +1,44 @@
 .. _web:
 
-Web
-===
+Streaming data from cloud sources
+=================================
+
+Spatial Temporal Asset Catalogs
+-------------------------------
+
+`STAC <https://stacspec.org/en>`_
+
+Stream Sentinel-2 level 2A data from Element84
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from pathlib import Path
+    from geowombat.core.stac import open_stac
+    from rasterio.enums import Resampling
+
+    # Bounds in lat/lon WGS84
+    bounds = (left, bottom, right, top)
+
+    data, df = open_stac(
+        stac_catalog='element84',
+        bounds=bounds,
+        epsg='epsg:8858',
+        nodata_fill=32768,
+        collection='sentinel_s2_l2a',
+        bands=['B02', 'B03', 'B04', 'B08'],
+        cloud_cover_perc=90,
+        chunksize=512,
+        start_date='2022-01-01',
+        end_date='2022-04-01',
+        resolution=10.0,
+        resampling=Resampling.cubic,
+        extra_assets=['metadata'],
+        out_path=Path('/out_path'),
+        max_items=None,
+        tqdm_item_position=0,
+        tqdm_extra_position=1
+    )
 
 Download data from Google Cloud Platform
 ----------------------------------------

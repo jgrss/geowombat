@@ -14,6 +14,7 @@ Examples
    ml
    moving
    radiometry
+   coreg
    tasks
    web
    external
