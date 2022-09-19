@@ -3,7 +3,7 @@
 Co-registration
 ===============
 
-Image co-registration is the ...
+Image co-registration is the misalignment of pixels in an image. This misalignment is exceedingly common in applications utlizing two sensors (e.g. Sentinel-1 and 2) but is even evidenced with images from the same sensor over time. Any displacement has the potential to significantly distort results `(Ye 2021) <https://doi.org/10.3390/rs13050928>`_ of, for instace, change detection, image fusion, and landcover classification `(Scheffler 2017) <https://www.mdpi.com/2072-4292/9/7/676>`_. Geowombat has integrated AROSICS which can be used to effectively co-register pixels both between senors systems and for time series of any given sensor. 
 
 AROSICS method
 --------------
