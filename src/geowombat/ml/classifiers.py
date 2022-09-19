@@ -1,5 +1,5 @@
 import functools
-import logging
+import warnings
 
 from .. import polygon_to_array
 
@@ -15,8 +15,6 @@ import numpy as np
 from geopandas.geodataframe import GeoDataFrame
 
 from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
-
-logger = logging.getLogger(__name__)
 
 
 def wrapped_cls(cls):
@@ -37,6 +35,8 @@ class WrappedClassifier(object):
 
 
 class ClassifiersMixin(object):
+    le = LabelEncoder()
+
     @staticmethod
     def _add_time_dim(data):
         if not hasattr(data, "time"):
@@ -49,15 +49,25 @@ class ClassifiersMixin(object):
         else:
             return data
 
+    @property
+    def classes_(self):
+        return self.le.classes_ + 1
+
+    def _fit_labels(self, labels: np.ndarray):
+        self.le.fit(labels)
+
+    def _transform_labels(self, labels: np.ndarray):
+        return self.le.transform(labels) + 1
+
     def _prepare_labels(self, data, labels, col, targ_name):
         if (labels[col].dtype != int) or (labels[col].min() == 0):
-            le = LabelEncoder()
-            labels[col] = le.fit_transform(labels[col]) + 1
-            logger.warning(
-                "target labels were not integers or min class is 0 (conflicts with missing), applying LabelEncoder and adding 1. Classes:",
-                le.classes_,
-                "Code:",
-                le.transform(le.classes_),
+            self._fit_labels(labels[col])
+            labels[col] = self._transform_labels(labels[col])
+            warnings.warn(
+                "target labels were not integers or min class is 0 (conflicts with missing), "
+                f"applying LabelEncoder and adding 1. Input classes = {','.join(self.le.classes_.astype(str).tolist())}; "
+                f"Transformed classes = {','.join(self._transform_labels(self.le.classes_).astype(str).tolist())}",
+                UserWarning,
             )
 
         if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
@@ -112,9 +122,9 @@ class ClassifiersMixin(object):
     @staticmethod
     def add_categorical(data, labels, col, variable_name="cat1"):
 
-        """
-        Adds numeric categorical data to array based on polygon col values.
-        For multiple time periods, multiple copies are made, one for each time period.
+        """Adds numeric categorical data to array based on polygon col values.
+        For multiple time periods, multiple copies are made, one for each time
+        period.
 
         Args:
 
@@ -160,15 +170,13 @@ class ClassifiersMixin(object):
 
     @staticmethod
     def _mask_nodata(y, x, src_nodata=None, dst_nodata=np.nan):
-        """
-        Remove missing data value and replace with another.
+        """Remove missing data value and replace with another.
 
         Args:
             y (DataArray): The prediction
             x (DataArray): The data to used to predict.
             src_nodata (int,float): Value to replace , default is x.attrs["nodatavals"][0]
             dst_nodata (int,float): Replacement value, default is np.nan - but converts y to float
-
         """
         if src_nodata is None:
             src_nodata = x.attrs["nodatavals"][0]
@@ -191,7 +199,7 @@ class Classifiers(ClassifiersMixin):
         targ_name="targ",
         targ_dim_name="sample",
     ):
-        """Fits a classifier given class labels
+        """Fits a classifier given class labels.
 
         Args:
             data (DataArray): The data to predict on.
@@ -280,7 +288,7 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         mask_nodataval=True,
     ):
-        """Fits a classifier given class labels and predicts on a DataArray
+        """Fits a classifier given class labels and predicts on a DataArray.
 
         Args:
             data (DataArray): The data to predict on.
@@ -360,7 +368,7 @@ class Classifiers(ClassifiersMixin):
         targ_dim_name="sample",
         mask_nodataval=True,
     ):
-        """Fits a classifier given class labels and predicts on a DataArray
+        """Fits a classifier given class labels and predicts on a DataArray.
 
         Args:
             data (DataArray): The data to predict on.
