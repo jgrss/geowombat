@@ -188,6 +188,12 @@ class ClassifiersMixin(object):
             mask = np.any((x == src_nodata).values, 1, keepdims=True)
             return xr.where(mask, dst_nodata, y)
 
+        # suggested by jordan
+        # Set the 'no data' attribute
+        # .gw.assign_nodata_attrs(0)
+        # Convert 'no data' values to nans
+        # .gw.mask_nodata()
+
 
 class Classifiers(ClassifiersMixin):
     def fit(
@@ -256,7 +262,7 @@ class Classifiers(ClassifiersMixin):
             # TODO: Validation checks
             # check_array(X)
             clf.fit(X)
-            setattr(clf, 'fitted_', True)
+            setattr(clf, "fitted_", True)
 
             return X, (X, None), clf
 
@@ -275,7 +281,7 @@ class Classifiers(ClassifiersMixin):
             # TO DO: Validation checks
             # Xna, y = check_X_y(Xna, y)
             clf.fit(Xna, y)
-            setattr(clf, 'fitted_', True)
+            setattr(clf, "fitted_", True)
 
             return X, (Xna, y), clf
 
@@ -348,6 +354,12 @@ class Classifiers(ClassifiersMixin):
             .assign_coords(coords={"band": targ_name})
             .expand_dims(dim="band")
             .transpose("time", "band", "y", "x")
+        )
+
+        y = (
+            y.chunk({"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks})
+            # Assign geo-attributes
+            .assign_attrs(**data.attrs)
         )
 
         if mask_nodataval:
