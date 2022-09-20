@@ -373,29 +373,30 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             raise ValueError("The DataArray does not have a 'no data' value.")
 
         # We need to store the data in a type that supports the 'no data' value
-        if isinstance(nodata_value, float):
-            if not np.issubdtype(self._obj.dtype, np.floating):
-                self._obj = self._obj.astype('float64')
-        else:
-            if nodata_value > abs(np.iinfo(self._obj.dtype).max):
-                for dtype_ in [
-                    'uint8',
-                    'int16',
-                    'uint16',
-                    'int32',
-                    'uint32',
-                    'int64',
-                    'uint64',
-                ]:
-                    if nodata_value <= abs(np.iinfo(dtype_).max):
-                        if self._obj.dtype != dtype_:
-                            self._obj = self._obj.astype(dtype_)
-                            warnings.warn(
-                                "The 'no data' value is beyond the range of the stored dtype. "
-                                f"Therefore, the DataArray dtype will be converted to {dtype_}.",
-                                UserWarning,
-                            )
-                        break
+        if not np.issubdtype(self._obj.gw.dtype, np.floating):
+            if isinstance(nodata_value, float):
+                if not np.issubdtype(self._obj.gw.dtype, np.floating):
+                    self._obj = self._obj.astype('float64')
+            else:
+                if nodata_value > abs(np.iinfo(self._obj.gw.dtype).max):
+                    for dtype_ in [
+                        'uint8',
+                        'int16',
+                        'uint16',
+                        'int32',
+                        'uint32',
+                        'int64',
+                        'uint64',
+                    ]:
+                        if nodata_value <= abs(np.iinfo(dtype_).max):
+                            if self._obj.gw.dtype != dtype_:
+                                self._obj = self._obj.astype(dtype_)
+                                warnings.warn(
+                                    "The 'no data' value is beyond the range of the stored dtype. "
+                                    f"Therefore, the DataArray dtype will be converted to {dtype_}.",
+                                    UserWarning,
+                                )
+                            break
 
         return self._obj.where(lambda x: x != nodata_value)
 
