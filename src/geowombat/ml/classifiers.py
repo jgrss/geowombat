@@ -85,7 +85,6 @@ class ClassifiersMixin(object):
     def _stack_it(data):
         return data.stack(sample=("x", "y", "time")).T
 
-    # @staticmethod
     def _prepare_predictors(self, data, targ_name):
 
         X = self._stack_it(data)
@@ -93,6 +92,7 @@ class ClassifiersMixin(object):
         # drop nans
         try:
             Xna = X[~X[targ_name].isnull()]
+            Xna = X[X[targ_name] != X.attrs["nodatavals"][0]]
         except KeyError:
             Xna = X
 
@@ -280,6 +280,7 @@ class Classifiers(ClassifiersMixin):
 
             # TO DO: Validation checks
             # Xna, y = check_X_y(Xna, y)
+
             clf.fit(Xna, y)
             setattr(clf, "fitted_", True)
 
@@ -334,7 +335,7 @@ class Classifiers(ClassifiersMixin):
 
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
-            >>>     with gw.open(l8_224078_20200518, chunks=128) as src:
+            >>>     with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>         X, Xy, clf = fit(src, pl, labels, col="lc")
             >>>         y = predict(src, X, clf)
             >>>         print(y)
@@ -356,17 +357,17 @@ class Classifiers(ClassifiersMixin):
             .transpose("time", "band", "y", "x")
         )
 
-        y = (
-            y.chunk({"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks})
-            # Assign geo-attributes
-            .assign_attrs(**data.attrs)
-        )
-
         if mask_nodataval:
             y = self._mask_nodata(y=y, x=data)
 
         if y.gw.ntime == 1:
             y = y.sel(time="t1")
+
+        y = (
+            y.chunk({"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks})
+            # Assign geo-attributes
+            .assign_attrs(**data.attrs)
+        )
 
         return y
 
@@ -421,18 +422,18 @@ class Classifiers(ClassifiersMixin):
             >>>                ('pca', PCA()),
             >>>                ('clf', GaussianNB()))])
             >>>
-            >>> with gw.open(l8_224078_20200518) as src:
+            >>> with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=0).sel(band='targ').gw.imshow()
             >>>
-            >>> with gw.open([l8_224078_20200518,l8_224078_20200518]) as src:
+            >>> with gw.open([l8_224078_20200518,l8_224078_20200518], nodata=0) as src:
             >>>     y = fit_predict(src, pl, labels, col='lc')
             >>>     y.isel(time=1).sel(band='targ').gw.imshow()
             >>>
             >>> # Use an unsupervised classification pipeline
             >>> cl = Pipeline([('pca', PCA()),
             >>>                ('cst', KMeans()))])
-            >>> with gw.open(l8_224078_20200518) as src:
+            >>> with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>     y2 = fit_predict(src, cl)
         """
 
