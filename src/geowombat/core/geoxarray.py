@@ -1,5 +1,6 @@
 import typing as T
 from pathlib import Path
+import warnings
 
 from ..config import config
 
@@ -88,7 +89,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         flip=False,
         text_color='black',
         rot=30,
-        **kwargs
+        **kwargs,
     ):
 
         """Shows an image on a plot.
@@ -119,7 +120,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             flip=flip,
             text_color=text_color,
             rot=rot,
-            **kwargs
+            **kwargs,
         )
 
     def to_raster(
@@ -133,7 +134,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         dtype=None,
         nodata=None,
         tags=None,
-        **kwargs
+        **kwargs,
     ):
 
         """Writes an Xarray Dataset to a raster file.
@@ -193,7 +194,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             transform=self._obj.transform,
             dtype=dtype,
             tags=tags,
-            **kwargs
+            **kwargs,
         )
 
     def moving(
@@ -371,12 +372,33 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             raise ValueError("The DataArray does not have a 'no data' value.")
 
-        if isinstance(nodata_value, float):
-            dtype = 'float64'
-        else:
-            dtype = self._obj.dtype
+        # We need to store the data in a type that supports the 'no data' value
+        if not np.issubdtype(self._obj.gw.dtype, np.floating):
+            if isinstance(nodata_value, float):
+                if not np.issubdtype(self._obj.gw.dtype, np.floating):
+                    self._obj = self._obj.astype('float64')
+            else:
+                if nodata_value > abs(np.iinfo(self._obj.gw.dtype).max):
+                    for dtype_ in [
+                        'uint8',
+                        'int16',
+                        'uint16',
+                        'int32',
+                        'uint32',
+                        'int64',
+                        'uint64',
+                    ]:
+                        if nodata_value <= abs(np.iinfo(dtype_).max):
+                            if self._obj.gw.dtype != dtype_:
+                                self._obj = self._obj.astype(dtype_)
+                                warnings.warn(
+                                    "The 'no data' value is beyond the range of the stored dtype. "
+                                    f"Therefore, the DataArray dtype will be converted to {dtype_}.",
+                                    UserWarning,
+                                )
+                            break
 
-        return self._obj.astype(dtype).where(lambda x: x != nodata_value)
+        return self._obj.where(lambda x: x != nodata_value)
 
     def assign_nodata_attrs(self, nodata: T.Union[float, int]) -> xr.DataArray:
         """Assigns 'no data' attributes."""
@@ -633,7 +655,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             flip=flip,
             text_color=text_color,
             rot=rot,
-            **kwargs
+            **kwargs,
         )
 
     def to_polygon(self, mask=None, connectivity=4):
@@ -859,7 +881,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         blockxsize=512,
         blockysize=512,
         tags=None,
-        **kwargs
+        **kwargs,
     ):
         """Writes an Xarray DataArray to a raster file.
 
@@ -919,7 +941,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             driver=driver,
             blockxsize=blockxsize,
             blockysize=blockysize,
-            **kwargs
+            **kwargs,
         )
 
         # Keywords for rasterio profile
@@ -960,7 +982,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             overviews=overviews,
             resampling=resampling,
             tags=tags,
-            **kwargs
+            **kwargs,
         )
 
     def to_vrt(
@@ -1025,7 +1047,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         nodata=None,
         dtype='uint8',
         gdal_cache=512,
-        **kwargs
+        **kwargs,
     ):
 
         """Predicts an image using a pre-fit model.
@@ -1077,7 +1099,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             nodata=nodata,
             dtype=dtype,
             gdal_cache=gdal_cache,
-            **kwargs
+            **kwargs,
         )
 
     def apply(self, filename, user_func, n_jobs=1, **kwargs):
@@ -1262,7 +1284,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         spacing=None,
         min_dist=None,
         max_attempts=10,
-        **kwargs
+        **kwargs,
     ):
 
         """Generates samples from a raster.
@@ -1320,7 +1342,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             spacing=spacing,
             min_dist=min_dist,
             max_attempts=max_attempts,
-            **kwargs
+            **kwargs,
         )
 
     def extract(
@@ -1334,7 +1356,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         mask=None,
         n_jobs=8,
         verbose=0,
-        **kwargs
+        **kwargs,
     ):
 
         """Extracts data within an area or points of interest. Projections do
@@ -1376,7 +1398,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             mask=mask,
             n_jobs=n_jobs,
             verbose=verbose,
-            **kwargs
+            **kwargs,
         )
 
     def band_mask(self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1):
