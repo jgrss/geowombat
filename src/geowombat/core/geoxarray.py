@@ -1,5 +1,6 @@
 import typing as T
 from pathlib import Path
+import warnings
 
 from ..config import config
 
@@ -17,7 +18,7 @@ from . import (
     clip,
     mask,
     replace,
-    recode
+    recode,
 )
 from . import dask_to_xarray, ndarray_to_xarray
 from . import norm_diff as gw_norm_diff
@@ -47,7 +48,6 @@ import joblib
 
 
 class _UpdateConfig(object):
-
     def _update_attrs(self):
 
         if self.config:
@@ -70,7 +70,6 @@ class _UpdateConfig(object):
 
 @xr.register_dataset_accessor('gw')
 class GeoWombatAccessor(_UpdateConfig, _DataProperties):
-
     def __init__(self, xarray_obj):
 
         self._obj = xarray_obj
@@ -81,18 +80,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         self._update_attrs()
 
-    def imshow(self,
-               variable='bands',
-               band_names=None,
-               mask=False,
-               nodata=0,
-               flip=False,
-               text_color='black',
-               rot=30,
-               **kwargs):
+    def imshow(
+        self,
+        variable='bands',
+        band_names=None,
+        mask=False,
+        nodata=0,
+        flip=False,
+        text_color='black',
+        rot=30,
+        **kwargs,
+    ):
 
-        """
-        Shows an image on a plot
+        """Shows an image on a plot.
 
         Args:
             variable (Optional[str]): The ``Dataset`` variable to write.
@@ -112,29 +112,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     ds.gw.imshow(band_names=['red', 'green', 'red'], mask=True, vmin=0.1, vmax=0.9, robust=True)
         """
 
-        gw_imshow(self._obj[variable],
-                  band_names=band_names,
-                  mask=mask,
-                  nodata=nodata,
-                  flip=flip,
-                  text_color=text_color,
-                  rot=rot,
-                  **kwargs)
+        gw_imshow(
+            self._obj[variable],
+            band_names=band_names,
+            mask=mask,
+            nodata=nodata,
+            flip=flip,
+            text_color=text_color,
+            rot=rot,
+            **kwargs,
+        )
 
-    def to_raster(self,
-                  filename,
-                  variable='bands',
-                  verbose=0,
-                  overwrite=False,
-                  driver='GTiff',
-                  gdal_cache=512,
-                  dtype=None,
-                  nodata=None,
-                  tags=None,
-                  **kwargs):
+    def to_raster(
+        self,
+        filename,
+        variable='bands',
+        verbose=0,
+        overwrite=False,
+        driver='GTiff',
+        gdal_cache=512,
+        dtype=None,
+        nodata=None,
+        tags=None,
+        **kwargs,
+    ):
 
-        """
-        Writes an Xarray Dataset to a raster file
+        """Writes an Xarray Dataset to a raster file.
 
         Args:
             filename (str): The output file name to write to.
@@ -179,31 +182,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if not hasattr(self._obj, 'transform'):
             raise AttributeError('The Dataset does not have a `transform` attribute.')
 
-        kwargs = self._update_kwargs(nodata=nodata,
-                                     driver=driver,
-                                     **kwargs)
+        kwargs = self._update_kwargs(nodata=nodata, driver=driver, **kwargs)
 
-        to_raster(self._obj[variable],
-                  filename,
-                  gdal_cache=gdal_cache,
-                  verbose=verbose,
-                  overwrite=overwrite,
-                  crs=self._obj.crs,
-                  transform=self._obj.transform,
-                  dtype=dtype,
-                  tags=tags,
-                  **kwargs)
+        to_raster(
+            self._obj[variable],
+            filename,
+            gdal_cache=gdal_cache,
+            verbose=verbose,
+            overwrite=overwrite,
+            crs=self._obj.crs,
+            transform=self._obj.transform,
+            dtype=dtype,
+            tags=tags,
+            **kwargs,
+        )
 
-    def moving(self,
-               variable='bands',
-               band_coords='band',
-               stat='mean',
-               perc=50.0,
-               w=3,
-               n_jobs=1):
+    def moving(
+        self,
+        variable='bands',
+        band_coords='band',
+        stat='mean',
+        perc=50.0,
+        w=3,
+        n_jobs=1,
+    ):
 
-        """
-        Applies a moving window function to the DataArray
+        """Applies a moving window function to the DataArray.
 
         Args:
             variable (Optional[str]): The variable to compute.
@@ -217,41 +221,103 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             DataArray
         """
 
-        return moving(self._obj[variable],
-                      band_names=self._obj.coords[band_coords].values,
-                      w=w,
-                      perc=perc,
-                      stat=stat,
-                      n_jobs=n_jobs)
+        return moving(
+            self._obj[variable],
+            band_names=self._obj.coords[band_coords].values,
+            w=w,
+            perc=perc,
+            stat=stat,
+            n_jobs=n_jobs,
+        )
 
-    def norm_diff(self, b1, b2, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_norm_diff(self._obj[variable], b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+    def norm_diff(
+        self,
+        b1,
+        b2,
+        variable='bands',
+        nodata=None,
+        mask=False,
+        sensor=None,
+        scale_factor=1.0,
+    ):
+        return gw_norm_diff(
+            self._obj[variable],
+            b1,
+            b2,
+            sensor=sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def evi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_evi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+    def evi(
+        self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
+        return gw_evi(
+            self._obj[variable],
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
-    def evi2(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_evi2(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+    def evi2(
+        self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
+        return gw_evi2(
+            self._obj[variable],
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
-    def nbr(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_nbr(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+    def nbr(
+        self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
+        return gw_nbr(
+            self._obj[variable],
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
-    def ndvi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_ndvi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+    def ndvi(
+        self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
+        return gw_ndvi(
+            self._obj[variable],
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
-    def wi(self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0):
-        return gw_wi(self._obj[variable], nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+    def wi(
+        self, variable='bands', nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
+        return gw_wi(
+            self._obj[variable],
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
-    def tasseled_cap(self, variable='bands', nodata=None, sensor=None, scale_factor=1.0):
-        return gw_tasseled_cap(self._obj[variable], nodata=nodata, sensor=sensor, scale_factor=scale_factor)
+    def tasseled_cap(
+        self, variable='bands', nodata=None, sensor=None, scale_factor=1.0
+    ):
+        return gw_tasseled_cap(
+            self._obj[variable], nodata=nodata, sensor=sensor, scale_factor=scale_factor
+        )
 
 
 @xr.register_dataarray_accessor('gw')
 class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
-    """
-    A method to access an ``xarray.DataArray``. This class is typically not accessed directly, but rather
-    through a call to ``geowombat.open``.
+    """A method to access an ``xarray.DataArray``. This class is typically not
+    accessed directly, but rather through a call to ``geowombat.open``.
 
     - A DataArray object will have a ``gw`` method.
     - To access GeoWombat methods, use ``xarray.DataArray.gw``.
@@ -266,18 +332,26 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     @property
     def filenames(self):
-        """Gets the data filenames"""
+        """Gets the data filenames."""
         return self._obj.attrs['filenames'] if 'filenames' in self._obj.attrs else []
 
     @property
     def data_are_separate(self):
-        """Checks whether the data are loaded separately"""
-        return bool(self._obj.attrs['data_are_separate']) if 'data_are_separate' in self._obj.attrs else False
+        """Checks whether the data are loaded separately."""
+        return (
+            bool(self._obj.attrs['data_are_separate'])
+            if 'data_are_separate' in self._obj.attrs
+            else False
+        )
 
     @property
     def data_are_stacked(self):
-        """Checks whether the data are stacked"""
-        return bool(self._obj.attrs['data_are_stacked']) if 'data_are_stacked' in self._obj.attrs else False
+        """Checks whether the data are stacked."""
+        return (
+            bool(self._obj.attrs['data_are_stacked'])
+            if 'data_are_stacked' in self._obj.attrs
+            else False
+        )
 
     def read(self, band=None, **kwargs):
         return self._obj.sel(band=band).gw.compute(**kwargs)
@@ -289,10 +363,52 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             return self._obj.data.compute(**kwargs)
 
+    def mask_nodata(self) -> xr.DataArray:
+        """Masks 'no data' values with nans."""
+        if hasattr(self._obj, '_FillValue'):
+            nodata_value = self._obj.attrs['_FillValue']
+        elif hasattr(self._obj, 'nodatavals'):
+            nodata_value = self._obj.attrs['nodatavals']
+        else:
+            raise ValueError("The DataArray does not have a 'no data' value.")
+
+        # We need to store the data in a type that supports the 'no data' value
+        if not np.issubdtype(self._obj.gw.dtype, np.floating):
+            if isinstance(nodata_value, float):
+                if not np.issubdtype(self._obj.gw.dtype, np.floating):
+                    self._obj = self._obj.astype('float64')
+            else:
+                if nodata_value > abs(np.iinfo(self._obj.gw.dtype).max):
+                    for dtype_ in [
+                        'uint8',
+                        'int16',
+                        'uint16',
+                        'int32',
+                        'uint32',
+                        'int64',
+                        'uint64',
+                    ]:
+                        if nodata_value <= abs(np.iinfo(dtype_).max):
+                            if self._obj.gw.dtype != dtype_:
+                                self._obj = self._obj.astype(dtype_)
+                                warnings.warn(
+                                    "The 'no data' value is beyond the range of the stored dtype. "
+                                    f"Therefore, the DataArray dtype will be converted to {dtype_}.",
+                                    UserWarning,
+                                )
+                            break
+
+        return self._obj.where(lambda x: x != nodata_value)
+
+    def assign_nodata_attrs(self, nodata: T.Union[float, int]) -> xr.DataArray:
+        """Assigns 'no data' attributes."""
+        return self._obj.assign_attrs(
+            **{'nodatavals': (nodata,) * self._obj.gw.nbands, '_FillValue': nodata}
+        )
+
     def match_data(self, data, band_names):
 
-        """
-        Coerces the DataArray to match another GeoWombat DataArray
+        """Coerces the DataArray to match another GeoWombat DataArray.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to match to.
@@ -324,8 +440,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def compare(self, op, b, return_binary=False):
 
-        """
-        Comparison operation
+        """Comparison operation.
 
         Args:
             op (str): The comparison operation.
@@ -377,7 +492,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return replace(self._obj, to_replace)
 
     def recode(self, polygon, to_replace, num_workers=1):
-        """Recodes a DataArray with polygon mappings
+        """Recodes a DataArray with polygon mappings.
 
         Args:
             polygon (GeoDataFrame | str): The ``geopandas.DataFrame`` or file with polygon geometry.
@@ -396,15 +511,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ``xarray.DataArray``
         """
 
-        return recode(self._obj,
-                      polygon,
-                      to_replace,
-                      num_workers=num_workers)
+        return recode(self._obj, polygon, to_replace, num_workers=num_workers)
 
     def bounds_overlay(self, bounds, how='intersects'):
 
-        """
-        Checks whether the bounds overlay the image bounds
+        """Checks whether the bounds overlay the image bounds.
 
         Args:
             bounds (tuple | rasterio.coords.BoundingBox | shapely.geometry): The bounds to check. If given as a tuple,
@@ -439,8 +550,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def n_windows(self, row_chunks=None, col_chunks=None):
 
-        """
-        Calculates the number of windows in a row/column iteration
+        """Calculates the number of windows in a row/column iteration.
 
         Args:
             row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
@@ -453,12 +563,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
         cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
 
-        return len(list(range(0, self._obj.gw.nrows, rchunks))) * len(list(range(0, self._obj.gw.ncols, cchunks)))
+        return len(list(range(0, self._obj.gw.nrows, rchunks))) * len(
+            list(range(0, self._obj.gw.ncols, cchunks))
+        )
 
     def windows(self, row_chunks=None, col_chunks=None, return_type='window', ndim=2):
 
-        """
-        Generates windows for a row/column iteration
+        """Generates windows for a row/column iteration.
 
         Args:
             row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
@@ -468,7 +579,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         if return_type not in ['data', 'slice', 'window']:
-            raise NameError("The return type must be one of 'data', 'slice', or 'window'.")
+            raise NameError(
+                "The return type must be one of 'data', 'slice', or 'window'."
+            )
 
         rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
         cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
@@ -484,35 +597,40 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 if return_type == 'data':
 
                     if ndim == 2:
-                        yield self._obj[row_off:row_off+height, col_off:col_off+width]
+                        yield self._obj[
+                            row_off : row_off + height, col_off : col_off + width
+                        ]
                     else:
-                        slicer = tuple([slice(0, None)] * (ndim-2)) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        slicer = tuple([slice(0, None)] * (ndim - 2)) + (
+                            slice(row_off, row_off + height),
+                            slice(col_off, col_off + width),
+                        )
                         yield self._obj[slicer]
 
                 elif return_type == 'slice':
 
                     if ndim == 2:
-                        yield (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        yield (
+                            slice(row_off, row_off + height),
+                            slice(col_off, col_off + width),
+                        )
                     else:
-                        yield tuple([slice(0, None)] * (ndim-2)) + (slice(row_off, row_off+height), slice(col_off, col_off+width))
+                        yield tuple([slice(0, None)] * (ndim - 2)) + (
+                            slice(row_off, row_off + height),
+                            slice(col_off, col_off + width),
+                        )
 
                 elif return_type == 'window':
 
-                    yield _Window(row_off=row_off,
-                                  col_off=col_off,
-                                  height=height,
-                                  width=width)
+                    yield _Window(
+                        row_off=row_off, col_off=col_off, height=height, width=width
+                    )
 
-    def imshow(self,
-               mask=False,
-               nodata=0,
-               flip=False,
-               text_color='black',
-               rot=30,
-               **kwargs):
+    def imshow(
+        self, mask=False, nodata=0, flip=False, text_color='black', rot=30, **kwargs
+    ):
 
-        """
-        Shows an image on a plot
+        """Shows an image on a plot.
 
         Args:
             mask (Optional[bool]): Whether to mask 'no data' values (given by ``nodata``).
@@ -530,18 +648,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     ds.gw.imshow(band_names=['red', 'green', 'red'], mask=True, vmin=0.1, vmax=0.9, robust=True)
         """
 
-        gw_imshow(self._obj,
-                  mask=mask,
-                  nodata=nodata,
-                  flip=flip,
-                  text_color=text_color,
-                  rot=rot,
-                  **kwargs)
+        gw_imshow(
+            self._obj,
+            mask=mask,
+            nodata=nodata,
+            flip=flip,
+            text_color=text_color,
+            rot=rot,
+            **kwargs,
+        )
 
     def to_polygon(self, mask=None, connectivity=4):
 
-        """
-        Converts a ``dask`` array to a ``GeoDataFrame``
+        """Converts a ``dask`` array to a ``GeoDataFrame``
 
         Args:
             mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
@@ -563,14 +682,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>                            num_workers=8)
         """
 
-        return array_to_polygon(self._obj,
-                                mask=mask,
-                                connectivity=connectivity)
+        return array_to_polygon(self._obj, mask=mask, connectivity=connectivity)
 
     def to_vector(self, filename, mask=None, connectivity=4):
 
-        """
-        Writes an Xarray DataArray to a vector file
+        """Writes an Xarray DataArray to a vector file.
 
         Args:
             filename (str): The output file name to write to.
@@ -584,9 +700,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             None
         """
 
-        self.to_polygon(mask=mask,
-                        connectivity=connectivity)\
-                .to_file(filename)
+        self.to_polygon(mask=mask, connectivity=connectivity).to_file(filename)
 
     def transform_crs(
         self,
@@ -600,9 +714,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         coords_only=False,
         resampling='nearest',
         warp_mem_limit=512,
-        num_threads=1
+        num_threads=1,
     ):
-        """Transforms a DataArray to a new coordinate reference system
+        """Transforms a DataArray to a new coordinate reference system.
 
         Args:
             dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
@@ -646,13 +760,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             coords_only=coords_only,
             resampling=resampling,
             warp_mem_limit=warp_mem_limit,
-            num_threads=num_threads
+            num_threads=num_threads,
         )
 
     def to_netcdf(self, filename, *args, **kwargs):
 
-        """
-        Writes an Xarray DataArray to a NetCDF file
+        """Writes an Xarray DataArray to a NetCDF file.
 
         Args:
             filename (str): The output file name to write to.
@@ -689,6 +802,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def save(
         self,
         filename: T.Union[str, Path],
+        mode: T.Optional[str] = 'w',
+        nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
         client: T.Optional[Client] = None,
         compute: T.Optional[bool] = True,
@@ -696,12 +811,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         compression: T.Optional[str] = 'none',
         num_workers: T.Optional[int] = 1,
         log_progress: T.Optional[bool] = True,
-        tqdm_kwargs: T.Optional[dict] = None
+        tqdm_kwargs: T.Optional[dict] = None,
     ):
-        """Saves a DataArray to raster using rasterio/dask
+        """Saves a DataArray to raster using rasterio/dask.
 
         Args:
             filename (str | Path): The output file name to write to.
+            mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
+            nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
+                value is taken from the ``DataArray`` metadata.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
             client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
                 Default is None.
@@ -728,6 +846,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return save(
             self._obj,
             filename=filename,
+            mode=mode,
+            nodata=nodata,
             overwrite=overwrite,
             client=client,
             compute=compute,
@@ -735,7 +855,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             compression=compression,
             num_workers=num_workers,
             log_progress=log_progress,
-            tqdm_kwargs=tqdm_kwargs
+            tqdm_kwargs=tqdm_kwargs,
         )
 
     def to_raster(
@@ -761,9 +881,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         blockxsize=512,
         blockysize=512,
         tags=None,
-        **kwargs
+        **kwargs,
     ):
-        """Writes an Xarray DataArray to a raster file
+        """Writes an Xarray DataArray to a raster file.
 
         Args:
             filename (str): The output file name to write to.
@@ -821,7 +941,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             driver=driver,
             blockxsize=blockxsize,
             blockysize=blockysize,
-            **kwargs
+            **kwargs,
         )
 
         # Keywords for rasterio profile
@@ -862,19 +982,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             overviews=overviews,
             resampling=resampling,
             tags=tags,
-            **kwargs
+            **kwargs,
         )
 
-    def to_vrt(self,
-               filename,
-               overwrite=False,
-               resampling=None,
-               nodata=None,
-               init_dest_nodata=True,
-               warp_mem_limit=128):
+    def to_vrt(
+        self,
+        filename,
+        overwrite=False,
+        resampling=None,
+        nodata=None,
+        init_dest_nodata=True,
+        warp_mem_limit=128,
+    ):
 
-        """
-        Writes a file to a VRT file
+        """Writes a file to a VRT file.
 
         Args:
             filename (str): The output file name to write to.
@@ -902,31 +1023,34 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>         src.gw.to_vrt('output.vrt')
         """
 
-        to_vrt(self._obj,
-               filename,
-               overwrite=overwrite,
-               resampling=resampling,
-               nodata=nodata,
-               init_dest_nodata=init_dest_nodata,
-               warp_mem_limit=warp_mem_limit)
+        to_vrt(
+            self._obj,
+            filename,
+            overwrite=overwrite,
+            resampling=resampling,
+            nodata=nodata,
+            init_dest_nodata=init_dest_nodata,
+            warp_mem_limit=warp_mem_limit,
+        )
 
-    def predict(self,
-                clf,
-                outname=None,
-                chunksize='same',
-                x_chunks=(5000, 1),
-                overwrite=False,
-                return_as='array',
-                n_jobs=1,
-                backend='dask',
-                verbose=0,
-                nodata=None,
-                dtype='uint8',
-                gdal_cache=512,
-                **kwargs):
+    def predict(
+        self,
+        clf,
+        outname=None,
+        chunksize='same',
+        x_chunks=(5000, 1),
+        overwrite=False,
+        return_as='array',
+        n_jobs=1,
+        backend='dask',
+        verbose=0,
+        nodata=None,
+        dtype='uint8',
+        gdal_cache=512,
+        **kwargs,
+    ):
 
-        """
-        Predicts an image using a pre-fit model
+        """Predicts an image using a pre-fit model.
 
         Args:
             clf (object): A fitted classifier ``geowombat.model.Model`` instance with a ``predict`` method.
@@ -961,25 +1085,27 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         kwargs = self._update_kwargs(**kwargs)
 
-        return predict(self._obj,
-                       clf,
-                       outname=outname,
-                       chunksize=chunksize,
-                       x_chunks=x_chunks,
-                       overwrite=overwrite,
-                       return_as=return_as,
-                       n_jobs=n_jobs,
-                       backend=backend,
-                       verbose=verbose,
-                       nodata=nodata,
-                       dtype=dtype,
-                       gdal_cache=gdal_cache,
-                       **kwargs)
+        return predict(
+            self._obj,
+            clf,
+            outname=outname,
+            chunksize=chunksize,
+            x_chunks=x_chunks,
+            overwrite=overwrite,
+            return_as=return_as,
+            n_jobs=n_jobs,
+            backend=backend,
+            verbose=verbose,
+            nodata=nodata,
+            dtype=dtype,
+            gdal_cache=gdal_cache,
+            **kwargs,
+        )
 
     def apply(self, filename, user_func, n_jobs=1, **kwargs):
 
-        """
-        Applies a user function to an Xarray Dataset or DataArray and writes to file
+        """Applies a user function to an Xarray Dataset or DataArray and writes
+        to file.
 
         Args:
             filename (str): The output file name to write to.
@@ -997,10 +1123,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     ds.gw.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
         """
 
-        cluster = _Cluster(n_workers=n_jobs,
-                           threads_per_worker=1,
-                           scheduler_port=0,
-                           processes=False)
+        cluster = _Cluster(
+            n_workers=n_jobs, threads_per_worker=1, scheduler_port=0, processes=False
+        )
 
         cluster.start()
 
@@ -1014,8 +1139,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def clip(self, df, query=None, mask_data=False):
 
-        """
-        Clips a DataArray
+        """Clips a DataArray.
 
         Args:
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
@@ -1030,8 +1154,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def mask(self, df, query=None, keep='in'):
 
-        """
-        Masks a DataArray
+        """Masks a DataArray.
 
         Args:
             df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to use for masking.
@@ -1045,18 +1168,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         return mask(self._obj, df, query=query, keep=keep)
 
-    def subset(self,
-               left=None,
-               top=None,
-               right=None,
-               bottom=None,
-               rows=None,
-               cols=None,
-               center=False,
-               mask_corners=False):
+    def subset(
+        self,
+        left=None,
+        top=None,
+        right=None,
+        bottom=None,
+        rows=None,
+        cols=None,
+        center=False,
+        mask_corners=False,
+    ):
 
-        """
-        Subsets a DataArray
+        """Subsets a DataArray.
 
         Args:
             left (Optional[float]): The left coordinate.
@@ -1079,29 +1203,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     ds_sub = ds.gw.subset(-263529.884, 953985.314, rows=2048, cols=2048)
         """
 
-        return subset(self._obj,
-                      left=left,
-                      top=top,
-                      right=right,
-                      bottom=bottom,
-                      rows=rows,
-                      cols=cols,
-                      center=center,
-                      mask_corners=mask_corners)
+        return subset(
+            self._obj,
+            left=left,
+            top=top,
+            right=right,
+            bottom=bottom,
+            rows=rows,
+            cols=cols,
+            center=center,
+            mask_corners=mask_corners,
+        )
 
-    def calc_area(self,
-                  values,
-                  op='eq',
-                  units='km2',
-                  row_chunks=None,
-                  col_chunks=None,
-                  n_workers=1,
-                  n_threads=1,
-                  scheduler='threads',
-                  n_chunks=100):
+    def calc_area(
+        self,
+        values,
+        op='eq',
+        units='km2',
+        row_chunks=None,
+        col_chunks=None,
+        n_workers=1,
+        n_threads=1,
+        scheduler='threads',
+        n_chunks=100,
+    ):
 
-        """
-        Calculates the area of data values
+        """Calculates the area of data values.
 
         Args:
             values (list): A list of values.
@@ -1135,29 +1262,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>                           col_chunks=1024)
         """
 
-        return calc_area(self._obj,
-                         values,
-                         op=op,
-                         units=units,
-                         row_chunks=row_chunks,
-                         col_chunks=col_chunks,
-                         n_workers=n_workers,
-                         n_threads=n_threads,
-                         scheduler=scheduler,
-                         n_chunks=n_chunks)
+        return calc_area(
+            self._obj,
+            values,
+            op=op,
+            units=units,
+            row_chunks=row_chunks,
+            col_chunks=col_chunks,
+            n_workers=n_workers,
+            n_threads=n_threads,
+            scheduler=scheduler,
+            n_chunks=n_chunks,
+        )
 
-    def sample(self,
-               method='random',
-               band=None,
-               n=None,
-               strata=None,
-               spacing=None,
-               min_dist=None,
-               max_attempts=10,
-               **kwargs):
+    def sample(
+        self,
+        method='random',
+        band=None,
+        n=None,
+        strata=None,
+        spacing=None,
+        min_dist=None,
+        max_attempts=10,
+        **kwargs,
+    ):
 
-        """
-        Generates samples from a raster
+        """Generates samples from a raster.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to extract data from.
@@ -1203,31 +1333,34 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     df = ds.gw.sample(band=1, n=100, min_dist=1000, strata=strata)
         """
 
-        return sample(self._obj,
-                      method=method,
-                      band=band,
-                      n=n,
-                      strata=strata,
-                      spacing=spacing,
-                      min_dist=min_dist,
-                      max_attempts=max_attempts,
-                      **kwargs)
+        return sample(
+            self._obj,
+            method=method,
+            band=band,
+            n=n,
+            strata=strata,
+            spacing=spacing,
+            min_dist=min_dist,
+            max_attempts=max_attempts,
+            **kwargs,
+        )
 
-    def extract(self,
-                aoi,
-                bands=None,
-                time_names=None,
-                band_names=None,
-                frac=1.0,
-                all_touched=False,
-                mask=None,
-                n_jobs=8,
-                verbose=0,
-                **kwargs):
+    def extract(
+        self,
+        aoi,
+        bands=None,
+        time_names=None,
+        band_names=None,
+        frac=1.0,
+        all_touched=False,
+        mask=None,
+        n_jobs=8,
+        verbose=0,
+        **kwargs,
+    ):
 
-        """
-        Extracts data within an area or points of interest. Projections do not
-        need to match, as they are handled 'on-the-fly'.
+        """Extracts data within an area or points of interest. Projections do
+        not need to match, as they are handled 'on-the-fly'.
 
         Args:
             aoi (str or GeoDataFrame): A file or ``geopandas.GeoDataFrame`` to extract data frame.
@@ -1254,22 +1387,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         kwargs = self._update_kwargs(**kwargs)
 
-        return extract(self._obj,
-                       aoi,
-                       bands=bands,
-                       time_names=time_names,
-                       band_names=band_names,
-                       frac=frac,
-                       all_touched=all_touched,
-                       mask=mask,
-                       n_jobs=n_jobs,
-                       verbose=verbose,
-                       **kwargs)
+        return extract(
+            self._obj,
+            aoi,
+            bands=bands,
+            time_names=time_names,
+            band_names=band_names,
+            frac=frac,
+            all_touched=all_touched,
+            mask=mask,
+            n_jobs=n_jobs,
+            verbose=verbose,
+            **kwargs,
+        )
 
     def band_mask(self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1):
 
-        """
-        Creates a mask from band nonzeros
+        """Creates a mask from band nonzeros.
 
         Args:
             valid_bands (list): The bands considered valid.
@@ -1281,30 +1415,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ``xarray.DataArray``
         """
 
-        mask = self._obj.where(self._obj.sel(band=valid_bands) > 0)\
-                            .count(dim='band')\
-                            .expand_dims(dim='band')\
-                            .assign_coords(band=['mask'])\
-                            .astype('uint8')
+        mask = (
+            self._obj.where(self._obj.sel(band=valid_bands) > 0)
+            .count(dim='band')
+            .expand_dims(dim='band')
+            .assign_coords(band=['mask'])
+            .astype('uint8')
+        )
 
         if isinstance(src_nodata, int) or isinstance(src_nodata, float):
 
-            return xr.where((mask < len(valid_bands)) | (self._obj.sel(band='blue') == src_nodata),
-                            dst_mask_val,
-                            dst_clear_val)\
-                        .assign_attrs(**self._obj.attrs)
+            return xr.where(
+                (mask < len(valid_bands)) | (self._obj.sel(band='blue') == src_nodata),
+                dst_mask_val,
+                dst_clear_val,
+            ).assign_attrs(**self._obj.attrs)
 
         else:
 
-            return xr.where(mask < len(valid_bands),
-                            dst_mask_val,
-                            dst_clear_val)\
-                        .assign_attrs(**self._obj.attrs)
+            return xr.where(
+                mask < len(valid_bands), dst_mask_val, dst_clear_val
+            ).assign_attrs(**self._obj.attrs)
 
-    def set_nodata(self, src_nodata, dst_nodata, out_range=None, dtype=None, scale_factor=None):
-
-        """
-        Sets 'no data' values in the DataArray
+    def set_nodata(
+        self, src_nodata, dst_nodata, out_range=None, dtype=None, scale_factor=None
+    ):
+        """Sets 'no data' values in the DataArray.
 
         Args:
             src_nodata (int | float): The 'no data' values to replace.
@@ -1322,36 +1458,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>     src = src.gw.set_nodata(0, 65535, out_range=(0, 10000), dtype='uint16')
         """
-
-        if dtype:
+        if dtype is None:
             dtype = self._obj.dtype
 
         if not isinstance(scale_factor, float):
             scale_factor = 1.0
 
         attrs = self._obj.attrs.copy()
-
-        # Create a 'no data' mask
-        mask = self._obj.where(lambda x: x.band != src_nodata)\
-                            .count(dim='band')\
-                            .astype('uint8')
-
-        if self._obj.gw.has_time_coord:
-            mask = mask.transpose('time', 'y', 'x')
-
         # Mask the data
-        if out_range:
-
-            data = xr.where(mask < self._obj.gw.nbands,
-                            dst_nodata,
-                            self._obj*scale_factor)\
-                        .clip(out_range[0], out_range[1])
-
-        else:
-
-            data = xr.where(mask < self._obj.gw.nbands,
-                            dst_nodata,
-                            self._obj*scale_factor)
+        data = xr.where(self._obj == src_nodata, dst_nodata, self._obj * scale_factor)
+        if out_range is not None:
+            data = data.clip(out_range[0], out_range[1])
 
         if self._obj.gw.has_time_coord:
             data = data.transpose('time', 'band', 'y', 'x').astype(dtype)
@@ -1359,20 +1476,22 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             data = data.transpose('band', 'y', 'x').astype(dtype)
 
         attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
+        attrs['_FillValue'] = dst_nodata
 
         return data.assign_attrs(**attrs)
 
-    def moving(self,
-               band_coords='band',
-               stat='mean',
-               perc=50,
-               nodata=None,
-               w=3,
-               weights=False,
-               n_jobs=1):
+    def moving(
+        self,
+        band_coords='band',
+        stat='mean',
+        perc=50,
+        nodata=None,
+        w=3,
+        weights=False,
+        n_jobs=1,
+    ):
 
-        """
-        Applies a moving window function to the DataArray
+        """Applies a moving window function to the DataArray.
 
         Args:
             band_coords (Optional[str]): The band coordinate name.
@@ -1398,14 +1517,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     res = src.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
         """
 
-        return moving(self._obj,
-                      band_names=self._obj.coords[band_coords].values,
-                      perc=perc,
-                      nodata=nodata,
-                      w=w,
-                      stat=stat,
-                      weights=weights,
-                      n_jobs=n_jobs)
+        return moving(
+            self._obj,
+            band_names=self._obj.coords[band_coords].values,
+            perc=perc,
+            nodata=nodata,
+            w=w,
+            stat=stat,
+            weights=weights,
+            n_jobs=n_jobs,
+        )
 
     def norm_diff(self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1433,7 +1554,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: -1 to 1
         """
 
-        return gw_norm_diff(self._obj, b1, b2, sensor=sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return gw_norm_diff(
+            self._obj,
+            b1,
+            b2,
+            sensor=sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
     def avi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1460,7 +1589,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: 0 to 1
         """
 
-        return gw_avi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_avi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def evi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1487,7 +1622,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: 0 to 1
         """
 
-        return gw_evi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def evi2(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1514,7 +1655,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: 0 to 1
         """
 
-        return gw_evi2(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_evi2(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def gcvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1540,7 +1687,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: -1 to 1
         """
 
-        return gw_gcvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_gcvi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def nbr(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1566,7 +1719,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: -1 to 1
         """
 
-        return gw_nbr(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_nbr(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def ndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1592,7 +1751,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: -1 to 1
         """
 
-        return gw_ndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_ndvi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def kndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1618,7 +1783,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: -1 to 1
         """
 
-        return gw_kndvi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_kndvi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def wi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
 
@@ -1651,7 +1822,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Data range: 0 to 1
         """
 
-        return gw_wi(self._obj, nodata=nodata, mask=mask, sensor=sensor, scale_factor=scale_factor)
+        return gw_wi(
+            self._obj,
+            nodata=nodata,
+            mask=mask,
+            sensor=sensor,
+            scale_factor=scale_factor,
+        )
 
     def tasseled_cap(self, nodata=None, sensor=None, scale_factor=1.0):
 
@@ -1674,22 +1851,26 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>         tcap = ds.gw.tasseled_cap()
         """
 
-        return gw_tasseled_cap(self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor)
+        return gw_tasseled_cap(
+            self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor
+        )
 
-    def norm_brdf(self,
-                  solar_za,
-                  solar_az,
-                  sensor_za,
-                  sensor_az,
-                  sensor=None,
-                  wavelengths=None,
-                  nodata=None,
-                  mask=None,
-                  scale_factor=1.0,
-                  scale_angles=True):
+    def norm_brdf(
+        self,
+        solar_za,
+        solar_az,
+        sensor_za,
+        sensor_az,
+        sensor=None,
+        wavelengths=None,
+        nodata=None,
+        mask=None,
+        scale_factor=1.0,
+        scale_angles=True,
+    ):
 
-        """
-        Applies Bidirectional Reflectance Distribution Function (BRDF) normalization
+        """Applies Bidirectional Reflectance Distribution Function (BRDF)
+        normalization.
 
         Args:
             solar_za (2d DataArray): The solar zenith angles (degrees).
@@ -1722,20 +1903,28 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         # Get the central latitude
-        central_lat = project_coords(np.array([self._obj.x.values[int(self._obj.x.shape[0] / 2)]], dtype='float64'),
-                                     np.array([self._obj.y.values[int(self._obj.y.shape[0] / 2)]], dtype='float64'),
-                                     self._obj.crs,
-                                     {'init': 'epsg:4326'})[1][0]
+        central_lat = project_coords(
+            np.array(
+                [self._obj.x.values[int(self._obj.x.shape[0] / 2)]], dtype='float64'
+            ),
+            np.array(
+                [self._obj.y.values[int(self._obj.y.shape[0] / 2)]], dtype='float64'
+            ),
+            self._obj.crs,
+            {'init': 'epsg:4326'},
+        )[1][0]
 
-        return _BRDF().norm_brdf(self._obj,
-                                 solar_za,
-                                 solar_az,
-                                 sensor_za,
-                                 sensor_az,
-                                 central_lat,
-                                 sensor=sensor,
-                                 wavelengths=wavelengths,
-                                 nodata=nodata,
-                                 mask=mask,
-                                 scale_factor=scale_factor,
-                                 scale_angles=scale_angles)
+        return _BRDF().norm_brdf(
+            self._obj,
+            solar_za,
+            solar_az,
+            sensor_za,
+            sensor_az,
+            central_lat,
+            sensor=sensor,
+            wavelengths=wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+            scale_angles=scale_angles,
+        )

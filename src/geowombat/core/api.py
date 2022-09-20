@@ -277,14 +277,15 @@ class open(object):
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
         overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames``
             is a ``list``. Choices are ['min', 'max', 'mean'].
-        nodata (Optional[float | int]): A 'no data' value to set. Default is 0.
-            The 'no data' value is only used under these conditions:
-                1. if a ``geowombat.config.update`` context is used
-                2. if ``filename`` is a list or search string
-            Otherwise, if ``geowombat.open`` is used to open a single image without a config context then no
-            warping will be applied and, therefore, `nodata` will not apply.
+        nodata (Optional[float | int]): A 'no data' value to set. Default is ``None``. If ``nodata`` is ``None``,
+            the 'no data' value is set from the file metadata. If ``nodata`` is given, then the file 'no data'
+            value is overridden. See docstring examples for use of ``nodata`` in ``geowombat.config.update``.
 
-            See Examples: below for use of ``geowombat.config.update``.
+            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
+                in the following order:
+                    1. ``geowombat.config.update`` not ``None``
+                    2. ``nodata`` not ``None``
+                    3. file 'no data' value from metadata
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
@@ -377,27 +378,21 @@ class open(object):
     def __init__(
         self,
         filename,
-        band_names=None,
-        time_names=None,
-        stack_dim='time',
-        bounds=None,
-        bounds_by='reference',
-        resampling='nearest',
-        persist_filenames=False,
-        netcdf_vars=None,
-        mosaic=False,
-        overlap='max',
-        nodata=0,
-        dtype=None,
-        num_workers=1,
+        band_names: T.Optional[T.Union[T.Sequence, int, str]] = None,
+        time_names: T.Optional[T.Sequence] = None,
+        stack_dim: T.Optional[str] = 'time',
+        bounds: T.Optional[T.Union[BoundingBox, T.Sequence[float]]] = None,
+        bounds_by: T.Optional[str] = 'reference',
+        resampling: T.Optional[str] = 'nearest',
+        persist_filenames: T.Optional[bool] = False,
+        netcdf_vars: T.Optional[T.Union[T.Sequence, int, str]] = None,
+        mosaic: T.Optional[bool] = False,
+        overlap: T.Optional[str] = 'max',
+        nodata: T.Optional[T.Union[float, int]] = None,
+        dtype: T.Optional[T.Union[str, np.dtype]] = None,
+        num_workers: T.Optional[int] = 1,
         **kwargs,
     ):
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            logger.exception(
-                "  The 'nodata' keyword argument must be an integer or a float."
-            )
-            raise TypeError
-
         if stack_dim not in ['band', 'time']:
             logger.exception(
                 f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}"

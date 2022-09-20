@@ -13,7 +13,12 @@ import numpy as np
 import rasterio as rio
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
-from rasterio.warp import aligned_target, calculate_default_transform, transform_bounds, reproject
+from rasterio.warp import (
+    aligned_target,
+    calculate_default_transform,
+    transform_bounds,
+    reproject,
+)
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
 from rasterio.coords import BoundingBox
@@ -50,11 +55,13 @@ def get_file_info(src_obj):
         src_bounds=src_bounds,
         src_res=src_res,
         src_width=src_width,
-        src_height=src_height
+        src_height=src_height,
     )
 
 
-def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, tags, kwargs):
+def to_gtiff(
+    filename, data, window, indexes, transform, n_workers, separate, tags, kwargs
+):
     """Writes data to a GeoTiff file.
 
     Args:
@@ -82,10 +89,7 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
         pout.mkdir(exist_ok=True, parents=True)
 
         group_name = 'y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}.tif'.format(
-            Y=window.row_off,
-            X=window.col_off,
-            H=window.height,
-            W=window.width
+            Y=window.row_off, X=window.col_off, H=window.height, W=window.width
         )
 
         group_path = str(pout / group_name)
@@ -97,15 +101,21 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
         kwargs_copy['transform'] = Affine(*transform)
 
         group_window = Window(
-            col_off=0,
-            row_off=0,
-            width=window.width,
-            height=window.height
+            col_off=0, row_off=0, width=window.width, height=window.height
         )
 
         for item in [
-            'with_config', 'ignore_warnings', 'sensor', 'scale_factor', 'ref_image', 'ref_bounds', 'ref_crs',
-            'ref_res', 'ref_tar', 'l57_angles_path', 'l8_angles_path'
+            'with_config',
+            'ignore_warnings',
+            'sensor',
+            'scale_factor',
+            'ref_image',
+            'ref_bounds',
+            'ref_crs',
+            'ref_res',
+            'ref_tar',
+            'l57_angles_path',
+            'l8_angles_path',
         ]:
             if item in kwargs_copy:
                 del kwargs_copy[item]
@@ -120,33 +130,17 @@ def to_gtiff(filename, data, window, indexes, transform, n_workers, separate, ta
 
     if separate or (n_workers == 1):
         with rio.open(group_path, mode='r+') as dst_:
-            dst_.write(
-                data,
-                window=group_window,
-                indexes=indexes
-            )
+            dst_.write(data, window=group_window, indexes=indexes)
 
     else:
         with threading.Lock():
-            with rio.open(
-                group_path,
-                mode='r+',
-                sharing=False
-            ) as dst_:
-                dst_.write(
-                    data,
-                    window=group_window,
-                    indexes=indexes
-                )
+            with rio.open(group_path, mode='r+', sharing=False) as dst_:
+                dst_.write(data, window=group_window, indexes=indexes)
 
 
 class RasterioStore(object):
     def __init__(
-        self,
-        filename: T.Union[str, Path],
-        mode: str = 'w',
-        tags: dict = None,
-        **kwargs
+        self, filename: T.Union[str, Path], mode: str = 'w', tags: dict = None, **kwargs
     ):
         self.filename = Path(filename)
         self.mode = mode
@@ -157,7 +151,11 @@ class RasterioStore(object):
     def __setitem__(self, key, item):
         if len(key) == 3:
             index_range, y, x = key
-            indexes = list(range(index_range.start+1, index_range.stop+1, index_range.step or 1))
+            indexes = list(
+                range(
+                    index_range.start + 1, index_range.stop + 1, index_range.step or 1
+                )
+            )
         else:
             indexes = 1
             y, x = key
@@ -166,14 +164,10 @@ class RasterioStore(object):
             col_off=x.start,
             row_off=y.start,
             width=x.stop - x.start,
-            height=y.stop - y.start
+            height=y.stop - y.start,
         )
 
-        self.dst.write(
-            item,
-            window=w,
-            indexes=indexes
-        )
+        self.dst.write(item, window=w, indexes=indexes)
 
     def __enter__(self) -> 'RasterioStore':
         return self.open()
@@ -199,7 +193,7 @@ class RasterioStore(object):
             data.transpose('band', 'y', 'x').squeeze().data,
             self,
             lock=True,
-            compute=False
+            compute=False,
         )
 
         return self.close_delayed(store)
@@ -209,19 +203,15 @@ class RasterioStore(object):
         return self.close()
 
     def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
-        return da.store(
-            da.squeeze(data.data),
-            self,
-            lock=True,
-            compute=compute
-        )
+        return da.store(da.squeeze(data.data), self, lock=True, compute=compute)
 
     def close(self):
         self.dst.close()
 
 
 class WriteDaskArray(object):
-    """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as windows.
+    """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as
+    windows.
 
     Args:
         filename (str): The file to write to.
@@ -240,6 +230,7 @@ class WriteDaskArray(object):
     Returns:
         None
     """
+
     def __init__(
         self,
         filename: T.Union[str, Path],
@@ -248,7 +239,7 @@ class WriteDaskArray(object):
         out_block_type: str = 'gtiff',
         keep_blocks: bool = False,
         gdal_cache: int = 512,
-        **kwargs
+        **kwargs,
     ):
         if out_block_type == 'zarr':
             if not ZARR_INSTALLED:
@@ -274,15 +265,17 @@ class WriteDaskArray(object):
 
             if self.out_block_type.lower() not in ['gtiff', 'zarr']:
 
-                logger.warning('  The output block type is not recognized. Save blocks as zarr files.')
+                logger.warning(
+                    '  The output block type is not recognized. Save blocks as zarr files.'
+                )
                 self.out_block_type = 'zarr'
 
             self.sub_dir = os.path.join(self.d_name, 'sub_tmp_')
             self.zarr_file = os.path.join(self.sub_dir, 'data.zarr')
 
-            self.compressor = numcodecs.Blosc(cname='zstd',
-                                              clevel=3,
-                                              shuffle=numcodecs.Blosc.BITSHUFFLE)
+            self.compressor = numcodecs.Blosc(
+                cname='zstd', clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE
+            )
 
             if os.path.isdir(self.sub_dir):
                 shutil.rmtree(self.sub_dir)
@@ -294,7 +287,11 @@ class WriteDaskArray(object):
         if len(key) == 3:
 
             index_range, y, x = key
-            indexes = list(range(index_range.start + 1, index_range.stop + 1, index_range.step or 1))
+            indexes = list(
+                range(
+                    index_range.start + 1, index_range.stop + 1, index_range.step or 1
+                )
+            )
 
         else:
 
@@ -305,19 +302,23 @@ class WriteDaskArray(object):
 
             if self.out_block_type.lower() == 'zarr':
 
-                group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(BASE=self.f_base,
-                                                                                 Y=y.start,
-                                                                                 X=x.start,
-                                                                                 H=y.stop - y.start,
-                                                                                 W=x.stop - x.start)
+                group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(
+                    BASE=self.f_base,
+                    Y=y.start,
+                    X=x.start,
+                    H=y.stop - y.start,
+                    W=x.stop - x.start,
+                )
 
                 group = self.root.create_group(group_name)
 
-                z = group.array('data',
-                                item,
-                                compressor=self.compressor,
-                                dtype=item.dtype.name,
-                                chunks=(self.kwargs['blockysize'], self.kwargs['blockxsize']))
+                z = group.array(
+                    'data',
+                    item,
+                    compressor=self.compressor,
+                    dtype=item.dtype.name,
+                    chunks=(self.kwargs['blockysize'], self.kwargs['blockxsize']),
+                )
 
                 group.attrs['row_off'] = y.start
                 group.attrs['col_off'] = x.start
@@ -326,13 +327,17 @@ class WriteDaskArray(object):
 
             else:
 
-                out_filename = os.path.join(self.sub_dir,
-                                            '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}{EXT}'.format(BASE=self.f_base,
-                                                                                                     Y=y.start,
-                                                                                                     X=x.start,
-                                                                                                     H=y.stop - y.start,
-                                                                                                     W=x.stop - x.start,
-                                                                                                     EXT=self.f_ext))
+                out_filename = os.path.join(
+                    self.sub_dir,
+                    '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}{EXT}'.format(
+                        BASE=self.f_base,
+                        Y=y.start,
+                        X=x.start,
+                        H=y.stop - y.start,
+                        W=x.stop - x.start,
+                        EXT=self.f_ext,
+                    ),
+                )
 
                 if self.overwrite:
 
@@ -342,53 +347,62 @@ class WriteDaskArray(object):
                 io_mode = 'w'
 
                 # Every block starts at (0, 0) for the output
-                w = Window(col_off=0,
-                           row_off=0,
-                           width=x.stop - x.start,
-                           height=y.stop - y.start)
+                w = Window(
+                    col_off=0,
+                    row_off=0,
+                    width=x.stop - x.start,
+                    height=y.stop - y.start,
+                )
 
                 # xres, 0, minx, 0, yres, maxy
                 # TODO: hardcoded driver type
-                kwargs = dict(driver=self.kwargs['driver'],
-                              width=w.width,
-                              height=w.height,
-                              count=self.kwargs['count'],
-                              dtype=self.kwargs['dtype'],
-                              nodata=self.kwargs['nodata'],
-                              blockxsize=self.kwargs['blockxsize'],
-                              blockysize=self.kwargs['blockysize'],
-                              crs=self.kwargs['crs'],
-                              transform=Affine(self.kwargs['transform'][0],
-                                               0.0,
-                                               self.kwargs['transform'][2] + (x.start * self.kwargs['transform'][0]),
-                                               0.0,
-                                               self.kwargs['transform'][4],
-                                               self.kwargs['transform'][5] - (y.start * -self.kwargs['transform'][4])),
-                              compress=self.kwargs['compress'] if 'compress' in self.kwargs else 'none',
-                              tiled=True)
+                kwargs = dict(
+                    driver=self.kwargs['driver'],
+                    width=w.width,
+                    height=w.height,
+                    count=self.kwargs['count'],
+                    dtype=self.kwargs['dtype'],
+                    nodata=self.kwargs['nodata'],
+                    blockxsize=self.kwargs['blockxsize'],
+                    blockysize=self.kwargs['blockysize'],
+                    crs=self.kwargs['crs'],
+                    transform=Affine(
+                        self.kwargs['transform'][0],
+                        0.0,
+                        self.kwargs['transform'][2]
+                        + (x.start * self.kwargs['transform'][0]),
+                        0.0,
+                        self.kwargs['transform'][4],
+                        self.kwargs['transform'][5]
+                        - (y.start * -self.kwargs['transform'][4]),
+                    ),
+                    compress=self.kwargs['compress']
+                    if 'compress' in self.kwargs
+                    else 'none',
+                    tiled=True,
+                )
 
         else:
 
             out_filename = self.filename
 
-            w = Window(col_off=x.start,
-                       row_off=y.start,
-                       width=x.stop - x.start,
-                       height=y.stop - y.start)
+            w = Window(
+                col_off=x.start,
+                row_off=y.start,
+                width=x.stop - x.start,
+                height=y.stop - y.start,
+            )
 
             io_mode = 'r+'
             kwargs = {}
 
-        if not self.separate or (self.separate and self.out_block_type.lower() == 'gtiff'):
+        if not self.separate or (
+            self.separate and self.out_block_type.lower() == 'gtiff'
+        ):
 
-            with rio.open(out_filename,
-                          mode=io_mode,
-                          sharing=False,
-                          **kwargs) as dst_:
+            with rio.open(out_filename, mode=io_mode, sharing=False, **kwargs) as dst_:
 
-                dst_.write(item,
-                           window=w,
-                           indexes=indexes)
+                dst_.write(item, window=w, indexes=indexes)
 
     def __enter__(self):
 
@@ -400,7 +414,9 @@ class WriteDaskArray(object):
         else:
 
             if 'compress' in self.kwargs:
-                logger.warning('\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.')
+                logger.warning(
+                    '\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.'
+                )
                 del self.kwargs['compress']
 
             # Create the output file
@@ -414,7 +430,7 @@ class WriteDaskArray(object):
 
 
 def check_res(res):
-    """Checks a resolution
+    """Checks a resolution.
 
     Args:
         res (int | float | tuple): The resolution.
@@ -427,14 +443,16 @@ def check_res(res):
     elif isinstance(res, (float, int)):
         dst_res = (res, res)
     else:
-        logger.exception('  The resolution should be given as an integer, float, or tuple.')
+        logger.exception(
+            '  The resolution should be given as an integer, float, or tuple.'
+        )
         raise TypeError
 
     return dst_res
 
 
 def check_src_crs(src):
-    """Checks a rasterio open() instance
+    """Checks a rasterio open() instance.
 
     Args:
         src (object): A `rasterio.open` instance.
@@ -446,7 +464,7 @@ def check_src_crs(src):
 
 
 def check_crs(crs) -> CRS:
-    """Checks a CRS instance
+    """Checks a CRS instance.
 
     Args:
         crs (``CRS`` | int | dict | str): The CRS instance.
@@ -484,7 +502,7 @@ def check_crs(crs) -> CRS:
 
 
 def check_file_crs(filename) -> CRS:
-    """Checks a file CRS
+    """Checks a file CRS.
 
     Args:
         filename (Path | str): The file to open.
@@ -510,7 +528,7 @@ def check_file_crs(filename) -> CRS:
 
 
 def unpack_bounding_box(bounds):
-    """Unpacks a BoundBox() string
+    """Unpacks a BoundBox() string.
 
     Args:
         bounds (object)
@@ -534,7 +552,7 @@ def unpack_bounding_box(bounds):
 
 
 def unpack_window(bounds):
-    """Unpacks a Window() string
+    """Unpacks a Window() string.
 
     Args:
         bounds (object)
@@ -554,16 +572,11 @@ def unpack_window(bounds):
         elif str_.strip().startswith('width='):
             width = int(str_.strip().split('=')[1].replace(')', ''))
 
-    return Window(
-        col_off=col_off,
-        row_off=row_off,
-        width=width,
-        height=height
-    )
+    return Window(col_off=col_off, row_off=row_off, width=width, height=height)
 
 
 def window_to_bounds(filenames, w):
-    """Transforms a rasterio Window() object to image bounds
+    """Transforms a rasterio Window() object to image bounds.
 
     Args:
         filenames (str or str list)
@@ -588,7 +601,7 @@ def window_to_bounds(filenames, w):
 
 
 def align_bounds(minx, miny, maxx, maxy, res):
-    """Aligns bounds to resolution
+    """Aligns bounds to resolution.
 
     Args:
         minx (float)
@@ -611,13 +624,9 @@ def align_bounds(minx, miny, maxx, maxy, res):
 
 
 def get_file_bounds(
-    filenames,
-    bounds_by='union',
-    crs=None,
-    res=None,
-    return_bounds=False
+    filenames, bounds_by='union', crs=None, res=None, return_bounds=False
 ):
-    """Gets the union of all files
+    """Gets the union of all files.
 
     Args:
         filenames (list): The file names to mosaic.
@@ -659,7 +668,7 @@ def get_file_bounds(
                 src_info.src_bounds.bottom,
                 src_info.src_bounds.right,
                 src_info.src_bounds.top,
-                densify_pts=21
+                densify_pts=21,
             )
 
         if bounds_by.lower() in ['union', 'intersection']:
@@ -676,7 +685,7 @@ def get_file_bounds(
                         src_info.src_bounds.bottom,
                         src_info.src_bounds.right,
                         src_info.src_bounds.top,
-                        densify_pts=21
+                        densify_pts=21,
                     )
 
                 # Update the mosaic bounds
@@ -694,11 +703,7 @@ def get_file_bounds(
 
             # Align the cells
             bounds_transform, bounds_width, bounds_height = align_bounds(
-                bounds_left,
-                bounds_bottom,
-                bounds_right,
-                bounds_top,
-                dst_res
+                bounds_left, bounds_bottom, bounds_right, bounds_top, dst_res
             )
 
         else:
@@ -708,10 +713,10 @@ def get_file_bounds(
             bounds_transform = from_bounds(
                 bounds_left,
                 bounds_bottom,
-                 bounds_right,
-                 bounds_top,
-                 bounds_width,
-                 bounds_height
+                bounds_right,
+                bounds_top,
+                bounds_width,
+                bounds_height,
             )
 
         if return_bounds:
@@ -730,9 +735,9 @@ def warp_images(
     resampling='nearest',
     warp_mem_limit=512,
     num_threads=1,
-    tac=None
+    tac=None,
 ):
-    """Transforms a list of images to a common grid
+    """Transforms a list of images to a common grid.
 
     Args:
         filenames (list): The file names to mosaic.
@@ -750,8 +755,12 @@ def warp_images(
     Returns:
         ``list`` of ``rasterio.vrt.WarpedVRT`` objects
     """
-    if resampling not in [rmethod for rmethod in dir(Resampling) if not rmethod.startswith('__')]:
-        logger.warning("  The resampling method is not supported by rasterio. Setting to 'nearest'")
+    if resampling not in [
+        rmethod for rmethod in dir(Resampling) if not rmethod.startswith('__')
+    ]:
+        logger.warning(
+            "  The resampling method is not supported by rasterio. Setting to 'nearest'"
+        )
         resampling = 'nearest'
 
     warp_kwargs = {
@@ -761,7 +770,7 @@ def warp_images(
         'nodata': nodata,
         'warp_mem_limit': warp_mem_limit,
         'num_threads': num_threads,
-        'tac': tac
+        'tac': tac,
     }
 
     if bounds:
@@ -771,18 +780,14 @@ def warp_images(
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
         warp_kwargs['bounds'] = get_file_bounds(
-            filenames,
-            bounds_by=bounds_by,
-            crs=crs,
-            res=res,
-            return_bounds=True
+            filenames, bounds_by=bounds_by, crs=crs, res=res, return_bounds=True
         )
 
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
 
 def get_ref_image_meta(filename):
-    """Gets warping information from a reference image
+    """Gets warping information from a reference image.
 
     Args:
         filename (str): The file name to get information from.
@@ -811,9 +816,9 @@ def warp(
     warp_mem_limit=512,
     num_threads=1,
     tap=False,
-    tac=None
+    tac=None,
 ):
-    """Warps an image to a VRT object
+    """Warps an image to a VRT object.
 
     Args:
         filename (str): The input file name.
@@ -856,14 +861,14 @@ def warp(
                     src_info.src_bounds.bottom,
                     src_info.src_bounds.right,
                     src_info.src_bounds.top,
-                    densify_pts=21
+                    densify_pts=21,
                 )
 
                 dst_bounds = BoundingBox(
                     left=left_coord,
                     bottom=bottom_coord,
                     right=right_coord,
-                    top=top_coord
+                    top=top_coord,
                 )
 
             else:
@@ -876,7 +881,12 @@ def warp(
             elif isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
-                    left_coord, bottom_coord, right_coord, top_coord = unpack_bounding_box(bounds)
+                    (
+                        left_coord,
+                        bottom_coord,
+                        right_coord,
+                        top_coord,
+                    ) = unpack_bounding_box(bounds)
                 else:
                     logger.exception('  The bounds were not accepted.')
                     raise TypeError
@@ -885,39 +895,44 @@ def warp(
                     left=left_coord,
                     bottom=bottom_coord,
                     right=right_coord,
-                    top=top_coord
+                    top=top_coord,
                 )
 
             elif isinstance(bounds, (list, np.ndarray, tuple)):
                 dst_bounds = BoundingBox(
-                    left=bounds[0],
-                    bottom=bounds[1],
-                    right=bounds[2],
-                    top=bounds[3]
+                    left=bounds[0], bottom=bounds[1], right=bounds[2], top=bounds[3]
                 )
 
             else:
-                logger.exception(f'  The bounds type was not understood. Bounds should be given as a '
-                                 f'rasterio.coords.BoundingBox, tuple, or ndarray, not a {type(bounds)}.')
+                logger.exception(
+                    f'  The bounds type was not understood. Bounds should be given as a '
+                    f'rasterio.coords.BoundingBox, tuple, or ndarray, not a {type(bounds)}.'
+                )
                 raise TypeError
 
         dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
         dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
 
         # Do not warp if all the key metadata match the reference information
-        if (tuple(src_info.src_bounds) == tuple(bounds)) and \
-                (src_info.src_res == dst_res) and \
-                (src_crs == dst_crs) and \
-                (src_info.src_width == dst_width) and \
-                (src_info.src_height == dst_height) and \
-                ('.nc' not in filename.lower()):
+        if (
+            (tuple(src_info.src_bounds) == tuple(bounds))
+            and (src_info.src_res == dst_res)
+            and (src_crs == dst_crs)
+            and (src_info.src_width == dst_width)
+            and (src_info.src_height == dst_height)
+            and ('.nc' not in filename.lower())
+        ):
 
             output = filename
 
         else:
-
             src_transform = Affine(
-                src_info.src_res[0], 0.0, src_info.src_bounds.left, 0.0, -src_info.src_res[1], src_info.src_bounds.top
+                src_info.src_res[0],
+                0.0,
+                src_info.src_bounds.left,
+                0.0,
+                -src_info.src_res[1],
+                src_info.src_bounds.top,
             )
             dst_transform = Affine(
                 dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top
@@ -928,15 +943,14 @@ def warp(
                 tap_left = tac[0][np.abs(tac[0] - dst_bounds.left).argmin()]
                 tap_top = tac[1][np.abs(tac[1] - dst_bounds.top).argmin()]
 
-                dst_transform = Affine(dst_res[0], 0.0, tap_left, 0.0, -dst_res[1], tap_top)
+                dst_transform = Affine(
+                    dst_res[0], 0.0, tap_left, 0.0, -dst_res[1], tap_top
+                )
 
             if tap:
                 # Align the cells to the resolution
                 dst_transform, dst_width, dst_height = aligned_target(
-                    dst_transform,
-                    dst_width,
-                    dst_height,
-                    dst_res
+                    dst_transform, dst_width, dst_height, dst_res
                 )
 
             vrt_options = {
@@ -951,11 +965,10 @@ def warp(
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {
                     'multi': True,
-                    'warp_option': f'NUM_THREADS={num_threads}'
-                }
+                    'warp_option': f'NUM_THREADS={num_threads}',
+                },
             }
-            with WarpedVRT(src, **vrt_options) as vrt:
-                output = vrt
+            output = WarpedVRT(src, **vrt_options)
 
     return output
 
@@ -971,13 +984,10 @@ def reproject_array(
     resampling: Resampling,
     dst_res: tuple,
     warp_mem_limit: int,
-    num_threads: int
+    num_threads: int,
 ) -> np.ndarray:
-    """Reprojects a DataArray and translates to a numpy ndarray
-    """
-    dst_array = np.zeros(
-        (data.gw.nbands, dst_height, dst_width), dtype=data.dtype
-    )
+    """Reprojects a DataArray and translates to a numpy ndarray."""
+    dst_array = np.zeros((data.gw.nbands, dst_height, dst_width), dtype=data.dtype)
     dst_array, dst_transform = reproject(
         data.gw.compute(num_workers=num_threads),
         dst_array,
@@ -990,7 +1000,7 @@ def reproject_array(
         resampling=getattr(Resampling, resampling),
         dst_resolution=dst_res,
         warp_mem_limit=warp_mem_limit,
-        num_threads=num_threads
+        num_threads=num_threads,
     )
 
     return dst_array
@@ -1010,7 +1020,7 @@ def transform_crs(
     warp_mem_limit=512,
     num_threads=1,
     return_as_dict=False,
-    delayed_array=False
+    delayed_array=False,
 ):
     """Transforms a DataArray to a new coordinate reference system.
 
@@ -1076,7 +1086,7 @@ def transform_crs(
         top=data_src.gw.top,
         dst_width=dst_width,
         dst_height=dst_height,
-        resolution=dst_res
+        resolution=dst_res,
     )
 
     if not isinstance(dst_height, int):
@@ -1092,11 +1102,23 @@ def transform_crs(
 
     if coords_only:
         if isinstance(dst_width, int) and isinstance(dst_height, int):
-            xs = (dst_transform * (np.arange(0, dst_width) + 0.5, np.arange(0, dst_width) + 0.5))[0]
-            ys = (dst_transform * (np.arange(0, dst_height) + 0.5, np.arange(0, dst_height) + 0.5))[1]
+            xs = (
+                dst_transform
+                * (np.arange(0, dst_width) + 0.5, np.arange(0, dst_width) + 0.5)
+            )[0]
+            ys = (
+                dst_transform
+                * (np.arange(0, dst_height) + 0.5, np.arange(0, dst_height) + 0.5)
+            )[1]
         else:
-            xs = (dst_transform * (np.arange(0, dst_width_) + 0.5, np.arange(0, dst_width_) + 0.5))[0]
-            ys = (dst_transform * (np.arange(0, dst_height_) + 0.5, np.arange(0, dst_height_) + 0.5))[1]
+            xs = (
+                dst_transform
+                * (np.arange(0, dst_width_) + 0.5, np.arange(0, dst_width_) + 0.5)
+            )[0]
+            ys = (
+                dst_transform
+                * (np.arange(0, dst_height_) + 0.5, np.arange(0, dst_height_) + 0.5)
+            )[1]
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
         xy_coords = XYCoords(xs=xs, ys=ys)
@@ -1107,7 +1129,7 @@ def transform_crs(
                 'transform': dst_transform,
                 'crs': dst_crs,
                 'height': dst_height,
-                'width': dst_width
+                'width': dst_width,
             }
         else:
             return xy_coords, dst_transform, dst_crs
@@ -1115,8 +1137,8 @@ def transform_crs(
     if not dst_bounds:
         dst_left = dst_transform[2]
         dst_top = dst_transform[5]
-        dst_right = dst_left + (dst_width*dst_transform[0])
-        dst_bottom = dst_top - (dst_height*dst_transform[4])
+        dst_right = dst_left + (dst_width * dst_transform[0])
+        dst_bottom = dst_top - (dst_height * dst_transform[4])
 
         dst_bounds = (dst_left, dst_bottom, dst_right, dst_top)
 
@@ -1125,7 +1147,7 @@ def transform_crs(
             left=dst_bounds[0],
             bottom=dst_bounds[1],
             right=dst_bounds[2],
-            top=dst_bounds[3]
+            top=dst_bounds[3],
         )
 
     if not dst_res:
@@ -1134,7 +1156,9 @@ def transform_crs(
         dst_res = (cellx, celly)
 
     # Ensure the final transform is set based on adjusted bounds
-    dst_transform = Affine(abs(dst_res[0]), 0.0, dst_bounds.left, 0.0, -abs(dst_res[1]), dst_bounds.top)
+    dst_transform = Affine(
+        abs(dst_res[0]), 0.0, dst_bounds.left, 0.0, -abs(dst_res[1]), dst_bounds.top
+    )
 
     proj_func = dask.delayed(reproject_array) if delayed_array else reproject_array
     transformed_array = proj_func(
@@ -1148,7 +1172,7 @@ def transform_crs(
         resampling,
         dst_res,
         warp_mem_limit,
-        num_threads
+        num_threads,
     )
 
     if return_as_dict:
@@ -1157,7 +1181,7 @@ def transform_crs(
             'transform': dst_transform,
             'crs': dst_crs,
             'height': dst_height,
-            'width': dst_width
+            'width': dst_width,
         }
     else:
         return transformed_array, dst_transform, dst_crs

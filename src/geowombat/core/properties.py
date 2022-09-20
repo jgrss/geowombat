@@ -4,6 +4,7 @@ import typing as T
 
 from .util import n_rows_cols
 
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 from rasterio.coords import BoundingBox
@@ -781,6 +782,15 @@ class DataProperties(object):
     def pydatetime(self):
         """Get Python datetime objects from the time dimension."""
         return pd.to_datetime(self._obj.time.values).to_pydatetime()
+
+    @property
+    def dtype(self) -> str:
+        """Get the data type of the DataArray."""
+        return (
+            self._obj.dtype.name
+            if isinstance(self._obj.dtype, np.dtype)
+            else self._obj.dtype
+        )
 
     @property
     def chunk_grid(self) -> gpd.GeoDataFrame:

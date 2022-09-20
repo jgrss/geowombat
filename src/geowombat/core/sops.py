@@ -1288,9 +1288,9 @@ class SpatialOperations(_PropertyMixin):
                     {'crs': ref_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)}
                 )
                 if 'nodata' in kwargs:
-                    ref_src = ref_src.assign_attrs(
-                        {'nodatavals': (kwargs['nodata'][0],)}
-                    ).fillna(kwargs['nodata'][0])
+                    ref_src = ref_src.fillna(
+                        kwargs['nodata'][0]
+                    ).gw.assign_nodata_attrs(kwargs['nodata'][0])
                 ref_src.gw.save(ref_path, overwrite=True, log_progress=False)
             tar_kwargs = (
                 {'engine': 'h5netcdf'}
@@ -1311,9 +1311,9 @@ class SpatialOperations(_PropertyMixin):
                     {'crs': tar_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)}
                 )
                 if 'nodata' in kwargs:
-                    tar_src = tar_src.assign_attrs(
-                        {'nodatavals': (kwargs['nodata'][1],)}
-                    ).fillna(kwargs['nodata'][1])
+                    tar_src = tar_src.fillna(
+                        kwargs['nodata'][1]
+                    ).gw.assign_nodata_attrs(kwargs['nodata'][1])
                 tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
             cr = arosics.COREG(
