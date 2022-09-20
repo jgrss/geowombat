@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.6 (2022-09-19)
+* Changed behavior of `nodata` values ([#204](https://github.com/jgrss/geowombat/pull/204))
+
 ## v2.0.5 (2022-09-16)
 * Fixed attribute lookup when co-registration is applied ([#203](https://github.com/jgrss/geowombat/pull/203))
 
