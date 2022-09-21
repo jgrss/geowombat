@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.7 (2022-09-20)
+* Fixed ML `nodata` and `dtype` ([#207](https://github.com/jgrss/geowombat/pull/207))
+
 ## v2.0.6 (2022-09-19)
 * Changed behavior of `nodata` values ([#204](https://github.com/jgrss/geowombat/pull/204))
 
