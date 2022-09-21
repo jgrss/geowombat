@@ -3,14 +3,20 @@
 Co-registration
 ===============
 
-Image co-registration is the misalignment of pixels in an image. This misalignment is exceedingly common in applications utlizing two sensors (e.g. Sentinel-1 and 2) but is even evidenced with images from the same sensor over time. Any displacement has the potential to significantly distort results `(Ye 2021) <https://doi.org/10.3390/rs13050928>`_ of, for instace, change detection, image fusion, and landcover classification `(Scheffler 2017) <https://www.mdpi.com/2072-4292/9/7/676>`_. Geowombat has integrated AROSICS which can be used to effectively co-register pixels both between senors systems and for time series of any given sensor. 
+Image co-registration is the misalignment of pixels in an image. This misalignment is exceedingly common in
+applications utlizing two sensors (e.g., Sentinel-1 and 2) but is even evidenced with images from the same sensor
+over time. Any displacement has the potential to significantly distort results
+`(Ye 2021) <https://doi.org/10.3390/rs13050928>`_ of, for instace, change detection, image fusion, and land cover
+classification `(Scheffler 2017) <https://www.mdpi.com/2072-4292/9/7/676>`_. GeoWombat has integrated AROSICS (described
+in the following section), which can be used to effectively co-register pixels both between sensor systems and for
+time series of any given sensor.
 
 AROSICS method
 --------------
 
 The AROSICS (An Automated and Robust Open-Source Image Co-Registration Software for Multi-Sensor
-Satellite Data) co-registration method was developed `by Scheffler et al. (2017) <https://www.mdpi.com/2072-4292/9/7/676>`_.
-The authors made their algorithm open to the public in a Python package called
+Satellite Data) co-registration method was developed by `Scheffler et al. (2017) <https://www.mdpi.com/2072-4292/9/7/676>`_.
+The authors conveniently made their algorithm open to the public in a Python package called
 `AROSICS <https://danschef.git-pages.gfz-potsdam.de/arosics/doc/>`_.
 
 In GeoWombat, we provide an interface to the AROSICS package. The co-registration method is called :func:`geowombat.coregister`,
@@ -24,6 +30,10 @@ The AROSICS package can either be installed separately from geowombat by followi
 with geowombat. For the latter, simply add the ``coreg`` extra when installing geowombat by::
 
     pip install geowombat[coreg]@git+https://github.com/jgrss/geowombat.git
+
+if installing the latest or if installing a specific geowombat version (e.g., `v2.0.7`) then do::
+
+    pip install geowombat[coreg]@git+https://github.com/jgrss/geowombat.git@v2.0.7#egg=geowombat
 
 Co-register an image
 --------------------
