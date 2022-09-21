@@ -61,7 +61,6 @@ jobs:
           export CPLUS_INCLUDE_PATH=/usr/include/gdal
           export C_INCLUDE_PATH=/usr/include/gdal
           export LD_LIBRARY_PATH=/usr/local/lib
-        if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Install Python packages
         run: |
           # Install Python GDAL
@@ -69,7 +68,6 @@ jobs:
           pip install Cython>=0.29.* numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
           pip install GDAL==$GDAL_VERSION --no-binary=gdal
-        if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Install GeoWombat
         run: |
           pip install .[perf,ml,tests]
