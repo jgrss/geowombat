@@ -776,6 +776,7 @@ class DataProperties(object):
 
     @property
     def crs_to_pyproj(self) -> CRS:
+        """Get the CRS as a ``pyproj.CRS`` object."""
         return CRS.from_user_input(self._obj.crs)
 
     @property
@@ -823,7 +824,7 @@ class DataProperties(object):
     @property
     def footprint_grid(self) -> gpd.GeoDataFrame:
         """Get the image footprint grid."""
-        if not hasattr(self._obj, 'filenames'):
+        if not hasattr(self._obj, '_filenames'):
             raise AttributeError(
                 "The DataArray object does not have a 'filenames' attribute."
             )
@@ -833,7 +834,7 @@ class DataProperties(object):
             geometries = self._obj.geometries
         else:
             geometries = []
-            for fn in self._obj.filenames:
+            for fn in self._obj.gw.filenames:
                 kwargs = {'engine': 'h5netcdf'} if fn.lower().endswith('.nc') else {}
                 with gw_.open(
                     fn,
@@ -847,7 +848,7 @@ class DataProperties(object):
                     geometries.append(src.gw.geometry)
 
         return gpd.GeoDataFrame(
-            data=self._obj.filenames,
+            data=self._obj.gw.filenames,
             columns=['footprint'],
             geometry=geometries,
             crs=self._obj.crs,
