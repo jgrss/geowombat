@@ -27,6 +27,7 @@ import xml.etree.ElementTree as ET
 
 try:
     import cv2
+
     OPENCV_INSTALLED = True
 except:
     OPENCV_INSTALLED = False
@@ -45,15 +46,9 @@ class AngleInfo:
 
 
 def shift_objects(
-    data,
-    solar_za,
-    solar_az,
-    sensor_za,
-    sensor_az,
-    object_height,
-    num_workers
+    data, solar_za, solar_az, sensor_za, sensor_az, object_height, num_workers
 ):
-    """Shifts objects along x and y dimensions
+    """Shifts objects along x and y dimensions.
 
     Args:
         data (DataArray): The data to shift.
@@ -86,31 +81,40 @@ def shift_objects(
     rad_vza = np.deg2rad(vza)
     rad_vaa = np.deg2rad(vaa)
 
-    apparent_solar_az = np.pi + np.arctan((np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza)) /
-                                          (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza)))
+    apparent_solar_az = np.pi + np.arctan(
+        (np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza))
+        / (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))
+    )
 
     # Maximum horizontal distance
-    d = (object_height**2 * ((np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza))**2 +
-                 (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))**2))**0.5
+    d = (
+        object_height**2
+        * (
+            (np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza)) ** 2
+            + (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))
+            ** 2
+        )
+    ) ** 0.5
 
     # Convert the polar angle to cartesian offsets
-    x = int((np.cos(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
-    y = int((np.sin(apparent_solar_az) * d).max(skipna=True).data.compute(num_workers=num_workers))
+    x = int(
+        (np.cos(apparent_solar_az) * d)
+        .max(skipna=True)
+        .data.compute(num_workers=num_workers)
+    )
+    y = int(
+        (np.sin(apparent_solar_az) * d)
+        .max(skipna=True)
+        .data.compute(num_workers=num_workers)
+    )
 
     return data.shift(shifts={'x': x, 'y': y}, fill_value=0)
 
 
 def estimate_cloud_shadows(
-    data,
-    clouds,
-    solar_za,
-    solar_az,
-    sensor_za,
-    sensor_az,
-    heights=None,
-    num_workers=1
+    data, clouds, solar_za, solar_az, sensor_za, sensor_az, heights=None, num_workers=1
 ):
-    """Estimates shadows from a cloud mask and adds to the existing mask
+    r"""Estimates shadows from a cloud mask and adds to the existing mask
 
     Args:
         data (DataArray): The wavelengths, scaled 0-1.
@@ -139,24 +143,36 @@ def estimate_cloud_shadows(
 
     for object_height in heights:
         potential_shadows = shift_objects(
-            clouds,
-            solar_za,
-            solar_az,
-            sensor_za,
-            sensor_az,
-            object_height,
-            num_workers
+            clouds, solar_za, solar_az, sensor_za, sensor_az, object_height, num_workers
         )
 
         if not isinstance(shadows, xr.DataArray):
-            shadows = xr.where((data.sel(band='nir') < 0.25) & (data.sel(band='swir1') < 0.11) & (potential_shadows.sel(band='mask') == 1), 1, 0)
+            shadows = xr.where(
+                (data.sel(band='nir') < 0.25)
+                & (data.sel(band='swir1') < 0.11)
+                & (potential_shadows.sel(band='mask') == 1),
+                1,
+                0,
+            )
         else:
-            shadows = xr.where(((data.sel(band='nir') < 0.25) & (data.sel(band='swir1') < 0.11) & (potential_shadows.sel(band='mask') == 1)) | shadows.sel(band='mask') == 1, 1, 0)
+            shadows = xr.where(
+                (
+                    (data.sel(band='nir') < 0.25)
+                    & (data.sel(band='swir1') < 0.11)
+                    & (potential_shadows.sel(band='mask') == 1)
+                )
+                | shadows.sel(band='mask')
+                == 1,
+                1,
+                0,
+            )
 
         shadows = shadows.expand_dims(dim='band')
 
     # Add the shadows to the cloud mask
-    data = xr.where(clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0))
+    data = xr.where(
+        clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0)
+    )
     data = data.expand_dims(dim='band')
     data.attrs = attrs
 
@@ -168,9 +184,9 @@ def scattering_angle(
     cos_vza: xr.DataArray,
     sin_sza: xr.DataArray,
     sin_vza: xr.DataArray,
-    cos_raa: xr.DataArray
+    cos_raa: xr.DataArray,
 ) -> xr.DataArray:
-    """Calculates the scattering angle
+    """Calculates the scattering angle.
 
     Args:
         cos_sza (DataArray): The cosine of the solar zenith angle.
@@ -207,7 +223,7 @@ def scattering_angle(
 
 
 def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
-    """Calculates the relative azimuth angle
+    """Calculates the relative azimuth angle.
 
     Args:
         saa (DataArray): The solar azimuth angle (in degrees).
@@ -223,7 +239,7 @@ def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
     raa = np.deg2rad(saa - vaa)
 
     # Create masks
-    raa_plus = xr.where(raa >= 2.0*np.pi, 1, 0)
+    raa_plus = xr.where(raa >= 2.0 * np.pi, 1, 0)
     raa_minus = xr.where(raa < 0, 1, 0)
 
     raa = xr.where(raa_plus == 1, raa - (2.0 * np.pi), raa)
@@ -233,7 +249,7 @@ def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
 
 
 def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
-    """Gets the Sentinel sensor from metadata
+    """Gets the Sentinel sensor from metadata.
 
     Args:
         metadata (str | Path): The Sentinel metadata XML file path.
@@ -253,9 +269,9 @@ def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
 
 
 def get_sentinel_crs_transform(
-    metadata: T.Union[str, Path], resample_res = 10.0
+    metadata: T.Union[str, Path], resample_res=10.0
 ) -> tuple:
-    """Gets the Sentinel scene transformation information
+    """Gets the Sentinel scene transformation information.
 
     Args:
         metadata (str | Path): The Sentinel metadata XML file path.
@@ -284,7 +300,7 @@ def get_sentinel_crs_transform(
 
 
 def get_sentinel_angle_shape(metadata: T.Union[str, Path]) -> tuple:
-    """Gets the Sentinel scene angle array shape
+    """Gets the Sentinel scene angle array shape.
 
     Args:
         metadata (str | Path): The Sentinel metadata XML file path.
@@ -310,7 +326,7 @@ def get_sentinel_angle_shape(metadata: T.Union[str, Path]) -> tuple:
 def parse_sentinel_angles(
     metadata: T.Union[str, Path], proc_angles: str, nodata: T.Union[float, int]
 ):
-    """Gets the Sentinel-2 solar angles from metadata
+    """Gets the Sentinel-2 solar angles from metadata.
 
     Reference:
         https://github.com/hevgyrt/safe_to_netcdf/blob/master/s2_reader_and_NetCDF_converter.py
@@ -330,13 +346,21 @@ def parse_sentinel_angles(
     angles_view_list, angle_nrows, angle_ncols = get_sentinel_angle_shape(metadata)
 
     if proc_angles == 'view':
-        zenith_array = np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
-        azimuth_array = np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
+        zenith_array = (
+            np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
+        )
+        azimuth_array = (
+            np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
+        )
     else:
         zenith_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
         azimuth_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
 
-    view_tag = 'Sun_Angles_Grid' if proc_angles == 'solar' else 'Viewing_Incidence_Angles_Grids'
+    view_tag = (
+        'Sun_Angles_Grid'
+        if proc_angles == 'solar'
+        else 'Viewing_Incidence_Angles_Grids'
+    )
 
     # Find the angles
     for angle in angles_view_list:
@@ -359,13 +383,17 @@ def parse_sentinel_angles(
                     azimuth_values_list = field
 
             for ridx, zenith_values in enumerate(zenith_values_list):
-                zenith_values_array = np.array([float(i) for i in zenith_values.text.split()])
+                zenith_values_array = np.array(
+                    [float(i) for i in zenith_values.text.split()]
+                )
                 if proc_angles == 'view':
                     zenith_array[band_id, ridx] = zenith_values_array
                 else:
                     zenith_array[ridx] = zenith_values_array
             for ridx, azimuth_values in enumerate(azimuth_values_list):
-                azimuth_values_array = np.array([float(i) for i in azimuth_values.text.split()])
+                azimuth_values_array = np.array(
+                    [float(i) for i in azimuth_values.text.split()]
+                )
                 if proc_angles == 'view':
                     azimuth_array[band_id, ridx] = azimuth_values_array
                 else:
@@ -382,15 +410,11 @@ def run_espa_command(
     l8_angles_path: T.Union[str, Path],
     subsample: T.Union[float, int],
     out_dir: T.Union[str, Path],
-    verbose: int
+    verbose: int,
 ) -> namedtuple:
     AnglePaths = namedtuple('AnglePaths', 'sensor solar out_order')
 
-    angle_paths = AnglePaths(
-        sensor=None,
-        solar=None,
-        out_order=None
-    )
+    angle_paths = AnglePaths(sensor=None, solar=None, out_order=None)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         if not Path(ref_angle_file).is_file():
@@ -399,7 +423,7 @@ def run_espa_command(
                 angle_command = '{PATH} {META} -s {SUBSAMP:d} -b 1'.format(
                     PATH=str(Path(l57_angles_path).joinpath('landsat_angles')),
                     META=angles_file,
-                    SUBSAMP=subsample
+                    SUBSAMP=subsample,
                 )
 
                 # 1=zenith, 2=azimuth
@@ -410,7 +434,7 @@ def run_espa_command(
                 angle_command = '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(
                     PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
                     META=angles_file,
-                    SUBSAMP=subsample
+                    SUBSAMP=subsample,
                 )
 
                 # 1=azimuth, 2=zenith
@@ -444,7 +468,7 @@ def run_espa_command(
             angle_paths = AnglePaths(
                 sensor=str(sensor_angles_path),
                 solar=str(solar_angles_path),
-                out_order=out_order
+                out_order=out_order,
             )
         for file_ in Path(tmp_dir).iterdir():
             file_.unlink()
@@ -458,15 +482,17 @@ def open_angle_file(
     band_pos: int,
     nodata: T.Union[float, int],
     subsample: int,
-    ref_res: T.Sequence[float]
+    ref_res: T.Sequence[float],
 ) -> xr.DataArray:
-    new_res = subsample*ref_res[0]
+    new_res = subsample * ref_res[0]
     # Update the .hdr file
     with open(in_angle_path + '.hdr', mode='r') as txt:
         lines = txt.readlines()
         for lidx, line in enumerate(lines):
             if line.startswith('map info'):
-                lines[lidx] = line.replace('30.000, 30.000', f'{new_res:.3f}, {new_res:.3f}')
+                lines[lidx] = line.replace(
+                    '30.000, 30.000', f'{new_res:.3f}, {new_res:.3f}'
+                )
 
     Path(in_angle_path + '.hdr').unlink()
     with open(in_angle_path + '.hdr', mode='w') as txt:
@@ -491,15 +517,10 @@ def postprocess_espa_angles(
     subsample: int,
     resampling: str,
     num_workers: int,
-    chunks: int
+    chunks: int,
 ) -> AngleInfo:
     nodata = -32768
-    angle_array_dict = {
-        'vaa': None,
-        'vza': None,
-        'saa': None,
-        'sza': None
-    }
+    angle_array_dict = {'vaa': None, 'vza': None, 'saa': None, 'sza': None}
     if angle_paths_in.sensor is not None:
         with rio.open(ref_file) as src:
             ref_res = src.res
@@ -510,20 +531,15 @@ def postprocess_espa_angles(
                 angle_paths_in.sensor,
                 angle_paths_in.sensor,
                 angle_paths_in.solar,
-                angle_paths_in.solar
+                angle_paths_in.solar,
             ],
             [
                 angle_paths_out.vaa,
                 angle_paths_out.vza,
                 angle_paths_out.saa,
-                angle_paths_out.sza
+                angle_paths_out.sza,
             ],
-            [
-                'azimuth',
-                'zenith',
-                'azimuth',
-                'zenith'
-            ]
+            ['azimuth', 'zenith', 'azimuth', 'zenith'],
         ):
             if 'sensor_azimuth' in str(out_angle):
                 angle_name = 'vaa'
@@ -540,7 +556,7 @@ def postprocess_espa_angles(
                 angle_paths_in.out_order[band_pos],
                 nodata,
                 subsample,
-                ref_res
+                ref_res,
             )
             angle_array_dict = transform_angles(
                 ref_file,
@@ -549,14 +565,14 @@ def postprocess_espa_angles(
                 resampling,
                 num_workers,
                 angle_array_dict,
-                angle_name
+                angle_name,
             )
 
     return AngleInfo(
         vaa=angle_array_dict['vaa'],
         vza=angle_array_dict['vza'],
         saa=angle_array_dict['saa'],
-        sza=angle_array_dict['sza']
+        sza=angle_array_dict['sza'],
     )
 
 
@@ -571,9 +587,9 @@ def landsat_pixel_angles(
     resampling: str = 'bilinear',
     num_workers: int = 1,
     verbose: int = 0,
-    chunks: int = 256
+    chunks: int = 256,
 ) -> AngleInfo:
-    """Generates Landsat pixel angle files
+    """Generates Landsat pixel angle files.
 
     Args:
         angles_file (str): The angles file.
@@ -595,7 +611,9 @@ def landsat_pixel_angles(
     if not l57_angles_path:
         gw_bin = os.path.realpath(os.path.dirname(__file__))
         gw_out = os.path.realpath(Path(gw_bin).joinpath('../bin').as_posix())
-        gw_tar = os.path.realpath(Path(gw_bin).joinpath('../bin/ESPA.tar.gz').as_posix())
+        gw_tar = os.path.realpath(
+            Path(gw_bin).joinpath('../bin/ESPA.tar.gz').as_posix()
+        )
 
         if not Path(gw_bin).joinpath('../bin/ESPA').is_dir():
             with tarfile.open(gw_tar, mode='r:gz') as tf:
@@ -622,7 +640,7 @@ def landsat_pixel_angles(
         vaa=sensor_azimuth_path,
         vza=sensor_zenith_path,
         saa=solar_azimuth_path,
-        sza=solar_zenith_path
+        sza=solar_zenith_path,
     )
     angle_paths_in = run_espa_command(
         angle_paths_out.vaa,
@@ -632,7 +650,7 @@ def landsat_pixel_angles(
         l8_angles_path,
         subsample,
         out_path,
-        verbose
+        verbose,
     )
     angle_info = dask.delayed(postprocess_espa_angles)(
         ref_file,
@@ -641,7 +659,7 @@ def landsat_pixel_angles(
         subsample,
         resampling,
         num_workers,
-        chunks
+        chunks,
     )
 
     return angle_info
@@ -652,24 +670,21 @@ def resample_angles(
     nrows: int,
     ncols: int,
     data_shape: T.Tuple[int, int],
-    chunksize: T.Tuple[int, int]
+    chunksize: T.Tuple[int, int],
 ) -> da.Array:
-    """Resamples an angle array
-    """
+    """Resamples an angle array."""
     data = np.int16(
         cv2.resize(
             angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
             (0, 0),
             fy=nrows / data_shape[0],
             fx=ncols / data_shape[1],
-            interpolation=cv2.INTER_LINEAR
-        ) / 0.01
+            interpolation=cv2.INTER_LINEAR,
+        )
+        / 0.01
     )[None]
 
-    return da.from_array(
-        data,
-        chunks=(1,) + chunksize
-    )
+    return da.from_array(data, chunks=(1,) + chunksize)
 
 
 def transform_angles(
@@ -679,10 +694,9 @@ def transform_angles(
     resampling: str,
     num_workers: int,
     angle_array_dict: dict,
-    angle_name: str
+    angle_name: str,
 ) -> dict:
-    """Transforms angles to a new CRS
-    """
+    """Transforms angles to a new CRS."""
     with open_rasterio(ref_file, chunks=data.gw.row_chunks) as src:
         angle_array_resamp_da_transform = transform_crs(
             data,
@@ -693,12 +707,11 @@ def transform_angles(
             src_nodata=nodata,
             dst_nodata=nodata,
             resampling=resampling,
-            num_threads=num_workers
+            num_threads=num_workers,
         )
         # Save the angle image to file
         angle_array_resamp_da_transform = (
-            angle_array_resamp_da_transform
-            .fillna(nodata)
+            angle_array_resamp_da_transform.fillna(nodata)
             .astype('int16')
             .assign_attrs(nodatavals=(nodata,))
         )
@@ -716,9 +729,9 @@ def sentinel_pixel_angles(
     resampling: str = 'bilinear',
     num_workers: int = 1,
     resample_res: T.Union[float, int] = 60.0,
-    chunksize: T.Tuple[int, int] = None
+    chunksize: T.Tuple[int, int] = None,
 ) -> AngleInfo:
-    """Generates Sentinel pixel angle files
+    """Generates Sentinel pixel angle files.
 
     Args:
         metadata (str): The metadata file.
@@ -751,16 +764,11 @@ def sentinel_pixel_angles(
     xcoords = (transform * (np.arange(ncols) + 0.5, np.zeros(ncols) + 0.5))[0]
     ycoords = (transform * (np.zeros(nrows) + 0.5, np.arange(nrows) + 0.5))[1]
 
-    angle_array_dict = {
-        'vaa': None,
-        'vza': None,
-        'saa': None,
-        'sza': None
-    }
+    angle_array_dict = {'vaa': None, 'vza': None, 'saa': None, 'sza': None}
 
     for angle_name, angle_array in zip(
         ['vza', 'vaa', 'sza', 'saa'],
-        [view_angles[0], view_angles[1], solar_angles[0], solar_angles[1]]
+        [view_angles[0], view_angles[1], solar_angles[0], solar_angles[1]],
     ):
         # Resample and scale to the full image size
         angle_array_resamp = dask.delayed(resample_angles)(
@@ -769,22 +777,16 @@ def sentinel_pixel_angles(
         # Create a DataArray to write to file
         angle_array_resamp_da = xr.DataArray(
             da.from_delayed(
-                angle_array_resamp,
-                shape=(1, nrows, ncols),
-                dtype='float32'
+                angle_array_resamp, shape=(1, nrows, ncols), dtype='float32'
             ).rechunk((1,) + chunksize),
             dims=('band', 'y', 'x'),
-            coords={
-                'band': [1],
-                'y': ycoords,
-                'x': xcoords
-            },
+            coords={'band': [1], 'y': ycoords, 'x': xcoords},
             attrs={
                 'transform': transform,
                 'crs': crs,
                 'res': (resample_res, resample_res),
-                'nodatavals': (nodata,)
-            }
+                'nodatavals': (nodata,),
+            },
         )
         angle_array_dict = dask.delayed(transform_angles)(
             ref_file,
@@ -793,12 +795,12 @@ def sentinel_pixel_angles(
             resampling,
             num_workers,
             angle_array_dict,
-            angle_name
+            angle_name,
         )
 
     return AngleInfo(
         vaa=angle_array_dict['vaa'],
         vza=angle_array_dict['vza'],
         saa=angle_array_dict['saa'],
-        sza=angle_array_dict['sza']
+        sza=angle_array_dict['sza'],
     )
