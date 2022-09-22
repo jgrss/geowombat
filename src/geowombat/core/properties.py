@@ -924,7 +924,7 @@ class DataProperties(object):
         )
 
     @property
-    def nodata(self) -> T.Union[float, int, None]:
+    def nodataval(self) -> T.Union[float, int, None]:
         """Get the 'no data' value from the attributes."""
         nodata_value = None
         if hasattr(self._obj, '_FillValue'):
