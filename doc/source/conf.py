@@ -112,8 +112,8 @@ ipython_savefig_dir = '_static'
 
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
-autodoc_member_order = 'bysource'
-autosummary_generate = True
+# autodoc_member_order = 'bysource'
+# autosummary_generate = True
 
 autodoc_default_options = {
     'members': True,
