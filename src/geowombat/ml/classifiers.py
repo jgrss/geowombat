@@ -92,7 +92,7 @@ class ClassifiersMixin(object):
         # drop nans
         try:
             Xna = X[~X[targ_name].isnull()]
-            Xna = X[X[targ_name] != X.attrs["nodatavals"][0]]
+            Xna = X[X[targ_name] != X.gw.nodataval]
         except KeyError:
             Xna = X
 
@@ -363,6 +363,7 @@ class Classifiers(ClassifiersMixin):
         if y.gw.ntime == 1:
             y = y.sel(time="t1")
 
+        # covert to dask array
         y = (
             y.chunk({"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks})
             # Assign geo-attributes

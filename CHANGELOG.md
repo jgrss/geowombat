@@ -2,6 +2,8 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.9 (2022-09-21)
+* Added `nodataval` `DataArray` property to ML workflow ([#209](https://github.com/jgrss/geowombat/pull/209))
 
 ## v2.0.8 (2022-09-21)
 * Added a `nodataval` `DataArray` property ([#208](https://github.com/jgrss/geowombat/pull/208))
