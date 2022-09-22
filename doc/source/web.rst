@@ -3,10 +3,28 @@
 Streaming data from cloud sources
 =================================
 
+GeoWombat integrates easy access to Spatial Temporal Asset Catalog (`STAC <https://stacspec.org/en>`_) APIs.
+STAC is a standardized way to expose collections of spatial temporal data for easy data retrieval of products
+like Sentinel-2, Landsat, Digital Earth, and even Google Earth Engine products. For a full list of public STAC
+APIs refer to the following `STAC list <https://stacspec.org/en/about/datasets/>`_.
+
 Spatial Temporal Asset Catalogs
 -------------------------------
 
-`STAC <https://stacspec.org/en>`_
+To open a STAC catalog with GeoWombat, we interface through the following Python libraries:
+
+    * `pystac <https://pystac.readthedocs.io/en/latest/>`_
+    * `pystac_client <https://pystac-client.readthedocs.io/en/latest/>`_
+    * `stackstac <https://stackstac.readthedocs.io/en/latest/>`_ (currently forked and modified for `pyproj` changes at `https://github.com/jgrss/stackstac <https://github.com/jgrss/stackstac>`_)
+    * `planetary_computer <https://pypi.org/project/planetary-computer/>`_
+
+Geowombat :func:`open_stac` currently supports the following STAC catalogs:
+
+    * `element84 <'https://earth-search.aws.element84.com/v0'>`_
+    * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_
+
+STAC example
+------------
 
 Stream Sentinel-2 level 2A data from Element84
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,31 +35,50 @@ Stream Sentinel-2 level 2A data from Element84
     from geowombat.core.stac import open_stac
     from rasterio.enums import Resampling
 
-    # Bounds in lat/lon WGS84
+    # Query bounds in lat/lon WGS84
     bounds = (left, bottom, right, top)
 
     data, df = open_stac(
+        # Available catalog names can be found in geowombat.core.stac.STACNames
         stac_catalog='element84',
         bounds=bounds,
+        # Projection (matching `epsg`) bounds to return data in
+        # If not given, data are returned from the bounds query
+        proj_bounds=None,
+        # An EPSG code to warp the outputs to
         epsg='epsg:8858',
         nodata_fill=32768,
+        # Available collections can be found in geowombat.core.stac.STACCollections
+        # sentinel_s2_l2a = Sentinel-2 Level 2A (i.e., bottom-of-atmosphere, or surface, reflectance)
         collection='sentinel_s2_l2a',
+        # Band names depend on the catalog
         bands=['B02', 'B03', 'B04', 'B08'],
+        # Maximum cloud cover percentage in the query
         cloud_cover_perc=90,
+        # Dask chunk size to return data in
         chunksize=512,
+        # Query start and end dates (YYYY-MM-DD)
         start_date='2022-01-01',
         end_date='2022-04-01',
+        # Cell size to resample outputs to
         resolution=10.0,
+        # Resampling method as a rasterio Resampling enum
         resampling=Resampling.cubic,
+        # Non-raster extras to download, e.g., metadata files
         extra_assets=['metadata'],
         out_path=Path('/out_path'),
-        max_items=None,
-        tqdm_item_position=0,
-        tqdm_extra_position=1
+        # No limit on returned item count
+        max_items=None
     )
 
+Other examples
+--------------
+
+Rasterio makes it easy to read URLs from cloud sources. The examples below show other approaches to
+reading imagery from sources such as AWS or Google Cloud Platform buckets.
+
 Download data from Google Cloud Platform
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, a Landsat 7 panchromatic image is downloaded.
 
@@ -63,13 +100,15 @@ Here, a Landsat 7 panchromatic image is downloaded.
 
     search_wildcards = ['ANG.txt', 'MTL.txt', 'B8.TIF']
 
-    file_info = gdl.download_gcp('l7',
-                                 downloads='LE07/01/225/083/LE07_L1TP_225083_20190208_20190306_01_T1',
-                                 search_wildcards=search_wildcards,
-                                 verbose=1)
+    file_info = gdl.download_gcp(
+        'l7',
+        downloads='LE07/01/225/083/LE07_L1TP_225083_20190208_20190306_01_T1',
+        search_wildcards=search_wildcards,
+        verbose=1
+    )
 
 Download and cube data
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 In this example, data are downloaded and processed for a given time range and geographic extent.
 
@@ -92,11 +131,13 @@ In this example, data are downloaded and processed for a given time range and ge
     crs = "+proj=aea +lat_1=-5 +lat_2=-42 +lat_0=-32 +lon_0=-60 +x_0=0 +y_0=0 +ellps=aust_SA +units=m +no_defs"
 
     # Download a Landsat 7 panchromatic, BRDF-adjusted cube
-    gdl.download_cube(sensors,
-                      date_range,
-                      bounds,
-                      bands,
-                      crs=crs)
+    gdl.download_cube(
+        sensors,
+        date_range,
+        bounds,
+        bands,
+        crs=crs
+    )
 
 In the example above, the bounds can also be taken directly from a file, as shown below.
 
