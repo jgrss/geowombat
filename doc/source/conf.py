@@ -10,9 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('../..'))
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path('.').resolve()))
 
 from datetime import datetime
 import geowombat as gw
@@ -48,6 +49,8 @@ extensions = [
     'sphinx_automodapi.automodapi',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.autosummary',
     'sphinxcontrib.bibtex',
     'sphinx_tabs.tabs',
     'numpydoc',
@@ -106,6 +109,16 @@ html_theme_options = {
 # so a file named 'default.css' will overwrite the builtin 'default.css'.
 html_static_path = ['_static']
 ipython_savefig_dir = '_static'
+
+# Disable docstring inheritance
+autodoc_inherit_docstrings = False
+autodoc_member_order = 'bysource'
+autosummary_generate = True
+
+autodoc_default_options = {
+    'members': True,
+    'show-inheritance': True,
+}
 
 # -- Options for LaTeX output ---------------------------------------------
 
