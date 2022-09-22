@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+
+## v2.0.8 (2022-09-21)
+* Added a `nodataval` `DataArray` property ([#208](https://github.com/jgrss/geowombat/pull/208))
+
 ## v2.0.7 (2022-09-20)
 * Fixed ML `nodata` and `dtype` ([#207](https://github.com/jgrss/geowombat/pull/207))
 

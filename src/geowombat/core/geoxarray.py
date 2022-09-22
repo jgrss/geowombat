@@ -158,17 +158,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return mask(self._obj, df, query=query, keep=keep)
 
     def mask_nodata(self) -> xr.DataArray:
-        """Masks 'no data' values with nans.
-
-        Returns:
-            ``xarray.DataArray``
-        """
-        if hasattr(self._obj, '_FillValue'):
-            nodata_value = self._obj.attrs['_FillValue']
-        elif hasattr(self._obj, 'nodatavals'):
-            nodata_value = self._obj.attrs['nodatavals']
-        else:
-            raise ValueError("The DataArray does not have a 'no data' value.")
+        """Masks 'no data' values with nans."""
+        nodata_value = self._obj.gw.nodataval
+        if nodata_value is None:
+            warnings.warn("The 'no data' value is None, so masking cannot be applied.")
+            return self._obj
 
         # We need to store the data in a type that supports the 'no data' value
         if not np.issubdtype(self._obj.gw.dtype, np.floating):

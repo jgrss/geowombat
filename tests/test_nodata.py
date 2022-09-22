@@ -56,9 +56,11 @@ class TestNodata(unittest.TestCase):
             # The 'no data' values should be read
             self.assertEqual(nodata_block.mean().values, NODATA_VALUE)
             self.assertEqual(
-                nodata_block.nodatavals, (NODATA_VALUE,) * nodata_block.gw.nbands
+                nodata_block.attrs['nodatavals'],
+                (NODATA_VALUE,) * nodata_block.gw.nbands,
             )
-            self.assertEqual(nodata_block._FillValue, NODATA_VALUE)
+            self.assertEqual(nodata_block.attrs['_FillValue'], NODATA_VALUE)
+            self.assertEqual(nodata_block.gw.nodataval, NODATA_VALUE)
 
     def test_nodata_mask(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -68,9 +70,11 @@ class TestNodata(unittest.TestCase):
             # The 'no data' values should be nans
             self.assertTrue(np.isnan(nodata_block.mean().values).all())
             self.assertEqual(
-                nodata_block.nodatavals, (NODATA_VALUE,) * nodata_block.gw.nbands
+                nodata_block.attrs['nodatavals'],
+                (NODATA_VALUE,) * nodata_block.gw.nbands,
             )
-            self.assertEqual(nodata_block._FillValue, NODATA_VALUE)
+            self.assertEqual(nodata_block.attrs['_FillValue'], NODATA_VALUE)
+            self.assertEqual(nodata_block.gw.nodataval, NODATA_VALUE)
 
     def test_nodata_user(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -79,8 +83,11 @@ class TestNodata(unittest.TestCase):
             # Setting 'no data' explicitly should leave 255s
             nodata_block = load(tmp_file, open_nodata=0).gw.mask_nodata()
             self.assertFalse(np.isnan(nodata_block.mean().values).any())
-            self.assertEqual(nodata_block.nodatavals, (0,) * nodata_block.gw.nbands)
-            self.assertEqual(nodata_block._FillValue, 0)
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 0)
+            self.assertEqual(nodata_block.gw.nodataval, 0)
 
     def test_nodata_user_config(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -89,8 +96,11 @@ class TestNodata(unittest.TestCase):
             # Setting 'no data' explicitly should leave 255s
             nodata_block = load(tmp_file, config_nodata=0).gw.mask_nodata()
             self.assertFalse(np.isnan(nodata_block.mean().values).any())
-            self.assertEqual(nodata_block.nodatavals, (0,) * nodata_block.gw.nbands)
-            self.assertEqual(nodata_block._FillValue, 0)
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 0)
+            self.assertEqual(nodata_block.gw.nodataval, 0)
 
     def test_nodata_bbox(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -105,9 +115,11 @@ class TestNodata(unittest.TestCase):
             nodata_block = load(tmp_file, bounds=bounds)
             self.assertEqual(nodata_block.mean().values, NODATA_VALUE)
             self.assertEqual(
-                nodata_block.nodatavals, (NODATA_VALUE,) * nodata_block.gw.nbands
+                nodata_block.attrs['nodatavals'],
+                (NODATA_VALUE,) * nodata_block.gw.nbands,
             )
-            self.assertEqual(nodata_block._FillValue, NODATA_VALUE)
+            self.assertEqual(nodata_block.attrs['_FillValue'], NODATA_VALUE)
+            self.assertEqual(nodata_block.gw.nodataval, NODATA_VALUE)
 
 
 if __name__ == '__main__':

@@ -923,3 +923,14 @@ class DataProperties(object):
             affine=self.affine,
             geometry=self.geometry,
         )
+
+    @property
+    def nodataval(self) -> T.Union[float, int, None]:
+        """Get the 'no data' value from the attributes."""
+        nodata_value = None
+        if hasattr(self._obj, '_FillValue'):
+            nodata_value = self._obj.attrs['_FillValue']
+        elif hasattr(self._obj, 'nodatavals'):
+            nodata_value = self._obj.attrs['nodatavals'][0]
+
+        return nodata_value
