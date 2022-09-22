@@ -39,7 +39,7 @@ Co-register an image
 --------------------
 
 To co-register an image using a secondary reference, open both as ``DataArrays`` and pass them
-to the :func:`coregister` method.
+to the :func:`coregister` method. For extra keyword arguments, see the `AROSICS CoReg API <https://danschef.git-pages.gfz-potsdam.de/arosics/doc/arosics.html#module-arosics.CoReg>`_.
 
 .. note::
 
