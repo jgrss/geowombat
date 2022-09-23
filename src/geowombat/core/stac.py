@@ -250,14 +250,15 @@ def open_stac(
     if bounds is None:
         bounds = config['ref_bounds']
     assert bounds is not None, 'The bounds must be given in some format.'
-    if not isinstance(bounds, gpd.GeoDataFrame):
+    if not isinstance(bounds, (gpd.GeoDataFrame, tuple, list)):
         bounds = gpd.read_file(bounds)
         assert bounds.crs == pyproj.CRS.from_epsg(
             4326
         ), 'The CRS should be WGS84/latlon (EPSG=4326)'
-    if bounds_query is not None:
+    if (bounds_query is not None) and isinstance(bounds, gpd.GeoDataFrame):
         bounds = bounds.query(bounds_query)
-    bounds = bounds.bounds.values.flatten().tolist()
+    if isinstance(bounds, gpd.GeoDataFrame):
+        bounds = tuple(bounds.total_bounds.flatten().tolist())
 
     stac_catalog_url = getattr(STACCatalogs, stac_catalog)
     # Open the STAC catalog
@@ -280,7 +281,7 @@ def open_stac(
     if search is None:
         raise ValueError('No items found.')
 
-    if list(search.get_items()):
+    if list(search.items()):
         if getattr(STACNames, stac_catalog) is STACNames.microsoft:
             items = pc.sign(search)
         else:
@@ -377,7 +378,7 @@ def open_stac(
                 ).assign_attrs(**attrs)
 
         if nodata_fill is not None:
-            data = data.fillna(nodata_fill)
+            data = data.fillna(nodata_fill).gw.assign_nodata_attrs(nodata_fill)
 
         return data, df
 
