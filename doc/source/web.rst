@@ -5,7 +5,7 @@ Streaming data from cloud sources
 
 GeoWombat integrates easy access to Spatial Temporal Asset Catalog (`STAC <https://stacspec.org/en>`_) APIs.
 STAC is a standardized way to expose collections of spatial temporal data for easy data retrieval of products
-like Sentinel-2, Landsat, Digital Earth, and even Google Earth Engine products. For a full list of public STAC
+such as Sentinel-2, Landsat, and Digital Earth. For a full list of public STAC
 APIs refer to the following `STAC list <https://stacspec.org/en/about/datasets/>`_.
 
 Spatial Temporal Asset Catalogs
@@ -26,8 +26,12 @@ Geowombat :func:`open_stac` currently supports the following STAC catalogs:
 STAC example
 ------------
 
-Stream Sentinel-2 level 2A data from Element84
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Stream Sentinel-2 data from Element 84
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example streams selected Sentinel-2 bands using `Element 84's <https://www.element84.com/>`_
+Sentinel-2 STAC catalog. The Sentinel-2 data are Level 2A, which means they have been corrected to
+bottom-of-atmosphere, or also referred to as surface reflectance.
 
 .. code:: python
 
@@ -35,13 +39,11 @@ Stream Sentinel-2 level 2A data from Element84
     from geowombat.core.stac import open_stac
     from rasterio.enums import Resampling
 
-    # Query bounds in lat/lon WGS84
-    bounds = (left, bottom, right, top)
-
     data, df = open_stac(
         # Available catalog names can be found in geowombat.core.stac.STACNames
         stac_catalog='element84',
-        bounds=bounds,
+        # Query bounds in lat/lon WGS84
+        bounds=(left, bottom, right, top),
         # Projection (matching `epsg`) bounds to return data in
         # If not given, data are returned from the bounds query
         proj_bounds=None,
