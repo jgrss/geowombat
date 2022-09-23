@@ -70,7 +70,7 @@ jobs:
           pip install GDAL==$GDAL_VERSION --no-binary=gdal
       - name: Install GeoWombat
         run: |
-          pip install .[perf,ml,tests]
+          pip install .[perf,ml,tests,web]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
