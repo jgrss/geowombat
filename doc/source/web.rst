@@ -23,6 +23,10 @@ Geowombat :func:`open_stac` currently supports the following STAC catalogs:
     * `element84 <'https://earth-search.aws.element84.com/v0'>`_
     * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_
 
+To install GeoWombat with STAC functionality::
+
+    pip install geowombat[stac]@git+https://github.com/jgrss/geowombat.git@v2.0.9#egg=geowombat
+
 STAC example
 ------------
 

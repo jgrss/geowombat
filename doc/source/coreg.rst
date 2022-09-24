@@ -31,9 +31,9 @@ with geowombat. For the latter, simply add the ``coreg`` extra when installing g
 
     pip install geowombat[coreg]@git+https://github.com/jgrss/geowombat.git
 
-if installing the latest or if installing a specific geowombat version (e.g., `v2.0.7`) then do::
+if installing the latest or if installing a specific geowombat version (e.g., `v2.0.9`) then do::
 
-    pip install geowombat[coreg]@git+https://github.com/jgrss/geowombat.git@v2.0.7#egg=geowombat
+    pip install geowombat[coreg]@git+https://github.com/jgrss/geowombat.git@v2.0.9#egg=geowombat
 
 Co-register an image
 --------------------
