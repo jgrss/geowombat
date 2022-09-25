@@ -9,19 +9,19 @@ import geopandas as gpd
 class TestProperties(unittest.TestCase):
     def test_filenames_none(self):
         with gw.open(l8_224078_20200518, persist_filenames=False) as src:
-            self.assertFalse(hasattr(src, 'filenames'))
+            self.assertFalse(hasattr(src, '_filenames'))
 
     def test_filenames_single(self):
         with gw.open(l8_224078_20200518, persist_filenames=True) as src:
-            self.assertTrue(hasattr(src, 'filenames'))
-            self.assertEqual(len(src.filenames), 1)
+            self.assertTrue(hasattr(src, '_filenames'))
+            self.assertEqual(len(src.gw.filenames), 1)
 
     def test_filenames_multi(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518], persist_filenames=True
         ) as src:
-            self.assertTrue(hasattr(src, 'filenames'))
-            self.assertEqual(len(src.filenames), 2)
+            self.assertTrue(hasattr(src, '_filenames'))
+            self.assertEqual(len(src.gw.filenames), 2)
 
     def test_chunk_grid(self):
         with gw.open(l8_224078_20200518) as src:

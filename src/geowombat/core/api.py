@@ -546,12 +546,12 @@ class open(object):
 
         self.data = self.data.assign_attrs(
             {
-                'data_are_separate': int(self.__data_are_separate),
-                'data_are_stacked': int(self.__data_are_stacked),
+                '_data_are_separate': int(self.__data_are_separate),
+                '_data_are_stacked': int(self.__data_are_stacked),
             }
         )
         if persist_filenames:
-            self.data = self.data.assign_attrs(**{'filenames': self.__filenames})
+            self.data = self.data.assign_attrs(**{'_filenames': self.__filenames})
 
     def __enter__(self):
         self.__is_context_manager = True

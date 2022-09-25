@@ -13,18 +13,14 @@ API reference
     :no-inheritance-diagram:
     :no-inherited-members:
 
+.. automodapi:: geowombat.core.stac
+    :no-inheritance-diagram:
+    :no-inherited-members:
+
 .. automodapi:: geowombat.ml
     :no-inheritance-diagram:
     :no-inherited-members:
 
 .. automodapi:: geowombat.radiometry
-    :no-inheritance-diagram:
-    :no-inherited-members:
-
-.. automodapi:: geowombat.tasks
-    :no-inheritance-diagram:
-    :no-inherited-members:
-
-.. automodapi:: geowombat.util
     :no-inheritance-diagram:
     :no-inherited-members:

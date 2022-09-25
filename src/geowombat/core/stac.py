@@ -1,43 +1,45 @@
-from dataclasses import dataclass
+from dataclasses import dataclass as _dataclass
 import enum
 import typing as T
-from pathlib import Path
+from pathlib import Path as _Path
 import warnings
 
 from . import geoxarray
 from ..config import config
-from ..radiometry import QABits
+from ..radiometry import QABits as _QABits
 
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from rasterio.enums import Resampling
+from rasterio.enums import Resampling as _Resampling
 import dask.array as da
 import xarray as xr
 import pyproj
-from tqdm.auto import tqdm
+from tqdm.auto import tqdm as _tqdm
 
 try:
-    from pystac_client import Client
+    from pystac_client import Client as _Client
     import pystac.errors as pystac_errors
-    from pystac import Catalog, ItemCollection
-    from pystac.extensions.eo import EOExtension as eo
+    from pystac import Catalog as _Catalog, ItemCollection as _ItemCollection
+    from pystac.extensions.eo import EOExtension as _EOExtension
     import stackstac
     import planetary_computer as pc
-    from rich.console import Console
-    from rich.table import Table
+    from rich.console import Console as _Console
+    from rich.table import Table as _Table
     import wget
 except:
-    warnings.warn("Install geowombat with 'pip install .[web]' to use the STAC API.")
+    warnings.warn("Install geowombat with 'pip install .[stac]' to use the STAC API.")
 
 
 class STACNames(enum.Enum):
+    """STAC names."""
+
     element84 = 'element84'
     google = 'google'
     microsoft = 'microsoft'
 
 
-class STACCollectionTypes(enum.Enum):
+class _STACCollectionTypes(enum.Enum):
     landsat = 'landsat'
     landsat_c2_l2 = 'landsat'
     landsat_l8_c2_l2 = 'landsat'
@@ -46,26 +48,33 @@ class STACCollectionTypes(enum.Enum):
     sentinel_s2_l1c = 'sentinel2'
 
 
-@dataclass
+@_dataclass
 class STACCatalogs:
+    """STAC catalogs."""
+
     element84 = 'https://earth-search.aws.element84.com/v0'
     google = 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
     microsoft = 'https://planetarycomputer.microsoft.com/api/stac/v1'
 
 
-@dataclass
-class STACScaling:
-    landsat_c2_l2 = {
-        STACNames.microsoft.value: {'gain': 0.0000275, 'offset': -0.2}
-    }
+@_dataclass
+class _STACScaling:
+    """STAC scaling coefficients."""
+
+    landsat_c2_l2 = {STACNames.microsoft.value: {'gain': 0.0000275, 'offset': -0.2}}
 
 
-@dataclass
+@_dataclass
 class STACCollections:
+    """STAC collections available for Landsat and Sentinel-2."""
+
     # All Landsat, Collection 2, Level 2 (surface reflectance)
     landsat_c2_l2 = {
         STACNames.google.value: [
-            'LC09/C02/T1_L2', 'LC08/C02/T1_L2', 'LE07/C02/T1_L2', 'LT05/C02/T1_L2'
+            'LC09/C02/T1_L2',
+            'LC08/C02/T1_L2',
+            'LE07/C02/T1_L2',
+            'LT05/C02/T1_L2',
         ],
         STACNames.microsoft.value: 'landsat-c2-l2',
     }
@@ -73,60 +82,64 @@ class STACCollections:
     sentinel_s2_l2a = {
         STACNames.element84.value: 'sentinel-s2-l2a-cogs',
         STACNames.google.value: 'sentinel-2-l2a',
-        STACNames.microsoft.value: 'sentinel-2-l2a'
+        STACNames.microsoft.value: 'sentinel-2-l2a',
     }
     # Sentinel-2, Level 1c (top of atmosphere with all 13 bands available)
-    sentinel_s2_l1c = {
-        STACNames.element84.value: 'sentinel-s2-l1c'
-    }
+    sentinel_s2_l1c = {STACNames.element84.value: 'sentinel-s2-l1c'}
     # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
     landsat_l8_c2_l2 = {
         STACNames.google.value: 'LC08_C02_T1_L2',
-        STACNames.microsoft.value: 'landsat-8-c2-l2'
+        STACNames.microsoft.value: 'landsat-8-c2-l2',
     }
 
 
-@dataclass
-class STACCatalogOpeners:
-    element84 = Client.open
-    google = Catalog.from_file
-    microsoft = Client.open
+@_dataclass
+class _STACCatalogOpeners:
+    element84 = _Client.open
+    google = _Catalog.from_file
+    microsoft = _Client.open
 
 
 def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataArray:
+    """Merges DataArrays by time.
+
+    Args:
+        data (DataArray): The ``DataArray`` to merge to.
+        other (list of DataArrays): The ``DataArrays`` to merge.
+
+    Returns:
+        ``xarray.DataArray``
+    """
     name = data.collection
     for darray in other:
         name += f'+{darray.collection}'
-    collections = [data.collection]*data.gw.ntime
+    collections = [data.collection] * data.gw.ntime
     for darray in other:
-        collections += [darray.collection]*darray.gw.ntime
+        collections += [darray.collection] * darray.gw.ntime
 
-    stack = (
-        xr.DataArray(
-            da.concatenate(
-                (
-                    data.transpose('time', 'band', 'y', 'x').data,
-                    *(darray.transpose('time', 'band', 'y', 'x').data for darray in other)
-                ), axis=0
+    stack = xr.DataArray(
+        da.concatenate(
+            (
+                data.transpose('time', 'band', 'y', 'x').data,
+                *(darray.transpose('time', 'band', 'y', 'x').data for darray in other),
             ),
-            dims=('time', 'band', 'y', 'x'),
-            coords={
-                'time': np.concatenate(
-                    (data.time.values, *(darray.time.values for darray in other))
-                ),
-                'band': data.band.values,
-                'y': data.y.values,
-                'x': data.x.values
-            },
-            attrs=data.attrs,
-            name=name
-        )
-        .sortby('time')
-    )
+            axis=0,
+        ),
+        dims=('time', 'band', 'y', 'x'),
+        coords={
+            'time': np.concatenate(
+                (data.time.values, *(darray.time.values for darray in other))
+            ),
+            'band': data.band.values,
+            'y': data.y.values,
+            'x': data.x.values,
+        },
+        attrs=data.attrs,
+        name=name,
+    ).sortby('time')
 
     return (
-        stack
-        .groupby('time')
+        stack.groupby('time')
         .mean(dim='time', skipna=True)
         .assign_attrs(**data.attrs)
         .assign_attrs(collection=None)
@@ -136,7 +149,7 @@ def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataA
 def open_stac(
     stac_catalog: str = 'microsoft',
     collection: str = None,
-    bounds: T.Union[T.Sequence[float], str, Path, gpd.GeoDataFrame] = None,
+    bounds: T.Union[T.Sequence[float], str, _Path, gpd.GeoDataFrame] = None,
     proj_bounds: T.Sequence[float] = None,
     start_date: str = None,
     end_date: str = None,
@@ -148,14 +161,14 @@ def open_stac(
     mask_data: T.Optional[bool] = False,
     epsg: T.Optional[int] = None,
     resolution: T.Optional[T.Union[float, int]] = None,
-    resampling: T.Optional[Resampling] = Resampling.nearest,
+    resampling: T.Optional[_Resampling] = _Resampling.nearest,
     nodata_fill: T.Optional[T.Union[float, int]] = None,
     view_asset_keys: T.Optional[bool] = False,
     extra_assets: T.Optional[T.Sequence[str]] = None,
-    out_path: T.Optional[T.Union[Path, str]] = '.',
+    out_path: T.Optional[T.Union[_Path, str]] = '.',
     max_items: T.Optional[int] = 100,
     tqdm_item_position: T.Optional[int] = 0,
-    tqdm_extra_position: T.Optional[int] = 1
+    tqdm_extra_position: T.Optional[int] = 1,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
@@ -237,16 +250,21 @@ def open_stac(
     if bounds is None:
         bounds = config['ref_bounds']
     assert bounds is not None, 'The bounds must be given in some format.'
-    if not isinstance(bounds, gpd.GeoDataFrame):
+    if not isinstance(bounds, (gpd.GeoDataFrame, tuple, list)):
         bounds = gpd.read_file(bounds)
-        assert bounds.crs == pyproj.CRS.from_epsg(4326), 'The CRS should be WGS84/latlon (EPSG=4326)'
-    if bounds_query is not None:
+        assert bounds.crs == pyproj.CRS.from_epsg(
+            4326
+        ), 'The CRS should be WGS84/latlon (EPSG=4326)'
+    if (bounds_query is not None) and isinstance(bounds, gpd.GeoDataFrame):
         bounds = bounds.query(bounds_query)
-    bounds = bounds.bounds.values.flatten().tolist()
+    if isinstance(bounds, gpd.GeoDataFrame):
+        bounds = tuple(bounds.total_bounds.flatten().tolist())
 
     stac_catalog_url = getattr(STACCatalogs, stac_catalog)
     # Open the STAC catalog
-    catalog = getattr(STACCatalogOpeners, getattr(STACNames, stac_catalog).value)(stac_catalog_url)
+    catalog = getattr(_STACCatalogOpeners, getattr(STACNames, stac_catalog).value)(
+        stac_catalog_url
+    )
     catalog_collections = [
         getattr(STACCollections, collection)[getattr(STACNames, stac_catalog).value]
     ]
@@ -257,38 +275,47 @@ def open_stac(
         datetime=date_range,
         query={"eo:cloud_cover": {"lt": cloud_cover_perc}},
         max_items=max_items,
-        limit=max_items
+        limit=max_items,
     )
 
     if search is None:
         raise ValueError('No items found.')
 
-    if list(search.get_items()):
+    if list(search.items()):
         if getattr(STACNames, stac_catalog) is STACNames.microsoft:
             items = pc.sign(search)
         else:
-            items = ItemCollection(items=list(search.items()))
+            items = _ItemCollection(items=list(search.items()))
 
         if view_asset_keys:
             try:
-                selected_item = min(items, key=lambda item: eo.ext(item).cloud_cover)
+                selected_item = min(
+                    items, key=lambda item: _EOExtension.ext(item).cloud_cover
+                )
             except pystac_errors.ExtensionNotImplemented:
                 selected_item = items.items[0]
-            table = Table("Asset Key", "Description")
+            table = _Table("Asset Key", "Description")
             for asset_key, asset in selected_item.assets.items():
                 table.add_row(asset_key, asset.title)
-            console = Console()
+            console = _Console()
             console.print(table)
 
             return None, None
 
         # Download metadata and coefficient files
         if extra_assets is not None:
-            for item in tqdm(items, desc='Extra assets', position=tqdm_item_position):
+            for item in _tqdm(items, desc='Extra assets', position=tqdm_item_position):
                 df_dict = {'id': item.id}
-                for extra in tqdm(extra_assets, desc='Asset', position=tqdm_extra_position, leave=False):
+                for extra in _tqdm(
+                    extra_assets,
+                    desc='Asset',
+                    position=tqdm_extra_position,
+                    leave=False,
+                ):
                     url = item.assets[extra].to_dict()['href']
-                    out_name = Path(out_path) / f"{item.id}_{Path(url.split('?')[0]).name}"
+                    out_name = (
+                        _Path(out_path) / f"{item.id}_{_Path(url.split('?')[0]).name}"
+                    )
                     df_dict[extra] = str(out_name)
                     if not out_name.is_file():
                         wget.download(url, out=str(out_name), bar=None)
@@ -302,16 +329,15 @@ def open_stac(
             chunksize=chunksize,
             epsg=epsg,
             resolution=resolution,
-            resampling=resampling
+            resampling=resampling,
         )
         data = data.assign_attrs(
-            res=(data.resolution, data.resolution),
-            collection=collection
+            res=(data.resolution, data.resolution), collection=collection
         )
         attrs = data.attrs.copy()
         # if (
         #     hasattr(data, 'common_name')
-        #     and (getattr(STACCollectionTypes, collection) is not STACCollectionTypes.landsat)
+        #     and (getattr(_STACCollectionTypes, collection) is not _STACCollectionTypes.landsat)
         # ):
         #     data = data.assign_coords(
         #         band=lambda x: x.common_name.rename('band')
@@ -319,8 +345,18 @@ def open_stac(
 
         if mask_data:
             if mask_items is None:
-                mask_items = ['fill', 'dilated_cloud', 'cirrus', 'cloud', 'cloud_shadow', 'snow']
-            mask_bitfields = [getattr(QABits, collection).value[mask_item] for mask_item in mask_items]
+                mask_items = [
+                    'fill',
+                    'dilated_cloud',
+                    'cirrus',
+                    'cloud',
+                    'cloud_shadow',
+                    'snow',
+                ]
+            mask_bitfields = [
+                getattr(_QABits, collection).value[mask_item]
+                for mask_item in mask_items
+            ]
             # Source: https://stackstac.readthedocs.io/en/v0.3.0/examples/gif.html
             bitmask = 0
             for field in mask_bitfields:
@@ -328,15 +364,21 @@ def open_stac(
             # TODO: get qa_pixel name for different sensors
             qa = data.sel(band='qa_pixel').astype('uint16')
             mask = qa & bitmask
-            data = data.sel(band=[band for band in bands if band != 'qa_pixel']).where(mask == 0)
+            data = data.sel(band=[band for band in bands if band != 'qa_pixel']).where(
+                mask == 0
+            )
 
-        if hasattr(STACScaling, collection):
-            scaling = getattr(STACScaling, collection)[getattr(STACNames, stac_catalog).value]
+        if hasattr(_STACScaling, collection):
+            scaling = getattr(_STACScaling, collection)[
+                getattr(STACNames, stac_catalog).value
+            ]
             if scaling:
-                data = ((data * scaling['gain'] + scaling['offset']) * 10_000.0).assign_attrs(**attrs)
+                data = (
+                    (data * scaling['gain'] + scaling['offset']) * 10_000.0
+                ).assign_attrs(**attrs)
 
         if nodata_fill is not None:
-            data = data.fillna(nodata_fill)
+            data = data.fillna(nodata_fill).gw.assign_nodata_attrs(nodata_fill)
 
         return data, df
 
