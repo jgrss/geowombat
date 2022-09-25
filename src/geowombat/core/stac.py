@@ -28,7 +28,7 @@ try:
     from rich.table import Table as _Table
     import wget
 except:
-    warnings.warn("Install geowombat with 'pip install .[web]' to use the STAC API.")
+    warnings.warn("Install geowombat with 'pip install .[stac]' to use the STAC API.")
 
 
 class STACNames(enum.Enum):
