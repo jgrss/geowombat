@@ -2,5 +2,5 @@ retry
 requests>=2.20.0
 cryptography
 setuptools>=59.5.0
-gdal==3.3.2
+gdal==3.0.2
 ipython
