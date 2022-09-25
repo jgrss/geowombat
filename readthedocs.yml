@@ -14,6 +14,8 @@ python:
         - docs
         - perf
         - ml
+        - coreg
+        - stac
     - method: setuptools
       path: .
 sphinx:

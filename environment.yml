@@ -8,8 +8,8 @@ dependencies:
 - setuptools>=59.5.0
 - ipython
 - libspatialindex
-- libgdal=3.0.2
-- gdal=3.0.2
+- libgdal=3.3.2
+- gdal=3.3.2
 - pip
 - pip:
   - -r requirements_docs.txt
