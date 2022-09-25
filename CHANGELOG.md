@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.10 (2022-09-24)
+* Improved ``DataArray`` attributes, modified extra dependencies, added STAC and co-reg tests, and improved online documentation ([#205](https://github.com/jgrss/geowombat/pull/205))
+
 ## v2.0.9 (2022-09-21)
 * Added `nodataval` `DataArray` property to ML workflow ([#209](https://github.com/jgrss/geowombat/pull/209))
 
