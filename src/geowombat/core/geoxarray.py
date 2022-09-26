@@ -1158,16 +1158,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ).assign_attrs(**self._obj.attrs)
 
     def set_nodata(
-        self, src_nodata, dst_nodata, out_range=None, dtype=None, scale_factor=None
+        self,
+        src_nodata: T.Union[float, int] = None,
+        dst_nodata: T.Union[float, int] = None,
+        out_range: T.Tuple[T.Union[float, int], T.Union[float, int]] = None,
+        dtype: str = None,
+        scale_factor: T.Union[float, int] = None,
+        offset: T.Union[float, int] = None,
     ):
-        """Sets 'no data' values in the DataArray.
+        """Sets 'no data' values and applies scaling to a DataArray.
 
         Args:
-            src_nodata (int | float): The 'no data' values to replace.
-            dst_nodata (int | float): The 'no data' value to set.
-            out_range (Optional[tuple]): The output clip range.
-            dtype (Optional[str]): The output data type.
-            scale_factor (Optional[float]): A scale factor to apply.
+            src_nodata (int | float): The 'no data' values to replace. Default is ``None``.
+            dst_nodata (int | float): The 'no data' value to set. Default is ``nan``.
+            out_range (Optional[tuple]): The output clip range. Default is ``None``.
+            dtype (Optional[str]): The output data type. Default is ``None``.
+            scale_factor (Optional[float | int]): A scale factor to apply. Default is ``None``.
+            offset (Optional[float | int]): An offset to apply. Default is ``None``.
 
         Returns:
             ``xarray.DataArray``
@@ -1178,15 +1185,37 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>     src = src.gw.set_nodata(0, 65535, out_range=(0, 10000), dtype='uint16')
         """
+        if self.config['nodata'] is not None:
+            src_nodata = self.config['nodata']
+        elif src_nodata is None:
+            src_nodata = self._obj.gw.nodataval
+
+        if dst_nodata is None:
+            dst_nodata = np.nan
+
+        if self.config['scale_factor'] is not None:
+            scale_factor = self.config['scale_factor']
+        elif scale_factor is None:
+            scale_factor = self._obj.gw.scaleval
+
+        if self.config['offset'] is not None:
+            offset = self.config['offset']
+        elif offset is None:
+            offset = self._obj.gw.offsetval
+
         if dtype is None:
             dtype = self._obj.dtype
 
-        if not isinstance(scale_factor, float):
+        if not isinstance(scale_factor, (float, int)):
             scale_factor = 1.0
+        if not isinstance(offset, (float, int)):
+            offset = 0
 
         attrs = self._obj.attrs.copy()
         # Mask the data
-        data = xr.where(self._obj == src_nodata, dst_nodata, self._obj * scale_factor)
+        data = xr.where(
+            self._obj == src_nodata, dst_nodata, self._obj * scale_factor + offset
+        )
         if out_range is not None:
             data = data.clip(out_range[0], out_range[1])
 
@@ -1195,8 +1224,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             data = data.transpose('band', 'y', 'x').astype(dtype)
 
-        attrs['nodatavals'] = tuple([dst_nodata] * self._obj.gw.nbands)
+        attrs['nodatavals'] = (dst_nodata,) * self._obj.gw.nbands
         attrs['_FillValue'] = dst_nodata
+        # These now refer to the new, scaled data
+        attrs['scales'] = (1.0,) * self._obj.gw.nbands
+        attrs['offsets'] = (0,) * self._obj.gw.nbands
 
         return data.assign_attrs(**attrs)
 
