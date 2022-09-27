@@ -16,7 +16,7 @@ Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong b
     * Sentinel 2
     * Landsat 5-8
     * PlanetScope
-    * Others 
+    * Others
 * Image mosaicking
 * On-the-fly image transformations (reprojection)
 * Point / polygon raster sampling, extraction
@@ -24,8 +24,8 @@ Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong b
 * Band math (NDVI, Tasseled cap, EVI etc)
 * Image classification and regression
 * Radiometry (BRDF normalization)
-* Distributed processing 
-    
+* Distributed processing
+
 ## Basic usage - Sentinel & Landsat
 
 ```python
@@ -76,12 +76,13 @@ Computation scales easily over large datasets with minimal changes to the code.
 >>>         # The size of srca, srcb, and results are determined by the configuration context
 >>>         results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
 >>>
->>>         # Initiate computation by writing the results to file. 
->>>         # Mix process and thread workers to execute the task in parallel. 
->>>         results.gw.to_raster('output.tif', 
->>>                              n_workers=4, 
->>>                              n_threads=4,
->>>                              compress='lzw')
+>>>         # Initiate computation by writing the results to file.
+>>>         # Mix process and thread workers to execute the task in parallel.
+>>>         results.gw.save(
+>>>             'output.tif',
+>>>             num_workers=4,
+>>>             compress='lzw'
+>>>         )
 ```
 
 
@@ -92,37 +93,33 @@ For more details, see [https://geowombat.readthedocs.io](https://geowombat.readt
 ## Installation
 
 ### Conda Install
-To allow easy installation and build of all dependencies we recommend installing via conda-forge: 
+To allow easy installation and build of all dependencies we recommend installing via conda-forge:
 
 Installing geowombat from the conda-forge channel can be achieved by adding conda-forge to your channels with:
 
-``` commandline
+```commandline
 conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 Once the conda-forge channel has been enabled, geowombat can be installed with conda:
 
-``` commandline
+```commandline
 conda install geowombat
 ```
 
 or faster with mamba:
 
-``` commandline
+```commandline
 mamba install geowombat
 ```
 
-
 ### Pip Install
-GeoWombat is not on PyPi, but it can be installed with `pip`. The due to a number of dependencies we provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html).
- 
+GeoWombat is not on PyPi, but it can be installed with `pip`. We provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html).
 
 ### Universal Install Via Docker
 If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
-Please follow the [instructions on pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
+See the `Dockerfile`, or for more details instructions, see the guide on [pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
 
- 
-
-## Learning 
+## Learning
 
 If you are new to geospatial programming in Python please refer to [pygis.io](https://pygis.io)
