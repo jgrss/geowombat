@@ -70,6 +70,7 @@ jobs:
           pip install GDAL==$GDAL_VERSION --no-binary=gdal
       - name: Install GeoWombat
         run: |
+          pip install arosics --no-deps
           pip install .[ml,coreg,stac,perf,tests]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
