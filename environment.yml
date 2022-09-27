@@ -10,6 +10,6 @@ dependencies:
 - libspatialindex
 - libgdal=3.0.2
 - gdal=3.0.2
-- pip
+- pip>=22.2.2
 - pip:
   - -r requirements_docs.txt
