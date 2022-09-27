@@ -597,6 +597,17 @@ class open(object):
                 scale_factor=scale_factor,
                 offset=offset,
             )
+        else:
+            # No scaling is applied, but the user assigned a scale factor to update the attributes
+            if scale_factor is not None:
+                self.data = self.data.assign_attrs(
+                    **{'scales': (scale_factor,) * self.data.gw.nbands}
+                )
+            # No scaling is applied, but the user assigned an offset to update the attributes
+            if offset is not None:
+                self.data = self.data.assign_attrs(
+                    **{'offsets': (offset,) * self.data.gw.nbands}
+                )
 
     def __enter__(self):
         self.__is_context_manager = True
