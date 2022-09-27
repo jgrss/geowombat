@@ -6,8 +6,8 @@ Installing GeoWombat
 Install with pip
 ----------------
 
-If your system has GDAL installed then `geowombat <https://gdal.org/>`_ can be installed via `pip`
-directly from the GitHub repository.
+If your system has `GDAL <https://gdal.org/>`_ installed then GeoWombat can be installed via
+`pip <https://pypi.org/project/pip/>`_ directly from the `GitHub repository <https://github.com/jgrss/geowombat>`_.
 
 .. tabs::
 
@@ -23,7 +23,7 @@ directly from the GitHub repository.
 
             pip install git+https://github.com/jgrss/geowombat@v2.0.10
 
-    .. tab:: pip (Clone repository)
+    .. tab:: pip (clone repository)
 
         .. tabs::
 
@@ -55,9 +55,9 @@ directly from the GitHub repository.
 Install with Conda
 ------------------
 
-`Conda <https://docs.conda.io/en/latest/>`_ provides an easy and consistent installation method regardless of
-operating system. See the `conda installation instructions <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_
-for setup.
+If you have issues installing GDAL then `Conda <https://docs.conda.io/en/latest/>`_ provides an easy and
+consistent installation method regardless of operating system. See the
+`Conda installation instructions <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_ for setup.
 
 Installing `geowombat` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with::
 
@@ -71,6 +71,10 @@ Once the `conda-forge` channel has been enabled, `geowombat` can be installed wi
 or with `mamba`::
 
     mamba install geowombat
+
+Alternatively, install in one line following the `GeoWombat Conda page <https://anaconda.org/conda-forge/geowombat>`_::
+
+    conda install -c conda-forge geowombat
 
 
 Detailed install
