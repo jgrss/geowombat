@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.11 (2022-09-27)
+* Fixed GDAL install issue with 'coreg' extra ([#217](https://github.com/jgrss/geowombat/pull/217))
+
 ## v2.0.10 (2022-09-24)
 * Improved ``DataArray`` attributes, modified extra dependencies, added STAC and co-reg tests, and improved online documentation ([#205](https://github.com/jgrss/geowombat/pull/205))
 

@@ -1,12 +1,63 @@
 .. _install:
 
-Installing geowombat
+Installing GeoWombat
 ====================
 
-Easiest Install
----------------
+Install with pip
+----------------
 
-Conda provides an easy and consistent installation method regardless of operating system. 
+If your system has `GDAL <https://gdal.org/>`_ installed then GeoWombat can be installed via
+`pip <https://pypi.org/project/pip/>`_ directly from the `GitHub repository <https://github.com/jgrss/geowombat>`_.
+
+.. tabs::
+
+    .. tab:: pip (latest version)
+
+        Install directly from the GitHub.com repository::
+
+            pip install git+https://github.com/jgrss/geowombat
+
+    .. tab:: pip (specific version)
+
+        Specify a version to install (e.g., `geowombat==2.0.10`)::
+
+            pip install git+https://github.com/jgrss/geowombat@v2.0.10
+
+    .. tab:: pip (clone repository)
+
+        .. tabs::
+
+            .. tab:: Clone and install
+
+                Clone the repository and build locally (requires `git`)::
+
+                    cd clone_dir/
+                    git clone https://github.com/jgrss/geowombat.git
+                    cd geowombat/
+                    pip install .
+
+            .. tab:: Pull and update
+
+                Pull the latest and rebuild::
+
+                    cd clone_dir/geowombat/
+                    git pull origin main
+                    pip install -U .
+
+            .. tab:: Branch and develop
+
+                Create a new branch and install as editable::
+
+                    cd clone_dir/geowombat/
+                    git checkout -b new_branch_name
+                    pip install -e .
+
+Install with Conda
+------------------
+
+If you have issues installing GDAL then `Conda <https://docs.conda.io/en/latest/>`_ provides an easy and
+consistent installation method regardless of operating system. See the
+`Conda installation instructions <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_ for setup.
 
 Installing `geowombat` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with::
 
@@ -19,389 +70,246 @@ Once the `conda-forge` channel has been enabled, `geowombat` can be installed wi
 
 or with `mamba`::
 
-    mamba install geowombat 
+    mamba install geowombat
+
+Alternatively, install in one line following the `GeoWombat Conda page <https://anaconda.org/conda-forge/geowombat>`_::
+
+    conda install -c conda-forge geowombat
 
 
-Quick Install
--------------
-
-If you system already has all the core dependencies installed, install the latest version from the GitHub repository::
-
-    pip install git+https://github.com/jgrss/geowombat
-
-
-Detailed Install
+Detailed install
 ----------------
+
+The GDAL binaries must be installed prior to installing GeoWombat. Below are instructions on how to build GDAL for your
+operating system.
 
 .. tabs::
 
-   .. tab:: OSx
+    .. tab:: Full build
 
-      .. tabs::
+        .. tabs::
 
-         .. tab:: 1 - Dependencies
+            .. tab:: 1 - GDAL
 
-            Installing on a mac takes a few extra steps. In particular you will need to install `gcc` to compile and `gdal`. Both of these are easiest to install via homebrew: `homebrew Install <https://docs.brew.sh/Installation>`_.
-            
-            From the terminal window, update brew and install::
+                .. tabs::
 
-                brew update
-                brew upgrade
-                brew install gdal openssl gcc
+                    .. tab:: OSX
 
-            Check the installed GDAL version::
+                        Install `gcc` to compile and install `GDAL <https://gdal.org/>`_. On OSX, these are easiest to
+                        install via `homebrew <https://docs.brew.sh/Installation>`_.
 
-                gdalinfo --version
+                        From the terminal window, update `brew` and install::
 
-         .. tab:: 2 - Envrionments
+                            brew update
+                            brew upgrade
+                            brew install gcc
+                            brew install gdal openssl spatialindex
 
-            **Virtual environments with virtualenv**
+                    .. tab:: Linux
 
-            Install the `virtualenv` Python package::
+                        Install requirements on Linux using `apt`::
 
-                pip install virtualenv
+                            apt update -y && apt upgrade -y && \
+                            apt install -y software-properties-common && \
+                            add-apt-repository ppa:ubuntugis/ppa && \
+                            apt update -y && apt install -y \
+                            gdal-bin \
+                            geotiff-bin \
+                            git \
+                            libgdal-dev \
+                            libgl1 \
+                            libspatialindex-dev \
+                            wget \
+                            python3 \
+                            python3-pip \
+                            pip \
+                            g++
 
-            Create a virtual environment with a specific Python version::
+                    .. tab:: Windows
 
-                virtualenv -p python3.7 gwenv
+                        Using `conda`, install GDAL by::
 
-            Activate the virtual environment::
+                            conda install -c conda-forge gdal
 
-                source gwenv/bin/activate
+                        For more details and possibly other options (e.g., .exe), refer to this
+                        `GDAL on Windows blog <https://opensourceoptions.com/blog/how-to-install-gdal-for-python-with-pip-on-windows/>`_.
 
-            Install geowombat requirements::
+            .. tab:: 2 - Post-GDAL
 
-                pip install Cython numpy
+                After GDAL has been installed, ensure that the binaries are in the system path by::
 
+                    gdalinfo --version
 
-            **Virtual environments with Conda**
+                which should printout something like::
 
-            Install Conda following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
+                    GDAL 3.3.2, released 2021/09/01
 
-            Create a virtual Conda environment with a specific Python version::
+                Note that the version can also be obtained by::
 
-                conda create --name gwenv python=3.8 cython numpy
+                    gdal-config --version
 
-            Activate the virtual environment::
+            .. tab:: 3 - Virtual environment
 
-                conda activate gwenv
-            
-            Install geowombat requirements via conda-forge::
+                .. tabs::
 
-                conda config --env --add channels conda-forge
-                conda config --env --set channel_priority strict
-                conda install cython gdal numpy -y
+                    .. tab:: Virtual environments
 
-            **Using the virtual environment**
+                        Python virtual environments are not required, but are good practice. There are various packages available
+                        that can be used to create a virtual environment. For example, the built-in
+                        `venv <https://docs.python.org/3/library/venv.html>`_, can be used like::
 
-            With an environment activated, the command line should look something like::
+                            python -m venv <path to virtual environment>
 
-                (gwenv) $
+                        The `virtualenv package <https://virtualenv.pypa.io/en/latest/>`_ can be installed from `PyPI <https://pypi.org/>`_::
 
-         .. tab:: 3 - Geowombat
-            **Install GeoWombat**
+                            pip install virtualenv
 
-            Install the latest version from GitHub.com::
+                        The `pyenv package <https://github.com/pyenv/pyenv>`_ is another good option.
 
-                pip install git+https://github.com/jgrss/geowombat
+                        **Creating a virtual environment**
 
-         .. tab:: (Update)
-            **Updating Geowombat**
+                        Create a virtual environment with a specific Python version using `virtualenv`::
 
-            To update GeoWombat::
-            
-                pip install --upgrade git+https://github.com/jgrss/geowombat
-         
+                            virtualenv -p python3.8 gwenv
 
-         .. tab:: (Extras)
+                        Activate the virtual environment::
 
-            **Install optional extras**
+                            source gwenv/bin/activate
 
-            Geowombat has a lot of additional capabilities, some of which you may or may not want to use. For this reason we allow the user to decide which dependencies they want to install. 
+                    .. tab:: Virtual environments with Conda
 
-            Install GeoWombat with libraries for building sphinx docs::
+                        Virtual environments can also be created using `conda`. First, install `conda`
+                        following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[docs]
+                        Create a virtual Conda environment with a specific Python version::
 
-            Install GeoWombat with libraries for co-registration::
+                            conda create --name gwenv python=3.8 cython numpy
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
+                        Activate the virtual environment::
 
-            Install GeoWombat with libraries for savings zarr files::
+                            conda activate gwenv
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[zarr]
+                        Install geowombat requirements via conda-forge::
 
-            Install GeoWombat with libraries for machine learning and classification::
+                            conda config --env --add channels conda-forge
+                            conda config --env --set channel_priority strict
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[ml]
+                    .. tab:: Using a virtual environment
 
-            Install GeoWombat with libraries for pygeos, opencv, netcdf and ray support::
+                        With a virtual environment activated, the command line should look something like::
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[perf]
+                            (gwenv)
 
-            Install GeoWombat with libraries for parsing dates automatically::
+                        where `gwenv` is the name of your virtual environment. Once activated, all subsequent
+                        Python package installations will be isolated to this environment.
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[time]
+            .. tab:: 4 - Python GDAL
 
-            Install GeoWombat with libraries with mapping making dependencies::
+                The Python GDAL package version must match the GDAL binaries version. For this reason, GeoWombat
+                does not attempt to install the GDAL Python package. Be sure to use the same version printed from::
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]
-            
-            Install GeoWombat with libraries for accessing hosted data::
+                    gdalinfo --version
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[web]
+                or::
 
-            Install GeoWombat with libraries for co-registration and geo-performance enhancements::
+                    gdal-config --version
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
+                For example, if the version from the above commands is `3.3.2` then install the Python GDAL API by::
 
-            Install GeoWombat with all extra libraries::
+                    (gwenv) pip install GDAL==3.3.2
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
+                .. note::
 
-        
+                    In Windows we recommend the use of `conda` since `pip` often requires the use of precompiled
+                    binaries, which can get tricky. If using `pip`, there may be some cases where installing packages
+                    will not be successful in Windows. In these cases please refer to the precompiled wheel files at
+                    `Christoph Gohlke's website <https://www.lfd.uci.edu/~gohlke/pythonlibs/>`_.
 
-   .. tab:: Linux (Debian)
+            .. tab:: 5 - GeoWombat
 
-      .. tabs::
+                Install the latest version from GitHub.com::
 
-         .. tab:: 1 - Dependencies
+                    (gwenv) pip install git+https://github.com/jgrss/geowombat
 
-            Installing on a linux requires you to have a few underlying dependencies such as the gdal binaries::
+            .. tab:: 6 - Updating
 
-                apt update -y && apt upgrade -y && \
-                apt install -y software-properties-common && \
-                add-apt-repository ppa:ubuntugis/ppa && \
-                apt update -y && apt install -y \
-                gdal-bin \
-                geotiff-bin \
-                git \
-                libgdal-dev \
-                libgl1 \
-                libspatialindex-dev \ 
-                wget \
-                python3 \
-                python3-pip \
-                pip \
-                g++ 
-  
-            Check the installed GDAL version::
+                To update GeoWombat::
 
-                gdalinfo --version
-                    
-         .. tab:: 2 - Envrionments
+                    (gwenv) pip install --upgrade git+https://github.com/jgrss/geowombat
 
-            **Virtual environments with virtualenv**
+            .. tab:: 7 - Optional extras
 
-            Install the `virtualenv` Python package::
+                GeoWombat has a lot of additional capabilities, some of which you may or may not want to use.
+                For this reason, we allow the user to decide which dependencies they want to install.
 
-                pip install virtualenv
+                Install GeoWombat with libraries for building Sphinx docs::
 
-            Create a virtual environment with a specific Python version::
+                    (gwenv) pip install "geowombat[docs]@git+https://github.com/jgrss/geowombat.git"
 
-                virtualenv -p python3.7 gwenv
+                Install GeoWombat with libraries for co-registration::
 
-            Activate the virtual environment::
+                    (gwenv) pip install arosics --no-deps && pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git"
 
-                source gwenv/bin/activate
+                Install GeoWombat with libraries for machine learning and classification::
 
-            Install geowombat requirements::
+                    (gwenv) pip install "geowombat[ml]@git+https://github.com/jgrss/geowombat.git"
 
-                pip install Cython numpy
+                Install GeoWombat with libraries for pygeos, netcdf and ray support::
 
+                    (gwenv) pip install "geowombat[perf]@git+https://github.com/jgrss/geowombat.git"
 
-            **Virtual environments with Conda**
+                Install GeoWombat with libraries for parsing dates automatically::
 
-            Install Conda following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
+                    (gwenv) pip install "geowombat[time]@git+https://github.com/jgrss/geowombat.git"
 
-            Create a virtual Conda environment with a specific Python version::
+                Install GeoWombat with libraries with map-making dependencies::
 
-                conda create --name gwenv python=3.8 cython numpy
+                    (gwenv) pip install "geowombat[view]@git+https://github.com/jgrss/geowombat.git"
 
-            Activate the virtual environment::
+                Install GeoWombat with libraries for accessing hosted data::
 
-                conda activate gwenv
-            
-            Install geowombat requirements via conda-forge::
+                    (gwenv) pip install "geowombat[web]@git+https://github.com/jgrss/geowombat.git"
 
-                conda config --env --add channels conda-forge
-                conda config --env --set channel_priority strict
-                conda install cython gdal numpy -y
+                Install GeoWombat with libraries for streaming data from STAC::
 
-            **Using the virtual environment**
+                    (gwenv) pip install "geowombat[stac]@git+https://github.com/jgrss/geowombat.git"
 
-            With an environment activated, the command line should look something like::
+                Multiple extras can be included::
 
-                (gwenv) $
+                    (gwenv) pip install "geowombat[perf,stac]@git+https://github.com/jgrss/geowombat.git"
 
-         .. tab:: 3 - Geowombat
-            **Install GeoWombat**
+                Install GeoWombat with all extra libraries::
 
-            Install the latest version from GitHub.com::
+                    (gwenv) pip install "geowombat[all]@git+https://github.com/jgrss/geowombat.git"
 
-                pip install git+https://github.com/jgrss/geowombat
+    .. tab:: Docker
 
-         .. tab:: (Update)
-            **Updating Geowombat**
+        .. tabs::
 
-            To update GeoWombat::
-            
-                pip install --upgrade git+https://github.com/jgrss/geowombat
-         
+            .. tab:: Build from pre-built image
 
-         .. tab:: (Extras)
+                A pre-built Docker image is available as `mmann1123/gw_pygis` on `Docker Hub <https://hub.docker.com/>`_.
+                To use this image, follow the Docker build instructions at
+                `PyGIS <https://pygis.io/docs/b_conda_started.html#docker-for-spatial-python-gdal-included>`_.
 
-            **Install optional extras**
-            
-            Geowombat has a lot of additional capabilities, some of which you may or may not want to use. For this reason we allow the user to decide which dependencies they want to install. 
+            .. tab:: Build image from scratch
 
-            Install GeoWombat with libraries for building sphinx docs::
+                If you want to build an image from scratch, a Dockerfile is provided in GeoWombat. Using this file,
+                a Docker image can be built by::
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[docs]
+                    git clone https://github.com/jgrss/geowombat.git
+                    cd geowombat/
+                    docker build -t <your image name> .
 
-            Install GeoWombat with libraries for co-registration::
+                Enter the image by::
 
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
-
-            Install GeoWombat with libraries for savings zarr files::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[zarr]
-
-            Install GeoWombat with libraries for machine learning and classification::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[ml]
-
-            Install GeoWombat with libraries for pygeos, opencv, netcdf and ray support::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[perf]
-
-            Install GeoWombat with libraries for parsing dates automatically::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[time]
-
-            Install GeoWombat with libraries with mapping making dependencies::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]
-            
-            Install GeoWombat with libraries for accessing hosted data::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[web]
-
-            Install GeoWombat with libraries for co-registration and geo-performance enhancements::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
-
-            Install GeoWombat with all extra libraries::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
-
-        
-   .. tab:: Windows
-
-      .. tabs::
-
-         .. tab:: 1 - Dependencies
-
-            Although we are not 100% sure, if you use `conda` we do not currently believe you need to install gdal binaries or any other dependencies with windows. Please let us know if this is not the case!             
-
-         .. tab:: 2 - Envrionments
-            In windows we strongly recommend the use of Conda since pip often requires the use of precompiled binaries which can get tricky. 
-            There may be some cases where pip installing packages will not be successful in Windows. In these cases please refer to our instructions on using `Christoph Gohlke's website <https://opensourceoptions.com/blog/how-to-install-gdal-for-python-with-pip-on-windows/>`_.
-
-            **Virtual environments with Conda**
-
-            Install Conda following the `online instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_.
-
-            Create a virtual Conda environment with a specific Python version::
-
-                conda create --name gwenv python=3.8 cython numpy
-
-            Activate the virtual environment::
-
-                conda activate gwenv
-            
-            Install geowombat requirements via conda-forge::
-
-                conda config --env --add channels conda-forge
-                conda config --env --set channel_priority strict
-                conda install cython gdal numpy -y
-
-            **Using the virtual environment**
-
-            With an environment activated, the command line should look something like::
-
-                (gwenv) $
-
-         .. tab:: 3 - Geowombat
-            **Install GeoWombat**
-
-            Install the latest version from GitHub.com::
-
-                pip install git+https://github.com/jgrss/geowombat
-
-         .. tab:: (Update)
-            **Updating Geowombat**
-
-            To update GeoWombat::
-            
-                pip install --upgrade git+https://github.com/jgrss/geowombat
-         
-
-         .. tab:: (Extras)
-
-            **Install optional extras**
-            
-            Geowombat has a lot of additional capabilities, some of which you may or may not want to use. For this reason we allow the user to decide which dependencies they want to install. 
-
-            Install GeoWombat with libraries for building sphinx docs::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[docs]
-
-            Install GeoWombat with libraries for co-registration::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg]
-
-            Install GeoWombat with libraries for savings zarr files::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[zarr]
-
-            Install GeoWombat with libraries for machine learning and classification::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[ml]
-
-            Install GeoWombat with libraries for pygeos, opencv, netcdf and ray support::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[perf]
-
-            Install GeoWombat with libraries for parsing dates automatically::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[time]
-
-            Install GeoWombat with libraries with mapping making dependencies::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[view]
-            
-            Install GeoWombat with libraries for accessing hosted data::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[web]
-
-            Install GeoWombat with libraries for co-registration and geo-performance enhancements::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[coreg,perf]
-
-            Install GeoWombat with all extra libraries::
-
-                pip install git+https://github.com/jgrss/geowombat.git#egg=project[all]
-
-   .. tab:: Docker
-        It is also possible to pull or build an image with geowombat already install from Dockerhub. Please refer to the `online instructions <https://pygis.io/docs/b_conda_started.html#docker-for-spatial-python-gdal-included>`_.
-
+                    docker run -it <your image name> bash
 
 Test the installation
 ---------------------
 
-1. Test the import
-##################
+Test the import
+###############
 
 If GeoWombat installed correctly, you should be able to run the following command from the terminal::
 
@@ -414,8 +322,8 @@ or in Python:
     import geowombat as gw
     print(gw.__version__)
 
-2. Unittests
-############
+Unittests
+#########
 
 Install `testfixtures` (used to test logging outputs in `test_config.py`)::
 
@@ -429,24 +337,23 @@ Run all unittests inside GeoWombat's `/tests` directory::
 Run an individual test::
 
     python test_open.py
-    
- 
- 
+
+
 Installation Notes
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. note::
-    **GDAL Install**
+
+    **GDAL install:**
     GeoWombat requires `GDAL <https://gdal.org/>`_ and `libspatialindex <https://libspatialindex.org/>`_.
 
     This GDAL requirement is a prerequisite itself for the `Python GDAL bindings <https://pypi.org/project/GDAL/>`_.
 
-  
 .. note::
-    **GDAL Paths in Linux**
-    Although we think this is now resolved, earlier gdal installs had issues with paths. If this is the case:
-    
-    Update environment paths::
+
+    **GDAL Paths in Linux:**
+    Although we think this is now resolved, earlier GDAL installations had issues with paths. If this is the case, try
+    updating the environment paths::
 
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
@@ -458,31 +365,15 @@ Installation Notes
         # echo 'export LD_LIBRARY_PATH="/usr/local/lib"' >> ~/.profile
 
 .. note::
-    **EPSG File Missing in Linux**
-    If you install GDAL 3.x on Ubuntu, when importing rasterio you may receive an error saying
+
+    **EPSG File Missing in Linux:**
+    If you install GDAL 3.x on Ubuntu, when importing `rasterio` you may receive an error saying
 
     - `CPLE_OpenFailedError: Unable to open EPSG support file gcs.csv`.
 
-    This error is documented on rasterio's `ReadTheDocs page <https://rasterio.readthedocs.io/en/latest/faq.html>`_ and `GitHub page <https://github.com/mapbox/rasterio/issues/1787>`_. If the suggested solutions do not fix the issue, you can try setting the `GDAL_DATA` environment variable to point to Fiona (which will be installed automatically when installing GeoWombat). For example, if you have setup a virtual environment, the `GDAL_DATA` variable can point to `/path/to/myenv/lib/python3.7/site-packages/fiona/gdal_data`, where `/path/to/myenv` is the name of your virtual environment path directory. Change 3.7 if using a different Python version.
- 
-
-.. note::
-
-    **Install the GDAL Python bindings seperately**
-    GeoWombat will attempt to install the GDAL Python package if the GDAL binaries are installed. However, to install Python GDAL manually, use pip::
-
-        # match the GDAL binaries
-        pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}') --no-binary=gdal
-        # which is the same as the following if the GDAL binary version is 2.4.0
-        # pip install GDAL==2.4.0 --no-binary=gdal
- 
-
- 
-.. toctree::
-   :maxdepth: 2
-
-   install_gdal
-   install_pip
-   install_conda
-   install_docker
-   install_post
+    This error is documented on rasterio's `ReadTheDocs page <https://rasterio.readthedocs.io/en/latest/faq.html>`_
+    and `GitHub page <https://github.com/mapbox/rasterio/issues/1787>`_. If the suggested solutions do not fix the
+    issue, you can try setting the `GDAL_DATA` environment variable to point to Fiona (which will be installed
+    automatically when installing GeoWombat). For example, if you have setup a virtual environment, the `GDAL_DATA`
+    variable can point to `/path/to/myenv/lib/python3.8/site-packages/fiona/gdal_data`, where `/path/to/myenv` is
+    the name of your virtual environment path directory. Change 3.8 if using a different Python version.
