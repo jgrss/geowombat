@@ -280,8 +280,26 @@ operating system.
 
     .. tab:: Docker
 
-        It is also possible to pull or build an image with GeoWombat already install from Dockerhub. Please refer to
-        the `online instructions <https://pygis.io/docs/b_conda_started.html#docker-for-spatial-python-gdal-included>`_.
+        .. tabs::
+
+            .. tab:: Build from pre-built image
+
+                A pre-built Docker image is available as `mmann1123/gw_pygis` on `Docker Hub <https://hub.docker.com/>`_.
+                To use this image, follow the Docker build instructions at
+                `PyGIS <https://pygis.io/docs/b_conda_started.html#docker-for-spatial-python-gdal-included>`_.
+
+            .. tab:: Build image from scratch
+
+                If you want to build an image from scratch, a Dockerfile is provided in GeoWombat. Using this file,
+                a Docker image can be built by::
+
+                    git clone https://github.com/jgrss/geowombat.git
+                    cd geowombat/
+                    docker build -t <your image name> .
+
+                Enter the image by::
+
+                    docker run -it <your image name> bash
 
 Test the installation
 ---------------------
@@ -355,11 +373,3 @@ Installation Notes
     automatically when installing GeoWombat). For example, if you have setup a virtual environment, the `GDAL_DATA`
     variable can point to `/path/to/myenv/lib/python3.8/site-packages/fiona/gdal_data`, where `/path/to/myenv` is
     the name of your virtual environment path directory. Change 3.8 if using a different Python version.
-
-More installation details
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   install_docker
