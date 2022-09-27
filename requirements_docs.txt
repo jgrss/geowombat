@@ -1,12 +1,7 @@
 retry
 requests>=2.20.0
+wget
 cryptography
 setuptools>=59.5.0
 gdal==3.0.2
-ipython
-stackstac[viz]>=0.4.3
-pystac-client
-sat-search
-planetary-computer
-Rich
-wget
+arosics --no-deps
