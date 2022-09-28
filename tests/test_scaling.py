@@ -83,6 +83,19 @@ class TestScaling(unittest.TestCase):
                     np.allclose(src[VALID_LOC].values, VALID_DATA * SCALE_FACTOR)
                 )
 
+    def test_scaling_attrs(self):
+        """Do not apply scaling but update attributes."""
+        with gw.open(
+            l8_224078_20200518,
+            scale_data=False,
+            scale_factor=SCALE_FACTOR,
+            offset=0,
+            nodata=NODATA_VALUE,
+        ) as src:
+            self.assertEqual(src.attrs['scales'], (SCALE_FACTOR,) * src.gw.nbands)
+            self.assertEqual(src.attrs['offsets'], (0,) * src.gw.nbands)
+            self.assertTrue(np.allclose(src[VALID_LOC].values, VALID_DATA))
+
 
 if __name__ == '__main__':
     unittest.main()
