@@ -35,6 +35,8 @@ release = gw.__version__
 # have docstrings.
 napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = False
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -56,7 +58,6 @@ extensions = [
     'numpydoc',
 ]
 
-autodoc_default_options = {'exclude-members': 'Client, Path'}
 
 # mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
 
@@ -73,6 +74,8 @@ exclude_patterns = ['_build']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'sphinx_book_theme'
+html_title = ''
+logo_only = True
 html_logo = '_static/logo.png'
 # html_favicon = ''
 pygments_style = 'sphinx'
@@ -125,6 +128,7 @@ ipython_savefig_dir = '_static'
 autodoc_inherit_docstrings = False
 # autodoc_member_order = 'bysource'
 autosummary_generate = True
+autodoc_typehints = 'none'
 
 autodoc_default_options = {
     'members': True,
