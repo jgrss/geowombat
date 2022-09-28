@@ -1,11 +1,13 @@
 version: 2
 
 build:
-  image: latest
+  os: ubuntu-20.04
   tools:
     python: mambaforge-4.10
+
 conda:
   environment: environment.yml
+
 python:
   version: "3.8"
   install:
@@ -19,5 +21,6 @@ python:
         - stac
     - method: setuptools
       path: .
+
 sphinx:
   configuration: doc/source/conf.py
