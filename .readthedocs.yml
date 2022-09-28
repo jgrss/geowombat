@@ -4,7 +4,6 @@ build:
   tools:
     python: mambaforge-4.10
 python:
-  version: "3.8"
   install:
     - requirements: requirements_docs.txt
     - method: pip
