@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.12 (2022-09-28)
+* Fixed issue with `scale_factor` and attribute setting ([#221](https://github.com/jgrss/geowombat/pull/221))
+
 ## v2.0.11 (2022-09-27)
 * Fixed GDAL install issue with 'coreg' extra ([#217](https://github.com/jgrss/geowombat/pull/217))
 
