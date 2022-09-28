@@ -72,7 +72,10 @@ exclude_patterns = ['_build']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
+html_logo = '_static/logo.png'
+# html_favicon = ''
+pygments_style = 'sphinx'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -99,6 +102,14 @@ html_theme_options = {
     'github_button': True,
     'github_user': 'jgrss',
     'github_repo': 'geowombat',
+    'repository_url': 'https://github.com/jgrss/geowombat',
+    'repository_branch': 'main',
+    'use_repository_button': True,
+    'use_issues_button': False,
+    'home_page_in_toc': False,
+    'extra_navbar': '',
+    'navbar_footer_text': '',
+    'extra_footer': '',
     'anchor': '#d37a7a',
     'anchor_hover_bg': '#d37a7a',
     'anchor_hover_fg': '#d37a7a',
@@ -113,7 +124,7 @@ ipython_savefig_dir = '_static'
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # autodoc_member_order = 'bysource'
-# autosummary_generate = True
+autosummary_generate = True
 
 autodoc_default_options = {
     'members': True,

@@ -134,10 +134,12 @@ To use this class, call it in ``apply``:
     with gw.series(filenames) as src:
 
         # Read band 1 and apply the temporal mean reduction
-        src.apply(TemporalMean(),
-                  'temporal_mean.tif',
-                  bands=1,
-                  num_workers=4)
+        src.apply(
+            TemporalMean(),
+            'temporal_mean.tif',
+            bands=1,
+            num_workers=4
+        )
 
 Minor changes are needed for multiple band outputs.
 
@@ -146,9 +148,7 @@ First, we add a ``count`` attribute that overrides the default of 1.
 .. code:: python
 
     class TemporalMean(gw.TimeModule):
-
         def __init__(self):
-
             super(TemporalMean, self).__init__()
 
             self.count = 2
@@ -163,10 +163,12 @@ Then, all is needed is to read the desired bands.
     with gw.series(filenames) as src:
 
         # Read bands 1 and 2 and apply the temporal mean reduction
-        src.apply(TemporalMean(),
-                  'temporal_mean.tif',
-                  bands=[1, 2],
-                  num_workers=4)
+        src.apply(
+            TemporalMean(),
+            'temporal_mean.tif',
+            bands=[1, 2],
+            num_workers=4
+        )
 
 Combining custom modules
 ------------------------
@@ -176,7 +178,7 @@ the other to compute the temporal max. We could use these separately as illustra
 outputs would generate images with two bands. However, we can also combine the two modules to generate
 one 4-band image.
 
-.. ipython:: python
+.. code:: python
 
     import geowombat as gw
     import numpy as np
@@ -189,7 +191,7 @@ one 4-band image.
         def calculate(self, array):
             return np.asarray(jnp.nanmean(array, axis=0).squeeze())
 
-.. ipython:: python
+.. code:: python
 
     class TemporalMax(gw.TimeModule):
         def __init__(self):
@@ -202,15 +204,20 @@ Combine the two modules
 
 .. code:: python
 
-    stacked_module = gw.TimeModulePipeline([TemporalMean(),
-                                            TemporalMax()])
+    stacked_module = gw.TimeModulePipeline(
+        [
+            TemporalMean(),
+            TemporalMax()
+        ]
+    )
 
     with gw.series(filenames) as src:
-
-        src.apply(stacked_module,
-                  'temporal_stack.tif',
-                  bands=[1, 2],
-                  num_workers=8)
+        src.apply(
+            stacked_module,
+            'temporal_stack.tif',
+            bands=[1, 2],
+            num_workers=8
+        )
 
 .. note::
 
@@ -218,7 +225,7 @@ Combine the two modules
 
 For example,
 
-.. ipython:: python
+.. code:: python
 
     stacked_module = TemporalMean() + TemporalMax()
     for module in stacked_module.modules:
@@ -226,10 +233,14 @@ For example,
 
 is equivalent to
 
-.. ipython:: python
+.. code:: python
 
-    stacked_module = gw.TimeModulePipeline([TemporalMean(),
-                                            TemporalMax()])
+    stacked_module = gw.TimeModulePipeline(
+        [
+            TemporalMean(),
+            TemporalMax()
+        ]
+    )
 
     for module in stacked_module.modules:
         print(module)
@@ -242,16 +253,13 @@ The band dictionary attribute is available within a module if ``band_list`` is p
 .. code:: python
 
     class TemporalNDVI(gw.TimeModule):
-
         def __init__(self):
-
             super(TemporalNDVI, self).__init__()
 
             self.count = 1
             self.dtype = 'uint16'
 
         def calculate(self, array):
-
             # Set slice tuples for [time, bands, rows, columns]
             sl1 = (slice(0, None), slice(self.band_dict['nir'], self.band_dict['nir']+1), slice(0, None), slice(0, None))
             sl2 = (slice(0, None), slice(self.band_dict['red'], self.band_dict['red']+1), slice(0, None), slice(0, None))
@@ -269,11 +277,13 @@ The band dictionary attribute is available within a module if ``band_list`` is p
     with gw.series(filenames) as src:
 
         # Read band 1 and apply the temporal mean reduction
-        src.apply(TemporalNDVI(),
-                  'temporal_ndvi.tif',
-                  band_list=['red', 'nir'],
-                  bands=[3, 4],
-                  num_workers=4)
+        src.apply(
+            TemporalNDVI(),
+            'temporal_ndvi.tif',
+            band_list=['red', 'nir'],
+            bands=[3, 4],
+            num_workers=4
+        )
 
 Generic vegetation indices with user arguments
 ----------------------------------------------
@@ -281,9 +291,7 @@ Generic vegetation indices with user arguments
 .. code:: python
 
     class GenericVI(gw.TimeModule):
-
         def __init__(self, b1, b2):
-
             super(GenericVI, self).__init__()
 
             self.b1 = b1
@@ -294,7 +302,6 @@ Generic vegetation indices with user arguments
             self.bigtiff = 'YES'
 
         def calculate(self, array):
-
             # Set slice tuples for [time, bands, rows, columns]
             sl1 = (slice(0, None), slice(self.band_dict[self.b2], self.band_dict[self.b2]+1), slice(0, None), slice(0, None))
             sl2 = (slice(0, None), slice(self.band_dict[self.b1], self.band_dict[self.b1]+1), slice(0, None), slice(0, None))
@@ -308,18 +315,24 @@ Now we can create a pipeline with different band ratios.
 
 .. code:: python
 
-    stacked_module = gw.TimeModulePipeline([GenericVI('red', 'nir'),
-                                            GenericVI('green', 'red'),
-                                            GenericVI('swir2', 'nir')])
+    stacked_module = gw.TimeModulePipeline(
+        [
+            GenericVI('red', 'nir'),
+            GenericVI('green', 'red'),
+            GenericVI('swir2', 'nir')
+        ]
+    )
 
     with gw.series(filenames) as src:
 
         # Read all bands
-        src.apply(stacked_module,
-                  'temporal_stack.tif',
-                  band_list=['blue', 'green', 'red', 'nir', 'swir1', 'swir2'],
-                  bands=-1,
-                  num_workers=4)
+        src.apply(
+            stacked_module,
+            'temporal_stack.tif',
+            band_list=['blue', 'green', 'red', 'nir', 'swir1', 'swir2'],
+            bands=-1,
+            num_workers=4
+        )
 
 Load and apply PyTorch models
 -----------------------------
@@ -330,9 +343,7 @@ Load and apply PyTorch models
     import torch.nn.functional as F
 
     class TorchModel(gw.TimeModule):
-
         def __init__(self, model_file, model):
-
             super(TorchModel, self).__init__()
 
             self.model = model
@@ -345,7 +356,6 @@ Load and apply PyTorch models
             self.dtype = 'uint8'
 
         def calculate(self, array):
-
             torch.cuda.empty_cache()
 
             logits = self.model(array)
@@ -359,12 +369,14 @@ Load and apply PyTorch models
     with gw.series(filenames) as src:
 
         # Read all bands
-        src.apply(TorchModel('model.cnn', CNN()),
-                  'temporal_stack.tif',
-                  transfer_lib='pytorch',
-                  band_list=['blue', 'green', 'red', 'nir'],
-                  bands=[1, 2, 3, 4],
-                  num_workers=4)
+        src.apply(
+            TorchModel('model.cnn', CNN()),
+            'temporal_stack.tif',
+            transfer_lib='pytorch',
+            band_list=['blue', 'green', 'red', 'nir'],
+            bands=[1, 2, 3, 4],
+            num_workers=4
+        )
 
 Load and apply Tensorflow/Keras models
 --------------------------------------
@@ -374,9 +386,7 @@ Load and apply Tensorflow/Keras models
     import tensorflow as tf
 
     class TensorflowModel(gw.TimeModule):
-
         def __init__(self, model_file, model):
-
             super(TensorflowModel, self).__init__()
 
             self.model = model
@@ -386,24 +396,27 @@ Load and apply Tensorflow/Keras models
             self.dtype = 'uint8'
 
         def calculate(self, array):
-
             labels = self.model.predict(array)
 
             return labels.eval(session=tf.compat.v1.Session())
 
 .. code:: python
 
-    with gw.series(filenames,
-                   window_size=(512, 512),
-                   padding=(16, 16, 16, 16)) as src:
+    with gw.series(
+        filenames,
+        window_size=(512, 512),
+        padding=(16, 16, 16, 16)
+    ) as src:
 
         # Read all bands
-        src.apply(TensorflowModel('model.cnn', CNN()),
-                  'temporal_stack.tif',
-                  transfer_lib='tensorflow',
-                  band_list=['blue', 'green', 'red', 'nir'],
-                  bands=[1, 2, 3, 4],
-                  num_workers=4)
+        src.apply(
+            TensorflowModel('model.cnn', CNN()),
+            'temporal_stack.tif',
+            transfer_lib='tensorflow',
+            band_list=['blue', 'green', 'red', 'nir'],
+            bands=[1, 2, 3, 4],
+            num_workers=4
+        )
 
 Generating time series file lists
 ---------------------------------
@@ -416,13 +429,15 @@ Generating time series file lists
 
     file_path = Path('.')
 
-    image_dict = sort_images_by_date(file_path,
-                                     '*.tif',
-                                     date_pos=0,
-                                     date_start=0,
-                                     date_end=7,
-                                     split_by='_',
-                                     date_format='%Y%j')
+    image_dict = sort_images_by_date(
+        file_path,
+        '*.tif',
+        date_pos=0,
+        date_start=0,
+        date_end=7,
+        split_by='_',
+        date_format='%Y%j'
+    )
 
     image_names = list(image_dict.keys())
     image_dates = list(image_dict.values())
@@ -431,4 +446,3 @@ Generating time series file lists
     df = pd.DataFrame(data=image_names, columns=['name'], index=image_dates)
 
     file_list = df.loc['2019-07-01':'2020-07-01'].name.values.tolist()
-
