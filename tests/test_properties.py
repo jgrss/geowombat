@@ -31,6 +31,17 @@ class TestProperties(unittest.TestCase):
         with gw.open(l8_224078_20200518, persist_filenames=True) as src:
             self.assertEqual(type(src.gw.footprint_grid), gpd.GeoDataFrame)
 
+    def test_array_type(self):
+        with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(src.gw.array_is_dask)
+            src.load()
+            self.assertFalse(src.gw.array_is_dask)
+
+    def test_chunksize_check(self):
+        with gw.open(l8_224078_20200518) as src:
+            self.assertEqual(src.gw.check_chunksize(64, 128), 64)
+            self.assertEqual(src.gw.check_chunksize(64, 60), 32)
+
 
 if __name__ == '__main__':
     unittest.main()
