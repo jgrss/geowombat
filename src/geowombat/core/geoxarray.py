@@ -124,9 +124,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         than the array."""
         if not (chunksize % 16 == 0) or (chunksize > array_size):
             if chunksize % 16 == 0:
-                chunksize = min(1024, self._obj.gw.nrows)
+                chunksize = 1024
             while True:
-                if chunksize < self._obj.gw.nrows:
+                if chunksize < array_size:
                     break
                 chunksize /= 2
                 if chunksize <= 2:
