@@ -670,6 +670,17 @@ def save(
         if dtype != 'float32':
             dtype = 'float64'
 
+    blockxsize = (
+        data.gw.check_chunksize(512, data.gw.ncols)
+        if not data.gw.array_is_dask
+        else data.gw.col_chunks
+    )
+    blockysize = (
+        data.gw.check_chunksize(512, data.gw.nrows)
+        if not data.gw.array_is_dask
+        else data.gw.row_chunks
+    )
+
     kwargs = dict(
         driver=driver_from_extension(filename),
         width=data.gw.ncols,
@@ -677,12 +688,12 @@ def save(
         count=data.gw.nbands,
         dtype=dtype,
         nodata=nodata,
-        blockxsize=data.gw.col_chunks,
-        blockysize=data.gw.row_chunks,
+        blockxsize=blockxsize,
+        blockysize=blockysize,
         crs=data.gw.crs_to_pyproj,
         transform=data.gw.transform,
         compress=compression,
-        tiled=True if max(data.gw.row_chunks, data.gw.col_chunks) >= 16 else False,
+        tiled=True if max(blockxsize, blockysize) >= 16 else False,
         sharing=False,
     )
     if tqdm_kwargs is None:

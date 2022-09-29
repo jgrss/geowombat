@@ -661,6 +661,11 @@ class DataProperties(object):
         return get_sensor_info(key='wavelength')
 
     @property
+    def array_is_dask(self) -> bool:
+        """Get whether the array is a Dask array."""
+        return False if isinstance(self._obj.data, np.ndarray) else True
+
+    @property
     def ndims(self) -> int:
         """Get the number of array dimensions."""
         return len(self._obj.shape)

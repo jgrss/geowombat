@@ -12,7 +12,6 @@ python:
         - docs
         - perf
         - ml
-        - stac
 sphinx:
   configuration: doc/source/conf.py
 conda:

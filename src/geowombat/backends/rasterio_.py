@@ -203,7 +203,12 @@ class RasterioStore(object):
         return self.close()
 
     def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
-        return da.store(da.squeeze(data.data), self, lock=True, compute=compute)
+        if isinstance(data.data, da.Array):
+            return da.store(da.squeeze(data.data), self, lock=True, compute=compute)
+        else:
+            self.dst.write(
+                data.squeeze().data, indexes=list(range(1, data.data.shape[0] + 1))
+            )
 
     def close(self):
         self.dst.close()
