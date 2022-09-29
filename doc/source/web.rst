@@ -184,7 +184,7 @@ we query a Landsat scene and open the blue, green, red, and NIR band metadata.
     # Get the results
     print(gdl.get_gcp_results)
 
-.. ipython:: python
+.. code:: python
 
     from geowombat.util import GeoDownloads
     gdl = GeoDownloads()
@@ -222,7 +222,7 @@ a longer SAFE id.
 
     gdl.list_gcp('s2b', '21/H/UD/*201801*.SAFE/GRANULE/*')
 
-.. ipython:: python
+.. code:: python
 
     from geowombat.util import GeoDownloads
     gdl = GeoDownloads()
