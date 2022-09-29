@@ -119,6 +119,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             else False
         )
 
+    def check_chunksize(self, chunksize: int, array_size: int) -> int:
+        """Assert the chunk size fits within intervals of 16 and is smaller
+        than the array."""
+        if not (chunksize % 16 == 0) or (chunksize > array_size):
+            if chunksize % 16 == 0:
+                chunksize = min(1024, self._obj.gw.nrows)
+            while True:
+                if chunksize < self._obj.gw.nrows:
+                    break
+                chunksize /= 2
+                if chunksize <= 2:
+                    break
+
+        return int(chunksize)
+
     def read(
         self, band: T.Union[int, str, T.Sequence[T.Union[int, str]]], **kwargs
     ) -> np.ndarray:
