@@ -4,4 +4,3 @@ wget
 cryptography
 setuptools>=59.5.0
 gdal==3.0.2
-arosics --install-option='--no-deps'
