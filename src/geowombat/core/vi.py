@@ -1,5 +1,6 @@
 import logging
 
+from ..config import config
 from ..handler import add_handler
 from .base import PropertyMixin as _PropertyMixin
 
@@ -14,64 +15,68 @@ logger = add_handler(logger)
 
 def _create_nodata_array(data, nodata, band_name, var_name):
 
-    """
-    Creates a 'no data' Xarray
+    """Creates a 'no data' Xarray.
 
     Args:
         data (Xarray)
     """
 
-    return xr.DataArray(data=da.zeros((1, data.gw.nrows, data.gw.ncols),
-                                      chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                                      dtype=data.dtype.name) + nodata,
-                        coords={band_name: [var_name],
-                                'y': data.y.values,
-                                'x': data.x.values},
-                        dims=(band_name, 'y', 'x'),
-                        attrs=data.attrs)
+    return xr.DataArray(
+        data=da.zeros(
+            (1, data.gw.nrows, data.gw.ncols),
+            chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
+            dtype=data.dtype.name,
+        )
+        + nodata,
+        coords={band_name: [var_name], 'y': data.y.values, 'x': data.x.values},
+        dims=(band_name, 'y', 'x'),
+        attrs=data.attrs,
+    )
 
 
 class BandMath(object):
-
     @staticmethod
     def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
-
         attrs = data.attrs.copy()
 
         if band_variable == 'wavelength':
-
-            band_data = data.astype('float64')\
-                            .where(np.isfinite(data))\
-                            .where(lambda x: x.band != nodata)\
-                            .sel(wavelength=names)
+            band_data = (
+                data.astype('float64')
+                .where(np.isfinite(data))
+                .where(lambda x: x.band != nodata)
+                .sel(wavelength=names)
+            )
 
         else:
+            band_data = (
+                data.astype('float64')
+                .where(np.isfinite(data))
+                .where(lambda x: x.band != nodata)
+                .sel(band=names)
+            )
 
-            band_data = data.astype('float64')\
-                            .where(np.isfinite(data))\
-                            .where(lambda x: x.band != nodata)\
-                            .sel(band=names)
-
-        return (band_data.astype('float64') * scale_factor)\
-                    .assign_coords(coords={band_variable: new_names})\
-                    .assign_attrs(**attrs)
+        return (
+            (band_data.astype('float64') * scale_factor)
+            .assign_coords(coords={band_variable: new_names})
+            .assign_attrs(**attrs)
+        )
 
     @staticmethod
-    def mask_and_assign(data,
-                        result,
-                        band_variable,
-                        band_name,
-                        nodata,
-                        new_name,
-                        mask,
-                        clip_min,
-                        clip_max,
-                        scale_factor,
-                        sensor,
-                        norm=False):
-
-        """
-        Masks a DataArray
+    def mask_and_assign(
+        data,
+        result,
+        band_variable,
+        band_name,
+        nodata,
+        new_name,
+        mask,
+        clip_min,
+        clip_max,
+        scale_factor,
+        sensor,
+        norm=False,
+    ):
+        """Masks a DataArray.
 
         Args:
             data (DataArray or Dataset)
@@ -94,9 +99,13 @@ class BandMath(object):
         if isinstance(nodata, int) or isinstance(nodata, float):
 
             if band_variable == 'wavelength':
-                result = xr.where(data.sel(wavelength=band_name) == nodata, nodata, result).astype('float64')
+                result = xr.where(
+                    data.sel(wavelength=band_name) == nodata, nodata, result
+                ).astype('float64')
             else:
-                result = xr.where(data.sel(band=band_name) == nodata, nodata, result).astype('float64')
+                result = xr.where(
+                    data.sel(band=band_name) == nodata, nodata, result
+                ).astype('float64')
 
         if mask:
 
@@ -111,9 +120,6 @@ class BandMath(object):
 
         new_attrs = data.attrs.copy()
 
-        new_attrs['nodatavals'] = (nodata,)
-        new_attrs['scales'] = (1.0,)
-        new_attrs['offsets'] = (0.0,)
         new_attrs['pre-scaling'] = scale_factor
         new_attrs['sensor'] = sensor
         new_attrs['vi'] = new_name
@@ -138,9 +144,15 @@ class BandMath(object):
         else:
             result = result.transpose('band', 'y', 'x')
 
-        return result.assign_attrs(**new_attrs)
+        result = result.assign_attrs(**new_attrs).gw.set_nodata(
+            nodata, nodata, scale_factor=1.0, offset=0
+        )
 
-    def norm_diff_math(self, data, b1, b2, name, sensor, nodata=None, mask=False, scale_factor=1.0):
+        return result
+
+    def norm_diff_math(
+        self, data, b1, b2, name, sensor, nodata=None, mask=False, scale_factor=None
+    ):
 
         """
         Normalized difference index --> (b2 - b1) / (b2 + b1)
@@ -161,24 +173,51 @@ class BandMath(object):
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
-        band_data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [b1, b2], [b1, b2])
+        band_data = self.scale_and_assign(
+            data, nodata, band_variable, scale_factor, [b1, b2], [b1, b2]
+        )
 
         if band_variable == 'wavelength':
 
-            result = ((band_data.sel(wavelength=b2) - band_data.sel(wavelength=b1)) /
-                      (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))).fillna(nodata).astype('float64')
+            result = (
+                (
+                    (band_data.sel(wavelength=b2) - band_data.sel(wavelength=b1))
+                    / (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
         else:
 
-            result = ((band_data.sel(band=b2) - band_data.sel(band=b1)) /
-                      (band_data.sel(band=b2) + band_data.sel(band=b1))).fillna(nodata).astype('float64')
+            result = (
+                (
+                    (band_data.sel(band=b2) - band_data.sel(band=b1))
+                    / (band_data.sel(band=b2) + band_data.sel(band=b1))
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
-        return self.mask_and_assign(band_data, result, band_variable, b2, nodata, name, mask, -1, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            band_data,
+            result,
+            band_variable,
+            b2,
+            nodata,
+            name,
+            mask,
+            -1,
+            1,
+            scale_factor,
+            sensor,
+        )
 
-    def avi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def avi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Advanced vegetation index
+        """Advanced vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -193,24 +232,59 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [red, nir], ['red', 'nir'])
+        data = self.scale_and_assign(
+            data, nodata, band_variable, scale_factor, [red, nir], ['red', 'nir']
+        )
 
         if band_variable == 'wavelength':
 
-            result = ((data.sel(wavelength='nir') * (1.0 - data.sel(wavelength='red')) *
-                       (data.sel(wavelength='nir') - data.sel(wavelength='red'))) ** 0.3334).fillna(nodata).astype('float64')
+            result = (
+                (
+                    (
+                        data.sel(wavelength='nir')
+                        * (1.0 - data.sel(wavelength='red'))
+                        * (data.sel(wavelength='nir') - data.sel(wavelength='red'))
+                    )
+                    ** 0.3334
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
         else:
 
-            result = ((data.sel(band='nir') * (1.0 - data.sel(band='red')) *
-                       (data.sel(band='nir') - data.sel(band='red'))) ** 0.3334).fillna(nodata).astype('float64')
+            result = (
+                (
+                    (
+                        data.sel(band='nir')
+                        * (1.0 - data.sel(band='red'))
+                        * (data.sel(band='nir') - data.sel(band='red'))
+                    )
+                    ** 0.3334
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'avi', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'nir',
+            nodata,
+            'avi',
+            mask,
+            0,
+            1,
+            scale_factor,
+            sensor,
+        )
 
-    def evi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def evi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Enhanced vegetation index
+        """Enhanced vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -232,24 +306,66 @@ class BandMath(object):
             red = wavelengths[sensor].red
             blue = wavelengths[sensor].blue
 
-        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, red, blue], ['nir', 'red', 'blue'])
+        data = self.scale_and_assign(
+            data,
+            nodata,
+            band_variable,
+            scale_factor,
+            [nir, red, blue],
+            ['nir', 'red', 'blue'],
+        )
 
         if band_variable == 'wavelength':
 
-            result = (g * (data.sel(wavelength='nir') - data.sel(wavelength='red')) /
-                      (data.sel(wavelength='nir') * c1 * data.sel(wavelength='red') - c2 * data.sel(wavelength='blue') + l)).fillna(nodata).astype('float64')
+            result = (
+                (
+                    g
+                    * (data.sel(wavelength='nir') - data.sel(wavelength='red'))
+                    / (
+                        data.sel(wavelength='nir') * c1 * data.sel(wavelength='red')
+                        - c2 * data.sel(wavelength='blue')
+                        + l
+                    )
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
         else:
 
-            result = (g * (data.sel(band='nir') - data.sel(band='red')) /
-                      (data.sel(band='nir') * c1 * data.sel(band='red') - c2 * data.sel(band='blue') + l)).fillna(nodata).astype('float64')
+            result = (
+                (
+                    g
+                    * (data.sel(band='nir') - data.sel(band='red'))
+                    / (
+                        data.sel(band='nir') * c1 * data.sel(band='red')
+                        - c2 * data.sel(band='blue')
+                        + l
+                    )
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'nir',
+            nodata,
+            'evi',
+            mask,
+            0,
+            1,
+            scale_factor,
+            sensor,
+        )
 
-    def evi2_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def evi2_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Two-band enhanced vegetation index
+        """Two-band enhanced vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -264,24 +380,61 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, red], ['nir', 'red'])
+        data = self.scale_and_assign(
+            data, nodata, band_variable, scale_factor, [nir, red], ['nir', 'red']
+        )
 
         if band_variable == 'wavelength':
 
-            result = (2.5 * ((data.sel(wavelength='nir') - data.sel(wavelength='red')) /
-                             (data.sel(wavelength='nir') + 1.0 + (2.4 * (data.sel(wavelength='red')))))).fillna(nodata).astype('float64')
+            result = (
+                (
+                    2.5
+                    * (
+                        (data.sel(wavelength='nir') - data.sel(wavelength='red'))
+                        / (
+                            data.sel(wavelength='nir')
+                            + 1.0
+                            + (2.4 * (data.sel(wavelength='red')))
+                        )
+                    )
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
         else:
 
-            result = (2.5 * ((data.sel(band='nir') - data.sel(band='red')) /
-                             (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red')))))).fillna(nodata).astype('float64')
+            result = (
+                (
+                    2.5
+                    * (
+                        (data.sel(band='nir') - data.sel(band='red'))
+                        / (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red'))))
+                    )
+                )
+                .fillna(nodata)
+                .astype('float64')
+            )
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'evi2', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'nir',
+            nodata,
+            'evi2',
+            mask,
+            0,
+            1,
+            scale_factor,
+            sensor,
+        )
 
-    def gcvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def gcvi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        green chlorophyll vegetation index
+        """green chlorophyll vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -296,19 +449,35 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             green = wavelengths[sensor].green
 
-        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [nir, green], ['nir', 'green'])
+        data = self.scale_and_assign(
+            data, nodata, band_variable, scale_factor, [nir, green], ['nir', 'green']
+        )
 
         if band_variable == 'wavelength':
             result = (data.sel(wavelength='nir') / data.sel(wavelength='green')) - 1.0
         else:
             result = (data.sel(band='nir') / data.sel(band='green')) - 1.0
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'gcvi', mask, 0, 10, scale_factor, sensor, norm=True)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'nir',
+            nodata,
+            'gcvi',
+            mask,
+            0,
+            10,
+            scale_factor,
+            sensor,
+            norm=True,
+        )
 
-    def nbr_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def nbr_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Normalized burn ratio
+        """Normalized burn ratio.
 
         Returns:
             ``xarray.DataArray``
@@ -323,12 +492,22 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             swir2 = wavelengths[sensor].swir2
 
-        return self.norm_diff_math(data, swir2, nir, 'nbr', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.norm_diff_math(
+            data,
+            swir2,
+            nir,
+            'nbr',
+            sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def ndvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def ndvi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Normalized difference vegetation index
+        """Normalized difference vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -343,12 +522,22 @@ class BandMath(object):
             nir = wavelengths[sensor].nir
             red = wavelengths[sensor].red
 
-        return self.norm_diff_math(data, red, nir, 'ndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.norm_diff_math(
+            data,
+            red,
+            nir,
+            'ndvi',
+            sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def kndvi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def kndvi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        kernel Normalized difference vegetation index
+        """kernel Normalized difference vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -364,7 +553,16 @@ class BandMath(object):
             red = wavelengths[sensor].red
 
         # Calculate the NDVI
-        result = self.norm_diff_math(data, red, nir, 'kndvi', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        result = self.norm_diff_math(
+            data,
+            red,
+            nir,
+            'kndvi',
+            sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
         # Calculate the kNDVI
         result = np.tanh(result**2)
 
@@ -380,12 +578,25 @@ class BandMath(object):
         #     knr = np.exp(-(data.sel(band='nir') - data.sel(band='red'))**2 / (2.0*sigma**2))
         #     result = (1.0 - knr) / (1.0 + knr)
 
-        return self.mask_and_assign(data, result, band_variable, 'nir', nodata, 'kndvi', mask, -1, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'nir',
+            nodata,
+            'kndvi',
+            mask,
+            -1,
+            1,
+            scale_factor,
+            sensor,
+        )
 
-    def wi_math(self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=1.0):
+    def wi_math(
+        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+    ):
 
-        """
-        Woody index
+        """Woody index.
 
         Returns:
             ``xarray.DataArray``
@@ -400,18 +611,34 @@ class BandMath(object):
             swir1 = wavelengths[sensor].swir1
             red = wavelengths[sensor].red
 
-        data = self.scale_and_assign(data, nodata, band_variable, scale_factor, [swir1, red], ['swir1', 'red'])
+        data = self.scale_and_assign(
+            data, nodata, band_variable, scale_factor, [swir1, red], ['swir1', 'red']
+        )
 
         if band_variable == 'wavelength':
             result = data.sel(wavelength='swir1') + data.sel(wavelength='red')
         else:
             result = data.sel(band='swir1') + data.sel(band='red')
 
-        result = xr.where(result > 0.5, 0, 1.0 - (result / 0.5))\
-                        .fillna(nodata)\
-                        .astype('float64')
+        result = (
+            xr.where(result > 0.5, 0, 1.0 - (result / 0.5))
+            .fillna(nodata)
+            .astype('float64')
+        )
 
-        return self.mask_and_assign(data, result, band_variable, 'red', nodata, 'wi', mask, 0, 1, scale_factor, sensor)
+        return self.mask_and_assign(
+            data,
+            result,
+            band_variable,
+            'red',
+            nodata,
+            'wi',
+            mask,
+            0,
+            1,
+            scale_factor,
+            sensor,
+        )
 
 
 def linear_transform(data, bands, scale, offset):
@@ -435,96 +662,146 @@ def linear_transform(data, bands, scale, offset):
         ``xarray.DataArray``
     """
 
-    scalexr = xr.DataArray(scale,
-                           coords=[bands],
-                           dims=['band'])
+    scalexr = xr.DataArray(scale, coords=[bands], dims=['band'])
 
-    offsetxr = xr.DataArray(offset,
-                            coords=[bands],
-                            dims=['band'])
+    offsetxr = xr.DataArray(offset, coords=[bands], dims=['band'])
 
     return data * scalexr + offsetxr
 
 
 class TasseledCapLookup(object):
-
     @staticmethod
     def get_coefficients(wavelengths, sensor):
 
-        lookup_dict = dict(aster=np.array([[0.3909, -0.0318, 0.4571],
-                                           [0.5224, -0.1031, 0.4262],
-                                           [0.1184, 0.9422, -0.1568],
-                                           [0.3233, 0.2512, 0.2809],
-                                           [0.305, -0.0737, -0.2417],
-                                           [0.3571, -0.069, -0.3269],
-                                           [0.3347, -0.0957, -0.4077],
-                                           [0.3169, -0.1195, -0.3731],
-                                           [0.151, -0.0625, -0.1877]], dtype='float64'),
-                           cbers2=np.array([[0.509, -0.494, 0.581],
-                                            [0.431, -0.318, -0.07],
-                                            [0.33, -0.324, -0.811],
-                                            [0.668, 0.741, 0.003]], dtype='float64'),
-                           ik=np.array([[0.326, -0.311, -0.612],
-                                        [0.509, -0.256, -0.312],
-                                        [0.56, -0.325, 0.722],
-                                        [0.567, 0.819, -0.081]], dtype='float64'),
-                           l4=np.array([[0.433, -0.29, -0.829],
-                                        [0.632, -0.562, 0.522],
-                                        [0.586, 0.6, -0.039],
-                                        [0.264, 0.491, 0.194]], dtype='float64'),
-                           l5=np.array([[0.3037, -0.2848, 0.1509],
-                                        [0.2793, -0.2435, 0.1793],
-                                        [0.4343, -0.5436, 0.3299],
-                                        [0.5585, 0.7243, 0.3406],
-                                        [0.5082, 0.084, -0.7112],
-                                        [0.1863, -0.18, -0.4572]], dtype='float64'),
-                           l7=np.array([[0.3561, -0.3344, 0.2626],
-                                        [0.3972, -0.3544, 0.2141],
-                                        [0.3904, -0.4556, 0.0926],
-                                        [0.6966, 0.6966, 0.0656],
-                                        [0.2286, -0.0242, -0.7629],
-                                        [0.1596, -0.263, -0.5388]], dtype='float64'),
-                           l8=np.array([[0.3029, -0.2941, 0.1511],
-                                        [0.2786, -0.243, 0.1973],
-                                        [0.4733, -0.5424, 0.3283],
-                                        [0.5599, 0.7276, 0.3407],
-                                        [0.508, 0.0713, -0.7117],
-                                        [0.1872, -0.1608, -0.4559]], dtype='float64'),
-                           modis=np.array([[0.4395, -0.4064, 0.1147],
-                                           [0.5945, 0.5129, 0.2489],
-                                           [0.2460, -0.2744, 0.2408],
-                                           [0.3918, -0.2893, 0.3132],
-                                           [0.3506, 0.4882, -0.3122],
-                                           [0.2136, -0.0036, -0.6416],
-                                           [0.2678, -0.4169, -0.5087]], dtype='float64'),
-                           qb=np.array([[0.319, -0.121, 0.652],
-                                        [0.542, -0.331, 0.375],
-                                        [0.49, -0.517, -0.639],
-                                        [0.604, 0.78, -0.163]], dtype='float64'),
-                           rapideye=np.array([[-0.293, -0.406, 0.572],
-                                              [-0.354, -0.367, 0.402],
-                                              [-0.372, -0.446, -0.494],
-                                              [-0.44, -0.128, -0.498],
-                                              [-0.676, 0.697, 0.138]], dtype='float64'))
+        lookup_dict = dict(
+            aster=np.array(
+                [
+                    [0.3909, -0.0318, 0.4571],
+                    [0.5224, -0.1031, 0.4262],
+                    [0.1184, 0.9422, -0.1568],
+                    [0.3233, 0.2512, 0.2809],
+                    [0.305, -0.0737, -0.2417],
+                    [0.3571, -0.069, -0.3269],
+                    [0.3347, -0.0957, -0.4077],
+                    [0.3169, -0.1195, -0.3731],
+                    [0.151, -0.0625, -0.1877],
+                ],
+                dtype='float64',
+            ),
+            cbers2=np.array(
+                [
+                    [0.509, -0.494, 0.581],
+                    [0.431, -0.318, -0.07],
+                    [0.33, -0.324, -0.811],
+                    [0.668, 0.741, 0.003],
+                ],
+                dtype='float64',
+            ),
+            ik=np.array(
+                [
+                    [0.326, -0.311, -0.612],
+                    [0.509, -0.256, -0.312],
+                    [0.56, -0.325, 0.722],
+                    [0.567, 0.819, -0.081],
+                ],
+                dtype='float64',
+            ),
+            l4=np.array(
+                [
+                    [0.433, -0.29, -0.829],
+                    [0.632, -0.562, 0.522],
+                    [0.586, 0.6, -0.039],
+                    [0.264, 0.491, 0.194],
+                ],
+                dtype='float64',
+            ),
+            l5=np.array(
+                [
+                    [0.3037, -0.2848, 0.1509],
+                    [0.2793, -0.2435, 0.1793],
+                    [0.4343, -0.5436, 0.3299],
+                    [0.5585, 0.7243, 0.3406],
+                    [0.5082, 0.084, -0.7112],
+                    [0.1863, -0.18, -0.4572],
+                ],
+                dtype='float64',
+            ),
+            l7=np.array(
+                [
+                    [0.3561, -0.3344, 0.2626],
+                    [0.3972, -0.3544, 0.2141],
+                    [0.3904, -0.4556, 0.0926],
+                    [0.6966, 0.6966, 0.0656],
+                    [0.2286, -0.0242, -0.7629],
+                    [0.1596, -0.263, -0.5388],
+                ],
+                dtype='float64',
+            ),
+            l8=np.array(
+                [
+                    [0.3029, -0.2941, 0.1511],
+                    [0.2786, -0.243, 0.1973],
+                    [0.4733, -0.5424, 0.3283],
+                    [0.5599, 0.7276, 0.3407],
+                    [0.508, 0.0713, -0.7117],
+                    [0.1872, -0.1608, -0.4559],
+                ],
+                dtype='float64',
+            ),
+            modis=np.array(
+                [
+                    [0.4395, -0.4064, 0.1147],
+                    [0.5945, 0.5129, 0.2489],
+                    [0.2460, -0.2744, 0.2408],
+                    [0.3918, -0.2893, 0.3132],
+                    [0.3506, 0.4882, -0.3122],
+                    [0.2136, -0.0036, -0.6416],
+                    [0.2678, -0.4169, -0.5087],
+                ],
+                dtype='float64',
+            ),
+            qb=np.array(
+                [
+                    [0.319, -0.121, 0.652],
+                    [0.542, -0.331, 0.375],
+                    [0.49, -0.517, -0.639],
+                    [0.604, 0.78, -0.163],
+                ],
+                dtype='float64',
+            ),
+            rapideye=np.array(
+                [
+                    [-0.293, -0.406, 0.572],
+                    [-0.354, -0.367, 0.402],
+                    [-0.372, -0.446, -0.494],
+                    [-0.44, -0.128, -0.498],
+                    [-0.676, 0.697, 0.138],
+                ],
+                dtype='float64',
+            ),
+        )
 
-        return xr.DataArray(data=lookup_dict[sensor],
-                            coords={'coeff': ['brightness', 'greenness', 'wetness'],
-                                    'band': list(wavelengths[sensor]._fields)},
-                            dims=('band', 'coeff'))
+        return xr.DataArray(
+            data=lookup_dict[sensor],
+            coords={
+                'coeff': ['brightness', 'greenness', 'wetness'],
+                'band': list(wavelengths[sensor]._fields),
+            },
+            dims=('band', 'coeff'),
+        )
 
 
 class TasseledCap(_PropertyMixin, TasseledCapLookup):
-
-    def tasseled_cap(self, data, nodata=None, sensor=None, scale_factor=1.0):
+    def tasseled_cap(self, data, nodata=None, sensor=None, scale_factor=None):
 
         r"""
         Applies a tasseled cap transformation
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Examples:
             >>> import geowombat as gw
@@ -565,26 +842,32 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
         tc_coefficients = self.get_coefficients(data.gw.wavelengths, sensor)
 
-        tcap = ((data.where(data != nodata) * scale_factor) * tc_coefficients)\
-                    .sum(dim='band')\
-                    .fillna(nodata)\
-                    .transpose('coeff', 'y', 'x')\
-                    .rename({'coeff': 'band'})
+        tcap = (
+            ((data.where(data != nodata) * scale_factor) * tc_coefficients)
+            .sum(dim='band')
+            .fillna(nodata)
+            .transpose('coeff', 'y', 'x')
+            .rename({'coeff': 'band'})
+        )
 
         return tcap.astype('float64').assign_attrs(**data.attrs)
 
 
 class VegetationIndices(_PropertyMixin, BandMath):
-
-    def norm_diff(self, data, b1, b2, sensor=None, nodata=None, mask=False, scale_factor=1.0):
+    def norm_diff(
+        self, data, b1, b2, sensor=None, nodata=None, mask=False, scale_factor=None
+    ):
 
         r"""
         Calculates the normalized difference band ratio
@@ -593,10 +876,10 @@ class VegetationIndices(_PropertyMixin, BandMath):
             data (DataArray): The ``xarray.DataArray`` to process.
             b1 (str): The band name of the first band.
             b2 (str): The band name of the second band.
-            sensor (Optional[str]): sensor (Optional[str]): The data's sensor.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            sensor (Optional[str]): sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -613,25 +896,37 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.norm_diff_math(data, b1, b2, 'norm-diff', sensor, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.norm_diff_math(
+            data,
+            b1,
+            b2,
+            'norm-diff',
+            sensor,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def avi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def avi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the advanced vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -648,25 +943,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.avi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.avi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def evi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def evi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the enhanced vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -683,25 +988,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.evi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.evi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def evi2(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def evi2(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the two-band modified enhanced vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -721,25 +1036,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.evi2_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.evi2_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def gcvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def gcvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the green chlorophyll vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -756,25 +1081,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.gcvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.gcvi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def nbr(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def nbr(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the normalized burn ratio
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -791,25 +1126,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.nbr_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.nbr_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def ndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def ndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the normalized difference vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -826,25 +1171,35 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.ndvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.ndvi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def kndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def kndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
 
         r"""
         Calculates the kernel normalized difference vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -864,25 +1219,34 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.kndvi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.kndvi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
 
-    def wi(self, data, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def wi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
         r"""
         Calculates the woody vegetation index
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
             mask (Optional[bool]): Whether to mask the results.
-            sensor (Optional[str]): The data's sensor.
-            scale_factor (Optional[float]): A scale factor to apply to the data.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
 
         Equation:
 
@@ -905,13 +1269,22 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
                 Data range: 0 to 1
         """
-
         sensor = self.check_sensor(data, sensor)
 
-        if not isinstance(nodata, int) and not isinstance(nodata, float):
-            nodata = data.gw.nodata
+        if nodata is None:
+            nodata = data.gw.nodataval
 
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
+        if config['scale_factor'] is not None:
+            scale_factor = config['scale_factor']
+        else:
+            if scale_factor is None:
+                scale_factor = data.gw.scaleval
 
-        return self.wi_math(data, sensor, data.gw.wavelengths, nodata=nodata, mask=mask, scale_factor=scale_factor)
+        return self.wi_math(
+            data,
+            sensor,
+            data.gw.wavelengths,
+            nodata=nodata,
+            mask=mask,
+            scale_factor=scale_factor,
+        )
