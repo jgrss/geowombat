@@ -9,9 +9,10 @@ Modifications:
 
 import os
 import warnings
+import typing as T
+from pathlib import Path
 
 import numpy as np
-
 from xarray.core import indexing
 from xarray.core.dataarray import DataArray
 from xarray.core.utils import is_scalar
@@ -19,6 +20,7 @@ from xarray.backends.common import BackendArray
 from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import SerializableLock
 import rasterio
+from rasterio.io import DatasetReader
 from rasterio.vrt import WarpedVRT
 from dask.base import tokenize
 import pyproj
@@ -172,12 +174,12 @@ def _parse_envi(meta):
 
 
 def open_rasterio(
-    filename,
-    nodata=None,
-    parse_coordinates=None,
-    chunks=None,
-    cache=None,
-    lock=None,
+    filename: T.Union[str, Path, DatasetReader, WarpedVRT],
+    nodata: T.Optional[T.Union[float, int]] = None,
+    parse_coordinates: T.Optional[bool] = None,
+    chunks: T.Optional[T.Union[int, tuple, dict]] = None,
+    cache: T.Optional[bool] = None,
+    lock: T.Optional[T.Union[bool, SerializableLock]] = None,
     **kwargs,
 ):
     """Open a file with rasterio.
@@ -401,7 +403,6 @@ def open_rasterio(
                 attrs[k] = v
 
     data = indexing.LazilyIndexedArray(RasterioArrayWrapper(manager, lock, vrt_params))
-
     # this lets you write arrays loaded with rasterio
     data = indexing.CopyOnWriteArray(data)
     if cache and chunks is None:

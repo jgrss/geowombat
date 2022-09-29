@@ -939,3 +939,21 @@ class DataProperties(object):
             nodata_value = self._obj.attrs['nodatavals'][0]
 
         return nodata_value
+
+    @property
+    def scaleval(self) -> T.Union[float, int]:
+        """Get the scale factor value."""
+        scale_value = 1.0
+        if hasattr(self._obj, 'scales'):
+            scale_value = self._obj.attrs['scales'][0]
+
+        return scale_value
+
+    @property
+    def offsetval(self) -> T.Union[float, int]:
+        """Get the offset value."""
+        offset_value = 0
+        if hasattr(self._obj, 'offsets'):
+            offset_value = self._obj.attrs['offsets'][0]
+
+        return offset_value

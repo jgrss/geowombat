@@ -31,13 +31,20 @@ class TestConfig(unittest.TestCase):
 
     def test_config_defaults(self):
         with gw.open(l8_224078_20200518) as src:
-            self.assertEqual(src.gw.config['scale_factor'], 1)
+            self.assertEqual(src.gw.config['scale_factor'], None)
 
             for config_default in ['with_config', 'ignore_warnings']:
                 self.assertFalse(src.gw.config[config_default])
 
             for config_default in [
-                'sensor', 'nodata', 'ref_image', 'ref_bounds', 'ref_crs', 'ref_res', 'ref_tar', 'compress'
+                'sensor',
+                'nodata',
+                'ref_image',
+                'ref_bounds',
+                'ref_crs',
+                'ref_res',
+                'ref_tar',
+                'compress',
             ]:
                 self.assertIsNone(src.gw.config[config_default])
 
@@ -61,8 +68,7 @@ class TestConfig(unittest.TestCase):
             self.assertFalse(src.gw.config['with_config'])
 
     def test_config_crs_3857(self):
-        """Test warp to Pseudo-Mercator / EPSG:3857
-        """
+        """Test warp to Pseudo-Mercator / EPSG:3857."""
         test_crs = CRS.from_user_input('epsg:3857')
         with gw.config.update(ref_crs='epsg:3857', ref_res=100):
             with gw.open(l8_224078_20200518) as src:
@@ -72,8 +78,7 @@ class TestConfig(unittest.TestCase):
                 self.assertTrue(src.res, (100.0, 100.0))
 
     def test_config_crs_8858(self):
-        """Test warp to Equal Earth Americas / EPSG:8858
-        """
+        """Test warp to Equal Earth Americas / EPSG:8858."""
         test_crs = CRS.from_user_input('epsg:8858')
         with gw.config.update(ref_crs='epsg:8858', ref_res=100):
             with gw.open(l8_224078_20200518) as src:
@@ -95,9 +100,7 @@ class TestConfig(unittest.TestCase):
         filenames = [l8_224078_20200518, l8_224078_20200518]
         with gw.config.update(ref_image=l8_224077_20200518_B2):
             with gw.open(
-                filenames,
-                band_names=['blue', 'green', 'red'],
-                time_names=['t1', 't2']
+                filenames, band_names=['blue', 'green', 'red'], time_names=['t1', 't2']
             ) as src:
                 self.assertTrue(src.crs, 32621)
                 self.assertTrue(test_crs, src.gw.crs_to_pyproj)
@@ -120,8 +123,14 @@ class TestConfig(unittest.TestCase):
                 with gw.open(l8_224078_20200518) as src:
                     pass
 
-            self.assertNotIn(('geowombat.backends.xarray_', 'WARNING', "  The new bands, ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'], do not match the sensor bands, [1, 2, 3]."),
-                             log)
+            self.assertNotIn(
+                (
+                    'geowombat.backends.xarray_',
+                    'WARNING',
+                    "  The new bands, ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'], do not match the sensor bands, [1, 2, 3].",
+                ),
+                log,
+            )
 
 
 if __name__ == '__main__':
