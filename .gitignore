@@ -29,6 +29,7 @@ envs/
 doc/*.log
 doc/build/
 doc/source/*.log
+doc/source/_build
 geowombat/moving/*.c
 geowombat/moving/*.so
 geowombat/moving/*.pyd

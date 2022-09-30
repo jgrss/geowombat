@@ -1239,13 +1239,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         else:
             data = data.transpose('band', 'y', 'x').astype(dtype)
 
-        attrs['nodatavals'] = (dst_nodata,) * self._obj.gw.nbands
-        attrs['_FillValue'] = dst_nodata
         # These now refer to the new, scaled data
         attrs['scales'] = (1.0,) * self._obj.gw.nbands
         attrs['offsets'] = (0,) * self._obj.gw.nbands
 
-        return data.assign_attrs(**attrs)
+        return data.assign_attrs(**attrs).gw.assign_nodata_attrs(dst_nodata)
 
     def moving(
         self,
