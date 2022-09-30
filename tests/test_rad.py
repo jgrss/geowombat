@@ -17,5 +17,9 @@ class TestRadiometrics(unittest.TestCase):
         self.assertTrue(meta.sensor, 'l8')
         self.assertEqual(
             pd.Timestamp(meta.date_acquired).round('D').to_pydatetime(),
-            datetime(2020, 1, 28, 0, 0, tzinfo=timezone.utc)
+            datetime(2020, 1, 28, 0, 0, tzinfo=timezone.utc),
         )
+
+
+if __name__ == '__main__':
+    unittest.main()

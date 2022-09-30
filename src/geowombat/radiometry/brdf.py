@@ -16,13 +16,10 @@ logger = add_handler(logger)
 
 
 class Special(object):
-
     @staticmethod
     def get_distance(tan1, tan2, cos3):
 
-        """
-        Gets distance component of Li kernels
-        """
+        """Gets distance component of Li kernels."""
 
         temp = tan1 * tan1 + tan2 * tan2 - 2.0 * tan1 * tan2 * cos3
 
@@ -31,15 +28,19 @@ class Special(object):
     @staticmethod
     def get_overlap(cos1, cos2, tan1, tan2, sin3, distance, hb, m_pi):
 
-        """
-        Applies the HB ratio transformation
-        """
+        """Applies the HB ratio transformation."""
 
         OverlapInfo = namedtuple('OverlapInfo', 'tvar sint overlap temp')
 
         temp = (1.0 / cos1) + (1.0 / cos2)
 
-        cost = da.clip(hb * da.sqrt(distance * distance + tan1 * tan1 * tan2 * tan2 * sin3 * sin3) / temp, -1, 1)
+        cost = da.clip(
+            hb
+            * da.sqrt(distance * distance + tan1 * tan1 * tan2 * tan2 * sin3 * sin3)
+            / temp,
+            -1,
+            1,
+        )
 
         tvar = da.arccos(cost)
         sint = da.sin(tvar)
@@ -51,15 +52,14 @@ class Special(object):
 
 
 class Angles(object):
-
     @staticmethod
     def get_phaang(cos_vza, cos_sza, sin_vza, sin_sza, cos_raa):
 
-        """
-        Gets the phase angle
-        """
+        """Gets the phase angle."""
 
-        cos_phase_angle = da.clip(cos_vza * cos_sza + sin_vza * sin_sza * cos_raa, -1, 1)
+        cos_phase_angle = da.clip(
+            cos_vza * cos_sza + sin_vza * sin_sza * cos_raa, -1, 1
+        )
         phase_angle = da.arccos(cos_phase_angle)
         sin_phase_angle = da.sin(phase_angle)
 
@@ -68,9 +68,7 @@ class Angles(object):
     @staticmethod
     def get_pangles(tan1, br, nearly_zero):
 
-        """
-        Get the prime angles
-        """
+        """Get the prime angles."""
 
         tanp = br * tan1
 
@@ -88,9 +86,7 @@ class Angles(object):
     @staticmethod
     def get_angle_info(vza, sza, raa, m_pi):
 
-        """
-        Gets the angle information
-        """
+        """Gets the angle information."""
 
         AngleInfo = namedtuple('AngleInfo', 'vza sza raa vza_rad sza_rad raa_rad')
 
@@ -108,16 +104,12 @@ class Angles(object):
 
         raa_abs = da.where((vza_rad < 0) | (sza_rad < 0), m_pi, raa_rad)
 
-        return AngleInfo(vza=vza,
-                         sza=sza,
-                         raa=raa,
-                         vza_rad=vza_abs,
-                         sza_rad=sza_abs,
-                         raa_rad=raa_abs)
+        return AngleInfo(
+            vza=vza, sza=sza, raa=raa, vza_rad=vza_abs, sza_rad=sza_abs, raa_rad=raa_abs
+        )
 
 
 class LiKernel(Special, Angles):
-
     def get_li(self, kernel_type, li_recip):
 
         # relative azimuth angle
@@ -130,43 +122,69 @@ class LiKernel(Special, Angles):
         tanti = da.tan(self.angle_info.sza_rad)
         tantv = da.tan(self.angle_info.vza_rad)
 
-        cos1, sin1, tan1 = self.get_pangles(tantv, self.global_args.br, self.global_args.nearly_zero)
-        cos2, sin2, tan2 = self.get_pangles(tanti, self.global_args.br, self.global_args.nearly_zero)
+        cos1, sin1, tan1 = self.get_pangles(
+            tantv, self.global_args.br, self.global_args.nearly_zero
+        )
+        cos2, sin2, tan2 = self.get_pangles(
+            tanti, self.global_args.br, self.global_args.nearly_zero
+        )
 
         # sets cos & sin phase angle terms
-        cos_phaang, phaang, sin_phaang = self.get_phaang(cos1, cos2, sin1, sin2, cos_phi)
+        cos_phaang, phaang, sin_phaang = self.get_phaang(
+            cos1, cos2, sin1, sin2, cos_phi
+        )
         distance = self.get_distance(tan1, tan2, cos_phi)
-        overlap_info = self.get_overlap(cos1, cos2, tan1, tan2, sin_phi, distance, self.global_args.hb, self.global_args.m_pi)
+        overlap_info = self.get_overlap(
+            cos1,
+            cos2,
+            tan1,
+            tan2,
+            sin_phi,
+            distance,
+            self.global_args.hb,
+            self.global_args.m_pi,
+        )
 
         if kernel_type.lower() == 'sparse':
 
             if li_recip:
-                li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + cos_phaang) / cos1 / cos2
+                li = (
+                    overlap_info.overlap
+                    - overlap_info.temp
+                    + 0.5 * (1.0 + cos_phaang) / cos1 / cos2
+                )
             else:
-                li = overlap_info.overlap - overlap_info.temp + 0.5 * (1.0 + cos_phaang) / cos1
+                li = (
+                    overlap_info.overlap
+                    - overlap_info.temp
+                    + 0.5 * (1.0 + cos_phaang) / cos1
+                )
 
         else:
 
             if kernel_type.lower() == 'dense':
 
                 if li_recip:
-                    li = (1.0 + cos_phaang) / (cos1 * cos2 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+                    li = (1.0 + cos_phaang) / (
+                        cos1 * cos2 * (overlap_info.temp - overlap_info.overlap)
+                    ) - 2.0
                 else:
-                    li = (1.0 + cos_phaang) / (cos1 * (overlap_info.temp - overlap_info.overlap)) - 2.0
+                    li = (1.0 + cos_phaang) / (
+                        cos1 * (overlap_info.temp - overlap_info.overlap)
+                    ) - 2.0
 
         return li
 
 
 class RossKernel(Special, Angles):
-
     def ross_part(self, angle_info, global_args):
 
-        """
-        Calculates the main part of Ross kernel
-        """
+        """Calculates the main part of Ross kernel."""
 
-        RossKernelOutputs = namedtuple('RossKernelOutputs',
-                                       'cos_vza cos_sza sin_vza sin_sza cos_raa ross_element cos_phase_angle phase_angle sin_phase_angle ross')
+        RossKernelOutputs = namedtuple(
+            'RossKernelOutputs',
+            'cos_vza cos_sza sin_vza sin_sza cos_raa ross_element cos_phase_angle phase_angle sin_phase_angle ross',
+        )
 
         cos_vza = da.cos(angle_info.vza_rad)
         cos_sza = da.cos(angle_info.sza_rad)
@@ -174,27 +192,35 @@ class RossKernel(Special, Angles):
         sin_sza = da.sin(angle_info.sza_rad)
         cos_raa = da.cos(angle_info.raa_rad)
 
-        cos_phase_angle, phase_angle, sin_phase_angle = self.get_phaang(cos_vza, cos_sza, sin_vza, sin_sza, cos_raa)
+        cos_phase_angle, phase_angle, sin_phase_angle = self.get_phaang(
+            cos_vza, cos_sza, sin_vza, sin_sza, cos_raa
+        )
 
-        ross_element = (global_args.m_pi / 2.0 - phase_angle) * cos_phase_angle + sin_phase_angle
+        ross_element = (
+            global_args.m_pi / 2.0 - phase_angle
+        ) * cos_phase_angle + sin_phase_angle
 
-        return RossKernelOutputs(cos_vza=cos_vza,
-                                 cos_sza=cos_sza,
-                                 sin_vza=sin_vza,
-                                 sin_sza=sin_sza,
-                                 cos_raa=cos_raa,
-                                 ross_element=ross_element,
-                                 cos_phase_angle=cos_phase_angle,
-                                 phase_angle=phase_angle,
-                                 sin_phase_angle=sin_phase_angle,
-                                 ross=None)
+        return RossKernelOutputs(
+            cos_vza=cos_vza,
+            cos_sza=cos_sza,
+            sin_vza=sin_vza,
+            sin_sza=sin_sza,
+            cos_raa=cos_raa,
+            ross_element=ross_element,
+            cos_phase_angle=cos_phase_angle,
+            phase_angle=phase_angle,
+            sin_phase_angle=sin_phase_angle,
+            ross=None,
+        )
 
     @staticmethod
     def ross_thin(ross_outputs):
 
         RossThinOutputs = namedtuple('RossThinOutputs', 'ross phase_angle')
 
-        ross_ = ross_outputs.ross_element / (ross_outputs.cos_vza * ross_outputs.cos_sza)
+        ross_ = ross_outputs.ross_element / (
+            ross_outputs.cos_vza * ross_outputs.cos_sza
+        )
 
         return RossThinOutputs(ross=ross_, phase_angle=ross_outputs.phase_angle)
 
@@ -203,7 +229,9 @@ class RossKernel(Special, Angles):
 
         RossThickOutputs = namedtuple('RossThickOutputs', 'ross phase_angle')
 
-        ross_ = ross_outputs.ross_element / (ross_outputs.cos_vza + ross_outputs.cos_sza)
+        ross_ = ross_outputs.ross_element / (
+            ross_outputs.cos_vza + ross_outputs.cos_sza
+        )
 
         return RossThickOutputs(ross=ross_, phase_angle=ross_outputs.phase_angle)
 
@@ -217,7 +245,9 @@ class RossKernel(Special, Angles):
             ross_kernel_outputs = self.ross_thick(ross_outputs)
 
         if self.global_args.hs:
-            ross = ross_kernel_outputs.ross * (1.0 + 1.0 / (1.0 + ross_kernel_outputs.phase_angle / 0.25))
+            ross = ross_kernel_outputs.ross * (
+                1.0 + 1.0 / (1.0 + ross_kernel_outputs.phase_angle / 0.25)
+            )
         else:
             ross = ross_kernel_outputs.ross - self.global_args.m_pi / 4.0
 
@@ -226,8 +256,7 @@ class RossKernel(Special, Angles):
 
 class BRDFKernels(LiKernel, RossKernel):
 
-    """
-    A class for the Li and Ross BRDF kernels
+    """A class for the Li and Ross BRDF kernels.
 
     Args:
         vza (dask.array): The view zenith angle.
@@ -239,20 +268,24 @@ class BRDFKernels(LiKernel, RossKernel):
         hb (Optional[float]): The HB ratio.
     """
 
-    def __init__(self,
-                 vza,
-                 sza,
-                 raa,
-                 li_type='sparse',
-                 ross_type='thick',
-                 li_recip=True,
-                 br=1.0,
-                 hb=2.0,
-                 hs=False):
+    def __init__(
+        self,
+        vza,
+        sza,
+        raa,
+        li_type='sparse',
+        ross_type='thick',
+        li_recip=True,
+        br=1.0,
+        hb=2.0,
+        hs=False,
+    ):
 
         GlobalArgs = namedtuple('GlobalArgs', 'br m_pi hb hs nearly_zero')
 
-        self.global_args = GlobalArgs(br=br, m_pi=np.pi, hb=hb, hs=hs, nearly_zero=1e-20)
+        self.global_args = GlobalArgs(
+            br=br, m_pi=np.pi, hb=hb, hs=hs, nearly_zero=1e-20
+        )
         self.angle_info = self.get_angle_info(vza, sza, raa, self.global_args.m_pi)
 
         self.li_k = self.get_li(li_type, li_recip)
@@ -260,12 +293,11 @@ class BRDFKernels(LiKernel, RossKernel):
 
 
 class GeoVolKernels(object):
-
     @staticmethod
     def get_mean_sza(central_latitude):
 
-        """
-        Returns the mean solar zenith angle (SZA) as a function of the central latitude
+        """Returns the mean solar zenith angle (SZA) as a function of the
+        central latitude.
 
         Args:
             central_latitude (float): The central latitude.
@@ -278,13 +310,15 @@ class GeoVolKernels(object):
             ``float``
         """
 
-        return 31.0076 + \
-               -0.1272 * central_latitude + \
-               0.01187 * (central_latitude ** 2) + \
-               2.40e-05 * (central_latitude ** 3) + \
-               -9.48e-07 * (central_latitude ** 4) + \
-               -1.95e-09 * (central_latitude ** 5) + \
-               6.15e-11 * (central_latitude ** 6)
+        return (
+            31.0076
+            + -0.1272 * central_latitude
+            + 0.01187 * (central_latitude**2)
+            + 2.40e-05 * (central_latitude**3)
+            + -9.48e-07 * (central_latitude**4)
+            + -1.95e-09 * (central_latitude**5)
+            + 6.15e-11 * (central_latitude**6)
+        )
 
     def get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
 
@@ -305,9 +339,9 @@ class GeoVolKernels(object):
         # Get the volume scattering kernel.
         #
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
-        kl = BRDFKernels(sensor_za.data,
-                         solar_za.data,
-                         relative_azimuth(solar_az, sensor_az).data)
+        kl = BRDFKernels(
+            sensor_za.data, solar_za.data, relative_azimuth(solar_az, sensor_az).data
+        )
 
         self.geo_sensor = kl.li_k
         self.vol_sensor = kl.ross_k
@@ -315,9 +349,8 @@ class GeoVolKernels(object):
 
 class BRDF(GeoVolKernels):
 
-    """
-    A class for Bidirectional Reflectance Distribution Function (BRDF) normalization
-    """
+    """A class for Bidirectional Reflectance Distribution Function (BRDF)
+    normalization."""
 
     def __init__(self):
 
@@ -332,49 +365,37 @@ class BRDF(GeoVolKernels):
         self.c_equation = 'SA * ((fiso + fvol*vol_norm + fgeo*geo_norm) / (fiso + fvol*vol_sensor + fgeo*geo_sensor))'
 
         # A dictionary of BRDF kernel coefficients
-        self.coeff_dict = dict(blue=dict(fiso=0.0774,
-                                         fgeo=0.0079,
-                                         fvol=0.0372),
-                               green=dict(fiso=0.1306,
-                                          fgeo=0.0178,
-                                          fvol=0.058),
-                               red=dict(fiso=0.169,
-                                        fgeo=0.0227,
-                                        fvol=0.0574),
-                               nir=dict(fiso=0.3093,
-                                        fgeo=0.033,
-                                        fvol=0.1535),
-                               swir1=dict(fiso=0.343,
-                                          fgeo=0.0453,
-                                          fvol=0.1154),
-                               swir2=dict(fiso=0.2658,
-                                          fgeo=0.0387,
-                                          fvol=0.0639),
-                               pan=dict(fiso=0.12567,
-                                        fgeo=0.01613,
-                                        fvol=0.0509))
+        self.coeff_dict = dict(
+            blue=dict(fiso=0.0774, fgeo=0.0079, fvol=0.0372),
+            green=dict(fiso=0.1306, fgeo=0.0178, fvol=0.058),
+            red=dict(fiso=0.169, fgeo=0.0227, fvol=0.0574),
+            nir=dict(fiso=0.3093, fgeo=0.033, fvol=0.1535),
+            swir1=dict(fiso=0.343, fgeo=0.0453, fvol=0.1154),
+            swir2=dict(fiso=0.2658, fgeo=0.0387, fvol=0.0639),
+            pan=dict(fiso=0.12567, fgeo=0.01613, fvol=0.0509),
+        )
 
     def _get_coeffs(self, sensor_band):
         return self.coeff_dict[sensor_band]
 
-    def norm_brdf(self,
-                  data,
-                  solar_za,
-                  solar_az,
-                  sensor_za,
-                  sensor_az,
-                  central_latitude=None,
-                  sensor=None,
-                  wavelengths=None,
-                  src_nodata=-32768,
-                  dst_nodata=-32768,
-                  mask=None,
-                  scale_factor=1.0,
-                  out_range=None,
-                  scale_angles=True):
-
-        r"""
-        Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
+    def norm_brdf(
+        self,
+        data,
+        solar_za,
+        solar_az,
+        sensor_za,
+        sensor_az,
+        central_latitude=None,
+        sensor=None,
+        wavelengths=None,
+        src_nodata=-32768,
+        dst_nodata=-32768,
+        mask=None,
+        scale_factor=1.0,
+        out_range=None,
+        scale_angles=True,
+    ):
+        r"""Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
         using the global c-factor method
 
         Args:
@@ -425,13 +446,10 @@ class BRDF(GeoVolKernels):
             >>>         with gw.open('landsat.tif') as src:
             >>>             src_norm = brdf.norm_brdf(src, solarz, solara, sensorz, sensora)
         """
-
         if not wavelengths:
-
             if sensor:
                 wavelengths = list(data.gw.wavelengths[sensor]._fields)
             else:
-
                 if not data.gw.sensor:
                     logger.exception('  The sensor must be supplied.')
 
@@ -440,47 +458,36 @@ class BRDF(GeoVolKernels):
         if not wavelengths:
             logger.exception('  The sensor or wavelength must be supplied.')
 
-        if not isinstance(dst_nodata, int) and not isinstance(dst_nodata, float):
-            dst_nodata = data.gw.nodata
-
-        # ne.set_num_threads(num_threads)
+        if not isinstance(dst_nodata, (int, float)):
+            dst_nodata = data.gw.nodataval
 
         if not isinstance(central_latitude, np.ndarray):
             if not isinstance(central_latitude, xr.DataArray):
                 if not isinstance(central_latitude, float):
-
-                    central_latitude = \
-                    project_coords(np.array([data.x.values[int(data.x.shape[0] / 2)]], dtype='float64'),
-                                   np.array([data.y.values[int(data.y.shape[0] / 2)]], dtype='float64'),
-                                   data.crs,
-                                   {'init': 'epsg:4326'})[1][0]
-
-                    # TODO: rasterio.warp.reproject does not seem to be working
-                    #
-                    # Create the 2d latitudes
-                    # central_latitude = project_coords(data.x.values,
-                    #                                   data.y.values,
-                    #                                   data.crs,
-                    #                                   {'init': 'epsg:4326'},
-                    #                                   num_threads=1,
-                    #                                   warp_mem_limit=512)
+                    central_latitude = project_coords(
+                        np.array(
+                            [data.x.values[int(data.x.shape[0] / 2)]], dtype='float64'
+                        ),
+                        np.array(
+                            [data.y.values[int(data.y.shape[0] / 2)]], dtype='float64'
+                        ),
+                        data.crs,
+                        {'init': 'epsg:4326'},
+                    )[1][0]
 
         attrs = data.attrs.copy()
-
-        # Set 'no data' as nans
-        data = data.where(data != src_nodata)
-
-        if scale_factor == 1.0:
-            scale_factor = data.gw.scale_factor
-
-        # Scale the reflectance data
-        if scale_factor != 1:
-            data = data * scale_factor
+        # Set 'no data' as nans and scale the reflectance data
+        data = data.gw.set_nodata(
+            src_nodata,
+            np.nan,
+            out_range=(0, 1),
+            dtype='float64',
+            scale_factor=scale_factor,
+            offset=0,
+        )
 
         if scale_angles:
-
             # Scale the angle data to degrees
-
             solar_za = solar_za * 0.01
             solar_za.coords['band'] = [1]
 
@@ -494,89 +501,75 @@ class BRDF(GeoVolKernels):
             sensor_az.coords['band'] = [1]
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude,
-                         solar_za,
-                         solar_az,
-                         sensor_za,
-                         sensor_az)
-
-        # if len(wavelengths) == 1:
-        #
-        #     # Get the band iso, geo, and vol coefficients.
-        #     coeffs = self.get_coeffs(wavelengths[0])
-        #
-        #     # Apply the adjustment.
-        #     data = dask.delayed(ne.evaluate)(self.c_equation,
-        #                                      local_dict=dict(fiso=coeffs['fiso'],
-        #                                                      fgeo=coeffs['fgeo'],
-        #                                                      fvol=coeffs['fvol'],
-        #                                                      SA=data,
-        #                                                      geo_norm=self.geo_norm,
-        #                                                      geo_sensor=self.geo_sensor,
-        #                                                      vol_norm=self.vol_norm,
-        #                                                      vol_sensor=self.vol_sensor))
-        #
-        # else:
+        self.get_kernels(central_latitude, solar_za, solar_az, sensor_za, sensor_az)
 
         results = []
-
         for si, wavelength in enumerate(wavelengths):
-
-            # Get the band iso, geo,
-            #   and vol coefficients.
+            # Get the band iso, geo, and vol coefficients.
             coeffs = self._get_coeffs(wavelength)
-
             # c-factor
-            c_factor = (coeffs['fiso'] +
-                        coeffs['fvol']*self.vol_norm +
-                        coeffs['fgeo']*self.geo_norm) / \
-                       (coeffs['fiso'] +
-                        coeffs['fvol']*self.vol_sensor +
-                        coeffs['fgeo']*self.geo_sensor)
+            c_factor = (
+                coeffs['fiso']
+                + coeffs['fvol'] * self.vol_norm
+                + coeffs['fgeo'] * self.geo_norm
+            ) / (
+                coeffs['fiso']
+                + coeffs['fvol'] * self.vol_sensor
+                + coeffs['fgeo'] * self.geo_sensor
+            )
 
             p_norm = data.sel(band=wavelength).data * c_factor
-
             # Apply the adjustment to the current layer.
             results.append(p_norm)
 
-        data = xr.DataArray(data=da.concatenate(results),
-                            dims=('band', 'y', 'x'),
-                            coords={'band': data.band.values,
-                                    'y': data.y,
-                                    'x': data.x},
-                            attrs=data.attrs).fillna(src_nodata)
+        data = xr.DataArray(
+            data=da.concatenate(results),
+            dims=('band', 'y', 'x'),
+            coords={'band': data.band.values, 'y': data.y, 'x': data.x},
+            attrs=data.attrs,
+        ).fillna(src_nodata)
 
-        if isinstance(out_range, float) or isinstance(out_range, int):
+        if isinstance(out_range, (int, float, tuple)):
+            if isinstance(out_range, (int, float)):
+                range_max = out_range
+            else:
+                range_max = out_range[1]
 
-            if out_range <= 1:
+            if range_max <= 1:
                 dtype = 'float64'
-            elif 1 < out_range <= 255:
+            elif 1 < range_max <= 255:
                 dtype = 'uint8'
             else:
                 dtype = 'uint16'
 
-            drange = (0, out_range)
-
-            data = xr.where(data == src_nodata, src_nodata, (data * out_range).clip(0, out_range))
+            drange = (0, range_max)
+            data = xr.where(
+                data == src_nodata, src_nodata, (data * range_max).clip(0, range_max)
+            )
 
         else:
-
             drange = (0, 1)
             dtype = 'float64'
 
         # Mask data
         if isinstance(mask, xr.DataArray):
-            data = xr.where((mask.sel(band=1) == 1) | (solar_za.sel(band=1) == -32768*0.01) | (data == src_nodata), dst_nodata, data)
+            data = xr.where(
+                (mask.sel(band=1) == 1)
+                | (solar_za.sel(band=1) == -32768 * 0.01)
+                | (data == src_nodata),
+                dst_nodata,
+                data,
+            )
         else:
-            data = xr.where((solar_za.sel(band=1) == -32768*0.01) | (data == src_nodata), dst_nodata, data)
+            data = xr.where(
+                (solar_za.sel(band=1) == -32768 * 0.01) | (data == src_nodata),
+                dst_nodata,
+                data,
+            )
 
         data = data.transpose('band', 'y', 'x').astype(dtype)
-
         attrs['sensor'] = sensor
         attrs['calibration'] = 'BRDF-adjusted surface reflectance'
-        attrs['nodata'] = dst_nodata
         attrs['drange'] = drange
 
-        data.attrs = attrs
-
-        return data
+        return data.assign_attrs(**attrs).gw.assign_nodata_attrs(dst_nodata)

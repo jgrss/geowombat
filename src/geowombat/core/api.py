@@ -283,11 +283,32 @@ class open(object):
 
             .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
                 in the following order:
-                    1. ``geowombat.config.update`` not ``None``
-                    2. ``nodata`` not ``None``
-                    3. file 'no data' value from metadata
+                    1. ``geowombat.config.update(nodata not None)``
+                    2. ``open(nodata not None)``
+                    3. file 'no data' value from metadata '_FillValue' or 'nodatavals'
+        scale_factor (Optional[float | int]): A scale value to apply to the opened data. The same rules used in
+            ``nodata`` apply. I.e.,
+
+            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
+                in the following order:
+                    1. ``geowombat.config.update(scale_factor not None)``
+                    2. ``open(scale_factor not None)``
+                    3. file scale value from metadata 'scales'
+        offset (Optional[float | int]): An offset value to apply to the opened data. The same rules used in
+            ``nodata`` apply. I.e.,
+
+            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
+                in the following order:
+                    1. ``geowombat.config.update(offset not None)``
+                    2. ``open(offset not None)``
+                    3. file offset value from metadata 'offsets'
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
+        scale_data (Optional[bool]): Whether to apply scaling to the opened data. Default is ``False``. Scaled
+            data are returned as:
+                scaled = data * gain + offset
+
+            See the arguments ``nodata``, ``scale_factor``, and ``offset`` for rules regarding how scaling is applied.
         num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``
             is given or ``window`` is given. Default is 1.
         kwargs (Optional[dict]): Keyword arguments passed to the file opener.
@@ -340,24 +361,35 @@ class open(object):
         >>>
         >>> # Open a list of images at a window slice
         >>> from rasterio.windows import Window
-        >>> w = Window(row_off=0, col_off=0, height=100, width=100)
-        >>>
         >>> # Stack two images, opening band 3
         >>> with gw.open(
         >>>     ['image1.tif', 'image2.tif'],
         >>>     band_names=['date1', 'date2'],
         >>>     num_workers=8,
         >>>     indexes=3,
-        >>>     window=w,
+        >>>     window=Window(row_off=0, col_off=0, height=100, width=100),
         >>>     dtype='float32'
         >>> ) as ds:
         >>>     print(ds)
         >>>
-        >>> # Open a NetCDF variable
+        >>> # Scale data upon opening, using the image metadata to get scales and offsets
+        >>> with gw.open('image.tif', scale_data=True) as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Scale data upon opening, specifying scales and overriding metadata
+        >>> with gw.open('image.tif', scale_data=True, scale_factor=1e-4) as ds:
+        >>>     print(ds)
+        >>>
+        >>> # Scale data upon opening, specifying scales and overriding metadata
+        >>> with gw.config.update(scale_factor=1e-4):
+        >>>     with gw.open('image.tif', scale_data=True) as ds:
+        >>>         print(ds)
+        >>>
+        >>> # Open a NetCDF variable, specifying a NetCDF prefix and variable to open
         >>> with gw.open('netcdf:image.nc:blue') as src:
         >>>     print(src)
         >>>
-        >>> # Open a NetCDF image without access to transforms
+        >>> # Open a NetCDF image without access to transforms by providing full file path
         >>> # NOTE: This will be faster than the above method
         >>> # as it uses ``xarray.open_dataset`` and bypasses CRS checks.
         >>> # NOTE: The chunks must be provided by the user.
@@ -377,7 +409,7 @@ class open(object):
 
     def __init__(
         self,
-        filename,
+        filename: T.Union[str, Path, T.Sequence[T.Union[str, Path]]],
         band_names: T.Optional[T.Union[T.Sequence, int, str]] = None,
         time_names: T.Optional[T.Sequence] = None,
         stack_dim: T.Optional[str] = 'time',
@@ -389,7 +421,10 @@ class open(object):
         mosaic: T.Optional[bool] = False,
         overlap: T.Optional[str] = 'max',
         nodata: T.Optional[T.Union[float, int]] = None,
+        scale_factor: T.Optional[T.Union[float, int]] = None,
+        offset: T.Optional[T.Union[float, int]] = None,
         dtype: T.Optional[T.Union[str, np.dtype]] = None,
+        scale_data: T.Optional[bool] = False,
         num_workers: T.Optional[int] = 1,
         **kwargs,
     ):
@@ -552,6 +587,27 @@ class open(object):
         )
         if persist_filenames:
             self.data = self.data.assign_attrs(**{'_filenames': self.__filenames})
+
+        if scale_data:
+            self.data = self.data.gw.set_nodata(
+                src_nodata=nodata,
+                dst_nodata=np.nan,
+                out_range=None,
+                dtype='float64',
+                scale_factor=scale_factor,
+                offset=offset,
+            )
+        else:
+            # No scaling is applied, but the user assigned a scale factor to update the attributes
+            if scale_factor is not None:
+                self.data = self.data.assign_attrs(
+                    **{'scales': (scale_factor,) * self.data.gw.nbands}
+                )
+            # No scaling is applied, but the user assigned an offset to update the attributes
+            if offset is not None:
+                self.data = self.data.assign_attrs(
+                    **{'offsets': (offset,) * self.data.gw.nbands}
+                )
 
     def __enter__(self):
         self.__is_context_manager = True

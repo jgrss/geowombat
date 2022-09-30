@@ -1,7 +1,3 @@
-retry
-requests>=2.20.0
-wget
-cryptography
+numpy>=1.19.0
 setuptools>=59.5.0
-gdal==3.0.2
-arosics --install-option='--no-deps'
+ipython
