@@ -22,6 +22,7 @@ from affine import Affine
 
 try:
     from dateparser.search import search_dates
+
     DATEPARSER_INSTALLED = True
 except:
     DATEPARSER_INSTALLED = False
@@ -38,8 +39,7 @@ def lazy_wombat(func):
 
 def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
 
-    """
-    Estimates the size of an array in-memory
+    """Estimates the size of an array in-memory.
 
     Args:
         ntime (int): The number of time dimensions.
@@ -57,8 +57,7 @@ def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
 
 def parse_filename_dates(filenames):
 
-    """
-    Parses dates from file names
+    """Parses dates from file names.
 
     Args:
         filenames (list): A list of files to parse.
@@ -80,10 +79,18 @@ def parse_filename_dates(filenames):
 
             try:
 
-                s, dt = list(zip(*search_dates(' '.join(' '.join(f_base.split('_')).split('-')),
-                                               settings={'DATE_ORDER': 'YMD',
-                                                         'STRICT_PARSING': False,
-                                                         'PREFER_LANGUAGE_DATE_ORDER': False})))
+                s, dt = list(
+                    zip(
+                        *search_dates(
+                            ' '.join(' '.join(f_base.split('_')).split('-')),
+                            settings={
+                                'DATE_ORDER': 'YMD',
+                                'STRICT_PARSING': False,
+                                'PREFER_LANGUAGE_DATE_ORDER': False,
+                            },
+                        )
+                    )
+                )
 
             except:
                 return list(range(1, len(filenames) + 1))
@@ -98,8 +105,7 @@ def parse_filename_dates(filenames):
 
 def parse_wildcard(string):
 
-    """
-    Parses a search wildcard from a string
+    """Parses a search wildcard from a string.
 
     Args:
         string (str): The string to parse.
@@ -135,9 +141,9 @@ def sort_images_by_date(
     split_by='_',
     date_format='%Y%m%d',
     file_list=None,
-    prepend_str=None
+    prepend_str=None,
 ):
-    """Sorts images by date
+    """Sorts images by date.
 
     Args:
         image_path (Path): The image directory.
@@ -173,15 +179,21 @@ def sort_images_by_date(
     if prepend_str:
         fl = [Path(f'{prepend_str}{str(fn)}') for fn in fl]
 
-    dates = [datetime.strptime(fn.name.split(split_by)[date_pos][date_start:date_end], date_format) for fn in fl]
+    dates = [
+        datetime.strptime(
+            fn.name.split(split_by)[date_pos][date_start:date_end], date_format
+        )
+        for fn in fl
+    ]
 
-    return OrderedDict(sorted(dict(zip([str(fn) for fn in fl], dates)).items(), key=lambda x_: x_[1]))
+    return OrderedDict(
+        sorted(dict(zip([str(fn) for fn in fl], dates)).items(), key=lambda x_: x_[1])
+    )
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
 
-    """
-    Projects coordinates to a new CRS
+    """Projects coordinates to a new CRS.
 
     Args:
         x (1d array-like): The x coordinates.
@@ -197,9 +209,9 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
 
     if return_as == '1d':
 
-        df_tmp = gpd.GeoDataFrame(np.arange(0, x.shape[0]),
-                                  geometry=gpd.points_from_xy(x, y),
-                                  crs=src_crs)
+        df_tmp = gpd.GeoDataFrame(
+            np.arange(0, x.shape[0]), geometry=gpd.points_from_xy(x, y), crs=src_crs
+        )
 
         df_tmp = df_tmp.to_crs(dst_crs)
 
@@ -217,31 +229,40 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
 
         latitudes = np.zeros(yy.shape, dtype='float64')
 
-        src_transform = from_bounds(x[0], y[-1], x[-1], y[0], latitudes.shape[1], latitudes.shape[0])
+        src_transform = from_bounds(
+            x[0], y[-1], x[-1], y[0], latitudes.shape[1], latitudes.shape[0]
+        )
 
-        west, south, east, north = transform_bounds(src_crs, CRS(dst_crs), x[0], y[-1], x[-1], y[0])
-        dst_transform = from_bounds(west, south, east, north, latitudes.shape[1], latitudes.shape[0])
+        west, south, east, north = transform_bounds(
+            src_crs, CRS(dst_crs), x[0], y[-1], x[-1], y[0]
+        )
+        dst_transform = from_bounds(
+            west, south, east, north, latitudes.shape[1], latitudes.shape[0]
+        )
 
-        latitudes = reproject(yy,
-                              destination=latitudes,
-                              src_transform=src_transform,
-                              dst_transform=dst_transform,
-                              src_crs=CRS.from_epsg(src_crs.split(':')[1]),
-                              dst_crs=CRS(dst_crs),
-                              **kwargs)[0]
+        latitudes = reproject(
+            yy,
+            destination=latitudes,
+            src_transform=src_transform,
+            dst_transform=dst_transform,
+            src_crs=CRS.from_epsg(src_crs.split(':')[1]),
+            dst_crs=CRS(dst_crs),
+            **kwargs,
+        )[0]
 
-        return xr.DataArray(data=da.from_array(latitudes[np.newaxis, :, :],
-                                               chunks=(1, 512, 512)),
-                            dims=('band', 'y', 'x'),
-                            coords={'band': ['lat'],
-                                    'y': ('y', latitudes[:, 0]),
-                                    'x': ('x', np.arange(1, latitudes.shape[1]+1))})
+        return xr.DataArray(
+            data=da.from_array(latitudes[np.newaxis, :, :], chunks=(1, 512, 512)),
+            dims=('band', 'y', 'x'),
+            coords={
+                'band': ['lat'],
+                'y': ('y', latitudes[:, 0]),
+                'x': ('x', np.arange(1, latitudes.shape[1] + 1)),
+            },
+        )
 
 
 def get_geometry_info(geometry, res):
-
-    """
-    Gets information from a Shapely geometry object
+    """Gets information from a Shapely geometry object.
 
     Args:
         geometry (object): A `shapely.geometry` object.
@@ -250,28 +271,28 @@ def get_geometry_info(geometry, res):
     Returns:
         Geometry information (namedtuple)
     """
-
     GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
+    resx, resy = abs(res[1]), abs(res[0])
     minx, miny, maxx, maxy = geometry.bounds
-
     if isinstance(minx, str):
         minx, miny, maxx, maxy = geometry.bounds.values[0]
 
-    out_shape = (int((maxy - miny) / res[1]), int((maxx - minx) / res[0]))
+    out_shape = (int((maxy - miny) / resx), int((maxx - minx) / resy))
 
-    return GeomInfo(left=minx,
-                    bottom=miny,
-                    right=maxx,
-                    top=maxy,
-                    shape=out_shape,
-                    affine=Affine(res[0], 0.0, minx, 0.0, -res[1], maxy))
+    return GeomInfo(
+        left=minx,
+        bottom=miny,
+        right=maxx,
+        top=maxy,
+        shape=out_shape,
+        affine=Affine(resy, 0.0, minx, 0.0, -resx, maxy),
+    )
 
 
 def get_file_extension(filename):
 
-    """
-    Gets file and directory name information
+    """Gets file and directory name information.
 
     Args:
         filename (str): The file name.
@@ -290,8 +311,7 @@ def get_file_extension(filename):
 
 def n_rows_cols(pixel_index, block_size, rows_cols):
 
-    """
-    Adjusts block size for the end of image rows and columns.
+    """Adjusts block size for the end of image rows and columns.
 
     Args:
         pixel_index (int): The current pixel row or column index.
@@ -302,7 +322,11 @@ def n_rows_cols(pixel_index, block_size, rows_cols):
         Adjusted block size as int.
     """
 
-    return block_size if (pixel_index + block_size) < rows_cols else rows_cols - pixel_index
+    return (
+        block_size
+        if (pixel_index + block_size) < rows_cols
+        else rows_cols - pixel_index
+    )
 
 
 class Chunks(object):
@@ -320,7 +344,9 @@ class Chunks(object):
         if not isinstance(chunksize, tuple):
             if not isinstance(chunksize, dict):
                 if not isinstance(chunksize, int):
-                    logger.warning('  The chunksize parameter should be a tuple, dictionary, or integer.')
+                    logger.warning(
+                        '  The chunksize parameter should be a tuple, dictionary, or integer.'
+                    )
 
         if chunk_len != output_len:
             return self.check_chunksize(chunksize, output=output)
@@ -342,19 +368,19 @@ class Chunks(object):
 
 
 class MapProcesses(object):
-
     @staticmethod
-    def moving(data,
-               band_names=None,
-               stat='mean',
-               perc=50,
-               nodata=None,
-               w=3,
-               weights=False,
-               n_jobs=1):
+    def moving(
+        data,
+        band_names=None,
+        stat='mean',
+        perc=50,
+        nodata=None,
+        w=3,
+        weights=False,
+        n_jobs=1,
+    ):
 
-        """
-        Applies a moving window function over Dask array blocks
+        """Applies a moving window function over Dask array blocks.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
@@ -393,7 +419,9 @@ class MapProcesses(object):
 
         if n_jobs <= 0:
 
-            logger.warning('  The number of parallel jobs should be a positive integer, so setting n_jobs=1.')
+            logger.warning(
+                '  The number of parallel jobs should be a positive integer, so setting n_jobs=1.'
+            )
             n_jobs = 1
 
         hw = int(w / 2.0)
@@ -409,13 +437,15 @@ class MapProcesses(object):
                 return block_data
             else:
 
-                return moving_window(block_data,
-                                     stat=stat,
-                                     w=w,
-                                     perc=perc,
-                                     nodata=nodata,
-                                     weights=weights,
-                                     n_jobs=n_jobs)
+                return moving_window(
+                    block_data,
+                    stat=stat,
+                    w=w,
+                    perc=perc,
+                    nodata=nodata,
+                    weights=weights,
+                    n_jobs=n_jobs,
+                )
 
         results = list()
 
@@ -423,11 +453,13 @@ class MapProcesses(object):
 
             band_array = data.sel(band=band)
 
-            res = band_array.astype('float64').data.map_overlap(_move_func,
-                                                                depth=(hw, hw),
-                                                                trim=True,
-                                                                boundary='reflect',
-                                                                dtype='float64')
+            res = band_array.astype('float64').data.map_overlap(
+                _move_func,
+                depth=(hw, hw),
+                trim=True,
+                boundary='reflect',
+                dtype='float64',
+            )
 
             results.append(res)
 
@@ -439,14 +471,14 @@ class MapProcesses(object):
         if not isinstance(band_names, list):
 
             if not isinstance(band_names, np.ndarray):
-                band_names = np.arange(1, data.shape[0]+1)
+                band_names = np.arange(1, data.shape[0] + 1)
 
-        results = xr.DataArray(data=da.stack(results, axis=0),
-                               dims=('band', 'y', 'x'),
-                               coords={'band': band_names,
-                                       'y': y,
-                                       'x': x},
-                               attrs=attrs)
+        results = xr.DataArray(
+            data=da.stack(results, axis=0),
+            dims=('band', 'y', 'x'),
+            coords={'band': band_names, 'y': y, 'x': x},
+            attrs=attrs,
+        )
 
         results.attrs['moving_stat'] = stat
         results.attrs['moving_window_size'] = w
@@ -457,10 +489,19 @@ class MapProcesses(object):
         return results
 
 
-def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, frac, min_frac_area, feature_array=None):
-
-    """
-    Samples polygon features
+def sample_feature(
+    df_row,
+    id_column,
+    df_columns,
+    crs,
+    res,
+    all_touched,
+    meta,
+    frac,
+    min_frac_area,
+    feature_array=None,
+):
+    """Samples polygon features.
 
     Args:
         df_row (pandas.Series)
@@ -477,7 +518,6 @@ def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, f
     Returns:
         ``geopandas.GeoDataFrame``
     """
-
     geom = df_row.geometry
 
     # Get the feature's bounding extent
@@ -487,70 +527,65 @@ def sample_feature(df_row, id_column, df_columns, crs, res, all_touched, meta, f
         return gpd.GeoDataFrame([])
 
     fid = df_row[id_column]
-
     other_cols = [col for col in df_columns if col not in [id_column, 'geometry']]
 
     if not isinstance(feature_array, np.ndarray):
-
         # "Rasterize" the geometry into a NumPy array
-        feature_array = features.rasterize([geom],
-                                           out_shape=geom_info.shape,
-                                           fill=0,
-                                           out=None,
-                                           transform=geom_info.affine,
-                                           all_touched=all_touched,
-                                           default_value=1,
-                                           dtype='int32')
+        feature_array = features.rasterize(
+            [geom],
+            out_shape=geom_info.shape,
+            fill=0,
+            out=None,
+            transform=geom_info.affine,
+            all_touched=all_touched,
+            default_value=1,
+            dtype='int64',
+        )
 
     # Get the indices of the feature's envelope
     valid_samples = np.where(feature_array == 1)
-
-    # Convert the indices to map indices
-    y_samples = valid_samples[0] + int(round(abs(meta.top - geom_info.top)) / res[1])
-    x_samples = valid_samples[1] + int(round(abs(geom_info.left - meta.left)) / res[0])
-
-    # Convert the map indices to map coordinates
-    x_coords, y_coords = meta.affine * (x_samples, y_samples)
+    # Get geometry indices
+    x_samples = valid_samples[1]
+    y_samples = valid_samples[0]
+    # Convert the geometry indices to geometry map coordinates
+    x_coords, y_coords = geom_info.affine * (x_samples, y_samples)
+    # Move coordinates offset from polygon left and top edges
+    x_coords += abs(res[1]) * 0.5
+    y_coords -= abs(res[0]) * 0.5
 
     if frac < 1:
-
         take_subset = True
-
-        if isinstance(min_frac_area, int) or isinstance(min_frac_area, float):
+        if isinstance(min_frac_area, (float, int)):
             if y_coords.shape[0] <= min_frac_area:
                 take_subset = False
 
         if take_subset:
-
-            rand_idx = np.random.choice(np.arange(0, y_coords.shape[0]),
-                                        size=int(y_coords.shape[0] * frac),
-                                        replace=False)
-
+            rand_idx = np.random.choice(
+                np.arange(0, y_coords.shape[0]),
+                size=int(y_coords.shape[0] * frac),
+                replace=False,
+            )
             y_coords = y_coords[rand_idx]
             x_coords = x_coords[rand_idx]
 
     n_samples = y_coords.shape[0]
-
     try:
-
         fid_ = int(fid)
         fid_ = np.zeros(n_samples, dtype='int64') + fid_
-
-    except:
-
+    except ValueError:
         fid_ = str(fid)
-        fid_ = np.zeros([fid_]*n_samples, dtype=object)
+        fid_ = np.zeros([fid_] * n_samples, dtype=object)
 
     # Combine the coordinates into `Shapely` point geometry
-    fea_df = gpd.GeoDataFrame(data=np.c_[fid_, np.arange(0, n_samples)],
-                              geometry=gpd.points_from_xy(x_coords, y_coords),
-                              crs=crs,
-                              columns=[id_column, 'point'])
+    fea_df = gpd.GeoDataFrame(
+        data=np.c_[fid_, np.arange(0, n_samples)],
+        geometry=gpd.points_from_xy(x_coords, y_coords),
+        crs=crs,
+        columns=[id_column, 'point'],
+    )
 
     if not fea_df.empty:
         for col in other_cols:
-            fea_df.loc[:, col] = df_row[col]
-    else:
-        pass
+            fea_df = fea_df.assign(**{col: df_row[col]})
 
     return fea_df
