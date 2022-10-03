@@ -730,16 +730,12 @@ class SpatialOperations(_PropertyMixin):
             n_threads = multi.cpu_count()
 
         if use_client:
-
             if address:
                 cluster_object = _cluster_dummy
             else:
                 cluster_object = LocalCluster
-
             client_object = Client
-
         else:
-
             cluster_object = _cluster_dummy
             client_object = _client_dummy
 
@@ -747,7 +743,6 @@ class SpatialOperations(_PropertyMixin):
         band_names = self.check_sensor_band_names(data, sensor, band_names)
 
         converters = Converters()
-
         shape_len = data.gw.ndims
 
         if isinstance(bands, list):
@@ -762,7 +757,6 @@ class SpatialOperations(_PropertyMixin):
                 bands_idx = list(range(0, data.gw.nbands))
 
         if isinstance(aoi, gpd.GeoDataFrame):
-
             if id_column not in aoi.columns.tolist():
                 aoi['id'] = aoi.index.values
 
@@ -785,9 +779,9 @@ class SpatialOperations(_PropertyMixin):
         if verbose > 0:
             logger.info('  Extracting data ...')
 
-        # Convert the map coordinates to indices
+        # Convert the geometry map coordinates to array indices
         x, y = converters.coords_to_indices(
-            df.geometry.x.values, df.geometry.y.values, data.gw.transform
+            df.geometry.x.values, df.geometry.y.values, data.gw.affine
         )
 
         if y.max() >= data.gw.nrows:
@@ -825,22 +819,16 @@ class SpatialOperations(_PropertyMixin):
         if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:
-
             # `res` is shaped [dimensions x samples]
             df = pd.concat((df, pd.DataFrame(data=res.T, columns=band_names)), axis=1)
-
         else:
-
             if time_names:
-
                 if isinstance(time_names[0], datetime):
                     time_names = [t.strftime(time_format) for t in time_names]
-
             else:
                 time_names = [f't{t}' for t in range(1, res.shape[0] + 1)]
 
             band_names_concat = []
-
             for t in time_names:
                 for b in band_names:
                     band_names_concat.append(f'{t}_{b}')
