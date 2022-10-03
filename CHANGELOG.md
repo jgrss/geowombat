@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.15 (2022-10-03)
+* Fixed issue with polygon point extraction, which caused a one pixel shift north and west of the polygon top left bounds ([#225](https://github.com/jgrss/geowombat/pull/225))
+
 ## v2.0.14 (2022-09-29)
 * Fixed property errors exposed in online doc builds ([#223](https://github.com/jgrss/geowombat/pull/223))
 
