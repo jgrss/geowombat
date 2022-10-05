@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.16 (2022-10-05)
+* Pinned dependency `threadpoolctl` to a minimum version ([#227](https://github.com/jgrss/geowombat/pull/227))
+
 ## v2.0.15 (2022-10-03)
 * Fixed issue with polygon point extraction, which caused a one pixel shift north and west of the polygon top left bounds ([#225](https://github.com/jgrss/geowombat/pull/225))
 
