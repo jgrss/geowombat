@@ -482,9 +482,8 @@ def open_angle_file(
     band_pos: int,
     nodata: T.Union[float, int],
     subsample: int,
-    ref_res: T.Sequence[float],
 ) -> xr.DataArray:
-    new_res = subsample * ref_res[0]
+    new_res = subsample * 30.0
     # Update the .hdr file
     with open(in_angle_path + '.hdr', mode='r') as txt:
         lines = txt.readlines()
@@ -522,9 +521,6 @@ def postprocess_espa_angles(
     nodata = -32768
     angle_array_dict = {'vaa': None, 'vza': None, 'saa': None, 'sza': None}
     if angle_paths_in.sensor is not None:
-        with rio.open(ref_file) as src:
-            ref_res = src.res
-
         # Convert the data
         for in_angle, out_angle, band_pos in zip(
             [
@@ -551,12 +547,7 @@ def postprocess_espa_angles(
                 angle_name = 'sza'
 
             angle_array_resamp_da = open_angle_file(
-                in_angle,
-                chunks,
-                angle_paths_in.out_order[band_pos],
-                nodata,
-                subsample,
-                ref_res,
+                in_angle, chunks, angle_paths_in.out_order[band_pos], nodata, subsample
             )
             angle_array_dict = transform_angles(
                 ref_file,
