@@ -17,7 +17,7 @@ from ..handler import add_handler
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
-p = Path(os.path.abspath(os.path.dirname(__file__)))
+p = Path(__file__).absolute().parent
 
 rgbn = str(p / 'rgbn.tif')
 rgbn_suba = str(p / 'rgbn_suba.tif')
@@ -53,6 +53,7 @@ l7_225078_20110306_ang = str(
     p
     / 'LE07_L2SP_225078_20110306_02_T1_LE07_L2SP_225078_20110306_20200910_02_T1_ANG.txt'
 )
+l7_225078_20110306_SZA = str(p / 'LE07_L2SP_225078_20110306_02_T1_SZA.tif')
 l7_225078_20110306_B1 = str(p / 'LE07_L2SP_225078_20110306_02_T1_B1.tif')
 srtm30m_bounding_boxes = str(p / 'srtm30m_bounding_boxes.gpkg')
 wrs2 = str(p / 'wrs2.tar.gz')
