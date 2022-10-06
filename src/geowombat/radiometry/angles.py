@@ -567,6 +567,47 @@ def postprocess_espa_angles(
     )
 
 
+def landsat_angle_prep(
+    ref_file: T.Union[str, Path],
+    out_dir: T.Union[str, Path],
+    l57_angles_path: T.Union[str, Path] = None,
+    l8_angles_path: T.Union[str, Path] = None,
+) -> T.Tuple[Path, namedtuple, str, str]:
+    if not l57_angles_path:
+        gw_bin = os.path.realpath(os.path.dirname(__file__))
+        gw_out = os.path.realpath(str(Path(gw_bin).joinpath('../bin')))
+        gw_tar = os.path.realpath(str(Path(gw_bin).joinpath('../bin/ESPA.tar.gz')))
+
+        if not Path(gw_bin).joinpath('../bin/ESPA').is_dir():
+            with tarfile.open(gw_tar, mode='r:gz') as tf:
+                tf.extractall(gw_out)
+
+        l57_angles_path = str(Path(gw_out).joinpath('ESPA/landsat_angles'))
+        l8_angles_path = str(Path(gw_out).joinpath('ESPA/l8_angles'))
+
+    # Setup the angles name.
+    # example file = LE07_L1TP_225098_20160911_20161008_01_T1_sr_band1.tif
+    ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    # Set output angle file names.
+    sensor_azimuth_path = str(out_path.joinpath(ref_base + '_sensor_azimuth.tif'))
+    sensor_zenith_path = str(out_path.joinpath(ref_base + '_sensor_zenith.tif'))
+    solar_azimuth_path = str(out_path.joinpath(ref_base + '_solar_azimuth.tif'))
+    solar_zenith_path = str(out_path.joinpath(ref_base + '_solar_zenith.tif'))
+
+    AnglePathsOut = namedtuple('AnglePathsOut', 'vaa vza saa sza')
+    angle_paths_out = AnglePathsOut(
+        vaa=sensor_azimuth_path,
+        vza=sensor_zenith_path,
+        saa=solar_azimuth_path,
+        sza=solar_zenith_path,
+    )
+
+    return out_path, angle_paths_out, l57_angles_path, l8_angles_path
+
+
 def landsat_pixel_angles(
     angles_file: T.Union[str, Path],
     ref_file: T.Union[str, Path],
@@ -599,39 +640,11 @@ def landsat_pixel_angles(
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
-    if not l57_angles_path:
-        gw_bin = os.path.realpath(os.path.dirname(__file__))
-        gw_out = os.path.realpath(Path(gw_bin).joinpath('../bin').as_posix())
-        gw_tar = os.path.realpath(
-            Path(gw_bin).joinpath('../bin/ESPA.tar.gz').as_posix()
-        )
-
-        if not Path(gw_bin).joinpath('../bin/ESPA').is_dir():
-            with tarfile.open(gw_tar, mode='r:gz') as tf:
-                tf.extractall(gw_out)
-
-        l57_angles_path = Path(gw_out).joinpath('ESPA/landsat_angles').as_posix()
-        l8_angles_path = Path(gw_out).joinpath('ESPA/l8_angles').as_posix()
-
-    # Setup the angles name.
-    # example file = LE07_L1TP_225098_20160911_20161008_01_T1_sr_band1.tif
-
-    ref_base = '_'.join(os.path.basename(ref_file).split('_')[:-1])
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    # Set output angle file names.
-    sensor_azimuth_path = str(out_path.joinpath(ref_base + '_sensor_azimuth.tif'))
-    sensor_zenith_path = str(out_path.joinpath(ref_base + '_sensor_zenith.tif'))
-    solar_azimuth_path = str(out_path.joinpath(ref_base + '_solar_azimuth.tif'))
-    solar_zenith_path = str(out_path.joinpath(ref_base + '_solar_zenith.tif'))
-
-    AnglePathsOut = namedtuple('AnglePathsOut', 'vaa vza saa sza')
-    angle_paths_out = AnglePathsOut(
-        vaa=sensor_azimuth_path,
-        vza=sensor_zenith_path,
-        saa=solar_azimuth_path,
-        sza=solar_zenith_path,
+    out_path, angle_paths_out, l57_angles_path, l8_angles_path = landsat_angle_prep(
+        ref_file=ref_file,
+        out_dir=out_dir,
+        l57_angles_path=l57_angles_path,
+        l8_angles_path=l8_angles_path,
     )
     angle_paths_in = run_espa_command(
         angle_paths_out.vaa,
