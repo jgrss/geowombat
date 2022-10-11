@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.17 (2022-10-11)
+* Pinned dask version and fixed issue with Landsat angle creation ([#228](https://github.com/jgrss/geowombat/pull/228))
+
 ## v2.0.16 (2022-10-05)
 * Pinned dependency `threadpoolctl` to a minimum version ([#227](https://github.com/jgrss/geowombat/pull/227))
 
