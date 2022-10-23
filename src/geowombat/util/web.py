@@ -991,7 +991,26 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             if not path_shp.is_file():
 
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
-                    tf.extractall(data_dir.as_posix())
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(tf, data_dir.as_posix())
 
             df_wrs = gpd.read_file(wrs)
             df_wrs = df_wrs[df_wrs.geometry.intersects(bounds_object)]
@@ -1011,7 +1030,26 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
             if not path_shp.is_file():
 
                 with tarfile.open(os.path.realpath(path_tar.as_posix()), mode='r:gz') as tf:
-                    tf.extractall(data_dir.as_posix())
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(tf, data_dir.as_posix())
 
             df_mgrs = gpd.read_file(mgrs)
             df_mgrs = df_mgrs[df_mgrs.geometry.intersects(bounds_object)]
