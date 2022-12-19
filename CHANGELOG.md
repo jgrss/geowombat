@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.18 (2022-12-19)
+* Removed OpenCV dependency ([#232](https://github.com/jgrss/geowombat/pull/232))
+
 ## v2.0.17 (2022-10-11)
 * Pinned dask version and fixed issue with Landsat angle creation ([#228](https://github.com/jgrss/geowombat/pull/228))
 
