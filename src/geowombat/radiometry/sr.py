@@ -12,7 +12,7 @@ from .sixs import AOT, SixS
 from ..core.properties import get_sensor_info
 
 import numpy as np
-import cv2
+from scipy.ndimage import zoom
 import pandas as pd
 from rasterio.fill import fillnodata
 import xarray as xr
@@ -25,14 +25,15 @@ logger = add_handler(logger)
 
 
 def coeffs_to_array(coeffs, band_names):
-    """Converts coefficients to a DataArray"""
-    return xr.DataArray(data=[coeffs[bi] for bi in band_names], coords={'band': band_names}, dims='band')
+    """Converts coefficients to a DataArray."""
+    return xr.DataArray(
+        data=[coeffs[bi] for bi in band_names], coords={'band': band_names}, dims='band'
+    )
 
 
 def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
 
-    """
-    Calculates atmospheric reflectance due to Rayleigh scattering
+    """Calculates atmospheric reflectance due to Rayleigh scattering.
 
     Args:
         m (float): The air mass.
@@ -54,13 +55,14 @@ def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
     cos_sensor_za_stack = xr.concat([cos_sensor_za] * len(m.band), dim='band')
     cos_sensor_za_stack.coords['band'] = m.band.values
 
-    return rphase_stack * ((1.0 - np.exp(-m*r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack)))
+    return rphase_stack * (
+        (1.0 - np.exp(-m * r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack))
+    )
 
 
 def t_sv(r, cos_zenith):
 
-    """
-    Calculates atmospheric transmittance of sun-surface path
+    """Calculates atmospheric transmittance of sun-surface path.
 
     Args:
         r (float): The Rayleigh optical depth.
@@ -74,15 +76,15 @@ def t_sv(r, cos_zenith):
     cos_zenith_stack.coords['band'] = r.band.values
 
     cose1 = np.exp(-r / cos_zenith_stack)
-    cose2 = np.exp(0.52*r / cos_zenith_stack)
+    cose2 = np.exp(0.52 * r / cos_zenith_stack)
 
     return cose1 + cose1 * (cose2 - 1.0)
 
 
 def s_atm(r):
 
-    """
-    Calculates atmospheric backscattering ratio to count multiple reflections between the surface and atmosphere
+    """Calculates atmospheric backscattering ratio to count multiple
+    reflections between the surface and atmosphere.
 
     Args:
         r (float): The Rayleigh optical depth.
@@ -91,26 +93,57 @@ def s_atm(r):
         ``float``
     """
 
-    return (0.92*r) * np.exp(-r)
+    return (0.92 * r) * np.exp(-r)
 
 
 def _format_coeff(dataframe, sensor, key):
     bands_dict = dict(
         l5={
-            '1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6': 'th', '7': 'swir2'
+            '1': 'blue',
+            '2': 'green',
+            '3': 'red',
+            '4': 'nir',
+            '5': 'swir1',
+            '6': 'th',
+            '7': 'swir2',
         },
         l7={
-            '1': 'blue', '2': 'green', '3': 'red', '4': 'nir', '5': 'swir1', '6VCID1': 'th1',
-            '6VCID2': 'th2', '7': 'swir2', '8': 'pan'
+            '1': 'blue',
+            '2': 'green',
+            '3': 'red',
+            '4': 'nir',
+            '5': 'swir1',
+            '6VCID1': 'th1',
+            '6VCID2': 'th2',
+            '7': 'swir2',
+            '8': 'pan',
         },
         l8={
-            '1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
-            '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'
+            '1': 'coastal',
+            '2': 'blue',
+            '3': 'green',
+            '4': 'red',
+            '5': 'nir',
+            '6': 'swir1',
+            '7': 'swir2',
+            '8': 'pan',
+            '9': 'cirrus',
+            '10': 'th1',
+            '11': 'th2',
         },
         l9={
-            '1': 'coastal', '2': 'blue', '3': 'green', '4': 'red', '5': 'nir', '6': 'swir1',
-            '7': 'swir2', '8': 'pan', '9': 'cirrus', '10': 'th1', '11': 'th2'
-        }
+            '1': 'coastal',
+            '2': 'blue',
+            '3': 'green',
+            '4': 'red',
+            '5': 'nir',
+            '6': 'swir1',
+            '7': 'swir2',
+            '8': 'pan',
+            '9': 'cirrus',
+            '10': 'th1',
+            '11': 'th2',
+        },
     )
 
     sensor_dict = bands_dict[sensor]
@@ -135,11 +168,11 @@ def _format_coeff(dataframe, sensor, key):
 
 
 class MetaData(object):
-    """A class for sensor metadata
-    """
+    """A class for sensor metadata."""
+
     @staticmethod
     def get_landsat_coefficients(meta_file):
-        """Gets coefficients from a Landsat metadata file
+        """Gets coefficients from a Landsat metadata file.
 
         Args:
             meta_file (str): The text metadata file.
@@ -154,12 +187,12 @@ class MetaData(object):
             'LANDSAT_5': 'l5',
             'LANDSAT_7': 'l7',
             'LANDSAT_8': 'l8',
-            'LANDSAT_9': 'l9'
+            'LANDSAT_9': 'l9',
         }
 
         MetaCoeffs = namedtuple(
             'MetaCoeffs',
-            'sensor m_l a_l m_p a_p date_acquired sza left bottom right top'
+            'sensor m_l a_l m_p a_p date_acquired sza left bottom right top',
         )
 
         df = pd.read_csv(meta_file, sep='=')
@@ -176,10 +209,18 @@ class MetaData(object):
         m_p = _format_coeff(df, sensor, 'REFLECTANCE_MULT_BAND_')
         a_p = _format_coeff(df, sensor, 'REFLECTANCE_ADD_BAND_')
 
-        ux_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_X_PRODUCT')].values)
-        lx_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_X_PRODUCT')].values)
-        uy_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_Y_PRODUCT')].values)
-        ly_dict = dict(df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_Y_PRODUCT')].values)
+        ux_dict = dict(
+            df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_X_PRODUCT')].values
+        )
+        lx_dict = dict(
+            df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_X_PRODUCT')].values
+        )
+        uy_dict = dict(
+            df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_Y_PRODUCT')].values
+        )
+        ly_dict = dict(
+            df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_Y_PRODUCT')].values
+        )
 
         left = float(ux_dict['CORNER_UL_PROJECTION_X_PRODUCT'])
         bottom = float(ly_dict['CORNER_LR_PROJECTION_Y_PRODUCT'])
@@ -198,7 +239,9 @@ class MetaData(object):
         month = int(month)
         day = int(day)
 
-        scene_center_time = dict(df[df.iloc[:, 0].str.startswith('SCENE_CENTER_TIME')].values)
+        scene_center_time = dict(
+            df[df.iloc[:, 0].str.startswith('SCENE_CENTER_TIME')].values
+        )
         scene_center_time = scene_center_time['SCENE_CENTER_TIME'].replace('"', '')
         hour = int(scene_center_time.split(':')[0])
 
@@ -215,14 +258,13 @@ class MetaData(object):
             left=left,
             bottom=bottom,
             right=right,
-            top=top
+            top=top,
         )
 
     @staticmethod
     def get_sentinel_coefficients(meta_file):
 
-        """
-        Gets coefficients from a Sentinel metadata file
+        """Gets coefficients from a Sentinel metadata file.
 
         Args:
             meta_file (str): The XML metadata file.
@@ -236,7 +278,9 @@ class MetaData(object):
 
         solar_zenith = None
 
-        MetaCoeffs = namedtuple('MetaCoeffs', 'sensor date_acquired sza grid_sza grid_saa grid_vza grid_vaa')
+        MetaCoeffs = namedtuple(
+            'MetaCoeffs', 'sensor date_acquired sza grid_sza grid_saa grid_vza grid_vaa'
+        )
 
         tree = ET.parse(meta_file)
         root = tree.getroot()
@@ -271,7 +315,13 @@ class MetaData(object):
                         year, month, day = segment.text.split('-')
                         break
 
-        date_acquired = dtime(int(year), int(month), int(day[:2]), int(day[3:5]), tzinfo=datetime.timezone.utc)
+        date_acquired = dtime(
+            int(year),
+            int(month),
+            int(day[:2]),
+            int(day[3:5]),
+            tzinfo=datetime.timezone.utc,
+        )
 
         sza, saa = parse_sentinel_angles(meta_file, 'solar', 0)
         vza, vaa = parse_sentinel_angles(meta_file, 'view', 0)
@@ -281,91 +331,163 @@ class MetaData(object):
             if len(grid.shape) == 2:
                 grid = grid[np.newaxis, :, :]
 
-            return xr.DataArray(grid,
-                                dims=('band', 'y', 'x'),
-                                coords={'band': band_names,
-                                        'y': range(0, grid.shape[1]),
-                                        'x': range(0, grid.shape[2])})
+            return xr.DataArray(
+                grid,
+                dims=('band', 'y', 'x'),
+                coords={
+                    'band': band_names,
+                    'y': range(0, grid.shape[1]),
+                    'x': range(0, grid.shape[2]),
+                },
+            )
 
-        return MetaCoeffs(sensor=sensor,
-                          date_acquired=date_acquired,
-                          sza=solar_zenith,
-                          grid_sza=grid_to_data_array(sza, ['sza']),
-                          grid_saa=grid_to_data_array(saa, ['saa']),
-                          grid_vza=grid_to_data_array(vza, ['coastal', 'blue', 'green', 'red', 'nir1', 'nir2', 'nir3',
-                                                             'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']),
-                          grid_vaa=grid_to_data_array(vaa, ['coastal', 'blue', 'green', 'red', 'nir1', 'nir2', 'nir3',
-                                                             'nir', 'rededge', 'water', 'cirrus', 'swir1', 'swir2']))
+        return MetaCoeffs(
+            sensor=sensor,
+            date_acquired=date_acquired,
+            sza=solar_zenith,
+            grid_sza=grid_to_data_array(sza, ['sza']),
+            grid_saa=grid_to_data_array(saa, ['saa']),
+            grid_vza=grid_to_data_array(
+                vza,
+                [
+                    'coastal',
+                    'blue',
+                    'green',
+                    'red',
+                    'nir1',
+                    'nir2',
+                    'nir3',
+                    'nir',
+                    'rededge',
+                    'water',
+                    'cirrus',
+                    'swir1',
+                    'swir2',
+                ],
+            ),
+            grid_vaa=grid_to_data_array(
+                vaa,
+                [
+                    'coastal',
+                    'blue',
+                    'green',
+                    'red',
+                    'nir1',
+                    'nir2',
+                    'nir3',
+                    'nir',
+                    'rededge',
+                    'water',
+                    'cirrus',
+                    'swir1',
+                    'swir2',
+                ],
+            ),
+        )
 
 
 class LinearAdjustments(object):
-    """A class for linear bandpass adjustments
-    """
+    """A class for linear bandpass adjustments."""
+
     def __init__(self):
-        self.coefficients = dict(s2a=dict(l5=None,
-                                          l7=None,
-                                          l8=dict(alphas=dict(coastal=-0.0002,
-                                                              blue=-0.004,
-                                                              green=-0.0009,
-                                                              red=0.0009,
-                                                              nir=-0.0001,
-                                                              swir1=-0.0011,
-                                                              swir2=-0.0012),
-                                                  betas=dict(coastal=0.9959,
-                                                             blue=0.9778,
-                                                             green=1.0053,
-                                                             red=0.9765,
-                                                             nir=0.9983,
-                                                             swir1=0.9987,
-                                                             swir2=1.003))),
-                                 s2b=dict(l5=None,
-                                          l7=None,
-                                          l8=dict(alphas=dict(coastal=-0.0002,
-                                                              blue=-0.004,
-                                                              green=-0.0008,
-                                                              red=0.001,
-                                                              nir=0.0,
-                                                              swir1=-0.0003,
-                                                              swir2=0.0004),
-                                                  betas=dict(coastal=0.9959,
-                                                             blue=0.9778,
-                                                             green=1.0075,
-                                                             red=0.9761,
-                                                             nir=0.9966,
-                                                             swir1=1.0,
-                                                             swir2=0.9867))),
-                                 l5=dict(l7=None,
-                                         l8=dict(alphas=dict(blue=-0.0095,
-                                                             green=-0.0016,
-                                                             red=-0.0022,
-                                                             nir=-0.0021,
-                                                             swir1=-0.003,
-                                                             swir2=0.0029,
-                                                             pan=-0.00443),
-                                                 betas=dict(blue=0.9785,
-                                                            green=0.9542,
-                                                            red=0.9825,
-                                                            nir=1.0073,
-                                                            swir1=1.0171,
-                                                            swir2=0.9949,
-                                                            pan=0.9717)),
-                                         s2=None),
-                                 l7=dict(l5=None,
-                                         l8=dict(alphas=dict(blue=-0.0095,
-                                                             green=-0.0016,
-                                                             red=-0.0022,
-                                                             nir=-0.0021,
-                                                             swir1=-0.003,
-                                                             swir2=0.0029,
-                                                             pan=-0.00443),
-                                                 betas=dict(blue=0.9785,
-                                                            green=0.9542,
-                                                            red=0.9825,
-                                                            nir=1.0073,
-                                                            swir1=1.0171,
-                                                            swir2=0.9949,
-                                                            pan=0.9717)),
-                                         s2=None))
+        self.coefficients = dict(
+            s2a=dict(
+                l5=None,
+                l7=None,
+                l8=dict(
+                    alphas=dict(
+                        coastal=-0.0002,
+                        blue=-0.004,
+                        green=-0.0009,
+                        red=0.0009,
+                        nir=-0.0001,
+                        swir1=-0.0011,
+                        swir2=-0.0012,
+                    ),
+                    betas=dict(
+                        coastal=0.9959,
+                        blue=0.9778,
+                        green=1.0053,
+                        red=0.9765,
+                        nir=0.9983,
+                        swir1=0.9987,
+                        swir2=1.003,
+                    ),
+                ),
+            ),
+            s2b=dict(
+                l5=None,
+                l7=None,
+                l8=dict(
+                    alphas=dict(
+                        coastal=-0.0002,
+                        blue=-0.004,
+                        green=-0.0008,
+                        red=0.001,
+                        nir=0.0,
+                        swir1=-0.0003,
+                        swir2=0.0004,
+                    ),
+                    betas=dict(
+                        coastal=0.9959,
+                        blue=0.9778,
+                        green=1.0075,
+                        red=0.9761,
+                        nir=0.9966,
+                        swir1=1.0,
+                        swir2=0.9867,
+                    ),
+                ),
+            ),
+            l5=dict(
+                l7=None,
+                l8=dict(
+                    alphas=dict(
+                        blue=-0.0095,
+                        green=-0.0016,
+                        red=-0.0022,
+                        nir=-0.0021,
+                        swir1=-0.003,
+                        swir2=0.0029,
+                        pan=-0.00443,
+                    ),
+                    betas=dict(
+                        blue=0.9785,
+                        green=0.9542,
+                        red=0.9825,
+                        nir=1.0073,
+                        swir1=1.0171,
+                        swir2=0.9949,
+                        pan=0.9717,
+                    ),
+                ),
+                s2=None,
+            ),
+            l7=dict(
+                l5=None,
+                l8=dict(
+                    alphas=dict(
+                        blue=-0.0095,
+                        green=-0.0016,
+                        red=-0.0022,
+                        nir=-0.0021,
+                        swir1=-0.003,
+                        swir2=0.0029,
+                        pan=-0.00443,
+                    ),
+                    betas=dict(
+                        blue=0.9785,
+                        green=0.9542,
+                        red=0.9825,
+                        nir=1.0073,
+                        swir1=1.0171,
+                        swir2=0.9949,
+                        pan=0.9717,
+                    ),
+                ),
+                s2=None,
+            ),
+        )
 
     def bandpass(
         self,
@@ -375,9 +497,10 @@ class LinearAdjustments(object):
         band_names=None,
         scale_factor=1,
         src_nodata=0,
-        dst_nodata=0
+        dst_nodata=0,
     ):
-        """Applies a bandpass adjustment by applying a linear function to surface reflectance values
+        """Applies a bandpass adjustment by applying a linear function to
+        surface reflectance values.
 
         Args:
             data (DataArray): The data to adjust.
@@ -435,20 +558,16 @@ class LinearAdjustments(object):
 
         coeff_dict = self.coefficients[sensor][to]
 
-        alphas = np.array([coeff_dict['alphas'][bd] for bd in band_names], dtype='float64')
-        betas = np.array([coeff_dict['betas'][bd] for bd in band_names], dtype='float64')
-
-        alphas = xr.DataArray(
-            data=alphas,
-            coords={'band': band_names},
-            dims='band'
+        alphas = np.array(
+            [coeff_dict['alphas'][bd] for bd in band_names], dtype='float64'
+        )
+        betas = np.array(
+            [coeff_dict['betas'][bd] for bd in band_names], dtype='float64'
         )
 
-        betas = xr.DataArray(
-            data=betas,
-            coords={'band': band_names},
-            dims='band'
-        )
+        alphas = xr.DataArray(data=alphas, coords={'band': band_names}, dims='band')
+
+        betas = xr.DataArray(data=betas, coords={'band': band_names}, dims='band')
 
         # Apply the linear bandpass adjustment
         data = alphas + betas * data
@@ -469,27 +588,26 @@ class LinearAdjustments(object):
 
 class RadTransforms(MetaData):
 
-    """
-    A class for radiometric transformations
-    """
+    """A class for radiometric transformations."""
 
-    def dn_to_sr(self,
-                 dn,
-                 solar_za,
-                 solar_az,
-                 sensor_za,
-                 sensor_az,
-                 src_nodata=-32768,
-                 dst_nodata=-32768,
-                 sensor=None,
-                 method='srem',
-                 angle_factor=0.01,
-                 meta=None,
-                 interp_method='fast',
-                 **kwargs):
+    def dn_to_sr(
+        self,
+        dn,
+        solar_za,
+        solar_az,
+        sensor_za,
+        sensor_az,
+        src_nodata=-32768,
+        dst_nodata=-32768,
+        sensor=None,
+        method='srem',
+        angle_factor=0.01,
+        meta=None,
+        interp_method='fast',
+        **kwargs
+    ):
 
-        """
-        Converts digital numbers to surface reflectance
+        """Converts digital numbers to surface reflectance.
 
         Args:
             dn (DataArray): The digital number data to calibrate.
@@ -544,13 +662,17 @@ class RadTransforms(MetaData):
                 if bi not in meta.m_p:
                     logger.warning(meta.m_p)
                     logger.warning(band_names)
-                    logger.exception('  The metadata holder does not have matching bands.')
+                    logger.exception(
+                        '  The metadata holder does not have matching bands.'
+                    )
                     raise ValueError
 
                 if bi not in meta.a_p:
                     logger.warning(meta.a_p)
                     logger.warning(band_names)
-                    logger.exception('  The metadata holder does not have matching bands.')
+                    logger.exception(
+                        '  The metadata holder does not have matching bands.'
+                    )
                     raise ValueError
 
             if method == '6s':
@@ -578,14 +700,18 @@ class RadTransforms(MetaData):
 
                 for band in band_names:
 
-                    sr_data.append(sxs.rad_to_sr(radiance,
-                                                 meta.sensor,
-                                                 band,
-                                                 solar_za,
-                                                 meta.date_acquired.timetuple().tm_yday,
-                                                 angle_factor=angle_factor,
-                                                 interp_method=interp_method,
-                                                 **kwargs))
+                    sr_data.append(
+                        sxs.rad_to_sr(
+                            radiance,
+                            meta.sensor,
+                            band,
+                            solar_za,
+                            meta.date_acquired.timetuple().tm_yday,
+                            angle_factor=angle_factor,
+                            interp_method=interp_method,
+                            **kwargs
+                        )
+                    )
 
                 sr_data = xr.concat(sr_data, dim='band')
 
@@ -597,7 +723,14 @@ class RadTransforms(MetaData):
                 m_p = coeffs_to_array(meta.m_p, band_names)
                 a_p = coeffs_to_array(meta.a_p, band_names)
 
-                toar = self.dn_to_toar(dn, m_p, a_p, solar_za=solar_za, angle_factor=angle_factor, sun_angle=True)
+                toar = self.dn_to_toar(
+                    dn,
+                    m_p,
+                    a_p,
+                    solar_za=solar_za,
+                    angle_factor=angle_factor,
+                    sun_angle=True,
+                )
 
         else:
 
@@ -617,14 +750,16 @@ class RadTransforms(MetaData):
 
         if method == 'srem':
 
-            sr_data = self.toar_to_sr(toar,
-                                      solar_za,
-                                      solar_az,
-                                      sensor_za,
-                                      sensor_az,
-                                      sensor,
-                                      src_nodata=src_nodata,
-                                      dst_nodata=dst_nodata)
+            sr_data = self.toar_to_sr(
+                toar,
+                solar_za,
+                solar_az,
+                sensor_za,
+                sensor_az,
+                sensor,
+                src_nodata=src_nodata,
+                dst_nodata=dst_nodata,
+            )
 
         attrs['sensor'] = sensor
         attrs['nodata'] = dst_nodata
@@ -640,8 +775,7 @@ class RadTransforms(MetaData):
 
     def dn_to_radiance(self, dn, gain, bias):
 
-        """
-        Converts digital numbers to radiance
+        """Converts digital numbers to radiance.
 
         Args:
             dn (DataArray): The digital number data to calibrate.
@@ -657,10 +791,11 @@ class RadTransforms(MetaData):
 
         return self._linear_transform(dn, gain, bias).assign_attrs(**attrs)
 
-    def dn_to_toar(self, dn, gain, bias, solar_za=None, angle_factor=0.01, sun_angle=True):
+    def dn_to_toar(
+        self, dn, gain, bias, solar_za=None, angle_factor=0.01, sun_angle=True
+    ):
 
-        """
-        Converts digital numbers to top-of-atmosphere reflectance
+        """Converts digital numbers to top-of-atmosphere reflectance.
 
         Args:
             dn (DataArray): The digital number data to calibrate.
@@ -691,7 +826,10 @@ class RadTransforms(MetaData):
                 raise NameError
 
             # TOA reflectance with sun angle correction
-            cos_sza = xr.concat([np.cos(np.deg2rad(solar_za * angle_factor))] * len(toar.band), dim='band')
+            cos_sza = xr.concat(
+                [np.cos(np.deg2rad(solar_za * angle_factor))] * len(toar.band),
+                dim='band',
+            )
             cos_sza.coords['band'] = toar.band.values
             toar = toar / cos_sza
 
@@ -702,8 +840,7 @@ class RadTransforms(MetaData):
     @staticmethod
     def radiance_to_toar(radiance, solar_za, global_args):
 
-        """
-        Converts radiance to top-of-atmosphere reflectance
+        """Converts radiance to top-of-atmosphere reflectance.
 
         Args:
             radiance (DataArray): The radiance data to calibrate.
@@ -718,7 +855,9 @@ class RadTransforms(MetaData):
 
         solar_zenith_angle = solar_za * 0.01
 
-        toar_data = (global_args.pi * radiance * global_args.d**2) / (global_args.esun * da.cos(solar_zenith_angle))
+        toar_data = (global_args.pi * radiance * global_args.d**2) / (
+            global_args.esun * da.cos(solar_zenith_angle)
+        )
 
         attrs['calibration'] = 'top-of-atmosphere reflectance'
 
@@ -729,8 +868,8 @@ class RadTransforms(MetaData):
     @staticmethod
     def toar_to_rad(toar, meta):
 
-        """
-        Converts top of atmosphere reflectance to top of atmosphere radiance
+        """Converts top of atmosphere reflectance to top of atmosphere
+        radiance.
 
         Args:
             toar (DataArray): The top of atmosphere reflectance (0-1).
@@ -744,21 +883,26 @@ class RadTransforms(MetaData):
         attrs = toar.attrs.copy()
 
         # Get the mean incidence angle for each band
-        vza = meta.grid_vza.sel(band=toar.band.values.tolist())\
-                    .where(lambda x: x != 0)\
-                    .reduce(np.nanmean, dim=('y', 'x'))
+        vza = (
+            meta.grid_vza.sel(band=toar.band.values.tolist())
+            .where(lambda x: x != 0)
+            .reduce(np.nanmean, dim=('y', 'x'))
+        )
 
         band_names = toar.band.values.tolist()
 
         # Julian day with ESA reference date
         # https://sentinel.esa.int/web/sentinel/technical-guides/sentinel-2-msi/level-1c/algorithm
-        julian_day = meta.date_acquired.toordinal() + dtime.strptime('1950-1-1', '%Y-%m-%d').toordinal() # + 1721424.5
+        julian_day = (
+            meta.date_acquired.toordinal()
+            + dtime.strptime('1950-1-1', '%Y-%m-%d').toordinal()
+        )  # + 1721424.5
 
         # Earth-sun distance
         # This could be replaced with 1/U from the ESA metadata. However, since the
         # U variable is stored in a separate metadata file it's easier to just
         # calculate it here.
-        d2 = 1.0 / ((1.0 - 0.0167 * np.cos(0.0172 * (julian_day - 2.0)))**2)
+        d2 = 1.0 / ((1.0 - 0.0167 * np.cos(0.0172 * (julian_day - 2.0))) ** 2)
 
         # Band solar irradiance
         solar_irradiances = get_sensor_info(key='solar_irradiance', sensor=meta.sensor)
@@ -766,27 +910,31 @@ class RadTransforms(MetaData):
         solar_irradiances = coeffs_to_array(solar_irradiances, band_names)
 
         # Convert TOAR to radiance
-        rad = (((toar*10000.0) * np.cos(np.deg2rad(vza)) * solar_irradiances) / (np.pi * d2)) * 0.0001
+        rad = (
+            ((toar * 10000.0) * np.cos(np.deg2rad(vza)) * solar_irradiances)
+            / (np.pi * d2)
+        ) * 0.0001
 
         return rad.assign_attrs(**attrs)
 
-    def toar_to_sr(self,
-                   toar,
-                   solar_za,
-                   solar_az,
-                   sensor_za,
-                   sensor_az,
-                   sensor=None,
-                   src_nodata=-32768,
-                   dst_nodata=-32768,
-                   method='srem',
-                   angle_factor=0.01,
-                   meta=None,
-                   interp_method='fast',
-                   **kwargs):
+    def toar_to_sr(
+        self,
+        toar,
+        solar_za,
+        solar_az,
+        sensor_za,
+        sensor_az,
+        sensor=None,
+        src_nodata=-32768,
+        dst_nodata=-32768,
+        method='srem',
+        angle_factor=0.01,
+        meta=None,
+        interp_method='fast',
+        **kwargs
+    ):
 
-        """
-        Converts top-of-atmosphere reflectance to surface reflectance
+        """Converts top-of-atmosphere reflectance to surface reflectance.
 
         Args:
             toar (DataArray): The top-of-atmosphere reflectance (0-1).
@@ -844,16 +992,20 @@ class RadTransforms(MetaData):
 
             for band in band_names:
 
-                sr_data.append(sxs.rad_to_sr(rad,
-                                             sensor,
-                                             band,
-                                             solar_za,
-                                             meta.date_acquired.timetuple().tm_yday,
-                                             src_nodata=src_nodata,
-                                             dst_nodata=dst_nodata,
-                                             angle_factor=angle_factor,
-                                             interp_method=interp_method,
-                                             **kwargs))
+                sr_data.append(
+                    sxs.rad_to_sr(
+                        rad,
+                        sensor,
+                        band,
+                        solar_za,
+                        meta.date_acquired.timetuple().tm_yday,
+                        src_nodata=src_nodata,
+                        dst_nodata=dst_nodata,
+                        angle_factor=angle_factor,
+                        interp_method=interp_method,
+                        **kwargs
+                    )
+                )
 
             sr_data = xr.concat(sr_data, dim='band')
 
@@ -862,7 +1014,7 @@ class RadTransforms(MetaData):
             # Get the central wavelength (in micrometers)
             central_um = toar.gw.central_um[sensor]
             band_names = list(toar.gw.wavelengths[sensor]._fields)
-            band_um = [getattr(central_um, p)*1000.0 for p in band_names]
+            band_um = [getattr(central_um, p) * 1000.0 for p in band_names]
             um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
 
             # Scale the angles to degrees
@@ -898,13 +1050,13 @@ class RadTransforms(MetaData):
             m = m.expand_dims(dim='band')
             m = m.assign_coords(band=[1])
 
-            m = xr.concat([m]*len(toar.band), dim='band')
+            m = xr.concat([m] * len(toar.band), dim='band')
             m.coords['band'] = toar.band.values
 
             # Rayleigh optical depth
             # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
             # Eq. 2.30, p. 544
-            r = 0.008569*um**-4 * (1.0 + 0.0113*um**-2 + 0.0013*um**-4)
+            r = 0.008569 * um**-4 * (1.0 + 0.0113 * um**-2 + 0.0013 * um**-4)
 
             # Relative azimuth angle
             # TODO: doesn't work if the band coordinate is named
@@ -919,13 +1071,17 @@ class RadTransforms(MetaData):
             # cos_vza = cos(pi/180 x vza)
             # sin_sza = sin(pi/180 x sza)
             # sin_vza = sin(pi/180 x vza)
-            scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
-            cos2_scattering_angle = np.cos(scattering_angle)**2
+            scattering_angle = np.arccos(
+                -cos_sza * cos_vza - sin_sza * sin_vza * cos_raa
+            )
+            cos2_scattering_angle = np.cos(scattering_angle) ** 2
 
             # Rayleigh phase function
             rayleigh_a = 0.9587256
             rayleigh_b = 1.0 - rayleigh_a
-            rphase = ((3.0 * rayleigh_a) / (4.0 + rayleigh_b)) * (1.0 + cos2_scattering_angle)
+            rphase = ((3.0 * rayleigh_a) / (4.0 + rayleigh_b)) * (
+                1.0 + cos2_scattering_angle
+            )
 
             # Get the air mass
             pr_data = p_r(m, r, rphase, cos_sza, cos_vza)
@@ -938,20 +1094,23 @@ class RadTransforms(MetaData):
             # Atmospheric backscattering ratio
             ab_ratio = s_atm(r)
 
-            sr_data = (toar_diff / (toar_diff * ab_ratio + transmission))\
-                            .fillna(src_nodata)\
-                            .astype('float64')
+            sr_data = (
+                (toar_diff / (toar_diff * ab_ratio + transmission))
+                .fillna(src_nodata)
+                .astype('float64')
+            )
 
         # Create a 'no data' mask
-        mask = sr_data.where((sr_data != src_nodata) & (toar != src_nodata))\
-                    .count(dim='band')\
-                    .astype('uint8')
+        mask = (
+            sr_data.where((sr_data != src_nodata) & (toar != src_nodata))
+            .count(dim='band')
+            .astype('uint8')
+        )
 
         # Mask 'no data' values
-        sr_data = xr.where(mask < sr_data.gw.nbands,
-                           dst_nodata,
-                           sr_data.clip(0, 1))\
-                        .transpose('band', 'y', 'x')
+        sr_data = xr.where(
+            mask < sr_data.gw.nbands, dst_nodata, sr_data.clip(0, 1)
+        ).transpose('band', 'y', 'x')
 
         attrs['sensor'] = sensor
         attrs['calibration'] = 'surface reflectance'
@@ -963,24 +1122,24 @@ class RadTransforms(MetaData):
 
 
 class DOS(AOT, RadTransforms):
+    def get_aot(
+        self,
+        data,
+        sza,
+        meta,
+        data_values='dn',
+        angle_factor=0.01,
+        dn_interp=None,
+        interp_method='fast',
+        aot_fallback=0.3,
+        h2o=2.0,
+        o3=0.3,
+        altitude=0.0,
+        w=None,
+        n_jobs=1,
+    ):
 
-    def get_aot(self,
-                data,
-                sza,
-                meta,
-                data_values='dn',
-                angle_factor=0.01,
-                dn_interp=None,
-                interp_method='fast',
-                aot_fallback=0.3,
-                h2o=2.0,
-                o3=0.3,
-                altitude=0.0,
-                w=None,
-                n_jobs=1):
-
-        """
-        Gets the aerosol optical thickness (AOT) from dark objects
+        """Gets the aerosol optical thickness (AOT) from dark objects.
 
         Args:
             data (DataArray): The digital numbers or top of atmosphere reflectance at a coarse resolution.
@@ -1046,8 +1205,12 @@ class DOS(AOT, RadTransforms):
         blue_rad = rad.sel(band='blue')
 
         # Get SWIR2 TOAR dark pixels
-        swir2_toar_dark = xr.where((swir2_toar >= 0.01) & (swir2_toar <= 0.15), swir2_toar, np.nan)
-        blue_rad_dark = xr.where((swir2_toar >= 0.01) & (swir2_toar <= 0.15), blue_rad, np.nan)
+        swir2_toar_dark = xr.where(
+            (swir2_toar >= 0.01) & (swir2_toar <= 0.15), swir2_toar, np.nan
+        )
+        blue_rad_dark = xr.where(
+            (swir2_toar >= 0.01) & (swir2_toar <= 0.15), blue_rad, np.nan
+        )
 
         # Estimate the blue surface reflectance with
         # a simple linear transformation (Masek et al., 2006)
@@ -1061,16 +1224,18 @@ class DOS(AOT, RadTransforms):
 
         if valid_idx[0].shape[0] > 0:
 
-            aot = self.get_optimized_aot(blue_rad_dark_data,
-                                         blue_p_data,
-                                         meta.sensor,
-                                         'blue',
-                                         interp_method,
-                                         sza,
-                                         doy,
-                                         h2o,
-                                         o3,
-                                         altitude)
+            aot = self.get_optimized_aot(
+                blue_rad_dark_data,
+                blue_p_data,
+                meta.sensor,
+                'blue',
+                interp_method,
+                sza,
+                doy,
+                h2o,
+                o3,
+                altitude,
+            )
 
             mask = np.ones(aot.shape, dtype='uint8')
             mask[np.isnan(blue_p_data)] = 0
@@ -1089,34 +1254,40 @@ class DOS(AOT, RadTransforms):
 
             if isinstance(dn_interp, xr.DataArray):
 
-                return ndarray_to_xarray(dn_interp,
-                                         np.zeros((dn_interp.gw.nrows,
-                                                   dn_interp.gw.ncols), dtype='float64')+aot_fallback,
-                                         ['aot'])
+                return ndarray_to_xarray(
+                    dn_interp,
+                    np.zeros((dn_interp.gw.nrows, dn_interp.gw.ncols), dtype='float64')
+                    + aot_fallback,
+                    ['aot'],
+                )
 
             else:
 
-                return ndarray_to_xarray(data,
-                                         np.zeros((data.gw.nrows,
-                                                   data.gw.ncols), dtype='float64')+aot_fallback,
-                                         ['aot'])
+                return ndarray_to_xarray(
+                    data,
+                    np.zeros((data.gw.nrows, data.gw.ncols), dtype='float64')
+                    + aot_fallback,
+                    ['aot'],
+                )
 
     @staticmethod
     def _resize(aot, src_interp, w, n_jobs):
 
-        aot = cv2.resize(aot,
-                         (0, 0),
-                         fy=src_interp.gw.nrows / aot.shape[0],
-                         fx=src_interp.gw.ncols / aot.shape[1],
-                         interpolation=cv2.INTER_CUBIC)
+        aot = zoom(
+            aot,
+            src_interp.gw.nrows / aot.shape[0],
+            src_interp.gw.ncols / aot.shape[1],
+            order=3,
+        )
 
         if isinstance(w, int):
 
             hw = int(w / 2.0)
 
-            aot = moving_window(np.float64(cv2.copyMakeBorder(np.float32(aot), hw, hw, hw, hw, cv2.BORDER_REFLECT)),
-                                stat='mean',
-                                w=w,
-                                n_jobs=n_jobs)[hw:-hw, hw:-hw]
+            aot_padded = np.pad(aot, pad_width=hw, mode='reflect')
+
+            aot = moving_window(
+                np.float64(aot_padded), stat='mean', w=w, n_jobs=n_jobs
+            )[hw:-hw, hw:-hw]
 
         return aot
