@@ -15,22 +15,14 @@ from ..handler import add_handler
 from ..backends import transform_crs
 
 import numpy as np
+from scipy.ndimage import zoom
 import dask
 from dask.delayed import Delayed, DelayedAttr, DelayedLeaf
 import dask.array as da
 import xarray as xr
-import rasterio as rio
 from rasterio.errors import TransformError
-from rasterio.crs import CRS
 from affine import Affine
 import xml.etree.ElementTree as ET
-
-try:
-    import cv2
-
-    OPENCV_INSTALLED = True
-except:
-    OPENCV_INSTALLED = False
 
 
 logger = logging.getLogger(__name__)
@@ -677,13 +669,12 @@ def resample_angles(
     chunksize: T.Tuple[int, int],
 ) -> da.Array:
     """Resamples an angle array."""
-    data = np.int16(
-        cv2.resize(
+    data = np.in16(
+        zoom(
             angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
-            (0, 0),
-            fy=nrows / data_shape[0],
-            fx=ncols / data_shape[1],
-            interpolation=cv2.INTER_LINEAR,
+            nrows / data_shape[0],
+            ncols / data_shape[0],
+            order=2,
         )
         / 0.01
     )[None]
