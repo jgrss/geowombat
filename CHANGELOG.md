@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.19 (2022-12-21)
+* Added support for `sdist` ([#233](https://github.com/jgrss/geowombat/pull/233))
+* Merged tarfile safety patch ([#234](https://github.com/jgrss/geowombat/pull/234))
+
 ## v2.0.18 (2022-12-19)
 * Removed OpenCV dependency ([#232](https://github.com/jgrss/geowombat/pull/232))
 
