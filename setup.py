@@ -1,5 +1,6 @@
 import platform
 from pathlib import Path
+from setuptools import setup
 from distutils.core import setup
 from distutils.extension import Extension
 
@@ -23,36 +24,41 @@ if platform.system().lower() == 'darwin':
 
 
 def get_extensions():
-    extensions = [Extension(
-        '*',
-        sources=['src/geowombat/moving/_moving.pyx'],
-        extra_compile_args=compile_args,
-        extra_link_args=link_args
-    )]
+    extensions = [
+        Extension(
+            '*',
+            sources=['src/geowombat/moving/_moving.pyx'],
+            extra_compile_args=compile_args,
+            extra_link_args=link_args,
+        )
+    ]
 
     if Path('src/geowombat/moving/_test.pyx').is_file():
-        extensions += [Extension(
-            '*',
-            sources=['src/geowombat/moving/_test.pyx'],
-            extra_compile_args=compile_args,
-            extra_link_args=link_args
-        )]
+        extensions += [
+            Extension(
+                '*',
+                sources=['src/geowombat/moving/_test.pyx'],
+                extra_compile_args=compile_args,
+                extra_link_args=link_args,
+            )
+        ]
 
     if Path('src/geowombat/radiometry/_fusion.pyx').is_file():
-        extensions += [Extension(
-            '*',
-            sources=['src/geowombat/radiometry/_fusion.pyx'],
-            extra_compile_args=compile_args,
-            extra_link_args=link_args
-        )]
+        extensions += [
+            Extension(
+                '*',
+                sources=['src/geowombat/radiometry/_fusion.pyx'],
+                extra_compile_args=compile_args,
+                extra_link_args=link_args,
+            )
+        ]
 
     return extensions
 
 
 def setup_package():
     metadata = dict(
-        ext_modules=cythonize(get_extensions()),
-        include_dirs=[np.get_include()]
+        ext_modules=cythonize(get_extensions()), include_dirs=[np.get_include()]
     )
 
     setup(**metadata)
