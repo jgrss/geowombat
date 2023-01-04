@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.0 (2023-01-04)
+* Added weight argument to BRDF module ([#234](https://github.com/jgrss/geowombat/pull/234))
+
 ## v2.0.19 (2022-12-21)
 * Added support for `sdist` ([#233](https://github.com/jgrss/geowombat/pull/233))
 * Merged tarfile safety patch ([#234](https://github.com/jgrss/geowombat/pull/234))
