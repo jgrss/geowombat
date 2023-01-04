@@ -394,6 +394,7 @@ class BRDF(GeoVolKernels):
         scale_factor=1.0,
         out_range=None,
         scale_angles=True,
+        vol_weight=1.0
     ):
         r"""Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
         using the global c-factor method
@@ -413,6 +414,7 @@ class BRDF(GeoVolKernels):
             scale_factor (Optional[float]): A scale factor to apply to the input data.
             out_range (Optional[float]): The out data range. If not given, the output data are return in a 0-1 range.
             scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.
+            vol_weight (Optional[float]): Weight to be applied to the volumetric kernel in the c-factor equation
 
         References:
 
@@ -510,11 +512,11 @@ class BRDF(GeoVolKernels):
             # c-factor
             c_factor = (
                 coeffs['fiso']
-                + coeffs['fvol'] * self.vol_norm
+                + coeffs['fvol'] * self.vol_norm * vol_weight
                 + coeffs['fgeo'] * self.geo_norm
             ) / (
                 coeffs['fiso']
-                + coeffs['fvol'] * self.vol_sensor
+                + coeffs['fvol'] * self.vol_sensor * vol_weight
                 + coeffs['fgeo'] * self.geo_sensor
             )
 
