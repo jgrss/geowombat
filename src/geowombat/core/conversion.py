@@ -33,7 +33,8 @@ def _iter_func(a):
 
 class Converters(object):
     def bounds_to_coords(self, bounds, dst_crs):
-        """Converts bounds from longitude and latitude to native map coordinates
+        """Converts bounds from longitude and latitude to native map
+        coordinates.
 
         Args:
             bounds (``tuple`` | ``rasterio.coords.BoundingBox``): The lat/lon bounds to transform.
@@ -54,7 +55,7 @@ class Converters(object):
 
     @staticmethod
     def lonlat_to_xy(lon, lat, dst_crs):
-        """Converts from longitude and latitude to native map coordinates
+        """Converts from longitude and latitude to native map coordinates.
 
         Args:
             lon (float): The longitude to convert.
@@ -84,7 +85,7 @@ class Converters(object):
 
     @staticmethod
     def xy_to_lonlat(x, y, dst_crs):
-        """Converts from native map coordinates to longitude and latitude
+        """Converts from native map coordinates to longitude and latitude.
 
         Args:
             x (float): The x coordinate to convert.
@@ -114,7 +115,7 @@ class Converters(object):
 
     @staticmethod
     def indices_to_coords(col_index, row_index, transform):
-        """Converts array indices to map coordinates
+        """Converts array indices to map coordinates.
 
         Args:
             col_index (float or 1d array): The column index.
@@ -140,14 +141,16 @@ class Converters(object):
             elif isinstance(transform, xr.DataArray):
                 transform = transform.gw.affine
             else:
-                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                logger.exception(
+                    '  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple'
+                )
                 raise TypeError
 
         return transform * (col_index, row_index)
 
     @staticmethod
     def coords_to_indices(x, y, transform):
-        """Converts map coordinates to array indices
+        """Converts map coordinates to array indices.
 
         Args:
             x (float or 1d array): The x coordinates.
@@ -173,7 +176,9 @@ class Converters(object):
             elif isinstance(transform, xr.DataArray):
                 transform = transform.gw.affine
             else:
-                logger.exception('  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple')
+                logger.exception(
+                    '  The transform must be an instance of affine.Affine, an xarray.DataArray, or a tuple'
+                )
                 raise TypeError
 
         col_index, row_index = ~transform * (x, y)
@@ -182,7 +187,7 @@ class Converters(object):
 
     @staticmethod
     def dask_to_xarray(data, dask_data, band_names):
-        """Converts a Dask array to an Xarray DataArray
+        """Converts a Dask array to an Xarray DataArray.
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -198,12 +203,8 @@ class Converters(object):
         return xr.DataArray(
             dask_data,
             dims=('band', 'y', 'x'),
-            coords={
-                'band': band_names,
-                'y': data.y,
-                'x': data.x
-            },
-            attrs=data.attrs
+            coords={'band': band_names, 'y': data.y, 'x': data.x},
+            attrs=data.attrs,
         )
 
     @staticmethod
@@ -215,9 +216,9 @@ class Converters(object):
         col_chunks=None,
         y=None,
         x=None,
-        attrs=None
+        attrs=None,
     ):
-        """Converts a NumPy array to an Xarray DataArray
+        """Converts a NumPy array to an Xarray DataArray.
 
         Args:
             data (DataArray): The DataArray with attribute information.
@@ -235,36 +236,28 @@ class Converters(object):
         if len(numpy_data.shape) == 2:
             numpy_data = numpy_data[np.newaxis, :, :]
 
-        data_row_chunks = row_chunks if isinstance(row_chunks, int) else data.gw.row_chunks
-        data_col_chunks = col_chunks if isinstance(col_chunks, int) else data.gw.col_chunks
+        data_row_chunks = (
+            row_chunks if isinstance(row_chunks, int) else data.gw.row_chunks
+        )
+        data_col_chunks = (
+            col_chunks if isinstance(col_chunks, int) else data.gw.col_chunks
+        )
         data_y = y if isinstance(y, np.ndarray) else data.y
         data_x = x if isinstance(x, np.ndarray) else data.x
         data_attrs = attrs if isinstance(attrs, dict) else data.attrs
 
         return xr.DataArray(
-            da.from_array(
-                numpy_data,
-                chunks=(1, data_row_chunks, data_col_chunks)
-            ),
+            da.from_array(numpy_data, chunks=(1, data_row_chunks, data_col_chunks)),
             dims=('band', 'y', 'x'),
-            coords={
-                'band': band_names,
-                'y': data_y,
-                'x': data_x
-            },
-            attrs=data_attrs
+            coords={'band': band_names, 'y': data_y, 'x': data_x},
+            attrs=data_attrs,
         )
 
     @staticmethod
     def xarray_to_xdataset(
-        data_array,
-        band_names,
-        time_names,
-        ycoords=None,
-        xcoords=None,
-        attrs=None
+        data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None
     ):
-        """Converts an Xarray DataArray to a Xarray Dataset
+        """Converts an Xarray DataArray to a Xarray Dataset.
 
         Args:
             data_array (DataArray)
@@ -293,29 +286,25 @@ class Converters(object):
 
         if time_names:
             return xr.Dataset(
-                {
-                    'bands': (['date', 'band', 'y', 'x'], data_array)
-                },
+                {'bands': (['date', 'band', 'y', 'x'], data_array)},
                 coords={
                     'date': time_names,
                     'band': band_names,
                     'y': ('y', ycoords),
-                    'x': ('x', xcoords)
+                    'x': ('x', xcoords),
                 },
-                attrs=attrs
+                attrs=attrs,
             )
 
         else:
             return xr.Dataset(
-                {
-                    'bands': (['band', 'y', 'x'], data_array.data)
-                },
+                {'bands': (['band', 'y', 'x'], data_array.data)},
                 coords={
                     'band': band_names,
                     'y': ('y', data_array.y),
-                    'x': ('x', data_array.x)
+                    'x': ('x', data_array.x),
                 },
-                attrs=data_array.attrs
+                attrs=data_array.attrs,
             )
 
     def prepare_points(
@@ -340,7 +329,6 @@ class Converters(object):
                     raise OSError
 
                 df = gpd.read_file(aoi)
-
             else:
                 logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
                 raise TypeError
@@ -365,22 +353,18 @@ class Converters(object):
             logger.info('  Checking geometry extent ...')
 
         # Remove data outside of the image bounds
-        if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
+        if isinstance(df.iloc[0].geometry, (Polygon, MultiPolygon)):
             df = gpd.overlay(
                 df,
-                gpd.GeoDataFrame(
-                    data=[0],
-                    geometry=[data.gw.geometry],
-                    crs=df_crs
-                ),
-                how='intersection'
+                gpd.GeoDataFrame(data=[0], geometry=[data.gw.geometry], crs=df_crs),
+                how='intersection',
             ).drop(columns=[0])
 
         else:
             # Clip points to the image bounds
             df = df[df.geometry.intersects(data.gw.geometry)]
 
-        if isinstance(mask, Polygon) or isinstance(mask, MultiPolygon) or isinstance(mask, gpd.GeoDataFrame):
+        if isinstance(mask, (Polygon, MultiPolygon, gpd.GeoDataFrame)):
             if isinstance(mask, gpd.GeoDataFrame):
                 if CRS.from_dict(mask.crs).to_wkt() != df_crs:
                     mask = mask.to_crs(df_crs)
@@ -396,7 +380,7 @@ class Converters(object):
 
         if not df.empty:
             # Convert polygons to points
-            if (type(df.iloc[0].geometry) == Polygon) or (type(df.iloc[0].geometry) == MultiPolygon):
+            if isinstance(df.iloc[0].geometry, (Polygon, MultiPolygon)):
                 if verbose > 0:
                     logger.info('  Converting polygons to points ...')
 
@@ -428,7 +412,7 @@ class Converters(object):
         n_jobs=1,
         **kwargs
     ):
-        """Converts polygons to points
+        """Converts polygons to points.
 
         Args:
             data (DataArray or Dataset): The ``xarray.DataArray`` or ``xarray.Dataset``.
@@ -448,12 +432,9 @@ class Converters(object):
         dataframes = []
         df_columns = df.columns.tolist()
         with multi.Pool(processes=n_jobs) as pool:
-            for i in pool.imap(_iter_func, range(0, df.shape[0]), **kwargs):
-                # Get the current feature's geometry
-                dfrow = df.iloc[i]
-
+            for i in pool.imap(_iter_func, range(0, len(df.index)), **kwargs):
                 point_df = sample_feature(
-                    dfrow,
+                    df.iloc[i],
                     id_column,
                     df_columns,
                     data.crs,
@@ -461,19 +442,17 @@ class Converters(object):
                     all_touched,
                     meta,
                     frac,
-                    min_frac_area
+                    min_frac_area,
                 )
-
                 if not point_df.empty:
                     dataframes.append(point_df)
 
         if dataframes:
             dataframes = pd.concat(dataframes, axis=0)
             # Make the points unique
-            dataframes.loc[:, 'point'] = np.arange(0, dataframes.shape[0])
+            dataframes = dataframes.assign(point=np.arange(0, dataframes.shape[0]))
 
             return dataframes
-
         else:
             return gpd.GeoDataFrame(data=[])
 
@@ -520,7 +499,7 @@ class Converters(object):
             data.data.compute(num_workers=num_workers),
             mask=mask,
             connectivity=connectivity,
-            transform=data.gw.transform
+            transform=data.gw.transform,
         )
 
         poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
@@ -530,10 +509,7 @@ class Converters(object):
             poly_values = list(list(zip(*poly_data))[1])
 
             return gpd.GeoDataFrame(
-                data=poly_values,
-                columns=['value'],
-                geometry=poly_geom,
-                crs=data.crs
+                data=poly_values, columns=['value'], geometry=poly_geom, crs=data.crs
             )
 
         else:
@@ -557,7 +533,7 @@ class Converters(object):
         dtype='uint8',
         sindex=None,
         tap=False,
-        bounds_by='intersection'
+        bounds_by='intersection',
     ):
         """Converts a polygon geometry to an ``xarray.DataArray``.
 
@@ -616,19 +592,13 @@ class Converters(object):
                 logger.exception('  The polygon file does not exist.')
                 raise OSError
 
-        ref_kwargs = {
-            'bounds': None,
-            'crs': None,
-            'res': None,
-            'tap': tap,
-            'tac': None
-        }
+        ref_kwargs = {'bounds': None, 'crs': None, 'res': None, 'tap': tap, 'tac': None}
 
         if config['with_config'] and not isinstance(data, xr.DataArray):
             ref_kwargs = _check_config_globals(
                 data.filename if isinstance(data, xr.DataArray) else None,
                 bounds_by,
-                ref_kwargs
+                ref_kwargs,
             )
 
         if isinstance(data, xr.DataArray):
@@ -651,12 +621,13 @@ class Converters(object):
 
             if not int_idx:
                 return self.dask_to_xarray(
-                    data, da.zeros(
+                    data,
+                    da.zeros(
                         (1, data.gw.nrows, data.gw.ncols),
                         chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                        dtype=data.dtype.name
+                        dtype=data.dtype.name,
                     ),
-                    band_names=band_name
+                    band_names=band_name,
                 )
 
             # Subset to the intersecting features
@@ -666,12 +637,13 @@ class Converters(object):
 
             if dataframe.empty:
                 return self.dask_to_xarray(
-                    data, da.zeros(
+                    data,
+                    da.zeros(
                         (1, data.gw.nrows, data.gw.ncols),
                         chunks=(1, data.gw.row_chunks, data.gw.col_chunks),
-                        dtype=data.dtype.name
+                        dtype=data.dtype.name,
                     ),
-                    band_names=band_name
+                    band_names=band_name,
                 )
 
             cellx = data.gw.cellx
@@ -683,13 +655,20 @@ class Converters(object):
             if ref_kwargs['bounds']:
                 left, bottom, right, top = ref_kwargs['bounds']
                 if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
-                    if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
+                    if isinstance(ref_kwargs['res'], tuple) or isinstance(
+                        ref_kwargs['res'], list
+                    ):
                         cellx, celly = ref_kwargs['res']
-                    elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
+                    elif isinstance(ref_kwargs['res'], int) or isinstance(
+                        ref_kwargs['res'], float
+                    ):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
+                        logger.exception(
+                            'The reference resolution must be a tuple, int, or float. Is type %s'
+                            % (type(ref_kwargs['res']))
+                        )
                         raise TypeError
 
             else:
@@ -699,13 +678,20 @@ class Converters(object):
             if ref_kwargs['bounds']:
                 left, bottom, right, top = ref_kwargs['bounds']
                 if 'res' in ref_kwargs and ref_kwargs['res'] is not None:
-                    if isinstance(ref_kwargs['res'], tuple) or isinstance(ref_kwargs['res'], list):
+                    if isinstance(ref_kwargs['res'], tuple) or isinstance(
+                        ref_kwargs['res'], list
+                    ):
                         cellx, celly = ref_kwargs['res']
-                    elif isinstance(ref_kwargs['res'], int) or isinstance(ref_kwargs['res'], float):
+                    elif isinstance(ref_kwargs['res'], int) or isinstance(
+                        ref_kwargs['res'], float
+                    ):
                         cellx = ref_kwargs['res']
                         celly = ref_kwargs['res']
                     else:
-                        logger.exception('The reference resolution must be a tuple, int, or float. Is type %s' % (type(ref_kwargs['res'])))
+                        logger.exception(
+                            'The reference resolution must be a tuple, int, or float. Is type %s'
+                            % (type(ref_kwargs['res']))
+                        )
                         raise TypeError
 
             else:
@@ -717,10 +703,7 @@ class Converters(object):
 
         if src_res:
             dst_transform = aligned_target(
-                dst_transform,
-                dst_width,
-                dst_height,
-                src_res
+                dst_transform, dst_width, dst_height, src_res
             )[0]
 
             left = dst_transform[2]
@@ -728,7 +711,9 @@ class Converters(object):
             dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
         if col:
-            shapes = ((geom,value) for geom, value in zip(dataframe.geometry, dataframe[col]))
+            shapes = (
+                (geom, value) for geom, value in zip(dataframe.geometry, dataframe[col])
+            )
             # TODO: throw error if dataframe[col] is character
             dtype = get_minimum_dtype(dataframe[col])
 
@@ -742,7 +727,7 @@ class Converters(object):
             fill=fill,
             default_value=default_value,
             all_touched=all_touched,
-            dtype=dtype
+            dtype=dtype,
         )
 
         cellxh = abs(cellx) / 2.0
@@ -754,8 +739,12 @@ class Converters(object):
             ycoords = data.y.values
 
         else:
-            xcoords = np.arange(left + cellxh, left + cellxh + dst_width * abs(cellx), cellx)
-            ycoords = np.arange(top - cellyh, top - cellyh - dst_height * abs(celly), -celly)
+            xcoords = np.arange(
+                left + cellxh, left + cellxh + dst_width * abs(cellx), cellx
+            )
+            ycoords = np.arange(
+                top - cellyh, top - cellyh - dst_height * abs(celly), -celly
+            )
 
         if xcoords.shape[0] > dst_width:
             xcoords = xcoords[:dst_width]
@@ -767,18 +756,14 @@ class Converters(object):
             'transform': dst_transform[:6],
             'crs': dataframe.crs,
             'res': (cellx, celly),
-            'is_tiled': 1
+            'is_tiled': 1,
         }
 
         return xr.DataArray(
             data=da.from_array(
                 varray[np.newaxis, :, :], chunks=(1, row_chunks, col_chunks)
             ),
-            coords={
-                'band': band_name,
-                'y': ycoords,
-                'x': xcoords
-            },
+            coords={'band': band_name, 'y': ycoords, 'x': xcoords},
             dims=('band', 'y', 'x'),
-            attrs=attrs
+            attrs=attrs,
         )

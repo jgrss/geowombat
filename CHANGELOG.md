@@ -2,6 +2,25 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.0 (2023-01-04)
+* Added weight argument to BRDF module ([#234](https://github.com/jgrss/geowombat/pull/234))
+
+## v2.0.19 (2022-12-21)
+* Added support for `sdist` ([#233](https://github.com/jgrss/geowombat/pull/233))
+* Merged tarfile safety patch ([#234](https://github.com/jgrss/geowombat/pull/234))
+
+## v2.0.18 (2022-12-19)
+* Removed OpenCV dependency ([#232](https://github.com/jgrss/geowombat/pull/232))
+
+## v2.0.17 (2022-10-11)
+* Pinned dask version and fixed issue with Landsat angle creation ([#228](https://github.com/jgrss/geowombat/pull/228))
+
+## v2.0.16 (2022-10-05)
+* Pinned dependency `threadpoolctl` to a minimum version ([#227](https://github.com/jgrss/geowombat/pull/227))
+
+## v2.0.15 (2022-10-03)
+* Fixed issue with polygon point extraction, which caused a one pixel shift north and west of the polygon top left bounds ([#225](https://github.com/jgrss/geowombat/pull/225))
+
 ## v2.0.14 (2022-09-29)
 * Fixed property errors exposed in online doc builds ([#223](https://github.com/jgrss/geowombat/pull/223))
 
