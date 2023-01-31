@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.1 (2023-01-31)
+* Pinned required packages to full semantic versions ([#238](https://github.com/jgrss/geowombat/pull/238))
+
 ## v2.1.0 (2023-01-04)
 * Added weight argument to BRDF module ([#234](https://github.com/jgrss/geowombat/pull/234))
 
