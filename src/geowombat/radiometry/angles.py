@@ -742,9 +742,6 @@ def sentinel_pixel_angles(
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
-    if not OPENCV_INSTALLED:
-        logger.exception('OpenCV must be installed.')
-
     if not chunksize:
         chunksize = (256, 256)
     # Get the CRS, transform, and image size of the full S-2 footprint
