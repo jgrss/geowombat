@@ -669,11 +669,10 @@ def resample_angles(
     chunksize: T.Tuple[int, int],
 ) -> da.Array:
     """Resamples an angle array."""
-    data = np.in16(
+    data = np.int16(
         zoom(
             angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
-            nrows / data_shape[0],
-            ncols / data_shape[0],
+            (nrows / data_shape[0], ncols / data_shape[1]),
             order=2,
         )
         / 0.01
@@ -742,9 +741,6 @@ def sentinel_pixel_angles(
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
-    if not OPENCV_INSTALLED:
-        logger.exception('OpenCV must be installed.')
-
     if not chunksize:
         chunksize = (256, 256)
     # Get the CRS, transform, and image size of the full S-2 footprint
