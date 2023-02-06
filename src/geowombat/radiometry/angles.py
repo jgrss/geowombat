@@ -672,8 +672,7 @@ def resample_angles(
     data = np.int16(
         zoom(
             angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
-            nrows / data_shape[0],
-            ncols / data_shape[0],
+            (nrows / data_shape[0], ncols / data_shape[1]),
             order=2,
         )
         / 0.01
