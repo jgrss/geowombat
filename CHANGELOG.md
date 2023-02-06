@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.2 (2023-02-06)
+* Fixed `zoom` dimensions ([#239](https://github.com/jgrss/geowombat/pull/239))
+
 ## v2.1.1 (2023-01-31)
 * Pinned required packages to full semantic versions ([#238](https://github.com/jgrss/geowombat/pull/238))
 
