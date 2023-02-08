@@ -47,9 +47,50 @@ class TestOpen(unittest.TestCase):
         with gw.open(l8_224078_20200518) as src:
             self.assertFalse(src.drop_vars('band').gw.has_band_coord)
 
+    def test_nodata(self):
+        with gw.open(l8_224078_20200518) as src:
+            self.assertEqual(src.gw.nodataval, np.nan)
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            self.assertEqual(src.gw.nodataval, 0)
+
     def test_open_multiple(self):
         with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
             self.assertEqual(src.gw.ntime, 2)
+
+    def test_open_multiple_same(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time'
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_max(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='max'
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_min(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='min'
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_mean(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='mean'
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
 
     def test_has_time_dim(self):
         with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
