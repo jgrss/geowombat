@@ -2,7 +2,10 @@ import unittest
 from pathlib import Path
 
 import geowombat as gw
-from geowombat.data import l8_224078_20200518, l3b_s2b_00390821jxn0l2a_20210319_20220730_c01
+from geowombat.data import (
+    l8_224078_20200518,
+    l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
+)
 
 import numpy as np
 import dask
@@ -16,13 +19,13 @@ class TestOpen(unittest.TestCase):
         with gw.open(
             l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
             chunks={'band': -1, 'y': 256, 'x': 256},
-            engine='h5netcdf'
+            engine='h5netcdf',
         ) as src:
             self.assertEqual(src.shape, (6, 668, 668))
             with xr.open_dataset(
                 l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
                 chunks={'band': -1, 'y': 256, 'x': 256},
-                engine='h5netcdf'
+                engine='h5netcdf',
             ) as ds:
                 self.assertTrue(np.allclose(src.y.values, ds.y.values))
                 self.assertTrue(np.allclose(src.x.values, ds.x.values))
@@ -47,9 +50,50 @@ class TestOpen(unittest.TestCase):
         with gw.open(l8_224078_20200518) as src:
             self.assertFalse(src.drop_vars('band').gw.has_band_coord)
 
+    def test_nodata(self):
+        with gw.open(l8_224078_20200518) as src:
+            self.assertTrue(np.isnan(src.gw.nodataval))
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            self.assertEqual(src.gw.nodataval, 0)
+
     def test_open_multiple(self):
         with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
             self.assertEqual(src.gw.ntime, 2)
+
+    def test_open_multiple_same(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_max(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='max',
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_min(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='min',
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
+
+    def test_open_multiple_same_mean(self):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['20200518', '20200518'],
+            stack_dim='time',
+            overlap='mean',
+        ) as src:
+            self.assertEqual(src.gw.ntime, 1)
 
     def test_has_time_dim(self):
         with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
@@ -127,7 +171,7 @@ class TestOpen(unittest.TestCase):
                 dst_crs=4326,
                 dst_width=src.gw.ncols,
                 dst_height=src.gw.nrows,
-                coords_only=True
+                coords_only=True,
             )
             self.assertEqual(test_crs, result.crs)
             self.assertEqual(test_crs, result.gw.crs_to_pyproj)
