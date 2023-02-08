@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.3 (2023-02-08)
+* Fixed typos in temporal aggregation ([#241](https://github.com/jgrss/geowombat/pull/241))
+
 ## v2.1.2 (2023-02-06)
 * Fixed `zoom` dimensions ([#239](https://github.com/jgrss/geowombat/pull/239))
 
