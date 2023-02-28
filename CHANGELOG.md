@@ -3,7 +3,7 @@
 <!--next-version-placeholder-->
 
 ## v2.1.4 (2023-02-28)
-* Fixed error in .pyd compilation ([#243](https://github.com/jgrss/geowombat/pull/243))
+* Fixed error in .pxd compilation ([#243](https://github.com/jgrss/geowombat/pull/243))
 
 ## v2.1.3 (2023-02-08)
 * Fixed typos in temporal aggregation ([#241](https://github.com/jgrss/geowombat/pull/241))
