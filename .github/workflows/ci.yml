@@ -51,9 +51,10 @@ jobs:
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Install GDAL binaries
         run: |
-          # Install GDAL
+          # Temporary? dpkg fix: https://askubuntu.com/questions/1276111/error-upgrading-grub-efi-amd64-signed-special-device-old-ssd-does-not-exist
           sudo rm /var/cache/debconf/config.dat
           sudo dpkg --configure -a
+          # Install GDAL
           sudo apt update && sudo apt upgrade -y && sudo apt install -y
           sudo apt install software-properties-common -y
           sudo add-apt-repository ppa:ubuntugis/ppa
