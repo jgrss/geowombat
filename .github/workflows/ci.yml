@@ -52,7 +52,7 @@ jobs:
       - name: Install GDAL binaries
         run: |
           # Install GDAL
-          sudo apt update && sudo apt upgrade -y && sudo apt install -y
+          sudo apt update && sudo apt upgrade -y && sudo apt --fix-broken install -y
           sudo apt install software-properties-common -y
           sudo add-apt-repository ppa:ubuntugis/ppa
           sudo apt update -y && sudo apt install -y
