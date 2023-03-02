@@ -76,8 +76,7 @@ class TestConfig(unittest.TestCase):
                     nodata=0,
                     n_jobs=2,
                     verbose=1,
-                    compress='lzw',
-                    overwrite=True
+                    compress='lzw'
                 )
                 try:
                     src.gw.to_raster(
@@ -87,8 +86,7 @@ class TestConfig(unittest.TestCase):
                         nodata=0,
                         n_jobs=2,
                         verbose=1,
-                        compress='lzw',
-                        overwrite=True
+                        compress='lzw'
                     )
                 # NOTE: this likely won't catch on Windows
                 except FileExistsError:
