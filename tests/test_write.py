@@ -69,6 +69,16 @@ class TestConfig(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / 'test.tif'
             with gw.open(l8_224077_20200518_B2) as src:
+                src.gw.to_raster(
+                    out_path,
+                    overwrite=True,
+                    bigtiff=True,
+                    nodata=0,
+                    n_jobs=2,
+                    verbose=1,
+                    compress='lzw',
+                    overwrite=True
+                )
                 try:
                     src.gw.to_raster(
                         out_path,
