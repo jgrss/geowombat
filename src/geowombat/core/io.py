@@ -1267,7 +1267,7 @@ def to_raster(
                     tags=tags,
                 )
 
-                temp_file.rename(filename)
+                temp_file.replace(filename)
 
             if verbose > 0:
                 logger.info('  Finished compressing')
