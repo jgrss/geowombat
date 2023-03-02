@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.5 (2023-03-02)
+* Fixed issue with overwriting existing files on Windows ([#244](https://github.com/jgrss/geowombat/pull/244))
+
 ## v2.1.4 (2023-02-28)
 * Fixed error in .pxd compilation ([#243](https://github.com/jgrss/geowombat/pull/243))
 
