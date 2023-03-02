@@ -1,42 +1,71 @@
-# This docker file automatically builds an image that can be used for debugging geowombat ie it install dependancies but not geowombat itself. 
-# it also creates a file called debug_script.py that can be used to import geowombat from the directory. 
-# AVAILABLE: docker pull mmann1123/gw_debug
+# This docker file automatically builds an image that can be used for debugging geowombat ie
 
-# NOTE: this currently doesn't handle submodules (eg moving) that require building with cython. Comment out references to .moving for now. 
+# NOTE: To test a particular branch update "--branch jgrss/#242"
 
-FROM ubuntu:20.04
+FROM nvidia/cuda:11.3.0-base-ubuntu20.04
+
 USER root
 
 RUN apt update -y && apt upgrade -y && \
     apt install -y software-properties-common && \
-    add-apt-repository ppa:ubuntugis/ppa && \
-    apt update -y && apt install -y \
-    gdal-bin \
-    geotiff-bin \
-    git \
+    add-apt-repository ppa:ubuntugis/ubuntugis-unstable -y && \
+    apt update -y &&     apt install \
+    build-essential \
+    python3.8 \
+    python3-pip \
+    libgeos++-dev \
+    libgeos-3.8.0 \
+    libgeos-c1v5 \
+    libgeos-dev \
+    libgeos-doc \
+    libspatialindex-dev \
+    g++ \
     libgdal-dev \
+    gdal-bin \
+    libproj-dev \
+    libspatialindex-dev \
+    geotiff-bin \
     libgl1 \
-    libspatialindex-dev \ 
-    wget \
     python-is-python3 \
-    pip \
-    g++ 
+    git -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install Cython numpy  
+RUN pip install -U pip setuptools wheel
+RUN pip install -U --no-cache-dir "setuptools<=58.*"
+RUN pip install -U --no-cache-dir cython>=0.29.*
+RUN pip install -U --no-cache-dir numpy>=1.21.0
 
-RUN git clone https://github.com/jgrss/geowombat.git
 
-RUN pip install -r /geowombat/requirements.txt
+RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/#242
 
-RUN  pip install sklearn-xarray  pip-tools rtree ipykernel
+RUN cd geowombat && pip install --user -e .[stac,time,perf,ml,zarr,coreg,tests,docs] 
 
-RUN python -c "import geowombat as gw"
-RUN python -c "import rasterio;from rasterio.crs import CRS; cc = CRS.from_epsg(4326)"
+RUN  pip install  pip-tools rtree ipykernel
+
+RUN pip install git+https://github.com/jgrss/sklearn-xarray
+
 
 RUN echo ' # %% \n\ 
     import sys \n\  
     sys.path.append("/") \n\ 
     sys.path.append("/geowombat") \n\ 
-    import geowombat as gw \n # %%' > /geowombat/debug_script.py
+    import geowombat as gw \n # %%' > ./geowombat/src/debug_script.py
 
-CMD cd geowombat && git pull && python
+RUN cd geowombat && mkdir -p .vscode 
+RUN  echo '{ \
+    "version": "0.2.0", \
+    "configurations": [ \
+    { \
+    "name": "Python: Module", \
+    "type": "python",\
+    "request": "launch", \
+    "module": "geowombat", \
+    "justMyCode": false, \
+    "env": {"PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT": "25"} \
+    } \
+    ] \
+    }'> ./geowombat/.vscode/launch.json
+
+CMD cd geowombat/tests/ && python -m unittest &&  bash
+
