@@ -36,7 +36,7 @@ class TestConfig(unittest.TestCase):
                         filename=out_path,
                         overwrite=True,
                         tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compression='lzw',
+                        compress='lzw',
                         num_workers=2,
                     )
                 )
@@ -63,6 +63,27 @@ class TestConfig(unittest.TestCase):
                 with gw.open(out_path, band_names=['B2', 'B3']) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
 
+    def test_to_raster_bigtiff(self):
+        """This test was added following Issue #242
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / 'test.tif'
+            with gw.open(l8_224077_20200518_B2) as src:
+                try:
+                    src.gw.to_raster(
+                        out_path,
+                        overwrite=True,
+                        bigtiff=True,
+                        nodata=0,
+                        n_jobs=2,
+                        verbose=1,
+                        compress='lzw',
+                        overwrite=True
+                    )
+                # NOTE: this likely won't catch on Windows
+                except FileExistsError:
+                    self.assertTrue(False)
+
     def test_save(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / 'test.tif'
@@ -75,7 +96,7 @@ class TestConfig(unittest.TestCase):
                         filename=out_path,
                         overwrite=True,
                         tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compression='lzw',
+                        compress='lzw',
                         num_workers=2,
                     )
                 )
@@ -94,7 +115,7 @@ class TestConfig(unittest.TestCase):
                         src,
                         filename=out_path,
                         tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compression='lzw',
+                        compress='lzw',
                         num_workers=2,
                         compute=False,
                         overwrite=True,
