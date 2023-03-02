@@ -8,7 +8,7 @@
 from libc.stdlib cimport malloc, realloc, free, qsort
 
 
-cdef inline int _cmp(const void * pa, const void * pb) noexcept nogil:
+cdef inline int _cmp(const void * pa, const void * pb) nogil:
 
     cdef:
         double a = (<double *>pa)[0]
