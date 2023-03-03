@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.6 (2023-03-03)
+* Pinned maximum Cython version to <3.0.0 ([#247](https://github.com/jgrss/geowombat/pull/247))
+
 ## v2.1.5 (2023-03-02)
 * Fixed issue with overwriting existing files on Windows ([#244](https://github.com/jgrss/geowombat/pull/244))
 
