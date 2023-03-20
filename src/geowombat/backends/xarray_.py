@@ -449,12 +449,12 @@ def mosaic(
                                 (darray.mean(dim='band') != ref_kwargs['nodata'])
                                 & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
                                 darray,
-                                np.mininum(darray, darrayb),
+                                np.minimum(darray, darrayb),
                             ),
                         )
 
                     else:
-                        darray = np.mininum(darray, darrayb)
+                        darray = np.minimum(darray, darrayb)
 
                 elif overlap == 'max':
                     if isinstance(ref_kwargs['nodata'], float) or isinstance(

@@ -631,7 +631,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         client: T.Optional[_Client] = None,
         compute: T.Optional[bool] = True,
         tags: T.Optional[dict] = None,
-        compression: T.Optional[str] = 'none',
+        compress: T.Optional[str] = 'none',
+        compression: T.Optional[str] = None,
         num_workers: T.Optional[int] = 1,
         log_progress: T.Optional[bool] = True,
         tqdm_kwargs: T.Optional[dict] = None,
@@ -650,7 +651,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
                 return the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
+            compress (Optional[str]): The file compression type. Default is 'none', or no compression.
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+                .. deprecated:: 2.1.4
+                    Use 'compress' -- 'compression' will be removed in >=2.2.0.
+
             num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
                 Default is 1.
             log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
@@ -664,8 +669,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>> with gw.open('file.tif') as src:
             >>>     result = ...
-            >>>     result.gw.save('output.tif', compression='lzw', num_workers=8)
+            >>>     result.gw.save('output.tif', compress='lzw', num_workers=8)
         """
+        if compression is not None:
+            warnings.warn(
+                f"The argument 'compression' will be deprecated in >=2.2.0. Use 'compress'.",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            compress = compression
+
         return save(
             self._obj,
             filename=filename,
@@ -675,7 +688,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             client=client,
             compute=compute,
             tags=tags,
-            compression=compression,
+            compress=compress,
             num_workers=num_workers,
             log_progress=log_progress,
             tqdm_kwargs=tqdm_kwargs,

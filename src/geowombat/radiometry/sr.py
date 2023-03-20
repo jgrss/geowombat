@@ -1272,11 +1272,9 @@ class DOS(AOT, RadTransforms):
 
     @staticmethod
     def _resize(aot, src_interp, w, n_jobs):
-
         aot = zoom(
             aot,
-            src_interp.gw.nrows / aot.shape[0],
-            src_interp.gw.ncols / aot.shape[1],
+            (src_interp.gw.nrows / aot.shape[0], src_interp.gw.ncols / aot.shape[1]),
             order=3,
         )
 
