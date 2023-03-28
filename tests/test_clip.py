@@ -18,14 +18,14 @@ class TestClip(unittest.TestCase):
             stack_dim="band",
             band_names=["B2", "B3"],
         ) as src:
-            src_clip = gw.clip(src, l8_224078_20200518_polygons)
+            src_clip = gw.clip_by_polygon(src, l8_224078_20200518_polygons)
             self.assertEqual(src_clip.crs, src.crs)
 
     def test_clip_data(self):
         with gw.open(l8_224077_20200518_B2, chunks=64) as src:
             src_crs = src.crs
-            src_clip = gw.clip(src, l8_224078_20200518_polygons)
-            src_clip_mask = gw.clip(
+            src_clip = gw.clip_by_polygon(src, l8_224078_20200518_polygons)
+            src_clip_mask = gw.clip_by_polygon(
                 src, l8_224078_20200518_polygons, mask_data=True
             )
         df = gpd.read_file(l8_224078_20200518_polygons)

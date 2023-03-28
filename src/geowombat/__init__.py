@@ -12,6 +12,7 @@ from .core import sample
 from .core import calc_area
 from .core import subset
 from .core import clip
+from .core import clip_by_polygon
 from .core import mask
 from .core import replace
 from .core import recode
@@ -53,6 +54,7 @@ __all__ = [
     'calc_area',
     'subset',
     'clip',
+    'clip_by_polygon',
     'mask',
     'replace',
     'recode',
@@ -81,5 +83,5 @@ __all__ = [
     'bounds_to_coords',
     'lonlat_to_xy',
     'xy_to_lonlat',
-    '__version__'
+    '__version__',
 ]
