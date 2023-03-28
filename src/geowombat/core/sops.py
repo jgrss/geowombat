@@ -18,8 +18,6 @@ import dask
 import dask.array as da
 from dask.distributed import Client, LocalCluster
 from rasterio import features
-from rasterio.mask import mask as rio_mask
-from rasterio.warp import transform_bounds
 from rasterio.coords import BoundingBox
 from affine import Affine
 from shapely.geometry import Polygon
@@ -949,37 +947,21 @@ class SpatialOperations(_PropertyMixin):
         # Re-project the DataFrame to match the image CRS
         if data_crs_ != df_crs_:
             df = df.to_crs(data_crs_)
-
+        # Get the target bounds
         left, bottom, right, top = df.total_bounds
-
-        ############
-        # https://gis.stackexchange.com/questions/329434/creating-an-in-memory-rasterio-dataset-from-numpy-array
-        (left_coord, bottom_coord, right_coord, top_coord,) = transform_bounds(
-            data_crs_,
-            data_crs_,
-            left,
-            bottom,
-            right,
-            top,
-            densify_pts=21,
-        )
+        # Get the target dimensions
         dst_bounds = BoundingBox(
-            left=left_coord,
-            bottom=bottom_coord,
-            right=right_coord,
-            top=top_coord,
+            left=left,
+            bottom=bottom,
+            right=right,
+            top=top,
         )
         align_height, align_width = get_dims_from_bounds(
             dst_bounds, (data.gw.cellx, data.gw.celly)
         )
-        ############
-
-        # align_height = int(np.floor((top - bottom) / abs(data.gw.celly)))
-        # align_width = int(np.floor((right - left) / abs(data.gw.cellx)))
         align_transform = Affine(
             data.gw.cellx, 0.0, left, 0.0, -data.gw.celly, top
         )
-
         # Get the new bounds
         new_left, new_bottom, new_right, new_top = array_bounds(
             align_height, align_width, align_transform
@@ -1001,39 +983,16 @@ class SpatialOperations(_PropertyMixin):
         )
 
         if mask_data:
-            # Rasterize the geometry and store as a DataArray
-            mask = delayed_to_xarray(
-                delayed_data=dask.delayed(features.rasterize)(
-                    list(df.geometry.values),
-                    out_shape=(align_height, align_width),
-                    transform=align_transform,
-                    fill=0,
-                    out=None,
-                    all_touched=True,
-                    default_value=1,
-                    dtype='int32',
-                ),
-                shape=(data.gw.nbands, data.gw.nrows, data.gw.ncols),
-                dtype=data.dtype,
-                chunks=(-1, data.gw.row_chunks, data.gw.col_chunks),
-                coords={
-                    'band': data.band.values,
-                    'y': data.y.values,
-                    'x': data.x.values,
-                },
-                attrs={
-                    'transform': data.gw.transform,
-                    'crs': data.crs,
-                    'res': (data.gw.cellx, data.gw.celly),
-                    'nodatavals': data.gw.nodatavals,
-                },
+            converters = Converters()
+            mask = converters.polygon_to_array(df, data=data)
+
+            data = (
+                (data * mask.where(lambda x: x == 1))
+                .fillna(data.gw.nodataval)
+                .assign_attrs(**data.attrs)
             )
 
-            # Return the clipped array
-            return data.where(mask == 1)
-
-        else:
-            return data
+        return data
 
     @staticmethod
     @lazy_wombat
