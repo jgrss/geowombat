@@ -931,10 +931,12 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.clip(df, query="Id == 1")
         """
-        if isinstance(df, str) and os.path.isfile(df):
+        if isinstance(df, (Path, str)):
+            if not Path(df).is_file():
+                raise FileExistsError(f'{str(df)} does not exist.')
             df = gpd.read_file(df)
 
-        if query:
+        if query is not None:
             df = df.query(query)
 
         data_crs_ = check_crs(data.crs)
@@ -996,7 +998,7 @@ class SpatialOperations(_PropertyMixin):
                 attrs={
                     'transform': data.gw.transform,
                     'crs': data.crs,
-                    'res': (data.gw.celly, data.gw.celly),
+                    'res': (data.gw.cellx, data.gw.celly),
                     'nodatavals': data.gw.nodatavals,
                 },
             )
