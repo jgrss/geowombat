@@ -1,5 +1,4 @@
 import os
-import math
 import itertools
 from datetime import datetime
 from collections import defaultdict
@@ -8,14 +7,6 @@ import multiprocessing as multi
 from pathlib import Path
 import tempfile
 import typing as T
-
-from ..handler import add_handler
-from ..backends.rasterio_ import align_bounds, array_bounds, aligned_target, check_crs
-from .conversion import Converters
-from .base import PropertyMixin as _PropertyMixin
-from .util import lazy_wombat
-from .parallel import ParallelTask
-from .base import _client_dummy, _cluster_dummy
 
 import numpy as np
 from scipy.stats import mode as sci_mode
@@ -26,7 +17,6 @@ import xarray as xr
 import dask
 import dask.array as da
 from dask.distributed import Client, LocalCluster
-import rasterio as rio
 from rasterio import features
 from affine import Affine
 from pyproj.enums import WktVersion
@@ -36,22 +26,36 @@ try:
     from geoarray import GeoArray
 
     AROSICS_INSTALLED = True
-except:
+except ImportError:
     AROSICS_INSTALLED = False
 
 try:
     import pymorph
 
     PYMORPH_INSTALLED = True
-except:
+except ImportError:
     PYMORPH_INSTALLED = False
+
+from ..handler import add_handler
+from ..backends.rasterio_ import (
+    align_bounds,
+    array_bounds,
+    aligned_target,
+    check_crs,
+)
+from ..backends.xarray_ import delayed_to_xarray
+from .conversion import Converters
+from .base import PropertyMixin as _PropertyMixin
+from .util import lazy_wombat
+from .parallel import ParallelTask
+from .base import _client_dummy, _cluster_dummy
 
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
-def _remove_near_points(dataframe, r):
+def _remove_near_points(dataframe: gpd.GeoDataFrame, r: T.Union[float, int]):
     """Removes points less than a specified distance to another point.
 
     Args:
@@ -77,7 +81,13 @@ def _remove_near_points(dataframe, r):
     return dataframe
 
 
-def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cellyh):
+def _transform_and_shift(
+    affine_transform: Affine,
+    col_indices: T.Sequence[int],
+    row_indices: T.Sequence[int],
+    cellxh: float,
+    cellyh: float,
+):
     """Transforms indices to coordinates and applies a half pixel shift.
 
     Args:
@@ -101,16 +111,16 @@ def _transform_and_shift(affine_transform, col_indices, row_indices, cellxh, cel
 class SpatialOperations(_PropertyMixin):
     @staticmethod
     def calc_area(
-        data,
-        values,
-        op='eq',
-        units='km2',
-        row_chunks=None,
-        col_chunks=None,
-        n_workers=1,
-        n_threads=1,
-        scheduler='threads',
-        n_chunks=100,
+        data: xr.DataArray,
+        values: T.Sequence[T.Union[float, int]],
+        op: str = 'eq',
+        units: str = 'km2',
+        row_chunks: int = None,
+        col_chunks: int = None,
+        n_workers: int = 1,
+        n_threads: int = 1,
+        scheduler: str = 'threads',
+        n_chunks: int = 100,
     ):
         """Calculates the area of data values.
 
@@ -165,7 +175,9 @@ class SpatialOperations(_PropertyMixin):
                     .data.compute(scheduler='threads', num_workers=n_threads)
                 )
 
-                data_totals_[value] += (chunk_value_total * sqm) * area_conversion
+                data_totals_[value] += (
+                    chunk_value_total * sqm
+                ) * area_conversion
 
             return dict(data_totals_)
 
@@ -189,24 +201,26 @@ class SpatialOperations(_PropertyMixin):
         data_totals = dict(data_totals)
         data_totals = dict(sorted(data_totals.items()))
 
-        df = pd.DataFrame.from_dict(data_totals, orient='index', columns=[units])
+        df = pd.DataFrame.from_dict(
+            data_totals, orient='index', columns=[units]
+        )
         df['area_value'] = df.index
 
         return df
 
     def sample(
         self,
-        data,
-        method='random',
-        band=None,
-        n=None,
-        strata=None,
-        spacing=None,
-        min_dist=None,
-        max_attempts=10,
-        num_workers=1,
-        verbose=1,
-        **kwargs,
+        data: xr.DataArray,
+        method: str = 'random',
+        band: T.Union[int, str] = None,
+        n: int = None,
+        strata: T.Optional[T.Dict[str, T.Union[float, int]]] = None,
+        spacing: T.Optional[float] = None,
+        min_dist: T.Optional[T.Union[float, int]] = None,
+        max_attempts: T.Optional[int] = 10,
+        num_workers: T.Optional[int] = 1,
+        verbose: T.Optional[int] = 1,
+        **kwargs: T.Optional[dict],
     ):
         """Generates samples from a raster.
 
@@ -284,7 +298,9 @@ class SpatialOperations(_PropertyMixin):
                 y_samples = list()
 
                 for i in range(0, data.gw.nrows, int(spacing / data.gw.celly)):
-                    for j in range(0, data.gw.ncols, int(spacing / data.gw.cellx)):
+                    for j in range(
+                        0, data.gw.ncols, int(spacing / data.gw.cellx)
+                    ):
 
                         x_samples.append(j)
                         y_samples.append(i)
@@ -346,7 +362,9 @@ class SpatialOperations(_PropertyMixin):
                                 dfs,
                                 gpd.GeoDataFrame(
                                     data=range(0, x_coords.shape[0]),
-                                    geometry=gpd.points_from_xy(x_coords, y_coords),
+                                    geometry=gpd.points_from_xy(
+                                        x_coords, y_coords
+                                    ),
                                     crs=data.crs,
                                     columns=['point'],
                                 ),
@@ -363,7 +381,9 @@ class SpatialOperations(_PropertyMixin):
                             columns=['point'],
                         )
 
-                    if isinstance(min_dist, float) or isinstance(min_dist, int):
+                    if isinstance(min_dist, float) or isinstance(
+                        min_dist, int
+                    ):
 
                         # Remove samples within a minimum distance
                         dfn = _remove_near_points(dfs, min_dist)
@@ -539,15 +559,25 @@ class SpatialOperations(_PropertyMixin):
                     else:
 
                         if sign == '>':
-                            valid_samples = da.where(data.sel(band=band).data > value)
+                            valid_samples = da.where(
+                                data.sel(band=band).data > value
+                            )
                         elif sign == '>=':
-                            valid_samples = da.where(data.sel(band=band).data >= value)
+                            valid_samples = da.where(
+                                data.sel(band=band).data >= value
+                            )
                         elif sign == '<':
-                            valid_samples = da.where(data.sel(band=band).data < value)
+                            valid_samples = da.where(
+                                data.sel(band=band).data < value
+                            )
                         elif sign == '<=':
-                            valid_samples = da.where(data.sel(band=band).data <= value)
+                            valid_samples = da.where(
+                                data.sel(band=band).data <= value
+                            )
                         elif sign == '==':
-                            valid_samples = da.where(data.sel(band=band).data == value)
+                            valid_samples = da.where(
+                                data.sel(band=band).data == value
+                            )
                         else:
                             logger.exception(
                                 "  The conditional sign was not recognized. Use one of '>', '>=', '<', '<=', or '=='."
@@ -555,7 +585,9 @@ class SpatialOperations(_PropertyMixin):
                             raise NameError
 
                     valid_samples = dask.compute(
-                        valid_samples, num_workers=num_workers, scheduler='threads'
+                        valid_samples,
+                        num_workers=num_workers,
+                        scheduler='threads',
                     )[0]
 
                     y_samples = valid_samples[0]
@@ -574,7 +606,9 @@ class SpatialOperations(_PropertyMixin):
 
                         # Get indices within the stratum
                         idx = np.random.choice(
-                            range(0, y_samples.shape[0]), size=ssize, replace=False
+                            range(0, y_samples.shape[0]),
+                            size=ssize,
+                            replace=False,
                         )
 
                         y_samples = y_samples[idx]
@@ -596,7 +630,9 @@ class SpatialOperations(_PropertyMixin):
                                     dfs,
                                     gpd.GeoDataFrame(
                                         data=range(0, x_coords.shape[0]),
-                                        geometry=gpd.points_from_xy(x_coords, y_coords),
+                                        geometry=gpd.points_from_xy(
+                                            x_coords, y_coords
+                                        ),
                                         crs=data.crs,
                                         columns=['point'],
                                     ),
@@ -608,12 +644,16 @@ class SpatialOperations(_PropertyMixin):
 
                             dfs = gpd.GeoDataFrame(
                                 data=range(0, x_coords.shape[0]),
-                                geometry=gpd.points_from_xy(x_coords, y_coords),
+                                geometry=gpd.points_from_xy(
+                                    x_coords, y_coords
+                                ),
                                 crs=data.crs,
                                 columns=['point'],
                             )
 
-                        if isinstance(min_dist, float) or isinstance(min_dist, int):
+                        if isinstance(min_dist, float) or isinstance(
+                            min_dist, int
+                        ):
 
                             # Remove samples within a minimum distance
                             dfn = _remove_near_points(dfs, min_dist)
@@ -810,17 +850,25 @@ class SpatialOperations(_PropertyMixin):
                 cluster_address = address if address else cluster
                 with client_object(address=cluster_address) as client:
                     res = client.gather(
-                        client.compute(data.isel(band=bands_idx, y=yidx, x=xidx).data)
+                        client.compute(
+                            data.isel(band=bands_idx, y=yidx, x=xidx).data
+                        )
                     )
 
         else:
-            res = data.isel(band=bands_idx, y=yidx, x=xidx).gw.compute(**kwargs)
+            res = data.isel(band=bands_idx, y=yidx, x=xidx).gw.compute(
+                **kwargs
+            )
 
-        if (len(res.shape) == 1) or ((len(res.shape) == 2) and (res.shape[0] == 1)):
+        if (len(res.shape) == 1) or (
+            (len(res.shape) == 2) and (res.shape[0] == 1)
+        ):
             df[band_names[0]] = res.flatten()
         elif len(res.shape) == 2:
             # `res` is shaped [dimensions x samples]
-            df = pd.concat((df, pd.DataFrame(data=res.T, columns=band_names)), axis=1)
+            df = pd.concat(
+                (df, pd.DataFrame(data=res.T, columns=band_names)), axis=1
+            )
         else:
             if time_names:
                 if isinstance(time_names[0], datetime):
@@ -851,7 +899,14 @@ class SpatialOperations(_PropertyMixin):
 
         return df
 
-    def clip(self, data, df, query=None, mask_data=False, expand_by=0):
+    def clip(
+        self,
+        data: xr.DataArray,
+        df: T.Union[str, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        mask_data: T.Optional[bool] = False,
+        expand_by: T.Optional[int] = 0,
+    ):
         """Clips a DataArray by vector polygon geometry.
 
         Args:
@@ -888,14 +943,12 @@ class SpatialOperations(_PropertyMixin):
         if data_crs_ != df_crs_:
             df = df.to_crs(data_crs_)
 
-        row_chunks = data.gw.row_chunks
-        col_chunks = data.gw.col_chunks
-
         left, bottom, right, top = df.total_bounds
 
-        # Align the geometry array grid
-        align_transform, align_width, align_height = align_bounds(
-            left, bottom, right, top, data.res
+        align_height = int(np.floor((top - bottom) / abs(data.gw.celly)))
+        align_width = int(np.floor((right - left) / abs(data.gw.cellx)))
+        align_transform = Affine(
+            data.gw.cellx, 0.0, left, 0.0, -data.gw.celly, top
         )
 
         # Get the new bounds
@@ -911,27 +964,40 @@ class SpatialOperations(_PropertyMixin):
 
         # Subset the array
         data = self.subset(
-            data, left=new_left, bottom=new_bottom, right=new_right, top=new_top
+            data,
+            left=new_left,
+            bottom=new_bottom,
+            right=new_right,
+            top=new_top,
         )
 
         if mask_data:
             # Rasterize the geometry and store as a DataArray
-            mask = xr.DataArray(
-                data=da.from_array(
-                    features.rasterize(
-                        list(df.geometry.values),
-                        out_shape=(align_height, align_width),
-                        transform=align_transform,
-                        fill=0,
-                        out=None,
-                        all_touched=True,
-                        default_value=1,
-                        dtype='int32',
-                    ),
-                    chunks=(row_chunks, col_chunks),
+            mask = delayed_to_xarray(
+                delayed_data=dask.delayed(features.rasterize)(
+                    list(df.geometry.values),
+                    out_shape=(align_height, align_width),
+                    transform=align_transform,
+                    fill=0,
+                    out=None,
+                    all_touched=True,
+                    default_value=1,
+                    dtype='int32',
                 ),
-                dims=['y', 'x'],
-                coords={'y': data.y.values, 'x': data.x.values},
+                shape=(data.gw.nbands, data.gw.nrows, data.gw.ncols),
+                dtype=data.dtype,
+                chunks=(-1, data.gw.row_chunks, data.gw.col_chunks),
+                coords={
+                    'band': data.band.values,
+                    'y': data.y.values,
+                    'x': data.x.values,
+                },
+                attrs={
+                    'transform': data.gw.transform,
+                    'crs': data.crs,
+                    'res': (data.gw.celly, data.gw.celly),
+                    'nodatavals': data.gw.nodatavals,
+                },
             )
 
             # Return the clipped array
@@ -1074,7 +1140,9 @@ class SpatialOperations(_PropertyMixin):
                 )
 
                 to_replace[k] = int(
-                    sci_mode(data_array_np, axis=None, nan_policy='omit').mode.flatten()
+                    sci_mode(
+                        data_array_np, axis=None, nan_policy='omit'
+                    ).mode.flatten()
                 )
 
         return (
@@ -1085,15 +1153,15 @@ class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     def subset(
-        data,
-        left=None,
-        top=None,
-        right=None,
-        bottom=None,
-        rows=None,
-        cols=None,
-        center=False,
-        mask_corners=False,
+        data: xr.DataArray,
+        left: T.Optional[float] = None,
+        top: T.Optional[float] = None,
+        right: T.Optional[float] = None,
+        bottom: T.Optional[float] = None,
+        rows: T.Optional[int] = None,
+        cols: T.Optional[int] = None,
+        center: T.Optional[bool] = False,
+        mask_corners: T.Optional[bool] = False,
     ):
         """Subsets a DataArray.
 
@@ -1115,41 +1183,49 @@ class SpatialOperations(_PropertyMixin):
             >>> import geowombat as gw
             >>>
             >>> with gw.open('image.tif', chunks=512) as ds:
-            >>>
-            >>>     ds_sub = gw.subset(ds,
-            >>>                        left=-263529.884,
-            >>>                        top=953985.314,
-            >>>                        rows=2048,
-            >>>                        cols=2048)
+            >>>     ds_sub = gw.subset(
+            >>>         ds,
+            >>>         left=-263529.884,
+            >>>         top=953985.314,
+            >>>         rows=2048,
+            >>>         cols=2048
+            >>>     )
         """
-        if isinstance(right, int) or isinstance(right, float):
+        if isinstance(right, (float, int)):
             cols = int((right - left) / data.gw.celly)
 
         if not isinstance(cols, int):
-
-            logger.exception('  The right coordinate or columns must be specified.')
+            logger.exception(
+                '  The right coordinate or columns must be specified.'
+            )
             raise NameError
 
-        if isinstance(bottom, int) or isinstance(bottom, float):
+        if isinstance(bottom, (float, int)):
             rows = int((top - bottom) / data.gw.celly)
 
         if not isinstance(rows, int):
-
-            logger.exception('  The bottom coordinate or rows must be specified.')
+            logger.exception(
+                '  The bottom coordinate or rows must be specified.'
+            )
             raise NameError
 
-        x_idx = np.linspace(
-            math.ceil(left), math.ceil(left) + (cols * abs(data.gw.cellx)), cols
-        ) + abs(data.gw.cellxh)
-        y_idx = np.linspace(
-            math.ceil(top), math.ceil(top) - (rows * abs(data.gw.celly)), rows
-        ) - abs(data.gw.cellyh)
-
+        converters = Converters()
+        x_idx, y_idx = converters.coords_to_indices(
+            left + abs(data.gw.cellxh),
+            top - abs(data.gw.cellyh),
+            data.gw.affine,
+        )
         if center:
             y_idx += (rows / 2.0) * abs(data.gw.celly)
             x_idx -= (cols / 2.0) * abs(data.gw.cellx)
-
-        ds_sub = data.sel(y=y_idx, x=x_idx, method='nearest')
+        ds_sub = data.isel(
+            indexers={
+                'band': slice(0, None),
+                'y': slice(y_idx, y_idx + rows),
+                'x': slice(x_idx, x_idx + cols),
+            }
+        )
+        ds_sub.attrs['transform'] = ds_sub.gw.transform
 
         if mask_corners:
             if PYMORPH_INSTALLED:
@@ -1160,24 +1236,13 @@ class SpatialOperations(_PropertyMixin):
                     ).astype('uint8')
                     ds_sub = ds_sub.where(disk == 1)
 
-                except:
-                    logger.warning('  Cannot mask corners without a square subset.')
+                except ValueError:
+                    logger.warning(
+                        '  Cannot mask corners without a square subset.'
+                    )
 
             else:
                 logger.warning('  Cannot mask corners without Pymorph.')
-
-        # Update the left and top coordinates
-        transform = list(data.gw.transform)
-
-        transform[2] = x_idx[0]
-        transform[5] = y_idx[0]
-
-        # Align the coordinates to the target grid
-        dst_transform, dst_width, dst_height = aligned_target(
-            Affine(*transform), ds_sub.shape[1], ds_sub.shape[0], data.res
-        )
-
-        ds_sub.attrs['transform'] = dst_transform
 
         return ds_sub
 
@@ -1273,7 +1338,11 @@ class SpatialOperations(_PropertyMixin):
                 **ref_kwargs,
             ) as ref_src:
                 ref_src = ref_src.assign_attrs(
-                    {'crs': ref_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)}
+                    {
+                        'crs': ref_src.gw.crs_to_pyproj.to_wkt(
+                            version=wkt_version
+                        )
+                    }
                 )
                 if 'nodata' in kwargs:
                     ref_src = ref_src.fillna(
@@ -1296,7 +1365,11 @@ class SpatialOperations(_PropertyMixin):
                 **tar_kwargs,
             ) as tar_src:
                 tar_src = tar_src.assign_attrs(
-                    {'crs': tar_src.gw.crs_to_pyproj.to_wkt(version=wkt_version)}
+                    {
+                        'crs': tar_src.gw.crs_to_pyproj.to_wkt(
+                            version=wkt_version
+                        )
+                    }
                 )
                 if 'nodata' in kwargs:
                     tar_src = tar_src.fillna(
@@ -1313,7 +1386,9 @@ class SpatialOperations(_PropertyMixin):
             try:
                 cr.calculate_spatial_shifts()
             except RuntimeError as e:
-                logger.warning(f"  Could not co-register the data because -> {e}")
+                logger.warning(
+                    f"  Could not co-register the data because -> {e}"
+                )
                 return target
 
             # Apply spatial shifts
@@ -1359,6 +1434,10 @@ class SpatialOperations(_PropertyMixin):
                 ),
             ),
             dims=('band', 'y', 'x'),
-            coords={'band': target.band.values.tolist(), 'y': ycoords, 'x': xcoords},
+            coords={
+                'band': target.band.values.tolist(),
+                'y': ycoords,
+                'x': xcoords,
+            },
             attrs=target_attrs,
         )
