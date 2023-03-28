@@ -19,6 +19,7 @@ import dask.array as da
 from dask.distributed import Client, LocalCluster
 from rasterio import features
 from affine import Affine
+from shapely.geometry import Polygon
 from pyproj.enums import WktVersion
 
 try:
@@ -38,9 +39,7 @@ except ImportError:
 
 from ..handler import add_handler
 from ..backends.rasterio_ import (
-    align_bounds,
     array_bounds,
-    aligned_target,
     check_crs,
 )
 from ..backends.xarray_ import delayed_to_xarray
@@ -55,7 +54,9 @@ logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
-def _remove_near_points(dataframe: gpd.GeoDataFrame, r: T.Union[float, int]):
+def _remove_near_points(
+    dataframe: gpd.GeoDataFrame, r: T.Union[float, int]
+) -> gpd.GeoDataFrame:
     """Removes points less than a specified distance to another point.
 
     Args:
@@ -87,7 +88,7 @@ def _transform_and_shift(
     row_indices: T.Sequence[int],
     cellxh: float,
     cellyh: float,
-):
+) -> T.Tuple[np.ndarray, np.ndarray]:
     """Transforms indices to coordinates and applies a half pixel shift.
 
     Args:
@@ -121,7 +122,7 @@ class SpatialOperations(_PropertyMixin):
         n_threads: int = 1,
         scheduler: str = 'threads',
         n_chunks: int = 100,
-    ):
+    ) -> pd.DataFrame:
         """Calculates the area of data values.
 
         Args:
@@ -220,8 +221,8 @@ class SpatialOperations(_PropertyMixin):
         max_attempts: T.Optional[int] = 10,
         num_workers: T.Optional[int] = 1,
         verbose: T.Optional[int] = 1,
-        **kwargs: T.Optional[dict],
-    ):
+        **kwargs,
+    ) -> gpd.GeoDataFrame:
         """Generates samples from a raster.
 
         Args:
@@ -294,8 +295,8 @@ class SpatialOperations(_PropertyMixin):
 
             if method == 'systematic':
 
-                x_samples = list()
-                y_samples = list()
+                x_samples = []
+                y_samples = []
 
                 for i in range(0, data.gw.nrows, int(spacing / data.gw.celly)):
                     for j in range(
@@ -686,28 +687,28 @@ class SpatialOperations(_PropertyMixin):
 
     def extract(
         self,
-        data,
-        aoi,
-        bands=None,
-        time_names=None,
-        band_names=None,
-        frac=1.0,
-        min_frac_area=None,
-        all_touched=False,
-        id_column='id',
-        time_format='%Y%m%d',
-        mask=None,
-        n_jobs=8,
-        verbose=0,
-        n_workers=1,
-        n_threads=-1,
-        use_client=False,
-        address=None,
-        total_memory=24,
-        processes=False,
-        pool_kwargs=None,
+        data: xr.DataArray,
+        aoi: T.Union[str, Path, gpd.GeoDataFrame],
+        bands: T.Union[int, T.Sequence[int]] = None,
+        time_names: T.Sequence[T.Any] = None,
+        band_names: T.Sequence[T.Any] = None,
+        frac: float = 1.0,
+        min_frac_area: T.Optional[T.Union[float, int]] = None,
+        all_touched: T.Optional[bool] = False,
+        id_column: T.Optional[str] = 'id',
+        time_format: T.Optional[str] = '%Y%m%d',
+        mask: T.Optional[T.Union[Polygon, gpd.GeoDataFrame]] = None,
+        n_jobs: T.Optional[int] = 8,
+        verbose: T.Optional[int] = 0,
+        n_workers: T.Optional[int] = 1,
+        n_threads: T.Optional[int] = -1,
+        use_client: T.Optional[bool] = False,
+        address: T.Optional[str] = None,
+        total_memory: T.Optional[int] = 24,
+        processes: T.Optional[bool] = False,
+        pool_kwargs: T.Optional[dict] = None,
         **kwargs,
-    ):
+    ) -> gpd.GeoDataFrame:
         """Extracts data within an area or points of interest. Projections do
         not need to match, as they are handled 'on-the-fly'.
 
@@ -906,7 +907,7 @@ class SpatialOperations(_PropertyMixin):
         query: T.Optional[str] = None,
         mask_data: T.Optional[bool] = False,
         expand_by: T.Optional[int] = 0,
-    ):
+    ) -> xr.DataArray:
         """Clips a DataArray by vector polygon geometry.
 
         Args:
@@ -1008,7 +1009,12 @@ class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     @lazy_wombat
-    def mask(data, dataframe, query=None, keep='in'):
+    def mask(
+        data: xr.DataArray,
+        dataframe: T.Union[str, Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        keep: T.Optional[str] = 'in',
+    ) -> xr.DataArray:
         """Masks a DataArray by vector polygon geometry.
 
         Args:
@@ -1065,7 +1071,9 @@ class SpatialOperations(_PropertyMixin):
             return data.where(mask == 1)
 
     @staticmethod
-    def replace(data, to_replace):
+    def replace(
+        data: xr.DataArray, to_replace: T.Dict[int, T.Union[int, str]]
+    ) -> xr.DataArray:
         """Replace values given in to_replace with value.
 
         Args:
@@ -1102,7 +1110,13 @@ class SpatialOperations(_PropertyMixin):
         return data.assign_attrs(**attrs).astype(dtype)
 
     @lazy_wombat
-    def recode(self, data, polygon, to_replace, num_workers=1):
+    def recode(
+        self,
+        data: xr.DataArray,
+        polygon: T.Union[str, Path, gpd.GeoDataFrame],
+        to_replace: dict,
+        num_workers: T.Optional[int] = 1,
+    ) -> xr.DataArray:
         """Recodes a DataArray with polygon mappings.
 
         Args:
@@ -1162,7 +1176,7 @@ class SpatialOperations(_PropertyMixin):
         cols: T.Optional[int] = None,
         center: T.Optional[bool] = False,
         mask_corners: T.Optional[bool] = False,
-    ):
+    ) -> xr.DataArray:
         """Subsets a DataArray.
 
         Args:
@@ -1248,13 +1262,13 @@ class SpatialOperations(_PropertyMixin):
 
     @staticmethod
     def coregister(
-        target,
-        reference,
+        target: T.Union[str, Path, xr.DataArray],
+        reference: T.Union[str, Path, xr.DataArray],
         band_names_reference: T.Optional[T.Sequence[str]] = None,
         band_names_target: T.Optional[T.Sequence[str]] = None,
         wkt_version: T.Optional[str] = None,
         **kwargs,
-    ):
+    ) -> xr.DataArray:
         """Co-registers an image, or images, using AROSICS.
 
         While the required inputs are DataArrays, the intermediate results are stored as NumPy arrays.
@@ -1280,11 +1294,20 @@ class SpatialOperations(_PropertyMixin):
             >>>
             >>> # Co-register a single image to a reference image
             >>> with gw.open('target.tif') as tar, gw.open('reference.tif') as ref:
-            >>>     results = gw.coregister(tar, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4)
+            >>>     results = gw.coregister(
+            >>>         tar, ref, q=True, ws=(512, 512), max_shift=3, CPUs=4
+            >>>     )
             >>>
             >>> # or
             >>>
-            >>> results = gw.coregister('target.tif', 'reference.tif', q=True, ws=(512, 512), max_shift=3, CPUs=4)
+            >>> results = gw.coregister(
+            >>>     'target.tif',
+            >>>     'reference.tif',
+            >>>     q=True,
+            >>>     ws=(512, 512),
+            >>>     max_shift=3,
+            >>>     CPUs=4
+            >>> )
         """
         import geowombat as gw_
 
