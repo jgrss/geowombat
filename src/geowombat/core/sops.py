@@ -7,6 +7,7 @@ import multiprocessing as multi
 from pathlib import Path
 import tempfile
 import typing as T
+import warnings
 
 import numpy as np
 from scipy.stats import mode as sci_mode
@@ -902,6 +903,98 @@ class SpatialOperations(_PropertyMixin):
 
         return df
 
+    def clip_by_polygon(
+        self,
+        data: xr.DataArray,
+        df: T.Union[str, Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        mask_data: T.Optional[bool] = False,
+        expand_by: T.Optional[int] = 0,
+    ) -> xr.DataArray:
+        """Clips a DataArray by vector polygon geometry.
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to subset.
+            df (GeoDataFrame or str): The ``geopandas.GeoDataFrame`` or filename to clip to.
+            query (Optional[str]): A query to apply to ``df``.
+            mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
+            expand_by (Optional[int]): Expand the clip array bounds by ``expand_by`` pixels on each side.
+
+        Returns:
+             ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
+            >>>
+            >>> # or
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
+        """
+        if isinstance(df, (Path, str)):
+            if not Path(df).is_file():
+                raise FileExistsError(f'{str(df)} does not exist.')
+            df = gpd.read_file(df)
+
+        if query is not None:
+            df = df.query(query)
+
+        data_crs_ = check_crs(data.crs)
+        df_crs_ = check_crs(df.crs)
+
+        # Re-project the DataFrame to match the image CRS
+        if data_crs_ != df_crs_:
+            df = df.to_crs(data_crs_)
+        # Get the target bounds
+        left, bottom, right, top = df.total_bounds
+        # Get the target dimensions
+        dst_bounds = BoundingBox(
+            left=left,
+            bottom=bottom,
+            right=right,
+            top=top,
+        )
+        align_height, align_width = get_dims_from_bounds(
+            dst_bounds, (data.gw.cellx, data.gw.celly)
+        )
+        align_transform = Affine(
+            data.gw.cellx, 0.0, left, 0.0, -data.gw.celly, top
+        )
+        # Get the new bounds
+        new_left, new_bottom, new_right, new_top = array_bounds(
+            align_height, align_width, align_transform
+        )
+
+        if expand_by > 0:
+            new_left -= data.gw.cellx * expand_by
+            new_bottom -= data.gw.celly * expand_by
+            new_right += data.gw.cellx * expand_by
+            new_top += data.gw.celly * expand_by
+
+        # Subset the array
+        data = self.subset(
+            data,
+            left=new_left,
+            bottom=new_bottom,
+            right=new_right,
+            top=new_top,
+        )
+
+        if mask_data:
+            converters = Converters()
+            mask = converters.polygon_to_array(df, data=data)
+
+            data = (
+                (data * mask.where(lambda x: x == 1))
+                .fillna(data.gw.nodataval)
+                .assign_attrs(**data.attrs)
+            )
+
+        return data
+
     def clip(
         self,
         data: xr.DataArray,
@@ -911,6 +1004,9 @@ class SpatialOperations(_PropertyMixin):
         expand_by: T.Optional[int] = 0,
     ) -> xr.DataArray:
         """Clips a DataArray by vector polygon geometry.
+
+        .. deprecated:: 2.1.7
+            Use ``clip_by_polygon()``
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
@@ -933,6 +1029,12 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.clip(df, query="Id == 1")
         """
+        warnings.warn(
+            'The method clip() will be deprecated in >=2.2.0. Use clip_by_polygon() instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         if isinstance(df, (Path, str)):
             if not Path(df).is_file():
                 raise FileExistsError(f'{str(df)} does not exist.')
