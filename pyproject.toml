@@ -5,3 +5,22 @@ requires = [
     'Cython>=0.29.0,<3.0.0',
     'numpy>=1.19.0'
 ]
+
+[tool.black]
+line-length = 79
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.vscode
+  | \.idea
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
