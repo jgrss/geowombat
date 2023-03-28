@@ -43,6 +43,15 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def get_dims_from_bounds(
+    bounds: BoundingBox, res: T.Tuple[float, float]
+) -> T.Tuple[int, int]:
+    width = int((bounds.right - bounds.left) / abs(res[0]))
+    height = int((bounds.top - bounds.bottom) / abs(res[1]))
+
+    return height, width
+
+
 def get_file_info(src_obj):
     src_bounds = src_obj.bounds
     src_res = src_obj.res
@@ -965,8 +974,7 @@ def warp(
                 )
                 raise TypeError
 
-        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
-        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
+        dst_height, dst_width = get_dims_from_bounds(dst_bounds, dst_res)
 
         # Do not warp if all the key metadata match the reference information
         if (

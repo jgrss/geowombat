@@ -18,6 +18,9 @@ import dask
 import dask.array as da
 from dask.distributed import Client, LocalCluster
 from rasterio import features
+from rasterio.mask import mask as rio_mask
+from rasterio.warp import transform_bounds
+from rasterio.coords import BoundingBox
 from affine import Affine
 from shapely.geometry import Polygon
 from pyproj.enums import WktVersion
@@ -41,6 +44,7 @@ from ..handler import add_handler
 from ..backends.rasterio_ import (
     array_bounds,
     check_crs,
+    get_dims_from_bounds,
 )
 from ..backends.xarray_ import delayed_to_xarray
 from .conversion import Converters
@@ -948,8 +952,30 @@ class SpatialOperations(_PropertyMixin):
 
         left, bottom, right, top = df.total_bounds
 
-        align_height = int(np.floor((top - bottom) / abs(data.gw.celly)))
-        align_width = int(np.floor((right - left) / abs(data.gw.cellx)))
+        ############
+        # https://gis.stackexchange.com/questions/329434/creating-an-in-memory-rasterio-dataset-from-numpy-array
+        (left_coord, bottom_coord, right_coord, top_coord,) = transform_bounds(
+            data_crs_,
+            data_crs_,
+            left,
+            bottom,
+            right,
+            top,
+            densify_pts=21,
+        )
+        dst_bounds = BoundingBox(
+            left=left_coord,
+            bottom=bottom_coord,
+            right=right_coord,
+            top=top_coord,
+        )
+        align_height, align_width = get_dims_from_bounds(
+            dst_bounds, (data.gw.cellx, data.gw.celly)
+        )
+        ############
+
+        # align_height = int(np.floor((top - bottom) / abs(data.gw.celly)))
+        # align_width = int(np.floor((right - left) / abs(data.gw.cellx)))
         align_transform = Affine(
             data.gw.cellx, 0.0, left, 0.0, -data.gw.celly, top
         )
