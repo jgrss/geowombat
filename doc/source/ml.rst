@@ -104,7 +104,7 @@ Unsupervised classifiers can also be used in a pipeline
     # Fit_predict unsupervised classifier
     with gw.config.update(ref_res=300):
         with gw.open(l8_224078_20200518) as src:
-            y= fit_predict(src, cl)
+            y = fit_predict(src, cl)
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
 
@@ -139,6 +139,13 @@ Cross-validation and parameter tuning is now possible
             # get set tuned parameters
             # Note: predict(gridsearch.best_model_) not currently supported
             clf.set_params(**gridsearch.best_params_)
-            y1 = predict(src, X, clf)
+            y = predict(src, X, clf)
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
+
+Save prediction output
+----------------------
+
+.. ipython:: python
+
+    y.gw.save('./output/output.tif',overwrite=True)
