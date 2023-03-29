@@ -1501,6 +1501,9 @@ class SpatialOperations(_PropertyMixin):
                     "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
                 )
                 logger.exception(e)
+                raise AttributeError(
+                    "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
+                )
 
             try:
                 cr.calculate_spatial_shifts()
