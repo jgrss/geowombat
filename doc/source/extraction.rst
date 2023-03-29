@@ -22,24 +22,28 @@ Slice a subset using a `rasterio.window.Window`.
 
     bounds = (793475.76, 2049033.03, 794222.03, 2049527.24)
 
-    with gw.open(rgbn,
-                 band_names=['blue', 'green', 'red'],
-                 num_workers=8,
-                 indexes=[1, 2, 3],
-                 window=w,
-                 out_dtype='float32') as src:
+    with gw.open(
+        rgbn,
+        band_names=['blue', 'green', 'red'],
+        num_workers=8,
+        indexes=[1, 2, 3],
+        window=w,
+        out_dtype='float32'
+    ) as src:
         print(src)
 
 Slice a subset using a tuple of bounded coordinates.
 
 .. code:: python
 
-    with gw.open(rgbn,
-                 band_names=['green', 'red', 'nir'],
-                 num_workers=8,
-                 indexes=[2, 3, 4],
-                 bounds=bounds,
-                 out_dtype='float32') as src:
+    with gw.open(
+        rgbn,
+        band_names=['green', 'red', 'nir'],
+        num_workers=8,
+        indexes=[2, 3, 4],
+        bounds=bounds,
+        out_dtype='float32'
+    ) as src:
         print(src)
 
 The configuration manager provides an alternative method to subset rasters. See :ref:`tutorial-config` for more details.
@@ -191,7 +195,9 @@ To extract values within polygons, use the same :func:`geowombat.extract` functi
 
     with gw.config.update(sensor='bgr'):
         with gw.open(l8_224078_20200518) as src:
-            df = src.gw.extract(l8_224078_20200518_polygons,
-                                band_names=src.band.values.tolist())
+            df = src.gw.extract(
+                l8_224078_20200518_polygons,
+                band_names=src.band.values.tolist()
+            )
 
     print(df)
