@@ -987,7 +987,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             expand_by=expand_by,
         )
 
-    def clip(self, df, query=None, mask_data=False):
+    def clip(
+        self,
+        df: T.Union[str, _Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        mask_data: T.Optional[bool] = False,
+        expand_by: T.Optional[int] = 0,
+    ):
         """Clips a DataArray by vector polygon geometry.
 
         .. deprecated:: 2.1.7
@@ -997,6 +1003,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
             query (Optional[str]): A query to apply to ``df``.
             mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
+            expand_by (Optional[int]): Expand the clip array bounds by ``expand_by`` pixels on each side.
 
         Returns:
              ``xarray.DataArray``
@@ -1007,7 +1014,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             stacklevel=2,
         )
 
-        return clip_by_polygon(self._obj, df, query=query, mask_data=mask_data)
+        return clip_by_polygon(
+            self._obj,
+            df,
+            query=query,
+            mask_data=mask_data,
+            expand_by=expand_by,
+        )
 
     def subset(
         self,
