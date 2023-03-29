@@ -77,8 +77,12 @@ class TestCOREG(unittest.TestCase):
                 with gw.open(tmp_file) as target_shifted:
                     # Co-register the shifted data
                     shifted = gw.coregister(
-                        target=target_shifted,
-                        reference=reference,
+                        target=target_shifted.fillna(0).assign_attrs(
+                            {'crs': f'epsg:{target_shifted.crs}'}
+                        ),
+                        reference=reference.fillna(0).assign_attrs(
+                            {'crs': f'epsg:{target_shifted.crs}'}
+                        ),
                         ws=(256, 256),
                         r_b4match=1,
                         s_b4match=1,
@@ -99,7 +103,8 @@ class TestCOREG(unittest.TestCase):
                     # Check if the corrected data match the original (unshifted) target
                     self.assertTrue(
                         np.allclose(
-                            target.values[:, :-1, :-1], shifted.values[:, :-1, :-1]
+                            target.values[:, :-1, :-1],
+                            shifted.values[:, :-1, :-1],
                         )
                     )
 

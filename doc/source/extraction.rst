@@ -22,24 +22,28 @@ Slice a subset using a `rasterio.window.Window`.
 
     bounds = (793475.76, 2049033.03, 794222.03, 2049527.24)
 
-    with gw.open(rgbn,
-                 band_names=['blue', 'green', 'red'],
-                 num_workers=8,
-                 indexes=[1, 2, 3],
-                 window=w,
-                 out_dtype='float32') as src:
+    with gw.open(
+        rgbn,
+        band_names=['blue', 'green', 'red'],
+        num_workers=8,
+        indexes=[1, 2, 3],
+        window=w,
+        out_dtype='float32'
+    ) as src:
         print(src)
 
 Slice a subset using a tuple of bounded coordinates.
 
 .. code:: python
 
-    with gw.open(rgbn,
-                 band_names=['green', 'red', 'nir'],
-                 num_workers=8,
-                 indexes=[2, 3, 4],
-                 bounds=bounds,
-                 out_dtype='float32') as src:
+    with gw.open(
+        rgbn,
+        band_names=['green', 'red', 'nir'],
+        num_workers=8,
+        indexes=[2, 3, 4],
+        bounds=bounds,
+        out_dtype='float32'
+    ) as src:
         print(src)
 
 The configuration manager provides an alternative method to subset rasters. See :ref:`tutorial-config` for more details.
@@ -59,6 +63,34 @@ By default, the subset will be returned by the upper left coordinates of the bou
 
         with gw.open(rgbn) as src:
             print(src)
+
+Clipping to bounds
+------------------
+
+Geowombat's :func:`clip_by_polygon` is an alternative method to `geowombat.config.update`. The
+:func:`clip_by_polygon` method limits the bounds of the image to match a polygon, where the polygon
+can be a `geopandas.GeoDataFrame`, or a path to a file readable with :func:`geopandas.read_file`.
+You can augment the clip by using a `query` on the polygon attributes, and if multiple polygons
+are present you can `mask_data` to fill `nan` where polygons are not present, or expand the clip
+array bounds by `expand_by` pixels on each side.
+
+.. code:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
+    import geopandas as gpd
+
+    polys = gpd.read_file(l8_224078_20200518_polygons)
+
+    with gw.open(l8_224078_20200518) as src:
+        print(src)
+        clipped = src.gw.clip_by_polygon(
+            df,
+            query="name == water",
+            mask_data=True,
+            expand_by=1
+        )
+        print(clipped)
 
 Extracting data with coordinates
 --------------------------------
@@ -163,7 +195,9 @@ To extract values within polygons, use the same :func:`geowombat.extract` functi
 
     with gw.config.update(sensor='bgr'):
         with gw.open(l8_224078_20200518) as src:
-            df = src.gw.extract(l8_224078_20200518_polygons,
-                                band_names=src.band.values.tolist())
+            df = src.gw.extract(
+                l8_224078_20200518_polygons,
+                band_names=src.band.values.tolist()
+            )
 
     print(df)
