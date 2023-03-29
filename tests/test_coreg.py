@@ -81,7 +81,7 @@ class TestCOREG(unittest.TestCase):
                             {'crs': f'epsg:{target_shifted.crs}'}
                         ),
                         reference=reference.fillna(0).assign_attrs(
-                            {'crs': f'epsg:{target_shifted.crs}'}
+                            {'crs': f'epsg:{reference.crs}'}
                         ),
                         ws=(256, 256),
                         r_b4match=1,
