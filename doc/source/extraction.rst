@@ -60,6 +60,34 @@ By default, the subset will be returned by the upper left coordinates of the bou
         with gw.open(rgbn) as src:
             print(src)
 
+Clipping to bounds
+------------------
+
+Geowombat's :func:`clip_by_polygon` is an alternative method to `geowombat.config.update`. The
+:func:`clip_by_polygon` method limits the bounds of the image to match a polygon, where the polygon
+can be a `geopandas.GeoDataFrame`, or a path to a file readable with :func:`geopandas.read_file`.
+You can augment the clip by using a `query` on the polygon attributes, and if multiple polygons
+are present you can `mask_data` to fill `nan` where polygons are not present, or expand the clip
+array bounds by `expand_by` pixels on each side.
+
+.. code:: python
+
+    import geowombat as gw
+    from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
+    import geopandas as gpd
+
+    polys = gpd.read_file(l8_224078_20200518_polygons)
+
+    with gw.open(l8_224078_20200518) as src:
+        print(src)
+        clipped = src.gw.clip_by_polygon(
+            df,
+            query="name == water",
+            mask_data=True,
+            expand_by=1
+        )
+        print(clipped)
+
 Extracting data with coordinates
 --------------------------------
 
