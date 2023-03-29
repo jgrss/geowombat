@@ -493,11 +493,13 @@ def check_res(res):
     return dst_res
 
 
-def check_src_crs(src):
+def check_src_crs(
+    src: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+) -> rio.crs.CRS:
     """Checks a rasterio open() instance.
 
     Args:
-        src (object): A `rasterio.open` instance.
+        src (object): An instance of ``rasterio.io.DatasetReader`` or ``rasterio.io.DatasetWriter``.
 
     Returns:
         ``rasterio.crs.CRS``
@@ -505,7 +507,7 @@ def check_src_crs(src):
     return src.crs if src.crs else src.gcps[1]
 
 
-def check_crs(crs) -> CRS:
+def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
     """Checks a CRS instance.
 
     Args:
