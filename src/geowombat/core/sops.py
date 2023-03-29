@@ -23,6 +23,7 @@ from rasterio.coords import BoundingBox
 from affine import Affine
 from shapely.geometry import Polygon
 from pyproj.enums import WktVersion
+from pyproj.exceptions import CRSError
 
 try:
     import arosics
@@ -1489,11 +1490,17 @@ class SpatialOperations(_PropertyMixin):
                     ).gw.assign_nodata_attrs(kwargs['nodata'][1])
                 tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
-            cr = arosics.COREG(
-                GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
-                GeoArray(GeoArray(str(tar_path)), projection=tar_src.crs),
-                **kwargs,
-            )
+            try:
+                cr = arosics.COREG(
+                    GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
+                    GeoArray(GeoArray(str(tar_path)), projection=tar_src.crs),
+                    **kwargs,
+                )
+            except CRSError as e:
+                logger.warning(
+                    "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
+                )
+                logger.exception(e)
 
             try:
                 cr.calculate_spatial_shifts()
