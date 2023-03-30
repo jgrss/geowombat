@@ -1,5 +1,3 @@
 numpy>=1.19.0
 setuptools>=59.5.0
 ipython
-pydata-sphinx-theme==0.13.1
-sphinx-book-theme

@@ -52,6 +52,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinxcontrib.bibtex',
     'sphinx_tabs.tabs',
+    'sphinx_copybutton',
     'numpydoc',
 ]
 
