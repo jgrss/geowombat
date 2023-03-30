@@ -97,7 +97,9 @@ html_theme_options = {
     'note_bg': '#cccccc',
     'note_border': '#c0c3e2',
     'fixed_sidebar': False,
-    'logo': 'logo.png',
+    'logo': {
+        'alt_text': 'GeoWombat',
+    },
     'logo_name': False,
     'github_banner': True,
     'github_button': True,
