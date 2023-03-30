@@ -52,7 +52,9 @@ def get_dims_from_bounds(
     return height, width
 
 
-def get_file_info(src_obj):
+def get_file_info(
+    src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+) -> namedtuple:
     src_bounds = src_obj.bounds
     src_res = src_obj.res
     src_width = src_obj.width
@@ -471,7 +473,9 @@ class WriteDaskArray(object):
         pass
 
 
-def check_res(res):
+def check_res(
+    res: T.Union[T.Tuple[float, float], float, int]
+) -> T.Tuple[float, float]:
     """Checks a resolution.
 
     Args:
@@ -481,9 +485,9 @@ def check_res(res):
         ``tuple``
     """
     if isinstance(res, tuple):
-        dst_res = res
+        dst_res = (float(res[0]), float(res[1]))
     elif isinstance(res, (float, int)):
-        dst_res = (res, res)
+        dst_res = (float(res), float(res))
     else:
         logger.exception(
             '  The resolution should be given as an integer, float, or tuple.'
@@ -545,7 +549,7 @@ def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
     return dst_crs
 
 
-def check_file_crs(filename) -> CRS:
+def check_file_crs(filename: T.Union[str, Path]) -> CRS:
     """Checks a file CRS.
 
     Args:
@@ -571,11 +575,11 @@ def check_file_crs(filename) -> CRS:
     return check_crs(src_crs)
 
 
-def unpack_bounding_box(bounds):
+def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
     """Unpacks a BoundBox() string.
 
     Args:
-        bounds (object)
+        bounds (str)
 
     Returns:
         ``tuple``
@@ -595,14 +599,14 @@ def unpack_bounding_box(bounds):
     return left_coord, bottom_coord, right_coord, top_coord
 
 
-def unpack_window(bounds):
+def unpack_window(bounds: str) -> Window:
     """Unpacks a Window() string.
 
     Args:
-        bounds (object)
+        bounds (str)
 
     Returns:
-        ``object``
+        ``rasterio.windows.Window``
     """
     bounds_str = bounds.replace('Window(', '').split(',')
 
@@ -619,7 +623,9 @@ def unpack_window(bounds):
     return Window(col_off=col_off, row_off=row_off, width=width, height=height)
 
 
-def window_to_bounds(filenames, w):
+def window_to_bounds(
+    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
+) -> T.Tuple[float, float, float, float]:
     """Transforms a rasterio Window() object to image bounds.
 
     Args:
@@ -673,7 +679,11 @@ def align_bounds(
 
 
 def get_file_bounds(
-    filenames, bounds_by='union', crs=None, res=None, return_bounds=False
+    filenames: T.Sequence[T.Union[str, Path]],
+    bounds_by: str = 'union',
+    crs: T.Optional[T.Any] = None,
+    res: T.Optional[T.Union[T.Tuple[float, float], float, int]] = None,
+    return_bounds: T.Optional[bool] = False,
 ):
     """Gets the union of all files.
 
