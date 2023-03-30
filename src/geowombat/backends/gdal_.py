@@ -1,16 +1,18 @@
 from pathlib import Path
+import typing as T
 
 from osgeo import gdal
 
 
-def warp(in_image,
-         out_image,
-         overwrite=False,
-         delete_input=False,
-         **kwargs):
+def warp(
+    in_image: T.Union[str, Path],
+    out_image: T.Union[str, Path],
+    overwrite: bool = False,
+    delete_input: bool = False,
+    **kwargs
+) -> None:
 
-    """
-    Warps an image
+    """Warps an image.
 
     Args:
         in_image (str): The input image.
@@ -31,17 +33,13 @@ def warp(in_image,
             metadataConflictValue=None, setColorInterpretation=False,
             callback=None, callback_data=None
     """
-
     if overwrite:
-
         if Path(out_image).is_file():
             Path(out_image).unlink()
 
     warp_options = gdal.WarpOptions(**kwargs)
 
-    out_ds = gdal.Warp(out_image,
-                       in_image,
-                       options=warp_options)
+    out_ds = gdal.Warp(str(out_image), str(in_image), options=warp_options)
 
     out_ds = None
 
