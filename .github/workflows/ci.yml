@@ -36,13 +36,12 @@ jobs:
 #        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
   Tests:
-#    needs: Quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.8.12
+          python-version: 3.8.15
       - uses: syphar/restore-virtualenv@v1
         id: cache-gwenv
         with:
@@ -68,9 +67,9 @@ jobs:
         run: |
           # Install Python GDAL
           pip install -U pip setuptools>=59.5.0 wheel
-          pip install Cython>=0.29.* numpy>=1.19.0
+          pip install "cython>=0.29.0,<3.0.0" numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
-          pip install GDAL==$GDAL_VERSION --no-binary=gdal
+          pip install GDAL==$GDAL_VERSION --no-cache-dir
       - name: Install GeoWombat
         run: |
           pip install arosics --no-deps
