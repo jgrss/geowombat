@@ -1490,20 +1490,23 @@ class SpatialOperations(_PropertyMixin):
                     ).gw.assign_nodata_attrs(kwargs['nodata'][1])
                 tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
-            try:
-                cr = arosics.COREG(
-                    GeoArray(GeoArray(str(ref_path)), projection=ref_src.crs),
-                    GeoArray(GeoArray(str(tar_path)), projection=tar_src.crs),
-                    **kwargs,
-                )
-            except CRSError as e:
-                logger.warning(
-                    "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
-                )
-                logger.exception(e)
-                raise AttributeError(
-                    "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
-                )
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', FutureWarning)
+                try:
+                    cr = arosics.COREG(
+                        GeoArray(
+                            GeoArray(str(ref_path)), projection=ref_src.crs
+                        ),
+                        GeoArray(
+                            GeoArray(str(tar_path)), projection=tar_src.crs
+                        ),
+                        **kwargs,
+                    )
+                except CRSError as e:
+                    logger.exception(e)
+                    raise AttributeError(
+                        "Try using an integer EPSG format (e.g., data.attrs['crs'] = 'epsg:32621')"
+                    )
 
             try:
                 cr.calculate_spatial_shifts()
