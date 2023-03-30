@@ -25,6 +25,4 @@ repos:
   #   hooks:
   #     - id: isort
   #       name: isort (python)
-  #     - id: isort
-  #       name: isort (cython)
-  #       types: [cython]
+  #       args: [--settings-path=pyproject.toml]
