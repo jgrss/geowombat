@@ -99,7 +99,8 @@ class TestCOREG(unittest.TestCase):
                     # Check if the corrected data match the original (unshifted) target
                     self.assertTrue(
                         np.allclose(
-                            target.values[:, :-1, :-1], shifted.values[:, :-1, :-1]
+                            target.values[:, :-1, :-1],
+                            shifted.values[:, :-1, :-1],
                         )
                     )
 

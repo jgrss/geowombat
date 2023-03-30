@@ -9,6 +9,7 @@ import random
 import string
 import logging
 import typing as T
+import warnings
 
 from ..handler import add_handler
 from ..backends.rasterio_ import to_gtiff, RasterioStore
@@ -605,7 +606,8 @@ def save(
     client: T.Optional[Client] = None,
     compute: T.Optional[bool] = True,
     tags: T.Optional[dict] = None,
-    compression: T.Optional[str] = 'none',
+    compress: T.Optional[str] = 'none',
+    compression: T.Optional[str] = None,
     num_workers: T.Optional[int] = 1,
     log_progress: T.Optional[bool] = True,
     tqdm_kwargs: T.Optional[dict] = None,
@@ -624,7 +626,11 @@ def save(
             the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
             return the ``dask`` task graph. Default is ``True``.
         tags (Optional[dict]): Metadata tags to write to file. Default is None.
+        compress (Optional[str]): The file compression type. Default is 'none', or no compression.
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+            .. deprecated:: 2.1.4
+                Use 'compress' -- 'compression' will be removed in >=2.2.0.
+
         num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
             Default is 1.
         log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
@@ -638,13 +644,21 @@ def save(
         >>>
         >>> with gw.open('file.tif') as src:
         >>>     result = ...
-        >>>     gw.save(result, 'output.tif', compression='lzw', num_workers=8)
+        >>>     gw.save(result, 'output.tif', compress='lzw', num_workers=8)
         >>>
         >>> # Create delayed write tasks and compute later
         >>> tasks = [gw.save(array, 'output.tif', compute=False) for array in array_list]
         >>> # Write and close files
         >>> dask.compute(tasks, num_workers=8)
     """
+    if compression is not None:
+        warnings.warn(
+            f"The argument 'compression' will be deprecated in >=2.2.0. Use 'compress'.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        compress = compression
+
     if mode not in ['w', 'r+']:
         raise AttributeError("The mode must be either 'w' or 'r+'.")
 
@@ -692,7 +706,7 @@ def save(
         blockysize=blockysize,
         crs=data.gw.crs_to_pyproj,
         transform=data.gw.transform,
-        compress=compression,
+        compress=compress,
         tiled=True if max(blockxsize, blockysize) >= 16 else False,
         sharing=False,
     )
@@ -1267,7 +1281,7 @@ def to_raster(
                     tags=tags,
                 )
 
-                temp_file.rename(filename)
+                temp_file.replace(filename)
 
             if verbose > 0:
                 logger.info('  Finished compressing')

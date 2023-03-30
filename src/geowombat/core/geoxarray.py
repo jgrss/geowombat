@@ -15,7 +15,7 @@ from . import (
     sample,
     calc_area,
     subset,
-    clip,
+    clip_by_polygon,
     mask,
     replace,
     recode,
@@ -91,7 +91,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``list``
         """
-        return self._obj.attrs['_filenames'] if '_filenames' in self._obj.attrs else []
+        return (
+            self._obj.attrs['_filenames']
+            if '_filenames' in self._obj.attrs
+            else []
+        )
 
     @property
     def data_are_separate(self) -> bool:
@@ -176,7 +180,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Masks 'no data' values with nans."""
         nodata_value = self._obj.gw.nodataval
         if nodata_value is None:
-            warnings.warn("The 'no data' value is None, so masking cannot be applied.")
+            warnings.warn(
+                "The 'no data' value is None, so masking cannot be applied."
+            )
             return self._obj
 
         # We need to store the data in a type that supports the 'no data' value
@@ -217,7 +223,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ``xarray.DataArray``
         """
         return self._obj.assign_attrs(
-            **{'nodatavals': (nodata,) * self._obj.gw.nbands, '_FillValue': nodata}
+            **{
+                'nodatavals': (nodata,) * self._obj.gw.nbands,
+                '_FillValue': nodata,
+            }
         )
 
     def match_data(
@@ -247,12 +256,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             else:
                 new_chunks = (1, data.gw.row_chunks, data.gw.col_chunks)
 
-            return dask_to_xarray(data, self._obj.data.rechunk(new_chunks), band_names)
+            return dask_to_xarray(
+                data, self._obj.data.rechunk(new_chunks), band_names
+            )
         else:
             return ndarray_to_xarray(data, self._obj.data, band_names)
 
     def compare(
-        self, op: str, b: T.Union[float, int], return_binary: T.Optional[bool] = False
+        self,
+        op: str,
+        b: T.Union[float, int],
+        return_binary: T.Optional[bool] = False,
     ) -> xr.DataArray:
         """Comparison operation.
 
@@ -284,7 +298,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if return_binary:
             out = xr.where(out > 0, 1, np.nan)
 
-        return out.astype(self._obj.dtype.name).assign_attrs(**self._obj.attrs.copy())
+        return out.astype(self._obj.dtype.name).assign_attrs(
+            **self._obj.attrs.copy()
+        )
 
     def replace(self, to_replace: dict) -> xr.DataArray:
         """Replace values given in to_replace with value.
@@ -331,7 +347,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return recode(self._obj, polygon, to_replace, num_workers=num_workers)
 
     def bounds_overlay(
-        self, bounds: T.Union[tuple, _BoundingBox], how: T.Optional[str] = 'intersects'
+        self,
+        bounds: T.Union[tuple, _BoundingBox],
+        how: T.Optional[str] = 'intersects',
     ) -> bool:
         """Checks whether the bounds overlay the image bounds.
 
@@ -376,8 +394,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ``int``
         """
 
-        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
-        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
+        rchunks = (
+            row_chunks
+            if isinstance(row_chunks, int)
+            else self._obj.gw.row_chunks
+        )
+        cchunks = (
+            col_chunks
+            if isinstance(col_chunks, int)
+            else self._obj.gw.col_chunks
+        )
 
         return len(list(range(0, self._obj.gw.nrows, rchunks))) * len(
             list(range(0, self._obj.gw.ncols, cchunks))
@@ -403,8 +429,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 "The return type must be one of 'data', 'slice', or 'window'."
             )
 
-        rchunks = row_chunks if isinstance(row_chunks, int) else self._obj.gw.row_chunks
-        cchunks = col_chunks if isinstance(col_chunks, int) else self._obj.gw.col_chunks
+        rchunks = (
+            row_chunks
+            if isinstance(row_chunks, int)
+            else self._obj.gw.row_chunks
+        )
+        cchunks = (
+            col_chunks
+            if isinstance(col_chunks, int)
+            else self._obj.gw.col_chunks
+        )
 
         for row_off in range(0, self._obj.gw.nrows, rchunks):
             height = n_rows_cols(row_off, rchunks, self._obj.gw.nrows)
@@ -414,7 +448,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 if return_type == 'data':
                     if ndim == 2:
                         yield self._obj[
-                            row_off : row_off + height, col_off : col_off + width
+                            row_off : row_off + height,
+                            col_off : col_off + width,
                         ]
                     else:
                         slicer = tuple([slice(0, None)] * (ndim - 2)) + (
@@ -438,7 +473,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 elif return_type == 'window':
 
                     yield _Window(
-                        row_off=row_off, col_off=col_off, height=height, width=width
+                        row_off=row_off,
+                        col_off=col_off,
+                        height=height,
+                        width=width,
                     )
 
     def imshow(
@@ -503,7 +541,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     df = src.gw.to_polygon(mask='source',
             >>>                            num_workers=8)
         """
-        return array_to_polygon(self._obj, mask=mask, connectivity=connectivity)
+        return array_to_polygon(
+            self._obj, mask=mask, connectivity=connectivity
+        )
 
     def to_vector(
         self,
@@ -631,7 +671,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         client: T.Optional[_Client] = None,
         compute: T.Optional[bool] = True,
         tags: T.Optional[dict] = None,
-        compression: T.Optional[str] = 'none',
+        compress: T.Optional[str] = 'none',
+        compression: T.Optional[str] = None,
         num_workers: T.Optional[int] = 1,
         log_progress: T.Optional[bool] = True,
         tqdm_kwargs: T.Optional[dict] = None,
@@ -650,7 +691,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 the ``dask`` task graph. If ``True``, compute and write to ``filename``. If ``False``,
                 return the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
+            compress (Optional[str]): The file compression type. Default is 'none', or no compression.
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+                .. deprecated:: 2.1.4
+                    Use 'compress' -- 'compression' will be removed in >=2.2.0.
+
             num_workers (Optional[int]): The number of dask workers (i.e., chunks) to write concurrently.
                 Default is 1.
             log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
@@ -664,8 +709,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>> with gw.open('file.tif') as src:
             >>>     result = ...
-            >>>     result.gw.save('output.tif', compression='lzw', num_workers=8)
+            >>>     result.gw.save('output.tif', compress='lzw', num_workers=8)
         """
+        if compression is not None:
+            warnings.warn(
+                "The argument 'compression' will be deprecated in >=2.2.0. Use 'compress'.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            compress = compression
+
         return save(
             self._obj,
             filename=filename,
@@ -675,7 +728,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             client=client,
             compute=compute,
             tags=tags,
-            compression=compression,
+            compress=compress,
             num_workers=num_workers,
             log_progress=log_progress,
             tqdm_kwargs=tqdm_kwargs,
@@ -754,10 +807,14 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         if not hasattr(self._obj, 'crs'):
-            raise AttributeError('The DataArray does not have a `crs` attribute.')
+            raise AttributeError(
+                'The DataArray does not have a `crs` attribute.'
+            )
 
         if not hasattr(self._obj, 'transform'):
-            raise AttributeError('The DataArray does not have a `transform` attribute.')
+            raise AttributeError(
+                'The DataArray does not have a `transform` attribute.'
+            )
 
         kwargs = self._update_kwargs(
             nodata=nodata,
@@ -877,7 +934,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """
 
         cluster = _Cluster(
-            n_workers=n_jobs, threads_per_worker=1, scheduler_port=0, processes=False
+            n_workers=n_jobs,
+            threads_per_worker=1,
+            scheduler_port=0,
+            processes=False,
         )
 
         cluster.start()
@@ -890,19 +950,77 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         cluster.stop()
 
-    def clip(self, df, query=None, mask_data=False):
-        """Clips a DataArray.
+    def clip_by_polygon(
+        self,
+        df: T.Union[str, _Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        mask_data: T.Optional[bool] = False,
+        expand_by: T.Optional[int] = 0,
+    ) -> xr.DataArray:
+        """Clips a DataArray by vector polygon geometry.
 
         Args:
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
             query (Optional[str]): A query to apply to ``df``.
             mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
+            expand_by (Optional[int]): Expand the clip array bounds by ``expand_by`` pixels on each side.
+
+        Returns:
+             ``xarray.DataArray``
+
+        Examples:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = ds.gw.clip_by_polygon(df, query="Id == 1")
+            >>>
+            >>> # or
+            >>>
+            >>> with gw.open('image.tif') as ds:
+            >>>     ds = ds.gw.clip_by_polygon(df, query="Id == 1")
+        """
+        return clip_by_polygon(
+            self._obj,
+            df,
+            query=query,
+            mask_data=mask_data,
+            expand_by=expand_by,
+        )
+
+    def clip(
+        self,
+        df: T.Union[str, _Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        mask_data: T.Optional[bool] = False,
+        expand_by: T.Optional[int] = 0,
+    ):
+        """Clips a DataArray by vector polygon geometry.
+
+        .. deprecated:: 2.1.7
+            Use ``clip_by_polygon()``
+
+        Args:
+            df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.
+            query (Optional[str]): A query to apply to ``df``.
+            mask_data (Optional[bool]): Whether to mask values outside of the ``df`` geometry envelope.
+            expand_by (Optional[int]): Expand the clip array bounds by ``expand_by`` pixels on each side.
 
         Returns:
              ``xarray.DataArray``
         """
+        warnings.warn(
+            'The method clip() will be deprecated in >=2.2.0. Use clip_by_polygon() instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-        return clip(self._obj, df, query=query, mask_data=mask_data)
+        return clip_by_polygon(
+            self._obj,
+            df,
+            query=query,
+            mask_data=mask_data,
+            expand_by=expand_by,
+        )
 
     def subset(
         self,
@@ -1136,7 +1254,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             **kwargs,
         )
 
-    def band_mask(self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1):
+    def band_mask(
+        self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1
+    ):
 
         """Creates a mask from band nonzeros.
 
@@ -1161,7 +1281,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if isinstance(src_nodata, int) or isinstance(src_nodata, float):
 
             return xr.where(
-                (mask < len(valid_bands)) | (self._obj.sel(band='blue') == src_nodata),
+                (mask < len(valid_bands))
+                | (self._obj.sel(band='blue') == src_nodata),
                 dst_mask_val,
                 dst_clear_val,
             ).assign_attrs(**self._obj.attrs)
@@ -1229,7 +1350,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         attrs = self._obj.attrs.copy()
         # Mask the data
         data = xr.where(
-            self._obj == src_nodata, dst_nodata, self._obj * scale_factor + offset
+            self._obj == src_nodata,
+            dst_nodata,
+            self._obj * scale_factor + offset,
         )
         if out_range is not None:
             data = data.clip(out_range[0], out_range[1])
@@ -1293,7 +1416,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             n_jobs=n_jobs,
         )
 
-    def norm_diff(self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0):
+    def norm_diff(
+        self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0
+    ):
 
         r"""
         Calculates the normalized difference band ratio
@@ -1670,10 +1795,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         # Get the central latitude
         central_lat = project_coords(
             np.array(
-                [self._obj.x.values[int(self._obj.x.shape[0] / 2)]], dtype='float64'
+                [self._obj.x.values[int(self._obj.x.shape[0] / 2)]],
+                dtype='float64',
             ),
             np.array(
-                [self._obj.y.values[int(self._obj.y.shape[0] / 2)]], dtype='float64'
+                [self._obj.y.values[int(self._obj.y.shape[0] / 2)]],
+                dtype='float64',
             ),
             self._obj.crs,
             {'init': 'epsg:4326'},

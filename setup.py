@@ -1,8 +1,10 @@
 import platform
 from pathlib import Path
-from setuptools import setup
-from distutils.core import setup
-from distutils.extension import Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup
+    from distutils.extension import Extension
 
 try:
     from Cython.Build import cythonize
