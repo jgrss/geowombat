@@ -1,3 +1,11 @@
+# Contibuting to Geowombat
+---------------------------
+
+We have two methods for contribution, 1) local install, 2) docker based debugging
+
+1 - Local Install
+--------------
+
 ## Install GeoWombat
 
 ### Clone the latest repo
@@ -49,7 +57,27 @@ Install other extras from `setup.cfg` as needed.
 (venv.gw) python -m unittest
 ```
 
+2 - Docker Debuging 
+--------------------
+Prerequisites
+- [Visual Studio Code](https://code.visualstudio.com/download)
+- [Docker VS Code Extension](https://code.visualstudio.com/docs/containers/overview)
+- [Docker Desktop](https://docs.docker.com/desktop/)
+
+1. Build `geowombat/dockerfiles/gw_docker_debug` by right clicking and hit `Build Image...`
+    - This will take a long time the first time only
+    - Give the image a name like `gw_debug`, hit Enter
+2. Click on dock extension tab on left panel of vscode
+3. Under Images click on `gw_debug` right click on `latest`, hit `Run Interactive`
+4. Under Individual Containers, right click on your running `gw_debug` instance, hit `Attach Visual Studio Code`
+5. Once opened make sure the `python` and `ipython` vscode extensions are installed in your attached vscode server
+6. Go to `geowombat/src/debug_script.py` run top cell.
+7. Add code and run `debug cell`
+
+View Example Video here: [![Debug Docker](https://github.com/jgrss/geowombat/blob/jgrss/features_precommit/data/resume.png?raw=true)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
+
 ## Create a Pull Request for the new feature or fix
+----------------------
 
 ### Commit and push changes
 
