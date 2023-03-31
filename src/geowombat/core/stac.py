@@ -1,32 +1,33 @@
-from dataclasses import dataclass as _dataclass
 import enum
 import typing as T
-from pathlib import Path as _Path
 import warnings
+from dataclasses import dataclass as _dataclass
+from pathlib import Path as _Path
 
-from . import geoxarray
-from ..config import config
-from ..radiometry import QABits as _QABits
-
+import dask.array as da
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
-from rasterio.enums import Resampling as _Resampling
-import dask.array as da
-import xarray as xr
 import pyproj
+import xarray as xr
+from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
 
+from ..config import config
+from ..radiometry import QABits as _QABits
+from . import geoxarray
+
 try:
-    from pystac_client import Client as _Client
-    import pystac.errors as pystac_errors
-    from pystac import Catalog as _Catalog, ItemCollection as _ItemCollection
-    from pystac.extensions.eo import EOExtension as _EOExtension
-    import stackstac
     import planetary_computer as pc
+    import pystac.errors as pystac_errors
+    import stackstac
+    import wget
+    from pystac import Catalog as _Catalog
+    from pystac import ItemCollection as _ItemCollection
+    from pystac.extensions.eo import EOExtension as _EOExtension
+    from pystac_client import Client as _Client
     from rich.console import Console as _Console
     from rich.table import Table as _Table
-    import wget
 except ImportError:
     warnings.warn(
         "Install geowombat with 'pip install .[stac]' to use the STAC API."

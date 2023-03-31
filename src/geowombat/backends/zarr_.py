@@ -1,22 +1,20 @@
 from pathlib import Path
 
-import zarr
 import numcodecs
-
+import zarr
 
 if hasattr(numcodecs, 'blosc'):
 
     numcodecs.blosc.use_threads = False
 
-    compressor = numcodecs.Blosc(cname='zstd',
-                                 clevel=2,
-                                 shuffle=numcodecs.Blosc.BITSHUFFLE)
+    compressor = numcodecs.Blosc(
+        cname='zstd', clevel=2, shuffle=numcodecs.Blosc.BITSHUFFLE
+    )
 
 
 def to_zarr(filename, data, window, chunks, root=None):
 
-    """
-    Writes data to a zarr file
+    """Writes data to a zarr file.
 
     Args:
         filename (str): The output file name.
@@ -41,22 +39,26 @@ def to_zarr(filename, data, window, chunks, root=None):
     if not root:
         root = zarr.open(zarr_file, mode='r+')
 
-    group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(BASE=f_base,
-                                                                     Y=window.row_off,
-                                                                     X=window.col_off,
-                                                                     H=window.height,
-                                                                     W=window.width)
+    group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(
+        BASE=f_base,
+        Y=window.row_off,
+        X=window.col_off,
+        H=window.height,
+        W=window.width,
+    )
 
     group = root.create_group(group_name)
 
     synchronizer = zarr.ProcessSynchronizer('data.sync')
 
-    z = group.array('data',
-                    data,
-                    compressor=compressor,
-                    dtype=data.dtype.name,
-                    chunks=chunks,
-                    synchronizer=synchronizer)
+    z = group.array(
+        'data',
+        data,
+        compressor=compressor,
+        dtype=data.dtype.name,
+        chunks=chunks,
+        synchronizer=synchronizer,
+    )
 
     group.attrs['row_off'] = window.row_off
     group.attrs['col_off'] = window.col_off

@@ -9,34 +9,32 @@ try:
 except ImportError:
     pass
 
-import warnings
-from pathlib import Path
+import concurrent.futures
 import logging
 import threading
-from contextlib import contextmanager
 import typing as T
+import warnings
+from contextlib import contextmanager
+from pathlib import Path
 
-import concurrent.futures
+import dask
+import dask.array as da
+import numpy as np
+import rasterio as rio
+import xarray as xr
+from rasterio.coords import BoundingBox
+from rasterio.windows import Window, from_bounds
+from tqdm.auto import tqdm
 
-from . import geoxarray
-from .series import BaseSeries, SeriesStats, TransferLib
-from .util import Chunks, get_file_extension, parse_wildcard
-from ..handler import add_handler
-from ..config import config, _set_defaults
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
 from ..backends import warp_open
 from ..backends.rasterio_ import check_src_crs
-
-import numpy as np
-import xarray as xr
-import rasterio as rio
-from rasterio.windows import from_bounds, Window
-from rasterio.coords import BoundingBox
-import dask
-import dask.array as da
-from tqdm.auto import tqdm
-
+from ..config import _set_defaults, config
+from ..handler import add_handler
+from . import geoxarray
+from .series import BaseSeries, SeriesStats, TransferLib
+from .util import Chunks, get_file_extension, parse_wildcard
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -745,8 +743,8 @@ def load(
         >>>                    num_workers=4)
     """
     import dask
-    from dask.diagnostics import ProgressBar
     import ray
+    from dask.diagnostics import ProgressBar
     from ray.util.dask import ray_dask_get
 
     netcdf_prepend = [

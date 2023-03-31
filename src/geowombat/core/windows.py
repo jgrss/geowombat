@@ -1,8 +1,8 @@
 import typing as T
 
-from .util import n_rows_cols
-
 from rasterio.windows import Window
+
+from .util import n_rows_cols
 
 
 def get_window_offsets(

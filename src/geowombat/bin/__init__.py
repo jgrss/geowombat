@@ -1,9 +1,8 @@
 import os
-from pathlib import Path
 import tarfile
 import typing as T
 from dataclasses import dataclass
-
+from pathlib import Path
 
 p = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -17,8 +16,7 @@ class AnglePaths:
 
 
 def extract_espa_tools(out_path: T.Union[str, Path]) -> AnglePaths:
-    """Extracts the USGS ESPA angle creation tools
-    """
+    """Extracts the USGS ESPA angle creation tools."""
     with tarfile.open(espa_tarball) as f:
         f.extractall(str(out_path))
 
@@ -26,7 +24,7 @@ def extract_espa_tools(out_path: T.Union[str, Path]) -> AnglePaths:
 
     angle_paths = AnglePaths(
         l8_angles_path=espa_path / 'l8_angles',
-        l57_angles_path=espa_path / 'landsat_angles'
+        l57_angles_path=espa_path / 'landsat_angles',
     )
 
     return angle_paths

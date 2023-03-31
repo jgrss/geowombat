@@ -1,47 +1,46 @@
-import os
-from pathlib import Path
-import shutil
-import itertools
 import concurrent.futures
-import multiprocessing as multi
-import threading
-import random
-import string
+import itertools
 import logging
+import multiprocessing as multi
+import os
+import random
+import shutil
+import string
+import threading
 import typing as T
 import warnings
+from pathlib import Path
 
+from ..backends.rasterio_ import RasterioStore, to_gtiff
 from ..handler import add_handler
-from ..backends.rasterio_ import to_gtiff, RasterioStore
 from .windows import get_window_offsets
 
 try:
-    from ..backends.zarr_ import to_zarr
     import zarr
+
+    from ..backends.zarr_ import to_zarr
 
     ZARR_INSTALLED = True
 except ImportError:
     ZARR_INSTALLED = False
 
-import numpy as np
-from osgeo import gdal
-
-import xarray as xr
 import dask
+import numpy as np
+import pyproj
+import rasterio as rio
+import xarray as xr
+from affine import Affine
 from dask import is_dask_collection
 from dask.distributed import Client, progress
-import rasterio as rio
-from rasterio.windows import Window
-from rasterio.vrt import WarpedVRT
-from rasterio.enums import Resampling
-from rasterio.drivers import driver_from_extension
+from osgeo import gdal
 from rasterio import shutil as rio_shutil
-from affine import Affine
+from rasterio.drivers import driver_from_extension
+from rasterio.enums import Resampling
+from rasterio.vrt import WarpedVRT
+from rasterio.windows import Window
+from threadpoolctl import threadpool_limits
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
-import pyproj
-from threadpoolctl import threadpool_limits
-
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)

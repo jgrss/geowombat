@@ -1,30 +1,28 @@
-import os
-import multiprocessing as multi
 import logging
+import multiprocessing as multi
+import os
 import typing as T
 from pathlib import Path
 
-from ..config import config
-from ..handler import add_handler
-from ..backends.rasterio_ import check_crs
-from ..backends.xarray_ import _check_config_globals
-from .util import sample_feature
-from .util import lazy_wombat
-
-import numpy as np
 import dask.array as da
-import xarray as xr
-import pandas as pd
 import geopandas as gpd
+import numpy as np
+import pandas as pd
+import pyproj
+import xarray as xr
+from affine import Affine
+from rasterio.coords import BoundingBox
+from rasterio.crs import CRS
+from rasterio.dtypes import get_minimum_dtype
 from rasterio.features import rasterize, shapes
 from rasterio.warp import aligned_target
-from rasterio.crs import CRS
-from rasterio.coords import BoundingBox
-from rasterio.dtypes import get_minimum_dtype
-from shapely.geometry import Polygon, MultiPolygon
-from affine import Affine
-import pyproj
+from shapely.geometry import MultiPolygon, Polygon
 
+from ..backends.rasterio_ import check_crs
+from ..backends.xarray_ import _check_config_globals
+from ..config import config
+from ..handler import add_handler
+from .util import lazy_wombat, sample_feature
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)

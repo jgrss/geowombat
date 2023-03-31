@@ -8,23 +8,22 @@ Modifications:
 """
 
 import os
-import warnings
 import typing as T
+import warnings
 from pathlib import Path
 
 import numpy as np
-from xarray.core import indexing
-from xarray.core.dataarray import DataArray
-from xarray.core.utils import is_scalar
+import pyproj
+import rasterio
+from dask.base import tokenize
+from rasterio.io import DatasetReader
+from rasterio.vrt import WarpedVRT
 from xarray.backends.common import BackendArray
 from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import SerializableLock
-import rasterio
-from rasterio.io import DatasetReader
-from rasterio.vrt import WarpedVRT
-from dask.base import tokenize
-import pyproj
-
+from xarray.core import indexing
+from xarray.core.dataarray import DataArray
+from xarray.core.utils import is_scalar
 
 # TODO: should this be GDAL_LOCK instead?
 RASTERIO_LOCK = SerializableLock()

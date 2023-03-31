@@ -5,7 +5,7 @@
 # cython: wraparound=False
 # cython: nonecheck=False
 
-from libc.stdlib cimport malloc, realloc, free, qsort
+from libc.stdlib cimport free, malloc, qsort, realloc
 
 
 cdef inline int _cmp(const void * pa, const void * pb) nogil:

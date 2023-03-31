@@ -1,18 +1,17 @@
-import os
-from pathlib import Path
-from getpass import getpass
-import math
 import logging
+import math
+import os
 import zipfile
-from retry import retry
+from getpass import getpass
+from pathlib import Path
 
 import requests
 import yaml
-from tqdm import tqdm
 from cryptography.fernet import Fernet
+from retry import retry
+from tqdm import tqdm
 
 from ..handler import add_handler
-
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -29,12 +28,24 @@ rgbn_20170203 = str(p / 'rgbn_20170203.tif')
 
 rgbn_time_list = [rgbn_20160101, rgbn_20160401, rgbn_20160517, rgbn_20170203]
 
-l8_224077_20200518_B2 = str(p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF')
-l8_224077_20200518_B3 = str(p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B3.TIF')
-l8_224077_20200518_B4 = str(p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B4.TIF')
-l8_224078_20200518_B2 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF')
-l8_224078_20200518_B3 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B3.TIF')
-l8_224078_20200518_B4 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF')
+l8_224077_20200518_B2 = str(
+    p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF'
+)
+l8_224077_20200518_B3 = str(
+    p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B3.TIF'
+)
+l8_224077_20200518_B4 = str(
+    p / 'LC08_L1TP_224077_20200518_20200518_01_RT_B4.TIF'
+)
+l8_224078_20200518_B2 = str(
+    p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B2.TIF'
+)
+l8_224078_20200518_B3 = str(
+    p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B3.TIF'
+)
+l8_224078_20200518_B4 = str(
+    p / 'LC08_L1TP_224078_20200518_20200518_01_RT_B4.TIF'
+)
 l8_224078_20200518 = str(p / 'LC08_L1TP_224078_20200518_20200518_01_RT.TIF')
 l8_224078_20200518_points = str(
     p / 'LC08_L1TP_224078_20200518_20200518_01_RT_points.gpkg'
@@ -87,7 +98,9 @@ class PassKey(object):
         ciphered_text = cipher_suite.encrypt(passcode.encode())
 
         with open(passcode_file, mode='w') as pf:
-            yaml.dump({'passcode': ciphered_text}, pf, default_flow_style=False)
+            yaml.dump(
+                {'passcode': ciphered_text}, pf, default_flow_style=False
+            )
 
     @staticmethod
     def load_passcode(key_file, passcode_file):
@@ -112,7 +125,9 @@ class BaseDownloader(object):
             return
 
         if safe_download:
-            base64_password = self.load_passcode(self.key_file, self.code_file).decode()
+            base64_password = self.load_passcode(
+                self.key_file, self.code_file
+            ).decode()
 
         chunk_size = 256 * 10240
 
@@ -125,7 +140,9 @@ class BaseDownloader(object):
             req = session.request('get', url)
 
             if safe_download:
-                response = session.get(req.url, auth=(self.username, base64_password))
+                response = session.get(
+                    req.url, auth=(self.username, base64_password)
+                )
             else:
                 response = session.get(req.url)
 
@@ -147,7 +164,8 @@ class BaseDownloader(object):
             with open(str(outfile), 'wb') as ofn:
 
                 for data in tqdm(
-                    response.iter_content(chunk_size=chunk_size_), total=content_iters
+                    response.iter_content(chunk_size=chunk_size_),
+                    total=content_iters,
                 ):
                     ofn.write(data)
 

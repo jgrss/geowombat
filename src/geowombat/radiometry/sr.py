@@ -1,24 +1,23 @@
-import math
-from collections import namedtuple
-from datetime import datetime as dtime
 import datetime
 import logging
-
-from ..handler import add_handler
-from ..core import ndarray_to_xarray
-from ..moving import moving_window
-from .angles import relative_azimuth, parse_sentinel_angles
-from .sixs import AOT, SixS
-from ..core.properties import get_sensor_info
-
-import numpy as np
-from scipy.ndimage import zoom
-import pandas as pd
-from rasterio.fill import fillnodata
-import xarray as xr
-import dask.array as da
+import math
 import xml.etree.ElementTree as ET
+from collections import namedtuple
+from datetime import datetime as dtime
 
+import dask.array as da
+import numpy as np
+import pandas as pd
+import xarray as xr
+from rasterio.fill import fillnodata
+from scipy.ndimage import zoom
+
+from ..core import ndarray_to_xarray
+from ..core.properties import get_sensor_info
+from ..handler import add_handler
+from ..moving import moving_window
+from .angles import parse_sentinel_angles, relative_azimuth
+from .sixs import AOT, SixS
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -27,7 +26,9 @@ logger = add_handler(logger)
 def coeffs_to_array(coeffs, band_names):
     """Converts coefficients to a DataArray."""
     return xr.DataArray(
-        data=[coeffs[bi] for bi in band_names], coords={'band': band_names}, dims='band'
+        data=[coeffs[bi] for bi in band_names],
+        coords={'band': band_names},
+        dims='band',
     )
 
 
@@ -56,7 +57,8 @@ def p_r(m, r, rphase, cos_solar_za, cos_sensor_za):
     cos_sensor_za_stack.coords['band'] = m.band.values
 
     return rphase_stack * (
-        (1.0 - np.exp(-m * r)) / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack))
+        (1.0 - np.exp(-m * r))
+        / (4.0 * (cos_solar_za_stack + cos_sensor_za_stack))
     )
 
 
@@ -200,8 +202,12 @@ class MetaData(object):
         df.iloc[:, 0] = df.iloc[:, 0].str.strip()
         df.iloc[:, 1] = df.iloc[:, 1].str.strip()
 
-        spacecraft_id = dict(df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values)
-        spacecraft_id['SPACECRAFT_ID'] = spacecraft_id['SPACECRAFT_ID'].replace('"', '')
+        spacecraft_id = dict(
+            df[df.iloc[:, 0].str.startswith('SPACECRAFT_ID')].values
+        )
+        spacecraft_id['SPACECRAFT_ID'] = spacecraft_id[
+            'SPACECRAFT_ID'
+        ].replace('"', '')
         sensor = associations[spacecraft_id['SPACECRAFT_ID']]
 
         m_l = _format_coeff(df, sensor, 'RADIANCE_MULT_BAND_')
@@ -210,16 +216,24 @@ class MetaData(object):
         a_p = _format_coeff(df, sensor, 'REFLECTANCE_ADD_BAND_')
 
         ux_dict = dict(
-            df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_X_PRODUCT')].values
+            df[
+                df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_X_PRODUCT')
+            ].values
         )
         lx_dict = dict(
-            df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_X_PRODUCT')].values
+            df[
+                df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_X_PRODUCT')
+            ].values
         )
         uy_dict = dict(
-            df[df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_Y_PRODUCT')].values
+            df[
+                df.iloc[:, 0].str.startswith('CORNER_UL_PROJECTION_Y_PRODUCT')
+            ].values
         )
         ly_dict = dict(
-            df[df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_Y_PRODUCT')].values
+            df[
+                df.iloc[:, 0].str.startswith('CORNER_LR_PROJECTION_Y_PRODUCT')
+            ].values
         )
 
         left = float(ux_dict['CORNER_UL_PROJECTION_X_PRODUCT'])
@@ -227,11 +241,15 @@ class MetaData(object):
         right = float(lx_dict['CORNER_LR_PROJECTION_X_PRODUCT'])
         top = float(uy_dict['CORNER_UL_PROJECTION_Y_PRODUCT'])
 
-        solar_elev = dict(df[df.iloc[:, 0].str.startswith('SUN_ELEVATION')].values)
+        solar_elev = dict(
+            df[df.iloc[:, 0].str.startswith('SUN_ELEVATION')].values
+        )
         solar_elev = solar_elev['SUN_ELEVATION'].replace('"', '')
         solar_zenith = 90.0 - float(solar_elev)
 
-        date_acquired_ = dict(df[df.iloc[:, 0].str.startswith('DATE_ACQUIRED')].values)
+        date_acquired_ = dict(
+            df[df.iloc[:, 0].str.startswith('DATE_ACQUIRED')].values
+        )
         date_acquired_ = date_acquired_['DATE_ACQUIRED'].replace('"', '')
         year, month, day = date_acquired_.split('-')
 
@@ -242,10 +260,14 @@ class MetaData(object):
         scene_center_time = dict(
             df[df.iloc[:, 0].str.startswith('SCENE_CENTER_TIME')].values
         )
-        scene_center_time = scene_center_time['SCENE_CENTER_TIME'].replace('"', '')
+        scene_center_time = scene_center_time['SCENE_CENTER_TIME'].replace(
+            '"', ''
+        )
         hour = int(scene_center_time.split(':')[0])
 
-        date_acquired = dtime(year, month, day, hour, tzinfo=datetime.timezone.utc)
+        date_acquired = dtime(
+            year, month, day, hour, tzinfo=datetime.timezone.utc
+        )
 
         return MetaCoeffs(
             sensor=sensor,
@@ -279,7 +301,8 @@ class MetaData(object):
         solar_zenith = None
 
         MetaCoeffs = namedtuple(
-            'MetaCoeffs', 'sensor date_acquired sza grid_sza grid_saa grid_vza grid_vaa'
+            'MetaCoeffs',
+            'sensor date_acquired sza grid_sza grid_saa grid_vza grid_vaa',
         )
 
         tree = ET.parse(meta_file)
@@ -565,9 +588,13 @@ class LinearAdjustments(object):
             [coeff_dict['betas'][bd] for bd in band_names], dtype='float64'
         )
 
-        alphas = xr.DataArray(data=alphas, coords={'band': band_names}, dims='band')
+        alphas = xr.DataArray(
+            data=alphas, coords={'band': band_names}, dims='band'
+        )
 
-        betas = xr.DataArray(data=betas, coords={'band': band_names}, dims='band')
+        betas = xr.DataArray(
+            data=betas, coords={'band': band_names}, dims='band'
+        )
 
         # Apply the linear bandpass adjustment
         data = alphas + betas * data
@@ -905,8 +932,12 @@ class RadTransforms(MetaData):
         d2 = 1.0 / ((1.0 - 0.0167 * np.cos(0.0172 * (julian_day - 2.0))) ** 2)
 
         # Band solar irradiance
-        solar_irradiances = get_sensor_info(key='solar_irradiance', sensor=meta.sensor)
-        solar_irradiances = {b: getattr(solar_irradiances, b) for b in band_names}
+        solar_irradiances = get_sensor_info(
+            key='solar_irradiance', sensor=meta.sensor
+        )
+        solar_irradiances = {
+            b: getattr(solar_irradiances, b) for b in band_names
+        }
         solar_irradiances = coeffs_to_array(solar_irradiances, band_names)
 
         # Convert TOAR to radiance
@@ -1015,7 +1046,9 @@ class RadTransforms(MetaData):
             central_um = toar.gw.central_um[sensor]
             band_names = list(toar.gw.wavelengths[sensor]._fields)
             band_um = [getattr(central_um, p) * 1000.0 for p in band_names]
-            um = xr.DataArray(data=band_um, coords={'band': band_names}, dims='band')
+            um = xr.DataArray(
+                data=band_um, coords={'band': band_names}, dims='band'
+            )
 
             # Scale the angles to degrees
             sza = solar_za * angle_factor
@@ -1056,7 +1089,11 @@ class RadTransforms(MetaData):
             # Rayleigh optical depth
             # Hansen, JF and Travis, LD (1974) LIGHT SCATTERING IN PLANETARY ATMOSPHERES
             # Eq. 2.30, p. 544
-            r = 0.008569 * um**-4 * (1.0 + 0.0113 * um**-2 + 0.0013 * um**-4)
+            r = (
+                0.008569
+                * um**-4
+                * (1.0 + 0.0113 * um**-2 + 0.0013 * um**-4)
+            )
 
             # Relative azimuth angle
             # TODO: doesn't work if the band coordinate is named
@@ -1218,7 +1255,9 @@ class DOS(AOT, RadTransforms):
 
         # Get reflectance and radiance data as numpy arrays
         blue_p_data = blue_p.squeeze().data.compute(num_workers=n_jobs)
-        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute(num_workers=n_jobs)
+        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute(
+            num_workers=n_jobs
+        )
 
         valid_idx = np.where(~np.isnan(blue_p_data))
 
@@ -1256,7 +1295,10 @@ class DOS(AOT, RadTransforms):
 
                 return ndarray_to_xarray(
                     dn_interp,
-                    np.zeros((dn_interp.gw.nrows, dn_interp.gw.ncols), dtype='float64')
+                    np.zeros(
+                        (dn_interp.gw.nrows, dn_interp.gw.ncols),
+                        dtype='float64',
+                    )
                     + aot_fallback,
                     ['aot'],
                 )
@@ -1274,7 +1316,10 @@ class DOS(AOT, RadTransforms):
     def _resize(aot, src_interp, w, n_jobs):
         aot = zoom(
             aot,
-            (src_interp.gw.nrows / aot.shape[0], src_interp.gw.ncols / aot.shape[1]),
+            (
+                src_interp.gw.nrows / aot.shape[0],
+                src_interp.gw.ncols / aot.shape[1],
+            ),
             order=3,
         )
 

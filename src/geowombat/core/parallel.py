@@ -1,13 +1,12 @@
-import multiprocessing as multi
 import concurrent.futures
-
-from .base import _executor_dummy
-from .windows import get_window_offsets
+import multiprocessing as multi
 
 import rasterio as rio
 import xarray as xr
-from tqdm import trange, tqdm
+from tqdm import tqdm, trange
 
+from .base import _executor_dummy
+from .windows import get_window_offsets
 
 _EXEC_DICT = {
     'mpool': multi.Pool,

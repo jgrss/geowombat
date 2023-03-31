@@ -1,29 +1,29 @@
-import os
 import itertools
-from datetime import datetime
-from collections import defaultdict
 import logging
 import multiprocessing as multi
-from pathlib import Path
+import os
 import tempfile
 import typing as T
 import warnings
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
 
-import numpy as np
-from scipy.stats import mode as sci_mode
-from scipy.spatial import cKDTree
-import pandas as pd
-import geopandas as gpd
-import xarray as xr
 import dask
 import dask.array as da
-from dask.distributed import Client, LocalCluster
-from rasterio import features
-from rasterio.coords import BoundingBox
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import xarray as xr
 from affine import Affine
-from shapely.geometry import Polygon
+from dask.distributed import Client, LocalCluster
 from pyproj.enums import WktVersion
 from pyproj.exceptions import CRSError
+from rasterio import features
+from rasterio.coords import BoundingBox
+from scipy.spatial import cKDTree
+from scipy.stats import mode as sci_mode
+from shapely.geometry import Polygon
 
 try:
     import arosics
@@ -40,19 +40,13 @@ try:
 except ImportError:
     PYMORPH_INSTALLED = False
 
+from ..backends.rasterio_ import array_bounds, check_crs, get_dims_from_bounds
 from ..handler import add_handler
-from ..backends.rasterio_ import (
-    array_bounds,
-    check_crs,
-    get_dims_from_bounds,
-)
-from ..backends.xarray_ import delayed_to_xarray
-from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
-from .util import lazy_wombat
-from .parallel import ParallelTask
 from .base import _client_dummy, _cluster_dummy
-
+from .conversion import Converters
+from .parallel import ParallelTask
+from .util import lazy_wombat
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)

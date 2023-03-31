@@ -1,29 +1,28 @@
 import logging
 
-from ..handler import add_handler
-
-import xarray as xr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import xarray as xr
 
+from ..handler import add_handler
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
 class Plotting(object):
-
     @staticmethod
-    def imshow(data,
-               mask=False,
-               nodata=0,
-               flip=False,
-               text_color='black',
-               rot=30,
-               **kwargs):
+    def imshow(
+        data,
+        mask=False,
+        nodata=0,
+        flip=False,
+        text_color='black',
+        rot=30,
+        **kwargs
+    ):
 
-        """
-        Shows an image on a plot
+        """Shows an image on a plot.
 
         Args:
             data (``xarray.DataArray`` or ``xarray.Dataset``): The data to plot.
@@ -57,7 +56,9 @@ class Plotting(object):
         if data.gw.nbands != 1:
 
             if data.gw.nbands != 3:
-                logger.exception('  Only 1-band or 3-band arrays can be plotted.')
+                logger.exception(
+                    '  Only 1-band or 3-band arrays can be plotted.'
+                )
 
         plt.rcParams['axes.titlesize'] = 5
         plt.rcParams['axes.titlepad'] = 5
@@ -80,9 +81,13 @@ class Plotting(object):
             if isinstance(data, xr.Dataset):
 
                 if data.gw.nbands == 1:
-                    plot_data = data.where((data['mask'] < 3) & (data != nodata))
+                    plot_data = data.where(
+                        (data['mask'] < 3) & (data != nodata)
+                    )
                 else:
-                    plot_data = data.where((data['mask'] < 3) & (data.max(axis=0) != nodata))
+                    plot_data = data.where(
+                        (data['mask'] < 3) & (data.max(axis=0) != nodata)
+                    )
 
             else:
 
@@ -101,8 +106,7 @@ class Plotting(object):
             if flip:
                 plot_data = plot_data[..., ::-1]
 
-            plot_data.plot.imshow(rgb='band',
-                                  **kwargs)
+            plot_data.plot.imshow(rgb='band', **kwargs)
 
         else:
             plot_data.squeeze().plot.imshow(**kwargs)

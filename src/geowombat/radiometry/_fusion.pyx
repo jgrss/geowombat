@@ -6,13 +6,14 @@
 # cython: nonecheck=False
 
 import cython
+
 cimport cython
 
 import numpy as np
+
 cimport numpy as np
 
-from cython.parallel import prange
-from cython.parallel import parallel
+from cython.parallel import parallel, prange
 
 
 cdef extern from 'math.h':

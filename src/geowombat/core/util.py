@@ -1,25 +1,23 @@
-import os
 import fnmatch
-from collections import namedtuple, OrderedDict
+import logging
+import os
+import typing as T
+from collections import OrderedDict, namedtuple
 from datetime import datetime
 from pathlib import Path
-import logging
-import typing as T
+
+import dask.array as da
+import geopandas as gpd
+import numpy as np
+import xarray as xr
+from affine import Affine
+from rasterio import features
+from rasterio.crs import CRS
+from rasterio.transform import from_bounds
+from rasterio.warp import reproject, transform_bounds
 
 from ..handler import add_handler
 from ..moving import moving_window
-
-import numpy as np
-import geopandas as gpd
-import xarray as xr
-import dask.array as da
-
-from rasterio import features
-from rasterio.crs import CRS
-from rasterio.warp import reproject, transform_bounds
-from rasterio.transform import from_bounds
-
-from affine import Affine
 
 try:
     from dateparser.search import search_dates

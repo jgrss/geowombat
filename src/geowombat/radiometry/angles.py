@@ -1,29 +1,29 @@
+import logging
 import os
-from pathlib import Path
 import shutil
 import subprocess
-from collections import namedtuple
 import tarfile
-import logging
-import typing as T
-from dataclasses import dataclass
 import tempfile
+import typing as T
+import xml.etree.ElementTree as ET
+from collections import namedtuple
+from dataclasses import dataclass
+from pathlib import Path
+
+import dask
+import dask.array as da
+import numpy as np
+import xarray as xr
+from affine import Affine
+from dask.delayed import Delayed, DelayedAttr, DelayedLeaf
+from rasterio.errors import TransformError
+from scipy.ndimage import zoom
 
 import geowombat as gw
 from geowombat.backends.xarray_rasterio_ import open_rasterio
-from ..handler import add_handler
+
 from ..backends import transform_crs
-
-import numpy as np
-from scipy.ndimage import zoom
-import dask
-from dask.delayed import Delayed, DelayedAttr, DelayedLeaf
-import dask.array as da
-import xarray as xr
-from rasterio.errors import TransformError
-from affine import Affine
-import xml.etree.ElementTree as ET
-
+from ..handler import add_handler
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -31,10 +31,18 @@ logger = add_handler(logger)
 
 @dataclass
 class AngleInfo:
-    vza: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
-    vaa: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
-    sza: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
-    saa: T.Union[np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf]
+    vza: T.Union[
+        np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf
+    ]
+    vaa: T.Union[
+        np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf
+    ]
+    sza: T.Union[
+        np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf
+    ]
+    saa: T.Union[
+        np.ndarray, xr.DataArray, da.Array, Delayed, DelayedAttr, DelayedLeaf
+    ]
 
 
 def shift_objects(
@@ -75,15 +83,25 @@ def shift_objects(
 
     apparent_solar_az = np.pi + np.arctan(
         (np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza))
-        / (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))
+        / (
+            np.cos(rad_saa) * np.tan(rad_sza)
+            - np.cos(rad_vaa) * np.tan(rad_vza)
+        )
     )
 
     # Maximum horizontal distance
     d = (
         object_height**2
         * (
-            (np.sin(rad_saa) * np.tan(rad_sza) - np.sin(rad_vaa) * np.tan(rad_vza)) ** 2
-            + (np.cos(rad_saa) * np.tan(rad_sza) - np.cos(rad_vaa) * np.tan(rad_vza))
+            (
+                np.sin(rad_saa) * np.tan(rad_sza)
+                - np.sin(rad_vaa) * np.tan(rad_vza)
+            )
+            ** 2
+            + (
+                np.cos(rad_saa) * np.tan(rad_sza)
+                - np.cos(rad_vaa) * np.tan(rad_vza)
+            )
             ** 2
         )
     ) ** 0.5
@@ -104,7 +122,14 @@ def shift_objects(
 
 
 def estimate_cloud_shadows(
-    data, clouds, solar_za, solar_az, sensor_za, sensor_az, heights=None, num_workers=1
+    data,
+    clouds,
+    solar_za,
+    solar_az,
+    sensor_za,
+    sensor_az,
+    heights=None,
+    num_workers=1,
 ):
     r"""Estimates shadows from a cloud mask and adds to the existing mask
 
@@ -135,7 +160,13 @@ def estimate_cloud_shadows(
 
     for object_height in heights:
         potential_shadows = shift_objects(
-            clouds, solar_za, solar_az, sensor_za, sensor_az, object_height, num_workers
+            clouds,
+            solar_za,
+            solar_az,
+            sensor_za,
+            sensor_az,
+            object_height,
+            num_workers,
         )
 
         if not isinstance(shadows, xr.DataArray):
@@ -163,7 +194,9 @@ def estimate_cloud_shadows(
 
     # Add the shadows to the cloud mask
     data = xr.where(
-        clouds.sel(band='mask') == 1, 1, xr.where(shadows.sel(band='mask') == 1, 2, 0)
+        clouds.sel(band='mask') == 1,
+        1,
+        xr.where(shadows.sel(band='mask') == 1, 2, 0),
     )
     data = data.expand_dims(dim='band')
     data.attrs = attrs
@@ -178,7 +211,7 @@ def scattering_angle(
     sin_vza: xr.DataArray,
     cos_raa: xr.DataArray,
 ) -> xr.DataArray:
-    """Calculates the scattering angle.
+    r"""Calculates the scattering angle.
 
     Args:
         cos_sza (DataArray): The cosine of the solar zenith angle.
@@ -209,7 +242,9 @@ def scattering_angle(
     Returns:
         Scattering angle (in radians) as an ``xarray.DataArray``
     """
-    scattering_angle = np.arccos(-cos_sza * cos_vza - sin_sza * sin_vza * cos_raa)
+    scattering_angle = np.arccos(
+        -cos_sza * cos_vza - sin_sza * sin_vza * cos_raa
+    )
 
     return np.cos(scattering_angle) ** 2
 
@@ -335,7 +370,9 @@ def parse_sentinel_angles(
     tree = ET.parse(str(metadata))
     root = tree.getroot()
 
-    angles_view_list, angle_nrows, angle_ncols = get_sentinel_angle_shape(metadata)
+    angles_view_list, angle_nrows, angle_ncols = get_sentinel_angle_shape(
+        metadata
+    )
 
     if proc_angles == 'view':
         zenith_array = (
@@ -345,8 +382,12 @@ def parse_sentinel_angles(
             np.zeros((13, angle_nrows, angle_ncols), dtype='float64') + nodata
         )
     else:
-        zenith_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
-        azimuth_array = np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
+        zenith_array = (
+            np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
+        )
+        azimuth_array = (
+            np.zeros((angle_nrows, angle_ncols), dtype='float64') + nodata
+        )
 
     view_tag = (
         'Sun_Angles_Grid'
@@ -423,10 +464,12 @@ def run_espa_command(
                 # out_order = [2, 1, 2, 1]
 
             else:
-                angle_command = '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(
-                    PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
-                    META=angles_file,
-                    SUBSAMP=subsample,
+                angle_command = (
+                    '{PATH} {META} BOTH {SUBSAMP:d} -f -32768 -b 4'.format(
+                        PATH=str(Path(l8_angles_path).joinpath('l8_angles')),
+                        META=angles_file,
+                        SUBSAMP=subsample,
+                    )
                 )
 
                 # 1=azimuth, 2=zenith
@@ -449,7 +492,9 @@ def run_espa_command(
 
             # Copy all the associated files
             for file_path in Path(tmp_dir).glob('*B04.img*'):
-                shutil.move(str(file_path), str(Path(out_dir) / file_path.name))
+                shutil.move(
+                    str(file_path), str(Path(out_dir) / file_path.name)
+                )
             sensor_angle_file = list(Path(out_dir).glob('*sensor_B04.img'))[0]
             solar_angles_file = list(Path(out_dir).glob('*solar_B04.img'))[0]
 
@@ -539,7 +584,11 @@ def postprocess_espa_angles(
                 angle_name = 'sza'
 
             angle_array_resamp_da = open_angle_file(
-                in_angle, chunks, angle_paths_in.out_order[band_pos], nodata, subsample
+                in_angle,
+                chunks,
+                angle_paths_in.out_order[band_pos],
+                nodata,
+                subsample,
             )
             angle_array_dict = transform_angles(
                 ref_file,
@@ -568,7 +617,9 @@ def landsat_angle_prep(
     if not l57_angles_path:
         gw_bin = os.path.realpath(os.path.dirname(__file__))
         gw_out = os.path.realpath(str(Path(gw_bin).joinpath('../bin')))
-        gw_tar = os.path.realpath(str(Path(gw_bin).joinpath('../bin/ESPA.tar.gz')))
+        gw_tar = os.path.realpath(
+            str(Path(gw_bin).joinpath('../bin/ESPA.tar.gz'))
+        )
 
         if not Path(gw_bin).joinpath('../bin/ESPA').is_dir():
             with tarfile.open(gw_tar, mode='r:gz') as tf:
@@ -584,9 +635,15 @@ def landsat_angle_prep(
     out_path.mkdir(parents=True, exist_ok=True)
 
     # Set output angle file names.
-    sensor_azimuth_path = str(out_path.joinpath(ref_base + '_sensor_azimuth.tif'))
-    sensor_zenith_path = str(out_path.joinpath(ref_base + '_sensor_zenith.tif'))
-    solar_azimuth_path = str(out_path.joinpath(ref_base + '_solar_azimuth.tif'))
+    sensor_azimuth_path = str(
+        out_path.joinpath(ref_base + '_sensor_azimuth.tif')
+    )
+    sensor_zenith_path = str(
+        out_path.joinpath(ref_base + '_sensor_zenith.tif')
+    )
+    solar_azimuth_path = str(
+        out_path.joinpath(ref_base + '_solar_azimuth.tif')
+    )
     solar_zenith_path = str(out_path.joinpath(ref_base + '_solar_zenith.tif'))
 
     AnglePathsOut = namedtuple('AnglePathsOut', 'vaa vza saa sza')
@@ -632,7 +689,12 @@ def landsat_pixel_angles(
     Returns:
         zenith and azimuth angles as a ``namedtuple`` of angle file names
     """
-    out_path, angle_paths_out, l57_angles_path, l8_angles_path = landsat_angle_prep(
+    (
+        out_path,
+        angle_paths_out,
+        l57_angles_path,
+        l8_angles_path,
+    ) = landsat_angle_prep(
         ref_file=ref_file,
         out_dir=out_dir,
         l57_angles_path=l57_angles_path,
@@ -671,7 +733,9 @@ def resample_angles(
     """Resamples an angle array."""
     data = np.int16(
         zoom(
-            angle_array.mean(axis=0) if len(angle_array.shape) > 2 else angle_array,
+            angle_array.mean(axis=0)
+            if len(angle_array.shape) > 2
+            else angle_array,
             (nrows / data_shape[0], ncols / data_shape[1]),
             order=2,
         )
@@ -709,8 +773,12 @@ def transform_angles(
             .astype('int16')
             .assign_attrs(nodatavals=(nodata,))
         )
-        if not angle_array_resamp_da_transform.gw.bounds_overlay(src.gw.bounds):
-            raise TransformError('The angle image was not correctly transformed.')
+        if not angle_array_resamp_da_transform.gw.bounds_overlay(
+            src.gw.bounds
+        ):
+            raise TransformError(
+                'The angle image was not correctly transformed.'
+            )
         angle_array_dict[angle_name] = angle_array_resamp_da_transform
 
     return angle_array_dict
@@ -749,7 +817,9 @@ def sentinel_pixel_angles(
     )
     # Get the angle arrays
     angle_nrows, angle_ncols = get_sentinel_angle_shape(metadata)[1:]
-    solar_angles = dask.delayed(parse_sentinel_angles)(metadata, 'solar', nodata)
+    solar_angles = dask.delayed(parse_sentinel_angles)(
+        metadata, 'solar', nodata
+    )
     view_angles = dask.delayed(parse_sentinel_angles)(metadata, 'view', nodata)
     # Create coordinates that are a representation of the full S-2 image
     xcoords = (transform * (np.arange(ncols) + 0.5, np.zeros(ncols) + 0.5))[0]

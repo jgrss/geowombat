@@ -1,54 +1,53 @@
+import concurrent.futures
+import fnmatch
+import logging
 import os
 import shutil
-import fnmatch
-import tarfile
 import subprocess
-from pathlib import Path
-from datetime import datetime
-from collections import namedtuple
+import tarfile
 import time
-import logging
-import concurrent.futures
+from collections import namedtuple
+from datetime import datetime
+from pathlib import Path
 
-from ..handler import add_handler
-from ..radiometry import (
-    BRDF,
-    LinearAdjustments,
-    RadTransforms,
-    landsat_pixel_angles,
-    sentinel_pixel_angles,
-    QAMasker,
-    DOS,
-    SixS,
-)
-from ..radiometry.angles import estimate_cloud_shadows
-from ..core.properties import get_sensor_info
-from ..core import ndarray_to_xarray
-from ..backends.gdal_ import warp
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import psutil
+import xarray as xr
+from osgeo import gdal
+from shapely.geometry import Polygon
 
 import geowombat as gw
 
-import numpy as np
-from osgeo import gdal
-import pandas as pd
-import geopandas as gpd
-import xarray as xr
-from shapely.geometry import Polygon
+from ..backends.gdal_ import warp
+from ..core import ndarray_to_xarray
+from ..core.properties import get_sensor_info
+from ..handler import add_handler
+from ..radiometry import (
+    BRDF,
+    DOS,
+    LinearAdjustments,
+    QAMasker,
+    RadTransforms,
+    SixS,
+    landsat_pixel_angles,
+    sentinel_pixel_angles,
+)
+from ..radiometry.angles import estimate_cloud_shadows
 
 try:
     import requests
 
     REQUESTS_INSTALLED = True
-except:
+except ImportError:
     REQUESTS_INSTALLED = False
 
 try:
-
     from s2cloudless import S2PixelCloudDetector
 
     S2CLOUDLESS_INSTALLED = True
-
-except:
+except ImportError:
     S2CLOUDLESS_INSTALLED = False
 
 logger = logging.getLogger(__name__)
@@ -56,7 +55,9 @@ logger = add_handler(logger)
 
 
 RESAMPLING_DICT = dict(
-    bilinear=gdal.GRA_Bilinear, cubic=gdal.GRA_Cubic, nearest=gdal.GRA_NearestNeighbour
+    bilinear=gdal.GRA_Bilinear,
+    cubic=gdal.GRA_Cubic,
+    nearest=gdal.GRA_NearestNeighbour,
 )
 
 OrbitDates = namedtuple('OrbitDates', 'start end')
@@ -76,16 +77,16 @@ def _rmdir(pathdir):
 
                 try:
                     child.unlink()
-                except:
+                except Exception:
                     pass
 
         try:
             pathdir.rmdir()
-        except:
+        except Exception:
 
             try:
                 shutil.rmtree(str(pathdir))
-            except:
+            except Exception:
                 pass
 
 
@@ -188,7 +189,9 @@ def _clean_and_update(
                     logger.warning('  Could not delete {}.'.format(v.name))
 
             else:
-                logger.warning('  The {} file does not exist to delete.'.format(v.name))
+                logger.warning(
+                    '  The {} file does not exist to delete.'.format(v.name)
+                )
 
     # if update_status:
     #     _update_status_file(status, meta_name)
@@ -202,7 +205,9 @@ def _clean_and_update(
                 try:
                     Path(loaded_band).unlink()
                 except Warning:
-                    logger.warning('  Could not delete {}.'.format(loaded_band))
+                    logger.warning(
+                        '  Could not delete {}.'.format(loaded_band)
+                    )
 
 
 def _assign_attrs(data, attrs, bands_out):
@@ -216,7 +221,9 @@ def _assign_attrs(data, attrs, bands_out):
     return data
 
 
-def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
+def _parse_google_filename(
+    filename, landsat_parts, sentinel_parts, public_url
+):
 
     file_info = GoogleFileInfo(url=None, url_file=None, meta=None, angles=None)
 
@@ -236,8 +243,12 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
         )
 
         url_filename = '{URL}/{FN}'.format(URL=url_, FN=filename)
-        url_meta = '{URL}/{FN}_MTL.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
-        url_angles = '{URL}/{FN}_ANG.txt'.format(URL=url_, FN='_'.join(fn_parts[:-1]))
+        url_meta = '{URL}/{FN}_MTL.txt'.format(
+            URL=url_, FN='_'.join(fn_parts[:-1])
+        )
+        url_angles = '{URL}/{FN}_ANG.txt'.format(
+            URL=url_, FN='_'.join(fn_parts[:-1])
+        )
 
         file_info = GoogleFileInfo(
             url=url_, url_file=url_filename, meta=url_meta, angles=url_angles
@@ -246,7 +257,9 @@ def _parse_google_filename(filename, landsat_parts, sentinel_parts, public_url):
     return file_info
 
 
-def _download_workers(gcp_str, poutdir, outdir, fname, fn, null_items, verbose):
+def _download_workers(
+    gcp_str, poutdir, outdir, fname, fn, null_items, verbose
+):
 
     # Renaming Sentinel data
     rename = False
@@ -388,7 +401,9 @@ class DownloadMixin(object):
                 download_list_ = []
 
                 for swild in search_wildcards:
-                    download_list_ += fnmatch.filter(download_list, '*{}'.format(swild))
+                    download_list_ += fnmatch.filter(
+                        download_list, '*{}'.format(swild)
+                    )
 
                 download_list = download_list_
 
@@ -419,11 +434,18 @@ class DownloadMixin(object):
             else:
 
                 id_list = list(
-                    set(['_'.join(fn.split('_')[:-1]) for fn in download_list_names])
+                    set(
+                        [
+                            '_'.join(fn.split('_')[:-1])
+                            for fn in download_list_names
+                        ]
+                    )
                 )
                 download_list_unique = [download_list]
 
-            for scene_id, sub_download_list in zip(id_list, download_list_unique):
+            for scene_id, sub_download_list in zip(
+                id_list, download_list_unique
+            ):
 
                 logger.info('  Checking scene {} ...'.format(scene_id))
 
@@ -455,7 +477,9 @@ class DownloadMixin(object):
 
                         fbase = Path(fn).parent.parent.name
                         key = Path(fn).name.split('.')[0].split('_')[-1]
-                        down_file = str(poutdir.joinpath(fbase + '_' + key + '.jp2'))
+                        down_file = str(
+                            poutdir.joinpath(fbase + '_' + key + '.jp2')
+                        )
 
                         brdfp = '_'.join(Path(down_file).name.split('_')[:-1])
                         out_brdf = outdir_brdf.joinpath(brdfp + '_MTD.tif')
@@ -468,14 +492,20 @@ class DownloadMixin(object):
                     if (
                         out_brdf.is_file()
                         or Path(str(out_brdf).replace('.tif', '.nc')).is_file()
-                        or Path(str(out_brdf).replace('.tif', '.nodata')).is_file()
+                        or Path(
+                            str(out_brdf).replace('.tif', '.nodata')
+                        ).is_file()
                     ):
 
                         logger.warning(
                             f'  The output BRDF file, {str(out_brdf)}, already exists.'
                         )
                         _clean_and_update(
-                            None, None, None, check_angles=False, check_downloads=False
+                            None,
+                            None,
+                            None,
+                            check_angles=False,
+                            check_downloads=False,
                         )
                         continue
 
@@ -492,12 +522,16 @@ class DownloadMixin(object):
                         for i in range(0, len(sub_download_list))
                         if sub_download_list[i].endswith('_MTL.txt')
                     ][0]
-                    sub_download_list.insert(0, sub_download_list.pop(meta_index))
+                    sub_download_list.insert(
+                        0, sub_download_list.pop(meta_index)
+                    )
                 else:
                     # The Sentinel 2 metadata files come in their own list
                     pass
 
-                download_list_names = [Path(dfn).name for dfn in sub_download_list]
+                download_list_names = [
+                    Path(dfn).name for dfn in sub_download_list
+                ]
 
                 results = []
 
@@ -516,7 +550,9 @@ class DownloadMixin(object):
                             null_items,
                             verbose,
                         )
-                        for fname, fn in zip(download_list_names, sub_download_list)
+                        for fname, fn in zip(
+                            download_list_names, sub_download_list
+                        )
                     ]
 
                     for f in concurrent.futures.as_completed(futures):
@@ -532,10 +568,15 @@ class DownloadMixin(object):
                     if len(downloaded_sub) < len(sub_download_list):
 
                         downloaded_names = [
-                            Path(v.name).name for v in list(downloaded_sub.values())
+                            Path(v.name).name
+                            for v in list(downloaded_sub.values())
                         ]
                         missing_items = ','.join(
-                            list(set(download_list_names).difference(downloaded_names))
+                            list(
+                                set(download_list_names).difference(
+                                    downloaded_names
+                                )
+                            )
                         )
 
                         logger.warning(
@@ -543,7 +584,9 @@ class DownloadMixin(object):
                                 len(downloaded_sub), len(sub_download_list)
                             )
                         )
-                        logger.warning('  {} are missing.'.format(missing_items))
+                        logger.warning(
+                            '  {} are missing.'.format(missing_items)
+                        )
 
                     downloaded[search_key] = downloaded_sub
 
@@ -738,7 +781,8 @@ class CloudPathMixin(object):
         lid = f'{sensor_collection}/01/{path}/{row}/{scene_id}'
 
         scene_urls = [
-            f'{gcp_base}/{lid}/{scene_id}_B{band_pos}.TIF' for band_pos in band_pos
+            f'{gcp_base}/{lid}/{scene_id}_B{band_pos}.TIF'
+            for band_pos in band_pos
         ]
         meta_url = f'{gcp_base}/{lid}/{scene_id}_MTL.txt'
 
@@ -777,7 +821,9 @@ class CloudPathMixin(object):
 
         gcp_base = 'https://storage.googleapis.com/gcp-public-data-sentinel-2'
 
-        sensor, level, date, __, __, mgrs, __ = safe_id.split('/')[0].split('_')
+        sensor, level, date, __, __, mgrs, __ = safe_id.split('/')[0].split(
+            '_'
+        )
         utm = mgrs[1:3]
         zone = mgrs[3]
         id_ = mgrs[4:]
@@ -794,7 +840,8 @@ class CloudPathMixin(object):
         lid = f'{utm}/{zone}/{id_}/{safe_id}/IMG_DATA/{mgrs}_{date}'
 
         scene_urls = [
-            f'{gcp_base}/tiles/{lid}_B{band_pos:02d}.jp2' for band_pos in band_pos
+            f'{gcp_base}/tiles/{lid}_B{band_pos:02d}.jp2'
+            for band_pos in band_pos
         ]
         meta_url = f'{utm}/{zone}/{id_}/{safe_id}/MTD_TL.xml'
 
@@ -811,7 +858,11 @@ def _is_within_directory(directory: Path, target: Path) -> bool:
 
 
 def _safe_extract(
-    tar: object, path: Path = Path('.'), members=None, *, numeric_owner: bool = False
+    tar: object,
+    path: Path = Path('.'),
+    members=None,
+    *,
+    numeric_owner: bool = False,
 ) -> None:
     for member in tar.getmembers():
         member_path = path / member.name
@@ -885,8 +936,19 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         )
 
         self.associations = dict(
-            l5=dict(blue=1, green=2, red=3, nir=4, swir1=5, thermal=6, swir2=7),
-            l7=dict(blue=1, green=2, red=3, nir=4, swir1=5, thermal=6, swir2=7, pan=8),
+            l5=dict(
+                blue=1, green=2, red=3, nir=4, swir1=5, thermal=6, swir2=7
+            ),
+            l7=dict(
+                blue=1,
+                green=2,
+                red=3,
+                nir=4,
+                swir1=5,
+                thermal=6,
+                swir2=7,
+                pan=8,
+            ),
             l8=dict(
                 coastal=1,
                 blue=2,
@@ -1066,7 +1128,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                 ]
             )  # upper left
 
-            bounds = gpd.GeoDataFrame([0], geometry=[bounds], crs={'init': 'epsg:4326'})
+            bounds = gpd.GeoDataFrame(
+                [0], geometry=[bounds], crs={'init': 'epsg:4326'}
+            )
 
         bounds_object = bounds.geometry.values[0]
 
@@ -1133,7 +1197,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         year_months = {}
 
         if dt1.month <= dt2.month:
-            month_range = months[months.index(dt1.month) : months.index(dt2.month) + 1]
+            month_range = months[
+                months.index(dt1.month) : months.index(dt2.month) + 1
+            ]
         else:
             month_range = (
                 months[months.index(dt1.month) :]
@@ -1169,9 +1235,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                 for sensor in sensors:
 
                     # Avoid unnecessary GCP queries
-                    if (target_date < self.orbit_dates[sensor.lower()].start) or (
-                        target_date > self.orbit_dates[sensor.lower()].end
-                    ):
+                    if (
+                        target_date < self.orbit_dates[sensor.lower()].start
+                    ) or (target_date > self.orbit_dates[sensor.lower()].end):
 
                         continue
 
@@ -1189,7 +1255,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                     else:
 
                         locations = [
-                            '{:03d}/{:03d}'.format(int(dfrow.PATH), int(dfrow.ROW))
+                            '{:03d}/{:03d}'.format(
+                                int(dfrow.PATH), int(dfrow.ROW)
+                            )
                             for dfi, dfrow in shp_dict['wrs'].iterrows()
                         ]
 
@@ -1220,7 +1288,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             logger.warning(
                                 '  No results found for {SENSOR} at location {LOC}, year {YEAR:d}, month {MONTH:d}.'.format(
-                                    SENSOR=sensor, LOC=location, YEAR=year, MONTH=m
+                                    SENSOR=sensor,
+                                    LOC=location,
+                                    YEAR=year,
+                                    MONTH=m,
                                 )
                             )
 
@@ -1261,13 +1332,21 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                     sub_dict_['meta'] = finfo_dict['meta']
 
-                                    for finfo_key_, finfo_dict_ in file_info.items():
+                                    for (
+                                        finfo_key_,
+                                        finfo_dict_,
+                                    ) in file_info.items():
 
                                         if 'meta' not in finfo_dict_:
-                                            for bdkey_, bdinfo_ in finfo_dict_.items():
+                                            for (
+                                                bdkey_,
+                                                bdinfo_,
+                                            ) in finfo_dict_.items():
                                                 if (
                                                     '_'.join(
-                                                        bdinfo_.name.split('_')[:-1]
+                                                        bdinfo_.name.split(
+                                                            '_'
+                                                        )[:-1]
                                                     )
                                                     in key
                                                 ):
@@ -1289,12 +1368,17 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                 del self.search_dict[dk]
 
                             load_bands = sorted(
-                                ['B{:d}'.format(band_associations[bd]) for bd in bands]
+                                [
+                                    'B{:d}'.format(band_associations[bd])
+                                    for bd in bands
+                                ]
                             )
 
-                            search_wildcards = ['ANG.txt', 'MTL.txt', 'BQA.TIF'] + [
-                                bd + '.TIF' for bd in load_bands
-                            ]
+                            search_wildcards = [
+                                'ANG.txt',
+                                'MTL.txt',
+                                'BQA.TIF',
+                            ] + [bd + '.TIF' for bd in load_bands]
 
                             file_info = self.download_gcp(
                                 sensor,
@@ -1317,37 +1401,45 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             # Incomplete dictionary because file was checked, existed, and cleaned
                             if 'meta' not in finfo_dict:
-                                logger.warning('  The metadata does not exist.')
+                                logger.warning(
+                                    '  The metadata does not exist.'
+                                )
                                 _clean_and_update(
                                     None, finfo_dict, None, check_angles=False
                                 )
                                 continue
 
                             brdfp = '_'.join(
-                                Path(finfo_dict['meta'].name).name.split('_')[:-1]
+                                Path(finfo_dict['meta'].name).name.split('_')[
+                                    :-1
+                                ]
                             )
                             out_brdf = outdir_brdf.joinpath(brdfp + '.tif')
-                            out_angles = outdir_brdf.joinpath(brdfp + '_angles.tif')
+                            out_angles = outdir_brdf.joinpath(
+                                brdfp + '_angles.tif'
+                            )
 
                             if sensor in ['s2', 's2a', 's2b', 's2c']:
                                 outdir_angles = outdir_tmp.joinpath(
                                     'angles_{}'.format(
-                                        Path(finfo_dict['meta'].name).name.replace(
-                                            '_MTD_TL.xml', ''
-                                        )
+                                        Path(
+                                            finfo_dict['meta'].name
+                                        ).name.replace('_MTD_TL.xml', '')
                                     )
                                 )
                             else:
                                 outdir_angles = outdir_tmp.joinpath(
                                     'angles_{}'.format(
-                                        Path(finfo_dict['meta'].name).name.replace(
-                                            '_MTL.txt', ''
-                                        )
+                                        Path(
+                                            finfo_dict['meta'].name
+                                        ).name.replace('_MTL.txt', '')
                                     )
                                 )
 
                             if not Path(finfo_dict['meta'].name).is_file():
-                                logger.warning('  The metadata does not exist.')
+                                logger.warning(
+                                    '  The metadata does not exist.'
+                                )
                                 _clean_and_update(
                                     outdir_angles,
                                     finfo_dict,
@@ -1389,7 +1481,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                             ref_file = finfo_dict[load_bands[0]].name
 
-                            logger.info('  Processing angles for {} ...'.format(brdfp))
+                            logger.info(
+                                '  Processing angles for {} ...'.format(brdfp)
+                            )
 
                             if sensor.lower() in ['s2', 's2a', 's2b', 's2c']:
 
@@ -1411,7 +1505,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                     == 'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2'
                                 ):
                                     rad_sensor = (
-                                        's2af' if angle_info.sensor == 's2a' else 's2bf'
+                                        's2af'
+                                        if angle_info.sensor == 's2a'
+                                        else 's2bf'
                                     )
                                 elif (
                                     ' '.join(bands)
@@ -1428,7 +1524,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                 ):
                                     rad_sensor = angle_info.sensor
                                 elif (
-                                    ' '.join(bands) == 'blue green red nir swir1 swir2'
+                                    ' '.join(bands)
+                                    == 'blue green red nir swir1 swir2'
                                 ):
                                     rad_sensor = (
                                         's2al7'
@@ -1478,7 +1575,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                     rad_sensor = sensor + bands[0]
                                 else:
 
-                                    if (len(bands) == 6) and (meta.sensor == 'l8'):
+                                    if (len(bands) == 6) and (
+                                        meta.sensor == 'l8'
+                                    ):
                                         rad_sensor = 'l8l7'
                                     elif (
                                         (len(bands) == 7)
@@ -1513,7 +1612,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                         warp(
                                             finfo_dict[bd].name,
-                                            finfo_dict[bd].name.replace('.jp2', '.tif'),
+                                            finfo_dict[bd].name.replace(
+                                                '.jp2', '.tif'
+                                            ),
                                             overwrite=True,
                                             delete_input=True,
                                             multithread=True,
@@ -1521,7 +1622,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                             outputBounds=out_bounds,
                                             xRes=ref_res[0],
                                             yRes=ref_res[1],
-                                            resampleAlg=RESAMPLING_DICT[resampling],
+                                            resampleAlg=RESAMPLING_DICT[
+                                                resampling
+                                            ],
                                             creationOptions=[
                                                 'TILED=YES',
                                                 'COMPRESS=LZW',
@@ -1535,7 +1638,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                         )
 
                                         load_bands_names.append(
-                                            finfo_dict[bd].name.replace('.jp2', '.tif')
+                                            finfo_dict[bd].name.replace(
+                                                '.jp2', '.tif'
+                                            )
                                         )
 
                             else:
@@ -1543,9 +1648,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                 # Get band names from user
                                 try:
                                     load_bands_names = [
-                                        finfo_dict[bd].name for bd in load_bands
+                                        finfo_dict[bd].name
+                                        for bd in load_bands
                                     ]
-                                except:
+                                except Exception:
                                     logger.exception(
                                         '  Could not get all band name associations.'
                                     )
@@ -1559,7 +1665,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                 sensor=rad_sensor,
                                 ref_bounds=out_bounds,
                                 ref_crs=crs,
-                                ref_res=ref_res if ref_res else load_bands_names[-1],
+                                ref_res=ref_res
+                                if ref_res
+                                else load_bands_names[-1],
                                 ignore_warnings=True,
                                 nasa_earthdata_user=earthdata_username,
                                 nasa_earthdata_key=earthdata_key_file,
@@ -1589,7 +1697,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                         if (
                                             data.sel(band=1)
                                             .max()
-                                            .data.compute(num_workers=num_workers)
+                                            .data.compute(
+                                                num_workers=num_workers
+                                            )
                                             == 0
                                         ):
                                             valid_data = False
@@ -1661,7 +1771,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     # Scale from 0-10000 to 0-1 and reshape
                                                     X = (
-                                                        (data_cloudless * 0.0001)
+                                                        (
+                                                            data_cloudless
+                                                            * 0.0001
+                                                        )
                                                         .clip(0, 1)
                                                         .data.compute(
                                                             num_workers=num_workers
@@ -1689,7 +1802,9 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                         # If there are extra bands, remove them because they
                                                         # are not supported in the BRDF kernels.
                                                         data = _assign_attrs(
-                                                            data, attrs, bands_out
+                                                            data,
+                                                            attrs,
+                                                            bands_out,
                                                         )
 
                                                     logger.warning(
@@ -1763,13 +1878,23 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                                 data_values = 'dn'
 
                                             if (
-                                                isinstance(earthdata_username, str)
-                                                and isinstance(earthdata_key_file, str)
-                                                and isinstance(earthdata_code_file, str)
+                                                isinstance(
+                                                    earthdata_username, str
+                                                )
+                                                and isinstance(
+                                                    earthdata_key_file, str
+                                                )
+                                                and isinstance(
+                                                    earthdata_code_file, str
+                                                )
                                             ):
 
-                                                altitude = sixs.get_mean_altitude(
-                                                    data, srtm_outdir, n_jobs=n_jobs
+                                                altitude = (
+                                                    sixs.get_mean_altitude(
+                                                        data,
+                                                        srtm_outdir,
+                                                        n_jobs=n_jobs,
+                                                    )
                                                 )
 
                                                 altitude *= 0.0001
@@ -1891,11 +2016,13 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                 if S2CLOUDLESS_INSTALLED:
 
-                                                    wavel_sub = sr_brdf.gw.set_nodata(
-                                                        nodataval,
-                                                        nodataval,
-                                                        out_range=(0, 1),
-                                                        dtype='float64',
+                                                    wavel_sub = (
+                                                        sr_brdf.gw.set_nodata(
+                                                            nodataval,
+                                                            nodataval,
+                                                            out_range=(0, 1),
+                                                            dtype='float64',
+                                                        )
                                                     )
 
                                                     # Estimate the cloud shadows
@@ -1912,8 +2039,16 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     # Update the bands with the mask
                                                     sr_brdf = xr.where(
-                                                        (mask.sel(band='mask') == 0)
-                                                        & (sr_brdf != nodataval),
+                                                        (
+                                                            mask.sel(
+                                                                band='mask'
+                                                            )
+                                                            == 0
+                                                        )
+                                                        & (
+                                                            sr_brdf
+                                                            != nodataval
+                                                        ),
                                                         sr_brdf.clip(0, 10000),
                                                         nodataval,
                                                     ).astype('uint16')
@@ -1954,18 +2089,22 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                                     # Mask non-clear pixels
                                                     sr_brdf = xr.where(
-                                                        mask.sel(band='mask') < 2,
+                                                        mask.sel(band='mask')
+                                                        < 2,
                                                         sr_brdf.clip(0, 10000),
                                                         nodataval,
                                                     ).astype('uint16')
 
                                                     sr_brdf = _assign_attrs(
-                                                        sr_brdf, attrs, bands_out
+                                                        sr_brdf,
+                                                        attrs,
+                                                        bands_out,
                                                     )
 
                                                     if write_format == 'gtiff':
                                                         sr_brdf.gw.to_raster(
-                                                            str(out_brdf), **kwargs
+                                                            str(out_brdf),
+                                                            **kwargs,
                                                         )
                                                     else:
                                                         sr_brdf.gw.to_netcdf(
@@ -2005,10 +2144,16 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
                                         if write_angle_files:
 
                                             angle_stack = (
-                                                xr.concat((sza, saa), dim='band')
+                                                xr.concat(
+                                                    (sza, saa), dim='band'
+                                                )
                                                 .astype('int16')
-                                                .assign_coords(band=['sza', 'saa'])
-                                                .assign_attrs(**sza.attrs.copy())
+                                                .assign_coords(
+                                                    band=['sza', 'saa']
+                                                )
+                                                .assign_attrs(
+                                                    **sza.attrs.copy()
+                                                )
                                             )
 
                                             if write_format == 'gtiff':
@@ -2035,7 +2180,10 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
                                     # Write an empty file for tracking
                                     with open(
-                                        str(out_brdf).replace('.tif', '.nodata'), 'w'
+                                        str(out_brdf).replace(
+                                            '.tif', '.nodata'
+                                        ),
+                                        'w',
                                     ) as tx:
                                         tx.writelines([])
 
@@ -2096,10 +2244,12 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
         try:
 
             proc = subprocess.run(
-                gsutil_str.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                gsutil_str.split(' '),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
 
-        except:
+        except Exception:
             logger.exception('gsutil must be installed.')
 
         output = proc.stdout
@@ -2164,6 +2314,8 @@ class GeoDownloads(CloudPathMixin, DownloadMixin):
 
             values = [value for value in values if value]
 
-            url_dict[key] = [value for value in values if not value.endswith('/:')]
+            url_dict[key] = [
+                value for value in values if not value.endswith('/:')
+            ]
 
         return url_dict

@@ -1,14 +1,13 @@
 import logging
 import typing as T
 
+import dask.array as da
+import numpy as np
+import xarray as xr
+
 from ..config import config
 from ..handler import add_handler
 from .base import PropertyMixin as _PropertyMixin
-
-import numpy as np
-import xarray as xr
-import dask.array as da
-
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)

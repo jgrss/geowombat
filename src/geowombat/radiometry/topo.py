@@ -1,18 +1,19 @@
 import logging
 
-from ..handler import add_handler
-
-import numpy as np
-from osgeo import gdal, gdal_array
 import dask
 import dask.array as da
+import numpy as np
 import xarray as xr
+from osgeo import gdal, gdal_array
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
+
+from ..handler import add_handler
 
 try:
     import cv2
+
     OPENCV_INSTALLED = True
-except:
+except ImportError:
     OPENCV_INSTALLED = False
 
 
@@ -24,13 +25,15 @@ def _resize_elev(elev, proc_dims):
 
     if OPENCV_INSTALLED:
 
-        elev = cv2.resize(elev.astype('float32'),
-                          proc_dims,
-                          interpolation=cv2.INTER_LINEAR)
+        elev = cv2.resize(
+            elev.astype('float32'), proc_dims, interpolation=cv2.INTER_LINEAR
+        )
 
     else:
 
-        logger.warning('  OpenCV is not installed, so using scipy.ndimage.zoom to resize the data.')
+        logger.warning(
+            '  OpenCV is not installed, so using scipy.ndimage.zoom to resize the data.'
+        )
 
         from scipy.ndimage import zoom
 
@@ -41,8 +44,7 @@ def _resize_elev(elev, proc_dims):
 
 def calc_slope(elev, proc_dims=None, w=None, **kwargs):
 
-    """
-    Calculates slope from elevation
+    """Calculates slope from elevation.
 
     Args:
         elev (2d array): The elevation data.
@@ -72,14 +74,18 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
 
     if proc_dims:
 
-        dst_array = cv2.resize(dst_array.astype('float32'),
-                               (incols, inrows),
-                               interpolation=cv2.INTER_LINEAR)
+        dst_array = cv2.resize(
+            dst_array.astype('float32'),
+            (incols, inrows),
+            interpolation=cv2.INTER_LINEAR,
+        )
 
         if not w:
             w = 15
 
-        return np.float64(cv2.bilateralFilter(np.float32(dst_array), w, 10, 10))
+        return np.float64(
+            cv2.bilateralFilter(np.float32(dst_array), w, 10, 10)
+        )
 
     else:
         return np.float64(dst_array)
@@ -87,8 +93,7 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
 
 def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
 
-    """
-    Calculates aspect from elevation
+    """Calculates aspect from elevation.
 
     Args:
         elev (2d array): The elevation data.
@@ -120,14 +125,18 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
 
     if proc_dims:
 
-        dst_array = cv2.resize(dst_array.astype('float32'),
-                               (incols, inrows),
-                               interpolation=cv2.INTER_LINEAR)
+        dst_array = cv2.resize(
+            dst_array.astype('float32'),
+            (incols, inrows),
+            interpolation=cv2.INTER_LINEAR,
+        )
 
         if not w:
             w = 15
 
-        return np.float64(cv2.bilateralFilter(np.float32(dst_array), w, 10, 10))
+        return np.float64(
+            cv2.bilateralFilter(np.float32(dst_array), w, 10, 10)
+        )
 
     else:
         return np.float64(dst_array)
@@ -139,16 +148,12 @@ calc_aspect_delayed = dask.delayed(calc_aspect)
 
 class Topo(object):
 
-    """
-    A class for topographic normalization
-    """
+    """A class for topographic normalization."""
 
     @staticmethod
     def _regress_a(X, y, robust, n_jobs):
 
-        """
-        Calculates the slope and intercept
-        """
+        """Calculates the slope and intercept."""
 
         if robust:
             model = TheilSenRegressor(n_jobs=n_jobs)
@@ -162,7 +167,18 @@ class Topo(object):
 
         return slope_m, intercept_b
 
-    def _method_empirical_rotation(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust, band_coeffs, band):
+    def _method_empirical_rotation(
+        self,
+        sr,
+        il,
+        cos_z,
+        nodata_samps,
+        min_samples,
+        n_jobs,
+        robust,
+        band_coeffs,
+        band,
+    ):
 
         r"""
         Normalizes terrain using the Empirical Rotation method
@@ -233,7 +249,18 @@ class Topo(object):
 
         return da.where(nodata_samps == 1, sr, sr_a).clip(0, 1)
 
-    def _method_c(self, sr, il, cos_z, nodata_samps, min_samples, n_jobs, robust, band_coeffs, band):
+    def _method_c(
+        self,
+        sr,
+        il,
+        cos_z,
+        nodata_samps,
+        min_samples,
+        n_jobs,
+        robust,
+        band_coeffs,
+        band,
+    ):
 
         r"""
         Normalizes terrain using the C-correction method
@@ -285,28 +312,29 @@ class Topo(object):
 
         return da.where((sr_a > 1) | (nodata_samps == 1), sr, sr_a).clip(0, 1)
 
-    def norm_topo(self,
-                  data,
-                  elev,
-                  solar_za,
-                  solar_az,
-                  slope=None,
-                  aspect=None,
-                  method='empirical-rotation',
-                  slope_thresh=2,
-                  nodata=0,
-                  elev_nodata=-32768,
-                  scale_factor=1,
-                  angle_scale=0.01,
-                  n_jobs=1,
-                  robust=False,
-                  min_samples=100,
-                  slope_kwargs=None,
-                  aspect_kwargs=None,
-                  band_coeffs=None):
+    def norm_topo(
+        self,
+        data,
+        elev,
+        solar_za,
+        solar_az,
+        slope=None,
+        aspect=None,
+        method='empirical-rotation',
+        slope_thresh=2,
+        nodata=0,
+        elev_nodata=-32768,
+        scale_factor=1,
+        angle_scale=0.01,
+        n_jobs=1,
+        robust=False,
+        min_samples=100,
+        slope_kwargs=None,
+        aspect_kwargs=None,
+        band_coeffs=None,
+    ):
 
-        """
-        Applies topographic normalization
+        """Applies topographic normalization.
 
         Args:
             data (2d or 3d DataArray): The data to normalize, in the range 0-1.
@@ -360,7 +388,9 @@ class Topo(object):
 
         if method not in ['c', 'empirical-rotation']:
 
-            logger.exception("  Currently, the only supported methods are 'c' and 'empirical-rotation'.")
+            logger.exception(
+                "  Currently, the only supported methods are 'c' and 'empirical-rotation'."
+            )
             raise NameError
 
         attrs = data.attrs.copy()
@@ -377,26 +407,32 @@ class Topo(object):
 
         if not slope_kwargs:
 
-            slope_kwargs = dict(format='MEM',
-                                computeEdges=True,
-                                alg='ZevenbergenThorne',
-                                slopeFormat='degree')
+            slope_kwargs = dict(
+                format='MEM',
+                computeEdges=True,
+                alg='ZevenbergenThorne',
+                slopeFormat='degree',
+            )
 
         if not aspect_kwargs:
 
-            aspect_kwargs = dict(format='MEM',
-                                 computeEdges=True,
-                                 alg='ZevenbergenThorne',
-                                 trigonometric=False,
-                                 zeroForFlat=True)
+            aspect_kwargs = dict(
+                format='MEM',
+                computeEdges=True,
+                alg='ZevenbergenThorne',
+                trigonometric=False,
+                zeroForFlat=True,
+            )
 
         slope_kwargs['format'] = 'MEM'
         slope_kwargs['slopeFormat'] = 'degree'
         aspect_kwargs['format'] = 'MEM'
 
         # Force to SRTM resolution
-        proc_dims = (int((data.gw.ncols*data.gw.cellx) / 30.0),
-                     int((data.gw.nrows*data.gw.celly) / 30.0))
+        proc_dims = (
+            int((data.gw.ncols * data.gw.cellx) / 30.0),
+            int((data.gw.nrows * data.gw.celly) / 30.0),
+        )
 
         w = int((5 * 30.0) / data.gw.celly)
 
@@ -407,19 +443,31 @@ class Topo(object):
             slope_deg_fd = slope.squeeze().data
         else:
 
-            slope_deg = calc_slope_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs)
-            slope_deg_fd = da.from_delayed(slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
+            slope_deg = calc_slope_delayed(
+                elev.squeeze().data, proc_dims=proc_dims, w=w, **slope_kwargs
+            )
+            slope_deg_fd = da.from_delayed(
+                slope_deg, (data.gw.nrows, data.gw.ncols), dtype='float64'
+            )
 
         if isinstance(aspect, xr.DataArray):
             aspect_deg_fd = aspect.squeeze().data
         else:
 
-            aspect_deg = calc_aspect_delayed(elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs)
-            aspect_deg_fd = da.from_delayed(aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64')
+            aspect_deg = calc_aspect_delayed(
+                elev.squeeze().data, proc_dims=proc_dims, w=w, **aspect_kwargs
+            )
+            aspect_deg_fd = da.from_delayed(
+                aspect_deg, (data.gw.nrows, data.gw.ncols), dtype='float64'
+            )
 
-        nodata_samps = da.where((elev.data == elev_nodata) |
-                                (data.max(dim='band').data == nodata) |
-                                (slope_deg_fd < slope_thresh), 1, 0)
+        nodata_samps = da.where(
+            (elev.data == elev_nodata)
+            | (data.max(dim='band').data == nodata)
+            | (slope_deg_fd < slope_thresh),
+            1,
+            0,
+        )
 
         slope_rad = da.deg2rad(slope_deg_fd)
         aspect_rad = da.deg2rad(aspect_deg_fd)
@@ -431,43 +479,57 @@ class Topo(object):
         cos_z = da.cos(solar_za)
 
         # Calculate the illumination angle
-        il = da.cos(slope_rad) * cos_z + da.sin(slope_rad) * da.sin(solar_za) * da.cos(solar_az - aspect_rad)
+        il = da.cos(slope_rad) * cos_z + da.sin(slope_rad) * da.sin(
+            solar_za
+        ) * da.cos(solar_az - aspect_rad)
 
         sr_adj = list()
         for band in data.band.values.tolist():
 
             if method == 'c':
 
-                sr_adj.append(self._method_c(data.sel(band=band).data,
-                                             il,
-                                             cos_z,
-                                             nodata_samps,
-                                             min_samples,
-                                             n_jobs,
-                                             robust,
-                                             band_coeffs,
-                                             band))
+                sr_adj.append(
+                    self._method_c(
+                        data.sel(band=band).data,
+                        il,
+                        cos_z,
+                        nodata_samps,
+                        min_samples,
+                        n_jobs,
+                        robust,
+                        band_coeffs,
+                        band,
+                    )
+                )
 
             else:
 
-                sr_adj.append(self._method_empirical_rotation(data.sel(band=band).data,
-                                                              il,
-                                                              cos_z,
-                                                              nodata_samps,
-                                                              min_samples,
-                                                              n_jobs,
-                                                              robust,
-                                                              band_coeffs,
-                                                              band))
+                sr_adj.append(
+                    self._method_empirical_rotation(
+                        data.sel(band=band).data,
+                        il,
+                        cos_z,
+                        nodata_samps,
+                        min_samples,
+                        n_jobs,
+                        robust,
+                        band_coeffs,
+                        band,
+                    )
+                )
 
-        adj_data = xr.DataArray(data=da.concatenate(sr_adj).reshape((data.gw.nbands,
-                                                                     data.gw.nrows,
-                                                                     data.gw.ncols)),
-                                coords={'band': data.band.values.tolist(),
-                                        'y': data.y.values,
-                                        'x': data.x.values},
-                                dims=('band', 'y', 'x'),
-                                attrs=data.attrs)
+        adj_data = xr.DataArray(
+            data=da.concatenate(sr_adj).reshape(
+                (data.gw.nbands, data.gw.nrows, data.gw.ncols)
+            ),
+            coords={
+                'band': data.band.values.tolist(),
+                'y': data.y.values,
+                'x': data.x.values,
+            },
+            dims=('band', 'y', 'x'),
+            attrs=data.attrs,
+        )
 
         attrs['calibration'] = 'Topographic-adjusted'
         attrs['nodata'] = nodata
