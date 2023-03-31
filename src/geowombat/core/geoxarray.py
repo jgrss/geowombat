@@ -43,6 +43,7 @@ import geopandas as gpd
 import xarray as xr
 from dask.distributed import Client as _Client
 import dask.array as da
+import rasterio as rio
 from rasterio.windows import Window as _Window
 from rasterio.coords import BoundingBox as _BoundingBox
 from shapely.geometry import Polygon as _Polygon, box
@@ -72,10 +73,10 @@ class _UpdateConfig(object):
 
 @xr.register_dataarray_accessor('gw')
 class GeoWombatAccessor(_UpdateConfig, _DataProperties):
-    """A method to access an ``xarray.DataArray``. This class is typically not
+    """A method to access a ``xarray.DataArray``. This class is typically not
     accessed directly, but rather through a call to ``geowombat.open``.
 
-    - A DataArray object will have a ``gw`` method.
+    - An ``xarray.DataArray`` object will have a ``gw`` method.
     - To access GeoWombat methods, use ``xarray.DataArray.gw``.
     """
 
@@ -455,6 +456,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
             return_type (Optional[str]): The data to return. Choices are ['data', 'slice', 'window'].
             ndim (Optional[int]): The number of required dimensions if ``return_type`` = 'data' or 'slice'.
+
+        Returns:
+            ``yields`` ``xarray.DataArray``, ``tuple``, or ``rasterio.windows.Window``
         """
         if return_type not in ['data', 'slice', 'window']:
             raise NameError(
@@ -519,7 +523,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         text_color: T.Optional[str] = 'black',
         rot: T.Optional[int] = 30,
         **kwargs,
-    ):
+    ) -> None:
         """Shows an image on a plot.
 
         Args:
@@ -531,7 +535,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             kwargs (Optional[dict]): Keyword arguments passed to ``xarray.plot.imshow``.
 
         Returns:
-            None
+            ``None``
 
         Examples:
             >>> with gw.open('image.tif') as ds:
@@ -555,14 +559,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Converts a ``dask`` array to a ``GeoDataFrame``
 
         Args:
-            mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
-                Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
-                Numpy's, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-                and mask is None, the source's mask will be inverted and used in place of mask.
-            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+            mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to
+                bool (rasterio.bool_ or rasterio.uint8). Values of False or 0 will be
+                excluded from feature generation. Note well that this is the inverse
+                sense from Numpy's, where a mask value of True indicates invalid data
+                in an array. If source is a Numpy masked array and mask is None, the
+                source's mask will be inverted and used in place of mask.
+            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping
+                pixels into features.
 
         Returns:
-            ``GeoDataFrame``
+            ``geopandas.GeoDataFrame``
 
         Example:
             >>> import geowombat as gw
@@ -570,8 +577,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>
             >>>     # Convert the input image to a GeoDataFrame
-            >>>     df = src.gw.to_polygon(mask='source',
-            >>>                            num_workers=8)
+            >>>     df = src.gw.to_polygon(mask='source', num_workers=8)
         """
         return array_to_polygon(
             self._obj, mask=mask, connectivity=connectivity
@@ -587,11 +593,14 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str): The output file name to write to.
-            mask (numpy ndarray or rasterio Band object, optional): Must evaluate to bool (rasterio.bool_ or rasterio.uint8).
-                Values of False or 0 will be excluded from feature generation. Note well that this is the inverse sense from
-                Numpy's, where a mask value of True indicates invalid data in an array. If source is a Numpy masked array
-                and mask is None, the source's mask will be inverted and used in place of mask.
-            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
+            mask (numpy ndarray or rasterio Band object, optional): Must evaluate to
+                bool (rasterio.bool_ or rasterio.uint8). Values of False or 0 will be
+                excluded from feature generation. Note well that this is the inverse
+                sense from Numpy's, where a mask value of True indicates invalid data
+                in an array. If source is a Numpy masked array and mask is None, the
+                source's mask will be inverted and used in place of mask.
+            connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping
+                pixels into features.
 
         Returns:
             None
@@ -611,8 +620,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         resampling='nearest',
         warp_mem_limit=512,
         num_threads=1,
-    ):
-        """Transforms a DataArray to a new coordinate reference system.
+    ) -> xr.DataArray:
+        """Transforms an ``xarray.DataArray`` to a new coordinate reference
+        system.
 
         Args:
             dst_crs (Optional[CRS | int | dict | str]): The destination CRS.
@@ -631,7 +641,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 the array is not warped and the size is unchanged. It also avoids in-memory computations.
             resampling (Optional[str]): The resampling method if ``filename`` is a ``list``.
                 Choices are ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss', 'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-            warp_mem_lim    it (Optional[int]): The warp memory limit.
+            warp_mem_limit (Optional[int]): The warp memory limit.
             num_threads (Optional[int]): The number of parallel threads.
 
         Returns:
@@ -659,11 +669,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             num_threads=num_threads,
         )
 
-    def to_netcdf(self, filename, *args, **kwargs):
+    def to_netcdf(
+        self, filename: T.Union[str, _Path], *args, **kwargs
+    ) -> None:
         """Writes an Xarray DataArray to a NetCDF file.
 
         Args:
-            filename (str): The output file name to write to.
+            filename (Path | str): The output file name to write to.
             args (DataArray): Additional ``DataArrays`` to stack.
             kwargs (dict): Encoding arguments.
 
@@ -691,7 +703,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
             >>>     src = ds.to_array(dim='band')
         """
-
         to_netcdf(self._obj, filename, *args, **kwargs)
 
     def save(
@@ -708,7 +719,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         num_workers: T.Optional[int] = 1,
         log_progress: T.Optional[bool] = True,
         tqdm_kwargs: T.Optional[dict] = None,
-    ):
+    ) -> None:
         """Saves a DataArray to raster using rasterio/dask.
 
         Args:
@@ -791,8 +802,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         blockysize=512,
         tags=None,
         **kwargs,
-    ):
+    ) -> None:
         """Writes an Xarray DataArray to a raster file.
+
+        .. note::
+
+            We advise using :func:`save` in place of this method.
 
         Args:
             filename (str): The output file name to write to.
@@ -821,7 +836,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
         Returns:
-            None
+            ``None``
 
         Examples:
             >>> import geowombat as gw
@@ -900,22 +915,22 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def to_vrt(
         self,
-        filename,
-        overwrite=False,
-        resampling=None,
-        nodata=None,
-        init_dest_nodata=True,
-        warp_mem_limit=128,
-    ):
-
+        filename: T.Union[str, _Path],
+        overwrite: bool = False,
+        resampling: rio.enums.Resampling = None,
+        nodata: T.Union[float, int] = None,
+        init_dest_nodata: bool = True,
+        warp_mem_limit: int = 128,
+    ) -> None:
         """Writes a file to a VRT file.
 
         Args:
-            filename (str): The output file name to write to.
+            filename (str | Path): The output file name to write to.
             overwrite (Optional[bool]): Whether to overwrite an existing VRT file.
             resampling (Optional[object]): The resampling algorithm for ``rasterio.vrt.WarpedVRT``.
             nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
-            init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
+            init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata``
+                for ``rasterio.vrt.WarpedVRT``.
             warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
         Example:
@@ -935,7 +950,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
             >>>         src.gw.to_vrt('output.vrt')
         """
-
         to_vrt(
             self._obj,
             filename,
@@ -946,15 +960,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             warp_mem_limit=warp_mem_limit,
         )
 
-    def apply(self, filename, user_func, n_jobs=1, **kwargs):
+    def apply(
+        self,
+        filename: T.Union[str, _Path],
+        user_func: T.Callable,
+        n_jobs: int = 1,
+        **kwargs,
+    ):
         """Applies a user function to an Xarray Dataset or DataArray and writes
         to file.
 
         Args:
-            filename (str): The output file name to write to.
+            filename (str | Path): The output file name to write to.
             user_func (func): The user function to apply.
             n_jobs (Optional[int]): The number of parallel jobs for the cluster.
-            kwargs (Optional[dict]): Keyword arguments passed to `to_raster`.
+            kwargs (Optional[dict]): Keyword arguments passed to :func:`to_raster`.
 
         Example:
             >>> import geowombat as gw
@@ -963,7 +983,14 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     return ds_.max(axis=0)
             >>>
             >>> with gw.open('image.tif', chunks=512) as ds:
-            >>>     ds.gw.apply('output.tif', user_func, n_jobs=8, overwrite=True, blockxsize=512, blockysize=512)
+            >>>     ds.gw.apply(
+            >>>         'output.tif',
+            >>>         user_func,
+            >>>         n_jobs=8,
+            >>>         overwrite=True,
+            >>>         blockxsize=512,
+            >>>         blockysize=512
+            >>>     )
         """
 
         cluster = _Cluster(
@@ -1052,15 +1079,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def subset(
         self,
-        left=None,
-        top=None,
-        right=None,
-        bottom=None,
-        rows=None,
-        cols=None,
-        center=False,
-        mask_corners=False,
-    ):
+        left: T.Optional[float] = None,
+        top: T.Optional[float] = None,
+        right: T.Optional[float] = None,
+        bottom: T.Optional[float] = None,
+        rows: T.Optional[int] = None,
+        cols: T.Optional[int] = None,
+        center: T.Optional[bool] = False,
+        mask_corners: T.Optional[bool] = False,
+    ) -> xr.DataArray:
         """Subsets a DataArray.
 
         Args:
