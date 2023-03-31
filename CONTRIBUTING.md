@@ -74,8 +74,7 @@ Prerequisites
 6. Go to `geowombat/src/debug_script.py` run top cell.
 7. Add code and run `debug cell`
 
-View Example Video here:
-[![Debug Docker](https://cdn-icons-png.flaticon.com/512/3024/3024584.png)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
+View Example Video here: [![Debug Docker](https://github.com/jgrss/geowombat/blob/jgrss/features_precommit/data/resume.png?raw=true)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
 ## Create a Pull Request for the new feature or fix
 ----------------------
