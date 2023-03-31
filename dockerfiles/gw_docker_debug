@@ -24,30 +24,37 @@ RUN apt update -y && apt upgrade -y && \
     libgl1 \
     python-is-python3 \
     git -y \
+    curl -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install -U pip setuptools wheel
-RUN pip install -U --no-cache-dir "setuptools<=58.*"
-RUN pip install -U --no-cache-dir cython>=0.29.*
-RUN pip install -U --no-cache-dir numpy>=1.21.0
+RUN pip install -U --no-cache-dir "setuptools<=58.*" \
+    cython>=0.29.* \
+    numpy>=1.21.0 \
+    pip-tools \
+    rtree \
+    ipykernel \
+    black 
 
 
-RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/#242
+# install VS Code (code-server)
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
+
+# install geowombat or a branch using --branch option
+RUN git clone https://github.com/jgrss/geowombat.git #--branch jgrss/features_citests
+# install cloned geowombat 
 RUN cd geowombat && pip install --user -e .[stac,time,perf,ml,zarr,coreg,tests,docs] 
 
-RUN pip install  pip-tools rtree ipykernel
-
-RUN pip install git+https://github.com/jgrss/sklearn-xarray
-
-
-RUN echo ' # %% \n\ 
+# add script to debug from
+RUN echo ' #%% \n\ 
     import sys \n\  
     sys.path.append("/") \n\ 
     sys.path.append("/geowombat") \n\ 
-    import geowombat as gw \n # %%' > ./geowombat/src/debug_script.py
+    import geowombat as gw \n #%%' > ./geowombat/src/debug_script.py
 
+# add debug profile
 RUN cd geowombat && mkdir -p .vscode 
 RUN  echo '{ \
     "version": "0.2.0", \
@@ -63,4 +70,12 @@ RUN  echo '{ \
     ] \
     }'> ./geowombat/.vscode/launch.json
 
-CMD cd geowombat/tests/ && python -m unittest &&  bash
+# install VS Code extensions
+RUN code-server    --install-extension ms-python.python \
+    --install-extension HoangKimLai.ipython
+
+# start from bash command line
+CMD /usr/bin/bash  
+
+# to run debug tests simply run:
+# cd geowombat/tests/ && python -m unittest  
