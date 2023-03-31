@@ -475,22 +475,26 @@ def to_vrt(
         init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
         warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> from rasterio.enums import Resampling
         >>>
         >>> # Transform a CRS and save to VRT
         >>> with gw.config.update(ref_crs=102033):
         >>>     with gw.open('image.tif') as src:
-        >>>         gw.to_vrt(src,
-        >>>                   'output.vrt',
-        >>>                   resampling=Resampling.cubic,
-        >>>                   warp_mem_limit=256)
+        >>>         gw.to_vrt(
+        >>>             src,
+        >>>             'output.vrt',
+        >>>             resampling=Resampling.cubic,
+        >>>             warp_mem_limit=256
+        >>>         )
         >>>
         >>> # Load multiple files set to a common geographic extent
         >>> bounds = (left, bottom, right, top)
         >>> with gw.config.update(ref_bounds=bounds):
-        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+        >>>     with gw.open(
+        >>>         ['image1.tif', 'image2.tif'], mosaic=True
+        >>>     ) as src:
         >>>         gw.to_vrt(src, 'output.vrt')
     """
     if Path(filename).is_file():
@@ -565,7 +569,7 @@ def to_netcdf(
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> import xarray as xr
         >>>
@@ -576,17 +580,33 @@ def to_netcdf(
         >>>
         >>> # Add extra layers
         >>> with gw.config.update(sensor='l7'):
-        >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
-        >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
+        >>>     with gw.open(
+        >>>         'LC08_L1TP_225078_20200219_20200225_01_T1.tif'
+        >>>     ) as src, gw.open(
+        >>>         'LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif',
+        >>>         band_names=['zenith', 'azimuth']
+        >>>     ) as ang:
+        >>>         src = (
+        >>>             xr.where(
+        >>>                 src == 0, -32768, src
+        >>>             )
+        >>>             .astype('int16')
+        >>>             .assign_attrs(**src.attrs)
+        >>>         )
         >>>
-        >>>         src = xr.where(src == 0, -32768, src)\
-        >>>                     .astype('int16')\
-        >>>                     .assign_attrs(**src.attrs)
-        >>>
-        >>>         gw.to_netcdf(src, 'filename.nc', ang.astype('int16'), zlib=True, complevel=5)
+        >>>         gw.to_netcdf(
+        >>>             src,
+        >>>             'filename.nc',
+        >>>             ang.astype('int16'),
+        >>>             zlib=True,
+        >>>             complevel=5,
+        >>>             _FillValue=-32768
+        >>>         )
         >>>
         >>> # Open the data and convert to a DataArray
-        >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
+        >>> with xr.open_dataset(
+        >>>     'filename.nc', engine='h5netcdf', chunks=256
+        >>> ) as ds:
         >>>     src = ds.to_array(dim='band')
     """
     if Path(filename).is_file():

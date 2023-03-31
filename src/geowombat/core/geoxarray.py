@@ -694,7 +694,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             args (DataArray): Additional ``DataArrays`` to stack.
             kwargs (dict): Encoding arguments.
 
-        Example:
+        Examples:
             >>> import geowombat as gw
             >>> import xarray as xr
             >>>
@@ -705,17 +705,32 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>> # Add extra layers
             >>> with gw.config.update(sensor='l7'):
-            >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
-            >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
+            >>>     with gw.open(
+            >>>         'LC08_L1TP_225078_20200219_20200225_01_T1.tif'
+            >>>     ) as src, gw.open(
+            >>>         'LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif',
+            >>>         band_names=['zenith', 'azimuth']
+            >>>     ) as ang:
+            >>>         src = (
+            >>>             xr.where(
+            >>>                 src == 0, -32768, src
+            >>>             )
+            >>>             .astype('int16')
+            >>>             .assign_attrs(**src.attrs)
+            >>>         )
             >>>
-            >>>         src = xr.where(src == 0, -32768, src)\
-            >>>                     .astype('int16')\
-            >>>                     .assign_attrs(**src.attrs)
-            >>>
-            >>>         src.gw.to_netcdf('filename.nc', ang.astype('int16'), zlib=True, complevel=5, _FillValue=-32768)
+            >>>         src.gw.to_netcdf(
+            >>>             'filename.nc',
+            >>>             ang.astype('int16'),
+            >>>             zlib=True,
+            >>>             complevel=5,
+            >>>             _FillValue=-32768
+            >>>         )
             >>>
             >>> # Open the data and convert to a DataArray
-            >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
+            >>> with xr.open_dataset(
+            >>>     'filename.nc', engine='h5netcdf', chunks=256
+            >>> ) as ds:
             >>>     src = ds.to_array(dim='band')
         """
         to_netcdf(self._obj, filename, *args, **kwargs)
@@ -948,21 +963,25 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 for ``rasterio.vrt.WarpedVRT``.
             warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
-        Example:
+        Examples:
             >>> import geowombat as gw
             >>> from rasterio.enums import Resampling
             >>>
             >>> # Transform a CRS and save to VRT
             >>> with gw.config.update(ref_crs=102033):
             >>>     with gw.open('image.tif') as src:
-            >>>         src.gw.to_vrt('output.vrt',
-            >>>                       resampling=Resampling.cubic,
-            >>>                       warp_mem_limit=256)
+            >>>         src.gw.to_vrt(
+            >>>             'output.vrt',
+            >>>             resampling=Resampling.cubic,
+            >>>             warp_mem_limit=256
+            >>>         )
             >>>
             >>> # Load multiple files set to a common geographic extent
             >>> bounds = (left, bottom, right, top)
             >>> with gw.config.update(ref_bounds=bounds):
-            >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+            >>>     with gw.open(
+            >>>         ['image1.tif', 'image2.tif'], mosaic=True
+            >>>     ) as src:
             >>>         src.gw.to_vrt('output.vrt')
         """
         to_vrt(
@@ -1130,7 +1149,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>         cols=2048
             >>>     )
         """
-
         return subset(
             self._obj,
             left=left,
@@ -1191,7 +1209,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>         col_chunks=1024
             >>>     )
         """
-
         return calc_area(
             self._obj,
             values,
@@ -1591,8 +1608,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def avi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def avi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the advanced vegetation index
 
@@ -1615,7 +1637,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: 0 to 1
         """
-
         return gw_avi(
             self._obj,
             nodata=nodata,
@@ -1624,8 +1645,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def evi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def evi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the enhanced vegetation index
 
@@ -1648,7 +1674,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: 0 to 1
         """
-
         return gw_evi(
             self._obj,
             nodata=nodata,
@@ -1657,8 +1682,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def evi2(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def evi2(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the two-band modified enhanced vegetation index
 
@@ -1681,7 +1711,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: 0 to 1
         """
-
         return gw_evi2(
             self._obj,
             nodata=nodata,
@@ -1690,8 +1719,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def gcvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def gcvi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the green chlorophyll vegetation index
 
@@ -1713,7 +1747,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: -1 to 1
         """
-
         return gw_gcvi(
             self._obj,
             nodata=nodata,
@@ -1722,8 +1755,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def nbr(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def nbr(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the normalized burn ratio
 
@@ -1745,7 +1783,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: -1 to 1
         """
-
         return gw_nbr(
             self._obj,
             nodata=nodata,
@@ -1754,8 +1791,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def ndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def ndvi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the normalized difference vegetation index
 
@@ -1777,7 +1819,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: -1 to 1
         """
-
         return gw_ndvi(
             self._obj,
             nodata=nodata,
@@ -1786,8 +1827,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def kndvi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def kndvi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the kernel normalized difference vegetation index
 
@@ -1809,7 +1855,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: -1 to 1
         """
-
         return gw_kndvi(
             self._obj,
             nodata=nodata,
@@ -1818,8 +1863,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def wi(self, nodata=None, mask=False, sensor=None, scale_factor=1.0):
-
+    def wi(
+        self,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Calculates the woody vegetation index
 
@@ -1848,7 +1898,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: 0 to 1
         """
-
         return gw_wi(
             self._obj,
             nodata=nodata,
@@ -1857,8 +1906,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
         )
 
-    def tasseled_cap(self, nodata=None, sensor=None, scale_factor=1.0):
-
+    def tasseled_cap(
+        self,
+        nodata: T.Union[float, int] = None,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
         Applies a tasseled cap transformation
 
@@ -1874,10 +1927,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> import geowombat as gw
             >>>
             >>> with gw.config.update(sensor='qb', scale_factor=0.0001):
-            >>>     with gw.open('image.tif', band_names=['blue', 'green', 'red', 'nir']) as ds:
+            >>>     with gw.open(
+            >>>         'image.tif', band_names=['blue', 'green', 'red', 'nir']
+            >>>     ) as ds:
             >>>         tcap = ds.gw.tasseled_cap()
         """
-
         return gw_tasseled_cap(
             self._obj, nodata=nodata, sensor=sensor, scale_factor=scale_factor
         )
@@ -1895,7 +1949,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         scale_factor=1.0,
         scale_angles=True,
     ):
-
         """Applies Bidirectional Reflectance Distribution Function (BRDF)
         normalization.
 
