@@ -71,7 +71,10 @@ Prerequisites
 3. Under Images click on `gw_debug` right click on `latest`, hit `Run Interactive`
 4. Under Individual Containers, right click on your running `gw_debug` instance, hit `Attach Visual Studio Code`
 5. Once opened make sure the `python` and `ipython` vscode extensions are installed in your attached vscode server
+6. Go to `geowombat/src/debug_script.py` run top cell.
+7. Add code and run `debug cell`
 
+[![Debug Docker](http://img.youtube.com/vi/XAMVzS13HY0/0.jpg)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
 ## Create a Pull Request for the new feature or fix
 ----------------------
