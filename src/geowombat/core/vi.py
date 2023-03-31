@@ -71,20 +71,20 @@ class BandMath(object):
 
     @staticmethod
     def mask_and_assign(
-        data,
-        result,
-        band_variable,
-        band_name,
-        nodata,
-        new_name,
-        mask,
-        clip_min,
-        clip_max,
-        scale_factor,
-        sensor,
-        norm=False,
-    ):
-        """Masks a DataArray.
+        data: xr.DataArray,
+        result: xr.DataArray,
+        band_variable: str,
+        band_name: str,
+        nodata: T.Union[float, int],
+        new_name: str,
+        mask: bool,
+        clip_min: T.Union[float, int],
+        clip_max: T.Union[float, int],
+        scale_factor: float,
+        sensor: str,
+        norm: bool = False,
+    ) -> xr.DataArray:
+        """Masks an ``xarray.DataArray``.
 
         Args:
             data (DataArray or Dataset)
@@ -94,8 +94,8 @@ class BandMath(object):
             nodata (int or float)
             new_name (str)
             mask (bool)
-            clip_min (int)
-            clip_max (int)
+            clip_min (float | int)
+            clip_max (float | int)
             scale_factor (float)
             sensor (str)
             norm (bool)
@@ -103,9 +103,7 @@ class BandMath(object):
         Returns:
             ``xarray.DataArray``
         """
-
-        if isinstance(nodata, int) or isinstance(nodata, float):
-
+        if isinstance(nodata, (float, int)):
             if band_variable == 'wavelength':
                 result = xr.where(
                     data.sel(wavelength=band_name) == nodata, nodata, result
@@ -116,7 +114,6 @@ class BandMath(object):
                 ).astype('float64')
 
         if mask:
-
             if isinstance(data, xr.Dataset):
                 result = result.where(data['mask'] < 3)
             else:
@@ -160,18 +157,16 @@ class BandMath(object):
 
     def norm_diff_math(
         self,
-        data,
-        b1,
-        b2,
-        name,
-        sensor,
-        nodata=None,
-        mask=False,
-        scale_factor=None,
-    ):
-
-        """
-        Normalized difference index --> (b2 - b1) / (b2 + b1)
+        data: xr.DataArray,
+        b1: xr.DataArray,
+        b2: xr.DataArray,
+        name: str,
+        sensor: str,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        scale_factor: float = None,
+    ) -> xr.DataArray:
+        """Normalized difference index --> (b2 - b1) / (b2 + b1)
 
         Args:
             data (DataArray)
