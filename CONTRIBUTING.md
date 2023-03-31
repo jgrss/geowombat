@@ -1,10 +1,13 @@
 # Contibuting to Geowombat
 ---------------------------
 
-We have two methods for contribution, 1) local install, 2) docker based debugging
+We have two methods for contribution:
 
-1 - Local Install
---------------
+1. Local install
+2. Docker-based debugging
+
+1. Local Install
+----------------
 
 ## Install GeoWombat
 
@@ -16,7 +19,7 @@ git clone https://github.com/jgrss/geowombat.git
 
 ### Create a virtual environment
 
-Modify the Python version (3.8.15) as needed
+Modify the Python version (i.e., 3.8.15) as needed
 
 ```commandline
 pyenv virtualenv 3.8.15 venv.gw
@@ -57,11 +60,13 @@ Install other extras from `setup.cfg` as needed.
 (venv.gw) python -m unittest
 ```
 
-2 - Docker Debuging 
---------------------
+2. Docker Debuging
+------------------
+
 Prerequisites
+
 - [Visual Studio Code](https://code.visualstudio.com/download)
-- [Docker VS Code Extension](https://code.visualstudio.com/docs/containers/overview)
+- [Docker VSCode Extension](https://code.visualstudio.com/docs/containers/overview)
 - [Docker Desktop](https://docs.docker.com/desktop/)
 
 1. Build `geowombat/dockerfiles/gw_docker_debug` by right clicking and hit `Build Image...`
@@ -76,8 +81,8 @@ Prerequisites
 
 View Example Video here: [![Debug Docker](https://github.com/jgrss/geowombat/blob/jgrss/features_precommit/data/resume.png?raw=true)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
-## Create a Pull Request for the new feature or fix
-----------------------
+## Create a Pull Request
+------------------------
 
 ### Commit and push changes
 
