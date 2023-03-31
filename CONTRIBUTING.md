@@ -74,7 +74,8 @@ Prerequisites
 6. Go to `geowombat/src/debug_script.py` run top cell.
 7. Add code and run `debug cell`
 
-[![Debug Docker](http://img.youtube.com/vi/XAMVzS13HY0/0.jpg)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
+View Example Video here:
+[![Debug Docker](https://geowombat.readthedocs.io/en/latest/_static/logo.png)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
 ## Create a Pull Request for the new feature or fix
 ----------------------
