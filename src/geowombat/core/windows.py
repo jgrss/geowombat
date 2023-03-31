@@ -38,7 +38,6 @@ def get_window_offsets(
         window_info = {}
 
     i = 0
-
     for row_off in range(0, n_rows, row_chunks):
         height = n_rows_cols(row_off, row_chunks, n_rows)
 

@@ -4,6 +4,7 @@ from collections import namedtuple, OrderedDict
 from datetime import datetime
 from pathlib import Path
 import logging
+import typing as T
 
 from ..handler import add_handler
 from ..moving import moving_window
@@ -24,7 +25,7 @@ try:
     from dateparser.search import search_dates
 
     DATEPARSER_INSTALLED = True
-except:
+except ImportError:
     DATEPARSER_INSTALLED = False
 
 
@@ -52,10 +53,15 @@ def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
         ``int`` in MB
     """
 
-    return np.random.random((ntime, nbands, nrows, ncols)).astype(dtype).nbytes * 1e-6
+    return (
+        np.random.random((ntime, nbands, nrows, ncols)).astype(dtype).nbytes
+        * 1e-6
+    )
 
 
-def parse_filename_dates(filenames):
+def parse_filename_dates(
+    filenames: T.Sequence[T.Union[str, Path]]
+) -> T.Sequence:
 
     """Parses dates from file names.
 
@@ -66,7 +72,7 @@ def parse_filename_dates(filenames):
         ``list``
     """
 
-    date_filenames = list()
+    date_filenames = []
 
     for fn in filenames:
 
@@ -79,7 +85,7 @@ def parse_filename_dates(filenames):
 
             try:
 
-                s, dt = list(
+                __, dt = list(
                     zip(
                         *search_dates(
                             ' '.join(' '.join(f_base.split('_')).split('-')),
@@ -92,7 +98,7 @@ def parse_filename_dates(filenames):
                     )
                 )
 
-            except:
+            except Exception:
                 return list(range(1, len(filenames) + 1))
 
         if not dt:
@@ -127,7 +133,9 @@ def parse_wildcard(string):
         matches = [os.path.join(d_name, fn) for fn in matches]
 
     if not matches:
-        logger.exception('  There were no images found with the string search.')
+        logger.exception(
+            '  There were no images found with the string search.'
+        )
 
     return matches
 
@@ -187,7 +195,10 @@ def sort_images_by_date(
     ]
 
     return OrderedDict(
-        sorted(dict(zip([str(fn) for fn in fl], dates)).items(), key=lambda x_: x_[1])
+        sorted(
+            dict(zip([str(fn) for fn in fl], dates)).items(),
+            key=lambda x_: x_[1],
+        )
     )
 
 
@@ -210,7 +221,9 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
     if return_as == '1d':
 
         df_tmp = gpd.GeoDataFrame(
-            np.arange(0, x.shape[0]), geometry=gpd.points_from_xy(x, y), crs=src_crs
+            np.arange(0, x.shape[0]),
+            geometry=gpd.points_from_xy(x, y),
+            crs=src_crs,
         )
 
         df_tmp = df_tmp.to_crs(dst_crs)
@@ -251,7 +264,9 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
         )[0]
 
         return xr.DataArray(
-            data=da.from_array(latitudes[np.newaxis, :, :], chunks=(1, 512, 512)),
+            data=da.from_array(
+                latitudes[np.newaxis, :, :], chunks=(1, 512, 512)
+            ),
             dims=('band', 'y', 'x'),
             coords={
                 'band': ['lat'],
@@ -527,7 +542,9 @@ def sample_feature(
         return gpd.GeoDataFrame([])
 
     fid = df_row[id_column]
-    other_cols = [col for col in df_columns if col not in [id_column, 'geometry']]
+    other_cols = [
+        col for col in df_columns if col not in [id_column, 'geometry']
+    ]
 
     if not isinstance(feature_array, np.ndarray):
         # "Rasterize" the geometry into a NumPy array
