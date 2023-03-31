@@ -1,4 +1,5 @@
 import logging
+import typing as T
 
 from ..config import config
 from ..handler import add_handler
@@ -36,7 +37,14 @@ def _create_nodata_array(data, nodata, band_name, var_name):
 
 class BandMath(object):
     @staticmethod
-    def scale_and_assign(data, nodata, band_variable, scale_factor, names, new_names):
+    def scale_and_assign(
+        data: xr.DataArray,
+        nodata: T.Union[float, int],
+        band_variable: str,
+        scale_factor: float,
+        names: T.Sequence[T.Any],
+        new_names: T.Sequence[T.Any],
+    ) -> xr.DataArray:
         attrs = data.attrs.copy()
 
         if band_variable == 'wavelength':
@@ -151,7 +159,15 @@ class BandMath(object):
         return result
 
     def norm_diff_math(
-        self, data, b1, b2, name, sensor, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        b1,
+        b2,
+        name,
+        sensor,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """
@@ -181,8 +197,14 @@ class BandMath(object):
 
             result = (
                 (
-                    (band_data.sel(wavelength=b2) - band_data.sel(wavelength=b1))
-                    / (band_data.sel(wavelength=b2) + band_data.sel(wavelength=b1))
+                    (
+                        band_data.sel(wavelength=b2)
+                        - band_data.sel(wavelength=b1)
+                    )
+                    / (
+                        band_data.sel(wavelength=b2)
+                        + band_data.sel(wavelength=b1)
+                    )
                 )
                 .fillna(nodata)
                 .astype('float64')
@@ -214,7 +236,13 @@ class BandMath(object):
         )
 
     def avi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Advanced vegetation index.
@@ -233,7 +261,12 @@ class BandMath(object):
             red = wavelengths[sensor].red
 
         data = self.scale_and_assign(
-            data, nodata, band_variable, scale_factor, [red, nir], ['red', 'nir']
+            data,
+            nodata,
+            band_variable,
+            scale_factor,
+            [red, nir],
+            ['red', 'nir'],
         )
 
         if band_variable == 'wavelength':
@@ -243,7 +276,10 @@ class BandMath(object):
                     (
                         data.sel(wavelength='nir')
                         * (1.0 - data.sel(wavelength='red'))
-                        * (data.sel(wavelength='nir') - data.sel(wavelength='red'))
+                        * (
+                            data.sel(wavelength='nir')
+                            - data.sel(wavelength='red')
+                        )
                     )
                     ** 0.3334
                 )
@@ -281,7 +317,13 @@ class BandMath(object):
         )
 
     def evi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Enhanced vegetation index.
@@ -290,10 +332,10 @@ class BandMath(object):
             ``xarray.DataArray``
         """
 
-        l = 1.0
+        l_factor = 1.0
         c1 = 6.0
         c2 = 7.5
-        g = 2.5
+        g_factor = 2.5
 
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
@@ -319,12 +361,14 @@ class BandMath(object):
 
             result = (
                 (
-                    g
+                    g_factor
                     * (data.sel(wavelength='nir') - data.sel(wavelength='red'))
                     / (
-                        data.sel(wavelength='nir') * c1 * data.sel(wavelength='red')
+                        data.sel(wavelength='nir')
+                        * c1
+                        * data.sel(wavelength='red')
                         - c2 * data.sel(wavelength='blue')
-                        + l
+                        + l_factor
                     )
                 )
                 .fillna(nodata)
@@ -335,12 +379,12 @@ class BandMath(object):
 
             result = (
                 (
-                    g
+                    g_factor
                     * (data.sel(band='nir') - data.sel(band='red'))
                     / (
                         data.sel(band='nir') * c1 * data.sel(band='red')
                         - c2 * data.sel(band='blue')
-                        + l
+                        + l_factor
                     )
                 )
                 .fillna(nodata)
@@ -362,7 +406,13 @@ class BandMath(object):
         )
 
     def evi2_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Two-band enhanced vegetation index.
@@ -381,7 +431,12 @@ class BandMath(object):
             red = wavelengths[sensor].red
 
         data = self.scale_and_assign(
-            data, nodata, band_variable, scale_factor, [nir, red], ['nir', 'red']
+            data,
+            nodata,
+            band_variable,
+            scale_factor,
+            [nir, red],
+            ['nir', 'red'],
         )
 
         if band_variable == 'wavelength':
@@ -390,7 +445,10 @@ class BandMath(object):
                 (
                     2.5
                     * (
-                        (data.sel(wavelength='nir') - data.sel(wavelength='red'))
+                        (
+                            data.sel(wavelength='nir')
+                            - data.sel(wavelength='red')
+                        )
                         / (
                             data.sel(wavelength='nir')
                             + 1.0
@@ -409,7 +467,11 @@ class BandMath(object):
                     2.5
                     * (
                         (data.sel(band='nir') - data.sel(band='red'))
-                        / (data.sel(band='nir') + 1.0 + (2.4 * (data.sel(band='red'))))
+                        / (
+                            data.sel(band='nir')
+                            + 1.0
+                            + (2.4 * (data.sel(band='red')))
+                        )
                     )
                 )
                 .fillna(nodata)
@@ -431,7 +493,13 @@ class BandMath(object):
         )
 
     def gcvi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """green chlorophyll vegetation index.
@@ -450,11 +518,18 @@ class BandMath(object):
             green = wavelengths[sensor].green
 
         data = self.scale_and_assign(
-            data, nodata, band_variable, scale_factor, [nir, green], ['nir', 'green']
+            data,
+            nodata,
+            band_variable,
+            scale_factor,
+            [nir, green],
+            ['nir', 'green'],
         )
 
         if band_variable == 'wavelength':
-            result = (data.sel(wavelength='nir') / data.sel(wavelength='green')) - 1.0
+            result = (
+                data.sel(wavelength='nir') / data.sel(wavelength='green')
+            ) - 1.0
         else:
             result = (data.sel(band='nir') / data.sel(band='green')) - 1.0
 
@@ -474,7 +549,13 @@ class BandMath(object):
         )
 
     def nbr_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Normalized burn ratio.
@@ -504,7 +585,13 @@ class BandMath(object):
         )
 
     def ndvi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Normalized difference vegetation index.
@@ -534,7 +621,13 @@ class BandMath(object):
         )
 
     def kndvi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """kernel Normalized difference vegetation index.
@@ -593,7 +686,13 @@ class BandMath(object):
         )
 
     def wi_math(
-        self, data, sensor, wavelengths, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        sensor,
+        wavelengths,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         """Woody index.
@@ -612,7 +711,12 @@ class BandMath(object):
             red = wavelengths[sensor].red
 
         data = self.scale_and_assign(
-            data, nodata, band_variable, scale_factor, [swir1, red], ['swir1', 'red']
+            data,
+            nodata,
+            band_variable,
+            scale_factor,
+            [swir1, red],
+            ['swir1', 'red'],
         )
 
         if band_variable == 'wavelength':
@@ -866,7 +970,14 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
 
 class VegetationIndices(_PropertyMixin, BandMath):
     def norm_diff(
-        self, data, b1, b2, sensor=None, nodata=None, mask=False, scale_factor=None
+        self,
+        data,
+        b1,
+        b2,
+        sensor=None,
+        nodata=None,
+        mask=False,
+        scale_factor=None,
     ):
 
         r"""
@@ -916,7 +1027,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def avi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def avi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the advanced vegetation index
@@ -961,7 +1074,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def evi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def evi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the enhanced vegetation index
@@ -1006,7 +1121,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def evi2(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def evi2(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the two-band modified enhanced vegetation index
@@ -1054,7 +1171,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def gcvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def gcvi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the green chlorophyll vegetation index
@@ -1099,7 +1218,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def nbr(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def nbr(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the normalized burn ratio
@@ -1144,7 +1265,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def ndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def ndvi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the normalized difference vegetation index
@@ -1189,7 +1312,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def kndvi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def kndvi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
 
         r"""
         Calculates the kernel normalized difference vegetation index
@@ -1237,7 +1362,9 @@ class VegetationIndices(_PropertyMixin, BandMath):
             scale_factor=scale_factor,
         )
 
-    def wi(self, data, nodata=None, mask=False, sensor=None, scale_factor=None):
+    def wi(
+        self, data, nodata=None, mask=False, sensor=None, scale_factor=None
+    ):
         r"""
         Calculates the woody vegetation index
 
