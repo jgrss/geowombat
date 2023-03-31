@@ -349,6 +349,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Replace 1 with 5
+            >>>     res = ds.gw.replace({1: 5})
         """
         return replace(self._obj, to_replace)
 
@@ -375,6 +382,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Recode 1 with 5 within a polygon
+            >>>     res = ds.gw.recode('poly.gpkg', {1: 5})
         """
         return recode(self._obj, polygon, to_replace, num_workers=num_workers)
 
@@ -1106,10 +1120,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ``xarray.DataArray``
 
         Example:
-            >>> geowombat as gw
+            >>> import geowombat as gw
             >>>
-            >>> with gw.open('image.tif', chunks=(1, 512, 512)) as ds:
-            >>>     ds_sub = ds.gw.subset(-263529.884, 953985.314, rows=2048, cols=2048)
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     ds_sub = ds.gw.subset(
+            >>>         left=-263529.884,
+            >>>         top=953985.314,
+            >>>         rows=2048,
+            >>>         cols=2048
+            >>>     )
         """
 
         return subset(
@@ -1158,7 +1177,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``pandas.DataFrame``
 
-        Examples:
+        Example:
             >>> import geowombat as gw
             >>>
             >>> # Read a land cover image with 512x512 chunks

@@ -817,6 +817,10 @@ def to_raster(
 ):
     """Writes a ``dask`` array to a raster file.
 
+    .. note::
+
+        We advise using :func:`save` in place of this method.
+
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
         filename (str): The output file name to write to.

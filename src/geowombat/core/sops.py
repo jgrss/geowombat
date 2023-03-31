@@ -149,18 +149,20 @@ class SpatialOperations(_PropertyMixin):
         Returns:
             ``pandas.DataFrame``
 
-        Examples:
+        Example:
             >>> import geowombat as gw
             >>>
             >>> # Read a land cover image with 512x512 chunks
             >>> with gw.open('land_cover.tif', chunks=512) as src:
             >>>
-            >>>     df = gw.calc_area(src,
-            >>>                       [1, 2, 5],        # calculate the area of classes 1, 2, and 5
-            >>>                       units='km2',      # return area in kilometers squared
-            >>>                       n_workers=4,
-            >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
-            >>>                       col_chunks=1024)
+            >>>     df = gw.calc_area(
+            >>>         src,
+            >>>         [1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>         units='km2',      # return area in kilometers squared
+            >>>         n_workers=4,
+            >>>         row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>         col_chunks=1024
+            >>>     )
         """
 
         def area_func(*args):
@@ -1181,6 +1183,13 @@ class SpatialOperations(_PropertyMixin):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Replace 1 with 5
+            >>>     res = gw.replace(ds, {1: 5})
         """
 
         attrs = data.attrs.copy()
@@ -1227,6 +1236,13 @@ class SpatialOperations(_PropertyMixin):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Recode 1 with 5 within a polygon
+            >>>     res = gw.recode(ds, 'poly.gpkg', {1: 5})
         """
         dtype = data.dtype.name
         attrs = data.attrs.copy()
