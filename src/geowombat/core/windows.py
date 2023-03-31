@@ -1,17 +1,21 @@
+import typing as T
+
 from .util import n_rows_cols
 
 from rasterio.windows import Window
 
 
-def get_window_offsets(n_rows,
-                       n_cols,
-                       row_chunks,
-                       col_chunks,
-                       return_as='list',
-                       padding=None):
-
-    """
-    Gets window offset indices from image dimensions and chunk sizes
+def get_window_offsets(
+    n_rows: int,
+    n_cols: int,
+    row_chunks: int,
+    col_chunks: int,
+    return_as: T.Optional[str] = 'list',
+    padding: T.Optional[T.Sequence[float]] = None,
+) -> T.Union[
+    T.List[Window], T.List[T.Tuple[Window, Window]], T.Dict[str, Window]
+]:
+    """Gets window offset indices from image dimensions and chunk sizes.
 
     Args:
         n_rows (int): The number of rows to iterate over.
@@ -25,13 +29,13 @@ def get_window_offsets(n_rows,
             and w2 contains the padded window offsets.
 
     Returns:
-        Window information (list or dict)
+        Window information as ``list`` or ``dict``.
     """
 
     if return_as == 'list':
-        window_info = list()
+        window_info = []
     else:
-        window_info = dict()
+        window_info = {}
 
     i = 0
 
@@ -47,10 +51,14 @@ def get_window_offsets(n_rows,
 
             if (return_as == 'list') and not padding:
 
-                window_info.append(Window(col_off=col_off,
-                                          row_off=row_off,
-                                          width=width,
-                                          height=height))
+                window_info.append(
+                    Window(
+                        col_off=col_off,
+                        row_off=row_off,
+                        width=width,
+                        height=height,
+                    )
+                )
 
             elif (return_as == 'list') and padding:
 
@@ -59,24 +67,42 @@ def get_window_offsets(n_rows,
                 padded_row_off = row_off - tpad if row_off - tpad >= 0 else 0
                 padded_col_off = col_off - lpad if col_off - lpad >= 0 else 0
 
-                padded_height = n_rows_cols(padded_row_off, abs(row_off-padded_row_off)+row_chunks+bpad, n_rows)
-                padded_width = n_rows_cols(padded_col_off, abs(col_off-padded_col_off)+col_chunks+rpad, n_cols)
+                padded_height = n_rows_cols(
+                    padded_row_off,
+                    abs(row_off - padded_row_off) + row_chunks + bpad,
+                    n_rows,
+                )
+                padded_width = n_rows_cols(
+                    padded_col_off,
+                    abs(col_off - padded_col_off) + col_chunks + rpad,
+                    n_cols,
+                )
 
-                window_info.append((Window(col_off=col_off,
-                                           row_off=row_off,
-                                           width=width,
-                                           height=height),
-                                    Window(col_off=padded_col_off,
-                                           row_off=padded_row_off,
-                                           width=padded_width,
-                                           height=padded_height)))
+                window_info.append(
+                    (
+                        Window(
+                            col_off=col_off,
+                            row_off=row_off,
+                            width=width,
+                            height=height,
+                        ),
+                        Window(
+                            col_off=padded_col_off,
+                            row_off=padded_row_off,
+                            width=padded_width,
+                            height=padded_height,
+                        ),
+                    )
+                )
 
             else:
 
-                window_info['{:d}{:d}'.format(i, j)] = Window(col_off=col_off,
-                                                              row_off=row_off,
-                                                              width=width,
-                                                              height=height)
+                window_info['{:d}{:d}'.format(i, j)] = Window(
+                    col_off=col_off,
+                    row_off=row_off,
+                    width=width,
+                    height=height,
+                )
 
             j += 1
 
