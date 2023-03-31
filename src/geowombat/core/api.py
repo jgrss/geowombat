@@ -1,12 +1,12 @@
 # https://github.com/pydata/xarray/issues/2560
 try:
     import netCDF4
-except:
+except ImportError:
     pass
 
 try:
     import h5netcdf
-except:
+except ImportError:
     pass
 
 import warnings
@@ -80,17 +80,23 @@ def _get_attrs(src, **kwargs):
     left_ = src.bounds.left + (kwargs['window'].col_off * src.res[0]) + cellxh
     top_ = src.bounds.top - (kwargs['window'].row_off * src.res[1]) - cellyh
 
-    xcoords = np.arange(left_, left_ + kwargs['window'].width * src.res[0], src.res[0])
-    ycoords = np.arange(top_, top_ - kwargs['window'].height * src.res[1], -src.res[1])
+    xcoords = np.arange(
+        left_, left_ + kwargs['window'].width * src.res[0], src.res[0]
+    )
+    ycoords = np.arange(
+        top_, top_ - kwargs['window'].height * src.res[1], -src.res[1]
+    )
 
     attrs = {}
-    attrs['transform'] = src.gw.transform if hasattr(src, 'gw') else src.transform
+    attrs['transform'] = (
+        src.gw.transform if hasattr(src, 'gw') else src.transform
+    )
 
     if hasattr(src, 'crs'):
         src_crs = check_src_crs(src)
         try:
             attrs['crs'] = src_crs.to_proj4()
-        except:
+        except Exception:
             attrs['crs'] = src_crs.to_string()
 
     if hasattr(src, 'res'):
@@ -101,7 +107,8 @@ def _get_attrs(src, **kwargs):
 
     if hasattr(src, 'nodatavals'):
         attrs['nodatavals'] = tuple(
-            np.nan if nodataval is None else nodataval for nodataval in src.nodatavals
+            np.nan if nodataval is None else nodataval
+            for nodataval in src.nodatavals
         )
 
     if hasattr(src, 'offsets'):
@@ -173,10 +180,14 @@ def read(
 
     if isinstance(filename, str):
         with rio.open(filename) as src:
-            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
+            src_transform = (
+                src.gw.transform if hasattr(src, 'gw') else src.transform
+            )
 
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
+                kwargs['window'] = from_bounds(
+                    *bounds, transform=src_transform
+                )
 
             ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
@@ -188,7 +199,9 @@ def read(
             band_names = np.arange(1, data.shape[0] + 1)
 
         if len(band_names) != data.shape[0]:
-            logger.exception('  The band names do not match the output dimensions.')
+            logger.exception(
+                '  The band names do not match the output dimensions.'
+            )
             raise ValueError
 
         data = xr.DataArray(
@@ -204,9 +217,13 @@ def read(
 
     else:
         with rio.open(filename[0]) as src:
-            src_transform = src.gw.transform if hasattr(src, 'gw') else src.transform
+            src_transform = (
+                src.gw.transform if hasattr(src, 'gw') else src.transform
+            )
             if bounds and ('window' not in kwargs):
-                kwargs['window'] = from_bounds(*bounds, transform=src_transform)
+                kwargs['window'] = from_bounds(
+                    *bounds, transform=src_transform
+                )
 
             ycoords, xcoords, attrs = _get_attrs(src, **kwargs)
 
@@ -221,14 +238,18 @@ def read(
             band_names = np.arange(1, data.shape[-3] + 1)
 
         if len(band_names) != data.shape[-3]:
-            logger.exception('  The band names do not match the output dimensions.')
+            logger.exception(
+                '  The band names do not match the output dimensions.'
+            )
             raise ValueError
 
         if not time_names:
             time_names = np.arange(1, len(filename) + 1)
 
         if len(time_names) != data.shape[-4]:
-            logger.exception('  The time names do not match the output dimensions.')
+            logger.exception(
+                '  The time names do not match the output dimensions.'
+            )
             raise ValueError
 
         data = xr.DataArray(
@@ -271,7 +292,7 @@ class open(object):
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are
             ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss',
             'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
-        persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``DataArray`` attributes.
+        persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``xarray.DataArray`` attributes.
             By default, ``persist_filenames=False`` to avoid storing large file lists.
         netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.
         mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.
@@ -446,9 +467,13 @@ class open(object):
         band_chunks = -1
         if 'chunks' in kwargs:
             if kwargs['chunks'] is not None:
-                kwargs['chunks'] = ch.check_chunktype(kwargs['chunks'], output='3d')
+                kwargs['chunks'] = ch.check_chunktype(
+                    kwargs['chunks'], output='3d'
+                )
 
-        if bounds or ('window' in kwargs and isinstance(kwargs['window'], Window)):
+        if bounds or (
+            'window' in kwargs and isinstance(kwargs['window'], Window)
+        ):
             if 'chunks' not in kwargs:
                 if isinstance(filename, list):
                     with rio.open(filename[0]) as src_:
@@ -551,14 +576,20 @@ class open(object):
                     )
 
                 else:
-                    if 'chunks' in kwargs and not isinstance(kwargs['chunks'], dict):
-                        logger.exception('  The chunks should be a dictionary.')
+                    if 'chunks' in kwargs and not isinstance(
+                        kwargs['chunks'], dict
+                    ):
+                        logger.exception(
+                            '  The chunks should be a dictionary.'
+                        )
                         raise TypeError
 
                     with xr.open_dataset(filename, **kwargs) as src:
                         self.data = src.to_array(dim='band')
                     # Ensure the filename attribute gets updated as the NetCDF file
-                    self.data = self.data.assign_attrs(**{'filename': str(filename)})
+                    self.data = self.data.assign_attrs(
+                        **{'filename': str(filename)}
+                    )
                     self.__filenames = [str(filename)]
                     # Order bands from the NetCDF dataset
                     if band_names is not None:
@@ -577,7 +608,9 @@ class open(object):
                             else:
                                 band_names_old.append(bname_old)
                         self.data = self.data.sel(band=band_names_old)
-                        self.data = self.data.assign_coords(**{'band': band_names_new})
+                        self.data = self.data.assign_coords(
+                            **{'band': band_names_new}
+                        )
 
         self.data = self.data.assign_attrs(
             {
@@ -586,7 +619,9 @@ class open(object):
             }
         )
         if persist_filenames:
-            self.data = self.data.assign_attrs(**{'_filenames': self.__filenames})
+            self.data = self.data.assign_attrs(
+                **{'_filenames': self.__filenames}
+            )
 
         if scale_data:
             self.data = self.data.gw.set_nodata(
@@ -663,12 +698,12 @@ def load(
     src=None,
     scheduler='ray',
 ):
-    """Loads data into memory using ``xarray.open_mfdataset`` and ``ray``. This
-    function does not check data alignments and CRSs. It assumes each image in
-    ``image_list`` has the same y and x dimensions and that the coordinates
-    align.
+    """Loads data into memory using :func:`xarray.open_mfdataset` and ``ray``.
+    This function does not check data alignments and CRSs. It assumes each
+    image in ``image_list`` has the same y and x dimensions and that the
+    coordinates align.
 
-    The `load` function cannot be used if `dataclasses` was pip installed.
+    The ``load`` function cannot be used if ``dataclasses`` was pip installed.
 
     Args:
         image_list (list): The list of image file paths.
@@ -683,7 +718,7 @@ def load(
         scheduler (Optional[str]): The distributed scheduler. Currently not implemented.
 
     Returns:
-        ``list``, ``ndarray``:
+        ``list``, ``numpy.ndarray``:
             Datetime list, array of (time x bands x rows x columns)
 
     Example:
@@ -714,7 +749,9 @@ def load(
     import ray
     from ray.util.dask import ray_dask_get
 
-    netcdf_prepend = [True for fn in image_list if str(fn).startswith('netcdf:')]
+    netcdf_prepend = [
+        True for fn in image_list if str(fn).startswith('netcdf:')
+    ]
 
     if any(netcdf_prepend):
         raise NameError(
@@ -733,8 +770,12 @@ def load(
         with open(
             image_list[0],
             time_names=time_names[0],
-            band_names=band_names if not str(image_list[0]).endswith('.nc') else None,
-            netcdf_vars=band_names if str(image_list[0]).endswith('.nc') else None,
+            band_names=band_names
+            if not str(image_list[0]).endswith('.nc')
+            else None,
+            netcdf_vars=band_names
+            if str(image_list[0]).endswith('.nc')
+            else None,
             chunks=chunks,
         ) as src:
             pass
@@ -746,7 +787,12 @@ def load(
     xcoords = src.x
 
     if data_slice is None:
-        data_slice = (slice(0, None), slice(0, None), slice(0, None), slice(0, None))
+        data_slice = (
+            slice(0, None),
+            slice(0, None),
+            slice(0, None),
+            slice(0, None),
+        )
 
     def expand_time(dataset):
         """``open_mfdataset`` preprocess function."""
@@ -766,7 +812,9 @@ def load(
         )
 
         # Scale from [0-10000] -> [0,1]
-        darray = xr.where(darray == nodata, 0, darray * scale_factor).astype('float64')
+        darray = xr.where(darray == nodata, 0, darray * scale_factor).astype(
+            'float64'
+        )
 
         return (
             darray.where(np.isfinite(darray))
@@ -817,28 +865,28 @@ class _ImportGPU(object):
         import jax.numpy as jnp
 
         JAX_INSTALLED = True
-    except:
+    except ImportError:
         JAX_INSTALLED = False
 
     try:
         import torch
 
         PYTORCH_INSTALLED = True
-    except:
+    except ImportError:
         PYTORCH_INSTALLED = False
 
     try:
         import tensorflow as tf
 
         TENSORFLOW_INSTALLED = True
-    except:
+    except ImportError:
         TENSORFLOW_INSTALLED = False
 
     try:
         from tensorflow import keras
 
         KERAS_INSTALLED = True
-    except:
+    except ImportError:
         KERAS_INSTALLED = False
 
 
@@ -895,7 +943,9 @@ class series(BaseSeries):
             logger.exception('PyTorch must be installed.')
             raise ImportError('PyTorch must be installed.')
 
-        if not imports_.TENSORFLOW_INSTALLED and (transfer_lib == 'tensorflow'):
+        if not imports_.TENSORFLOW_INSTALLED and (
+            transfer_lib == 'tensorflow'
+        ):
             logger.exception('Tensorflow must be installed.')
             raise ImportError('Tensorflow must be installed.')
 
@@ -1118,7 +1168,11 @@ class series(BaseSeries):
 
         tqdm_obj = tqdm if monitor_progress else _tqdm
 
-        if isinstance(func, str) or isinstance(func, list) or isinstance(func, tuple):
+        if (
+            isinstance(func, str)
+            or isinstance(func, list)
+            or isinstance(func, tuple)
+        ):
             if isinstance(bands, list) or isinstance(bands, tuple):
                 logger.exception(
                     'Only single-band images can be used with built-in functions.'
@@ -1158,13 +1212,17 @@ class series(BaseSeries):
                     data_gen = (
                         (
                             w,
-                            self.read(bands, window=w[1], gain=gain, offset=offset),
+                            self.read(
+                                bands, window=w[1], gain=gain, offset=offset
+                            ),
                             self.band_dict,
                         )
                         if self.padding
                         else (
                             w,
-                            self.read(bands, window=w, gain=gain, offset=offset),
+                            self.read(
+                                bands, window=w, gain=gain, offset=offset
+                            ),
                             self.band_dict,
                         )
                         for w in self.windows_
@@ -1208,7 +1266,9 @@ class series(BaseSeries):
                 )
 
             # Group duplicate dates
-            res, image_dates = self.group_dates(res, self.time_names, self.band_names)
+            res, image_dates = self.group_dates(
+                res, self.time_names, self.band_names
+            )
 
             return w, res, image_dates
 
