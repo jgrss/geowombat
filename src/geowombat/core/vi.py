@@ -763,7 +763,6 @@ def linear_transform(
 class TasseledCapLookup(object):
     @staticmethod
     def get_coefficients(wavelengths, sensor):
-
         lookup_dict = dict(
             aster=np.array(
                 [
@@ -883,16 +882,23 @@ class TasseledCapLookup(object):
 
 
 class TasseledCap(_PropertyMixin, TasseledCapLookup):
-    def tasseled_cap(self, data, nodata=None, sensor=None, scale_factor=None):
-
-        r"""
-        Applies a tasseled cap transformation
+    def tasseled_cap(
+        self,
+        data: xr.DataArray,
+        nodata: T.Union[float, int] = None,
+        sensor: str = None,
+        scale_factor: float = None,
+    ) -> xr.DataArray:
+        r"""Applies a tasseled cap transformation
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to process.
-            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``, the 'no data' value is taken from the ``DataArray`` attributes.
-            sensor (Optional[str]): The data's sensor. If ``None``, the band names should reflect the index being calculated.
-            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``, the scale value is taken from the ``DataArray`` attributes.
+            nodata (Optional[int or float]): A 'no data' value to fill NAs with. If ``None``,
+                the 'no data' value is taken from the ``xarray.DataArray`` attributes.
+            sensor (Optional[str]): The data's sensor. If ``None``, the band names should
+                reflect the index being calculated.
+            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,
+                the scale value is taken from the ``xarray.DataArray`` attributes.
 
         Examples:
             >>> import geowombat as gw
@@ -930,7 +936,6 @@ class TasseledCap(_PropertyMixin, TasseledCapLookup):
             RapidEye:
                 See :cite:`arnett_etal_2014`
         """
-
         sensor = self.check_sensor(data, sensor)
 
         if nodata is None:
