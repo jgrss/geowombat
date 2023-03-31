@@ -16,9 +16,7 @@ for section in config_parser.sections():
 
 
 def _update_config(config_parser, config_dict):
-
     for section in config_parser.sections():
-
         for k, v in config_parser[section].items():
 
             if v in ['True', 'False']:
@@ -30,7 +28,7 @@ def _update_config(config_parser, config_dict):
 
                 try:
                     config_dict[k] = ast.literal_eval(v)
-                except ValueError:
+                except (SyntaxError, ValueError):
                     config_dict[k] = v
 
     return config_dict
