@@ -41,9 +41,6 @@ RUN pip install -U --no-cache-dir "setuptools<=58.*" \
 # install VS Code (code-server)
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-# install VS Code extensions
-RUN code-server    --install-extension ms-python.python \
-    --install-extension HoangKimLai.ipython
 
 # install geowombat or a branch using --branch option
 RUN git clone https://github.com/jgrss/geowombat.git #--branch jgrss/features_citests
@@ -72,6 +69,10 @@ RUN  echo '{ \
     } \
     ] \
     }'> ./geowombat/.vscode/launch.json
+
+# install VS Code extensions
+RUN code-server    --install-extension ms-python.python \
+    --install-extension HoangKimLai.ipython
 
 # start from bash command line
 CMD /usr/bin/bash  

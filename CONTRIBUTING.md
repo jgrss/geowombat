@@ -64,7 +64,13 @@ Prerequisites
 - [Docker VS Code Extension](https://code.visualstudio.com/docs/containers/overview)
 - [Docker Desktop](https://docs.docker.com/desktop/)
 
-
+1. Build `geowombat/dockerfiles/gw_docker_debug` by right clicking and hit `Build Image...`
+    - This will take a long time the first time only
+    - Give the image a name like `gw_debug`, hit Enter
+2. Click on dock extension tab on left panel of vscode
+3. Under Images click on `gw_debug` right click on `latest`, hit `Run Interactive`
+4. Under Individual Containers, right click on your running `gw_debug` instance, hit `Attach Visual Studio Code`
+5. Once opened make sure the `python` and `ipython` vscode extensions are installed in your attached vscode server
 
 
 ## Create a Pull Request for the new feature or fix
