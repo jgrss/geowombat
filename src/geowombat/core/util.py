@@ -71,20 +71,15 @@ def parse_filename_dates(
     Returns:
         ``list``
     """
-
     date_filenames = []
-
     for fn in filenames:
-
-        d_name, f_name = os.path.split(fn)
-        f_base, f_ext = os.path.splitext(f_name)
+        __, f_name = os.path.split(fn)
+        f_base, __ = os.path.splitext(f_name)
 
         dt = None
 
         if DATEPARSER_INSTALLED:
-
             try:
-
                 __, dt = list(
                     zip(
                         *search_dates(
@@ -109,7 +104,7 @@ def parse_filename_dates(
     return date_filenames
 
 
-def parse_wildcard(string):
+def parse_wildcard(string: str) -> T.Sequence:
 
     """Parses a search wildcard from a string.
 
@@ -141,16 +136,16 @@ def parse_wildcard(string):
 
 
 def sort_images_by_date(
-    image_path,
-    image_wildcard,
-    date_pos=None,
-    date_start=None,
-    date_end=None,
-    split_by='_',
-    date_format='%Y%m%d',
-    file_list=None,
-    prepend_str=None,
-):
+    image_path: Path,
+    image_wildcard: str,
+    date_pos: int = 0,
+    date_start: int = 0,
+    date_end: int = 8,
+    split_by: str = '_',
+    date_format: str = '%Y%m%d',
+    file_list: T.Optional[T.Sequence[Path]] = None,
+    prepend_str: T.Optional[str] = None,
+) -> OrderedDict:
     """Sorts images by date.
 
     Args:
@@ -160,7 +155,7 @@ def sort_images_by_date(
         date_start (int): The date starting position in the split.
         date_end (int): The date ending position in the split.
         split_by (Optional[str]): How to split the file name.
-        date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
+        date_format (Optional[str]): The date format for :func:`datetime.datetime.strptime`.
         file_list (Optional[list of Paths]): A file list of names to sort. Overrides ``image_path``.
         prepend_str (Optional[str]): A string to prepend to each filename.
 
@@ -203,7 +198,6 @@ def sort_images_by_date(
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
-
     """Projects coordinates to a new CRS.
 
     Args:
@@ -276,15 +270,15 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
         )
 
 
-def get_geometry_info(geometry, res):
+def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     """Gets information from a Shapely geometry object.
 
     Args:
-        geometry (object): A `shapely.geometry` object.
+        geometry (object): A ``shapely.geometry`` object.
         res (tuple): The cell resolution for the affine transform.
 
     Returns:
-        Geometry information (namedtuple)
+        Geometry information as ``namedtuple``.
     """
     GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
