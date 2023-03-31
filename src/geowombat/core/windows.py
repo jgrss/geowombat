@@ -40,17 +40,14 @@ def get_window_offsets(
     i = 0
 
     for row_off in range(0, n_rows, row_chunks):
-
         height = n_rows_cols(row_off, row_chunks, n_rows)
 
         j = 0
 
         for col_off in range(0, n_cols, col_chunks):
-
             width = n_rows_cols(col_off, col_chunks, n_cols)
 
             if (return_as == 'list') and not padding:
-
                 window_info.append(
                     Window(
                         col_off=col_off,
@@ -105,7 +102,6 @@ def get_window_offsets(
                 )
 
             j += 1
-
         i += 1
 
     return window_info
