@@ -1,24 +1,24 @@
-import multiprocessing as multi
 import concurrent.futures
+import multiprocessing as multi
+
+import rasterio as rio
+import xarray as xr
+from tqdm import tqdm, trange
 
 from .base import _executor_dummy
 from .windows import get_window_offsets
 
-import rasterio as rio
-import xarray as xr
-from tqdm import trange, tqdm
-
-
-_EXEC_DICT = {'mpool': multi.Pool,
-              'ray': None,
-              'processes': concurrent.futures.ProcessPoolExecutor,
-              'threads': concurrent.futures.ThreadPoolExecutor}
+_EXEC_DICT = {
+    'mpool': multi.Pool,
+    'ray': None,
+    'processes': concurrent.futures.ProcessPoolExecutor,
+    'threads': concurrent.futures.ThreadPoolExecutor,
+}
 
 
 class ParallelTask(object):
-
-    """
-    A class for parallel tasks over a DataArray with returned results for each chunk
+    """A class for parallel tasks over a ``xarray.DataArray`` with returned
+    results for each chunk.
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to process.
@@ -66,12 +66,17 @@ class ParallelTask(object):
         >>>
         >>> @ray.remote
         >>> def user_func_ray(data_block_id, data_slice, window_id, num_workers):
-        >>>     return data_block_id[data_slice].data.sum().compute(scheduler='threads', num_workers=num_workers)
+        >>>     return (
+        >>>         data_block_id[data_slice].data.sum()
+        >>>         .compute(scheduler='threads', num_workers=num_workers)
+        >>>     )
         >>>
         >>> ray.init(num_cpus=8)
         >>>
         >>> with gw.open('image.tif', chunks=512) as src:
-        >>>     pt = ParallelTask(src, row_chunks=1024, col_chunks=1024, scheduler='ray', n_workers=8)
+        >>>     pt = ParallelTask(
+        >>>         src, row_chunks=1024, col_chunks=1024, scheduler='ray', n_workers=8
+        >>>     )
         >>>     res = ray.get(pt.map(user_func_ray, 4))
         >>>
         >>> ray.shutdown()
@@ -82,31 +87,37 @@ class ParallelTask(object):
         >>>
         >>> from dask.distributed import LocalCluster
         >>>
-        >>> with LocalCluster(n_workers=4,
-        >>>                   threads_per_worker=2,
-        >>>                   scheduler_port=0,
-        >>>                   processes=False,
-        >>>                   memory_limit='4GB') as cluster:
+        >>> with LocalCluster(
+        >>>     n_workers=4,
+        >>>     threads_per_worker=2,
+        >>>     scheduler_port=0,
+        >>>     processes=False,
+        >>>     memory_limit='4GB'
+        >>> ) as cluster:
         >>>
         >>>     with gw.open('image.tif') as src:
         >>>         pt = ParallelTask(src, scheduler='threads', n_workers=4, n_chunks=50)
         >>>         res = pt.map(user_func_threads, 2)
         >>>
         >>> # Map over multiple rasters
-        >>> for pt in ParallelTask(['image1.tif', 'image2.tif'], scheduler='threads', n_workers=4, n_chunks=500):
+        >>> for pt in ParallelTask(
+        >>>     ['image1.tif', 'image2.tif'], scheduler='threads', n_workers=4, n_chunks=500
+        >>> ):
         >>>     res = pt.map(user_func_threads, 2)
     """
 
-    def __init__(self,
-                 data=None,
-                 chunks=None,
-                 row_chunks=None,
-                 col_chunks=None,
-                 padding=None,
-                 scheduler='threads',
-                 get_ray=False,
-                 n_workers=1,
-                 n_chunks=None):
+    def __init__(
+        self,
+        data=None,
+        chunks=None,
+        row_chunks=None,
+        col_chunks=None,
+        padding=None,
+        scheduler='threads',
+        get_ray=False,
+        n_workers=1,
+        n_chunks=None,
+    ):
 
         self.chunks = 512 if not isinstance(chunks, int) else chunks
 
@@ -163,31 +174,65 @@ class ParallelTask(object):
 
     def _setup(self):
 
-        default_rchunks = self.data.block_window(1, 0, 0).height if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.row_chunks
-        default_cchunks = self.data.block_window(1, 0, 0).width if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.col_chunks
+        default_rchunks = (
+            self.data.block_window(1, 0, 0).height
+            if isinstance(self.data, rio.io.DatasetReader)
+            else self.data.gw.row_chunks
+        )
+        default_cchunks = (
+            self.data.block_window(1, 0, 0).width
+            if isinstance(self.data, rio.io.DatasetReader)
+            else self.data.gw.col_chunks
+        )
 
-        rchunksize = self.row_chunks if isinstance(self.row_chunks, int) else default_rchunks
-        cchunksize = self.col_chunks if isinstance(self.col_chunks, int) else default_cchunks
+        rchunksize = (
+            self.row_chunks
+            if isinstance(self.row_chunks, int)
+            else default_rchunks
+        )
+        cchunksize = (
+            self.col_chunks
+            if isinstance(self.col_chunks, int)
+            else default_cchunks
+        )
 
-        self.windows = get_window_offsets(self.data.height if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.nrows,
-                                          self.data.width if isinstance(self.data, rio.io.DatasetReader) else self.data.gw.ncols,
-                                          rchunksize,
-                                          cchunksize,
-                                          return_as='list',
-                                          padding=self.padding)
+        self.windows = get_window_offsets(
+            self.data.height
+            if isinstance(self.data, rio.io.DatasetReader)
+            else self.data.gw.nrows,
+            self.data.width
+            if isinstance(self.data, rio.io.DatasetReader)
+            else self.data.gw.ncols,
+            rchunksize,
+            cchunksize,
+            return_as='list',
+            padding=self.padding,
+        )
 
         # Convert windows into slices
         if len(self.data.shape) == 2:
-            self.slices = [(slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width)) for w in self.windows]
+            self.slices = [
+                (
+                    slice(w.row_off, w.row_off + w.height),
+                    slice(w.col_off, w.col_off + w.width),
+                )
+                for w in self.windows
+            ]
         else:
-            self.slices = [tuple([slice(0, None)] * (len(self.data.shape)-2)) + (slice(w.row_off, w.row_off+w.height), slice(w.col_off, w.col_off+w.width)) for w in self.windows]
+            self.slices = [
+                tuple([slice(0, None)] * (len(self.data.shape) - 2))
+                + (
+                    slice(w.row_off, w.row_off + w.height),
+                    slice(w.col_off, w.col_off + w.width),
+                )
+                for w in self.windows
+            ]
 
         self.n_windows = len(self.windows)
 
     def map(self, func, *args, **kwargs):
 
-        """
-        Maps a function over a DataArray
+        """Maps a function over a DataArray.
 
         Args:
             func (func): The function to apply to the ``data`` chunks.
@@ -319,24 +364,65 @@ class ParallelTask(object):
 
                 if self.padding:
 
-                    window_slice = self.windows[wchunk:wchunk+self.n_chunks]
+                    window_slice = self.windows[
+                        wchunk : wchunk + self.n_chunks
+                    ]
 
                     # Read the padded window
                     if len(self.data.shape) == 2:
-                        data_gen = ((self.data[w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                        data_gen = (
+                            (
+                                self.data[
+                                    w[1].row_off : w[1].row_off + w[1].height,
+                                    w[1].col_off : w[1].col_off + w[1].width,
+                                ],
+                                widx + wchunk,
+                                *args,
+                            )
+                            for widx, w in enumerate(window_slice)
+                        )
                     elif len(self.data.shape) == 3:
-                        data_gen = ((self.data[:, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                        data_gen = (
+                            (
+                                self.data[
+                                    :,
+                                    w[1].row_off : w[1].row_off + w[1].height,
+                                    w[1].col_off : w[1].col_off + w[1].width,
+                                ],
+                                widx + wchunk,
+                                *args,
+                            )
+                            for widx, w in enumerate(window_slice)
+                        )
                     else:
-                        data_gen = ((self.data[:, :, w[1].row_off:w[1].row_off + w[1].height, w[1].col_off:w[1].col_off + w[1].width], widx+wchunk, *args) for widx, w in enumerate(window_slice))
+                        data_gen = (
+                            (
+                                self.data[
+                                    :,
+                                    :,
+                                    w[1].row_off : w[1].row_off + w[1].height,
+                                    w[1].col_off : w[1].col_off + w[1].width,
+                                ],
+                                widx + wchunk,
+                                *args,
+                            )
+                            for widx, w in enumerate(window_slice)
+                        )
 
                 else:
 
-                    window_slice = self.slices[wchunk:wchunk + self.n_chunks]
+                    window_slice = self.slices[wchunk : wchunk + self.n_chunks]
 
                     if self.scheduler == 'ray':
-                        data_gen = ((data_id, slice_, widx + wchunk, *args) for widx, slice_ in enumerate(window_slice))
+                        data_gen = (
+                            (data_id, slice_, widx + wchunk, *args)
+                            for widx, slice_ in enumerate(window_slice)
+                        )
                     else:
-                        data_gen = ((self.data[slice_], widx+wchunk, *args) for widx, slice_ in enumerate(window_slice))
+                        data_gen = (
+                            (self.data[slice_], widx + wchunk, *args)
+                            for widx, slice_ in enumerate(window_slice)
+                        )
 
                 if (self.n_workers == 1) and (self.scheduler != 'ray'):
 
@@ -354,15 +440,26 @@ class ParallelTask(object):
 
                         if isinstance(func, ray.util.actor_pool.ActorPool):
 
-                            for result in tqdm(func.map(lambda a, v: a.exec_task.remote(*v), data_gen), total=len(window_slice)):
+                            for result in tqdm(
+                                func.map(
+                                    lambda a, v: a.exec_task.remote(*v),
+                                    data_gen,
+                                ),
+                                total=len(window_slice),
+                            ):
                                 results.append(result)
 
                         else:
 
                             if isinstance(func, ray.actor.ActorHandle):
-                                futures = [func.exec_task.remote(*dargs) for dargs in data_gen]
+                                futures = [
+                                    func.exec_task.remote(*dargs)
+                                    for dargs in data_gen
+                                ]
                             else:
-                                futures = [func.remote(*dargs) for dargs in data_gen]
+                                futures = [
+                                    func.remote(*dargs) for dargs in data_gen
+                                ]
 
                             if self.get_ray:
 

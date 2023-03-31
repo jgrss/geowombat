@@ -1,34 +1,37 @@
-from dataclasses import dataclass as _dataclass
 import enum
 import typing as T
-from pathlib import Path as _Path
 import warnings
+from dataclasses import dataclass as _dataclass
+from pathlib import Path as _Path
 
-from . import geoxarray
-from ..config import config
-from ..radiometry import QABits as _QABits
-
+import dask.array as da
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
-from rasterio.enums import Resampling as _Resampling
-import dask.array as da
-import xarray as xr
 import pyproj
+import xarray as xr
+from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
 
+from ..config import config
+from ..radiometry import QABits as _QABits
+from . import geoxarray
+
 try:
-    from pystac_client import Client as _Client
-    import pystac.errors as pystac_errors
-    from pystac import Catalog as _Catalog, ItemCollection as _ItemCollection
-    from pystac.extensions.eo import EOExtension as _EOExtension
-    import stackstac
     import planetary_computer as pc
+    import pystac.errors as pystac_errors
+    import stackstac
+    import wget
+    from pystac import Catalog as _Catalog
+    from pystac import ItemCollection as _ItemCollection
+    from pystac.extensions.eo import EOExtension as _EOExtension
+    from pystac_client import Client as _Client
     from rich.console import Console as _Console
     from rich.table import Table as _Table
-    import wget
-except:
-    warnings.warn("Install geowombat with 'pip install .[stac]' to use the STAC API.")
+except ImportError:
+    warnings.warn(
+        "Install geowombat with 'pip install .[stac]' to use the STAC API."
+    )
 
 
 class STACNames(enum.Enum):
@@ -53,7 +56,9 @@ class STACCatalogs:
     """STAC catalogs."""
 
     element84 = 'https://earth-search.aws.element84.com/v0'
-    google = 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
+    google = (
+        'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
+    )
     microsoft = 'https://planetarycomputer.microsoft.com/api/stac/v1'
 
 
@@ -61,7 +66,9 @@ class STACCatalogs:
 class _STACScaling:
     """STAC scaling coefficients."""
 
-    landsat_c2_l2 = {STACNames.microsoft.value: {'gain': 0.0000275, 'offset': -0.2}}
+    landsat_c2_l2 = {
+        STACNames.microsoft.value: {'gain': 0.0000275, 'offset': -0.2}
+    }
 
 
 @_dataclass
@@ -100,7 +107,9 @@ class _STACCatalogOpeners:
     microsoft = _Client.open
 
 
-def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataArray:
+def merge_stac(
+    data: xr.DataArray, *other: T.Sequence[xr.DataArray]
+) -> xr.DataArray:
     """Merges DataArrays by time.
 
     Args:
@@ -121,7 +130,10 @@ def merge_stac(data: xr.DataArray, *other: T.Sequence[xr.DataArray]) -> xr.DataA
         da.concatenate(
             (
                 data.transpose('time', 'band', 'y', 'x').data,
-                *(darray.transpose('time', 'band', 'y', 'x').data for darray in other),
+                *(
+                    darray.transpose('time', 'band', 'y', 'x').data
+                    for darray in other
+                ),
             ),
             axis=0,
         ),
@@ -186,7 +198,7 @@ def open_stac(
         bands (sequence): The bands to open.
         chunksize (int): The dask chunk size.
         mask_items (sequence): The items to mask.
-        bounds_query (Optional[str]): A query to select bounds from the ``GeoDataFrame``.
+        bounds_query (Optional[str]): A query to select bounds from the ``geopandas.GeoDataFrame``.
         mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
@@ -202,9 +214,9 @@ def open_stac(
         tqdm_extra_position (Optional[int]): The position of the extra progress bar.
 
     Returns:
-        xarray.DataArray
+        ``xarray.DataArray``
 
-    Example:
+    Examples:
         >>> from geowombat.core.stac import open_stac, merge_stac
         >>>
         >>> data_l, df_l = open_stac(
@@ -262,11 +274,13 @@ def open_stac(
 
     stac_catalog_url = getattr(STACCatalogs, stac_catalog)
     # Open the STAC catalog
-    catalog = getattr(_STACCatalogOpeners, getattr(STACNames, stac_catalog).value)(
-        stac_catalog_url
-    )
+    catalog = getattr(
+        _STACCatalogOpeners, getattr(STACNames, stac_catalog).value
+    )(stac_catalog_url)
     catalog_collections = [
-        getattr(STACCollections, collection)[getattr(STACNames, stac_catalog).value]
+        getattr(STACCollections, collection)[
+            getattr(STACNames, stac_catalog).value
+        ]
     ]
     # Search the STAC
     search = catalog.search(
@@ -304,7 +318,9 @@ def open_stac(
 
         # Download metadata and coefficient files
         if extra_assets is not None:
-            for item in _tqdm(items, desc='Extra assets', position=tqdm_item_position):
+            for item in _tqdm(
+                items, desc='Extra assets', position=tqdm_item_position
+            ):
                 df_dict = {'id': item.id}
                 for extra in _tqdm(
                     extra_assets,
@@ -314,7 +330,8 @@ def open_stac(
                 ):
                     url = item.assets[extra].to_dict()['href']
                     out_name = (
-                        _Path(out_path) / f"{item.id}_{_Path(url.split('?')[0]).name}"
+                        _Path(out_path)
+                        / f"{item.id}_{_Path(url.split('?')[0]).name}"
                     )
                     df_dict[extra] = str(out_name)
                     if not out_name.is_file():
@@ -364,9 +381,9 @@ def open_stac(
             # TODO: get qa_pixel name for different sensors
             qa = data.sel(band='qa_pixel').astype('uint16')
             mask = qa & bitmask
-            data = data.sel(band=[band for band in bands if band != 'qa_pixel']).where(
-                mask == 0
-            )
+            data = data.sel(
+                band=[band for band in bands if band != 'qa_pixel']
+            ).where(mask == 0)
 
         if hasattr(_STACScaling, collection):
             scaling = getattr(_STACScaling, collection)[

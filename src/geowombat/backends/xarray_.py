@@ -1,31 +1,31 @@
-import os
-from pathlib import Path
-import logging
 import contextlib
+import logging
+import os
 import typing as T
+from pathlib import Path
 
-from ..handler import add_handler
-from ..core.windows import get_window_offsets
-from ..core.util import parse_filename_dates
-from ..config import config
-from .rasterio_ import get_ref_image_meta
-from .rasterio_ import warp
-from .rasterio_ import warp_images
-from .rasterio_ import get_file_bounds
-from .rasterio_ import window_to_bounds
-from .rasterio_ import unpack_bounding_box
-from .rasterio_ import unpack_window
-from .rasterio_ import transform_crs as rio_transform_crs
-from .xarray_rasterio_ import open_rasterio
-
-import numpy as np
-from rasterio import open as rio_open
-from rasterio.windows import Window
-from rasterio.coords import BoundingBox
-from dask.delayed import Delayed
 import dask.array as da
+import numpy as np
 import xarray as xr
+from dask.delayed import Delayed
+from rasterio import open as rio_open
+from rasterio.coords import BoundingBox
+from rasterio.windows import Window
 
+from ..config import config
+from ..core.util import parse_filename_dates
+from ..core.windows import get_window_offsets
+from ..handler import add_handler
+from .rasterio_ import get_file_bounds, get_ref_image_meta
+from .rasterio_ import transform_crs as rio_transform_crs
+from .rasterio_ import (
+    unpack_bounding_box,
+    unpack_window,
+    warp,
+    warp_images,
+    window_to_bounds,
+)
+from .xarray_rasterio_ import open_rasterio
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -74,7 +74,9 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
         ref_kwargs = _update_kwarg(config['nodata'], ref_kwargs, 'nodata')
     # Check if there is a reference image
     if config['ref_image']:
-        if isinstance(config['ref_image'], str) and os.path.isfile(config['ref_image']):
+        if isinstance(config['ref_image'], str) and os.path.isfile(
+            config['ref_image']
+        ):
             # Get the metadata from the reference image
             ref_meta = get_ref_image_meta(config['ref_image'])
             ref_kwargs['bounds'] = ref_meta.bounds
@@ -173,16 +175,22 @@ def _check_config_globals(filenames, bounds_by, ref_kwargs):
             if isinstance(config['ref_tar'], str):
                 if os.path.isfile(config['ref_tar']):
                     ref_kwargs = _update_kwarg(
-                        _get_raster_coords(config['ref_tar']), ref_kwargs, 'tac'
+                        _get_raster_coords(config['ref_tar']),
+                        ref_kwargs,
+                        'tac',
                     )
                 else:
 
                     if not config['ignore_warnings']:
-                        logger.warning('  The target aligned raster does not exist.')
+                        logger.warning(
+                            '  The target aligned raster does not exist.'
+                        )
 
             else:
                 if not config['ignore_warnings']:
-                    logger.warning('  The target aligned raster must be an image.')
+                    logger.warning(
+                        '  The target aligned raster must be an image.'
+                    )
 
     return ref_kwargs
 
@@ -197,7 +205,9 @@ def delayed_to_xarray(
 ) -> xr.DataArray:
     """Converts a dask.Delayed array to a Xarray DataArray."""
     return xr.DataArray(
-        da.from_delayed(delayed_data, shape=shape, dtype=dtype).rechunk(chunks),
+        da.from_delayed(delayed_data, shape=shape, dtype=dtype).rechunk(
+            chunks
+        ),
         dims=('band', 'y', 'x'),
         coords=coords,
         attrs=attrs,
@@ -256,7 +266,9 @@ def warp_open(
 
     # Create a list of variables to open
     if filename.lower().startswith('netcdf:') and netcdf_vars:
-        filenames = (f'{filename}:' + f',{filename}:'.join(netcdf_vars)).split(',')
+        filenames = (f'{filename}:' + f',{filename}:'.join(netcdf_vars)).split(
+            ','
+        )
 
     if filenames:
         ref_kwargs_netcdf_stack = _check_config_globals(
@@ -314,7 +326,9 @@ def warp_open(
                         )
 
                 else:
-                    new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
+                    new_band_names = list(
+                        src.gw.wavelengths[src.gw.sensor]._fields
+                    )
                     # Avoid nested opens within a `config` context
                     if len(new_band_names) != len(src.band.values.tolist()):
                         if not src.gw.config['ignore_warnings']:
@@ -337,10 +351,16 @@ def warp_open(
                 chunksize = kwargs['chunks']
 
             src.attrs['block_windows'] = get_window_offsets(
-                src.shape[-2], src.shape[-1], chunksize, chunksize, return_as='list'
+                src.shape[-2],
+                src.shape[-1],
+                chunksize,
+                chunksize,
+                return_as='list',
             )
 
-        src = src.assign_attrs(**{'filename': filename, 'resampling': resampling})
+        src = src.assign_attrs(
+            **{'filename': filename, 'resampling': resampling}
+        )
 
         if tags:
             attrs = src.attrs.copy()
@@ -426,11 +446,15 @@ def mosaic(
         attrs = darray.attrs.copy()
 
         # Get the original bounds, unsampled
-        with open_rasterio(filenames[0], nodata=ref_kwargs['nodata'], **kwargs) as src_:
+        with open_rasterio(
+            filenames[0], nodata=ref_kwargs['nodata'], **kwargs
+        ) as src_:
             geometries.append(src_.gw.geometry)
 
         for fidx, fn in enumerate(warped_objects[1:]):
-            with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as darrayb:
+            with open_rasterio(
+                fn, nodata=ref_kwargs['nodata'], **kwargs
+            ) as darrayb:
                 with open_rasterio(
                     filenames[fidx + 1], nodata=ref_kwargs['nodata'], **kwargs
                 ) as src_:
@@ -443,11 +467,20 @@ def mosaic(
                     ):
                         darray = xr.where(
                             (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
+                            & (
+                                darrayb.mean(dim='band')
+                                != ref_kwargs['nodata']
+                            ),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != ref_kwargs['nodata'])
-                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
+                                (
+                                    darray.mean(dim='band')
+                                    != ref_kwargs['nodata']
+                                )
+                                & (
+                                    darrayb.mean(dim='band')
+                                    == ref_kwargs['nodata']
+                                ),
                                 darray,
                                 np.minimum(darray, darrayb),
                             ),
@@ -462,11 +495,20 @@ def mosaic(
                     ):
                         darray = xr.where(
                             (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
+                            & (
+                                darrayb.mean(dim='band')
+                                != ref_kwargs['nodata']
+                            ),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != ref_kwargs['nodata'])
-                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
+                                (
+                                    darray.mean(dim='band')
+                                    != ref_kwargs['nodata']
+                                )
+                                & (
+                                    darrayb.mean(dim='band')
+                                    == ref_kwargs['nodata']
+                                ),
                                 darray,
                                 np.maximum(darray, darrayb),
                             ),
@@ -482,11 +524,20 @@ def mosaic(
 
                         darray = xr.where(
                             (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (darrayb.mean(dim='band') != ref_kwargs['nodata']),
+                            & (
+                                darrayb.mean(dim='band')
+                                != ref_kwargs['nodata']
+                            ),
                             darrayb,
                             xr.where(
-                                (darray.mean(dim='band') != ref_kwargs['nodata'])
-                                & (darrayb.mean(dim='band') == ref_kwargs['nodata']),
+                                (
+                                    darray.mean(dim='band')
+                                    != ref_kwargs['nodata']
+                                )
+                                & (
+                                    darrayb.mean(dim='band')
+                                    == ref_kwargs['nodata']
+                                ),
                                 darray,
                                 (darray + darrayb) / 2.0,
                             ),
@@ -509,7 +560,8 @@ def mosaic(
 
                         logger.warning(
                             '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
-                                darray.gw.sensor, ', '.join(darray.gw.avail_sensors)
+                                darray.gw.sensor,
+                                ', '.join(darray.gw.avail_sensors),
                             )
                         )
 
@@ -527,9 +579,15 @@ def mosaic(
                             )
 
                     else:
-                        darray = darray.assign_coords(**{'band': new_band_names})
+                        darray = darray.assign_coords(
+                            **{'band': new_band_names}
+                        )
                         darray = darray.assign_attrs(
-                            **{'sensor': darray.gw.sensor_names[darray.gw.sensor]}
+                            **{
+                                'sensor': darray.gw.sensor_names[
+                                    darray.gw.sensor
+                                ]
+                            }
                         )
 
         darray = darray.assign_attrs(
@@ -710,7 +768,7 @@ def concat(
 
             try:
                 src = src.groupby('time').max().assign_attrs(**attrs)
-            except:
+            except ValueError:
                 pass
 
         else:
@@ -730,7 +788,9 @@ def concat(
                     )
 
             else:
-                new_band_names = list(src.gw.wavelengths[src.gw.sensor]._fields)
+                new_band_names = list(
+                    src.gw.wavelengths[src.gw.sensor]._fields
+                )
                 if len(new_band_names) != len(src.band.values.tolist()):
                     if not src.gw.config['ignore_warnings']:
                         logger.warning(
@@ -818,20 +878,24 @@ def transform_crs(
     # Get the transformed coordinates
     left = dst_transform[2]
     cellx = abs(dst_transform[0])
-    x = np.arange(left + cellx / 2.0, left + cellx / 2.0 + (cellx * dst_width), cellx)[
-        :dst_width
-    ]
+    x = np.arange(
+        left + cellx / 2.0, left + cellx / 2.0 + (cellx * dst_width), cellx
+    )[:dst_width]
     top = dst_transform[5]
     celly = abs(dst_transform[4])
-    y = np.arange(top - celly / 2.0, top - celly / 2.0 - (celly * dst_height), -celly)[
-        :dst_height
-    ]
+    y = np.arange(
+        top - celly / 2.0, top - celly / 2.0 - (celly * dst_height), -celly
+    )[:dst_height]
 
     attrs = data_src.attrs.copy()
 
     if coords_only:
         attrs.update(
-            {'crs': dst_crs, 'transform': dst_transform[:6], 'res': (cellx, celly)}
+            {
+                'crs': dst_crs,
+                'transform': dst_transform[:6],
+                'res': (cellx, celly),
+            }
         )
 
         return data_src.assign_coords(x=x, y=y).assign_attrs(**attrs)

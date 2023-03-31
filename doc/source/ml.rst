@@ -66,8 +66,8 @@ Fit a classifier with multiple dates
 Train a supervised classifier and predict
 -----------------------------------------
 
-
 .. ipython:: python
+
     fig, ax = plt.subplots(dpi=200,figsize=(5,5))
 
     # Fit the classifier
@@ -108,7 +108,6 @@ Unsupervised classifiers can also be used in a pipeline
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
 
-
 Predict with cross validation and parameter tuning
 --------------------------------------------------
 
@@ -146,6 +145,6 @@ Cross-validation and parameter tuning is now possible
 Save prediction output
 ----------------------
 
-.. ipython:: python
+.. code:: python
 
-    y.gw.save('./output/output.tif',overwrite=True)
+    y.gw.save('output.tif', overwrite=True)

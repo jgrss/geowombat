@@ -1,5 +1,4 @@
-"""
-interpolated_LUTs.py
+"""interpolated_LUTs.py.
 
 The Interpolated_LUTs class handles loading, downloading and interpolating
 of LUTs (look up tables) used by the 6S emulator
@@ -8,25 +7,27 @@ Reference:
     https://github.com/samsammurphy/6S_emulator/blob/master/bin/interpolated_LUTs.py
 """
 
+import logging
+import random
 import shutil
 import string
-import random
-from pathlib import Path
-import logging
 from collections import namedtuple
+from pathlib import Path
 
-from ..handler import add_handler
-from ..core import ndarray_to_xarray
-from ..data import LUTDownloader, NASAEarthdataDownloader
-from ..data import srtm30m_bounding_boxes
+import geopandas as gpd
+import joblib
+import numpy as np
+import xarray as xr
 
 import geowombat as gw
 
-import numpy as np
-import geopandas as gpd
-import xarray as xr
-import joblib
-
+from ..core import ndarray_to_xarray
+from ..data import (
+    LUTDownloader,
+    NASAEarthdataDownloader,
+    srtm30m_bounding_boxes,
+)
+from ..handler import add_handler
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -42,22 +43,21 @@ def _set_names(sensor_name):
 
     lut_path.mkdir(parents=True, exist_ok=True)
 
-    return LUTNames(name=sensor_name,
-                    path=lut_path)
+    return LUTNames(name=sensor_name, path=lut_path)
 
 
-SENSOR_LOOKUP = {'l5': _set_names('l5'),
-                 'l7': _set_names('l7'),
-                 'l8': _set_names('l8'),
-                 's2a': _set_names('s2a'),
-                 's2b': _set_names('s2b')}
+SENSOR_LOOKUP = {
+    'l5': _set_names('l5'),
+    'l7': _set_names('l7'),
+    'l8': _set_names('l8'),
+    's2a': _set_names('s2a'),
+    's2b': _set_names('s2b'),
+}
 
 
 def _random_id(string_length):
 
-    """
-    Generates a random string of letters and digits
-    """
+    """Generates a random string of letters and digits."""
 
     letters_digits = string.ascii_letters + string.digits
 
@@ -65,16 +65,17 @@ def _random_id(string_length):
 
 
 class Altitude(object):
-
     @staticmethod
-    def get_mean_altitude(data,
-                          out_dir,
-                          username=None,
-                          key_file=None,
-                          code_file=None,
-                          chunks=512,
-                          n_jobs=1,
-                          delete_downloaded=False):
+    def get_mean_altitude(
+        data,
+        out_dir,
+        username=None,
+        key_file=None,
+        code_file=None,
+        chunks=512,
+        n_jobs=1,
+        delete_downloaded=False,
+    ):
 
         if not username:
             username = data.gw.nasa_earthdata_user
@@ -86,13 +87,17 @@ class Altitude(object):
             code_file = data.gw.nasa_earthdata_code
 
         if not username or not key_file or not code_file:
-            logger.exception('  The NASA EarthData username, secret key file, and secret code file must be provided to download SRTM data.')
+            logger.exception(
+                '  The NASA EarthData username, secret key file, and secret code file must be provided to download SRTM data.'
+            )
             raise AttributeError
 
         if not Path(out_dir).is_dir():
             Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-        srtm_grid_path_temp = Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
+        srtm_grid_path_temp = (
+            Path(out_dir) / f'srtm30m_bounding_boxes_{_random_id(9)}.gpkg'
+        )
 
         shutil.copy(str(srtm30m_bounding_boxes), str(srtm_grid_path_temp))
 
@@ -100,7 +105,11 @@ class Altitude(object):
 
         srtm_grid_path_temp.unlink()
 
-        srtm_df_int = srtm_df[srtm_df.geometry.intersects(data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0])]
+        srtm_df_int = srtm_df[
+            srtm_df.geometry.intersects(
+                data.gw.geodataframe.to_crs(epsg=4326).geometry.values[0]
+            )
+        ]
 
         nedd = NASAEarthdataDownloader(username, key_file, code_file)
 
@@ -126,9 +135,11 @@ class Altitude(object):
 
         with gw.open(zip_paths, mosaic=mosaic, chunks=chunks) as src:
 
-            mean_elev = src.transpose('band', 'y', 'x')\
-                                .mean().data\
-                                .compute(num_workers=n_jobs)
+            mean_elev = (
+                src.transpose('band', 'y', 'x')
+                .mean()
+                .data.compute(num_workers=n_jobs)
+            )
 
         if delete_downloaded:
 
@@ -139,25 +150,32 @@ class Altitude(object):
 
 
 class SixSMixin(object):
-
     @staticmethod
     def _load(sensor, wavelength, interp_method, from_toar=False):
 
         if from_toar:
-            raise NotImplementedError('Lookup tables from top of atmosphere reflectance are not supported.')
+            raise NotImplementedError(
+                'Lookup tables from top of atmosphere reflectance are not supported.'
+            )
             # lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}_from_toar.lut'
         else:
-            lut_path = SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
+            lut_path = (
+                SENSOR_LOOKUP[sensor].path / f'{sensor}_{wavelength}.lut'
+            )
 
         if not lut_path.is_file():
 
-            logger.info(f'  Downloading {lut_path.name} into {SENSOR_LOOKUP[sensor].path}.')
+            logger.info(
+                f'  Downloading {lut_path.name} into {SENSOR_LOOKUP[sensor].path}.'
+            )
 
             lutd = LUTDownloader()
 
-            lutd.download(f'https://s3geowombat.s3.amazonaws.com/{sensor}_{wavelength}.lut',
-                          str(lut_path),
-                          safe_download=False)
+            lutd.download(
+                f'https://s3geowombat.s3.amazonaws.com/{sensor}_{wavelength}.lut',
+                str(lut_path),
+                safe_download=False,
+            )
 
         lut_ = joblib.load(str(lut_path))
 
@@ -166,8 +184,7 @@ class SixSMixin(object):
     @staticmethod
     def _rad_to_sr_from_coeffs(rad, xa, xb, xc):
 
-        """
-        Transforms radiance to surface reflectance using 6S coefficients
+        """Transforms radiance to surface reflectance using 6S coefficients.
 
         Args:
             rad (float | DataArray): The radiance.
@@ -191,9 +208,8 @@ class SixSMixin(object):
 
 class SixS(Altitude, SixSMixin):
 
-    """
-    A class to handle loading, downloading and interpolating
-    of LUTs (look up tables) used by the 6S emulator.
+    """A class to handle loading, downloading and interpolating of LUTs (look
+    up tables) used by the 6S emulator.
 
     Args:
         sensor (str): The sensor to adjust.
@@ -211,8 +227,8 @@ class SixS(Altitude, SixSMixin):
     @staticmethod
     def _toar_to_sr_from_coeffs(toar, t_g, p_alpha, s, t_s, t_v):
 
-        """
-        Transforms top of atmosphere reflectance to surface reflectance using 6S coefficients
+        """Transforms top of atmosphere reflectance to surface reflectance
+        using 6S coefficients.
 
         Args:
             toar (float | DataArray): The top of atmosphere reflectance.
@@ -238,34 +254,37 @@ class SixS(Altitude, SixSMixin):
     def _mask_nodata(data, other_data, src_nodata, dst_nodata):
 
         # Create a 'no data' mask
-        mask = data.where((data != src_nodata) & (other_data != src_nodata))\
-                        .count(dim='band')\
-                        .astype('uint8')
+        mask = (
+            data.where((data != src_nodata) & (other_data != src_nodata))
+            .count(dim='band')
+            .astype('uint8')
+        )
 
         # Mask 'no data' values
-        return xr.where(mask < data.gw.nbands,
-                        dst_nodata,
-                        data.clip(0, 1))\
-                    .transpose('band', 'y', 'x')
+        return xr.where(
+            mask < data.gw.nbands, dst_nodata, data.clip(0, 1)
+        ).transpose('band', 'y', 'x')
 
-    def toar_to_sr(self,
-                   data,
-                   sensor,
-                   wavelength,
-                   sza,
-                   doy,
-                   src_nodata=-32768,
-                   dst_nodata=-32768,
-                   angle_factor=0.01,
-                   interp_method='fast',
-                   h2o=1.0,
-                   o3=0.4,
-                   aot=0.3,
-                   altitude=0.0,
-                   n_jobs=1):
+    def toar_to_sr(
+        self,
+        data,
+        sensor,
+        wavelength,
+        sza,
+        doy,
+        src_nodata=-32768,
+        dst_nodata=-32768,
+        angle_factor=0.01,
+        interp_method='fast',
+        h2o=1.0,
+        o3=0.4,
+        aot=0.3,
+        altitude=0.0,
+        n_jobs=1,
+    ):
 
-        """
-        Converts top of atmosphere reflectance to surface reflectance using 6S outputs
+        """Converts top of atmosphere reflectance to surface reflectance using
+        6S outputs.
 
         Args:
             data (DataArray): The top of atmosphere reflectance.
@@ -306,7 +325,11 @@ class SixS(Altitude, SixSMixin):
         band_data = data.sel(band=wavelength)
 
         if isinstance(sza, xr.DataArray):
-            sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+            sza = (
+                sza.squeeze()
+                .astype('float64')
+                .data.compute(num_workers=n_jobs)
+            )
 
         sza *= angle_factor
 
@@ -316,7 +339,9 @@ class SixS(Altitude, SixSMixin):
         # t_g, p_alpha, s, t_s, t_v
         coeffs = lut(sza, h2o, o3, aot, altitude)
 
-        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        elliptical_orbit_correction = (
+            0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        )
 
         coeffs *= elliptical_orbit_correction
 
@@ -326,16 +351,20 @@ class SixS(Altitude, SixSMixin):
         t_s = self.prepare_coeff(band_data, coeffs, 3)
         t_v = self.prepare_coeff(band_data, coeffs, 4)
 
-        sr = self._toar_to_sr_from_coeffs(band_data,
-                                          t_g.sel(band='coeff'),
-                                          p_alpha.sel(band='coeff'),
-                                          s.sel(band='coeff'),
-                                          t_s.sel(band='coeff'),
-                                          t_v.sel(band='coeff'))\
-                    .fillna(src_nodata)\
-                    .expand_dims(dim='band')\
-                    .assign_coords(coords={'band': [wavelength]})\
-                    .astype('float64')
+        sr = (
+            self._toar_to_sr_from_coeffs(
+                band_data,
+                t_g.sel(band='coeff'),
+                p_alpha.sel(band='coeff'),
+                s.sel(band='coeff'),
+                t_s.sel(band='coeff'),
+                t_v.sel(band='coeff'),
+            )
+            .fillna(src_nodata)
+            .expand_dims(dim='band')
+            .assign_coords(coords={'band': [wavelength]})
+            .astype('float64')
+        )
 
         sr = self._mask_nodata(sr, band_data, src_nodata, dst_nodata)
 
@@ -347,24 +376,26 @@ class SixS(Altitude, SixSMixin):
 
         return sr.assign_attrs(**attrs)
 
-    def rad_to_sr(self,
-                  data,
-                  sensor,
-                  wavelength,
-                  sza,
-                  doy,
-                  src_nodata=-32768,
-                  dst_nodata=-32768,
-                  angle_factor=0.01,
-                  interp_method='fast',
-                  h2o=1.0,
-                  o3=0.4,
-                  aot=0.3,
-                  altitude=0.0,
-                  n_jobs=1):
+    def rad_to_sr(
+        self,
+        data,
+        sensor,
+        wavelength,
+        sza,
+        doy,
+        src_nodata=-32768,
+        dst_nodata=-32768,
+        angle_factor=0.01,
+        interp_method='fast',
+        h2o=1.0,
+        o3=0.4,
+        aot=0.3,
+        altitude=0.0,
+        n_jobs=1,
+    ):
 
-        """
-        Converts radiance to surface reflectance using a 6S radiative transfer model lookup table
+        """Converts radiance to surface reflectance using a 6S radiative
+        transfer model lookup table.
 
         Args:
             data (DataArray): The data to correct, in radiance.
@@ -399,18 +430,30 @@ class SixS(Altitude, SixSMixin):
         band_data = data.sel(band=wavelength)
 
         if isinstance(sza, xr.DataArray):
-            sza = sza.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+            sza = (
+                sza.squeeze()
+                .astype('float64')
+                .data.compute(num_workers=n_jobs)
+            )
 
         if isinstance(aot, xr.DataArray):
-            aot = aot.squeeze().astype('float64').data.compute(num_workers=n_jobs)
+            aot = (
+                aot.squeeze()
+                .astype('float64')
+                .data.compute(num_workers=n_jobs)
+            )
         else:
-            aot = np.zeros((data.gw.nrows, data.gw.ncols), dtype='float64')+aot
+            aot = (
+                np.zeros((data.gw.nrows, data.gw.ncols), dtype='float64') + aot
+            )
 
         sza *= angle_factor
 
         coeffs = lut(sza, h2o, o3, aot, altitude)
 
-        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        elliptical_orbit_correction = (
+            0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        )
 
         coeffs *= elliptical_orbit_correction
 
@@ -418,14 +461,18 @@ class SixS(Altitude, SixSMixin):
         xb = self.prepare_coeff(band_data, coeffs, 1)
         xc = self.prepare_coeff(band_data, coeffs, 2)
 
-        sr = self._rad_to_sr_from_coeffs(band_data,
-                                         xa.sel(band='coeff'),
-                                         xb.sel(band='coeff'),
-                                         xc.sel(band='coeff'))\
-                    .fillna(src_nodata)\
-                    .expand_dims(dim='band')\
-                    .assign_coords(coords={'band': [wavelength]})\
-                    .astype('float64')
+        sr = (
+            self._rad_to_sr_from_coeffs(
+                band_data,
+                xa.sel(band='coeff'),
+                xb.sel(band='coeff'),
+                xc.sel(band='coeff'),
+            )
+            .fillna(src_nodata)
+            .expand_dims(dim='band')
+            .assign_coords(coords={'band': [wavelength]})
+            .astype('float64')
+        )
 
         sr = self._mask_nodata(sr, band_data, src_nodata, dst_nodata)
 
@@ -439,22 +486,22 @@ class SixS(Altitude, SixSMixin):
 
 
 class AOT(SixSMixin):
+    def get_optimized_aot(
+        self,
+        blue_rad_dark,
+        blue_p_dark,
+        sensor,
+        wavelength,
+        interp_method,
+        sza,
+        doy,
+        h2o,
+        o3,
+        altitude,
+        max_aot=0.5,
+    ):
 
-    def get_optimized_aot(self,
-                          blue_rad_dark,
-                          blue_p_dark,
-                          sensor,
-                          wavelength,
-                          interp_method,
-                          sza,
-                          doy,
-                          h2o,
-                          o3,
-                          altitude,
-                          max_aot=0.5):
-
-        """
-        Gets the optimal aerosol optical thickness
+        """Gets the optimal aerosol optical thickness.
 
         Args:
             blue_rad_dark (DataArray)
@@ -476,9 +523,11 @@ class AOT(SixSMixin):
         min_score = np.zeros(blue_rad_dark.shape, dtype='float64') + 1e9
         aot = np.zeros(blue_rad_dark.shape, dtype='float64')
 
-        elliptical_orbit_correction = 0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        elliptical_orbit_correction = (
+            0.03275104 * np.cos(doy / 59.66638337) + 0.96804905
+        )
 
-        for aot_iter in np.arange(0.01, max_aot+0.01, 0.01):
+        for aot_iter in np.arange(0.01, max_aot + 0.01, 0.01):
 
             xa, xb, xc = lut(sza, h2o, o3, aot_iter, altitude)
 

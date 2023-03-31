@@ -1,47 +1,46 @@
-import os
-from pathlib import Path
-import shutil
-import itertools
 import concurrent.futures
-import multiprocessing as multi
-import threading
-import random
-import string
+import itertools
 import logging
+import multiprocessing as multi
+import os
+import random
+import shutil
+import string
+import threading
 import typing as T
 import warnings
+from pathlib import Path
 
+from ..backends.rasterio_ import RasterioStore, to_gtiff
 from ..handler import add_handler
-from ..backends.rasterio_ import to_gtiff, RasterioStore
 from .windows import get_window_offsets
 
 try:
-    from ..backends.zarr_ import to_zarr
     import zarr
 
+    from ..backends.zarr_ import to_zarr
+
     ZARR_INSTALLED = True
-except:
+except ImportError:
     ZARR_INSTALLED = False
 
-import numpy as np
-from osgeo import gdal
-
-import xarray as xr
 import dask
+import numpy as np
+import pyproj
+import rasterio as rio
+import xarray as xr
+from affine import Affine
 from dask import is_dask_collection
 from dask.distributed import Client, progress
-import rasterio as rio
-from rasterio.windows import Window
-from rasterio.vrt import WarpedVRT
-from rasterio.enums import Resampling
-from rasterio.drivers import driver_from_extension
+from osgeo import gdal
 from rasterio import shutil as rio_shutil
-from affine import Affine
+from rasterio.drivers import driver_from_extension
+from rasterio.enums import Resampling
+from rasterio.vrt import WarpedVRT
+from rasterio.windows import Window
+from threadpoolctl import threadpool_limits
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
-import pyproj
-from threadpoolctl import threadpool_limits
-
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -61,7 +60,9 @@ def get_norm_indices(n_bands, window_slice, indexes_multi):
 
 def _window_worker(w):
     """Helper to return window slice."""
-    return slice(w.row_off, w.row_off + w.height), slice(w.col_off, w.col_off + w.width)
+    return slice(w.row_off, w.row_off + w.height), slice(
+        w.col_off, w.col_off + w.width
+    )
 
 
 def _window_worker_time(w, n_bands, tidx, n_time):
@@ -73,7 +74,9 @@ def _window_worker_time(w, n_bands, tidx, n_time):
 
     # Prepend the band position index to the window slice
     if n_bands == 1:
-        window_slice = tuple([slice(tidx, n_time)] + [slice(0, 1)] + list(window_slice))
+        window_slice = tuple(
+            [slice(tidx, n_time)] + [slice(0, 1)] + list(window_slice)
+        )
     else:
         window_slice = tuple(
             [slice(tidx, n_time)] + [slice(0, n_bands)] + list(window_slice)
@@ -95,21 +98,33 @@ def _block_read_func(fn_, g_, t_):
         out_data_ = np.squeeze(group_node['data'][:])
     else:
         w_ = Window(
-            row_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]),
-            col_off=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]),
-            height=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]),
-            width=int(os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]),
+            row_off=int(
+                os.path.splitext(os.path.basename(fn_))[0].split('_')[-4][1:]
+            ),
+            col_off=int(
+                os.path.splitext(os.path.basename(fn_))[0].split('_')[-3][1:]
+            ),
+            height=int(
+                os.path.splitext(os.path.basename(fn_))[0].split('_')[-2][1:]
+            ),
+            width=int(
+                os.path.splitext(os.path.basename(fn_))[0].split('_')[-1][1:]
+            ),
         )
         out_data_ = np.squeeze(rio.open(fn_).read(window=w_))
 
     out_indexes_ = (
-        1 if len(out_data_.shape) == 2 else list(range(1, out_data_.shape[0] + 1))
+        1
+        if len(out_data_.shape) == 2
+        else list(range(1, out_data_.shape[0] + 1))
     )
 
     return w_, out_indexes_, out_data_
 
 
-def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, top_):
+def _check_offsets(
+    block, out_data_, window_, oleft, otop, ocols, orows, left_, top_
+):
     # Check if the data were read at larger
     # extents than the write bounds.
 
@@ -138,16 +153,25 @@ def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, 
         bottom_diff = out_data_.shape[-2]
         top_diff = int(abs(otop - top_) / abs(block.gw.celly))
 
-    if (left_diff != 0) or (top_diff != 0) or (bottom_diff != 0) or (right_diff != 0):
+    if (
+        (left_diff != 0)
+        or (top_diff != 0)
+        or (bottom_diff != 0)
+        or (right_diff != 0)
+    ):
 
         dshape = out_data_.shape
 
         if len(dshape) == 2:
             out_data_ = out_data_[top_diff:bottom_diff, left_diff:right_diff]
         elif len(dshape) == 3:
-            out_data_ = out_data_[:, top_diff:bottom_diff, left_diff:right_diff]
+            out_data_ = out_data_[
+                :, top_diff:bottom_diff, left_diff:right_diff
+            ]
         elif len(dshape) == 4:
-            out_data_ = out_data_[:, :, top_diff:bottom_diff, left_diff:right_diff]
+            out_data_ = out_data_[
+                :, :, top_diff:bottom_diff, left_diff:right_diff
+            ]
 
         window_ = Window(
             col_off=window_.col_off,
@@ -159,7 +183,9 @@ def _check_offsets(block, out_data_, window_, oleft, otop, ocols, orows, left_, 
     return out_data_, window_
 
 
-def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
+def _compute_block(
+    block, wid, window_, padded_window_, n_workers, num_workers
+):
     """Computes a DataArray window block of data.
 
     Args:
@@ -186,7 +212,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
         block = block.assign_attrs(**attrs)
 
-    if ('apply' in block.attrs) and hasattr(block.attrs['apply'], 'wombat_func_'):
+    if ('apply' in block.attrs) and hasattr(
+        block.attrs['apply'], 'wombat_func_'
+    ):
         if padded_window_:
             logger.warning('  Padding is not supported with lazy functions.')
 
@@ -214,7 +242,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
     else:
         # Get the data as a NumPy array
         if n_workers == 1:
-            out_data_ = block.data.compute(scheduler='threads', num_workers=num_workers)
+            out_data_ = block.data.compute(
+                scheduler='threads', num_workers=num_workers
+            )
         else:
             with threading.Lock():
                 out_data_ = block.data.compute(
@@ -232,16 +262,20 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
                     else 0
                 )
                 cspad = (
-                    padded_window_.width - window_.width if window_.col_off == 0 else 0
+                    padded_window_.width - window_.width
+                    if window_.col_off == 0
+                    else 0
                 )
                 repad = (
                     padded_window_.height - window_.height
-                    if (window_.row_off != 0) and (window_.height < block.gw.row_chunks)
+                    if (window_.row_off != 0)
+                    and (window_.height < block.gw.row_chunks)
                     else 0
                 )
                 cepad = (
                     padded_window_.width - window_.width
-                    if (window_.col_off != 0) and (window_.width < block.gw.col_chunks)
+                    if (window_.col_off != 0)
+                    and (window_.width < block.gw.col_chunks)
                     else 0
                 )
 
@@ -251,7 +285,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
                     if len(dshape) == 2:
                         out_data_ = np.pad(
-                            out_data_, ((rspad, repad), (cspad, cepad)), mode='reflect'
+                            out_data_,
+                            ((rspad, repad), (cspad, cepad)),
+                            mode='reflect',
                         )
                     elif len(dshape) == 3:
                         out_data_ = np.pad(
@@ -267,13 +303,23 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
                         )
 
             # Apply the user function
-            if ('apply_args' in block.attrs) and ('apply_kwargs' in block.attrs):
+            if ('apply_args' in block.attrs) and (
+                'apply_kwargs' in block.attrs
+            ):
                 out_data_ = block.attrs['apply'](
-                    out_data_, *block.attrs['apply_args'], **block.attrs['apply_kwargs']
+                    out_data_,
+                    *block.attrs['apply_args'],
+                    **block.attrs['apply_kwargs'],
                 )
-            elif ('apply_args' in block.attrs) and ('apply_kwargs' not in block.attrs):
-                out_data_ = block.attrs['apply'](out_data_, *block.attrs['apply_args'])
-            elif ('apply_args' not in block.attrs) and ('apply_kwargs' in block.attrs):
+            elif ('apply_args' in block.attrs) and (
+                'apply_kwargs' not in block.attrs
+            ):
+                out_data_ = block.attrs['apply'](
+                    out_data_, *block.attrs['apply_args']
+                )
+            elif ('apply_args' not in block.attrs) and (
+                'apply_kwargs' in block.attrs
+            ):
                 out_data_ = block.attrs['apply'](
                     out_data_, **block.attrs['apply_kwargs']
                 )
@@ -331,7 +377,9 @@ def _compute_block(block, wid, window_, padded_window_, n_workers, num_workers):
 
         else:
             if padded_window_:
-                logger.warning('  Padding is only supported with user functions.')
+                logger.warning(
+                    '  Padding is only supported with user functions.'
+                )
 
     if not isinstance(out_data_, np.ndarray):
         logger.exception(
@@ -426,22 +474,26 @@ def to_vrt(
         init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
         warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> from rasterio.enums import Resampling
         >>>
         >>> # Transform a CRS and save to VRT
         >>> with gw.config.update(ref_crs=102033):
         >>>     with gw.open('image.tif') as src:
-        >>>         gw.to_vrt(src,
-        >>>                   'output.vrt',
-        >>>                   resampling=Resampling.cubic,
-        >>>                   warp_mem_limit=256)
+        >>>         gw.to_vrt(
+        >>>             src,
+        >>>             'output.vrt',
+        >>>             resampling=Resampling.cubic,
+        >>>             warp_mem_limit=256
+        >>>         )
         >>>
         >>> # Load multiple files set to a common geographic extent
         >>> bounds = (left, bottom, right, top)
         >>> with gw.config.update(ref_bounds=bounds):
-        >>>     with gw.open(['image1.tif', 'image2.tif'], mosaic=True) as src:
+        >>>     with gw.open(
+        >>>         ['image1.tif', 'image2.tif'], mosaic=True
+        >>>     ) as src:
         >>>         gw.to_vrt(src, 'output.vrt')
     """
     if Path(filename).is_file():
@@ -481,7 +533,9 @@ def to_vrt(
             raise KeyError
 
         separate = (
-            True if data.gw.data_are_separate and data.gw.data_are_stacked else False
+            True
+            if data.gw.data_are_separate and data.gw.data_are_stacked
+            else False
         )
 
         vrt_options = gdal.BuildVRTOptions(
@@ -514,7 +568,7 @@ def to_netcdf(
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
 
-    Example:
+    Examples:
         >>> import geowombat as gw
         >>> import xarray as xr
         >>>
@@ -525,17 +579,33 @@ def to_netcdf(
         >>>
         >>> # Add extra layers
         >>> with gw.config.update(sensor='l7'):
-        >>>     with gw.open('LC08_L1TP_225078_20200219_20200225_01_T1.tif') as src, \
-        >>>         gw.open('LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif', band_names=['zenith', 'azimuth']) as ang:
+        >>>     with gw.open(
+        >>>         'LC08_L1TP_225078_20200219_20200225_01_T1.tif'
+        >>>     ) as src, gw.open(
+        >>>         'LC08_L1TP_225078_20200219_20200225_01_T1_angles.tif',
+        >>>         band_names=['zenith', 'azimuth']
+        >>>     ) as ang:
+        >>>         src = (
+        >>>             xr.where(
+        >>>                 src == 0, -32768, src
+        >>>             )
+        >>>             .astype('int16')
+        >>>             .assign_attrs(**src.attrs)
+        >>>         )
         >>>
-        >>>         src = xr.where(src == 0, -32768, src)\
-        >>>                     .astype('int16')\
-        >>>                     .assign_attrs(**src.attrs)
-        >>>
-        >>>         gw.to_netcdf(src, 'filename.nc', ang.astype('int16'), zlib=True, complevel=5)
+        >>>         gw.to_netcdf(
+        >>>             src,
+        >>>             'filename.nc',
+        >>>             ang.astype('int16'),
+        >>>             zlib=True,
+        >>>             complevel=5,
+        >>>             _FillValue=-32768
+        >>>         )
         >>>
         >>> # Open the data and convert to a DataArray
-        >>> with xr.open_dataset('filename.nc', engine='h5netcdf', chunks=256) as ds:
+        >>> with xr.open_dataset(
+        >>>     'filename.nc', engine='h5netcdf', chunks=256
+        >>> ) as ds:
         >>>     src = ds.to_array(dim='band')
     """
     if Path(filename).is_file():
@@ -628,6 +698,7 @@ def save(
         tags (Optional[dict]): Metadata tags to write to file. Default is None.
         compress (Optional[str]): The file compression type. Default is 'none', or no compression.
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+
             .. deprecated:: 2.1.4
                 Use 'compress' -- 'compression' will be removed in >=2.2.0.
 
@@ -653,9 +724,9 @@ def save(
     """
     if compression is not None:
         warnings.warn(
-            f"The argument 'compression' will be deprecated in >=2.2.0. Use 'compress'.",
+            "The argument 'compression' will be deprecated in >=2.2.0. Use 'compress'.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         compress = compression
 
@@ -721,7 +792,9 @@ def save(
         )
 
     else:
-        with RasterioStore(filename, mode=mode, tags=tags, **kwargs) as rio_store:
+        with RasterioStore(
+            filename, mode=mode, tags=tags, **kwargs
+        ) as rio_store:
             # Store the data and return a lazy evaluator
             res = rio_store.write(data)
 
@@ -762,6 +835,10 @@ def to_raster(
     **kwargs,
 ):
     """Writes a ``dask`` array to a raster file.
+
+    .. note::
+
+        We advise using :func:`save` in place of this method.
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to write.
@@ -905,7 +982,9 @@ def to_raster(
         compress = False
 
     if 'nodata' not in kwargs:
-        if isinstance(data.gw.nodata, int) or isinstance(data.gw.nodata, float):
+        if isinstance(data.gw.nodata, int) or isinstance(
+            data.gw.nodata, float
+        ):
             kwargs['nodata'] = data.gw.nodata
 
     if 'blockxsize' not in kwargs:
@@ -1171,7 +1250,9 @@ def to_raster(
 
             if n_workers == 1:
                 for __ in tqdm(
-                    map(_write_xarray, data_gen), total=n_windows_slice, **tqdm_kwargs
+                    map(_write_xarray, data_gen),
+                    total=n_windows_slice,
+                    **tqdm_kwargs,
                 ):
                     pass
 
@@ -1212,19 +1293,24 @@ def to_raster(
 
                         # Iterate over the windows in chunks
                         for wchunk in range(0, n_groups, n_chunks):
-                            group_keys_slice = group_keys[wchunk : wchunk + n_chunks]
+                            group_keys_slice = group_keys[
+                                wchunk : wchunk + n_chunks
+                            ]
                             n_windows_slice = len(group_keys_slice)
 
                             if verbose > 0:
                                 logger.info(
                                     '  Windows {:,d}--{:,d} of {:,d} ...'.format(
-                                        wchunk + 1, wchunk + n_windows_slice, n_windows
+                                        wchunk + 1,
+                                        wchunk + n_windows_slice,
+                                        n_windows,
                                     )
                                 )
 
                             ################################################
                             data_gen = (
-                                (open_file, group, 'zarr') for group in group_keys_slice
+                                (open_file, group, 'zarr')
+                                for group in group_keys_slice
                             )
 
                             with concurrent.futures.ProcessPoolExecutor(
@@ -1241,7 +1327,11 @@ def to_raster(
                                     total=n_windows_slice,
                                     **tqdm_kwargs,
                                 ):
-                                    out_window, out_indexes, out_block = f.result()
+                                    (
+                                        out_window,
+                                        out_indexes,
+                                        out_block,
+                                    ) = f.result()
                                     dst_.write(
                                         out_block,
                                         window=out_window,
@@ -1405,17 +1495,22 @@ def apply(
                 )
 
                 if args:
-                    args = [_arg_gen(arg, src.block_windows(1)) for arg in args]
+                    args = [
+                        _arg_gen(arg, src.block_windows(1)) for arg in args
+                    ]
 
                 with futures_executor(max_workers=n_jobs) as executor:
                     # Submit all of the tasks as futures
                     futures = [
                         executor.submit(block_func, iter_[0][1], *iter_[1:])
-                        for iter_ in zip(list(src.block_windows(1)), data_gen, *args)
+                        for iter_ in zip(
+                            list(src.block_windows(1)), data_gen, *args
+                        )
                     ]
 
                     for f in tqdm(
-                        concurrent.futures.as_completed(futures), total=len(futures)
+                        concurrent.futures.as_completed(futures),
+                        total=len(futures),
                     ):
                         out_window, out_block = f.result()
                         dst.write(

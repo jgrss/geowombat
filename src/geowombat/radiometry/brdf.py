@@ -1,15 +1,14 @@
-from copy import copy
-from collections import namedtuple
 import logging
+from collections import namedtuple
+from copy import copy
 
-from ..handler import add_handler
-from ..core.util import project_coords
-from .angles import relative_azimuth
-
+import dask.array as da
 import numpy as np
 import xarray as xr
-import dask.array as da
 
+from ..core.util import project_coords
+from ..handler import add_handler
+from .angles import relative_azimuth
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -36,7 +35,9 @@ class Special(object):
 
         cost = da.clip(
             hb
-            * da.sqrt(distance * distance + tan1 * tan1 * tan2 * tan2 * sin3 * sin3)
+            * da.sqrt(
+                distance * distance + tan1 * tan1 * tan2 * tan2 * sin3 * sin3
+            )
             / temp,
             -1,
             1,
@@ -88,7 +89,9 @@ class Angles(object):
 
         """Gets the angle information."""
 
-        AngleInfo = namedtuple('AngleInfo', 'vza sza raa vza_rad sza_rad raa_rad')
+        AngleInfo = namedtuple(
+            'AngleInfo', 'vza sza raa vza_rad sza_rad raa_rad'
+        )
 
         # View zenith angle
         vza_rad = da.deg2rad(vza)
@@ -105,7 +108,12 @@ class Angles(object):
         raa_abs = da.where((vza_rad < 0) | (sza_rad < 0), m_pi, raa_rad)
 
         return AngleInfo(
-            vza=vza, sza=sza, raa=raa, vza_rad=vza_abs, sza_rad=sza_abs, raa_rad=raa_abs
+            vza=vza,
+            sza=sza,
+            raa=raa,
+            vza_rad=vza_abs,
+            sza_rad=sza_abs,
+            raa_rad=raa_abs,
         )
 
 
@@ -114,7 +122,9 @@ class LiKernel(Special, Angles):
 
         # relative azimuth angle
         # ensure it is in a [0,2] pi range
-        phi = da.fabs((self.angle_info.raa_rad % (2.0 * self.global_args.m_pi)))
+        phi = da.fabs(
+            (self.angle_info.raa_rad % (2.0 * self.global_args.m_pi))
+        )
 
         cos_phi = da.cos(phi)
         sin_phi = da.sin(phi)
@@ -166,7 +176,9 @@ class LiKernel(Special, Angles):
 
                 if li_recip:
                     li = (1.0 + cos_phaang) / (
-                        cos1 * cos2 * (overlap_info.temp - overlap_info.overlap)
+                        cos1
+                        * cos2
+                        * (overlap_info.temp - overlap_info.overlap)
                     ) - 2.0
                 else:
                     li = (1.0 + cos_phaang) / (
@@ -222,7 +234,9 @@ class RossKernel(Special, Angles):
             ross_outputs.cos_vza * ross_outputs.cos_sza
         )
 
-        return RossThinOutputs(ross=ross_, phase_angle=ross_outputs.phase_angle)
+        return RossThinOutputs(
+            ross=ross_, phase_angle=ross_outputs.phase_angle
+        )
 
     @staticmethod
     def ross_thick(ross_outputs):
@@ -233,7 +247,9 @@ class RossKernel(Special, Angles):
             ross_outputs.cos_vza + ross_outputs.cos_sza
         )
 
-        return RossThickOutputs(ross=ross_, phase_angle=ross_outputs.phase_angle)
+        return RossThickOutputs(
+            ross=ross_, phase_angle=ross_outputs.phase_angle
+        )
 
     def get_ross(self, kernel_type):
 
@@ -286,7 +302,9 @@ class BRDFKernels(LiKernel, RossKernel):
         self.global_args = GlobalArgs(
             br=br, m_pi=np.pi, hb=hb, hs=hs, nearly_zero=1e-20
         )
-        self.angle_info = self.get_angle_info(vza, sza, raa, self.global_args.m_pi)
+        self.angle_info = self.get_angle_info(
+            vza, sza, raa, self.global_args.m_pi
+        )
 
         self.li_k = self.get_li(li_type, li_recip)
         self.ross_k = self.get_ross(ross_type)
@@ -320,7 +338,9 @@ class GeoVolKernels(object):
             + 6.15e-11 * (central_latitude**6)
         )
 
-    def get_kernels(self, central_latitude, solar_za, solar_az, sensor_za, sensor_az):
+    def get_kernels(
+        self, central_latitude, solar_za, solar_az, sensor_za, sensor_az
+    ):
 
         # Get the geometric scattering kernel.
         #
@@ -340,7 +360,9 @@ class GeoVolKernels(object):
         #
         # theta_v=0 for nadir view zenith angle, theta_s, delta_gamma
         kl = BRDFKernels(
-            sensor_za.data, solar_za.data, relative_azimuth(solar_az, sensor_az).data
+            sensor_za.data,
+            solar_za.data,
+            relative_azimuth(solar_az, sensor_az).data,
         )
 
         self.geo_sensor = kl.li_k
@@ -394,7 +416,7 @@ class BRDF(GeoVolKernels):
         scale_factor=1.0,
         out_range=None,
         scale_angles=True,
-        vol_weight=1.0
+        vol_weight=1.0,
     ):
         r"""Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization
         using the global c-factor method
@@ -468,10 +490,12 @@ class BRDF(GeoVolKernels):
                 if not isinstance(central_latitude, float):
                     central_latitude = project_coords(
                         np.array(
-                            [data.x.values[int(data.x.shape[0] / 2)]], dtype='float64'
+                            [data.x.values[int(data.x.shape[0] / 2)]],
+                            dtype='float64',
                         ),
                         np.array(
-                            [data.y.values[int(data.y.shape[0] / 2)]], dtype='float64'
+                            [data.y.values[int(data.y.shape[0] / 2)]],
+                            dtype='float64',
                         ),
                         data.crs,
                         {'init': 'epsg:4326'},
@@ -503,7 +527,9 @@ class BRDF(GeoVolKernels):
             sensor_az.coords['band'] = [1]
 
         # Get the Ross and Li coefficients
-        self.get_kernels(central_latitude, solar_za, solar_az, sensor_za, sensor_az)
+        self.get_kernels(
+            central_latitude, solar_za, solar_az, sensor_za, sensor_az
+        )
 
         results = []
         for si, wavelength in enumerate(wavelengths):
@@ -546,7 +572,9 @@ class BRDF(GeoVolKernels):
 
             drange = (0, range_max)
             data = xr.where(
-                data == src_nodata, src_nodata, (data * range_max).clip(0, range_max)
+                data == src_nodata,
+                src_nodata,
+                (data * range_max).clip(0, range_max),
             )
 
         else:
