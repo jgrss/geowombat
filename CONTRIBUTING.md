@@ -1,23 +1,21 @@
 # Contibuting to Geowombat
----------------------------
 
 We have two methods for contribution:
 
 1. Local install
 2. Docker-based debugging
 
-1. Local Install
-----------------
+## 1. Local Install
 
-## Install GeoWombat
+### Install GeoWombat
 
-### Clone the latest repo
+#### Clone the latest repo
 
 ```commandline
 git clone https://github.com/jgrss/geowombat.git
 ```
 
-### Create a virtual environment
+#### Create a virtual environment
 
 Modify the Python version (i.e., 3.8.15) as needed
 
@@ -25,20 +23,20 @@ Modify the Python version (i.e., 3.8.15) as needed
 pyenv virtualenv 3.8.15 venv.gw
 ```
 
-### Activate the virtual environment
+#### Activate the virtual environment
 
 ```commandline
 pyenv activate venv.gw
 ```
 
-### Install pre-commit
+#### Install pre-commit
 
 ```commandline
 (venv.gw) pip install pre-commit
 (venv.gw) pre-commit install
 ```
 
-### Install
+#### Install GeoWombat
 
 Install other extras from `setup.cfg` as needed.
 
@@ -47,23 +45,22 @@ Install other extras from `setup.cfg` as needed.
 (venv.gw) pip install -e .[tests]
 ```
 
-## Create a new branch for your contribution
+### Create a new branch for your contribution
 
 ```commandline
 (venv.gw) git checkout -b new_branch_name
 ```
 
-## After making changes, run tests
+### After making changes, run tests
 
 ```commandline
 (venv.gw) cd tests/
 (venv.gw) python -m unittest
 ```
 
-2. Docker Debuging
-------------------
+## 2. Docker debugging
 
-Prerequisites
+### Prerequisites
 
 - [Visual Studio Code](https://code.visualstudio.com/download)
 - [Docker VSCode Extension](https://code.visualstudio.com/docs/containers/overview)
@@ -81,10 +78,9 @@ Prerequisites
 
 View Example Video here: [![Debug Docker](https://github.com/jgrss/geowombat/blob/jgrss/features_precommit/data/resume.png?raw=true)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
-## Create a Pull Request
-------------------------
+### Create a Pull Request
 
-### Commit and push changes
+#### Commit and push changes
 
 ```commandline
 git add .
@@ -92,7 +88,7 @@ git commit -m 'your commit message'
 git push origin new_branch_name
 ```
 
-### GitHub Pull Request
+#### GitHub Pull Request
 
 1. Go to 'Pull Requests' tab
 2. Go to 'New Pull Request'
