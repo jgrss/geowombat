@@ -125,7 +125,9 @@ class RasterioArrayWrapper(BackendArray):
 
         if not band_key or any(start == stop for (start, stop) in window):
             # no need to do IO
-            shape = (len(band_key),) + tuple(stop - start for (start, stop) in window)
+            shape = (len(band_key),) + tuple(
+                stop - start for (start, stop) in window
+            )
             out = np.zeros(shape, dtype=self.dtype)
         else:
             with self.lock:
@@ -181,10 +183,10 @@ def open_rasterio(
     cache: T.Optional[bool] = None,
     lock: T.Optional[T.Union[bool, SerializableLock]] = None,
     **kwargs,
-):
-    """Open a file with rasterio.
+) -> DataArray:
+    """Opens a file with ``rasterio``.
 
-    This should work with any file that rasterio can open (most often:
+    This should work with any file that ``rasterio`` can open (most often:
     geoTIFF). The x and y coordinates are generated automatically from the
     file's geoinformation, shifted to the center of each pixel (see
     `"PixelIsArea" Raster Space
@@ -234,35 +236,32 @@ def open_rasterio(
                [102135.01896334, 102435.05689001, 102735.09481669, ...,
                 338564.90518331, 338864.94310999, 339164.98103666]])
 
-    Parameters
-    ----------
-    filename : str, rasterio.DatasetReader, or rasterio.WarpedVRT
-        Path to the file to open. Or already open rasterio dataset.
-    parse_coordinates : bool, optional
-        Whether to parse the x and y coordinates out of the file's
-        ``transform`` attribute or not. The default is to automatically
-        parse the coordinates only if they are rectilinear (1D).
-        It can be useful to set ``parse_coordinates=False``
-        if your files are very large or if you don't need the coordinates.
-    chunks : int, tuple or dict, optional
-        Chunk sizes along each dimension, e.g., ``5``, ``(5, 5)`` or
-        ``{'x': 5, 'y': 5}``. If chunks is provided, it used to load the new
-        DataArray into a dask array.
-    cache : bool, optional
-        If True, cache data loaded from the underlying datastore in memory as
-        NumPy arrays when accessed to avoid reading from the underlying data-
-        store multiple times. Defaults to True unless you specify the `chunks`
-        argument to use dask, in which case it defaults to False.
-    lock : False, True or threading.Lock, optional
-        If chunks is provided, this argument is passed on to
-        :py:func:`dask.array.from_array`. By default, a global lock is
-        used to avoid issues with concurrent access to the same file when using
-        dask's multithreaded backend.
+    Args:
+        filename (str | ``rasterio.io.DatasetReader`` | ``rasterio.vrt.WarpedVRT``):
+            Path to the file to open. Or already open rasterio dataset.
+        parse_coordinates (Optional[bool]):
+            Whether to parse the x and y coordinates out of the file's
+            ``transform`` attribute or not. The default is to automatically
+            parse the coordinates only if they are rectilinear (1D).
+            It can be useful to set ``parse_coordinates=False``
+            if your files are very large or if you don't need the coordinates.
+        chunks (Optional[int | tuple | dict]):
+            Chunk sizes along each dimension, e.g., ``5``, ``(5, 5)`` or
+            ``{'x': 5, 'y': 5}``. If chunks is provided, it used to load the new
+            ``xarray.DataArray`` into a ``dask`` array.
+        cache (Optional[bool]):
+            If ``True``, cache data loaded from the underlying datastore in memory as
+            NumPy arrays when accessed to avoid reading from the underlying data-
+            store multiple times. Defaults to True unless you specify the ``chunks``
+            argument to use ``dask``, in which case it defaults to ``False``.
+        lock (Optional[False | True | threading.Lock):
+            If ``chunks`` is provided, this argument is passed on to
+            :func:`dask.array.from_array`. By default, a global lock is
+            used to avoid issues with concurrent access to the same file when using
+            dask's multithreaded backend.
 
-    Returns
-    -------
-    data : DataArray
-        The newly created DataArray.
+    Returns:
+        ``xarray.DataArray``
     """
     vrt_params = None
     if isinstance(filename, rasterio.io.DatasetReader):
@@ -316,12 +315,12 @@ def open_rasterio(
         if parse:
             nx, ny = riods.width, riods.height
             # xarray coordinates are pixel centered
-            coords['x'] = (riods.transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5))[
-                0
-            ]
-            coords['y'] = (riods.transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5))[
-                1
-            ]
+            coords['x'] = (
+                riods.transform * (np.arange(nx) + 0.5, np.zeros(nx) + 0.5)
+            )[0]
+            coords['y'] = (
+                riods.transform * (np.zeros(ny) + 0.5, np.arange(ny) + 0.5)
+            )[1]
     else:
         # 2d coordinates
         parse = False if (parse_coordinates is None) else parse_coordinates
@@ -364,11 +363,14 @@ def open_rasterio(
         attrs['is_tiled'] = np.uint8(riods.is_tiled)
     if hasattr(riods, 'nodatavals'):
         # The nodata values for the raster bands
-        nodatavals = (nodata,) * riods.count if nodata is not None else riods.nodatavals
+        nodatavals = (
+            (nodata,) * riods.count if nodata is not None else riods.nodatavals
+        )
         if None in nodatavals:
             nodatavals = (np.nan,) * len(nodatavals)
         attrs['nodatavals'] = tuple(
-            np.nan if nodataval is None else nodataval for nodataval in nodatavals
+            np.nan if nodataval is None else nodataval
+            for nodataval in nodatavals
         )
         attrs['_FillValue'] = attrs['nodatavals'][0]
     if hasattr(riods, 'scales'):
@@ -402,13 +404,17 @@ def open_rasterio(
             else:
                 attrs[k] = v
 
-    data = indexing.LazilyIndexedArray(RasterioArrayWrapper(manager, lock, vrt_params))
+    data = indexing.LazilyIndexedArray(
+        RasterioArrayWrapper(manager, lock, vrt_params)
+    )
     # this lets you write arrays loaded with rasterio
     data = indexing.CopyOnWriteArray(data)
     if cache and chunks is None:
         data = indexing.MemoryCachedArray(data)
 
-    result = DataArray(data=data, dims=('band', 'y', 'x'), coords=coords, attrs=attrs)
+    result = DataArray(
+        data=data, dims=('band', 'y', 'x'), coords=coords, attrs=attrs
+    )
 
     if chunks is not None:
         # augment the token with the file modification time
