@@ -1,17 +1,11 @@
 from ..backends import transform_crs
-from .io import apply
-from .io import save
-from .io import to_raster
-from .io import to_netcdf
-from .io import to_vrt
-from .sops import SpatialOperations
 from .conversion import Converters
-from .util import MapProcesses
-from .vi import VegetationIndices
-from .vi import TasseledCap
+from .io import apply, save, to_netcdf, to_raster, to_vrt
+from .sops import SpatialOperations
 
 # Imports intended for module level
-from .util import sort_images_by_date
+from .util import MapProcesses, sort_images_by_date
+from .vi import TasseledCap, VegetationIndices
 
 # Imports intended for package level
 extract = SpatialOperations().extract

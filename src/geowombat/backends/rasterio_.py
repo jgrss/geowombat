@@ -1,39 +1,38 @@
+import logging
 import os
 import shutil
-from pathlib import Path
-from collections import namedtuple
 import threading
-import logging
-import warnings
 import typing as T
+import warnings
+from collections import namedtuple
+from pathlib import Path
 
-import geowombat as gw
-
+import dask
+import dask.array as da
 import numpy as np
 import rasterio as rio
+import xarray as xr
+from affine import Affine
+from dask.delayed import Delayed
+from pyproj import CRS
+from pyproj.exceptions import CRSError
+from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
+from rasterio.transform import array_bounds, from_bounds
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import (
     aligned_target,
     calculate_default_transform,
-    transform_bounds,
     reproject,
+    transform_bounds,
 )
-from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
-from rasterio.coords import BoundingBox
-import dask
-from dask.delayed import Delayed
-import dask.array as da
-import xarray as xr
-from pyproj import CRS
-from pyproj.exceptions import CRSError
-from affine import Affine
 
+import geowombat as gw
 
 try:
-    import zarr
     import numcodecs
+    import zarr
 
     ZARR_INSTALLED = True
 except ImportError:

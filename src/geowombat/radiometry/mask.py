@@ -1,30 +1,30 @@
-from ..errors import logger
-from ..core import ndarray_to_xarray
-from ..core import norm_diff
-
 import numpy as np
 import xarray as xr
+
+from ..core import ndarray_to_xarray, norm_diff
+from ..errors import logger
 
 try:
 
     from s2cloudless import S2PixelCloudDetector
+
     S2CLOUDLESS_INSTALLED = True
 
-except:
+except ImportError:
     S2CLOUDLESS_INSTALLED = False
 
 
-def estimate_shadows(data,
-                     cloud_mask,
-                     solar_zenith,
-                     solar_azimuth,
-                     cloud_heights,
-                     nodata,
-                     scale_factor,
-                     num_workers):
-
-    """
-    Estimates shadows from masked clouds, solar angle, and solar azimuth
+def estimate_shadows(
+    data,
+    cloud_mask,
+    solar_zenith,
+    solar_azimuth,
+    cloud_heights,
+    nodata,
+    scale_factor,
+    num_workers,
+):
+    """Estimates shadows from masked clouds, solar angle, and solar azimuth.
 
     Args:
         data (DataArray)
@@ -54,8 +54,24 @@ def estimate_shadows(data,
 
         # x and y components of shadow vector length
         # TODO: check if correct
-        y = int(((np.cos(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
-        x = -int(((np.sin(solar_azimuth.sel(band=1)) * shadow_vector) / data.gw.celly).round().min().data.compute(num_workers=num_workers))
+        y = int(
+            (
+                (np.cos(solar_azimuth.sel(band=1)) * shadow_vector)
+                / data.gw.celly
+            )
+            .round()
+            .min()
+            .data.compute(num_workers=num_workers)
+        )
+        x = -int(
+            (
+                (np.sin(solar_azimuth.sel(band=1)) * shadow_vector)
+                / data.gw.celly
+            )
+            .round()
+            .min()
+            .data.compute(num_workers=num_workers)
+        )
 
         # affine translation of clouds
         cloud_shift = cloud_mask.shift({'x': x, 'y': y}, fill_value=0)
@@ -63,21 +79,29 @@ def estimate_shadows(data,
         potential_shadows.append(cloud_shift)
 
     potential_shadows = xr.concat(potential_shadows, dim='band')
-    potential_shadows = potential_shadows.assign_coords(coords={'band': list(range(1, len(cloud_heights)+1))})
+    potential_shadows = potential_shadows.assign_coords(
+        coords={'band': list(range(1, len(cloud_heights) + 1))}
+    )
     potential_shadows = potential_shadows.max(dim='band')
     potential_shadows = potential_shadows.expand_dims(dim='band')
     potential_shadows = potential_shadows.assign_coords(coords={'band': [1]})
 
-    dark_pixels = norm_diff(data,
-                            'swir2',
-                            'green',
-                            sensor='s2',
-                            nodata=nodata,
-                            scale_factor=scale_factor)
+    dark_pixels = norm_diff(
+        data,
+        'swir2',
+        'green',
+        sensor='s2',
+        nodata=nodata,
+        scale_factor=scale_factor,
+    )
 
-    shadows = xr.where((potential_shadows.sel(band=1) >= 1) &
-                       (cloud_mask.sel(band=1) != 1) &
-                       (dark_pixels.sel(band='norm-diff') >= 0.1), 1, 0)
+    shadows = xr.where(
+        (potential_shadows.sel(band=1) >= 1)
+        & (cloud_mask.sel(band=1) != 1)
+        & (dark_pixels.sel(band='norm-diff') >= 0.1),
+        1,
+        0,
+    )
 
     shadows = shadows.expand_dims(dim='band')
     shadows = shadows.assign_coords(coords={'band': [1]})
@@ -97,7 +121,7 @@ class CloudShadowMasker(object):
         num_workers=1,
         **kwargs
     ):
-        """Masks Sentinel 2 data
+        """Masks Sentinel 2 data.
 
         Args:
             data (DataArray): The Sentinel 2 data to mask.
@@ -162,7 +186,7 @@ class CloudShadowMasker(object):
                     threshold=0.4,
                     average_over=4,
                     dilation_size=5,
-                    all_bands=False
+                    all_bands=False,
                 )
 
             cloud_detector = S2PixelCloudDetector(**kwargs)
@@ -179,22 +203,34 @@ class CloudShadowMasker(object):
                     'water',
                     'cirrus',
                     'swir1',
-                    'swir2'
+                    'swir2',
                 ]
             )
 
             # Scale from 0-10000 to 0-1
             if isinstance(nodata, int) or isinstance(nodata, float):
-                data_cloudless = xr.where(
-                    data_cloudless != nodata, data_cloudless * scale_factor, nodata
-                ).clip(0, 1).astype('float64')
+                data_cloudless = (
+                    xr.where(
+                        data_cloudless != nodata,
+                        data_cloudless * scale_factor,
+                        nodata,
+                    )
+                    .clip(0, 1)
+                    .astype('float64')
+                )
             else:
-                data_cloudless = (data_cloudless * scale_factor).clip(0, 1).astype('float64')
+                data_cloudless = (
+                    (data_cloudless * scale_factor)
+                    .clip(0, 1)
+                    .astype('float64')
+                )
 
             # Reshape for predictions ..
             #   from [bands x rows x columns]
             #   to [images x rows x columns x bands]
-            X = data_cloudless.transpose('y', 'x', 'band').data.compute(num_workers=num_workers)[np.newaxis, :, :, :]
+            X = data_cloudless.transpose('y', 'x', 'band').data.compute(
+                num_workers=num_workers
+            )[np.newaxis, :, :, :]
 
             ################
             # Predict clouds
@@ -202,7 +238,9 @@ class CloudShadowMasker(object):
 
             # Convert from NumPy array to DataArray
             # clear=0, clouds=1
-            cloud_mask = ndarray_to_xarray(data, cloud_detector.get_cloud_masks(X), [1])
+            cloud_mask = ndarray_to_xarray(
+                data, cloud_detector.get_cloud_masks(X), [1]
+            )
 
             #################
             # Predict shadows
@@ -228,13 +266,23 @@ class CloudShadowMasker(object):
                 cloud_heights,
                 nodata,
                 scale_factor,
-                num_workers
+                num_workers,
             )
 
             # Recode for final output
-            mask = xr.where(cloud_mask.sel(band=1) == 1, 4,
-                            xr.where(shadow_mask.sel(band=1) == 1, 2,
-                                     xr.where(data.max(dim='band') == nodata, 255, 0))).expand_dims(dim='band').astype('uint8')
+            mask = (
+                xr.where(
+                    cloud_mask.sel(band=1) == 1,
+                    4,
+                    xr.where(
+                        shadow_mask.sel(band=1) == 1,
+                        2,
+                        xr.where(data.max(dim='band') == nodata, 255, 0),
+                    ),
+                )
+                .expand_dims(dim='band')
+                .astype('uint8')
+            )
 
             mask = mask.assign_coords(coords={'band': ['mask']})
 

@@ -1,29 +1,29 @@
-import os
 import itertools
-from datetime import datetime
-from collections import defaultdict
 import logging
 import multiprocessing as multi
-from pathlib import Path
+import os
 import tempfile
 import typing as T
 import warnings
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
 
-import numpy as np
-from scipy.stats import mode as sci_mode
-from scipy.spatial import cKDTree
-import pandas as pd
-import geopandas as gpd
-import xarray as xr
 import dask
 import dask.array as da
-from dask.distributed import Client, LocalCluster
-from rasterio import features
-from rasterio.coords import BoundingBox
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import xarray as xr
 from affine import Affine
-from shapely.geometry import Polygon
+from dask.distributed import Client, LocalCluster
 from pyproj.enums import WktVersion
 from pyproj.exceptions import CRSError
+from rasterio import features
+from rasterio.coords import BoundingBox
+from scipy.spatial import cKDTree
+from scipy.stats import mode as sci_mode
+from shapely.geometry import Polygon
 
 try:
     import arosics
@@ -40,19 +40,13 @@ try:
 except ImportError:
     PYMORPH_INSTALLED = False
 
+from ..backends.rasterio_ import array_bounds, check_crs, get_dims_from_bounds
 from ..handler import add_handler
-from ..backends.rasterio_ import (
-    array_bounds,
-    check_crs,
-    get_dims_from_bounds,
-)
-from ..backends.xarray_ import delayed_to_xarray
-from .conversion import Converters
 from .base import PropertyMixin as _PropertyMixin
-from .util import lazy_wombat
-from .parallel import ParallelTask
 from .base import _client_dummy, _cluster_dummy
-
+from .conversion import Converters
+from .parallel import ParallelTask
+from .util import lazy_wombat
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -149,18 +143,20 @@ class SpatialOperations(_PropertyMixin):
         Returns:
             ``pandas.DataFrame``
 
-        Examples:
+        Example:
             >>> import geowombat as gw
             >>>
             >>> # Read a land cover image with 512x512 chunks
             >>> with gw.open('land_cover.tif', chunks=512) as src:
             >>>
-            >>>     df = gw.calc_area(src,
-            >>>                       [1, 2, 5],        # calculate the area of classes 1, 2, and 5
-            >>>                       units='km2',      # return area in kilometers squared
-            >>>                       n_workers=4,
-            >>>                       row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
-            >>>                       col_chunks=1024)
+            >>>     df = gw.calc_area(
+            >>>         src,
+            >>>         [1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>         units='km2',      # return area in kilometers squared
+            >>>         n_workers=4,
+            >>>         row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>         col_chunks=1024
+            >>>     )
         """
 
         def area_func(*args):
@@ -247,7 +243,7 @@ class SpatialOperations(_PropertyMixin):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
+            num_workers (Optional[int]): The number of parallel workers for :func:`dask.compute`.
             verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
@@ -726,7 +722,7 @@ class SpatialOperations(_PropertyMixin):
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             min_frac_area (Optional[int | float]): A minimum polygon area to use ``frac``. Otherwise, use all samples
                 within a polygon.
-            all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
+            all_touched (Optional[bool]): The ``all_touched`` argument is passed to :func:`rasterio.features.rasterize`.
             id_column (Optional[str]): The id column name.
             time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
@@ -739,8 +735,8 @@ class SpatialOperations(_PropertyMixin):
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
                 Only applies when ``use_client`` = ``True``.
-            pool_kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
+            pool_kwargs (Optional[dict]): Keyword arguments passed to :func:`multiprocessing.Pool().imap`.
+            kwargs (Optional[dict]): Keyword arguments passed to :func:`dask.compute`.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -757,14 +753,21 @@ class SpatialOperations(_PropertyMixin):
             >>>     df = gw.extract(src, 'poly.gpkg', use_client=True, n_threads=16)
             >>>
             >>> # Specify the client address with a local cluster
-            >>> with LocalCluster(n_workers=1,
-            >>>                   threads_per_worker=8,
-            >>>                   scheduler_port=0,
-            >>>                   processes=False,
-            >>>                   memory_limit='4GB') as cluster:
+            >>> with LocalCluster(
+            >>>     n_workers=1,
+            >>>     threads_per_worker=8,
+            >>>     scheduler_port=0,
+            >>>     processes=False,
+            >>>     memory_limit='4GB'
+            >>> ) as cluster:
             >>>
             >>>     with gw.open('image.tif') as src:
-            >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
+            >>>         df = gw.extract(
+            >>>             src,
+            >>>             'poly.gpkg',
+            >>>             use_client=True,
+            >>>             address=cluster
+            >>>         )
         """
         if not pool_kwargs:
             pool_kwargs = {}
@@ -929,11 +932,6 @@ class SpatialOperations(_PropertyMixin):
             >>>
             >>> with gw.open('image.tif') as ds:
             >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
-            >>>
-            >>> # or
-            >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
         """
         if isinstance(df, (Path, str)):
             if not Path(df).is_file():
@@ -1007,7 +1005,7 @@ class SpatialOperations(_PropertyMixin):
         """Clips a DataArray by vector polygon geometry.
 
         .. deprecated:: 2.1.7
-            Use ``clip_by_polygon()``
+            Use :func:`geowombat.clip_by_polygon`.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
@@ -1179,6 +1177,13 @@ class SpatialOperations(_PropertyMixin):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Replace 1 with 5
+            >>>     res = gw.replace(ds, {1: 5})
         """
 
         attrs = data.attrs.copy()
@@ -1225,6 +1230,13 @@ class SpatialOperations(_PropertyMixin):
 
         Returns:
             ``xarray.DataArray``
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif', chunks=512) as ds:
+            >>>     # Recode 1 with 5 within a polygon
+            >>>     res = gw.recode(ds, 'poly.gpkg', {1: 5})
         """
         dtype = data.dtype.name
         attrs = data.attrs.copy()

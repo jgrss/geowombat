@@ -39,13 +39,15 @@ In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface 
 
     meta = rt.get_landsat_coefficients(metadata)
 
-    angle_info = landsat_pixel_angles(angles,
-                                      str(b3),         # reference file
-                                      str(main_path),  # output path
-                                      meta.sensor,
-                                      l57_angles_path='../geowombat/bin/ESPA/landsat_angles',
-                                      l8_angles_path='../geowombat/bin/ESPA/l8_angles',
-                                      verbose=1)
+    angle_info = landsat_pixel_angles(
+        angles,
+        str(b3),         # reference file
+        str(main_path),  # output path
+        meta.sensor,
+        l57_angles_path='../geowombat/bin/ESPA/landsat_angles',
+        l8_angles_path='../geowombat/bin/ESPA/l8_angles',
+        verbose=1
+    )
 
     solar_zenith = 'LC08_L1TP_228074_20190120_20190120_01_RT_solar_zenith.tif'
     solar_azimuth = 'LC08_L1TP_228074_20190120_20190120_01_RT_solar_azimuth.tif'
@@ -60,19 +62,29 @@ In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface 
                     gw.open(sensor_zenith, chunks=chunks) as sensor_za, \
                         gw.open(sensor_azimuth, chunks=chunks) as sensor_az:
 
-            sr = rt.dn_to_sr(src,
-                             solar_za, solar_az, sensor_za, sensor_az,
-                             sensor='l8',
-                             meta=meta,
-                             method='srem',
-                             src_nodata=nodataval,
-                             dst_nodata=nodataval)
+            sr = rt.dn_to_sr(
+                dn=src,
+                solar_za=solar_za,
+                solar_az=solar_az,
+                sensor_za=sensor_za,
+                sensor_az=sensor_az,
+                sensor='l8',
+                meta=meta,
+                method='srem',
+                src_nodata=nodataval,
+                dst_nodata=nodataval
+            )
 
-            sr_brdf = br.norm_brdf(sr,
-                                   solar_za, solar_az, sensor_za, sensor_az,
-                                   sensor='l8',
-                                   wavelengths=src.band.values.tolist(),
-                                   src_nodata=nodataval,
-                                   dst_nodata=nodataval)
+            sr_brdf = br.norm_brdf(
+                data=sr,
+                solar_za=solar_za,
+                solar_az=solar_az,
+                sensor_za=sensor_za,
+                sensor_az=sensor_az,
+                sensor='l8',
+                wavelengths=src.band.values.tolist(),
+                src_nodata=nodataval,
+                dst_nodata=nodataval
+            )
 
 .. image:: _static/sr_srem.png

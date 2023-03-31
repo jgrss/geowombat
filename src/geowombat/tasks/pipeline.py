@@ -1,20 +1,19 @@
+import logging
 import os
+import random
+import string
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
-from pathlib import Path
 from copy import copy
-import string
-import random
 from datetime import datetime
-import logging
+from pathlib import Path
+
+import graphviz
+import xarray as xr
 
 from .. import config as gw_config
 from .. import open as gw_open
 from ..handler import add_handler
-
-import xarray as xr
-import graphviz
-
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -24,7 +23,8 @@ PROC_NODE_ATTRS = {
     "color": "#3454b4",
     "fontcolor": "#131f43",
     "style": "filled",
-    "fillcolor": "#c6d2f6"}
+    "fillcolor": "#c6d2f6",
+}
 
 PROC_EDGE_ATTRS = {"color": "#3454b4", "style": "bold"}
 
@@ -33,7 +33,8 @@ CONFIG_NODE_ATTRS = {
     "color": "black",
     "fontcolor": "#131f43",
     "style": "rounded,filled",
-    "fillcolor": "none"}
+    "fillcolor": "none",
+}
 
 CONFIG_EDGE_ATTRS = {"color": "grey", "style": "dashed"}
 
@@ -42,7 +43,8 @@ OUT_NODE_ATTRS = {
     "color": "black",
     "fontcolor": "#131f43",
     "style": "rounded,filled",
-    "fillcolor": "none"}
+    "fillcolor": "none",
+}
 
 OUT_EDGE_ATTRS = {"color": "#edcec6", "style": "dashed"}
 
@@ -51,28 +53,35 @@ INPUT_NODE_ATTRS = {
     "color": "#b49434",
     "fontcolor": "#2d250d",
     "style": "filled",
-    "fillcolor": "#f3e3b3"}
+    "fillcolor": "#f3e3b3",
+}
 
 INPUT_EDGE_ATTRS = {"color": "#b49434"}
 
-VAR_NODE_ATTRS = {"shape": "box", "color": "#555555", "fontcolor": "#555555", "style": "dashed"}
+VAR_NODE_ATTRS = {
+    "shape": "box",
+    "color": "#555555",
+    "fontcolor": "#555555",
+    "style": "dashed",
+}
 
 VAR_EDGE_ATTRS = {"color": "#555555"}
 
 
 class BaseGeoTask(ABC):
-
     @abstractmethod
-    def __init__(self,
-                 inputs,
-                 outputs,
-                 tasks,
-                 clean=None,
-                 config_args=None,
-                 open_args=None,
-                 func_args=None,
-                 out_args=None,
-                 log_file=None):
+    def __init__(
+        self,
+        inputs,
+        outputs,
+        tasks,
+        clean=None,
+        config_args=None,
+        open_args=None,
+        func_args=None,
+        out_args=None,
+        log_file=None,
+    ):
 
         self.inputs = inputs
         self.outputs = outputs
@@ -97,9 +106,7 @@ class BaseGeoTask(ABC):
 
     def __add__(self, other):
 
-        """
-        Add another pipeline
-        """
+        """Add another pipeline."""
 
         self_inputs_copy = self.inputs.copy()
         self_outputs_copy = self.outputs.copy()
@@ -125,23 +132,25 @@ class BaseGeoTask(ABC):
         self_out_args_copy.update(other.out_args)
         self_clean_copy.update(other.clean)
 
-        return GeoTask(self_inputs_copy,
-                       self_outputs_copy,
-                       tuple(tasks),
-                       clean=self_clean_copy,
-                       config_args=self_config_args_copy,
-                       open_args=self_open_args_copy,
-                       func_args=self_func_args_copy,
-                       out_args=self_out_args_copy)
+        return GeoTask(
+            self_inputs_copy,
+            self_outputs_copy,
+            tuple(tasks),
+            clean=self_clean_copy,
+            config_args=self_config_args_copy,
+            open_args=self_open_args_copy,
+            func_args=self_func_args_copy,
+            out_args=self_out_args_copy,
+        )
 
     @abstractmethod
     def execute(self, task_id, task, src, task_results, attrs, **kwargs):
-        """Execute a task"""
+        """Execute a task."""
         pass
 
     @abstractmethod
     def submit(self):
-        """Submit a task pipeline"""
+        """Submit a task pipeline."""
         raise NotImplementedError
 
     def _cleanup(self, level, task_id):
@@ -156,8 +165,12 @@ class BaseGeoTask(ABC):
 
                 try:
                     fn.unlink()
-                except:
-                    logger.warning('  Could not remove task {task_id} output.'.format(task_id=task_id))
+                except Exception:
+                    logger.warning(
+                        '  Could not remove task {task_id} output.'.format(
+                            task_id=task_id
+                        )
+                    )
 
     def _check_task(self, task_id):
         return True if Path(self.outputs[task_id]).is_file() else False
@@ -172,7 +185,11 @@ class BaseGeoTask(ABC):
 
         task_log = f"{when} | {task_output} | task_id-{random_id}"
 
-        return '{task_log} ok\n'.format(task_log=task_log) if self._check_task(task_id) else '{task_log} failed\n'.format(task_log=task_log)
+        return (
+            '{task_log} ok\n'.format(task_log=task_log)
+            if self._check_task(task_id)
+            else '{task_log} failed\n'.format(task_log=task_log)
+        )
 
     def _log_task(self, task_id):
 
@@ -223,14 +240,22 @@ class GraphBuilder(object):
             if task_id not in self.seen:
 
                 self.seen.add(task_id)
-                self.g.node(task_id, label='Task {task_id}: {task_name}'.format(task_id=task_id,
-                                                                                task_name=task.__name__),
-                            **PROC_NODE_ATTRS)
+                self.g.node(
+                    task_id,
+                    label='Task {task_id}: {task_name}'.format(
+                        task_id=task_id, task_name=task.__name__
+                    ),
+                    **PROC_NODE_ATTRS,
+                )
 
             if task_id != list(self.tasks)[0][0]:
 
                 if isinstance(self.inputs[task_id], str):
-                    self.g.edge(list(self.tasks)[counter-1][0], task_id, **PROC_EDGE_ATTRS)
+                    self.g.edge(
+                        list(self.tasks)[counter - 1][0],
+                        task_id,
+                        **PROC_EDGE_ATTRS,
+                    )
                 else:
 
                     task_list_ = list(list(zip(*self.tasks))[0])
@@ -239,21 +264,34 @@ class GraphBuilder(object):
                         if ctask in task_list_:
                             cidx = task_list_.index(ctask)
                         else:
-                            cidx = counter-1
+                            cidx = counter - 1
 
-                        self.g.edge(list(self.tasks)[cidx][0], task_id, **PROC_EDGE_ATTRS)
+                        self.g.edge(
+                            list(self.tasks)[cidx][0],
+                            task_id,
+                            **PROC_EDGE_ATTRS,
+                        )
 
             for config_key, config_setting in self.config_args.items():
 
                 with self.g.subgraph(name='cluster_0') as c:
 
                     c.attr(style='filled', color='lightgrey')
-                    c.node(config_key, label='{config_key}: {config_setting}'.format(config_key=config_key,
-                                                                                     config_setting=config_setting),
-                           **CONFIG_NODE_ATTRS)
+                    c.node(
+                        config_key,
+                        label='{config_key}: {config_setting}'.format(
+                            config_key=config_key,
+                            config_setting=config_setting,
+                        ),
+                        **CONFIG_NODE_ATTRS,
+                    )
                     c.attr(label='geowombat.config.update() args')
 
-                self.g.edge(config_key, list(self.tasks)[counter-1][0], **CONFIG_EDGE_ATTRS)
+                self.g.edge(
+                    config_key,
+                    list(self.tasks)[counter - 1][0],
+                    **CONFIG_EDGE_ATTRS,
+                )
 
             counter += 1
 
@@ -280,13 +318,22 @@ class GraphBuilder(object):
             node_attrs['style'] = 'dashed'
             edge_attrs['style'] = 'dashed'
 
-            self.g.node('{task_id} {task_output}'.format(task_id=task_id,
-                                                         task_output=self.outputs[task_id]),
-                        label=self.outputs[task_id], **node_attrs)
+            self.g.node(
+                '{task_id} {task_output}'.format(
+                    task_id=task_id, task_output=self.outputs[task_id]
+                ),
+                label=self.outputs[task_id],
+                **node_attrs,
+            )
 
-            self.g.edge(task_id, '{task_id} {task_output}'.format(task_id=task_id,
-                                                                  task_output=self.outputs[task_id]),
-                        weight='200', **edge_attrs)
+            self.g.edge(
+                task_id,
+                '{task_id} {task_output}'.format(
+                    task_id=task_id, task_output=self.outputs[task_id]
+                ),
+                weight='200',
+                **edge_attrs,
+            )
 
             for out_key, out_setting in self.out_args.items():
 
@@ -295,25 +342,39 @@ class GraphBuilder(object):
                     with self.g.subgraph(name='cluster_1') as c:
 
                         c.attr(style='filled', color='#a6d5ab')
-                        c.node(out_key, label='{out_key}: {out_setting}'.format(out_key=out_key,
-                                                                                out_setting=out_setting),
-                               **OUT_NODE_ATTRS)
+                        c.node(
+                            out_key,
+                            label='{out_key}: {out_setting}'.format(
+                                out_key=out_key, out_setting=out_setting
+                            ),
+                            **OUT_NODE_ATTRS,
+                        )
 
                         c.attr(label='geowombat.to_raster() args')
 
-                    self.g.edge(out_key, '{task_id} {task_output}'.format(task_id=task_id,
-                                                                          task_output=self.outputs[task_id]),
-                                **OUT_EDGE_ATTRS)
+                    self.g.edge(
+                        out_key,
+                        '{task_id} {task_output}'.format(
+                            task_id=task_id, task_output=self.outputs[task_id]
+                        ),
+                        **OUT_EDGE_ATTRS,
+                    )
 
             if counter > 0:
 
-                task_id_ = list(self.outputs.keys())[counter-1]
+                task_id_ = list(self.outputs.keys())[counter - 1]
 
                 if not self.outputs[task_id_].startswith('mem|'):
 
-                    self.g.edge('{task_id_} {task_output}'.format(task_id_=task_id_,
-                                                                  task_output=self.outputs[task_id_]),
-                                task_id, weight='200', **edge_attrs)
+                    self.g.edge(
+                        '{task_id_} {task_output}'.format(
+                            task_id_=task_id_,
+                            task_output=self.outputs[task_id_],
+                        ),
+                        task_id,
+                        weight='200',
+                        **edge_attrs,
+                    )
 
             counter += 1
 
@@ -332,8 +393,17 @@ class GraphBuilder(object):
 
             for k, param in params.items():
 
-                self.g.node('{task_id} {k}'.format(task_id=task_id, k=k), label='{k}: {param}'.format(k=k, param=param), **VAR_NODE_ATTRS)
-                self.g.edge('{task_id} {k}'.format(task_id=task_id, k=k), task_id, weight='200', **VAR_EDGE_ATTRS)
+                self.g.node(
+                    '{task_id} {k}'.format(task_id=task_id, k=k),
+                    label='{k}: {param}'.format(k=k, param=param),
+                    **VAR_NODE_ATTRS,
+                )
+                self.g.edge(
+                    '{task_id} {k}'.format(task_id=task_id, k=k),
+                    task_id,
+                    weight='200',
+                    **VAR_EDGE_ATTRS,
+                )
 
         return self.g
 
@@ -356,17 +426,26 @@ class GraphBuilder(object):
 
                         self.inputs_seen.add(gen_item)
 
-                        gen_label = Path(gen_item).name if Path(gen_item).is_file() else gen_item
+                        gen_label = (
+                            Path(gen_item).name
+                            if Path(gen_item).is_file()
+                            else gen_item
+                        )
 
                         if gen_item not in self.outputs:
 
-                            self.g.node('{task_id} {gen_item}'.format(task_id=task_id, gen_item=gen_item),
-                                        label=gen_label, **INPUT_NODE_ATTRS)
+                            self.g.node(
+                                '{task_id} {gen_item}'.format(
+                                    task_id=task_id, gen_item=gen_item
+                                ),
+                                label=gen_label,
+                                **INPUT_NODE_ATTRS,
+                            )
 
                         task_id_b = task_id
 
                     else:
-                        task_id_b = list(self.tasks)[counter-1][0]
+                        task_id_b = list(self.tasks)[counter - 1][0]
 
                 if task_id_b:
 
@@ -377,15 +456,19 @@ class GraphBuilder(object):
                                 task_id_b = itask
                                 break
 
-                        self.g.edge('{task_id_b} {gen_item}'.format(task_id_b=task_id_b,
-                                                                    gen_item=gen_item),
-                                    task_id, weight='200', **INPUT_EDGE_ATTRS)
+                        self.g.edge(
+                            '{task_id_b} {gen_item}'.format(
+                                task_id_b=task_id_b, gen_item=gen_item
+                            ),
+                            task_id,
+                            weight='200',
+                            **INPUT_EDGE_ATTRS,
+                        )
 
 
 class GeoTask(BaseGeoTask, GraphBuilder):
 
-    """
-    A Geo-task scheduler
+    """A Geo-task scheduler.
 
     Args:
         inputs (dict): The input steps.
@@ -447,31 +530,34 @@ class GeoTask(BaseGeoTask, GraphBuilder):
         >>> new_task.submit()
     """
 
-    def __init__(self,
-                 inputs,
-                 outputs,
-                 tasks,
-                 clean=None,
-                 config_args=None,
-                 open_args=None,
-                 func_args=None,
-                 out_args=None,
-                 log_file=None):
+    def __init__(
+        self,
+        inputs,
+        outputs,
+        tasks,
+        clean=None,
+        config_args=None,
+        open_args=None,
+        func_args=None,
+        out_args=None,
+        log_file=None,
+    ):
 
-        super().__init__(inputs,
-                         outputs,
-                         tasks,
-                         clean=clean,
-                         config_args=config_args,
-                         open_args=open_args,
-                         func_args=func_args,
-                         out_args=out_args,
-                         log_file=log_file)
+        super().__init__(
+            inputs,
+            outputs,
+            tasks,
+            clean=clean,
+            config_args=config_args,
+            open_args=open_args,
+            func_args=func_args,
+            out_args=out_args,
+            log_file=log_file,
+        )
 
     def execute(self, task_id, task, src, task_results, attrs, **kwargs):
 
-        """
-        Executes an individual task
+        """Executes an individual task.
 
         Args:
             task_id (str)
@@ -502,9 +588,7 @@ class GeoTask(BaseGeoTask, GraphBuilder):
 
     def submit(self):
 
-        """
-        Submits a pipeline task
-        """
+        """Submits a pipeline task."""
 
         task_results = {}
         attrs = None
@@ -517,28 +601,57 @@ class GeoTask(BaseGeoTask, GraphBuilder):
             for task_id, task in self.tasks:
 
                 # Check task keywords
-                kwargs = self.func_args[task_id] if task_id in self.func_args else {}
+                kwargs = (
+                    self.func_args[task_id]
+                    if task_id in self.func_args
+                    else {}
+                )
 
                 # Check task input(s)
-                if isinstance(self.inputs[task_id], tuple) or isinstance(self.inputs[task_id], list):
+                if isinstance(self.inputs[task_id], tuple) or isinstance(
+                    self.inputs[task_id], list
+                ):
 
                     with ExitStack() as stack:
 
                         # Open input files for the task
-                        src = (stack.enter_context(gw_open(fn, **self.open_args)) if Path(fn).is_file()
-                               else task_results[fn] for fn in self.inputs[task_id])
+                        src = (
+                            stack.enter_context(gw_open(fn, **self.open_args))
+                            if Path(fn).is_file()
+                            else task_results[fn]
+                            for fn in self.inputs[task_id]
+                        )
 
-                        res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
+                        res = self.execute(
+                            task_id, task, src, task_results, attrs, **kwargs
+                        )
 
                     # res = self.execute(task_id, task, self.inputs[task_id], task_results, attrs, **kwargs)
 
-                elif isinstance(self.inputs[task_id], str) and not Path(self.inputs[task_id]).is_file():
-                    res = self.execute(task_id, task, task_results[self.inputs[task_id]], task_results, attrs, **kwargs)
-                elif isinstance(self.inputs[task_id], str) and Path(self.inputs[task_id]).is_file():
+                elif (
+                    isinstance(self.inputs[task_id], str)
+                    and not Path(self.inputs[task_id]).is_file()
+                ):
+                    res = self.execute(
+                        task_id,
+                        task,
+                        task_results[self.inputs[task_id]],
+                        task_results,
+                        attrs,
+                        **kwargs,
+                    )
+                elif (
+                    isinstance(self.inputs[task_id], str)
+                    and Path(self.inputs[task_id]).is_file()
+                ):
 
-                    with gw_open(self.inputs[task_id], **self.open_args) as src:
+                    with gw_open(
+                        self.inputs[task_id], **self.open_args
+                    ) as src:
                         attrs = src.attrs.copy()
-                        res = self.execute(task_id, task, src, task_results, attrs, **kwargs)
+                        res = self.execute(
+                            task_id, task, src, task_results, attrs, **kwargs
+                        )
 
                 task_results[task_id] = res
 
