@@ -75,7 +75,7 @@ Prerequisites
 7. Add code and run `debug cell`
 
 View Example Video here:
-[![Debug Docker](https://geowombat.readthedocs.io/en/latest/_static/logo.png)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
+[![Debug Docker](https://cdn-icons-png.flaticon.com/512/3024/3024584.png)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
 
 ## Create a Pull Request for the new feature or fix
 ----------------------
