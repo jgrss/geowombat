@@ -1,3 +1,11 @@
+# Contibuting to Geowombat
+---------------------------
+
+We have two methods for contribution, 1) local install, 2) docker based debugging
+
+1 - Local Install
+--------------
+
 ## Install GeoWombat
 
 ### Clone the latest repo
@@ -49,7 +57,18 @@ Install other extras from `setup.cfg` as needed.
 (venv.gw) python -m unittest
 ```
 
+2 - Docker Debuging 
+--------------------
+Prerequisites
+- [Visual Studio Code](https://code.visualstudio.com/download)
+- [Docker VS Code Extension](https://code.visualstudio.com/docs/containers/overview)
+- [Docker Desktop](https://docs.docker.com/desktop/)
+
+
+
+
 ## Create a Pull Request for the new feature or fix
+----------------------
 
 ### Commit and push changes
 
