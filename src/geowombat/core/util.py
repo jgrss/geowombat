@@ -299,15 +299,14 @@ def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     )
 
 
-def get_file_extension(filename):
-
+def get_file_extension(filename: str) -> namedtuple:
     """Gets file and directory name information.
 
     Args:
         filename (str): The file name.
 
     Returns:
-        Name information (namedtuple)
+        Name information as ``namedtuple``.
     """
 
     FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
@@ -318,7 +317,7 @@ def get_file_extension(filename):
     return FileNames(d_name=d_name, f_name=f_name, f_base=f_base, f_ext=f_ext)
 
 
-def n_rows_cols(pixel_index, block_size, rows_cols):
+def n_rows_cols(pixel_index: int, block_size: int, rows_cols: int) -> int:
 
     """Adjusts block size for the end of image rows and columns.
 
@@ -328,9 +327,8 @@ def n_rows_cols(pixel_index, block_size, rows_cols):
         rows_cols (int): The total number of rows or columns in the image.
 
     Returns:
-        Adjusted block size as int.
+        Adjusted block size as ``int``.
     """
-
     return (
         block_size
         if (pixel_index + block_size) < rows_cols
