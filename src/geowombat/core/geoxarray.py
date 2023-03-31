@@ -693,6 +693,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
             compress (Optional[str]): The file compression type. Default is 'none', or no compression.
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
+
                 .. deprecated:: 2.1.4
                     Use 'compress' -- 'compression' will be removed in >=2.2.0.
 
@@ -973,11 +974,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>> with gw.open('image.tif') as ds:
             >>>     ds = ds.gw.clip_by_polygon(df, query="Id == 1")
-            >>>
-            >>> # or
-            >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = ds.gw.clip_by_polygon(df, query="Id == 1")
         """
         return clip_by_polygon(
             self._obj,
@@ -997,7 +993,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Clips a DataArray by vector polygon geometry.
 
         .. deprecated:: 2.1.7
-            Use ``clip_by_polygon()``
+            Use :func:`DataArray.gw.clip_by_polygon`.
 
         Args:
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.

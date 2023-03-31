@@ -929,11 +929,6 @@ class SpatialOperations(_PropertyMixin):
             >>>
             >>> with gw.open('image.tif') as ds:
             >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
-            >>>
-            >>> # or
-            >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     ds = gw.clip_by_polygon(ds, df, query="Id == 1")
         """
         if isinstance(df, (Path, str)):
             if not Path(df).is_file():
@@ -1007,7 +1002,7 @@ class SpatialOperations(_PropertyMixin):
         """Clips a DataArray by vector polygon geometry.
 
         .. deprecated:: 2.1.7
-            Use ``clip_by_polygon()``
+            Use :func:`geowombat.clip_by_polygon`.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to subset.
