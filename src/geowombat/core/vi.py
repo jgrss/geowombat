@@ -181,7 +181,6 @@ class BandMath(object):
         Returns:
             ``xarray.DataArray``
         """
-
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
         band_data = self.scale_and_assign(
@@ -189,7 +188,6 @@ class BandMath(object):
         )
 
         if band_variable == 'wavelength':
-
             result = (
                 (
                     (
@@ -409,7 +407,6 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
         """Two-band enhanced vegetation index.
 
         Returns:
@@ -496,8 +493,7 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
-        """green chlorophyll vegetation index.
+        """Green chlorophyll vegetation index.
 
         Returns:
             ``xarray.DataArray``
@@ -552,7 +548,6 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
         """Normalized burn ratio.
 
         Returns:
@@ -588,7 +583,6 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
         """Normalized difference vegetation index.
 
         Returns:
@@ -624,13 +618,11 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
-        """kernel Normalized difference vegetation index.
+        """Kernel normalized difference vegetation index.
 
         Returns:
             ``xarray.DataArray``
         """
-
         band_variable = 'wavelength' if 'wavelength' in data.coords else 'band'
 
         if 'nir' in data.coords[band_variable].values.tolist():
@@ -689,7 +681,6 @@ class BandMath(object):
         mask=False,
         scale_factor=None,
     ):
-
         """Woody index.
 
         Returns:
@@ -740,10 +731,13 @@ class BandMath(object):
         )
 
 
-def linear_transform(data, bands, scale, offset):
-
-    r"""
-    Linearly scales bands using a scale and an offset
+def linear_transform(
+    data: xr.DataArray,
+    bands: T.Sequence[T.Any],
+    scale: T.Sequence[T.Union[float, int]],
+    offset: T.Sequence[T.Union[float, int]],
+) -> xr.DataArray:
+    r"""Linearly scales bands using a scale and an offset
 
     Args:
         data (DataArray): The ``xarray.DataArray`` to transform.
@@ -760,9 +754,7 @@ def linear_transform(data, bands, scale, offset):
     Returns:
         ``xarray.DataArray``
     """
-
     scalexr = xr.DataArray(scale, coords=[bands], dims=['band'])
-
     offsetxr = xr.DataArray(offset, coords=[bands], dims=['band'])
 
     return data * scalexr + offsetxr
