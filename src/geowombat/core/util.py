@@ -341,7 +341,7 @@ class Chunks(object):
     def get_chunk_dim(chunksize):
         return '{:d}d'.format(len(chunksize))
 
-    def check_chunktype(self, chunksize, output='3d'):
+    def check_chunktype(self, chunksize: int, output: str = '3d'):
         if isinstance(chunksize, int):
             chunksize = (-1, chunksize, chunksize)
 
@@ -361,7 +361,7 @@ class Chunks(object):
             return chunksize
 
     @staticmethod
-    def check_chunksize(chunksize, output='3d'):
+    def check_chunksize(chunksize: int, output: str = '3d') -> tuple:
         chunk_len = len(chunksize)
         output_len = int(output[0])
 
@@ -454,7 +454,7 @@ class MapProcesses(object):
                     n_jobs=n_jobs,
                 )
 
-        results = list()
+        results = []
 
         for band in data.band.values.tolist():
 

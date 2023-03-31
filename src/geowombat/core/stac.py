@@ -197,7 +197,7 @@ def open_stac(
         bands (sequence): The bands to open.
         chunksize (int): The dask chunk size.
         mask_items (sequence): The items to mask.
-        bounds_query (Optional[str]): A query to select bounds from the ``GeoDataFrame``.
+        bounds_query (Optional[str]): A query to select bounds from the ``geopandas.GeoDataFrame``.
         mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
@@ -215,7 +215,7 @@ def open_stac(
     Returns:
         ``xarray.DataArray``
 
-    Example:
+    Examples:
         >>> from geowombat.core.stac import open_stac, merge_stac
         >>>
         >>> data_l, df_l = open_stac(
