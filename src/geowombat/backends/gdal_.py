@@ -1,5 +1,5 @@
-from pathlib import Path
 import typing as T
+from pathlib import Path
 
 from osgeo import gdal
 
@@ -38,9 +38,11 @@ def warp(
             Path(out_image).unlink()
 
     warp_options = gdal.WarpOptions(**kwargs)
-
-    out_ds = gdal.Warp(str(out_image), str(in_image), options=warp_options)
-
+    out_ds = gdal.Warp(
+        str(Path(out_image).resolve()),
+        str(Path(in_image).resolve()),
+        options=warp_options,
+    )
     out_ds = None
 
     if delete_input:
