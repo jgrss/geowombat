@@ -39,6 +39,7 @@ from ..util import imshow as gw_imshow
 from ..radiometry import BRDF as _BRDF
 
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 import xarray as xr
 from dask.distributed import Client as _Client
@@ -46,7 +47,7 @@ import dask.array as da
 import rasterio as rio
 from rasterio.windows import Window as _Window
 from rasterio.coords import BoundingBox as _BoundingBox
-from shapely.geometry import Polygon as _Polygon, box
+from shapely.geometry import Polygon as _Polygon, _box
 import joblib
 
 
@@ -410,7 +411,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         if isinstance(bounds, _Polygon):
             overlays = getattr(self._obj.gw.geometry, how)(bounds)
         else:
-            poly = box(*bounds)
+            poly = _box(*bounds)
             overlays = getattr(self._obj.gw.geometry, how)(poly)
 
         return overlays
@@ -1125,16 +1126,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def calc_area(
         self,
-        values,
-        op='eq',
-        units='km2',
-        row_chunks=None,
-        col_chunks=None,
-        n_workers=1,
-        n_threads=1,
-        scheduler='threads',
-        n_chunks=100,
-    ):
+        values: T.Sequence[T.Union[float, int]],
+        op: str = 'eq',
+        units: str = 'km2',
+        row_chunks: int = None,
+        col_chunks: int = None,
+        n_workers: int = 1,
+        n_threads: int = 1,
+        scheduler: str = 'threads',
+        n_chunks: int = 100,
+    ) -> pd.DataFrame:
 
         """Calculates the area of data values.
 
@@ -1163,11 +1164,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> # Read a land cover image with 512x512 chunks
             >>> with gw.open('land_cover.tif', chunks=512) as src:
             >>>
-            >>>     df = src.gw.calc_area([1, 2, 5],        # calculate the area of classes 1, 2, and 5
-            >>>                           units='km2',      # return area in kilometers squared
-            >>>                           n_workers=4,
-            >>>                           row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
-            >>>                           col_chunks=1024)
+            >>>     df = src.gw.calc_area(
+            >>>         [1, 2, 5],        # calculate the area of classes 1, 2, and 5
+            >>>         units='km2',      # return area in kilometers squared
+            >>>         n_workers=4,
+            >>>         row_chunks=1024,  # iterate over larger chunks to use 512 chunks in parallel
+            >>>         col_chunks=1024
+            >>>     )
         """
 
         return calc_area(
@@ -1185,15 +1188,17 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def sample(
         self,
-        method='random',
-        band=None,
-        n=None,
-        strata=None,
-        spacing=None,
-        min_dist=None,
-        max_attempts=10,
+        method: str = 'random',
+        band: T.Union[int, str] = None,
+        n: int = None,
+        strata: T.Optional[T.Dict[str, T.Union[float, int]]] = None,
+        spacing: T.Optional[float] = None,
+        min_dist: T.Optional[T.Union[float, int]] = None,
+        max_attempts: T.Optional[int] = 10,
+        num_workers: T.Optional[int] = 1,
+        verbose: T.Optional[int] = 1,
         **kwargs,
-    ):
+    ) -> gpd.GeoDataFrame:
 
         """Generates samples from a raster.
 
@@ -1215,6 +1220,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
+            num_workers (Optional[int]): The number of parallel workers for :func:`dask.compute`.
+            verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
         Returns:
@@ -1250,23 +1257,34 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             spacing=spacing,
             min_dist=min_dist,
             max_attempts=max_attempts,
+            num_workers=num_workers,
+            verbose=verbose,
             **kwargs,
         )
 
     def extract(
         self,
-        aoi,
-        bands=None,
-        time_names=None,
-        band_names=None,
-        frac=1.0,
-        all_touched=False,
-        mask=None,
-        n_jobs=8,
-        verbose=0,
+        aoi: T.Union[str, _Path, gpd.GeoDataFrame],
+        bands: T.Union[int, T.Sequence[int]] = None,
+        time_names: T.Sequence[T.Any] = None,
+        band_names: T.Sequence[T.Any] = None,
+        frac: float = 1.0,
+        min_frac_area: T.Optional[T.Union[float, int]] = None,
+        all_touched: T.Optional[bool] = False,
+        id_column: T.Optional[str] = 'id',
+        time_format: T.Optional[str] = '%Y%m%d',
+        mask: T.Optional[T.Union[_Polygon, gpd.GeoDataFrame]] = None,
+        n_jobs: T.Optional[int] = 8,
+        verbose: T.Optional[int] = 0,
+        n_workers: T.Optional[int] = 1,
+        n_threads: T.Optional[int] = -1,
+        use_client: T.Optional[bool] = False,
+        address: T.Optional[str] = None,
+        total_memory: T.Optional[int] = 24,
+        processes: T.Optional[bool] = False,
+        pool_kwargs: T.Optional[dict] = None,
         **kwargs,
-    ):
-
+    ) -> gpd.GeoDataFrame:
         """Extracts data within an area or points of interest. Projections do
         not need to match, as they are handled 'on-the-fly'.
 
@@ -1277,11 +1295,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             band_names (Optional[list]): A list of band names. Length should be the same as `bands`.
             time_names (Optional[list]): A list of time names.
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
-            all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
+            min_frac_area (Optional[int | float]): A minimum polygon area to use ``frac``. Otherwise, use all samples
+                within a polygon.
+            all_touched (Optional[bool]): The ``all_touched`` argument is passed to :func:`rasterio.features.rasterize`.
+            id_column (Optional[str]): The id column name.
+            time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
             n_jobs (Optional[int]): The number of features to rasterize in parallel.
             verbose (Optional[int]): The verbosity level.
-            kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
+            n_workers (Optional[int]): The number of process workers. Only applies when ``use_client`` = ``True``.
+            n_threads (Optional[int]): The number of thread workers. Only applies when ``use_client`` = ``True``.
+            use_client (Optional[bool]): Whether to use a ``dask`` client.
+            address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
+            total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
+            processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
+                Only applies when ``use_client`` = ``True``.
+            pool_kwargs (Optional[dict]): Keyword arguments passed to :func:`multiprocessing.Pool().imap`.
+            kwargs (Optional[dict]): Keyword arguments passed to :func:`dask.compute`.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -1289,10 +1319,30 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Examples:
             >>> import geowombat as gw
             >>>
-            >>> with gw.open('image.tif') as ds:
-            >>>     df = ds.gw.extract('poly.gpkg')
+            >>> with gw.open('image.tif') as src:
+            >>>     df = src.gw.extract('poly.gpkg')
+            >>>
+            >>> # On a cluster
+            >>> # Use a local cluster
+            >>> with gw.open('image.tif') as src:
+            >>>     df = src.gw.extract('poly.gpkg', use_client=True, n_threads=16)
+            >>>
+            >>> # Specify the client address with a local cluster
+            >>> with LocalCluster(
+            >>>     n_workers=1,
+            >>>     threads_per_worker=8,
+            >>>     scheduler_port=0,
+            >>>     processes=False,
+            >>>     memory_limit='4GB'
+            >>> ) as cluster:
+            >>>
+            >>>     with gw.open('image.tif') as src:
+            >>>         df = src.gw.extract(
+            >>>             'poly.gpkg',
+            >>>             use_client=True,
+            >>>             address=cluster
+            >>>         )
         """
-
         kwargs = self._update_kwargs(**kwargs)
 
         return extract(
@@ -1302,17 +1352,30 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             time_names=time_names,
             band_names=band_names,
             frac=frac,
+            min_frac_area=min_frac_area,
             all_touched=all_touched,
+            id_column=id_column,
+            time_format=time_format,
             mask=mask,
             n_jobs=n_jobs,
             verbose=verbose,
+            n_workers=n_workers,
+            n_threads=n_threads,
+            use_client=use_client,
+            address=address,
+            total_memory=total_memory,
+            processes=processes,
+            pool_kwargs=pool_kwargs,
             **kwargs,
         )
 
     def band_mask(
-        self, valid_bands, src_nodata=None, dst_clear_val=0, dst_mask_val=1
-    ):
-
+        self,
+        valid_bands: T.Sequence[T.Any],
+        src_nodata: T.Union[float, int] = None,
+        dst_clear_val: int = 0,
+        dst_mask_val: int = 1,
+    ) -> xr.DataArray:
         """Creates a mask from band nonzeros.
 
         Args:
@@ -1324,7 +1387,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``xarray.DataArray``
         """
-
         mask = (
             self._obj.where(self._obj.sel(band=valid_bands) > 0)
             .count(dim='band')
@@ -1333,8 +1395,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             .astype('uint8')
         )
 
-        if isinstance(src_nodata, int) or isinstance(src_nodata, float):
-
+        if isinstance(src_nodata, (float, int)):
             return xr.where(
                 (mask < len(valid_bands))
                 | (self._obj.sel(band='blue') == src_nodata),
@@ -1343,7 +1404,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             ).assign_attrs(**self._obj.attrs)
 
         else:
-
             return xr.where(
                 mask < len(valid_bands), dst_mask_val, dst_clear_val
             ).assign_attrs(**self._obj.attrs)
@@ -1356,8 +1416,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         dtype: str = None,
         scale_factor: T.Union[float, int] = None,
         offset: T.Union[float, int] = None,
-    ):
-        """Sets 'no data' values and applies scaling to a DataArray.
+    ) -> xr.DataArray:
+        """Sets 'no data' values and applies scaling to an
+        ``xarray.DataArray``.
 
         Args:
             src_nodata (int | float): The 'no data' values to replace. Default is ``None``.
@@ -1425,20 +1486,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def moving(
         self,
-        band_coords='band',
-        stat='mean',
-        perc=50,
-        nodata=None,
-        w=3,
-        weights=False,
-        n_jobs=1,
-    ):
-
+        band_coords: str = 'band',
+        stat: str = 'mean',
+        perc: int = 50,
+        nodata: T.Union[float, int] = None,
+        w: int = 3,
+        weights: bool = False,
+        n_jobs: int = 1,
+    ) -> xr.DataArray:
         """Applies a moving window function to the DataArray.
 
         Args:
             band_coords (Optional[str]): The band coordinate name.
-            stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc'].
+            stat (Optional[str]): The statistic to compute. Choices are
+                ['mean', 'std', 'var', 'min', 'max', 'perc'].
             perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
             nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
@@ -1459,7 +1520,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>> with gw.open('image.tif') as src:
             >>>     res = src.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
         """
-
         return moving(
             self._obj,
             band_names=self._obj.coords[band_coords].values,
@@ -1472,19 +1532,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         )
 
     def norm_diff(
-        self, b1, b2, nodata=None, mask=False, sensor=None, scale_factor=1.0
-    ):
-
+        self,
+        b1: T.Any,
+        b2: T.Any,
+        nodata: T.Union[float, int] = None,
+        mask: bool = False,
+        sensor: T.Optional[str] = None,
+        scale_factor: T.Optional[float] = 1.0,
+    ) -> xr.DataArray:
         r"""
-        Calculates the normalized difference band ratio
+        Calculates the normalized difference band ratio.
 
         Args:
-            data (DataArray): The ``xarray.DataArray`` to process.
             b1 (str): The band name of the first band.
             b2 (str): The band name of the second band.
-            sensor (Optional[str]): sensor (Optional[str]): The data's sensor.
             nodata (Optional[int or float]): A 'no data' value to fill NAs with.
             mask (Optional[bool]): Whether to mask the results.
+            sensor (Optional[str]): The data's sensor.
             scale_factor (Optional[float]): A scale factor to apply to the data.
 
         Equation:
@@ -1498,14 +1562,13 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
                 Data range: -1 to 1
         """
-
         return gw_norm_diff(
             self._obj,
             b1,
             b2,
-            sensor=sensor,
             nodata=nodata,
             mask=mask,
+            sensor=sensor,
             scale_factor=scale_factor,
         )
 

@@ -129,6 +129,7 @@ ipython_savefig_dir = '_static'
 autodoc_inherit_docstrings = False
 # autodoc_member_order = 'bysource'
 autosummary_generate = True
+autodoc_typehints = 'description'
 autodoc_default_options = {
     'members': True,
     'show-inheritance': True,

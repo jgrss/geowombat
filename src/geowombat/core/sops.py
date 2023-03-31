@@ -247,7 +247,7 @@ class SpatialOperations(_PropertyMixin):
             spacing (Optional[float]): The spacing (in map projection units) when ``method`` = 'systematic'.
             min_dist (Optional[float or int]): A minimum distance allowed between samples. Only applies when ``method`` = 'random'.
             max_attempts (Optional[int]): The maximum numer of attempts to sample points > ``min_dist`` from each other.
-            num_workers (Optional[int]): The number of parallel workers for ``dask.compute``.
+            num_workers (Optional[int]): The number of parallel workers for :func:`dask.compute`.
             verbose (Optional[int]): The verbosity level.
             kwargs (Optional[dict]): Keyword arguments passed to ``geowombat.extract``.
 
@@ -726,7 +726,7 @@ class SpatialOperations(_PropertyMixin):
             frac (Optional[float]): A fractional subset of points to extract in each polygon feature.
             min_frac_area (Optional[int | float]): A minimum polygon area to use ``frac``. Otherwise, use all samples
                 within a polygon.
-            all_touched (Optional[bool]): The ``all_touched`` argument is passed to ``rasterio.features.rasterize``.
+            all_touched (Optional[bool]): The ``all_touched`` argument is passed to :func:`rasterio.features.rasterize`.
             id_column (Optional[str]): The id column name.
             time_format (Optional[str]): The ``datetime`` conversion format if ``time_names`` are ``datetime`` objects.
             mask (Optional[GeoDataFrame or Shapely Polygon]): A ``shapely.geometry.Polygon`` mask to subset to.
@@ -739,8 +739,8 @@ class SpatialOperations(_PropertyMixin):
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
                 Only applies when ``use_client`` = ``True``.
-            pool_kwargs (Optional[dict]): Keyword arguments passed to ``multiprocessing.Pool().imap``.
-            kwargs (Optional[dict]): Keyword arguments passed to ``dask.compute``.
+            pool_kwargs (Optional[dict]): Keyword arguments passed to :func:`multiprocessing.Pool().imap`.
+            kwargs (Optional[dict]): Keyword arguments passed to :func:`dask.compute`.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -757,14 +757,21 @@ class SpatialOperations(_PropertyMixin):
             >>>     df = gw.extract(src, 'poly.gpkg', use_client=True, n_threads=16)
             >>>
             >>> # Specify the client address with a local cluster
-            >>> with LocalCluster(n_workers=1,
-            >>>                   threads_per_worker=8,
-            >>>                   scheduler_port=0,
-            >>>                   processes=False,
-            >>>                   memory_limit='4GB') as cluster:
+            >>> with LocalCluster(
+            >>>     n_workers=1,
+            >>>     threads_per_worker=8,
+            >>>     scheduler_port=0,
+            >>>     processes=False,
+            >>>     memory_limit='4GB'
+            >>> ) as cluster:
             >>>
             >>>     with gw.open('image.tif') as src:
-            >>>         df = gw.extract(src, 'poly.gpkg', use_client=True, address=cluster)
+            >>>         df = gw.extract(
+            >>>             src,
+            >>>             'poly.gpkg',
+            >>>             use_client=True,
+            >>>             address=cluster
+            >>>         )
         """
         if not pool_kwargs:
             pool_kwargs = {}
