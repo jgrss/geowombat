@@ -47,7 +47,7 @@ import dask.array as da
 import rasterio as rio
 from rasterio.windows import Window as _Window
 from rasterio.coords import BoundingBox as _BoundingBox
-from shapely.geometry import Polygon as _Polygon, _box
+from shapely.geometry import Polygon as _Polygon, box as _box
 import joblib
 
 
