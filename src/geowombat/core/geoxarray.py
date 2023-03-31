@@ -124,8 +124,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         )
 
     def check_chunksize(self, chunksize: int, array_size: int) -> int:
-        """Assert the chunk size fits within intervals of 16 and is smaller
-        than the array."""
+        """Asserts that the chunk size fits within intervals of 16 and is
+        smaller than the array.
+
+        Args:
+            chunksize (int): The chunk size to check.
+            array_size (int): The array dimension size to check against.
+
+        Returns:
+            ``int``
+        """
         if not (chunksize % 16 == 0) or (chunksize > array_size):
             if chunksize % 16 == 0:
                 chunksize = 1024
@@ -154,15 +162,23 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def compute(self, **kwargs) -> np.ndarray:
         """Computes data.
 
+        Args:
+            kwargs (Optional[dict]): Keyword arguments to pass to :func:`dask.compute`.
+
         Returns:
-            ``xarray.DataArray``
+            ``numpy.ndarray``
         """
         if not self._obj.chunks:
             return self._obj.data
         else:
             return self._obj.data.compute(**kwargs)
 
-    def mask(self, df, query=None, keep='in') -> xr.DataArray:
+    def mask(
+        self,
+        df: T.Union[str, _Path, gpd.GeoDataFrame],
+        query: T.Optional[str] = None,
+        keep: T.Optional[str] = 'in',
+    ) -> xr.DataArray:
         """Masks a DataArray.
 
         Args:
@@ -177,7 +193,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         return mask(self._obj, df, query=query, keep=keep)
 
     def mask_nodata(self) -> xr.DataArray:
-        """Masks 'no data' values with nans."""
+        """Masks 'no data' values with nans.
+
+        Returns:
+            ``xarray.DataArray``
+        """
         nodata_value = self._obj.gw.nodataval
         if nodata_value is None:
             warnings.warn(
@@ -232,7 +252,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def match_data(
         self, data: xr.DataArray, band_names: T.Sequence[T.Union[int, str]]
     ) -> xr.DataArray:
-        """Coerces the DataArray to match another GeoWombat DataArray.
+        """Coerces the ``xarray.DataArray`` to match another
+        ``xarray.DataArray``.
 
         Args:
             data (DataArray): The ``xarray.DataArray`` to match to.
@@ -241,7 +262,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``xarray.DataArray``
 
-        Examples:
+        Example:
             >>> import geowombat as gw
             >>> import xarray as xr
             >>>
@@ -272,12 +293,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             op (str): The comparison operation.
-            b (int | float): The value to compare to.
+            b (float | int): The value to compare to.
             return_binary (Optional[bool]): Whether to return a binary (1 or 0) array.
 
         Returns:
             ``xarray.DataArray``:
-                Valid data where ``op`` meets criteria ``b``, otherwise nans
+                Valid data where ``op`` meets criteria ``b``, otherwise nans.
+
+        Example:
+            >>> import geowombat as gw
+            >>>
+            >>> with gw.open('image.tif') as src:
+            >>>     # Mask all values greater than 10
+            >>>     thresh = src.gw.compare(op='lt', b=10)
         """
         if op not in ['lt', 'le', 'gt', 'ge', 'eq', 'ne']:
             raise NameError('The comparison operation is not supported.')
@@ -302,8 +330,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             **self._obj.attrs.copy()
         )
 
-    def replace(self, to_replace: dict) -> xr.DataArray:
-        """Replace values given in to_replace with value.
+    def replace(
+        self, to_replace: T.Dict[int, T.Union[int, str]]
+    ) -> xr.DataArray:
+        """Replace values given in ``to_replace`` with value.
 
         Args:
             to_replace (dict): How to find the values to replace. Dictionary mappings should be given
@@ -377,23 +407,25 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>     contains = src.gw.bounds_overlay(bounds, how='contains')
         """
         if isinstance(bounds, _Polygon):
-            return getattr(self._obj.gw.geometry, how)(bounds)
+            overlays = getattr(self._obj.gw.geometry, how)(bounds)
         else:
             poly = box(*bounds)
+            overlays = getattr(self._obj.gw.geometry, how)(poly)
 
-            return getattr(self._obj.gw.geometry, how)(poly)
+        return overlays
 
     def n_windows(self, row_chunks: int = None, col_chunks: int = None) -> int:
         """Calculates the number of windows in a row/column iteration.
 
         Args:
-            row_chunks (Optional[int]): The row chunk size. If not given, defaults to opened DataArray chunks.
-            col_chunks (Optional[int]): The column chunk size. If not given, defaults to opened DataArray chunks.
+            row_chunks (Optional[int]): The row chunk size. If not given,
+                defaults to opened DataArray chunks.
+            col_chunks (Optional[int]): The column chunk size. If not given,
+                defaults to opened DataArray chunks.
 
         Returns:
             ``int``
         """
-
         rchunks = (
             row_chunks
             if isinstance(row_chunks, int)
