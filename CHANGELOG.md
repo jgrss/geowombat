@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.7 (2023-04-01)
+* [#249](https://github.com/jgrss/geowombat/issues/249) merged in [#250](https://github.com/jgrss/geowombat/pull/250)
+* `pyproj>3.4.0` WKT errors addressed in [#254](https://github.com/jgrss/geowombat/pull/254)
+* CONTRIBUTING.md guide from [#253](https://github.com/jgrss/geowombat/pull/253)
+* New docs theme from [#256](https://github.com/jgrss/geowombat/pull/256)
+* Added test coverage in [#255](https://github.com/jgrss/geowombat/pull/255)
+
 ## v2.1.6 (2023-03-03)
 * Pinned maximum Cython version to <3.0.0 ([#247](https://github.com/jgrss/geowombat/pull/247))
 
