@@ -66,8 +66,8 @@ Fit a classifier with multiple dates
 Train a supervised classifier and predict
 -----------------------------------------
 
-
 .. ipython:: python
+
     fig, ax = plt.subplots(dpi=200,figsize=(5,5))
 
     # Fit the classifier
@@ -104,10 +104,9 @@ Unsupervised classifiers can also be used in a pipeline
     # Fit_predict unsupervised classifier
     with gw.config.update(ref_res=300):
         with gw.open(l8_224078_20200518) as src:
-            y= fit_predict(src, cl)
+            y = fit_predict(src, cl)
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
-
 
 Predict with cross validation and parameter tuning
 --------------------------------------------------
@@ -139,6 +138,13 @@ Cross-validation and parameter tuning is now possible
             # get set tuned parameters
             # Note: predict(gridsearch.best_model_) not currently supported
             clf.set_params(**gridsearch.best_params_)
-            y1 = predict(src, X, clf)
+            y = predict(src, X, clf)
             y.plot(robust=True, ax=ax)
     plt.tight_layout(pad=1)
+
+Save prediction output
+----------------------
+
+.. code:: python
+
+    y.gw.save('output.tif', overwrite=True)

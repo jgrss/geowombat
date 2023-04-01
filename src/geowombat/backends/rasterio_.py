@@ -1,55 +1,67 @@
+import logging
 import os
 import shutil
-from pathlib import Path
-from collections import namedtuple
 import threading
-import logging
-import warnings
 import typing as T
+import warnings
+from collections import namedtuple
+from pathlib import Path
 
-import geowombat as gw
-
+import dask
+import dask.array as da
 import numpy as np
 import rasterio as rio
+import xarray as xr
+from affine import Affine
+from dask.delayed import Delayed
+from pyproj import CRS
+from pyproj.exceptions import CRSError
+from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
+from rasterio.transform import array_bounds, from_bounds
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import (
     aligned_target,
     calculate_default_transform,
-    transform_bounds,
     reproject,
+    transform_bounds,
 )
-from rasterio.transform import array_bounds, from_bounds
 from rasterio.windows import Window
-from rasterio.coords import BoundingBox
-import dask
-from dask.delayed import Delayed
-import dask.array as da
-import xarray as xr
-from pyproj import CRS
-from pyproj.exceptions import CRSError
-from affine import Affine
 
+import geowombat as gw
 
 try:
-    import zarr
     import numcodecs
+    import zarr
 
     ZARR_INSTALLED = True
-except:
+except ImportError:
     ZARR_INSTALLED = False
 
 
 logger = logging.getLogger(__name__)
 
 
-def get_file_info(src_obj):
+def get_dims_from_bounds(
+    bounds: BoundingBox, res: T.Tuple[float, float]
+) -> T.Tuple[int, int]:
+    width = int((bounds.right - bounds.left) / abs(res[0]))
+    height = int((bounds.top - bounds.bottom) / abs(res[1]))
+
+    return height, width
+
+
+def get_file_info(
+    src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+) -> namedtuple:
     src_bounds = src_obj.bounds
     src_res = src_obj.res
     src_width = src_obj.width
     src_height = src_obj.height
 
-    FileInfo = namedtuple('FileInfo', 'src_bounds src_res src_width src_height')
+    FileInfo = namedtuple(
+        'FileInfo', 'src_bounds src_res src_width src_height'
+    )
 
     return FileInfo(
         src_bounds=src_bounds,
@@ -60,7 +72,15 @@ def get_file_info(src_obj):
 
 
 def to_gtiff(
-    filename, data, window, indexes, transform, n_workers, separate, tags, kwargs
+    filename,
+    data,
+    window,
+    indexes,
+    transform,
+    n_workers,
+    separate,
+    tags,
+    kwargs,
 ):
     """Writes data to a GeoTiff file.
 
@@ -140,7 +160,11 @@ def to_gtiff(
 
 class RasterioStore(object):
     def __init__(
-        self, filename: T.Union[str, Path], mode: str = 'w', tags: dict = None, **kwargs
+        self,
+        filename: T.Union[str, Path],
+        mode: str = 'w',
+        tags: dict = None,
+        **kwargs,
     ):
         self.filename = Path(filename)
         self.mode = mode
@@ -153,7 +177,9 @@ class RasterioStore(object):
             index_range, y, x = key
             indexes = list(
                 range(
-                    index_range.start + 1, index_range.stop + 1, index_range.step or 1
+                    index_range.start + 1,
+                    index_range.stop + 1,
+                    index_range.step or 1,
                 )
             )
         else:
@@ -204,10 +230,13 @@ class RasterioStore(object):
 
     def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
         if isinstance(data.data, da.Array):
-            return da.store(da.squeeze(data.data), self, lock=True, compute=compute)
+            return da.store(
+                da.squeeze(data.data), self, lock=True, compute=compute
+            )
         else:
             self.dst.write(
-                data.squeeze().data, indexes=list(range(1, data.data.shape[0] + 1))
+                data.squeeze().data,
+                indexes=list(range(1, data.data.shape[0] + 1)),
             )
 
     def close(self):
@@ -294,7 +323,9 @@ class WriteDaskArray(object):
             index_range, y, x = key
             indexes = list(
                 range(
-                    index_range.start + 1, index_range.stop + 1, index_range.step or 1
+                    index_range.start + 1,
+                    index_range.stop + 1,
+                    index_range.step or 1,
                 )
             )
 
@@ -307,12 +338,14 @@ class WriteDaskArray(object):
 
             if self.out_block_type.lower() == 'zarr':
 
-                group_name = '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(
-                    BASE=self.f_base,
-                    Y=y.start,
-                    X=x.start,
-                    H=y.stop - y.start,
-                    W=x.stop - x.start,
+                group_name = (
+                    '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(
+                        BASE=self.f_base,
+                        Y=y.start,
+                        X=x.start,
+                        H=y.stop - y.start,
+                        W=x.stop - x.start,
+                    )
                 )
 
                 group = self.root.create_group(group_name)
@@ -322,7 +355,10 @@ class WriteDaskArray(object):
                     item,
                     compressor=self.compressor,
                     dtype=item.dtype.name,
-                    chunks=(self.kwargs['blockysize'], self.kwargs['blockxsize']),
+                    chunks=(
+                        self.kwargs['blockysize'],
+                        self.kwargs['blockxsize'],
+                    ),
                 )
 
                 group.attrs['row_off'] = y.start
@@ -405,7 +441,9 @@ class WriteDaskArray(object):
             self.separate and self.out_block_type.lower() == 'gtiff'
         ):
 
-            with rio.open(out_filename, mode=io_mode, sharing=False, **kwargs) as dst_:
+            with rio.open(
+                out_filename, mode=io_mode, sharing=False, **kwargs
+            ) as dst_:
 
                 dst_.write(item, window=w, indexes=indexes)
 
@@ -434,7 +472,9 @@ class WriteDaskArray(object):
         pass
 
 
-def check_res(res):
+def check_res(
+    res: T.Union[T.Tuple[float, float], float, int]
+) -> T.Tuple[float, float]:
     """Checks a resolution.
 
     Args:
@@ -444,9 +484,9 @@ def check_res(res):
         ``tuple``
     """
     if isinstance(res, tuple):
-        dst_res = res
+        dst_res = (float(res[0]), float(res[1]))
     elif isinstance(res, (float, int)):
-        dst_res = (res, res)
+        dst_res = (float(res), float(res))
     else:
         logger.exception(
             '  The resolution should be given as an integer, float, or tuple.'
@@ -456,11 +496,13 @@ def check_res(res):
     return dst_res
 
 
-def check_src_crs(src):
+def check_src_crs(
+    src: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+) -> rio.crs.CRS:
     """Checks a rasterio open() instance.
 
     Args:
-        src (object): A `rasterio.open` instance.
+        src (object): An instance of ``rasterio.io.DatasetReader`` or ``rasterio.io.DatasetWriter``.
 
     Returns:
         ``rasterio.crs.CRS``
@@ -468,7 +510,7 @@ def check_src_crs(src):
     return src.crs if src.crs else src.gcps[1]
 
 
-def check_crs(crs) -> CRS:
+def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
     """Checks a CRS instance.
 
     Args:
@@ -506,7 +548,7 @@ def check_crs(crs) -> CRS:
     return dst_crs
 
 
-def check_file_crs(filename) -> CRS:
+def check_file_crs(filename: T.Union[str, Path]) -> CRS:
     """Checks a file CRS.
 
     Args:
@@ -532,11 +574,11 @@ def check_file_crs(filename) -> CRS:
     return check_crs(src_crs)
 
 
-def unpack_bounding_box(bounds):
+def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
     """Unpacks a BoundBox() string.
 
     Args:
-        bounds (object)
+        bounds (str)
 
     Returns:
         ``tuple``
@@ -556,14 +598,14 @@ def unpack_bounding_box(bounds):
     return left_coord, bottom_coord, right_coord, top_coord
 
 
-def unpack_window(bounds):
+def unpack_window(bounds: str) -> Window:
     """Unpacks a Window() string.
 
     Args:
-        bounds (object)
+        bounds (str)
 
     Returns:
-        ``object``
+        ``rasterio.windows.Window``
     """
     bounds_str = bounds.replace('Window(', '').split(',')
 
@@ -580,7 +622,9 @@ def unpack_window(bounds):
     return Window(col_off=col_off, row_off=row_off, width=width, height=height)
 
 
-def window_to_bounds(filenames, w):
+def window_to_bounds(
+    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
+) -> T.Tuple[float, float, float, float]:
     """Transforms a rasterio Window() object to image bounds.
 
     Args:
@@ -605,7 +649,13 @@ def window_to_bounds(filenames, w):
     return left, bottom, right, top
 
 
-def align_bounds(minx, miny, maxx, maxy, res):
+def align_bounds(
+    minx: float,
+    miny: float,
+    maxx: float,
+    maxy: float,
+    res: T.Tuple[float, float],
+) -> T.Tuple[Affine, int, int]:
     """Aligns bounds to resolution.
 
     Args:
@@ -620,16 +670,19 @@ def align_bounds(minx, miny, maxx, maxy, res):
     """
     xres, yres = res
 
-    new_height = (maxy - miny) / yres
-    new_width = (maxx - minx) / xres
-
+    new_height = int(np.floor((maxy - miny) / yres))
+    new_width = int(np.floor((maxx - minx) / xres))
     new_transform = Affine(xres, 0.0, minx, 0.0, -yres, maxy)
 
     return aligned_target(new_transform, new_width, new_height, res)
 
 
 def get_file_bounds(
-    filenames, bounds_by='union', crs=None, res=None, return_bounds=False
+    filenames: T.Sequence[T.Union[str, Path]],
+    bounds_by: str = 'union',
+    crs: T.Optional[T.Any] = None,
+    res: T.Optional[T.Union[T.Tuple[float, float], float, int]] = None,
+    return_bounds: T.Optional[bool] = False,
 ):
     """Gets the union of all files.
 
@@ -666,7 +719,12 @@ def get_file_bounds(
                 dst_res = src_info.src_res
 
             # Transform the extent to the reference CRS
-            bounds_left, bounds_bottom, bounds_right, bounds_top = transform_bounds(
+            (
+                bounds_left,
+                bounds_bottom,
+                bounds_right,
+                bounds_top,
+            ) = transform_bounds(
                 src_crs,
                 dst_crs,
                 src_info.src_bounds.left,
@@ -785,7 +843,11 @@ def warp_images(
         # Get the union bounds of all images.
         #   *Target-aligned-pixels are returned.
         warp_kwargs['bounds'] = get_file_bounds(
-            filenames, bounds_by=bounds_by, crs=crs, res=res, return_bounds=True
+            filenames,
+            bounds_by=bounds_by,
+            crs=crs,
+            res=res,
+            return_bounds=True,
         )
 
     return [warp(fn, **warp_kwargs) for fn in filenames]
@@ -859,7 +921,12 @@ def warp(
         # Check if the data need to be subset
         if (bounds is None) or (tuple(bounds) == tuple(src_info.src_bounds)):
             if crs:
-                left_coord, bottom_coord, right_coord, top_coord = transform_bounds(
+                (
+                    left_coord,
+                    bottom_coord,
+                    right_coord,
+                    top_coord,
+                ) = transform_bounds(
                     src_crs,
                     dst_crs,
                     src_info.src_bounds.left,
@@ -905,7 +972,10 @@ def warp(
 
             elif isinstance(bounds, (list, np.ndarray, tuple)):
                 dst_bounds = BoundingBox(
-                    left=bounds[0], bottom=bounds[1], right=bounds[2], top=bounds[3]
+                    left=bounds[0],
+                    bottom=bounds[1],
+                    right=bounds[2],
+                    top=bounds[3],
                 )
 
             else:
@@ -915,8 +985,7 @@ def warp(
                 )
                 raise TypeError
 
-        dst_width = int((dst_bounds.right - dst_bounds.left) / dst_res[0])
-        dst_height = int((dst_bounds.top - dst_bounds.bottom) / dst_res[1])
+        dst_height, dst_width = get_dims_from_bounds(dst_bounds, dst_res)
 
         # Do not warp if all the key metadata match the reference information
         if (
@@ -940,7 +1009,12 @@ def warp(
                 src_info.src_bounds.top,
             )
             dst_transform = Affine(
-                dst_res[0], 0.0, dst_bounds.left, 0.0, -dst_res[1], dst_bounds.top
+                dst_res[0],
+                0.0,
+                dst_bounds.left,
+                0.0,
+                -dst_res[1],
+                dst_bounds.top,
             )
 
             if tac:
@@ -992,7 +1066,9 @@ def reproject_array(
     num_threads: int,
 ) -> np.ndarray:
     """Reprojects a DataArray and translates to a numpy ndarray."""
-    dst_array = np.zeros((data.gw.nbands, dst_height, dst_width), dtype=data.dtype)
+    dst_array = np.zeros(
+        (data.gw.nbands, dst_height, dst_width), dtype=data.dtype
+    )
     dst_array, dst_transform = reproject(
         data.gw.compute(num_workers=num_threads),
         dst_array,
@@ -1109,20 +1185,32 @@ def transform_crs(
         if isinstance(dst_width, int) and isinstance(dst_height, int):
             xs = (
                 dst_transform
-                * (np.arange(0, dst_width) + 0.5, np.arange(0, dst_width) + 0.5)
+                * (
+                    np.arange(0, dst_width) + 0.5,
+                    np.arange(0, dst_width) + 0.5,
+                )
             )[0]
             ys = (
                 dst_transform
-                * (np.arange(0, dst_height) + 0.5, np.arange(0, dst_height) + 0.5)
+                * (
+                    np.arange(0, dst_height) + 0.5,
+                    np.arange(0, dst_height) + 0.5,
+                )
             )[1]
         else:
             xs = (
                 dst_transform
-                * (np.arange(0, dst_width_) + 0.5, np.arange(0, dst_width_) + 0.5)
+                * (
+                    np.arange(0, dst_width_) + 0.5,
+                    np.arange(0, dst_width_) + 0.5,
+                )
             )[0]
             ys = (
                 dst_transform
-                * (np.arange(0, dst_height_) + 0.5, np.arange(0, dst_height_) + 0.5)
+                * (
+                    np.arange(0, dst_height_) + 0.5,
+                    np.arange(0, dst_height_) + 0.5,
+                )
             )[1]
 
         XYCoords = namedtuple('XYCoords', 'xs ys')
@@ -1162,10 +1250,17 @@ def transform_crs(
 
     # Ensure the final transform is set based on adjusted bounds
     dst_transform = Affine(
-        abs(dst_res[0]), 0.0, dst_bounds.left, 0.0, -abs(dst_res[1]), dst_bounds.top
+        abs(dst_res[0]),
+        0.0,
+        dst_bounds.left,
+        0.0,
+        -abs(dst_res[1]),
+        dst_bounds.top,
     )
 
-    proj_func = dask.delayed(reproject_array) if delayed_array else reproject_array
+    proj_func = (
+        dask.delayed(reproject_array) if delayed_array else reproject_array
+    )
     transformed_array = proj_func(
         data_src,
         dst_height,

@@ -1,20 +1,17 @@
 import functools
 import warnings
 
+import numpy as np
+import xarray as xr
+from geopandas.geodataframe import GeoDataFrame
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn_xarray import Target, wrap
+
 from .. import polygon_to_array
 
 # from .transformers import Featurizer_GW as Featurizer
-
-import xarray as xr
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder
-from sklearn_xarray import wrap, Target
-
-
-import numpy as np
-from geopandas.geodataframe import GeoDataFrame
-
-from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
 
 
 def wrapped_cls(cls):
@@ -365,7 +362,9 @@ class Classifiers(ClassifiersMixin):
 
         # covert to dask array
         y = (
-            y.chunk({"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks})
+            y.chunk(
+                {"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks}
+            )
             # Assign geo-attributes
             .assign_attrs(**data.attrs)
         )
@@ -447,6 +446,8 @@ class Classifiers(ClassifiersMixin):
             targ_dim_name=targ_dim_name,
         )
 
-        y = self.predict(data, X, clf, targ_name, targ_dim_name, mask_nodataval)
+        y = self.predict(
+            data, X, clf, targ_name, targ_dim_name, mask_nodataval
+        )
 
         return y

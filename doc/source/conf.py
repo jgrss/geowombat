@@ -10,10 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path('.').resolve()))
 
 from datetime import datetime
 import geowombat as gw
@@ -35,6 +32,8 @@ release = gw.__version__
 # have docstrings.
 napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = False
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -53,10 +52,11 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinxcontrib.bibtex',
     'sphinx_tabs.tabs',
+    'sphinx_copybutton',
+    'sphinx_autodoc_typehints',
     'numpydoc',
 ]
 
-autodoc_default_options = {'exclude-members': 'Client, Path'}
 
 # mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
 
@@ -72,7 +72,12 @@ exclude_patterns = ['_build']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
+html_title = ''
+logo_only = True
+html_logo = '_static/logo.png'
+# html_favicon = ''
+pygments_style = 'sphinx'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -93,12 +98,22 @@ html_theme_options = {
     'note_bg': '#cccccc',
     'note_border': '#c0c3e2',
     'fixed_sidebar': False,
-    'logo': 'logo.png',
+    'logo': {
+        'alt_text': 'GeoWombat',
+    },
     'logo_name': False,
     'github_banner': True,
     'github_button': True,
     'github_user': 'jgrss',
     'github_repo': 'geowombat',
+    'repository_url': 'https://github.com/jgrss/geowombat',
+    'repository_branch': 'main',
+    'use_repository_button': True,
+    'use_issues_button': False,
+    'home_page_in_toc': False,
+    'extra_navbar': '',
+    'navbar_footer_text': '',
+    'extra_footer': '',
     'anchor': '#d37a7a',
     'anchor_hover_bg': '#d37a7a',
     'anchor_hover_fg': '#d37a7a',
@@ -113,8 +128,8 @@ ipython_savefig_dir = '_static'
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # autodoc_member_order = 'bysource'
-# autosummary_generate = True
-
+autosummary_generate = True
+autodoc_typehints = 'description'
 autodoc_default_options = {
     'members': True,
     'show-inheritance': True,

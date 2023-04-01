@@ -1,18 +1,17 @@
+import typing as T
 from collections import namedtuple
 from dataclasses import dataclass
-import typing as T
 
-from .util import n_rows_cols
-
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
-from rasterio.coords import BoundingBox
-from affine import Affine
 import shapely
-from shapely.geometry import box
+from affine import Affine
 from pyproj import CRS
+from rasterio.coords import BoundingBox
+from shapely.geometry import box
 
+from .util import n_rows_cols
 
 # TODO: convert to enumerated classes
 WavelengthsPan = namedtuple('WavelengthsPan', 'pan')
@@ -31,13 +30,15 @@ WavelengthsL8 = namedtuple(
     'WavelengthsL8', 'coastal blue green red nir swir1 swir2 cirrus'
 )
 WavelengthsL8Thermal = namedtuple(
-    'WavelengthsL8Thermal', 'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2'
+    'WavelengthsL8Thermal',
+    'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2',
 )
 WavelengthsL9 = namedtuple(
     'WavelengthsL9', 'coastal blue green red nir swir1 swir2 cirrus'
 )
 WavelengthsL9Thermal = namedtuple(
-    'WavelengthsL9Thermal', 'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2'
+    'WavelengthsL9Thermal',
+    'coastal blue green red nir swir1 swir2 cirrus tirs1 tirs2',
 )
 WavelengthsS2 = namedtuple(
     'WavelengthsS2', 'blue green red nir1 nir2 nir3 nir rededge swir1 swir2'
@@ -46,12 +47,16 @@ WavelengthsS2Full = namedtuple(
     'WavelengthsS2',
     'coastal blue green red nir1 nir2 nir3 nir rededge water cirrus swir1 swir2',
 )
-WavelengthsS220 = namedtuple('WavelengthsS220', 'nir1 nir2 nir3 rededge swir1 swir2')
+WavelengthsS220 = namedtuple(
+    'WavelengthsS220', 'nir1 nir2 nir3 rededge swir1 swir2'
+)
 WavelengthsS2Cloudless = namedtuple(
     'WavelengthsS2Cloudless',
     'coastal blue red nir1 nir rededge water cirrus swir1 swir2',
 )
-WavelengthsMODSR = namedtuple('WavelengthsMODSR', 'red nir blue green nir2 swir1 swir2')
+WavelengthsMODSR = namedtuple(
+    'WavelengthsMODSR', 'red nir blue green nir2 swir1 swir2'
+)
 
 
 def get_sensor_info(key=None, sensor=None):
@@ -205,10 +210,22 @@ def get_sensor_info(key=None, sensor=None):
             blue=0.48, green=0.56, red=0.655, nir=0.865, swir1=1.61, swir2=2.2
         ),
         l8l7mspan=WavelengthsL57Pan(
-            blue=0.48, green=0.56, red=0.655, nir=0.865, swir1=1.61, swir2=2.2, pan=0.59
+            blue=0.48,
+            green=0.56,
+            red=0.655,
+            nir=0.865,
+            swir1=1.61,
+            swir2=2.2,
+            pan=0.59,
         ),
         l9l7mspan=WavelengthsL57Pan(
-            blue=0.48, green=0.56, red=0.655, nir=0.865, swir1=1.61, swir2=2.2, pan=0.59
+            blue=0.48,
+            green=0.56,
+            red=0.655,
+            nir=0.865,
+            swir1=1.61,
+            swir2=2.2,
+            pan=0.59,
         ),
         l8pan=WavelengthsPan(pan=0.59),
         l9pan=WavelengthsPan(pan=0.59),
@@ -309,13 +326,25 @@ def get_sensor_info(key=None, sensor=None):
             swir2=2.2024,
         ),
         s2bl7=WavelengthsL57(
-            blue=0.4921, green=0.559, red=0.665, nir=0.833, swir1=1.6104, swir2=2.1857
+            blue=0.4921,
+            green=0.559,
+            red=0.665,
+            nir=0.833,
+            swir1=1.6104,
+            swir2=2.1857,
         ),
         s210=WavelengthsBGRN(blue=0.49, green=0.56, red=0.665, nir=0.842),
-        s2a10=WavelengthsBGRN(blue=0.4924, green=0.5598, red=0.6646, nir=0.8328),
+        s2a10=WavelengthsBGRN(
+            blue=0.4924, green=0.5598, red=0.6646, nir=0.8328
+        ),
         s2b10=WavelengthsBGRN(blue=0.4921, green=0.559, red=0.665, nir=0.833),
         s220=WavelengthsS220(
-            nir1=0.705, nir2=0.74, nir3=0.783, rededge=0.865, swir1=1.61, swir2=2.19
+            nir1=0.705,
+            nir2=0.74,
+            nir3=0.783,
+            rededge=0.865,
+            swir1=1.61,
+            swir2=2.19,
         ),
         s2a20=WavelengthsS220(
             nir1=0.7041,
@@ -423,10 +452,24 @@ def get_sensor_info(key=None, sensor=None):
         ),
         l7pan=WavelengthsPan(pan=1),
         l8=WavelengthsL8(
-            coastal=1, blue=2, green=3, red=4, nir=5, swir1=6, swir2=7, cirrus=8
+            coastal=1,
+            blue=2,
+            green=3,
+            red=4,
+            nir=5,
+            swir1=6,
+            swir2=7,
+            cirrus=8,
         ),
         l9=WavelengthsL9(
-            coastal=1, blue=2, green=3, red=4, nir=5, swir1=6, swir2=7, cirrus=8
+            coastal=1,
+            blue=2,
+            green=3,
+            red=4,
+            nir=5,
+            swir1=6,
+            swir2=7,
+            cirrus=8,
         ),
         l8th=WavelengthsL8Thermal(
             coastal=1,
@@ -552,9 +595,15 @@ def get_sensor_info(key=None, sensor=None):
         s210=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
         s2a10=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
         s2b10=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
-        s220=WavelengthsS220(nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6),
-        s2a20=WavelengthsS220(nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6),
-        s2b20=WavelengthsS220(nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6),
+        s220=WavelengthsS220(
+            nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6
+        ),
+        s2a20=WavelengthsS220(
+            nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6
+        ),
+        s2b20=WavelengthsS220(
+            nir1=1, nir2=2, nir3=3, rededge=4, swir1=5, swir2=6
+        ),
         s2cloudless=dict(
             coastal=1,
             blue=2,
@@ -840,7 +889,11 @@ class DataProperties(object):
         else:
             geometries = []
             for fn in self._obj.gw.filenames:
-                kwargs = {'engine': 'h5netcdf'} if fn.lower().endswith('.nc') else {}
+                kwargs = (
+                    {'engine': 'h5netcdf'}
+                    if fn.lower().endswith('.nc')
+                    else {}
+                )
                 with gw_.open(
                     fn,
                     chunks={
@@ -898,7 +951,10 @@ class DataProperties(object):
     def geodataframe(self) -> gpd.GeoDataFrame:
         """Get a ``geopandas.GeoDataFrame`` of the array bounds."""
         return gpd.GeoDataFrame(
-            data=[1], columns=['grid'], geometry=[self.geometry], crs=self._obj.crs
+            data=[1],
+            columns=['grid'],
+            geometry=[self.geometry],
+            crs=self._obj.crs,
         )
 
     @property

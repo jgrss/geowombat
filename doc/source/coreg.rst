@@ -29,10 +29,12 @@ The AROSICS package can either be installed separately from geowombat by followi
 `installation instructions <https://danschef.git-pages.gfz-potsdam.de/arosics/doc/installation.html>`_ or by installing
 with geowombat. For the latter, simply add the ``coreg`` extra when installing geowombat by::
 
+    pip install arosics --no-deps
     pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git"
 
 if installing the latest or if installing a specific geowombat version (e.g., `v2.0.10`) then do::
 
+    pip install arosics --no-deps
     pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git@2.0.10"
 
 Co-register an image

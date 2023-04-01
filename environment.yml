@@ -2,7 +2,7 @@ name: gwenv
 channels:
 - defaults
 dependencies:
-- python=3.8.12
+- python=3.8.15
 - libspatialindex
 - libgdal=3.0.2
 - gdal=3.0.2

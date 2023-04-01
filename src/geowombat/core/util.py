@@ -1,30 +1,29 @@
-import os
 import fnmatch
-from collections import namedtuple, OrderedDict
+import logging
+import os
+import typing as T
+from collections import OrderedDict, namedtuple
 from datetime import datetime
 from pathlib import Path
-import logging
+
+import dask.array as da
+import geopandas as gpd
+import numpy as np
+import xarray as xr
+from affine import Affine
+from rasterio import features
+from rasterio.crs import CRS
+from rasterio.transform import from_bounds
+from rasterio.warp import reproject, transform_bounds
 
 from ..handler import add_handler
 from ..moving import moving_window
-
-import numpy as np
-import geopandas as gpd
-import xarray as xr
-import dask.array as da
-
-from rasterio import features
-from rasterio.crs import CRS
-from rasterio.warp import reproject, transform_bounds
-from rasterio.transform import from_bounds
-
-from affine import Affine
 
 try:
     from dateparser.search import search_dates
 
     DATEPARSER_INSTALLED = True
-except:
+except ImportError:
     DATEPARSER_INSTALLED = False
 
 
@@ -52,10 +51,15 @@ def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
         ``int`` in MB
     """
 
-    return np.random.random((ntime, nbands, nrows, ncols)).astype(dtype).nbytes * 1e-6
+    return (
+        np.random.random((ntime, nbands, nrows, ncols)).astype(dtype).nbytes
+        * 1e-6
+    )
 
 
-def parse_filename_dates(filenames):
+def parse_filename_dates(
+    filenames: T.Sequence[T.Union[str, Path]]
+) -> T.Sequence:
 
     """Parses dates from file names.
 
@@ -65,21 +69,16 @@ def parse_filename_dates(filenames):
     Returns:
         ``list``
     """
-
-    date_filenames = list()
-
+    date_filenames = []
     for fn in filenames:
-
-        d_name, f_name = os.path.split(fn)
-        f_base, f_ext = os.path.splitext(f_name)
+        __, f_name = os.path.split(fn)
+        f_base, __ = os.path.splitext(f_name)
 
         dt = None
 
         if DATEPARSER_INSTALLED:
-
             try:
-
-                s, dt = list(
+                __, dt = list(
                     zip(
                         *search_dates(
                             ' '.join(' '.join(f_base.split('_')).split('-')),
@@ -92,7 +91,7 @@ def parse_filename_dates(filenames):
                     )
                 )
 
-            except:
+            except Exception:
                 return list(range(1, len(filenames) + 1))
 
         if not dt:
@@ -103,7 +102,7 @@ def parse_filename_dates(filenames):
     return date_filenames
 
 
-def parse_wildcard(string):
+def parse_wildcard(string: str) -> T.Sequence:
 
     """Parses a search wildcard from a string.
 
@@ -127,22 +126,24 @@ def parse_wildcard(string):
         matches = [os.path.join(d_name, fn) for fn in matches]
 
     if not matches:
-        logger.exception('  There were no images found with the string search.')
+        logger.exception(
+            '  There were no images found with the string search.'
+        )
 
     return matches
 
 
 def sort_images_by_date(
-    image_path,
-    image_wildcard,
-    date_pos=None,
-    date_start=None,
-    date_end=None,
-    split_by='_',
-    date_format='%Y%m%d',
-    file_list=None,
-    prepend_str=None,
-):
+    image_path: Path,
+    image_wildcard: str,
+    date_pos: int = 0,
+    date_start: int = 0,
+    date_end: int = 8,
+    split_by: str = '_',
+    date_format: str = '%Y%m%d',
+    file_list: T.Optional[T.Sequence[Path]] = None,
+    prepend_str: T.Optional[str] = None,
+) -> OrderedDict:
     """Sorts images by date.
 
     Args:
@@ -152,7 +153,7 @@ def sort_images_by_date(
         date_start (int): The date starting position in the split.
         date_end (int): The date ending position in the split.
         split_by (Optional[str]): How to split the file name.
-        date_format (Optional[str]): The date format for ``datetime.datetime.strptime``.
+        date_format (Optional[str]): The date format for :func:`datetime.datetime.strptime`.
         file_list (Optional[list of Paths]): A file list of names to sort. Overrides ``image_path``.
         prepend_str (Optional[str]): A string to prepend to each filename.
 
@@ -187,12 +188,14 @@ def sort_images_by_date(
     ]
 
     return OrderedDict(
-        sorted(dict(zip([str(fn) for fn in fl], dates)).items(), key=lambda x_: x_[1])
+        sorted(
+            dict(zip([str(fn) for fn in fl], dates)).items(),
+            key=lambda x_: x_[1],
+        )
     )
 
 
 def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
-
     """Projects coordinates to a new CRS.
 
     Args:
@@ -210,7 +213,9 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
     if return_as == '1d':
 
         df_tmp = gpd.GeoDataFrame(
-            np.arange(0, x.shape[0]), geometry=gpd.points_from_xy(x, y), crs=src_crs
+            np.arange(0, x.shape[0]),
+            geometry=gpd.points_from_xy(x, y),
+            crs=src_crs,
         )
 
         df_tmp = df_tmp.to_crs(dst_crs)
@@ -251,7 +256,9 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
         )[0]
 
         return xr.DataArray(
-            data=da.from_array(latitudes[np.newaxis, :, :], chunks=(1, 512, 512)),
+            data=da.from_array(
+                latitudes[np.newaxis, :, :], chunks=(1, 512, 512)
+            ),
             dims=('band', 'y', 'x'),
             coords={
                 'band': ['lat'],
@@ -261,15 +268,15 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
         )
 
 
-def get_geometry_info(geometry, res):
+def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     """Gets information from a Shapely geometry object.
 
     Args:
-        geometry (object): A `shapely.geometry` object.
+        geometry (object): A ``shapely.geometry`` object.
         res (tuple): The cell resolution for the affine transform.
 
     Returns:
-        Geometry information (namedtuple)
+        Geometry information as ``namedtuple``.
     """
     GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
 
@@ -290,15 +297,14 @@ def get_geometry_info(geometry, res):
     )
 
 
-def get_file_extension(filename):
-
+def get_file_extension(filename: str) -> namedtuple:
     """Gets file and directory name information.
 
     Args:
         filename (str): The file name.
 
     Returns:
-        Name information (namedtuple)
+        Name information as ``namedtuple``.
     """
 
     FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
@@ -309,7 +315,7 @@ def get_file_extension(filename):
     return FileNames(d_name=d_name, f_name=f_name, f_base=f_base, f_ext=f_ext)
 
 
-def n_rows_cols(pixel_index, block_size, rows_cols):
+def n_rows_cols(pixel_index: int, block_size: int, rows_cols: int) -> int:
 
     """Adjusts block size for the end of image rows and columns.
 
@@ -319,9 +325,8 @@ def n_rows_cols(pixel_index, block_size, rows_cols):
         rows_cols (int): The total number of rows or columns in the image.
 
     Returns:
-        Adjusted block size as int.
+        Adjusted block size as ``int``.
     """
-
     return (
         block_size
         if (pixel_index + block_size) < rows_cols
@@ -334,7 +339,7 @@ class Chunks(object):
     def get_chunk_dim(chunksize):
         return '{:d}d'.format(len(chunksize))
 
-    def check_chunktype(self, chunksize, output='3d'):
+    def check_chunktype(self, chunksize: int, output: str = '3d'):
         if isinstance(chunksize, int):
             chunksize = (-1, chunksize, chunksize)
 
@@ -354,7 +359,7 @@ class Chunks(object):
             return chunksize
 
     @staticmethod
-    def check_chunksize(chunksize, output='3d'):
+    def check_chunksize(chunksize: int, output: str = '3d') -> tuple:
         chunk_len = len(chunksize)
         output_len = int(output[0])
 
@@ -447,7 +452,7 @@ class MapProcesses(object):
                     n_jobs=n_jobs,
                 )
 
-        results = list()
+        results = []
 
         for band in data.band.values.tolist():
 
@@ -527,7 +532,9 @@ def sample_feature(
         return gpd.GeoDataFrame([])
 
     fid = df_row[id_column]
-    other_cols = [col for col in df_columns if col not in [id_column, 'geometry']]
+    other_cols = [
+        col for col in df_columns if col not in [id_column, 'geometry']
+    ]
 
     if not isinstance(feature_array, np.ndarray):
         # "Rasterize" the geometry into a NumPy array

@@ -1,27 +1,28 @@
-import os
-import multiprocessing as multi
 import logging
+import multiprocessing as multi
+import os
+import typing as T
+from pathlib import Path
 
-from ..config import config
-from ..handler import add_handler
-from ..backends.rasterio_ import check_crs
-from ..backends.xarray_ import _check_config_globals
-from .util import sample_feature
-from .util import lazy_wombat
-
-import numpy as np
 import dask.array as da
-import xarray as xr
-import pandas as pd
 import geopandas as gpd
-from rasterio.features import rasterize, shapes
-from rasterio.warp import aligned_target
+import numpy as np
+import pandas as pd
+import pyproj
+import xarray as xr
+from affine import Affine
+from rasterio.coords import BoundingBox
 from rasterio.crs import CRS
 from rasterio.dtypes import get_minimum_dtype
-from shapely.geometry import Polygon, MultiPolygon
-from affine import Affine
-import pyproj
+from rasterio.features import rasterize, shapes
+from rasterio.warp import aligned_target
+from shapely.geometry import MultiPolygon, Polygon
 
+from ..backends.rasterio_ import check_crs
+from ..backends.xarray_ import _check_config_globals
+from ..config import config
+from ..handler import add_handler
+from .util import lazy_wombat, sample_feature
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -32,7 +33,11 @@ def _iter_func(a):
 
 
 class Converters(object):
-    def bounds_to_coords(self, bounds, dst_crs):
+    def bounds_to_coords(
+        self,
+        bounds: T.Union[T.Sequence[float], BoundingBox],
+        dst_crs: T.Union[str, object, xr.DataArray],
+    ) -> T.Tuple[float, float, float, float]:
         """Converts bounds from longitude and latitude to native map
         coordinates.
 
@@ -54,7 +59,9 @@ class Converters(object):
         return left, bottom, right, top
 
     @staticmethod
-    def lonlat_to_xy(lon, lat, dst_crs):
+    def lonlat_to_xy(
+        lon: float, lat: float, dst_crs: T.Union[str, object, xr.DataArray]
+    ) -> T.Tuple[float, float]:
         """Converts from longitude and latitude to native map coordinates.
 
         Args:
@@ -84,7 +91,9 @@ class Converters(object):
         return pyproj.Proj(dst_crs)(lon, lat)
 
     @staticmethod
-    def xy_to_lonlat(x, y, dst_crs):
+    def xy_to_lonlat(
+        x: float, y: float, dst_crs: T.Union[str, object, xr.DataArray]
+    ) -> T.Tuple[float, float]:
         """Converts from native map coordinates to longitude and latitude.
 
         Args:
@@ -114,7 +123,11 @@ class Converters(object):
         return pyproj.Proj(dst_crs)(x, y, inverse=True)
 
     @staticmethod
-    def indices_to_coords(col_index, row_index, transform):
+    def indices_to_coords(
+        col_index: int,
+        row_index: int,
+        transform: T.Union[Affine, xr.DataArray, T.Sequence[float]],
+    ) -> T.Tuple[float, float]:
         """Converts array indices to map coordinates.
 
         Args:
@@ -149,7 +162,11 @@ class Converters(object):
         return transform * (col_index, row_index)
 
     @staticmethod
-    def coords_to_indices(x, y, transform):
+    def coords_to_indices(
+        x: float,
+        y: float,
+        transform: T.Union[Affine, xr.DataArray, T.Sequence[float]],
+    ) -> T.Tuple[int, int]:
         """Converts map coordinates to array indices.
 
         Args:
@@ -186,7 +203,9 @@ class Converters(object):
         return np.int64(col_index), np.int64(row_index)
 
     @staticmethod
-    def dask_to_xarray(data, dask_data, band_names):
+    def dask_to_xarray(
+        data: xr.DataArray, dask_data: da.Array, band_names: T.Sequence[T.Any]
+    ) -> xr.DataArray:
         """Converts a Dask array to an Xarray DataArray.
 
         Args:
@@ -198,7 +217,9 @@ class Converters(object):
             ``xarray.DataArray``
         """
         if len(dask_data.shape) == 2:
-            dask_data = dask_data.reshape(1, dask_data.shape[0], dask_data.shape[1])
+            dask_data = dask_data.reshape(
+                1, dask_data.shape[0], dask_data.shape[1]
+            )
 
         return xr.DataArray(
             dask_data,
@@ -209,15 +230,15 @@ class Converters(object):
 
     @staticmethod
     def ndarray_to_xarray(
-        data,
-        numpy_data,
-        band_names,
-        row_chunks=None,
-        col_chunks=None,
-        y=None,
-        x=None,
-        attrs=None,
-    ):
+        data: xr.DataArray,
+        numpy_data: np.ndarray,
+        band_names: T.Sequence[T.Any],
+        row_chunks: T.Optional[int] = None,
+        col_chunks: T.Optional[int] = None,
+        y: T.Optional[float] = None,
+        x: T.Optional[float] = None,
+        attrs: T.Optional[dict] = None,
+    ) -> xr.DataArray:
         """Converts a NumPy array to an Xarray DataArray.
 
         Args:
@@ -247,7 +268,9 @@ class Converters(object):
         data_attrs = attrs if isinstance(attrs, dict) else data.attrs
 
         return xr.DataArray(
-            da.from_array(numpy_data, chunks=(1, data_row_chunks, data_col_chunks)),
+            da.from_array(
+                numpy_data, chunks=(1, data_row_chunks, data_col_chunks)
+            ),
             dims=('band', 'y', 'x'),
             coords={'band': band_names, 'y': data_y, 'x': data_x},
             attrs=data_attrs,
@@ -255,8 +278,13 @@ class Converters(object):
 
     @staticmethod
     def xarray_to_xdataset(
-        data_array, band_names, time_names, ycoords=None, xcoords=None, attrs=None
-    ):
+        data_array: xr.DataArray,
+        band_names: T.Sequence[T.Any],
+        time_names: T.Sequence[T.Any],
+        ycoords: T.Optional[T.Sequence[float]] = None,
+        xcoords: T.Optional[T.Sequence[float]] = None,
+        attrs: T.Optional[dict] = None,
+    ) -> xr.Dataset:
         """Converts an Xarray DataArray to a Xarray Dataset.
 
         Args:
@@ -268,7 +296,7 @@ class Converters(object):
             attrs (dict)
 
         Returns:
-            Dataset
+            ``xarray.Dataset``
         """
         if len(data_array.shape) == 2:
             data_array = data_array.expand_dims('band')
@@ -330,7 +358,9 @@ class Converters(object):
 
                 df = gpd.read_file(aoi)
             else:
-                logger.exception('  The AOI must be a vector file or a GeoDataFrame.')
+                logger.exception(
+                    '  The AOI must be a vector file or a GeoDataFrame.'
+                )
                 raise TypeError
 
         if id_column not in df.columns.tolist():
@@ -356,7 +386,9 @@ class Converters(object):
         if isinstance(df.iloc[0].geometry, (Polygon, MultiPolygon)):
             df = gpd.overlay(
                 df,
-                gpd.GeoDataFrame(data=[0], geometry=[data.gw.geometry], crs=df_crs),
+                gpd.GeoDataFrame(
+                    data=[0], geometry=[data.gw.geometry], crs=df_crs
+                ),
                 how='intersection',
             ).drop(columns=[0])
 
@@ -375,7 +407,9 @@ class Converters(object):
             df = df[df.within(mask)]
 
             if df.empty:
-                logger.exception('  No geometry intersects the user-provided mask.')
+                logger.exception(
+                    '  No geometry intersects the user-provided mask.'
+                )
                 raise LookupError
 
         if not df.empty:
@@ -403,13 +437,13 @@ class Converters(object):
 
     @staticmethod
     def polygons_to_points(
-        data,
-        df,
-        frac=1.0,
-        min_frac_area=None,
-        all_touched=False,
-        id_column='id',
-        n_jobs=1,
+        data: xr.DataArray,
+        df: gpd.GeoDataFrame,
+        frac: T.Optional[float] = 1.0,
+        min_frac_area: T.Optional[T.Union[float, int]] = None,
+        all_touched: T.Optional[bool] = False,
+        id_column: T.Optional[str] = 'id',
+        n_jobs: T.Optional[int] = 1,
         **kwargs
     ):
         """Converts polygons to points.
@@ -450,14 +484,21 @@ class Converters(object):
         if dataframes:
             dataframes = pd.concat(dataframes, axis=0)
             # Make the points unique
-            dataframes = dataframes.assign(point=np.arange(0, dataframes.shape[0]))
+            dataframes = dataframes.assign(
+                point=np.arange(0, dataframes.shape[0])
+            )
 
             return dataframes
         else:
             return gpd.GeoDataFrame(data=[])
 
     @staticmethod
-    def array_to_polygon(data, mask=None, connectivity=4, num_workers=1):
+    def array_to_polygon(
+        data: xr.DataArray,
+        mask: T.Union[str, np.ndarray, object] = None,
+        connectivity: T.Optional[int] = 4,
+        num_workers: T.Optional[int] = 1,
+    ) -> gpd.GeoDataFrame:
         """Converts an ``xarray.DataArray` to a ``geopandas.GeoDataFrame``
 
         Args:
@@ -468,7 +509,7 @@ class Converters(object):
                 and mask is None, the source's mask will be inverted and used in place of mask. If ``mask`` is equal to
                 'source', then ``data`` is used as the mask.
             connectivity (Optional[int]): Use 4 or 8 pixel connectivity for grouping pixels into features.
-            num_workers (Optional[int]): The number of parallel workers to send to ``dask.compute``.
+            num_workers (Optional[int]): The number of parallel workers to send to :func:`dask.compute`.
 
         Returns:
             ``geopandas.GeoDataFrame``
@@ -479,9 +520,11 @@ class Converters(object):
             >>> with gw.open('image.tif') as src:
             >>>
             >>>     # Convert the input image to a GeoDataFrame
-            >>>     df = gw.array_to_polygon(src,
-            >>>                              mask='source',
-            >>>                              num_workers=8)
+            >>>     df = gw.array_to_polygon(
+            >>>         src,
+            >>>         mask='source',
+            >>>         num_workers=8
+            >>>     )
         """
         if not hasattr(data.gw, 'transform'):
             logger.exception("  The data should have a 'transform' object.")
@@ -493,7 +536,9 @@ class Converters(object):
 
         if isinstance(mask, str):
             if mask == 'source':
-                mask = data.astype('uint8').data.compute(num_workers=num_workers)
+                mask = data.astype('uint8').data.compute(
+                    num_workers=num_workers
+                )
 
         poly_objects = shapes(
             data.data.compute(num_workers=num_workers),
@@ -502,39 +547,46 @@ class Converters(object):
             transform=data.gw.transform,
         )
 
-        poly_data = [(Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects]
+        poly_data = [
+            (Polygon(p[0]['coordinates'][0]), p[1]) for p in poly_objects
+        ]
 
         if poly_data:
             poly_geom = list(list(zip(*poly_data))[0])
             poly_values = list(list(zip(*poly_data))[1])
 
-            return gpd.GeoDataFrame(
-                data=poly_values, columns=['value'], geometry=poly_geom, crs=data.crs
+            out_df = gpd.GeoDataFrame(
+                data=poly_values,
+                columns=['value'],
+                geometry=poly_geom,
+                crs=data.crs,
             )
 
         else:
-            return gpd.GeoDataFrame([], crs=data.crs)
+            out_df = gpd.GeoDataFrame([], crs=data.crs)
+
+        return out_df
 
     @lazy_wombat
     def polygon_to_array(
         self,
-        polygon,
-        col=None,
-        data=None,
-        cellx=None,
-        celly=None,
-        band_name=None,
-        row_chunks=512,
-        col_chunks=512,
-        src_res=None,
-        fill=0,
-        default_value=1,
-        all_touched=True,
-        dtype='uint8',
-        sindex=None,
-        tap=False,
-        bounds_by='intersection',
-    ):
+        polygon: T.Union[gpd.GeoDataFrame, str, Path],
+        col: T.Optional[str] = None,
+        data: T.Optional[xr.DataArray] = None,
+        cellx: T.Optional[float] = None,
+        celly: T.Optional[float] = None,
+        band_name: T.Optional[T.Sequence[T.Any]] = None,
+        row_chunks: T.Optional[int] = 512,
+        col_chunks: T.Optional[int] = 512,
+        src_res: T.Optional[T.Sequence[float]] = None,
+        fill: T.Optional[int] = 0,
+        default_value: T.Optional[int] = 1,
+        all_touched: T.Optional[bool] = True,
+        dtype: T.Optional[str] = 'uint8',
+        sindex: T.Optional[object] = None,
+        tap: T.Optional[bool] = False,
+        bounds_by: T.Optional[str] = 'intersection',
+    ) -> xr.DataArray:
         """Converts a polygon geometry to an ``xarray.DataArray``.
 
         Args:
@@ -554,8 +606,8 @@ class Converters(object):
                 to ``rasterio.features.rasterize``.
             all_touched (Optional[bool]): If True, all pixels touched by geometries will be burned in.
                 If false, only pixels whose center is within the polygon or that are selected by Bresenham’s line
-                algorithm will be burned in. The ``all_touched`` value for ``rasterio.features.rasterize``.
-            dtype (Optional[rasterio | numpy data type]): The output data type for ``rasterio.features.rasterize``.
+                algorithm will be burned in. The ``all_touched`` value for :func:`rasterio.features.rasterize`.
+            dtype (Optional[str | numpy data type]): The output data type for :func:`rasterio.features.rasterize`.
             sindex (Optional[object]): An instanced of ``geopandas.GeoDataFrame.sindex``.
             tap (Optional[bool]): Whether to target align pixels.
             bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union', 'reference'].
@@ -592,7 +644,13 @@ class Converters(object):
                 logger.exception('  The polygon file does not exist.')
                 raise OSError
 
-        ref_kwargs = {'bounds': None, 'crs': None, 'res': None, 'tap': tap, 'tac': None}
+        ref_kwargs = {
+            'bounds': None,
+            'crs': None,
+            'res': None,
+            'tap': tap,
+            'tac': None,
+        }
 
         if config['with_config'] and not isinstance(data, xr.DataArray):
             ref_kwargs = _check_config_globals(
@@ -695,7 +753,12 @@ class Converters(object):
                         raise TypeError
 
             else:
-                left, bottom, right, top = dataframe.total_bounds.flatten().tolist()
+                (
+                    left,
+                    bottom,
+                    right,
+                    top,
+                ) = dataframe.total_bounds.flatten().tolist()
 
         dst_height = int((top - bottom) / abs(celly))
         dst_width = int((right - left) / abs(cellx))
@@ -712,7 +775,8 @@ class Converters(object):
 
         if col:
             shapes = (
-                (geom, value) for geom, value in zip(dataframe.geometry, dataframe[col])
+                (geom, value)
+                for geom, value in zip(dataframe.geometry, dataframe[col])
             )
             # TODO: throw error if dataframe[col] is character
             dtype = get_minimum_dtype(dataframe[col])
