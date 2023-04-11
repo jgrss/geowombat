@@ -331,14 +331,16 @@ cdef double _get_max(double[:, ::1] input_view,
             return window_max
 
 
-cdef double[:, ::1] _moving_window(double[:, ::1] indata,
-                                   double[:, ::1] output,
-                                   str stat,
-                                   int perc,
-                                   int window_size,
-                                   double nodata,
-                                   bint weights,
-                                   unsigned int n_jobs):
+cdef double[:, ::1] _moving_window(
+    double[:, ::1] indata,
+    double[:, ::1] output,
+    str stat,
+    int perc,
+    int window_size,
+    double nodata,
+    bint weights,
+    unsigned int n_jobs
+):
 
     cdef:
         Py_ssize_t f, wi, wj
@@ -373,19 +375,19 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
                     window_weights[wi, wj] = 1.0 - (window_weights[wi, wj] / max_dist)
 
     if stat == 'perc':
-
         with nogil, parallel(num_threads=n_jobs):
-
             for f in prange(0, nsamples, schedule='static'):
 
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
 
-                output[i+hw, j+hw] = percentiles.get_perc2d(indata,
-                                                            i, j,
-                                                            window_size,
-                                                            nodata,
-                                                            percf)
+                output[i+hw, j+hw] = percentiles.get_perc2d(
+                    indata,
+                    i, j,
+                    window_size,
+                    nodata,
+                    percf
+                )
 
     else:
 
@@ -405,36 +407,131 @@ cdef double[:, ::1] _moving_window(double[:, ::1] indata,
             raise ValueError('The statistic is not supported.')
 
         with nogil, parallel(num_threads=n_jobs):
-
             for f in prange(0, nsamples, schedule='static'):
 
                 i = _get_rindex(col_dims, f)
                 j = _get_cindex(col_dims, f, i)
 
-                output[i+hw, j+hw] = window_function(indata,
-                                                     i, j,
-                                                     window_size,
-                                                     w_samples,
-                                                     nodata,
-                                                     window_weights)
+                output[i+hw, j+hw] = window_function(
+                    indata,
+                    i, j,
+                    window_size,
+                    w_samples,
+                    nodata,
+                    window_weights
+                )
 
     return output
 
 
-def moving_window(np.ndarray indata not None,
-                  stat='mean',
-                  perc=50,
-                  w=3,
-                  nodata=1e9,
-                  weights=False,
-                  n_jobs=1):
-    
-    """
-    Applies a moving window function over a NumPy array
+cdef double[:, ::1] _moving_window_serial(
+    double[:, ::1] indata,
+    double[:, ::1] output,
+    str stat,
+    int perc,
+    int window_size,
+    double nodata,
+    bint weights
+):
+    cdef:
+        Py_ssize_t f, wi, wj
+        int i, j
+        unsigned int rows = indata.shape[0]
+        unsigned int cols = indata.shape[1]
+        double w_samples = window_size * 2.0
+        int hw = <int>(window_size / 2.0)
+        unsigned int row_dims = rows - window_size
+        unsigned int col_dims = cols - window_size
+        double percf = <double>perc
+
+        unsigned int nsamples = <int>(row_dims * col_dims)
+
+        double[:, ::1] window_weights = np.ones(
+            (window_size, window_size), dtype='float64'
+        )
+        double max_dist
+
+        metric_ptr window_function
+
+    if weights:
+
+        with nogil:
+
+            for wi in range(0, window_size):
+                for wj in range(0, window_size):
+                    window_weights[wi, wj] = _edist(<double>wj, <double>wi, <double>hw)
+
+            max_dist = _edist(0.0, 0.0, <double>hw)
+
+            for wi in range(0, window_size):
+                for wj in range(0, window_size):
+                    window_weights[wi, wj] = 1.0 - (window_weights[wi, wj] / max_dist)
+
+    if stat == 'perc':
+        with nogil:
+            for f in range(0, nsamples):
+
+                i = _get_rindex(col_dims, f)
+                j = _get_cindex(col_dims, f, i)
+
+                output[i+hw, j+hw] = percentiles.get_perc2d(
+                    indata,
+                    i, j,
+                    window_size,
+                    nodata,
+                    percf
+                )
+
+    else:
+
+        if stat == 'mean':
+            window_function = &_get_mean
+        elif stat == 'std':
+            window_function = &_get_std
+        elif stat == 'var':
+            window_function = &_get_var
+        elif stat == 'min':
+            window_function = &_get_min
+        elif stat == 'max':
+            window_function = &_get_max
+        elif stat == 'expand':
+            window_function = &_get_expand
+        else:
+            raise ValueError('The statistic is not supported.')
+
+        with nogil:
+            for f in range(0, nsamples):
+
+                i = _get_rindex(col_dims, f)
+                j = _get_cindex(col_dims, f, i)
+
+                output[i+hw, j+hw] = window_function(
+                    indata,
+                    i, j,
+                    window_size,
+                    w_samples,
+                    nodata,
+                    window_weights
+                )
+
+    return output
+
+
+def moving_window(
+    np.ndarray indata not None,
+    stat='mean',
+    perc=50,
+    w=3,
+    nodata=1e9,
+    weights=False,
+    n_jobs=1
+):
+    """Applies a moving window function over a NumPy array
 
     Args:
         indata (2d NumPy array): The array to process.
-        stat (Optional[str]): The statistic to compute. Choices are ['mean', 'std', 'var', 'min', 'max', 'perc', 'expand'].
+        stat (Optional[str]): The statistic to compute.
+            Choices are ['mean', 'std', 'var', 'min', 'max', 'perc', 'expand'].
         perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
         w (Optional[int]): The moving window size (in pixels).
         nodata (Optional[int or float]): A 'no data' value to ignore.
@@ -448,4 +545,15 @@ def moving_window(np.ndarray indata not None,
     cdef:
         double[:, ::1] output = np.float64(indata).copy()
 
-    return np.float64(_moving_window(indata, output, stat, perc, w, nodata, weights, n_jobs))
+    if n_jobs == 1:
+        return np.float64(
+                _moving_window_serial(
+                    indata, output, stat, perc, w, nodata, weights
+                )
+            )
+    else:
+        return np.float64(
+            _moving_window(
+                indata, output, stat, perc, w, nodata, weights, n_jobs
+            )
+        )

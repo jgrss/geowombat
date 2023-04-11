@@ -1512,25 +1512,21 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
     def moving(
         self,
-        band_coords: str = 'band',
         stat: str = 'mean',
-        perc: int = 50,
-        nodata: T.Union[float, int] = None,
+        perc: T.Union[float, int] = 50,
         w: int = 3,
-        weights: bool = False,
-        n_jobs: int = 1,
+        nodata: T.Optional[T.Union[float, int]] = None,
+        weights: T.Optional[bool] = False,
     ) -> xr.DataArray:
         """Applies a moving window function to the DataArray.
 
         Args:
-            band_coords (Optional[str]): The band coordinate name.
             stat (Optional[str]): The statistic to compute. Choices are
                 ['mean', 'std', 'var', 'min', 'max', 'perc'].
             perc (Optional[int]): The percentile to return if ``stat`` = 'perc'.
-            nodata (Optional[int or float]): A 'no data' value to ignore.
             w (Optional[int]): The moving window size (in pixels).
+            nodata (Optional[int or float]): A 'no data' value to ignore.
             weights (Optional[bool]): Whether to weight values by distance from window center.
-            n_jobs (Optional[int]): The number of rows to process in parallel.
 
         Returns:
             ``xarray.DataArray``
@@ -1540,21 +1536,20 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             >>>
             >>> # Calculate the mean within a 5x5 window
             >>> with gw.open('image.tif') as src:
-            >>>     res = src.gw.moving(stat='mean', w=5, nodata=32767.0, n_jobs=8)
+            >>>     res = src.gw.moving(stat='mean', w=5, nodata=32767.0)
             >>>
             >>> # Calculate the 90th percentile within a 15x15 window
             >>> with gw.open('image.tif') as src:
-            >>>     res = src.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0, n_jobs=8)
+            >>>     res = src.gw.moving(stat='perc', w=15, perc=90, nodata=32767.0)
+            >>>     res.data.compute(num_workers=4)
         """
         return moving(
             self._obj,
-            band_names=self._obj.coords[band_coords].values,
             perc=perc,
             nodata=nodata,
             w=w,
             stat=stat,
             weights=weights,
-            n_jobs=n_jobs,
         )
 
     def norm_diff(
