@@ -458,11 +458,11 @@ class MapProcesses(object):
         )
 
         new_attrs = {
-            "moving_stat": stat,
-            "moving_window_size": w,
+            'moving_stat': stat,
+            'moving_window_size': w,
         }
         if stat == 'perc':
-            new_attrs["moving_perc"] = perc
+            new_attrs['moving_perc'] = perc
 
         return results.assign_attrs(**new_attrs)
 
