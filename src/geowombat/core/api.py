@@ -860,6 +860,7 @@ def load(
 class _ImportGPU(object):
 
     try:
+        import jax
         import jax.numpy as jnp
 
         JAX_INSTALLED = True
@@ -961,7 +962,7 @@ class series(BaseSeries):
         self.windows_ = None
 
         if transfer_lib == 'jax':
-            self.out_array_type = imports_.jnp.DeviceArray
+            self.out_array_type = imports_.jax.Array
         elif transfer_lib == 'numpy':
             self.out_array_type = np.ndarray
         elif transfer_lib == 'pytorch':
