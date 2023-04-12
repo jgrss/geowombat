@@ -67,7 +67,7 @@ jobs:
         run: |
           # Install Python GDAL
           pip install -U pip setuptools>=59.5.0 wheel
-          pip install "cython>=0.29.0,<3.0.0" numpy>=1.19.0
+          pip install numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
           pip install GDAL==$GDAL_VERSION --no-cache-dir
       - name: Install GeoWombat
