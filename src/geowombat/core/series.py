@@ -315,7 +315,7 @@ class TimeModule(object):
             f"self.count={self.count}\n    "
             f"self.compress='{self.compress}'\n    "
             f"self.bigtiff='{self.bigtiff}'\n    "
-            f"-> Array(numpy.ndarray | jax.numpy.DeviceArray | torch.Tensor | tensorflow.Tensor)[bands x height x width]"
+            f"-> Array(numpy.ndarray | jax.Array | torch.Tensor | tensorflow.Tensor)[bands x height x width]"
         )
 
     def __add__(self, other):
@@ -330,13 +330,13 @@ class TimeModule(object):
 
         Args:
             data (``numpy.ndarray`` |
-                  ``jax.numpy.DeviceArray`` |
+                  ``jax.Array`` |
                   ``torch.Tensor`` |
                   ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].
 
         Returns:
             ``numpy.ndarray`` |
-            ``jax.numpy.DeviceArray`` |
+            ``jax.Array`` |
             ``torch.Tensor`` |
             ``tensorflow.Tensor``:
                 Shaped (time|bands x rows x columns)

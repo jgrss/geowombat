@@ -99,13 +99,13 @@ Custom time series modules can be generated with classes following the format be
             """
             Args:
                 array (``numpy.ndarray`` |
-                       ``jax.numpy.DeviceArray`` |
+                       ``jax.Array`` |
                        ``torch.Tensor`` |
                        ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].
 
             Returns:
                 ``numpy.ndarray`` |
-                ``jax.numpy.DeviceArray`` |
+                ``jax.Array`` |
                 ``torch.Tensor`` |
                 ``tensorflow.Tensor``
             """
