@@ -1,17 +1,18 @@
 import unittest
 
-from geowombat.data import l8_224077_20200518_B2
-from geowombat.backends.rasterio_ import (
-    get_dims_from_bounds,
-    get_file_info,
-    check_res,
-    unpack_bounding_box,
-    unpack_window,
-)
-
 import rasterio as rio
 from rasterio.coords import BoundingBox
 from rasterio.windows import Window
+
+from geowombat.backends.rasterio_ import (
+    check_res,
+    get_dims_from_bounds,
+    get_file_info,
+    unpack_bounding_box,
+    unpack_window,
+    window_to_bounds,
+)
+from geowombat.data import l8_224077_20200518_B2
 
 
 class TestRasterio(unittest.TestCase):
@@ -53,6 +54,18 @@ class TestRasterio(unittest.TestCase):
         converted_window = unpack_window(window)
         ref_window = Window(col_off=0, row_off=0, width=100, height=100)
         self.assertEqual(ref_window, converted_window)
+
+    def test_window_to_bounds(self):
+        w = Window(col_off=0, row_off=0, width=100, height=100)
+        with rio.open(l8_224077_20200518_B2) as src:
+            bounds = window_to_bounds(l8_224077_20200518_B2, w=w)
+            ref_bounds = (
+                src.bounds.left,
+                src.bounds.top - (100 * src.res[0]),
+                src.bounds.left + (100 * src.res[0]),
+                src.bounds.top,
+            )
+            self.assertEqual(bounds, ref_bounds)
 
 
 if __name__ == '__main__':

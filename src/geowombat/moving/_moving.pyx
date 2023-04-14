@@ -6,17 +6,13 @@
 # cython: nonecheck=False
 
 import cython
-
 cimport cython
-
 import numpy as np
-
 cimport numpy as np
 
 np._import_array
 
 from ..util cimport percentiles
-
 from cython.parallel import parallel, prange
 
 
@@ -52,13 +48,15 @@ cdef inline double _edist(double xloc, double yloc, double hw) nogil:
     return sqrt(_pow2(xloc - hw) + _pow2(yloc - hw))
 
 
-cdef double _get_var(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
+cdef double _get_var(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -115,13 +113,15 @@ cdef double _get_var(double[:, ::1] input_view,
             return res
 
 
-cdef double _get_std(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
+cdef double _get_std(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -180,13 +180,15 @@ cdef double _get_std(double[:, ::1] input_view,
             return res
 
 
-cdef double _get_mean(double[:, ::1] input_view,
-                      Py_ssize_t i,
-                      Py_ssize_t j,
-                      int w,
-                      double w_samples,
-                      double nodata,
-                      double[:, ::1] window_weights) nogil:
+cdef double _get_mean(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -225,13 +227,15 @@ cdef double _get_mean(double[:, ::1] input_view,
             return res
 
 
-cdef double _get_expand(double[:, ::1] input_view,
-                        Py_ssize_t i,
-                        Py_ssize_t j,
-                        int w,
-                        double w_samples,
-                        double nodata,
-                        double[:, ::1] window_weights) nogil:
+cdef double _get_expand(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -249,13 +253,15 @@ cdef double _get_expand(double[:, ::1] input_view,
     return input_view[i+hw, j+hw]
 
 
-cdef double _get_min(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
+cdef double _get_min(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -286,19 +292,21 @@ cdef double _get_min(double[:, ::1] input_view,
         return window_min
     else:
 
-        if npy_isnan(window_min):
+        if npy_isnan(window_min) or (window_min == 1e9):
             return nodata
         else:
             return window_min
 
 
-cdef double _get_max(double[:, ::1] input_view,
-                     Py_ssize_t i,
-                     Py_ssize_t j,
-                     int w,
-                     double w_samples,
-                     double nodata,
-                     double[:, ::1] window_weights) nogil:
+cdef double _get_max(
+    double[:, ::1] input_view,
+    Py_ssize_t i,
+    Py_ssize_t j,
+    int w,
+    double w_samples,
+    double nodata,
+    double[:, ::1] window_weights
+) nogil:
 
     cdef:
         Py_ssize_t m, n
@@ -325,7 +333,7 @@ cdef double _get_max(double[:, ::1] input_view,
         return window_max
     else:
 
-        if npy_isnan(window_max):
+        if npy_isnan(window_max) or (window_max == -1e9):
             return nodata
         else:
             return window_max
