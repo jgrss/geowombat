@@ -164,8 +164,7 @@ class TestConfig(unittest.TestCase):
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    def test_classes_match_prediction(self):
-
+    def test_classes_match_prediction_a(self):
         with gw.config.update(
             ref_res=300,
         ):
@@ -185,6 +184,34 @@ class TestConfig(unittest.TestCase):
                     len(np.unique(y1.values))
                     == len(np.unique(aoi_point["lc"])),
                     len(np.unique(y2.values))
+                    == len(np.unique(aoi_point["lc"])),
+                ]
+            )
+        )
+
+    def test_classes_match_prediction_b(self):
+        with gw.config.update(
+            ref_res=300,
+        ):
+            with gw.open(l8_224078_20200518) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
+
+        y1values = np.unique(y1.values)
+        y2values = np.unique(y2.values)
+
+        self.assertTrue(
+            np.all(
+                [
+                    len(y1values[np.isfinite(y1values)])
+                    == len(np.unique(aoi_point["lc"])),
+                    len(y2values[np.isfinite(y2values)])
                     == len(np.unique(aoi_point["lc"])),
                 ]
             )
