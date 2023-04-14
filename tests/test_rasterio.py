@@ -34,10 +34,9 @@ class TestRasterio(unittest.TestCase):
             transform, Affine(2.0, 0.0, -100.0, 0.0, -2.0, 100.0)
         )
 
-        with self.assertRaises(TypeError):
-            transform, width, height = align_bounds(
-                -100.0, -100.0, 100.0, 100.0, {2.0}
-            )
+        self.assertRaises(
+            TypeError, align_bounds, -100.0, -100.0, 100.0, 100.0, {2.0}
+        )
 
         transform, width, height = align_bounds(
             -100.0, -100.0, 100.0, 100.0, 2.0
@@ -94,12 +93,9 @@ class TestRasterio(unittest.TestCase):
             )
 
         self.assertEqual(check_crs(4326), CRS.from_epsg(4326))
-        with self.assertRaises(ValueError):
-            crs = check_crs(4325)
-        with self.assertRaises(ValueError):
-            crs = check_crs("cat")
-        with self.assertRaises(TypeError):
-            crs = check_crs(np.ones(1))
+        self.assertRaises(ValueError, check_crs, 4325)
+        self.assertRaises(ValueError, check_crs, 'cat')
+        self.assertRaises(TypeError, check_crs, np.ones(1))
 
     def test_check_file_crs(self):
         crs = check_file_crs(
@@ -117,9 +113,7 @@ class TestRasterio(unittest.TestCase):
         self.assertEqual(check_res(10.0), (10.0, 10.0))
         self.assertEqual(check_res(10), (10.0, 10.0))
         self.assertEqual(check_res((10, 10)), (10.0, 10.0))
-
-        with self.assertRaises(TypeError):
-            check_res({10})
+        self.assertRaises(TypeError, check_res, {10})
 
     def test_unpack_bounding_box(self):
         bounds = 'BoundingBox(left=-100, bottom=-100, right=100, top=100)'
