@@ -119,7 +119,7 @@ class TestRasterio(unittest.TestCase):
         self.assertEqual(check_res((10, 10)), (10.0, 10.0))
 
         with self.assertRaises(TypeError):
-            check_res({10}), (10.0, 10.0)
+            check_res({10})
 
     def test_unpack_bounding_box(self):
         bounds = 'BoundingBox(left=-100, bottom=-100, right=100, top=100)'
