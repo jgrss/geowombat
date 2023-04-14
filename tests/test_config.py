@@ -1,33 +1,41 @@
 import unittest
 
-import geowombat as gw
-from geowombat.data import l8_224078_20200518
-from geowombat.data import l8_224077_20200518_B2
-from geowombat.data import rgbn
-
 from pyproj import CRS
 from testfixtures import LogCapture
+
+import geowombat as gw
+from geowombat.data import l8_224077_20200518_B2, l8_224078_20200518, rgbn
 
 
 class TestConfig(unittest.TestCase):
     def test_config_bands(self):
         with gw.open(l8_224078_20200518) as src:
-            self.assertEqual(','.join(map(str, src.band.values.tolist())), '1,2,3')
+            self.assertEqual(
+                ','.join(map(str, src.band.values.tolist())), '1,2,3'
+            )
 
     def test_config_bands_set_none(self):
         with gw.config.update(sensor=None):
             with gw.open(l8_224078_20200518) as src:
-                self.assertEqual(','.join(map(str, src.band.values.tolist())), '1,2,3')
+                self.assertEqual(
+                    ','.join(map(str, src.band.values.tolist())), '1,2,3'
+                )
 
     def test_config_bands_set(self):
         with gw.config.update(sensor='bgr'):
             with gw.open(l8_224078_20200518) as src:
-                self.assertEqual(','.join(src.band.values.tolist()), 'blue,green,red')
+                self.assertEqual(
+                    ','.join(src.band.values.tolist()), 'blue,green,red'
+                )
 
     def test_config_bands_set_override(self):
         with gw.config.update(sensor='bgr'):
-            with gw.open(l8_224078_20200518, band_names=['b1', 'b2', 'b3']) as src:
-                self.assertEqual(','.join(src.band.values.tolist()), 'b1,b2,b3')
+            with gw.open(
+                l8_224078_20200518, band_names=['b1', 'b2', 'b3']
+            ) as src:
+                self.assertEqual(
+                    ','.join(src.band.values.tolist()), 'b1,b2,b3'
+                )
 
     def test_config_defaults(self):
         with gw.open(l8_224078_20200518) as src:
@@ -100,7 +108,9 @@ class TestConfig(unittest.TestCase):
         filenames = [l8_224078_20200518, l8_224078_20200518]
         with gw.config.update(ref_image=l8_224077_20200518_B2):
             with gw.open(
-                filenames, band_names=['blue', 'green', 'red'], time_names=['t1', 't2']
+                filenames,
+                band_names=['blue', 'green', 'red'],
+                time_names=['t1', 't2'],
             ) as src:
                 self.assertTrue(src.crs, 32621)
                 self.assertTrue(test_crs, src.gw.crs_to_pyproj)
@@ -108,12 +118,16 @@ class TestConfig(unittest.TestCase):
     def test_unique_crs(self):
         proj4 = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"
         with gw.open(rgbn, chunks={'band': -1, 'y': 64, 'x': 64}) as src:
-            dst = src.gw.transform_crs(proj4, dst_res=(10, 10), resampling='bilinear')
+            dst = src.gw.transform_crs(
+                proj4, dst_res=(10, 10), resampling='bilinear'
+            )
             self.assertEqual(dst.crs, proj4)
             self.assertEqual(dst.gw.crs_to_pyproj, proj4)
             self.assertEqual(dst.data.chunksize, (src.gw.nbands, 64, 64))
             self.assertEqual(dst.gw.celly, 10.0)
-            dst = dst.gw.transform_crs(src.crs, dst_res=(5, 5), resampling='bilinear')
+            dst = dst.gw.transform_crs(
+                src.crs, dst_res=(5, 5), resampling='bilinear'
+            )
             self.assertEqual(dst.gw.celly, 5.0)
             self.assertEqual(dst.gw.crs_to_pyproj, src.crs)
 

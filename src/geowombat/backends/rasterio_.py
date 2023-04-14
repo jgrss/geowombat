@@ -159,6 +159,13 @@ def to_gtiff(
 
 
 class RasterioStore(object):
+    """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as
+    windows.
+
+    Reference:
+        Code modified from https://github.com/dymaxionlabs/dask-rasterio
+    """
+
     def __init__(
         self,
         filename: T.Union[str, Path],
@@ -243,237 +250,13 @@ class RasterioStore(object):
         self.dst.close()
 
 
-class WriteDaskArray(object):
-    """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as
-    windows.
-
-    Args:
-        filename (str): The file to write to.
-        overwrite (Optional[bool]): Whether to overwrite an existing output file.
-        separate (Optional[bool]): Whether to write blocks as separate files. Otherwise, write to the same file.
-        out_block_type (Optional[str]): The output block type. Choices are ['gtiff', 'zarr'].
-            *Only used if ``separate`` = ``True``.
-        keep_blocks (Optional[bool]): Whether to keep the blocks stored on disk.
-            *Only used if ``separate`` = ``True``.
-        gdal_cache (Optional[int]): The GDAL cache size (in MB).
-        kwargs (Optional[dict]): Other keyword arguments passed to ``rasterio``.
-
-    Reference:
-        Code modified from https://github.com/dymaxionlabs/dask-rasterio
-
-    Returns:
-        None
-    """
-
-    def __init__(
-        self,
-        filename: T.Union[str, Path],
-        overwrite: bool = False,
-        separate: bool = False,
-        out_block_type: str = 'gtiff',
-        keep_blocks: bool = False,
-        gdal_cache: int = 512,
-        **kwargs,
-    ):
-        if out_block_type == 'zarr':
-            if not ZARR_INSTALLED:
-                logger.exception('Zarr and numcodecs must be installed.')
-
-        self.filename = filename
-        self.overwrite = overwrite
-        self.separate = separate
-        self.out_block_type = out_block_type
-        self.keep_blocks = keep_blocks
-        self.gdal_cache = gdal_cache
-        self.kwargs = kwargs
-
-        self.d_name, f_name = os.path.split(self.filename)
-        self.f_base, self.f_ext = os.path.splitext(f_name)
-
-        self.root = None
-        self.compressor = None
-        self.sub_dir = None
-        self.zarr_file = None
-
-        if self.separate:
-
-            if self.out_block_type.lower() not in ['gtiff', 'zarr']:
-
-                logger.warning(
-                    '  The output block type is not recognized. Save blocks as zarr files.'
-                )
-                self.out_block_type = 'zarr'
-
-            self.sub_dir = os.path.join(self.d_name, 'sub_tmp_')
-            self.zarr_file = os.path.join(self.sub_dir, 'data.zarr')
-
-            self.compressor = numcodecs.Blosc(
-                cname='zstd', clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE
-            )
-
-            if os.path.isdir(self.sub_dir):
-                shutil.rmtree(self.sub_dir)
-
-            os.makedirs(self.sub_dir)
-
-    def __setitem__(self, key, item):
-
-        if len(key) == 3:
-
-            index_range, y, x = key
-            indexes = list(
-                range(
-                    index_range.start + 1,
-                    index_range.stop + 1,
-                    index_range.step or 1,
-                )
-            )
-
-        else:
-
-            indexes = 1
-            y, x = key
-
-        if self.separate:
-
-            if self.out_block_type.lower() == 'zarr':
-
-                group_name = (
-                    '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}'.format(
-                        BASE=self.f_base,
-                        Y=y.start,
-                        X=x.start,
-                        H=y.stop - y.start,
-                        W=x.stop - x.start,
-                    )
-                )
-
-                group = self.root.create_group(group_name)
-
-                z = group.array(
-                    'data',
-                    item,
-                    compressor=self.compressor,
-                    dtype=item.dtype.name,
-                    chunks=(
-                        self.kwargs['blockysize'],
-                        self.kwargs['blockxsize'],
-                    ),
-                )
-
-                group.attrs['row_off'] = y.start
-                group.attrs['col_off'] = x.start
-                group.attrs['height'] = y.stop - y.start
-                group.attrs['width'] = x.stop - x.start
-
-            else:
-
-                out_filename = os.path.join(
-                    self.sub_dir,
-                    '{BASE}_y{Y:09d}_x{X:09d}_h{H:09d}_w{W:09d}{EXT}'.format(
-                        BASE=self.f_base,
-                        Y=y.start,
-                        X=x.start,
-                        H=y.stop - y.start,
-                        W=x.stop - x.start,
-                        EXT=self.f_ext,
-                    ),
-                )
-
-                if self.overwrite:
-
-                    if os.path.isfile(out_filename):
-                        os.remove(out_filename)
-
-                io_mode = 'w'
-
-                # Every block starts at (0, 0) for the output
-                w = Window(
-                    col_off=0,
-                    row_off=0,
-                    width=x.stop - x.start,
-                    height=y.stop - y.start,
-                )
-
-                # xres, 0, minx, 0, yres, maxy
-                # TODO: hardcoded driver type
-                kwargs = dict(
-                    driver=self.kwargs['driver'],
-                    width=w.width,
-                    height=w.height,
-                    count=self.kwargs['count'],
-                    dtype=self.kwargs['dtype'],
-                    nodata=self.kwargs['nodata'],
-                    blockxsize=self.kwargs['blockxsize'],
-                    blockysize=self.kwargs['blockysize'],
-                    crs=self.kwargs['crs'],
-                    transform=Affine(
-                        self.kwargs['transform'][0],
-                        0.0,
-                        self.kwargs['transform'][2]
-                        + (x.start * self.kwargs['transform'][0]),
-                        0.0,
-                        self.kwargs['transform'][4],
-                        self.kwargs['transform'][5]
-                        - (y.start * -self.kwargs['transform'][4]),
-                    ),
-                    compress=self.kwargs['compress']
-                    if 'compress' in self.kwargs
-                    else 'none',
-                    tiled=True,
-                )
-
-        else:
-
-            out_filename = self.filename
-
-            w = Window(
-                col_off=x.start,
-                row_off=y.start,
-                width=x.stop - x.start,
-                height=y.stop - y.start,
-            )
-
-            io_mode = 'r+'
-            kwargs = {}
-
-        if not self.separate or (
-            self.separate and self.out_block_type.lower() == 'gtiff'
-        ):
-
-            with rio.open(
-                out_filename, mode=io_mode, sharing=False, **kwargs
-            ) as dst_:
-
-                dst_.write(item, window=w, indexes=indexes)
-
-    def __enter__(self):
-
-        if self.separate:
-
-            if self.out_block_type.lower() == 'zarr':
-                self.root = zarr.open(self.zarr_file, mode='w')
-
-        else:
-
-            if 'compress' in self.kwargs:
-                logger.warning(
-                    '\nCannot write concurrently to a compressed raster when using a combination of processes and threads.\nTherefore, compression will be applied after the initial write.'
-                )
-                del self.kwargs['compress']
-
-            # Create the output file
-            with rio.open(self.filename, mode='w', **self.kwargs) as dst_:
-                pass
-
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
-
-
 def check_res(
-    res: T.Union[T.Tuple[float, float], float, int]
+    res: T.Union[
+        T.Tuple[T.Union[float, int], T.Union[float, int]],
+        T.Sequence[T.Union[float, int]],
+        float,
+        int,
+    ]
 ) -> T.Tuple[float, float]:
     """Checks a resolution.
 
@@ -483,7 +266,7 @@ def check_res(
     Returns:
         ``tuple``
     """
-    if isinstance(res, tuple):
+    if isinstance(res, (list, tuple)):
         dst_res = (float(res[0]), float(res[1]))
     elif isinstance(res, (float, int)):
         dst_res = (float(res), float(res))
@@ -528,7 +311,10 @@ def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
                 try:
                     dst_crs = CRS.from_epsg(crs)
                 except CRSError:
-                    dst_crs = CRS.from_user_input(f"epsg:{crs}")
+                    try:
+                        dst_crs = CRS.from_user_input(f"epsg:{crs}")
+                    except CRSError as e:
+                        raise ValueError(e)
             elif isinstance(crs, dict):
                 dst_crs = CRS.from_dict(crs)
             elif isinstance(crs, str):
@@ -538,8 +324,11 @@ def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
                     crs = crs.replace('+init=', '')
                     try:
                         dst_crs = CRS.from_user_input(crs)
-                    except ValueError:
-                        dst_crs = CRS.from_string(crs)
+                    except CRSError:
+                        try:
+                            dst_crs = CRS.from_string(crs)
+                        except CRSError as e:
+                            raise ValueError(e)
 
             else:
                 logger.exception('  The CRS was not understood.')
@@ -654,7 +443,7 @@ def align_bounds(
     miny: float,
     maxx: float,
     maxy: float,
-    res: T.Tuple[float, float],
+    res: T.Union[T.Tuple[float, float], T.Sequence[float], float, int],
 ) -> T.Tuple[Affine, int, int]:
     """Aligns bounds to resolution.
 
@@ -663,12 +452,18 @@ def align_bounds(
         miny (float)
         maxx (float)
         maxy (float)
-        res (tuple)
+        res (tuple | float | int)
 
     Returns:
         ``affine.Affine``, ``int``, ``int``
     """
-    xres, yres = res
+    if isinstance(res, (int, float)):
+        res = (float(res), float(res))
+
+    try:
+        xres, yres = res
+    except Exception as e:
+        raise TypeError(e)
 
     new_height = int(np.floor((maxy - miny) / yres))
     new_width = int(np.floor((maxx - minx) / xres))
