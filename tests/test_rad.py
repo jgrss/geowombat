@@ -1,29 +1,32 @@
+import tarfile
+import tempfile
 import unittest
 from datetime import datetime, timezone
-import tempfile
-import tarfile
 from pathlib import Path
 
-import geowombat as gw
-from geowombat.data import (
-    l8_224078_20200127_meta,
-    l7_225078_20110306_B1,
-    l7_225078_20110306_SZA,
-    l7_225078_20110306_ang,
-    wrs2,
-)
-from geowombat.bin import extract_espa_tools
-from geowombat.radiometry import RadTransforms, landsat_pixel_angles
-from geowombat.radiometry.angles import (
-    landsat_angle_prep,
-    run_espa_command,
-    open_angle_file,
-)
-
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 
+import geowombat as gw
+from geowombat.bin import extract_espa_tools
+from geowombat.data import (
+    l7_225078_20110306_ang,
+    l7_225078_20110306_B1,
+    l7_225078_20110306_SZA,
+    l8_224078_20200127_meta,
+    wrs2,
+)
+from geowombat.radiometry import (
+    LinearAdjustments,
+    RadTransforms,
+    landsat_pixel_angles,
+)
+from geowombat.radiometry.angles import (
+    landsat_angle_prep,
+    open_angle_file,
+    run_espa_command,
+)
 
 RT = RadTransforms()
 
@@ -54,6 +57,34 @@ def save_angle_data(data, nodata):
 
 
 class TestRadiometrics(unittest.TestCase):
+    def test_bandpass(self):
+        lin = LinearAdjustments()
+        coeff_dict = lin.coefficients['l7']['l8']
+        alphas = coeff_dict['alphas']
+        betas = coeff_dict['betas']
+
+        with gw.open(
+            l7_225078_20110306_B1,
+            band_names=['blue'],
+        ) as src:
+            res = lin.bandpass(
+                src,
+                sensor='l7',
+                to='l8',
+                scale_factor=1e-4,
+            )
+
+            reference = (
+                (alphas['blue'] + betas['blue'] * (src * 1e-4)) / 1e-4
+            ).fillna(0)
+
+            self.assertTrue(
+                np.allclose(
+                    reference.squeeze().data.compute(),
+                    res.squeeze().data.compute(),
+                )
+            )
+
     def test_landsat_metadata(self):
         meta = RT.get_landsat_coefficients(str(l8_224078_20200127_meta))
 
@@ -107,7 +138,9 @@ class TestRadiometrics(unittest.TestCase):
                     .astype('int32')
                 )
                 # Check against a full solar angle image
-                with gw.open(l7_225078_20110306_SZA, chunks=data.gw.row_chunks) as src:
+                with gw.open(
+                    l7_225078_20110306_SZA, chunks=data.gw.row_chunks
+                ) as src:
                     self.assertTrue(src.equals(data))
             with tempfile.TemporaryDirectory() as tmp:
                 angle_data = landsat_pixel_angles(
@@ -126,7 +159,9 @@ class TestRadiometrics(unittest.TestCase):
                 sza = angle_data.sza.compute()
                 with gw.open(l7_225078_20110306_B1) as src:
                     # Same CRS
-                    self.assertEqual(src.gw.crs_to_pyproj, sza.gw.crs_to_pyproj)
+                    self.assertEqual(
+                        src.gw.crs_to_pyproj, sza.gw.crs_to_pyproj
+                    )
                     # Same bounds
                     self.assertEqual(src.gw.affine, sza.gw.affine)
                 # Overlapping bounds
