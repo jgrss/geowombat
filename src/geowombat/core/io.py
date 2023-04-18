@@ -11,19 +11,6 @@ import typing as T
 import warnings
 from pathlib import Path
 
-from ..backends.rasterio_ import RasterioStore, to_gtiff
-from ..handler import add_handler
-from .windows import get_window_offsets
-
-try:
-    import zarr
-
-    from ..backends.zarr_ import to_zarr
-
-    ZARR_INSTALLED = True
-except ImportError:
-    ZARR_INSTALLED = False
-
 import dask
 import numpy as np
 import pyproj
@@ -41,6 +28,19 @@ from rasterio.windows import Window
 from threadpoolctl import threadpool_limits
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
+
+try:
+    import zarr
+
+    from ..backends.zarr_ import to_zarr
+
+    ZARR_INSTALLED = True
+except ImportError:
+    ZARR_INSTALLED = False
+
+from ..backends.rasterio_ import RasterioStore, to_gtiff
+from ..handler import add_handler
+from .windows import get_window_offsets
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
