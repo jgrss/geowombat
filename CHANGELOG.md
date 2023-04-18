@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.8 (2023-04-19)
+* Removed nested multithreading in `geowombat.moving` ([#259](https://github.com/jgrss/geowombat/pull/259))
+
 ## v2.1.7 (2023-04-01)
 * [#249](https://github.com/jgrss/geowombat/issues/249) merged in [#250](https://github.com/jgrss/geowombat/pull/250)
 * `pyproj>3.4.0` WKT errors addressed in [#254](https://github.com/jgrss/geowombat/pull/254)
