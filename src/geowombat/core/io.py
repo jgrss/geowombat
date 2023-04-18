@@ -11,19 +11,6 @@ import typing as T
 import warnings
 from pathlib import Path
 
-from ..backends.rasterio_ import RasterioStore, to_gtiff
-from ..handler import add_handler
-from .windows import get_window_offsets
-
-try:
-    import zarr
-
-    from ..backends.zarr_ import to_zarr
-
-    ZARR_INSTALLED = True
-except ImportError:
-    ZARR_INSTALLED = False
-
 import dask
 import numpy as np
 import pyproj
@@ -41,6 +28,19 @@ from rasterio.windows import Window
 from threadpoolctl import threadpool_limits
 from tqdm import tqdm
 from tqdm.dask import TqdmCallback
+
+try:
+    import zarr
+
+    from ..backends.zarr_ import to_zarr
+
+    ZARR_INSTALLED = True
+except ImportError:
+    ZARR_INSTALLED = False
+
+from ..backends.rasterio_ import RasterioStore, to_gtiff
+from ..handler import add_handler
+from .windows import get_window_offsets
 
 logger = logging.getLogger(__name__)
 logger = add_handler(logger)
@@ -201,7 +201,7 @@ def _compute_block(
         orows (int): The output image rows.
 
     Returns:
-        ``numpy.ndarray``, ``rasterio.windows.Window``, ``int`` | ``list``
+        ``numpy.ndarray`` | ``rasterio.windows.Window`` | ``int`` | ``list``
     """
     out_data_ = None
     if 'apply' in block.attrs:
@@ -410,7 +410,7 @@ def _write_xarray(*args):
         https://github.com/dask/dask/issues/3600
 
     Returns:
-        ``str`` | None
+        ``str`` | ``None``
     """
     zarr_file = None
     (
@@ -473,6 +473,9 @@ def to_vrt(
         nodata (Optional[float or int]): The 'no data' value for ``rasterio.vrt.WarpedVRT``.
         init_dest_nodata (Optional[bool]): Whether or not to initialize output to ``nodata`` for ``rasterio.vrt.WarpedVRT``.
         warp_mem_limit (Optional[int]): The GDAL memory limit for ``rasterio.vrt.WarpedVRT``.
+
+    Returns:
+        ``None``, writes to ``filename``
 
     Examples:
         >>> import geowombat as gw
@@ -567,6 +570,9 @@ def to_netcdf(
             the ``dask`` task graph. Default is ``True``.
         args (DataArray): Additional ``DataArrays`` to stack.
         kwargs (dict): Encoding arguments.
+
+    Return:
+        ``None``, writes to ``filename``
 
     Examples:
         >>> import geowombat as gw
@@ -876,7 +882,7 @@ def to_raster(
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.write``.
 
     Returns:
-        ``dask.delayed`` object
+        ``None``, writes to ``filename``
 
     Examples:
         >>> import geowombat as gw
@@ -1416,7 +1422,7 @@ def apply(
         kwargs (Optional[dict]): Additional keyword arguments to pass to ``rasterio.open``.
 
     Returns:
-        None
+        ``None``, writes to ``outfile``
 
     Examples:
         >>> import geowombat as gw

@@ -1,25 +1,27 @@
 import unittest
+import warnings
+
+import geopandas as gpd
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
+# from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.naive_bayes import GaussianNB
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+# from sklearn_xarray.model_selection import CrossValidatorWrapper
+# from sklearn_xarray.preprocessing import Featurizer
+from xarray import DataArray as xr_da
 
 import geowombat as gw
 from geowombat.data import (
+    l8_224078_20200518,
     l8_224078_20200518_points,
     l8_224078_20200518_polygons,
-    l8_224078_20200518,
 )
-from geowombat.ml import fit, predict, fit_predict
-
-import numpy as np
-import geopandas as gpd
-from sklearn.preprocessing import LabelEncoder
-from sklearn_xarray.preprocessing import Featurizer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.naive_bayes import GaussianNB
-from sklearn.cluster import KMeans
-from sklearn.model_selection import GridSearchCV, KFold
-from sklearn_xarray.model_selection import CrossValidatorWrapper
-from xarray import DataArray as xr_da
+from geowombat.ml import fit, fit_predict, predict
 
 aoi_point = gpd.read_file(l8_224078_20200518_points)
 aoi_point["lc"] = LabelEncoder().fit_transform(aoi_point.name)
@@ -28,7 +30,6 @@ aoi_point = aoi_point.drop(columns=["name"])
 aoi_poly = gpd.read_file(l8_224078_20200518_polygons)
 aoi_poly["lc"] = LabelEncoder().fit_transform(aoi_poly.name)
 aoi_poly = aoi_poly.drop(columns=["name"])
-
 
 pl_wo_feat = Pipeline(
     [
@@ -59,20 +60,29 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518, nodata=0) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
 
         self.assertTrue(np.all(np.isnan(y1.values[0, 0:5, 0])))
         self.assertTrue(np.all(np.isnan(y2.values[0, 0:5, 0])))
         self.assertTrue(
             np.allclose(
-                y1.values[0, -5:-1, 0], np.array([2.0, 2.0, 3.0, 3.0]), equal_nan=True
+                y1.values[0, -5:-1, 0],
+                np.array([2.0, 2.0, 3.0, 3.0]),
+                equal_nan=True,
             )
         )
         self.assertTrue(
             np.allclose(
-                y2.values[0, -5:-1, 0], np.array([2.0, 2.0, 3.0, 3.0]), equal_nan=True
+                y2.values[0, -5:-1, 0],
+                np.array([2.0, 2.0, 3.0, 3.0]),
+                equal_nan=True,
             )
         )
 
@@ -82,9 +92,14 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518, nodata=0) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_poly, col="lc")
 
         self.assertTrue(isinstance(y1, xr_da))
         self.assertTrue(isinstance(y2, xr_da))
@@ -98,9 +113,14 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518, nodata=0) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
@@ -112,9 +132,18 @@ class TestConfig(unittest.TestCase):
             with gw.open(
                 [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
             ) as src:
-                y1 = fit_predict(
-                    src, pl_wo_feat, aoi_point, col="lc", mask_nodataval=False
-                )
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y1 = fit_predict(
+                        src,
+                        pl_wo_feat,
+                        aoi_point,
+                        col="lc",
+                        mask_nodataval=False,
+                    )
 
         self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
 
@@ -124,40 +153,55 @@ class TestConfig(unittest.TestCase):
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518, nodata=0) as src:
-                X, Xy, clf = fit(data=src, clf=cl_wo_feat)
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(data=src, clf=cl_wo_feat)
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(data=src, clf=cl_wo_feat)
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(data=src, clf=cl_wo_feat)
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    def test_classes_match_prediction(self):
-
+    def test_classes_match_prediction_a(self):
         with gw.config.update(
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
         self.assertTrue(
             np.all(
                 [
-                    len(np.unique(y1.values)) == len(np.unique(aoi_point["lc"])),
-                    len(np.unique(y2.values)) == len(np.unique(aoi_point["lc"])),
+                    len(np.unique(y1.values))
+                    == len(np.unique(aoi_point["lc"])),
+                    len(np.unique(y2.values))
+                    == len(np.unique(aoi_point["lc"])),
                 ]
             )
         )
 
-    def test_classes_match_prediction(self):
-
+    def test_classes_match_prediction_b(self):
         with gw.config.update(
             ref_res=300,
         ):
             with gw.open(l8_224078_20200518) as src:
-                X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
-                y1 = predict(src, X, clf)
-                y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        'ignore',
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, pl_wo_feat, aoi_point, col="lc")
 
         y1values = np.unique(y1.values)
         y2values = np.unique(y2.values)

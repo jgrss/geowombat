@@ -1,7 +1,7 @@
 import unittest
 
-import numpy as np
 import geopandas as gpd
+import numpy as np
 
 import geowombat as gw
 from geowombat.data import (
@@ -31,7 +31,8 @@ class TestClip(unittest.TestCase):
         df = gpd.read_file(l8_224078_20200518_polygons)
         df = df.to_crs(src_crs)
         with gw.config.update(
-            ref_bounds=df.total_bounds.tolist(), ref_tar=l8_224077_20200518_B2
+            ref_bounds=df.total_bounds.tolist(),
+            ref_tar=l8_224077_20200518_B2,
         ):
             with gw.open(l8_224077_20200518_B2, chunks=64) as ref:
                 self.assertTrue(

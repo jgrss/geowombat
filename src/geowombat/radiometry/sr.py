@@ -564,7 +564,6 @@ class LinearAdjustments(object):
 
         # Set 'no data' as nans
         data = data.where(data != src_nodata)
-
         if scale_factor == 1.0:
             scale_factor = data.gw.scale_factor
 
@@ -573,7 +572,6 @@ class LinearAdjustments(object):
             data = data * scale_factor
 
         if not band_names:
-
             band_names = data.band.values.tolist()
 
             if band_names[0] == 1:
