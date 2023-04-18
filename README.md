@@ -77,7 +77,7 @@ Computation scales easily over large datasets with minimal changes to the code.
 >>>         results = srca.sel(band=1) * srcb.sel(band=[1, 2, 3]).mean(dim='band')
 >>>
 >>>         # Initiate computation by writing the results to file.
->>>         # Mix process and thread workers to execute the task in parallel.
+>>>         # Compute the task in parallel using dask.
 >>>         results.gw.save(
 >>>             'output.tif',
 >>>             num_workers=4,
