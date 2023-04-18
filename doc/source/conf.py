@@ -6,15 +6,15 @@
 
 # -- Path setup --------------------------------------------------------------
 
+from datetime import datetime
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 from pathlib import Path
 
-from datetime import datetime
 import geowombat as gw
-
 
 # -- Project information -----------------------------------------------------
 
@@ -74,6 +74,7 @@ exclude_patterns = ['_build']
 # a list of builtin themes.
 html_theme = 'sphinx_book_theme'
 html_title = ''
+html_extra_path = ['google3b98284c88d0d3f0.html']
 logo_only = True
 html_logo = '_static/logo.png'
 # html_favicon = ''
