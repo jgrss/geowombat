@@ -1,6 +1,5 @@
 import datetime
 import unittest
-import warnings
 
 import numpy as np
 
@@ -27,17 +26,15 @@ class TestLoad(unittest.TestCase):
             slice(0, 64),
             slice(0, 64),
         )
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', ResourceWarning)
-            dates, y = gw.load(
-                IMAGE_LIST,
-                IMAGE_DATES,
-                ['blue'],
-                chunks={'band': -1, 'y': 64, 'x': 64},
-                nodata=65535,
-                data_slice=data_slice,
-                num_workers=1,
-            )
+        dates, y = gw.load(
+            IMAGE_LIST,
+            IMAGE_DATES,
+            ['blue'],
+            chunks={'band': -1, 'y': 64, 'x': 64},
+            nodata=65535,
+            data_slice=data_slice,
+            num_workers=1,
+        )
 
         self.assertTrue(isinstance(y, np.ndarray))
         self.assertEqual(y.shape, (3, 1, 64, 64))

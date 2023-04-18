@@ -1,5 +1,4 @@
 import unittest
-import warnings
 
 import numpy as np
 import rasterio as rio
@@ -77,11 +76,9 @@ class TestRasterio(unittest.TestCase):
     def test_check_crs(self):
         with rio.open(l8_224077_20200518_B2) as src:
             self.assertEqual(check_crs(src.crs), CRS.from_epsg(32621))
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', FutureWarning)
-                self.assertEqual(
-                    check_crs(src.crs.to_dict()), CRS.from_epsg(32621)
-                )
+            self.assertEqual(
+                check_crs(src.crs.to_dict()), CRS.from_epsg(32621)
+            )
             self.assertEqual(
                 check_crs(src.crs.to_proj4()), CRS.from_epsg(32621)
             )

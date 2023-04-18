@@ -304,7 +304,7 @@ def check_crs(crs: T.Union[CRS, rio.CRS, dict, int, np.number, str]) -> CRS:
     """
     with rio.Env():
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore', UserWarning)
+            warnings.simplefilter('ignore', (FutureWarning, UserWarning))
             if isinstance(crs, (CRS, rio.CRS)):
                 dst_crs = CRS.from_wkt(crs.to_wkt())
             elif isinstance(crs, (int, np.number)):
