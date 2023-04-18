@@ -15,6 +15,7 @@ from rasterio import features
 from rasterio.crs import CRS
 from rasterio.transform import from_bounds
 from rasterio.warp import reproject, transform_bounds
+from threadpoolctl import threadpool_limits
 
 from ..handler import add_handler
 from ..moving import moving_window
@@ -419,6 +420,7 @@ class MapProcesses(object):
         attrs = data.attrs
         hw = int(w * 0.5)
 
+        @threadpool_limits.wrap(limits=1, user_api='blas')
         def _move_func(block_data: np.ndarray) -> np.ndarray:
             """
             Args:
