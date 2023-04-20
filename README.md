@@ -12,6 +12,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/version.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/platforms.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/downloads.svg)](https://anaconda.org/conda-forge/geowombat)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/geowombat)
 
 ### GeoWombat: Utilities for geospatial data
 
