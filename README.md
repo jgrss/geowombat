@@ -2,10 +2,17 @@
 
 [![](https://img.shields.io/badge/License-MIT-black.svg)](https://github.com/jgrss/geowombat/blob/main/LICENSE.txt)
 [![python](https://img.shields.io/badge/Python-3.7%20%7C%203.8%20%7C%203.9-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
-[![](https://badge.fury.io/gh/jgrss%2Fgeowombat.svg)](https://badge.fury.io/gh/jgrss%2Fgeowombat)
-[![](https://github.com/jgrss/geowombat/actions/workflows/ci.yml/badge.svg)](https://github.com/jgrss/geowombat/actions?query=workflow%3ACI)
+[![](https://img.shields.io/github/v/release/jgrss/geowombat?display_name=release)](https://github.com/jgrss/geowombat/releases)
+[![](https://github.com/jgrss/geowombat/actions/workflows/ci.yml/badge.svg)](https://github.com/jgrss/geowombat/actions/)
 [![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
 [![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
+
+[GeoWombat on Anaconda](https://anaconda.org/conda-forge/geowombat)
+
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/version.svg)](https://anaconda.org/conda-forge/geowombat)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/platforms.svg)](https://anaconda.org/conda-forge/geowombat)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/downloads.svg)](https://anaconda.org/conda-forge/geowombat)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/geowombat)
 
 ### GeoWombat: Utilities for geospatial data
 
