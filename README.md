@@ -7,7 +7,7 @@
 [![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
 [![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
 
-### Anaconda
+[GeoWombat on Anaconda](https://anaconda.org/conda-forge/geowombat)
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/version.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/platforms.svg)](https://anaconda.org/conda-forge/geowombat)
