@@ -16,7 +16,7 @@ To begin, import GeoWombat and Xarray:
 Instantiate an xarray.DataArray with a GeoWombat accessor
 ---------------------------------------------------------
 
-Any :class:`xarray.DataArray`` will have the ``geowombat`` accessors appended. That is, the :class:`xarray.DataArray` will have
+Any :class:`xarray.DataArray` will have the ``geowombat`` accessors appended. That is, the :class:`xarray.DataArray` will have
 an :class:`xarray.DataArray.gw` object.
 
 .. ipython:: python

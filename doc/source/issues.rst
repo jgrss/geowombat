@@ -12,4 +12,4 @@ If the GDAL_DATA directory is missing the gcs.csv file, point the GDAL_DATA envi
 
 For example::
 
-    $ GDAL_DATA=/envs/ts3.7/lib/python3.7/site-packages/fiona/gdal_data
+    GDAL_DATA=/envs/ts3.7/lib/python3.7/site-packages/fiona/gdal_data

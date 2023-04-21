@@ -153,7 +153,8 @@ To extract the raster values at the point locations, use :func:`geowombat.extrac
 
 .. note::
 
-    The line **df = src.gw.extract(l8_224078_20200518_points)** could also have been written as **df = gw.extract(src, l8_224078_20200518_points)**.
+    The line ``df = src.gw.extract(l8_224078_20200518_points)`` could also have been written as
+    ``df = gw.extract(src, l8_224078_20200518_points)``.
 
 In the previous example, the point vector had a CRS that matched the raster (i.e., EPSG=32621, or UTM zone 21N).
 If the CRS had not matched, the :func:`geowombat.extract` function would have transformed the CRS on-the-fly.

@@ -24,9 +24,10 @@ Why not Xarray?
 ---------------
 
 Xarray's `open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ function is the interface
-to ``rasterio``. It opens a delayed raster as a :class:``dask.array.Array``, which means data are not loaded into memory until requested.
-However, ``xarray`` is intended to be a `general purpose library <http://xarray.pydata.org/en/stable/internals.html#extending-xarray>`_.
-Therefore, it does not include geo-specific tasks included in ``geowombat``, such as radiometric adjustments, vector/raster interaction,
+to ``rasterio``. It opens a delayed raster as a `dask.array.Array <https://docs.dask.org/en/stable/generated/dask.array.Array.html#dask.array.Array>`_,
+which means data are not loaded into memory until requested. However, ``xarray`` is intended to be a
+`general purpose library <http://xarray.pydata.org/en/stable/internals.html#extending-xarray>`_. Therefore,
+it does not include geo-specific tasks included in ``geowombat``, such as radiometric adjustments, vector/raster interaction,
 and special purpose I/O such as on-the-fly mosaicking.
 
 Related projects
