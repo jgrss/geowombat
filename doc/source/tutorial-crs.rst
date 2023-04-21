@@ -3,7 +3,7 @@
 Coordinate Reference Systems
 ============================
 
-Image projections can be transformed in GeoWombat using the configuration manager (see :ref:`tutorial-config`).
+Image projections can be transformed in ``geowombat`` using the configuration manager (see :ref:`tutorial-config`).
 With the configuration manager, the CRS is transformed using
 `pyproj.crs.CRS <https://pyproj4.github.io/pyproj/dev/api/crs/crs.html>`_
 and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references,

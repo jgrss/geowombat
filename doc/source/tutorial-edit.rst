@@ -17,15 +17,15 @@ file metadata, if it is available. For example:
     with gw.open(l8_224078_20200518) as src:
         print(src)
 
-Note the ``DataArray`` attributes 'nodatavals' and '_FillValue'. The former, 'nodatavals', is
+Note the :class:`xarray.DataArray` attributes **nodatavals** and **_FillValue**. The former, **nodatavals**, is
 :func:`geowombat.backends.xarray_rasterio_.open_rasterio` (originally from :func:`xarray.open_rasterio`)
 convention. This attribute is a ``tuple`` of length ``DataArray.gw.nbands``, describing the 'no data' value
 for each band. Typically, satellite imagery will have the same 'no data' value across all bands. The other
-'no data' attribute, '_FillValue', is an attribute used by :func:`xarray.open_dataset` to flag 'no data' values.
+'no data' attribute, **_FillValue**, is an attribute used by :func:`xarray.open_dataset` to flag 'no data' values.
 This attribute is an ``int`` or ``float``. We store both attributes when opening data.
 
 We can see in the opened image that the 'no data' value is ``nan`` (i.e., 'nodatavals' = (``nan``, ``nan``, ``nan``)
-and '_FillValue' = ``nan``).
+and **_FillValue** = ``nan``).
 
 .. ipython:: python
 
@@ -37,8 +37,8 @@ and '_FillValue' = ``nan``).
         print(src.squeeze().values[0])
 
 However, ``nan`` being set as the 'no data' is actually an error because this particular raster file does not
-contain information about 'no data' values. If there is no existing 'no data' information ``rasterio`` will
-set 'no data' as ``nan``. In this image, ``nans`` do not exist, and we can see that because the 'dtype' is
+contain information about 'no data' values. If there is no existing 'no data' information, ``rasterio`` will
+set 'no data' as ``nan``. In this image, ``nans`` do not exist, and we can see that because the **dtype** is
 'uint16', whereas ``nans`` require data as floating point numbers.
 
 Let's save a temporary file below and specify the 'no data' value as 0. Then, when we open the temporary
@@ -65,12 +65,12 @@ file the 'no data' attributes should be set as 0.
 
 .. note::
 
-    We are not modifying any data -- we are only updating the ``DataArray`` metadata. Thus, the printout of
-    the data above reflect changes in the ``DataArray`` 'no data' attributes but the printed array values
+    We are not modifying any data -- we are only updating the :class:`xarray.DataArray` metadata. Thus, the printout of
+    the data above reflect changes in the :class:`xarray.DataArray` 'no data' attributes but the printed array values
     remained unchanged.
 
 But what if we want to modify the 'no data' value when opening the file (instead of re-saving)? We can
-pass ``nodata`` to the opener as shown below.
+pass **nodata** to the opener as shown below.
 
 .. ipython:: python
 
@@ -129,7 +129,7 @@ demonstrated by the example below.
 Setting 'no data' values with scaling
 -------------------------------------
 
-In GeoWombat, we use :func:`xarray.DataArray.where` along with optional
+In ``geowombat``, we use :func:`xarray.DataArray.where` along with optional
 scaling in the :func:`xarray.DataArray.gw.set_nodata` function. In this example, we set zeros as
 ``nan`` and scale all other values from a [0,10000] range to [0,1] (i.e., x 1e-4).
 

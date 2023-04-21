@@ -11,7 +11,7 @@ APIs refer to the following `STAC list <https://stacspec.org/en/about/datasets/>
 Spatial Temporal Asset Catalogs
 -------------------------------
 
-To open a STAC catalog with GeoWombat, we interface through the following Python libraries:
+To open a STAC catalog with ``geowombat``, we interface through the following Python libraries:
 
     * `pystac <https://pystac.readthedocs.io/en/latest/>`_
     * `pystac_client <https://pystac-client.readthedocs.io/en/latest/>`_
@@ -23,7 +23,7 @@ To open a STAC catalog with GeoWombat, we interface through the following Python
     * `element84 <'https://earth-search.aws.element84.com/v0'>`_
     * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_
 
-To install GeoWombat with STAC functionality::
+To install ``geowombat`` with STAC functionality::
 
     pip install "geowombat[stac]@git+https://github.com/jgrss/geowombat.git"
 
@@ -159,7 +159,7 @@ In the example above, the bounds can also be taken directly from a file, as show
 Read from virtual Cloud Optimized GeoTiffs
 ------------------------------------------
 
-Using `rasterio` as a backend, we can read supported files directly from their respective cloud servers. In the example below,
+Using ``rasterio`` as a backend, we can read supported files directly from their respective cloud servers. In the example below,
 we query a Landsat scene and open the blue, green, red, and NIR band metadata.
 
 .. code:: python

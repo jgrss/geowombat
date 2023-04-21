@@ -6,7 +6,7 @@ Installing GeoWombat
 Install with pip
 ----------------
 
-If your system has `GDAL <https://gdal.org/>`_ installed then GeoWombat can be installed via
+If your system has `GDAL <https://gdal.org/>`_ installed, then ``geowombat`` can be installed via
 `pip <https://pypi.org/project/pip/>`_ directly from the `GitHub repository <https://github.com/jgrss/geowombat>`_.
 
 .. tabs::
@@ -57,7 +57,8 @@ Install with Conda
 
 If you have issues installing GDAL then `Conda <https://docs.conda.io/en/latest/>`_ provides an easy and
 consistent installation method regardless of operating system. See the
-`Conda installation instructions <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_ for setup.
+`Conda installation instructions <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_
+for setup.
 
 Installing ``geowombat`` from the ``conda-forge`` channel can be achieved by adding ``conda-forge`` to your channels with::
 
@@ -80,7 +81,7 @@ Alternatively, install in one line following the `GeoWombat Conda page <https://
 Detailed install
 ----------------
 
-The GDAL binaries must be installed prior to installing GeoWombat. Below are instructions on how to build GDAL for your
+The GDAL binaries must be installed prior to installing ``geowombat``. Below are instructions on how to build GDAL for your
 operating system.
 
 .. tabs::
@@ -189,7 +190,7 @@ operating system.
 
                             conda activate gwenv
 
-                        Install geowombat requirements via conda-forge::
+                        Install ``geowombat`` requirements via ``conda-forge``::
 
                             conda config --env --add channels conda-forge
                             conda config --env --set channel_priority strict
@@ -205,7 +206,7 @@ operating system.
 
             .. tab:: 4 - Python GDAL
 
-                The Python GDAL package version must match the GDAL binaries version. For this reason, GeoWombat
+                The Python GDAL package version must match the GDAL binaries version. For this reason, ``geowombat``
                 does not attempt to install the GDAL Python package. Be sure to use the same version printed from::
 
                     gdalinfo --version
@@ -220,7 +221,7 @@ operating system.
 
                 .. note::
 
-                    In Windows we recommend the use of ``conda`` since ``pip`` often requires the use of precompiled
+                    In Windows we recommend ``conda`` since ``pip`` often requires the use of precompiled
                     binaries, which can get tricky. If using ``pip``, there may be some cases where installing packages
                     will not be successful in Windows. In these cases please refer to the precompiled wheel files at
                     `Christoph Gohlke's website <https://www.lfd.uci.edu/~gohlke/pythonlibs/>`_.
@@ -233,7 +234,7 @@ operating system.
 
             .. tab:: 6 - Updating
 
-                To update GeoWombat::
+                To update ``geowombat``::
 
                     (gwenv) pip install --upgrade git+https://github.com/jgrss/geowombat
 
@@ -242,35 +243,35 @@ operating system.
                 GeoWombat has a lot of additional capabilities, some of which you may or may not want to use.
                 For this reason, we allow the user to decide which dependencies they want to install.
 
-                Install GeoWombat with libraries for building Sphinx docs::
+                Install ``geowombat`` with libraries for building Sphinx docs::
 
                     (gwenv) pip install "geowombat[docs]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for co-registration::
+                Install ``geowombat`` with libraries for co-registration::
 
                     (gwenv) pip install arosics --no-deps && pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for machine learning and classification::
+                Install ``geowombat`` with libraries for machine learning and classification::
 
                     (gwenv) pip install "geowombat[ml]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for pygeos, netcdf and ray support::
+                Install ``geowombat`` with libraries for ``pygeos``, ``netcdf`` and ``ray`` support::
 
                     (gwenv) pip install "geowombat[perf]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for parsing dates automatically::
+                Install ``geowombat`` with libraries for parsing dates automatically::
 
                     (gwenv) pip install "geowombat[time]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries with map-making dependencies::
+                Install ``geowombat`` with libraries with map-making dependencies::
 
                     (gwenv) pip install "geowombat[view]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for accessing hosted data::
+                Install ``geowombat`` with libraries for accessing hosted data::
 
                     (gwenv) pip install "geowombat[web]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with libraries for streaming data from STAC::
+                Install ``geowombat`` with libraries for streaming data from STAC::
 
                     (gwenv) pip install "geowombat[stac]@git+https://github.com/jgrss/geowombat.git"
 
@@ -278,7 +279,7 @@ operating system.
 
                     (gwenv) pip install "geowombat[perf,stac]@git+https://github.com/jgrss/geowombat.git"
 
-                Install GeoWombat with all extra libraries::
+                Install ``geowombat`` with all extra libraries::
 
                     (gwenv) pip install "geowombat[all]@git+https://github.com/jgrss/geowombat.git"
 
@@ -294,7 +295,7 @@ operating system.
 
             .. tab:: Build image from scratch
 
-                If you want to build an image from scratch, a Dockerfile is provided in GeoWombat. Using this file,
+                If you want to build an image from scratch, a Dockerfile is provided in ``geowombat``. Using this file,
                 a Docker image can be built by::
 
                     git clone https://github.com/jgrss/geowombat.git
@@ -311,7 +312,7 @@ Test the installation
 Test the import
 ###############
 
-If GeoWombat installed correctly, you should be able to run the following command from the terminal::
+If ``geowombat`` installed correctly, you should be able to run the following command from the terminal::
 
     python -c "import geowombat as gw;print(gw.__version__)"
 
@@ -329,7 +330,7 @@ Install ``testfixtures`` (used to test logging outputs in ``test_config.py``)::
 
     pip install testfixtures
 
-Run all unittests inside GeoWombat's ``/tests`` directory::
+Run all unittests inside the ``/tests`` directory::
 
     cd geowombat/tests
     python -m unittest

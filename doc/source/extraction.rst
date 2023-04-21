@@ -69,7 +69,7 @@ with the reference raster. To subset a raster and align it to the same grid, use
 Clipping to bounds
 ------------------
 
-Geowombat's :func:`geowombat.clip_by_polygon` is an alternative method to `geowombat.config.update`. The
+GeoWombat's :func:`geowombat.clip_by_polygon` is an alternative method to :class:`geowombat.config.update`. The
 :func:`geowombat.clip_by_polygon` method limits the bounds of the image to match a polygon, where the polygon
 can be a `geopandas.GeoDataFrame <https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame>`_,
 or a path to a file readable with `geopandas.read_file <https://geopandas.org/en/stable/docs/reference/api/geopandas.read_file.html#geopandas.read_file>`_.

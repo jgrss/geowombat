@@ -33,7 +33,7 @@ Available Configurations
 ------------------------
 
 The following is a list of configurations for all sensors. This documentation may become out of date, if so
-please refer to geowombat/core/properties.py for the full list.
+please refer to ``geowombat/core/properties.py`` for the full list.
 
 .. list-table:: Title
    :widths: 25 75

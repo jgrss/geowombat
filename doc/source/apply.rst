@@ -6,7 +6,7 @@ User functions
 User apply
 ----------
 
-With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.
+With functions that release the GIL (e.g., many NumPy functions, Cython), one can use ``rasterio`` to write concurrently.
 
 The example below applies a custom function concurrently over an image.
 
@@ -28,7 +28,7 @@ The example below applies a custom function concurrently over an image.
 User functions as DataArray attributes
 --------------------------------------
 
-User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the
+User functions that do not use a ``dask`` task graph can be passed as attributes. Unlike the example above, the
 example below has guaranteed image alignment. Functions and arguments can be passed as Xarray attributes.
 Here is an example that uses one user argument.
 
@@ -86,8 +86,8 @@ In this example, a keyword argument is also used.
 Applying in-memory GeoWombat functions lazily
 ---------------------------------------------
 
-Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these
-functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework.
+Several ``geowombat`` functions execute in-memory, and are therefore not optimized for large datasets. However, these
+functions can be applied at the block level for ``dask``-like out-of-memory processing using the user function framework.
 In the example below, :func:`geowombat.polygon_to_array` is applied at the raster block level.
 
 .. code:: python
@@ -120,8 +120,8 @@ In the example below, :func:`geowombat.polygon_to_array` is applied at the raste
             compress='lzw'
         )
 
-By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat
-function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
+By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a ``geowombat``
+function that operates on an :class:`xarray.DataArray`. To achieve this, we can decorate the function.
 
 .. code:: python
 

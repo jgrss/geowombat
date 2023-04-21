@@ -3,7 +3,7 @@
 Raster I/O
 ==========
 
-File opening with GeoWombat uses the :func:`geowombat.open` function to open raster files.
+File opening with ``geowombat`` uses the :func:`geowombat.open` function to open raster files.
 
 .. ipython:: python
 
@@ -18,7 +18,7 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     import matplotlib.pyplot as plt
     import matplotlib.patheffects as pe
 
-To open individual images, GeoWombat uses :func:`xarray.open_rasterio` and :class:`rasterio.vrt.WarpedVRT`.
+To open individual images, ``geowombat`` uses :func:`xarray.open_rasterio` and :class:`rasterio.vrt.WarpedVRT`.
 
 .. ipython:: python
 
@@ -28,7 +28,7 @@ To open individual images, GeoWombat uses :func:`xarray.open_rasterio` and :clas
     @savefig rgb_plot.png
     plt.tight_layout(pad=1)
 
-Open a raster as a DataArray.
+Open a raster as an :class:`xarray.DataArray`.
 
 .. ipython:: python
 
@@ -59,7 +59,7 @@ Use the sensor name to set band names.
 
 To open multiple images stacked by bands, use a list of files with ``stack_dim='band'``.
 
-Open a list of files as a DataArray, with all bands stacked.
+Open a list of files as an :class:`xarray.DataArray`, with all bands stacked.
 
 .. ipython:: python
 
@@ -70,7 +70,7 @@ Open a list of files as a DataArray, with all bands stacked.
 
 To open multiple images as a time stack, change the input to a list of files.
 
-Open a list of files as a DataArray.
+Open a list of files as an :class:`xarray.DataArray`.
 
 .. ipython:: python
 
@@ -85,7 +85,7 @@ Open a list of files as a DataArray.
     If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a
     context manager and a reference image to handle image alignment.
 
-In the example below, we specify a reference image using GeoWombat's configuration manager.
+In the example below, we specify a reference image using the ``geowombat`` configuration manager.
 
 .. note::
 
@@ -159,7 +159,7 @@ When multiple images have matching dates, the arrays are merged into one layer.
 Image mosaicking
 ----------------
 
-Mosaic the two subsets into a single DataArray. If the images in the mosaic list have the same CRS, no configuration
+Mosaic the two subsets into a single :class:`xarray.DataArray`. If the images in the mosaic list have the same CRS, no configuration
 is needed.
 
 .. ipython:: python
@@ -244,8 +244,7 @@ Mosaic by the union of images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
-footprints while the black grids illustrate the
-`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray-dataarray>`_ chunks.
+footprints while the black grids illustrate the :class:`xarray.DataArray` chunks.
 
 .. ipython:: python
 
@@ -271,8 +270,8 @@ Writing DataArrays to file
 --------------------------
 
 GeoWombat's file writing can be accessed through the ``geowombat`` :func:`to_vrt`, :func:`to_raster`,
-and :func:`save` functions. These functions use Rasterio's :func:`write` and ``Dask.array``
-:func:`store` functions as I/O backends. In the examples below, ``src`` is an ``xarray.DataArray``
+and :func:`save` functions. These functions use :func:`rasterio.write` and :func:`Dask.array.store`
+as I/O backends. In the examples below, ``src`` is an :class:`xarray.DataArray`
 with the necessary transform and coordinate reference system (CRS) information to write to an
 image file.
 
@@ -282,17 +281,17 @@ image file.
     background.
 
     In the early days of ``geowombat`` development, direct computation calls using
-    ``Dask`` (more on that with :func:`geowombat.save`) were tested on large raster files
+    ``dask`` (more on that with :func:`geowombat.save`) were tested on large raster files
     (i.e., width and height on the order of tens of thousands). It was determined that the overhead
-    of generating the Dask task graph was too large and outweighed the actual computation. To
+    of generating the ``dask`` task graph was too large and outweighed the actual computation. To
     address this, the :func:`geowombat.to_raster` method was designed to iterate over raster chunks/blocks
     using ``concurrent.futures``, reading and computing each block when requested. This removed
-    any large overhead but also negated the efficiency of ``Dask`` as the underlying 'delayed'
+    any large overhead but also negated the efficiency of ``dask`` as the underlying 'delayed'
     array. The :func:`geowombat.to_raster` can be used on data of any size, but comes with its own overhead.
     For example, when working with arrays that fit into memory, such as a standard satellite scene,
-    ``Dask`` (i.e., :func:`geowombat.save`) works quite well. To give an example, instead of slicing a ``DataArray``
+    ``dask`` (i.e., :func:`geowombat.save`) works quite well. To give an example, instead of slicing an :class:`xarray.DataArray`
     chunk and writing/computing that chunk (i.e., :func:`geowombat.to_raster` approach), we can also compute the entire
-    ``DataArray`` using ``Dask`` (i.e., :func:`geowombat.save`) and let ``Dask`` handle the concurrency. This is
+    :class:`xarray.DataArray` using ``dask`` (i.e., :func:`geowombat.save`) and let ``dask`` handle the concurrency. This is
     where :func:`geowombat.save` comes in to play. The :func:`geowombat.save` method (or also :func:`xarray.DataArray.gw.save`)
     submits the data to :func:`Dask.array.store` and each chunk is written to file using ``rasterio``.
 
@@ -300,8 +299,8 @@ image file.
     both methods, particularly if :func:`geowombat.save` is determined to be more efficient than :func:`geowombat.to_raster`,
     regardless of the data size.
 
-Write to a raster file using `Dask` and the `geowombat` :func:`save` function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Write to a raster file using Dask and :func:`geowombat.save`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -318,8 +317,8 @@ Write to a raster file using `Dask` and the `geowombat` :func:`save` function
             num_workers=4  # these workers are used as Dask.compute(num_workers=num_workers)
         )
 
-Write to a raster file using `concurrent.futures` and the `geowombat` :func:`to_raster` function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Write to a raster file using ``concurrent.futures`` and :func:`geowombat.to_raster`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 

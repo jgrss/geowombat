@@ -3,7 +3,7 @@
 Quick overview
 ==============
 
-Here are some quick examples of what you can do with GeoWombat objects.
+Here are some quick examples of what you can do with ``geowombat`` objects.
 
 To begin, import GeoWombat and Xarray:
 
@@ -13,10 +13,11 @@ To begin, import GeoWombat and Xarray:
     import numpy as np
     import xarray as xr
 
-Open a DataArray with a GeoWombat accessor
-------------------------------------------
+Instantiate an xarray.DataArray with a GeoWombat accessor
+---------------------------------------------------------
 
-Any DataArray or Dataset will have the GeoWombat accessors appended:
+Any :class:`xarray.DataArray`` will have the ``geowombat`` accessors appended. That is, the :class:`xarray.DataArray` will have
+an :class:`xarray.DataArray.gw` object.
 
 .. ipython:: python
 
@@ -28,10 +29,10 @@ Any DataArray or Dataset will have the GeoWombat accessors appended:
     print(data)
     print(data.gw)
 
-Open a file
------------
+Open a raster file
+------------------
 
-GeoWombat has its own file opening API (:ref:`io`):
+GeoWombat has its own file opening API through :func:`geowombat.open` (see :ref:`io` for details).
 
 .. ipython:: python
 
@@ -43,6 +44,8 @@ GeoWombat has its own file opening API (:ref:`io`):
 
 Write a raster
 --------------
+
+Save an :class:`xarray.DataArray` to file with :func:`geowombat.save`.
 
 .. code:: python
 

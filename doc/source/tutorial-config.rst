@@ -11,12 +11,13 @@ In short, a context manager ensures proper file closing using `with statements <
 What is the purpose of GeoWombat's context manager?
 ---------------------------------------------------
 
-The examples shown in :ref:`tutorial-open` opened the entire rasters as DataArrays as they were stored on file. The configuration manager allows easy control over opened raster dimensions, alignment, and transformations.
+The examples shown in :ref:`tutorial-open` opened entire rasters as an :class:`xarray.DataArray` as they were stored on file.
+The configuration manager allows easy control over opened raster dimensions, alignment, and transformations.
 
 How do I use it?
 ----------------
 
-To use GeoWombat's configuration manager, just call :class:`geowombat.config.update` before opening a file. For example,
+To use the ``geowombat`` configuration manager, just call :class:`geowombat.config.update` before opening a file. For example,
 
 .. code:: python
 
@@ -137,11 +138,11 @@ will be transformed to match those of the reference image.
 Reference settings: Sensors
 ---------------------------
 
-Because rasters are opened as DataArrays, the band coordinates will be named. By default, the bands
+Because rasters are opened as an :class:`xarray.DataArray`, the band coordinates will be named. By default, the bands
 will be named by their index position (starting at 1). It might, however, be more intuitive to store
-the band names as strings, where the names correspond to the sensor wavelengths. In GeoWombat, you
+the band names as strings, where the names correspond to the sensor wavelengths. In ``geowombat``, you
 can set the band names explicitly upon opening a file by using the :func:`geowombat.open` **band_names**
-keyword. Alternatively, if the sensor is known (and supported by GeoWombat), then you can set the band
+keyword. Alternatively, if the sensor is known (and supported by ``geowombat``), then you can set the band
 names by specifying the sensor name in the configuration settings.
 
 .. note::

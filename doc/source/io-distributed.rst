@@ -3,7 +3,7 @@
 Distributed processing
 ======================
 
-One of the key features of GeoWombat is the ability to write Dask/Xarray tasks to file in a concurrent workflow. Below are
+One of the key features of ``geowombat`` is the ability to write ``dask`` tasks to file in a concurrent workflow. Below are
 several examples illustrating this process.
 
 Import GeoWombat and Dask
@@ -20,13 +20,13 @@ Dask diagnostics
     from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
     from dask.diagnostics import visualize
 
-Use Dask to compute with parallel workers
------------------------------------------
+Use ``dask`` to compute with concurrent workers
+-----------------------------------------------
 
 .. note::
 
-    These examples illustrate the Dask concurrency over a DataArray task. An example showing how to write results
-    to file in parallel are shown at the bottom of the page.
+    These examples illustrate the ``dask`` concurrency over an :class:`xarray.DataArray`` task. An example showing
+    how to write results to file concurrently are shown at the bottom of the page.
 
 Chunk sizes of 64x64 require many reads for a simple calculation.
 
@@ -208,12 +208,9 @@ Open bands as a stacked array
 Use GeoWombat to write a task to file
 -------------------------------------
 
-In the previous examples, the call to ``dask`` :func:`compute` lets ``dask`` manage the task distribution.
-
-When writing results to file with :func:`geowombat.save`, individual chunks are managed in a parallel process
-using `Dask`.
-
-Writing results to file in a parallel environment can be performed on a laptop or a distributed compute system. With the
+In the previous examples, the call to ``dask`` :func:`compute` lets ``dask`` manage the task distribution. When writing
+results to file with :func:`geowombat.save`, individual chunks are managed by `Dask`. Writing results to file in a
+parallel environment can be performed on a laptop or a distributed compute system. With the
 former, a call to :func:`geowombat.save` is all that is needed. On a distributed compute system, one might instead use
 a `distributed client <https://distributed.dask.org/en/latest/client.html>`_ to manage the task concurrency.
 
@@ -317,8 +314,8 @@ One could also do the following.
 Use GeoWombat to gather block-level results in parallel
 -------------------------------------------------------
 
-If, you wish to retrieve values for each block without writing the entire blocks to file,
-use :class:`geowombat.core.parallel.ParallelTask`. In the example below, a custom function (`user_func`) is
+If you wish to retrieve values for each block without writing the entire blocks to file,
+use :class:`geowombat.core.parallel.ParallelTask`. In the example below, a custom function (``user_func``) is
 processed in parallel over each raster chunk/block.
 
 .. code:: python
@@ -358,9 +355,9 @@ processed in parallel over each raster chunk/block.
         # point in using multiple threads here
         res = pt.map(user_func, 1)
 
-In the example above, :class:`geowombat.core.parallel.ParallelTask` reads row and column chunks of `src.gw.row_chunks`
+In the example above, :class:`geowombat.core.parallel.ParallelTask` reads row and column chunks of ``src.gw.row_chunks``
 and ``src.gw.col_chunks`` size (which is set with :func:`geowombat.open`). Let's say we open a raster with chunks of 512x512.
-In the above example, the ``data.data.sum().compute(scheduler='threads', num_workers=num_workers)`` dask computation only
+In the above example, the ``data.data.sum().compute(scheduler='threads', num_workers=num_workers)`` ``dask`` computation only
 has 1 chunk to process because the chunk sizes are the same size as the blocks being passed to ``user_func``. We can
 specify a larger block size to read in parallel (the dask chunk size will remain the same) with **row_chunks** and **col_chunks**.
 

@@ -5,10 +5,10 @@ Opening rasters
 
 GeoWombat's file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with
 a context manager using the function :func:`geowombat.open`. GeoWombat uses
-:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ to
+`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ to
 load data into an `xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html>`_.
 In GeoWombat, the data are always chunked, meaning the data are always loaded as Dask arrays. As with
-:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_,
+`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_,
 the opened DataArrays always have at least 1 band.
 
 Opening a single image
@@ -27,13 +27,14 @@ expects a file name (`str` or `pathlib.Path <https://docs.python.org/3/library/p
     with gw.open(l8_224078_20200518) as src:
         print(src)
 
-In the example above, `src` is an :class:`xarray.DataArray`. Thus, printing the object will display the underlying
-:class:`dask.array.Array` dimensions and chunks, the :class:`xarray.DataArray`` named coordinates, and the DataArray attributes.
+In the example above, **src** is an :class:`xarray.DataArray`. Thus, printing the object will display the underlying
+:class:`dask.array.Array` dimensions and chunks, the :class:`xarray.DataArray` named coordinates, and the :class:`xarray.DataArray` attributes.
 
 Opening multiple bands as a stack
 ---------------------------------
 
-Often, satellite bands will be stored in separate raster files. To open the files as one DataArray, specify a list instead of a file name.
+Often, satellite bands will be stored in separate raster files. To open the files as one :class:`xarray.DataArray`,
+specify a list instead of a file name.
 
 .. ipython:: python
 
@@ -42,7 +43,8 @@ Often, satellite bands will be stored in separate raster files. To open the file
     with gw.open([l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4]) as src:
         print(src)
 
-By default, GeoWombat will stack multiple files by time. So, to stack multiple bands with the same timestamp, change the **stack_dim** keyword.
+By default, ``geowombat`` will stack multiple files by time. So, to stack multiple bands with the same timestamp,
+change the **stack_dim** keyword.
 
 .. ipython:: python
 
@@ -58,8 +60,8 @@ By default, GeoWombat will stack multiple files by time. So, to stack multiple b
 
 .. note::
 
-    If time names are not specified with ``stack_dim`` = 'time', GeoWombat will attempt to parse dates from the file names.
-    This could incur significant overhead when the file list is long. Therefore, it is good practice to specify the time names.
+    If time names are not specified with **stack_dim** = 'time', ``geowombat`` will attempt to parse dates from the file names.
+    This could incur some overhead when the file list is long. Therefore, it is good practice to specify the time names.
 
 Overhead required to parse file names
 
@@ -78,7 +80,7 @@ No file parsing overhead
 Opening multiple bands as a mosaic
 ----------------------------------
 
-When a list of files are given, GeoWombat will stack the data by default. To mosaic multiple files into the same band coordinate,
+When a list of files are given, ``geowombat`` will stack the data by default. To mosaic multiple files into the same band coordinate,
 use the **mosaic** keyword.
 
 .. ipython:: python
