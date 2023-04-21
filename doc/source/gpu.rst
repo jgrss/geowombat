@@ -252,7 +252,7 @@ is equivalent to
 Using the band dictionary
 -------------------------
 
-The band dictionary attribute is available within a module if ``band_list`` is provided in the ``apply`` function.
+The band dictionary attribute is available within a module if ``band_list`` is provided in the :func:`geowombat.apply` function.
 
 .. code:: python
 

@@ -18,7 +18,7 @@ File opening with GeoWombat uses the :func:`geowombat.open` function to open ras
     import matplotlib.pyplot as plt
     import matplotlib.patheffects as pe
 
-To open individual images, GeoWombat uses :func:`xarray.open_rasterio` and :func:`rasterio.vrt.WarpedVRT`.
+To open individual images, GeoWombat uses :func:`xarray.open_rasterio` and :class:`rasterio.vrt.WarpedVRT`.
 
 .. ipython:: python
 
@@ -81,7 +81,9 @@ Open a list of files as a DataArray.
 
 .. note::
 
-    Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned". If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a context manager and a reference image to handle image alignment.
+    Xarray will handle alignment of images of varying sizes as long as the the resolutions are "target aligned".
+    If images are not target aligned, Xarray might not concatenate a stack of images. With GeoWombat, we can use a
+    context manager and a reference image to handle image alignment.
 
 In the example below, we specify a reference image using GeoWombat's configuration manager.
 
@@ -97,15 +99,19 @@ In the example below, we specify a reference image using GeoWombat's configurati
     # in concat_list will conform to the reference grid.
     filenames = [l8_224078_20200518, l8_224078_20200518]
     with gw.config.update(ref_image=l8_224077_20200518_B2):
-        with gw.open(filenames,
-                     band_names=['blue', 'green', 'red'],
-                     time_names=['t1', 't2']) as src:
+        with gw.open(
+            filenames,
+            band_names=['blue', 'green', 'red'],
+            time_names=['t1', 't2']
+        ) as src:
             print(src)
 
     with gw.config.update(ref_image=l8_224078_20200518_B2):
-        with gw.open(filenames,
-                     band_names=['blue', 'green', 'red'],
-                     time_names=['t1', 't2']) as src:
+        with gw.open(
+            filenames,
+            band_names=['blue', 'green', 'red'],
+            time_names=['t1', 't2']
+        ) as src:
             print(src)
 
 Stack the intersection of all images.
@@ -114,10 +120,12 @@ Stack the intersection of all images.
 
     fig, ax = plt.subplots(dpi=200)
     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-    with gw.open(filenames,
-                 band_names=['blue'],
-                 mosaic=True,
-                 bounds_by='intersection') as src:
+    with gw.open(
+        filenames,
+        band_names=['blue'],
+        mosaic=True,
+        bounds_by='intersection'
+    ) as src:
         src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_intersection_plot.png
     plt.tight_layout(pad=1)
@@ -128,10 +136,12 @@ Stack the union of all images.
 
     fig, ax = plt.subplots(dpi=200)
     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-    with gw.open(filenames,
-                 band_names=['blue'],
-                 mosaic=True,
-                 bounds_by='union') as src:
+    with gw.open(
+        filenames,
+        band_names=['blue'],
+        mosaic=True,
+        bounds_by='union'
+    ) as src:
         src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_union_plot.png
     plt.tight_layout(pad=1)
@@ -154,9 +164,11 @@ is needed.
 
 .. ipython:: python
 
-    with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
-                 band_names=['b'],
-                 mosaic=True) as src:
+    with gw.open(
+        [l8_224077_20200518_B2, l8_224078_20200518_B2],
+        band_names=['b'],
+        mosaic=True
+    ) as src:
         print(src)
 
 If the images in the mosaic list have different CRSs, use a context manager to warp to a common grid.
@@ -169,9 +181,11 @@ If the images in the mosaic list have different CRSs, use a context manager to w
 
     # Use a reference CRS
     with gw.config.update(ref_image=l8_224077_20200518_B2):
-        with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
-                     band_names=['b'],
-                     mosaic=True) as src:
+        with gw.open(
+            [l8_224077_20200518_B2, l8_224078_20200518_B2],
+            band_names=['b'],
+            mosaic=True
+        ) as src:
             print(src)
 
 Setup a plot function
@@ -230,7 +244,8 @@ Mosaic by the union of images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
-footprints while the black grids illustrate the ``DataArray`` chunks.
+footprints while the black grids illustrate the
+:class:`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray-dataarray>`_ chunks.
 
 .. ipython:: python
 

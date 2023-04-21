@@ -20,7 +20,7 @@ The authors conveniently made their algorithm open to the public in a Python pac
 `AROSICS <https://danschef.git-pages.gfz-potsdam.de/arosics/doc/>`_.
 
 In GeoWombat, we provide an interface to the AROSICS package. The co-registration method is called :func:`geowombat.coregister`,
-and mainly acts as an interface between ``DataArrays`` and AROSICS.
+and mainly acts as an interface between an :class:`xarray.DataArray` and AROSICS.
 
 Install AROSICS
 ---------------
@@ -32,7 +32,7 @@ with geowombat. For the latter, simply add the ``coreg`` extra when installing g
     pip install arosics --no-deps
     pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git"
 
-if installing the latest or if installing a specific geowombat version (e.g., `v2.0.10`) then do::
+if installing the latest or if installing a specific geowombat version (e.g., ``v2.0.10``) then do::
 
     pip install arosics --no-deps
     pip install "geowombat[coreg]@git+https://github.com/jgrss/geowombat.git@2.0.10"
@@ -40,13 +40,13 @@ if installing the latest or if installing a specific geowombat version (e.g., `v
 Co-register an image
 --------------------
 
-To co-register an image using a secondary reference, open both as ``DataArrays`` and pass them
+To co-register an image using a secondary reference, open both as an :class:`xarray.DataArray` and pass them
 to the :func:`geowombat.coregister` method. For extra keyword arguments, see the `AROSICS CoReg API <https://danschef.git-pages.gfz-potsdam.de/arosics/doc/arosics.html#module-arosics.CoReg>`_.
 
 .. note::
 
     If AROSICS is unable to adjust the target data, either because of insufficient valid data or because
-    the data are not offset to each other, the returned ``DataArray`` will match the input target data.
+    the data are not offset to each other, the returned :class:`xarray.DataArray` will match the input target data.
 
 .. code:: python
 

@@ -14,8 +14,10 @@ the opened DataArrays always have at least 1 band.
 Opening a single image
 ----------------------
 
-Opening an image with default settings looks similar to :func:`xarray.open_rasterio` and :func:`rasterio.open`.
-:func:`geowombat.open` expects a file name (`str` or `pathlib.Path`).
+Opening an image with default settings looks similar to
+:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_
+and :func:`rasterio.open <https://rasterio.readthedocs.io/en/stable/topics/reading.html>`_. :func:`geowombat.open`
+expects a file name (`str` or `pathlib.Path <https://docs.python.org/3/library/pathlib.html#pathlib.Path>`_).
 
 .. ipython:: python
 
@@ -25,7 +27,8 @@ Opening an image with default settings looks similar to :func:`xarray.open_raste
     with gw.open(l8_224078_20200518) as src:
         print(src)
 
-In the example above, `src` is an `xarray.DataArray`. Thus, printing the object will display the underlying Dask array dimensions and chunks, the DataArray named coordinates, and the DataArray attributes.
+In the example above, `src` is an :class:`xarray.DataArray`. Thus, printing the object will display the underlying
+:class:`dask.array.Array` dimensions and chunks, the :class:`xarray.DataArray`` named coordinates, and the DataArray attributes.
 
 Opening multiple bands as a stack
 ---------------------------------
@@ -55,7 +58,8 @@ By default, GeoWombat will stack multiple files by time. So, to stack multiple b
 
 .. note::
 
-    If time names are not specified with ``stack_dim`` = 'time', GeoWombat will attempt to parse dates from the file names. This could incur significant overhead when the file list is long. Therefore, it is good practice to specify the time names.
+    If time names are not specified with ``stack_dim`` = 'time', GeoWombat will attempt to parse dates from the file names.
+    This could incur significant overhead when the file list is long. Therefore, it is good practice to specify the time names.
 
 Overhead required to parse file names
 
@@ -74,7 +78,8 @@ No file parsing overhead
 Opening multiple bands as a mosaic
 ----------------------------------
 
-When a list of files are given, GeoWombat will stack the data by default. To mosaic multiple files into the same band coordinate, use the **mosaic** keyword.
+When a list of files are given, GeoWombat will stack the data by default. To mosaic multiple files into the same band coordinate,
+use the **mosaic** keyword.
 
 .. ipython:: python
 

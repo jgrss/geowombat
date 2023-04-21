@@ -3,9 +3,13 @@
 Coordinate Reference Systems
 ============================
 
-Image projections can be transformed in GeoWombat using the configuration manager (see :ref:`tutorial-config`). With the configuration manager, the CRS is transformed using rasterio `CRS <https://rasterio.readthedocs.io/en/latest/api/rasterio.crs.html>`_ and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references, see `Spatial Reference <https://spatialreference.org/>`_ and `epsg.io <http://epsg.io/>`_.
+Image projections can be transformed in GeoWombat using the configuration manager (see :ref:`tutorial-config`).
+With the configuration manager, the CRS is transformed using
+:class:`pyproj.crs.CRS <https://pyproj4.github.io/pyproj/dev/api/crs/crs.html>`_ 
+and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references,
+see `Spatial Reference <https://spatialreference.org/>`_ and `epsg.io <http://epsg.io/>`_.
 
-The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ attributes.
+The CRS can be accessed from the :class:`xarray.DataArray <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ attributes.
 
 .. ipython:: python
 
@@ -50,7 +54,8 @@ Other formats supported by rasterio, (e.g., crs codes) can be used.
 Resampling the cell size
 ------------------------
 
-The resampling algorithm can be specified in the :func:`geowombat.open` function. Here, we use cubic convolution resampling to warp the data to EPSG code 102008.
+The resampling algorithm can be specified in the :func:`geowombat.open` function. Here, we use cubic convolution resampling
+to warp the data to EPSG code 102008.
 
 .. ipython:: python
 
@@ -72,7 +77,7 @@ The transformed cell resolution can be added in the context manager. Here, we re
             print(src.resampling)
             print(src.res)
 
-To transform an `xarray.DataArray` outside of a configuration context, use the :func:`geowombat.transform_crs` function.
+To transform an :class:`xarray.DataArray` outside of a configuration context, use the :func:`geowombat.transform_crs` function.
 
 .. ipython:: python
 

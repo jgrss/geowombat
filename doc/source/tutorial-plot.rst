@@ -115,7 +115,7 @@ Image mosaics
 -------------
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
-footprints while the black grids illustrate the ``DataArray`` chunks.
+footprints while the black grids illustrate the :class:`xarray.DataArray` chunks.
 
 .. ipython:: python
 

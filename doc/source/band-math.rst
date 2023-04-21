@@ -14,7 +14,7 @@ Enhanced Vegetation Index (EVI)
     import geowombat as gw
     from geowombat.data import rgbn
 
-Calculate a vegetation index, returning an `Xarray.DataArray`.
+Calculate a vegetation index, returning an :class:`xarray.DataArray`.
 
 .. ipython:: python
 

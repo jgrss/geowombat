@@ -32,7 +32,8 @@ Wrap functions in a context manager to control global arguments for particular s
 Available Configurations
 ------------------------
 
-The following is a list of configurations for all sensors. This documentation may become out of date, if so please refer to geowombat/core/properties.py for the full list. 
+The following is a list of configurations for all sensors. This documentation may become out of date, if so
+please refer to geowombat/core/properties.py for the full list.
 
 .. list-table:: Title
    :widths: 25 75
@@ -109,4 +110,4 @@ The following is a list of configurations for all sensors. This documentation ma
 
    * - 'ik'
      - IKONOS with 4 (visible + NIR) bands
- 
+

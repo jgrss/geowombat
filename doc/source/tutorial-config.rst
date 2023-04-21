@@ -16,7 +16,7 @@ The examples shown in :ref:`tutorial-open` opened the entire rasters as DataArra
 How do I use it?
 ----------------
 
-To use GeoWombat's configuration manager, just call :func:`geowombat.config.update` before opening a file. For example,
+To use GeoWombat's configuration manager, just call :class:`geowombat.config.update` before opening a file. For example,
 
 .. code:: python
 
@@ -29,7 +29,8 @@ To use GeoWombat's configuration manager, just call :func:`geowombat.config.upda
         with gw.open('image.tif') as src:
             # do something
 
-:func:`geowombat.config.update` stores keywords in a dictionary. To see all GeoWombat configuration keywords, just iterate over the dictionary.
+:class:`geowombat.config.update` stores keywords in a dictionary. To see all GeoWombat configuration keywords, just
+iterate over the dictionary.
 
 .. ipython:: python
 
@@ -45,7 +46,8 @@ To use GeoWombat's configuration manager, just call :func:`geowombat.config.upda
 Reference settings: CRS
 -----------------------
 
-Configuration keywords beginning with **ref** are the most important commands when opening rasters. For example, to transform the CRS of the data on-the-fly, use **ref_crs**. For more on Coordinate Reference Systems, see :ref:`here <tutorial-crs>`.
+Configuration keywords beginning with **ref** are the most important commands when opening rasters. For example,
+to transform the CRS of the data on-the-fly, use **ref_crs**. For more on Coordinate Reference Systems, see :ref:`here <tutorial-crs>`.
 
 .. ipython:: python
 
@@ -66,7 +68,8 @@ Configuration keywords beginning with **ref** are the most important commands wh
 Reference settings: Cell size
 -----------------------------
 
-It is possible to combine multiple configuration keywords. In the example below, the raster CRS is transformed from UTM to Albers Equal Area with a resampled cell size of 100m x 100m.
+It is possible to combine multiple configuration keywords. In the example below, the raster CRS is transformed from
+UTM to Albers Equal Area with a resampled cell size of 100m x 100m.
 
 .. ipython:: python
 
@@ -85,7 +88,8 @@ It is possible to combine multiple configuration keywords. In the example below,
 Reference settings: Bounds
 --------------------------
 
-To subset an image, specify bounds as a **tuple** of (left, bottom, right, top) or a rasterio **BoundingBox** object.
+To subset an image, specify bounds as a ``tuple`` of (left, bottom, right, top) or a
+:class:`rasterio.coords.BoundingBox <https://rasterio.readthedocs.io/en/stable/api/rasterio.coords.html#rasterio.coords.BoundingBox>`_ object.
 
 .. ipython:: python
 
@@ -110,7 +114,8 @@ To subset an image, specify bounds as a **tuple** of (left, bottom, right, top) 
 Reference settings: Image
 -------------------------
 
-To use another image as a reference, just set **ref_image**. Then, the opened file's bounds, CRS, and cell size will be transformed to match those of the reference image.
+To use another image as a reference, just set **ref_image**. Then, the opened file's bounds, CRS, and cell size
+will be transformed to match those of the reference image.
 
 .. ipython:: python
 
@@ -175,7 +180,8 @@ For a short description of the sensor, use the **sensor_names** property.
         for sensor_name, description in src.gw.sensor_names.items():
             print('{}: {}'.format(sensor_name.ljust(15), description))
 
-The following is a list of all available sensor names. This documentation may become out of date, if so please refer to geowombat/core/properties.py for the full list.
+The following is a list of all available sensor names. This documentation may become out of date, if so please
+refer to ``geowombat/core/properties.py`` for the full list.
 
 .. list-table:: Title
    :widths: 25 75

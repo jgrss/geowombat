@@ -28,7 +28,9 @@ The example below applies a custom function concurrently over an image.
 User functions as DataArray attributes
 --------------------------------------
 
-User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as `Xarray` attributes. Here is an example that uses one user argument.
+User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the
+example below has guaranteed image alignment. Functions and arguments can be passed as Xarray attributes.
+Here is an example that uses one user argument.
 
 .. code:: python
 
@@ -118,7 +120,8 @@ In the example below, :func:`geowombat.polygon_to_array` is applied at the raste
             compress='lzw'
         )
 
-By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
+By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat
+function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
 
 .. code:: python
 

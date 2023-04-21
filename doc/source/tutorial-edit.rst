@@ -98,7 +98,7 @@ Masking 'no data' values
 
 As mentioned above, the array data are not automatically modified by the 'no data' value. If we want to
 mask our 'no data' values (i.e., exclude them from any calculations), we simply need to convert the
-array values to ``nans``. GeoWombat provides a method called :func:`DataArray.gw.mask_nodata` to do this
+array values to ``nans``. GeoWombat provides a method called :func:`xarray.DataArray.gw.mask_nodata` to do this
 that uses the metadata.
 
 .. ipython:: python
@@ -114,7 +114,7 @@ that uses the metadata.
         print("\n'No data' values masked:")
         print(src.gw.mask_nodata().sel(band=1).values)
 
-The :func:`DataArray.gw.mask_nodata` function uses :func:`xarray.DataArray.where` logic, as
+The :func:`xarray.DataArray.gw.mask_nodata` function uses :func:`xarray.DataArray.where` logic, as
 demonstrated by the example below.
 
 .. code:: python
@@ -130,7 +130,7 @@ Setting 'no data' values with scaling
 -------------------------------------
 
 In GeoWombat, we use :func:`xarray.DataArray.where` along with optional
-scaling in the :func:`DataArray.gw.set_nodata` function. In this example, we set zeros as
+scaling in the :func:`xarray.DataArray.gw.set_nodata` function. In this example, we set zeros as
 ``nan`` and scale all other values from a [0,10000] range to [0,1] (i.e., x 1e-4).
 
 .. ipython:: python

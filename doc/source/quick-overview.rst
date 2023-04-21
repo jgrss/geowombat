@@ -3,9 +3,9 @@
 Quick overview
 ==============
 
-Here are some quick examples of what you can do with :py:class:`GeoWombat` objects.
+Here are some quick examples of what you can do with GeoWombat objects.
 
-To begin, import `GeoWombat` and `Xarray`:
+To begin, import GeoWombat and Xarray:
 
 .. ipython:: python
 
@@ -31,7 +31,7 @@ Any DataArray or Dataset will have the GeoWombat accessors appended:
 Open a file
 -----------
 
-:py:class:`GeoWombat` has its own file opening API (:ref:`io`):
+GeoWombat has its own file opening API (:ref:`io`):
 
 .. ipython:: python
 
