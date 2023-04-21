@@ -4,9 +4,12 @@ Opening rasters
 ===============
 
 GeoWombat's file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with
-a context manager using the function :func:`geowombat.open`. GeoWombat uses :func:`xarray.open_rasterio` to
-load data into an `xarray.DataArray`. In GeoWombat, the data are always chunked, meaning the data are always
-loaded as Dask arrays. As with :func:`xarray.open_rasterio`, the opened DataArrays always have at least 1 band.
+a context manager using the function :func:`geowombat.open`. GeoWombat uses
+:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ to
+load data into an :class:`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html>`_.
+In GeoWombat, the data are always chunked, meaning the data are always loaded as Dask arrays. As with
+:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_,
+the opened DataArrays always have at least 1 band.
 
 Opening a single image
 ----------------------
