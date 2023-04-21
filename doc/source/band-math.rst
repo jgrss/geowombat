@@ -45,7 +45,7 @@ Two-band Enhanced Vegetation Index (EVI2)
 Normalized difference indices
 -----------------------------
 
-Use the generic :func:`norm_diff` function with any two-band combination.
+Use the generic :func:`{DataArray}.gw.norm_diff` function with any two-band combination.
 
 .. ipython:: python
 

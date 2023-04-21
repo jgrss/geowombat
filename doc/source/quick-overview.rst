@@ -20,9 +20,11 @@ Any DataArray or Dataset will have the GeoWombat accessors appended:
 
 .. ipython:: python
 
-    data = xr.DataArray(np.random.randn(2, 3),
-                        dims=('x', 'y'),
-                        coords={'x': [10, 20]})
+    data = xr.DataArray(
+        np.random.randn(2, 3),
+        dims=('x', 'y'),
+        coords={'x': [10, 20]}
+    )
     print(data)
     print(data.gw)
 
@@ -56,8 +58,4 @@ Write a raster
         src.attrs = attrs
 
         # Write the data to a GeoTiff
-        src.gw.to_raster('output.tif',
-                         verbose=1,
-                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
-                         n_threads=2,    # number of thread workers sent to ``dask.compute``
-                         n_chunks=200)   # number of window chunks to send as concurrent futures
+        src.gw.save('output.tif', num_workers=4)

@@ -3,12 +3,16 @@
 Opening rasters
 ===============
 
-GeoWombat's file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with a context manager using the function :func:`geowombat.open`. GeoWombat uses :func:`xarray.open_rasterio` to load data into an `xarray.DataArray`. In GeoWombat, the data are always chunked, meaning the data are always loaded as Dask arrays. As with :func:`xarray.open_rasterio`, the opened DataArrays always have at least 1 band.
+GeoWombat's file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with
+a context manager using the function :func:`geowombat.open`. GeoWombat uses :func:`xarray.open_rasterio` to
+load data into an `xarray.DataArray`. In GeoWombat, the data are always chunked, meaning the data are always
+loaded as Dask arrays. As with :func:`xarray.open_rasterio`, the opened DataArrays always have at least 1 band.
 
 Opening a single image
 ----------------------
 
-Opening an image with default settings looks similar to :func:`xarray.open_rasterio` and :func:`rasterio.open`. :func:`geowombat.open` expects a file name (`str` or `pathlib.Path`).
+Opening an image with default settings looks similar to :func:`xarray.open_rasterio` and :func:`rasterio.open`.
+:func:`geowombat.open` expects a file name (`str` or `pathlib.Path`).
 
 .. ipython:: python
 
@@ -38,8 +42,12 @@ By default, GeoWombat will stack multiple files by time. So, to stack multiple b
 
     from geowombat.data import l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4
 
-    with gw.open([l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4],
-                 stack_dim='band') as src:
+    with gw.open(
+        [
+            l8_224078_20200518_B2, l8_224078_20200518_B3, l8_224078_20200518_B4
+        ],
+        stack_dim='band'
+    ) as src:
         print(src)
 
 .. note::
@@ -69,8 +77,12 @@ When a list of files are given, GeoWombat will stack the data by default. To mos
 
     from geowombat.data import l8_224077_20200518_B2, l8_224078_20200518_B2
 
-    with gw.open([l8_224077_20200518_B2, l8_224078_20200518_B2],
-                 mosaic=True) as src:
+    with gw.open(
+        [
+            l8_224077_20200518_B2, l8_224078_20200518_B2
+        ],
+        mosaic=True
+    ) as src:
         print(src)
 
 See :ref:`io` for more examples illustrating file opening.

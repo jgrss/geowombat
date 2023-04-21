@@ -255,7 +255,7 @@ footprints while the black grids illustrate the ``DataArray`` chunks.
 Writing DataArrays to file
 --------------------------
 
-GeoWombat's file writing can be accessed through the :func:`to_vrt`, :func:`to_raster`,
+GeoWombat's file writing can be accessed through the ``geowombat`` :func:`to_vrt`, :func:`to_raster`,
 and :func:`save` functions. These functions use Rasterio's :func:`write` and ``Dask.array``
 :func:`store` functions as I/O backends. In the examples below, ``src`` is an ``xarray.DataArray``
 with the necessary transform and coordinate reference system (CRS) information to write to an
@@ -263,26 +263,26 @@ image file.
 
 .. note::
 
-    Should I use :func:`to_raster` or :func:`save` when writing a raster file? First, a bit of
+    Should I use :func:`geowombat.to_raster` or :func:`geowombat.save` when writing a raster file? First, a bit of
     background.
 
     In the early days of ``geowombat`` development, direct computation calls using
-    ``Dask`` (more on that with :func:`save`) were tested on large raster files
+    ``Dask`` (more on that with :func:`geowombat.save`) were tested on large raster files
     (i.e., width and height on the order of tens of thousands). It was determined that the overhead
     of generating the Dask task graph was too large and outweighed the actual computation. To
-    address this, the :func:`to_raster` method was designed to iterate over raster chunks/blocks
+    address this, the :func:`geowombat.to_raster` method was designed to iterate over raster chunks/blocks
     using ``concurrent.futures``, reading and computing each block when requested. This removed
     any large overhead but also negated the efficiency of ``Dask`` as the underlying 'delayed'
-    array. The :func:`to_raster` can be used on data of any size, but comes with its own overhead.
+    array. The :func:`geowombat.to_raster` can be used on data of any size, but comes with its own overhead.
     For example, when working with arrays that fit into memory, such as a standard satellite scene,
-    ``Dask`` (i.e., :func:`save`) works quite well. To give an example, instead of slicing a ``DataArray``
-    chunk and writing/computing that chunk (i.e., :func:`to_raster` approach), we can also compute the entire
-    ``DataArray`` using ``Dask`` (i.e., :func:`save`) and let ``Dask`` handle the concurrency. This is
-    where :func:`save` comes in to play. The ``geowombat.save`` method (or also ``DataArray.gw.save``)
-    submits the data to ``Dask.array.store`` and each chunk is written to file using ``rasterio``.
+    ``Dask`` (i.e., :func:`geowombat.save`) works quite well. To give an example, instead of slicing a ``DataArray``
+    chunk and writing/computing that chunk (i.e., :func:`geowombat.to_raster` approach), we can also compute the entire
+    ``DataArray`` using ``Dask`` (i.e., :func:`geowombat.save`) and let ``Dask`` handle the concurrency. This is
+    where :func:`geowombat.save` comes in to play. The :func:`geowombat.save` method (or also :func:`{DataArray}.gw.save`)
+    submits the data to :func:`Dask.array.store` and each chunk is written to file using ``rasterio``.
 
-    The recommended method to use for saving raster files is :func:`save`. We welcome feedback for
-    both methods, particularly if :func:`save` is determined to be more efficient than :func:`to_raster`,
+    The recommended method to use for saving raster files is :func:`geowombat.save`. We welcome feedback for
+    both methods, particularly if :func:`geowombat.save` is determined to be more efficient than :func:`geowombat.to_raster`,
     regardless of the data size.
 
 Write to a raster file using `Dask` and the `geowombat` :func:`save` function

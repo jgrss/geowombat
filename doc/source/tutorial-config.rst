@@ -132,11 +132,18 @@ To use another image as a reference, just set **ref_image**. Then, the opened fi
 Reference settings: Sensors
 ---------------------------
 
-Because rasters are opened as DataArrays, the band coordinates will be named. By default, the bands will be named by their index position (starting at 1). It might, however, be more intuitive to store the band names as strings, where the names correspond to the sensor wavelengths. In GeoWombat, you can set the band names explicitly upon opening a file by using the :func:`geowombat.open` **band_names** keyword. Alternatively, if the sensor is known (and supported by GeoWombat), then you can set the band names by specifying the sensor name in the configuration settings.
+Because rasters are opened as DataArrays, the band coordinates will be named. By default, the bands
+will be named by their index position (starting at 1). It might, however, be more intuitive to store
+the band names as strings, where the names correspond to the sensor wavelengths. In GeoWombat, you
+can set the band names explicitly upon opening a file by using the :func:`geowombat.open` **band_names**
+keyword. Alternatively, if the sensor is known (and supported by GeoWombat), then you can set the band
+names by specifying the sensor name in the configuration settings.
 
 .. note::
 
-    In the example below, the example raster comes from a Landsat image. However, only the visible (blue, green, and red) wavelengths are stored. Thus, we use 'rgb' as the sensor name. If we had a full 6-band Landsat 7 image, for example, we could use the 'l7' sensor flag.
+    In the example below, the example raster comes from a Landsat image. However, only the visible
+    (blue, green, and red) wavelengths are stored. Thus, we use 'rgb' as the sensor name. If we had
+    a full 6-band Landsat 7 image, for example, we could use the 'l7' sensor flag.
 
 .. ipython:: python
 

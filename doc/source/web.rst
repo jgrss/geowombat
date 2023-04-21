@@ -18,7 +18,7 @@ To open a STAC catalog with GeoWombat, we interface through the following Python
     * `stackstac <https://stackstac.readthedocs.io/en/latest/>`_
     * `planetary_computer <https://pypi.org/project/planetary-computer/>`_
 
-Geowombat :func:`open_stac` currently supports the following STAC catalogs:
+:func:`geowombat.core.stac.open_stac` currently supports the following STAC catalogs:
 
     * `element84 <'https://earth-search.aws.element84.com/v0'>`_
     * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_

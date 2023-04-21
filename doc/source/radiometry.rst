@@ -9,7 +9,7 @@ BRDF-adjusted surface reflectance
 GeoWombat uses the global c-factor method by `Roy et al. (2016) <https://www.sciencedirect.com/science/article/pii/S0034425716300220>`_
 to apply BRDF normalization on surface reflectance data.
 
-In the example below, we use :func:`norm_brdf` to normalize a Landsat 8 surface reflectance image.
+In the example below, we use :func:`geowombat.norm_brdf` to normalize a Landsat 8 surface reflectance image.
 
 .. code:: python
 
