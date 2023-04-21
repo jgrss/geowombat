@@ -278,7 +278,7 @@ image file.
     ``Dask`` (i.e., :func:`geowombat.save`) works quite well. To give an example, instead of slicing a ``DataArray``
     chunk and writing/computing that chunk (i.e., :func:`geowombat.to_raster` approach), we can also compute the entire
     ``DataArray`` using ``Dask`` (i.e., :func:`geowombat.save`) and let ``Dask`` handle the concurrency. This is
-    where :func:`geowombat.save` comes in to play. The :func:`geowombat.save` method (or also :func:`{DataArray}.gw.save`)
+    where :func:`geowombat.save` comes in to play. The :func:`geowombat.save` method (or also :func:`xarray.DataArray.gw.save`)
     submits the data to :func:`Dask.array.store` and each chunk is written to file using ``rasterio``.
 
     The recommended method to use for saving raster files is :func:`geowombat.save`. We welcome feedback for

@@ -103,7 +103,7 @@ Bug fixes
 Enhancements
 ~~~~~~~~~~~~
 
-- Added automatic band dimension squeezing in :func:`{DataArray}.gw.imshow`.
+- Added automatic band dimension squeezing in :func:`xarray.DataArray.gw.imshow`.
 
 1.6.3 (8 March 2021)
 --------------------

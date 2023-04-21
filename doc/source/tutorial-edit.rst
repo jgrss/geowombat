@@ -150,7 +150,7 @@ scaling in the :func:`DataArray.gw.set_nodata` function. In this example, we set
 Replace values
 --------------
 
-The :func:`{DataArray}.gw.replace` function mimics :func:`pandas.DataFrame.replace`.
+The :func:`xarray.DataArray.gw.replace` function mimics :func:`pandas.DataFrame.replace`.
 
 .. code:: python
 
@@ -163,4 +163,4 @@ The :func:`{DataArray}.gw.replace` function mimics :func:`pandas.DataFrame.repla
 
 .. note::
 
-    The :func:`{DataArray}.gw.replace` function is typically used with thematic data.
+    The :func:`xarray.DataArray.gw.replace` function is typically used with thematic data.
