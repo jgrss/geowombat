@@ -89,7 +89,7 @@ Reference settings: Bounds
 --------------------------
 
 To subset an image, specify bounds as a ``tuple`` of (left, bottom, right, top) or a
-:class:`rasterio.coords.BoundingBox <https://rasterio.readthedocs.io/en/stable/api/rasterio.coords.html#rasterio.coords.BoundingBox>`_ object.
+`rasterio.coords.BoundingBox <https://rasterio.readthedocs.io/en/stable/api/rasterio.coords.html#rasterio.coords.BoundingBox>`_ object.
 
 .. ipython:: python
 

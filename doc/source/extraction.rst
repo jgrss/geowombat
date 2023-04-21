@@ -11,10 +11,10 @@ Data extraction
 Subsetting rasters
 ------------------
 
-Either a :class:`rasterio.window.Window <https://rasterio.readthedocs.io/en/stable/api/rasterio.windows.html#rasterio.windows.Window>`_
+Either a `rasterio.window.Window <https://rasterio.readthedocs.io/en/stable/api/rasterio.windows.html#rasterio.windows.Window>`_
 object or tuple can be used with :func:`geowombat.open`.
 
-Slice a subset using a :class:`rasterio.window.Window <https://rasterio.readthedocs.io/en/stable/api/rasterio.windows.html#rasterio.windows.Window>`_.
+Slice a subset using a `rasterio.window.Window <https://rasterio.readthedocs.io/en/stable/api/rasterio.windows.html#rasterio.windows.Window>`_.
 
 .. code:: python
 
@@ -71,8 +71,8 @@ Clipping to bounds
 
 Geowombat's :func:`geowombat.clip_by_polygon` is an alternative method to `geowombat.config.update`. The
 :func:`geowombat.clip_by_polygon` method limits the bounds of the image to match a polygon, where the polygon
-can be a :class:`geopandas.GeoDataFrame <https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame>`_,
-or a path to a file readable with :func:`geopandas.read_file <https://geopandas.org/en/stable/docs/reference/api/geopandas.read_file.html#geopandas.read_file>`_.
+can be a `geopandas.GeoDataFrame <https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame>`_,
+or a path to a file readable with `geopandas.read_file <https://geopandas.org/en/stable/docs/reference/api/geopandas.read_file.html#geopandas.read_file>`_.
 You can augment the clip by using the argument ``query`` on the polygon attributes, and if multiple polygons
 are present you can use ``mask_data`` to fill ``nans`` where polygons are not present, or expand the clip
 array bounds by setting ``expand_by=<n pixels>`` on each side.
@@ -138,7 +138,7 @@ Extracting data with point geometry
 -----------------------------------
 
 In the example below, ``l8_224078_20200518_points`` is a `GeoPackage <https://www.geopackage.org/>`_ of point
-locations, and the output ``df`` is a :class:`geopandas.GeoDataFrame <https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame>`_.
+locations, and the output ``df`` is a `geopandas.GeoDataFrame <https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame>`_.
 To extract the raster values at the point locations, use :func:`geowombat.extract`.
 
 .. ipython:: python

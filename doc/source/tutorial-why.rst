@@ -22,7 +22,7 @@ wanted to build a library that could process rasters of any size.
 Why not Xarray?
 ---------------
 
-Xarray's :func:`open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ function is the interface
+Xarray's `open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ function is the interface
 to rasterio. It opens a raster lazily as a Dask array, which means data are not loaded into memory until requested. However,
 Xarray is intended to be a `general purpose library <http://xarray.pydata.org/en/stable/internals.html#extending-xarray>`_. Therefore,
 it does not include geo-specific tasks included in GeoWombat, such as radiometric adjustments, vector/raster interaction, and special

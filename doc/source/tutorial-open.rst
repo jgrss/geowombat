@@ -6,7 +6,7 @@ Opening rasters
 GeoWombat's file opening is meant to mimic Xarray and Rasterio. That is, rasters are typically opened with
 a context manager using the function :func:`geowombat.open`. GeoWombat uses
 :func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_ to
-load data into an :class:`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html>`_.
+load data into an `xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html>`_.
 In GeoWombat, the data are always chunked, meaning the data are always loaded as Dask arrays. As with
 :func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_,
 the opened DataArrays always have at least 1 band.
@@ -15,8 +15,8 @@ Opening a single image
 ----------------------
 
 Opening an image with default settings looks similar to
-:func:`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_
-and :func:`rasterio.open <https://rasterio.readthedocs.io/en/stable/topics/reading.html>`_. :func:`geowombat.open`
+`xarray.open_rasterio <https://docs.xarray.dev/en/v2022.10.0/generated/xarray.open_rasterio.html>`_
+and `rasterio.open <https://rasterio.readthedocs.io/en/stable/topics/reading.html>`_. :func:`geowombat.open`
 expects a file name (`str` or `pathlib.Path <https://docs.python.org/3/library/pathlib.html#pathlib.Path>`_).
 
 .. ipython:: python

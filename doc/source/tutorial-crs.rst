@@ -5,11 +5,11 @@ Coordinate Reference Systems
 
 Image projections can be transformed in GeoWombat using the configuration manager (see :ref:`tutorial-config`).
 With the configuration manager, the CRS is transformed using
-:class:`pyproj.crs.CRS <https://pyproj4.github.io/pyproj/dev/api/crs/crs.html>`_ 
+`pyproj.crs.CRS <https://pyproj4.github.io/pyproj/dev/api/crs/crs.html>`_
 and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references,
 see `Spatial Reference <https://spatialreference.org/>`_ and `epsg.io <http://epsg.io/>`_.
 
-The CRS can be accessed from the :class:`xarray.DataArray <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ attributes.
+The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ attributes.
 
 .. ipython:: python
 

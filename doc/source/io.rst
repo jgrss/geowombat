@@ -245,7 +245,7 @@ Mosaic by the union of images
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
 footprints while the black grids illustrate the
-:class:`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray-dataarray>`_ chunks.
+`xarray.DataArray <https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray-dataarray>`_ chunks.
 
 .. ipython:: python
 
