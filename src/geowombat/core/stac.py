@@ -318,6 +318,8 @@ def open_stac(
 
         # Download metadata and coefficient files
         if extra_assets is not None:
+            out_path = _Path(out_path)
+            out_path.mkdir(parents=True, exist_ok=True)
             for item in _tqdm(
                 items, desc='Extra assets', position=tqdm_item_position
             ):
@@ -330,13 +332,14 @@ def open_stac(
                 ):
                     url = item.assets[extra].to_dict()['href']
                     out_name = (
-                        _Path(out_path)
-                        / f"{item.id}_{_Path(url.split('?')[0]).name}"
+                        out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
                     )
                     df_dict[extra] = str(out_name)
                     if not out_name.is_file():
                         wget.download(url, out=str(out_name), bar=None)
-                df = df.append(df_dict, ignore_index=True)
+                df = pd.concat(
+                    (df, pd.DataFrame([df_dict])), ignore_index=True
+                )
 
         data = stackstac.stack(
             items,
