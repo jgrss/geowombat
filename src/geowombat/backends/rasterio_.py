@@ -237,12 +237,10 @@ class RasterioStore(object):
 
     def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
         if isinstance(data.data, da.Array):
-            return da.store(
-                da.squeeze(data.data), self, lock=True, compute=compute
-            )
+            return da.store(data.data, self, lock=True, compute=compute)
         else:
             self.dst.write(
-                data.squeeze().data,
+                data.data,
                 indexes=list(range(1, data.data.shape[0] + 1)),
             )
 
