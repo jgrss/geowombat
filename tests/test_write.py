@@ -1,14 +1,15 @@
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
+
+import dask
 
 import geowombat as gw
 from geowombat.data import (
-    l8_224078_20200518,
     l8_224077_20200518_B2,
     l8_224077_20200518_B3,
+    l8_224078_20200518,
 )
-import dask
 
 
 class TestConfig(unittest.TestCase):
@@ -58,7 +59,9 @@ class TestConfig(unittest.TestCase):
                 # Apply operations on the DataArray
                 src = src * 10.0
                 # Write the data to a GeoTiff
-                src.assign_attrs(**attrs).gw.to_raster(out_path, overwrite=True)
+                src.assign_attrs(**attrs).gw.to_raster(
+                    out_path, overwrite=True
+                )
                 self.assertTrue(out_path.is_file())
                 with gw.open(out_path, band_names=['B2', 'B3']) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
@@ -113,11 +116,36 @@ class TestConfig(unittest.TestCase):
                     self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
                     self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
 
+    def test_save_small(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / 'test.tif'
+            with gw.open(l8_224078_20200518) as src:
+                data = src[:, :1, :2]
+                try:
+                    (
+                        data.fillna(32768)
+                        .gw.assign_nodata_attrs(32768)
+                        .astype('uint16')
+                        .gw.save(
+                            filename=out_path,
+                            overwrite=True,
+                            tags={'TEST_METADATA': 'TEST_VALUE'},
+                            compress='none',
+                            num_workers=1,
+                        )
+                    )
+                except ValueError:
+                    self.fail('The small array write test failed.')
+
     def test_delayed_save(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / 'test.tif'
             with gw.open(l8_224078_20200518) as src:
-                src = src.fillna(32768).gw.assign_nodata_attrs(32768).astype('uint16')
+                src = (
+                    src.fillna(32768)
+                    .gw.assign_nodata_attrs(32768)
+                    .astype('uint16')
+                )
                 tasks = [
                     gw.save(
                         src,
