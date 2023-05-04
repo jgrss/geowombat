@@ -34,10 +34,12 @@ Plot the intersection of two arrays
 
     fig, ax = plt.subplots(dpi=200)
     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-    with gw.open(filenames,
-                 band_names=['blue'],
-                 mosaic=True,
-                 bounds_by='intersection') as src:
+    with gw.open(
+        filenames,
+        band_names=['blue'],
+        mosaic=True,
+        bounds_by='intersection'
+    ) as src:
         src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_intersection_plot.png
     plt.tight_layout(pad=1)
@@ -49,10 +51,12 @@ Plot the union of two arrays
 
     fig, ax = plt.subplots(dpi=200)
     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-    with gw.open(filenames,
-                 band_names=['blue'],
-                 mosaic=True,
-                 bounds_by='union') as src:
+    with gw.open(
+        filenames,
+        band_names=['blue'],
+        mosaic=True,
+        bounds_by='union'
+    ) as src:
         src.where(src != 0).sel(band='blue').gw.imshow(robust=True, ax=ax)
     @savefig blue_union_plot.png
     plt.tight_layout(pad=1)
@@ -111,7 +115,7 @@ Image mosaics
 -------------
 
 The two plots below illustrate how two images can be mosaicked. The orange grids highlight the image
-footprints while the black grids illustrate the ``DataArray`` chunks.
+footprints while the black grids illustrate the :class:`xarray.DataArray` chunks.
 
 .. ipython:: python
 

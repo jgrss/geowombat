@@ -59,7 +59,12 @@ Fit a classifier with multiple dates
 .. ipython:: python
 
     with gw.config.update(ref_res=100):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], time_names=['t1', 't2'], stack_dim='time', chunks=128) as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            time_names=['t1', 't2'],
+            stack_dim='time',
+            chunks=128
+        ) as src:
             y = fit_predict(src, pl, labels, col='lc')
             print(y)
 
@@ -119,8 +124,12 @@ Cross-validation and parameter tuning is now possible
     from sklearn_xarray.model_selection import CrossValidatorWrapper
 
     cv = CrossValidatorWrapper(KFold())
-    gridsearch = GridSearchCV(pl, cv=cv, scoring='balanced_accuracy',
-                        param_grid={"pca__n_components": [1, 2, 3]})
+    gridsearch = GridSearchCV(
+        pl,
+        cv=cv,
+        scoring='balanced_accuracy',
+        param_grid={"pca__n_components": [1, 2, 3]}
+    )
 
     fig, ax = plt.subplots(dpi=200,figsize=(5,5))
 

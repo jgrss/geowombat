@@ -3,9 +3,9 @@
 Quick overview
 ==============
 
-Here are some quick examples of what you can do with :py:class:`GeoWombat` objects.
+Here are some quick examples of what you can do with ``geowombat`` objects.
 
-To begin, import `GeoWombat` and `Xarray`:
+To begin, import GeoWombat and Xarray:
 
 .. ipython:: python
 
@@ -13,23 +13,26 @@ To begin, import `GeoWombat` and `Xarray`:
     import numpy as np
     import xarray as xr
 
-Open a DataArray with a GeoWombat accessor
-------------------------------------------
+Instantiate an xarray.DataArray with a GeoWombat accessor
+---------------------------------------------------------
 
-Any DataArray or Dataset will have the GeoWombat accessors appended:
+Any :class:`xarray.DataArray` will have the ``geowombat`` accessors appended. That is, the :class:`xarray.DataArray` will have
+an :class:`xarray.DataArray.gw` object.
 
 .. ipython:: python
 
-    data = xr.DataArray(np.random.randn(2, 3),
-                        dims=('x', 'y'),
-                        coords={'x': [10, 20]})
+    data = xr.DataArray(
+        np.random.randn(2, 3),
+        dims=('x', 'y'),
+        coords={'x': [10, 20]}
+    )
     print(data)
     print(data.gw)
 
-Open a file
------------
+Open a raster file
+------------------
 
-:py:class:`GeoWombat` has its own file opening API (:ref:`io`):
+GeoWombat has its own file opening API through :func:`geowombat.open` (see :ref:`io` for details).
 
 .. ipython:: python
 
@@ -41,6 +44,8 @@ Open a file
 
 Write a raster
 --------------
+
+Save an :class:`xarray.DataArray` to file with :func:`geowombat.save`.
 
 .. code:: python
 
@@ -56,8 +61,4 @@ Write a raster
         src.attrs = attrs
 
         # Write the data to a GeoTiff
-        src.gw.to_raster('output.tif',
-                         verbose=1,
-                         n_workers=4,    # number of process workers sent to ``concurrent.futures``
-                         n_threads=2,    # number of thread workers sent to ``dask.compute``
-                         n_chunks=200)   # number of window chunks to send as concurrent futures
+        src.gw.save('output.tif', num_workers=4)

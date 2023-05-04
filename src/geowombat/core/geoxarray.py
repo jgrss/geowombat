@@ -1076,7 +1076,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         """Clips a DataArray by vector polygon geometry.
 
         .. deprecated:: 2.1.7
-            Use :func:`DataArray.gw.clip_by_polygon`.
+            Use :func:`xarray.DataArray.gw.clip_by_polygon`.
 
         Args:
             df (GeoDataFrame): The ``geopandas.GeoDataFrame`` to clip to.

@@ -6,9 +6,9 @@ User functions
 User apply
 ----------
 
-With functions that release the GIL (e.g., many NumPy functions, Cython), one can bypass Xarray and use Rasterio to write concurrently.
+With functions that release the GIL (e.g., many NumPy functions, Cython), one can use ``rasterio`` to write concurrently.
 
-The example below applies a custom function concurrently over an image.
+The example below applies a custom function concurrently over an image, where each block of data is multiplied by ``arg``.
 
 .. note::
 
@@ -28,7 +28,9 @@ The example below applies a custom function concurrently over an image.
 User functions as DataArray attributes
 --------------------------------------
 
-User functions that do not use a Dask task graph can be passed as attributes. Unlike the example above, the example below has guaranteed image alignment. Functions and arguments can be passed as `Xarray` attributes. Here is an example that uses one user argument.
+User functions that do not use a ``dask`` task graph can be passed as attributes. Unlike the example above, the
+example below has guaranteed image alignment. Functions and arguments can be passed as Xarray attributes.
+Here is an example that uses one user argument.
 
 .. code:: python
 
@@ -43,15 +45,15 @@ User functions that do not use a Dask task graph can be passed as attributes. Un
         # Functions are given as 'apply'
         ds.attrs['apply'] = user_func
 
-        # Function arguments are given as 'apply_args'
+        # Function arguments (n) are given as 'apply_args'
         ds.attrs['apply_args'] = [10.0]
 
-        ds.gw.to_raster('output.tif',
-                        n_workers=4,
-                        n_threads=2,
-                        separate=True,
-                        overwrite=True,
-                        compress='lzw')
+        ds.gw.save(
+            'output.tif',
+            num_workers=2,
+            overwrite=True,
+            compress='lzw'
+        )
 
 In this example, a keyword argument is also used.
 
@@ -74,17 +76,19 @@ In this example, a keyword argument is also used.
         # *Note that keyword arguments should always be a dictionary
         ds.attrs['apply_kwargs'] = {'divider': 2.3}
 
-        ds.gw.to_raster('output.tif',
-                        n_workers=4,
-                        n_threads=2,
-                        separate=True,
-                        overwrite=True,
-                        compress='lzw')
+        ds.gw.save(
+            'output.tif',
+            num_workers=2,
+            overwrite=True,
+            compress='lzw'
+        )
 
 Applying in-memory GeoWombat functions lazily
 ---------------------------------------------
 
-Several GeoWombat functions execute in-memory, and are therefore not optimized for large datasets. However, these functions can be applied at the block level for Dask-like out-of-memory processing using the user function framework. In the example below, :func:`geowombat.polygon_to_array` is applied at the raster block level.
+Several ``geowombat`` functions execute in-memory, and are therefore not optimized for large datasets. However, these
+functions can be applied at the block level for ``dask``-like out-of-memory processing using the user function framework.
+In the example below, :func:`geowombat.polygon_to_array` is applied at the raster block level.
 
 .. code:: python
 
@@ -104,16 +108,20 @@ Several GeoWombat functions execute in-memory, and are therefore not optimized f
         src.attrs['apply'] = gw.polygon_to_array
 
         # All arguments must be passed as keyword arguments
-        src.attrs['apply_kwargs'] = {'polygon': df,
-                                     'sindex': sindex,
-                                     'all_touched': False}
+        src.attrs['apply_kwargs'] = {
+            'polygon': df,
+            'sindex': sindex,
+            'all_touched': False
+        }
 
-        src.gw.to_raster('output.tif',
-                         n_workers=4,
-                         n_threads=2,
-                         compress='lzw')
+        src.gw.save(
+            'output.tif',
+            num_workers=2,
+            compress='lzw'
+        )
 
-By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a GeoWombat function that operates on a DataArray. To achieve this, we can decorate the function as a lazy wombat.
+By default, user functions expect a NumPy array as the first argument. It might be desirable to combine a ``geowombat``
+function that operates on an :class:`xarray.DataArray`. To achieve this, we can decorate the function.
 
 .. code:: python
 
@@ -134,14 +142,17 @@ By default, user functions expect a NumPy array as the first argument. It might 
         src.attrs['apply'] = user_func
 
         # All arguments must be passed as keyword arguments
-        src.attrs['apply_kwargs'] = {'polygon': df,
-                                     'sindex': sindex,
-                                     'all_touched': False}
+        src.attrs['apply_kwargs'] = {
+            'polygon': df,
+            'sindex': sindex,
+            'all_touched': False
+        }
 
-        src.gw.to_raster('output.tif',
-                         n_workers=4,
-                         n_threads=2,
-                         compress='lzw')
+        src.gw.save(
+            'output.tif',
+            num_workers=2,
+            compress='lzw'
+        )
 
 The above example is similar to the following with the :func:`geowombat.mask` function.
 
@@ -157,10 +168,13 @@ The above example is similar to the following with the :func:`geowombat.mask` fu
         src.attrs['apply'] = gw.mask
 
         # All arguments must be passed as keyword arguments
-        src.attrs['apply_kwargs'] = {'dataframe': df,
-                                     'keep': 'in'}
+        src.attrs['apply_kwargs'] = {
+            'dataframe': df,
+            'keep': 'in'
+        }
 
-        src.gw.to_raster('output.tif',
-                         n_workers=4,
-                         n_threads=2,
-                         compress='lzw')
+        src.gw.save(
+            'output.tif',
+            num_workers=2,
+            compress='lzw'
+        )

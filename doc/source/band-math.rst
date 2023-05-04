@@ -14,7 +14,7 @@ Enhanced Vegetation Index (EVI)
     import geowombat as gw
     from geowombat.data import rgbn
 
-Calculate a vegetation index, returning an `Xarray.DataArray`.
+Calculate a vegetation index, returning an :class:`xarray.DataArray`.
 
 .. ipython:: python
 
@@ -45,7 +45,7 @@ Two-band Enhanced Vegetation Index (EVI2)
 Normalized difference indices
 -----------------------------
 
-Use the generic :func:`norm_diff` function with any two-band combination.
+Use the generic :func:`xarray.DataArray.gw.norm_diff` function with any two-band combination.
 
 .. ipython:: python
 
@@ -63,3 +63,6 @@ Tasseled cap transformations
         with gw.open(rgbn) as ds:
             tcap = ds.gw.tasseled_cap()
             print(tcap)
+
+Additional useful indices are available, such as the normalized burned ratio (NBR) and woody index (WI). For a
+full list of indices, see the `API docs <https://geowombat.readthedocs.io/en/latest/api.html>`_

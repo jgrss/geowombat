@@ -65,10 +65,12 @@ In the example below, the mean over time is calculated on band 1.
 
     with gw.series(filenames) as src:
 
-        src.apply('mean',
-                  'temporal_mean.tif',
-                  bands=1,
-                  num_workers=4)
+        src.apply(
+            'mean',
+            'temporal_mean.tif',
+            bands=1,
+            num_workers=4
+        )
 
 Stacking multiple statistics
 ----------------------------
@@ -77,10 +79,12 @@ Stacking multiple statistics
 
     with gw.series(filenames) as src:
 
-        src.apply(['mean', 'max', 'cv'],
-                  'temporal_stats.tif',
-                  bands=1,
-                  num_workers=4)
+        src.apply(
+            ['mean', 'max', 'cv'],
+            'temporal_stats.tif',
+            bands=1,
+            num_workers=4
+        )
 
 Custom modules
 --------------
@@ -248,7 +252,7 @@ is equivalent to
 Using the band dictionary
 -------------------------
 
-The band dictionary attribute is available within a module if ``band_list`` is provided in the ``apply`` function.
+The band dictionary attribute is available within a module if ``band_list`` is provided in the :func:`geowombat.apply` function.
 
 .. code:: python
 

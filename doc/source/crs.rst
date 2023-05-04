@@ -3,7 +3,10 @@
 Coordinate Reference Systems
 ============================
 
-Image projections can be transformed in `geowombat` using the configuration manager (see :ref:`config`). With the configuration manager, the CRS is transformed using `rasterio` `CRS <https://rasterio.readthedocs.io/en/latest/api/rasterio.crs.html>`_ and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references, see `Spatial Reference <https://spatialreference.org/>`_ and `epsg.io <http://epsg.io/>`_.
+Image projections can be transformed in ``geowombat`` using the configuration manager (see :ref:`config`). With the
+configuration manager, the CRS is transformed using `pyproj.crs.CRS <https://pyproj4.github.io/pyproj/dev/api/crs/crs.html>`_
+and `virtual warping <https://rasterio.readthedocs.io/en/latest/topics/virtual-warping.html>`_. For references, see
+`Spatial Reference <https://spatialreference.org/>`_ and `epsg.io <http://epsg.io/>`_.
 
 The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ attributes.
 
@@ -18,7 +21,7 @@ The CRS can be accessed from the `xarray.DataArray <http://xarray.pydata.org/en/
         print(src.resampling)
         print(src.res)
 
-To transform the CRS, use the context manager. In this example, a proj4 code is used.
+To transform the CRS, use the context manager. In this example, a ``proj4`` code is used.
 
 .. ipython:: python
 
@@ -31,7 +34,7 @@ To transform the CRS, use the context manager. In this example, a proj4 code is 
             print(src.resampling)
             print(src.res)
 
-Other formats supported by `rasterio` can be used.
+Other formats supported by ``rasterio`` can be used.
 
 .. ipython:: python
 
@@ -66,7 +69,7 @@ The transformed cell resolution can be added in the context manager.
             print(src.resampling)
             print(src.res)
 
-To transform an `xarray.DataArray` outside of a configuration context, use the :func:`geowombat.transform_crs` function.
+To transform an :class:`xarray.DataArray` outside of a configuration context, use the :func:`geowombat.transform_crs` function.
 
 .. ipython:: python
 

@@ -3,8 +3,11 @@
 Configuration
 =============
 
-GeoWombat has a context manager (:class:`geowombat.config`) to assist in configurations
----------------------------------------------------------------------------------------
+GeoWombat has a context manager (:class:`geowombat.config.update`) to assist in global settings for processing. For instance,
+a cell resolution for all opened images can be set with 'ref_res', or images can be clipped to an AOI using 'ref_bounds'.
+
+GeoWombat context manager (:class:`geowombat.config.update`)
+------------------------------------------------------------
 
 .. ipython:: python
 
@@ -32,7 +35,9 @@ Wrap functions in a context manager to control global arguments for particular s
 Available Configurations
 ------------------------
 
-The following is a list of configurations for all sensors. This documentation may become out of date, if so please refer to geowombat/core/properties.py for the full list. 
+The following is a list of configurations for all sensors. This documentation may become out of date, if so
+please refer to ``geowombat/core/properties.py`` for the full list. For specific sensors, such as 'l7', ``geowombat``
+automatically sets the band names for the typical sensor band order.
 
 .. list-table:: Title
    :widths: 25 75
@@ -109,4 +114,4 @@ The following is a list of configurations for all sensors. This documentation ma
 
    * - 'ik'
      - IKONOS with 4 (visible + NIR) bands
- 
+
