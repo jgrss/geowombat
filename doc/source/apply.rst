@@ -8,7 +8,7 @@ User apply
 
 With functions that release the GIL (e.g., many NumPy functions, Cython), one can use ``rasterio`` to write concurrently.
 
-The example below applies a custom function concurrently over an image.
+The example below applies a custom function concurrently over an image, where each block of data is multiplied by ``arg``.
 
 .. note::
 
@@ -45,7 +45,7 @@ Here is an example that uses one user argument.
         # Functions are given as 'apply'
         ds.attrs['apply'] = user_func
 
-        # Function arguments are given as 'apply_args'
+        # Function arguments (n) are given as 'apply_args'
         ds.attrs['apply_args'] = [10.0]
 
         ds.gw.save(

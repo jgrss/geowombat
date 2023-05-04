@@ -63,3 +63,6 @@ Tasseled cap transformations
         with gw.open(rgbn) as ds:
             tcap = ds.gw.tasseled_cap()
             print(tcap)
+
+Additional useful indices are available, such as the normalized burned ratio (NBR) and woody index (WI). For a
+full list of indices, see the `API docs <https://geowombat.readthedocs.io/en/latest/api.html>`_
