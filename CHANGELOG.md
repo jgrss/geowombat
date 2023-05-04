@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.9 (2023-05-03)
+* Fixed STAC `DataFrame` concatenation in ([#267](https://github.com/jgrss/geowombat/pull/267))
+* Fixed issue with saving small arrays in ([#268](https://github.com/jgrss/geowombat/pull/268))
+
 ## v2.1.8 (2023-04-19)
 * Removed nested multithreading in `geowombat.moving` ([#259](https://github.com/jgrss/geowombat/pull/259))
 
