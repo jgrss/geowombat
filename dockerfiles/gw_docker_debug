@@ -1,6 +1,6 @@
 FROM nvidia/cuda:11.3.0-base-ubuntu20.04
 
-USER root
+# USER root
 
 RUN apt update -y && apt upgrade -y && \
     apt install -y software-properties-common && \
@@ -29,26 +29,24 @@ RUN apt update -y && apt upgrade -y && \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install -U pip setuptools wheel
-RUN pip install -U --no-cache-dir "setuptools<=58.*" \
-    cython>=0.29.* \
-    numpy>=1.21.0 \
-    pip-tools \
-    rtree \
-    ipykernel \
-    black 
+RUN pip install -U --no-cache-dir "setuptools<=58.*"
+RUN pip install -U --no-cache-dir cython>=0.29.*
+RUN pip install -U --no-cache-dir numpy>=1.21.0
 
 
-# install VS Code (code-server)
-RUN curl -fsSL https://code-server.dev/install.sh | sh
-
+RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/#242
 
 # install geowombat or a branch using --branch option
-RUN git clone https://github.com/jgrss/geowombat.git #--branch jgrss/features_citests
+RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/py39
 # install cloned geowombat 
 RUN cd geowombat && pip install --user -e .[stac,time,perf,ml,zarr,coreg,tests,docs] 
 
-# add script to debug from
-RUN echo ' #%% \n\ 
+RUN pip install  pip-tools rtree ipykernel
+
+RUN pip install git+https://github.com/jgrss/sklearn-xarray
+
+
+RUN echo ' # %% \n\ 
     import sys \n\  
     sys.path.append("/") \n\ 
     sys.path.append("/geowombat") \n\ 
@@ -70,12 +68,4 @@ RUN  echo '{ \
     ] \
     }'> ./geowombat/.vscode/launch.json
 
-# install VS Code extensions
-RUN code-server    --install-extension ms-python.python \
-    --install-extension HoangKimLai.ipython
-
-# start from bash command line
-CMD /usr/bin/bash  
-
-# to run debug tests simply run:
-# cd geowombat/tests/ && python -m unittest  
+CMD cd geowombat/tests/ && python -m unittest &&  bash
