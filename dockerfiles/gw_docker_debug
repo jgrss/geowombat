@@ -34,10 +34,10 @@ RUN pip install -U --no-cache-dir cython>=0.29.*
 RUN pip install -U --no-cache-dir numpy>=1.21.0
 
 
-RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/#242
 
 # install geowombat or a branch using --branch option
-RUN git clone https://github.com/jgrss/geowombat.git --branch jgrss/py39
+RUN git clone https://github.com/jgrss/geowombat.git  --branch jgrss/ml_group
+
 # install cloned geowombat 
 RUN cd geowombat && pip install --user -e .[stac,time,perf,ml,zarr,coreg,tests,docs] 
 
