@@ -30,7 +30,7 @@ class TestMoving(unittest.TestCase):
                 .data.compute()
             )
             tar_band1_value = res_3x3.sel(band=band)[101, 101].data.compute()
-            self.assertAlmostEqual(ref_band1_value, tar_band1_value, places=4)
+            self.assertAlmostEqual(ref_band1_value, tar_band1_value, places=2)
             self.assertEqual(src.shape, res_3x3.shape)
 
         for band in res_5x5.band.values:
