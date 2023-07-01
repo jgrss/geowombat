@@ -69,12 +69,12 @@ jobs:
           pip install numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
           pip install GDAL==$GDAL_VERSION --no-cache-dir
+          pip install arosics --no-deps
       - name: Install GeoWombat
         run: |
           # Remove compiled Cython files
           rm -rf src/geowombat/moving/*.so
-          pip install arosics --no-deps
-          pip install .[ml,coreg,stac,perf,tests]
+          pip install .[stac,web,ml,coreg,stac,perf,tests]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |
