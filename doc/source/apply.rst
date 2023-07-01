@@ -16,8 +16,8 @@ The example below applies a custom function concurrently over an image, where ea
 
 .. code:: python
 
-    def my_func(block, arg):
-        return block * arg
+    def my_func(w, block, arg):
+        return w, block * arg
 
 .. code:: python
 
