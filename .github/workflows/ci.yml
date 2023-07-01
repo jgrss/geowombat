@@ -46,12 +46,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-gwenv
-        with:
-          requirement_files: setup.cfg
-      - uses: syphar/restore-pip-download-cache@v1
-        if: steps.cache-gwenv.outputs.cache-hit != 'true'
+          cache: pip # caching pip dependencies based on changes to pyproject.toml
       - name: Install GDAL binaries
         run: |
           # Temporary? dpkg fix: https://askubuntu.com/questions/1276111/error-upgrading-grub-efi-amd64-signed-special-device-old-ssd-does-not-exist
