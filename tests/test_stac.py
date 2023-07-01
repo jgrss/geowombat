@@ -1,11 +1,10 @@
 import unittest
 
-from geowombat.core.stac import open_stac
-
 import geopandas as gpd
 from rasterio.enums import Resampling
 from shapely.geometry import CAP_STYLE, JOIN_STYLE, shape
 
+from geowombat.core.stac import open_stac
 
 geojson = {
     "type": "Polygon",
