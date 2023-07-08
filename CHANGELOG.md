@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.10 (2023-07-09)
+* Added support for Python 3.10 ([#277](https://github.com/jgrss/geowombat/pull/277))
+
 ## v2.1.9 (2023-05-03)
 * Fixed STAC `DataFrame` concatenation in ([#267](https://github.com/jgrss/geowombat/pull/267))
 * Fixed issue with saving small arrays in ([#268](https://github.com/jgrss/geowombat/pull/268))
