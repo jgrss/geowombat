@@ -18,7 +18,6 @@ from ..radiometry import QABits as _QABits
 from . import geoxarray
 
 try:
-    import planetary_computer as pc
     import pystac.errors as pystac_errors
     import stackstac
     import wget
@@ -28,10 +27,24 @@ try:
     from pystac_client import Client as _Client
     from rich.console import Console as _Console
     from rich.table import Table as _Table
-except ImportError:
+except ImportError as e:
     warnings.warn(
         "Install geowombat with 'pip install .[stac]' to use the STAC API."
     )
+    warnings.warn(e)
+
+try:
+    from pydantic.errors import PydanticImportError
+except ImportError:
+    PydanticImportError = ImportError
+
+try:
+    import planetary_computer as pc
+except (ImportError, PydanticImportError) as e:
+    warnings.warn(
+        'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited.'
+    )
+    warnings.warn(e)
 
 
 class STACNames(enum.Enum):

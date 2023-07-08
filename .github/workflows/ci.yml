@@ -37,17 +37,16 @@ jobs:
 
   Tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9.16
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-gwenv
-        with:
-          requirement_files: setup.cfg
-      - uses: syphar/restore-pip-download-cache@v1
-        if: steps.cache-gwenv.outputs.cache-hit != 'true'
+          python-version: ${{ matrix.python-version }}
+          cache: pip # caching pip dependencies based on changes to pyproject.toml
       - name: Install GDAL binaries
         run: |
           # Temporary? dpkg fix: https://askubuntu.com/questions/1276111/error-upgrading-grub-efi-amd64-signed-special-device-old-ssd-does-not-exist
@@ -70,12 +69,12 @@ jobs:
           pip install numpy>=1.19.0
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2"."$3}')
           pip install GDAL==$GDAL_VERSION --no-cache-dir
+          pip install arosics --no-deps
       - name: Install GeoWombat
         run: |
           # Remove compiled Cython files
           rm -rf src/geowombat/moving/*.so
-          pip install arosics --no-deps
-          pip install .[ml,coreg,stac,perf,tests]
+          pip install .[stac,web,ml,coreg,stac,perf,tests]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
       - name: Unittests
         run: |

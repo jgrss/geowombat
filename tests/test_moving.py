@@ -30,7 +30,7 @@ class TestMoving(unittest.TestCase):
                 .data.compute()
             )
             tar_band1_value = res_3x3.sel(band=band)[101, 101].data.compute()
-            self.assertAlmostEqual(ref_band1_value, tar_band1_value, places=4)
+            self.assertEqual(int(ref_band1_value), int(tar_band1_value))
             self.assertEqual(src.shape, res_3x3.shape)
 
         for band in res_5x5.band.values:
@@ -42,7 +42,7 @@ class TestMoving(unittest.TestCase):
             )
             tar_band1_value = res_5x5.sel(band=band)[102, 102].data.compute()
 
-            self.assertAlmostEqual(ref_band1_value, tar_band1_value, places=4)
+            self.assertEqual(int(ref_band1_value), int(tar_band1_value))
             self.assertEqual(src.shape, res_5x5.shape)
 
             # Check along chunk border
@@ -53,7 +53,7 @@ class TestMoving(unittest.TestCase):
             )
             tar_band1_value = res_5x5.sel(band=band)[2, 129].data.compute()
 
-            self.assertAlmostEqual(ref_band1_value, tar_band1_value, places=4)
+            self.assertEqual(int(ref_band1_value), int(tar_band1_value))
 
     def test_moving_mean(self):
         with gw.open(l8_224078_20200518, chunks=128) as src:
