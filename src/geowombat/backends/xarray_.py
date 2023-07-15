@@ -2,6 +2,7 @@ import contextlib
 import logging
 import os
 import typing as T
+import warnings
 from pathlib import Path
 
 import dask.array as da
@@ -669,7 +670,6 @@ def concat(
     )
 
     attrs = src_.attrs.copy()
-
     src_.close()
     src_ = None
 
@@ -732,22 +732,30 @@ def concat(
         )
 
     else:
-        src = xr.concat(
-            [
-                warp_open(
-                    fn,
-                    resampling=resampling,
-                    band_names=band_names,
-                    netcdf_vars=netcdf_vars,
-                    nodata=nodata,
-                    warp_mem_limit=warp_mem_limit,
-                    num_threads=num_threads,
-                    **kwargs,
-                )
-                for fn in filenames
-            ],
-            dim=stack_dim.lower(),
-        )
+        warp_list = [
+            warp_open(
+                fn,
+                resampling=resampling,
+                band_names=band_names,
+                netcdf_vars=netcdf_vars,
+                nodata=nodata,
+                warp_mem_limit=warp_mem_limit,
+                num_threads=num_threads,
+                **kwargs,
+            )
+            for fn in filenames
+        ]
+        # Check dimensions
+        try:
+            for fidx in range(0, len(warp_list) - 1):
+                xr.align(warp_list[fidx], warp_list[fidx + 1], join='exact')
+        except ValueError:
+            if not warp_list[0].gw.config['ignore_warnings']:
+                warning_message = 'The stacked dimensions are not aligned. If this was not intentional, use gw.config.update to align coordinates.'
+                warnings.warn(warning_message, UserWarning)
+                logger.warning(warning_message)
+
+        src = xr.concat(warp_list, dim=stack_dim.lower())
 
     src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
 
