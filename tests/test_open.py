@@ -49,9 +49,6 @@ class TestOpen(unittest.TestCase):
                 band_names=[1, 2],
             ) as src:
                 pass
-        import ipdb
-
-        ipdb.set_trace()
 
     def test_has_band_dim(self):
         with gw.open(l8_224078_20200518) as src:
