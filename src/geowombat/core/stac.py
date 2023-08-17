@@ -68,7 +68,7 @@ class _STACCollectionTypes(enum.Enum):
 class STACCatalogs:
     """STAC catalogs."""
 
-    element84 = 'https://earth-search.aws.element84.com/v0'
+    element84 = 'https://earth-search.aws.element84.com/v1'
     google = (
         'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
     )
@@ -88,8 +88,18 @@ class _STACScaling:
 class STACCollections:
     """STAC collections available for Landsat and Sentinel-2."""
 
+    # Copernicus DEM GLO-30
+    cop_dem_glo_30 = {
+        STACNames.element84.value: 'cop-dem-glo-30',
+        STACNames.microsoft: 'cop-dem-glo-30',
+    }
+    # All Landsat, Collection 2, Level 1
+    landsat_c2_l1 = {
+        STACNames.microsoft.value: 'landsat-c2-l1',
+    }
     # All Landsat, Collection 2, Level 2 (surface reflectance)
     landsat_c2_l2 = {
+        STACNames.element84.value: 'landsat-c2-l2',
         STACNames.google.value: [
             'LC09/C02/T1_L2',
             'LC08/C02/T1_L2',
@@ -100,16 +110,32 @@ class STACCollections:
     }
     # Sentinel-2, Level 2A (surface reflectance missing cirrus band)
     sentinel_s2_l2a = {
-        STACNames.element84.value: 'sentinel-s2-l2a-cogs',
+        STACNames.element84.value: 'sentinel-2-l2a',
         STACNames.google.value: 'sentinel-2-l2a',
         STACNames.microsoft.value: 'sentinel-2-l2a',
     }
-    # Sentinel-2, Level 1c (top of atmosphere with all 13 bands available)
-    sentinel_s2_l1c = {STACNames.element84.value: 'sentinel-s2-l1c'}
+    # Sentinel-2, Level 1C (top of atmosphere with all 13 bands available)
+    sentinel_s2_l1c = {STACNames.element84.value: 'sentinel-2-l1c'}
+    # Sentinel-1, Level 1C Ground Range Detected (GRD)
+    sentinel_s1_l1c = {
+        STACNames.element84.value: 'sentinel-1-grd',
+        STACNames.microsoft.value: 'sentinel-1-grd',
+    }
+    sentinel_3_lst = {
+        STACNames.microsoft.value: 'sentinel-3-slstr-lst-l2-netcdf',
+    }
     # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
     landsat_l8_c2_l2 = {
         STACNames.google.value: 'LC08_C02_T1_L2',
         STACNames.microsoft.value: 'landsat-8-c2-l2',
+    }
+    # USDA CDL
+    usda_cdl = {
+        STACNames.microsoft.value: 'usda-cdl',
+    }
+    # Esri 10 m land cover
+    io_lulc = {
+        STACNames.microsoft.value: 'io-lulc',
     }
 
 
@@ -200,6 +226,24 @@ def open_stac(
     Args:
         stac_catalog (str): Choices are ['element84', 'google', 'microsoft'].
         collection (str): The STAC collection to open.
+            Catalog options:
+                element84:
+                    cop_dem_glo_30
+                    landsat_c2_l2
+                    sentinel_s2_l2a
+                    sentinel_s2_l1c
+                    sentinel_s1_l1c
+                microsoft:
+                    cop_dem_glo_30
+                    landsat_c2_l1
+                    landsat_c2_l2
+                    landsat_l8_c2_l2
+                    sentinel_s2_l2a
+                    sentinel_s1_l1c
+                    sentinel_3_lst
+                    io_lulc
+                    usda_cdl
+
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``)
         proj_bounds (sequence): The projected bounds to return data. If ``None`` (default), the returned bounds
