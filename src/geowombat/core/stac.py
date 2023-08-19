@@ -12,9 +12,10 @@ import xarray as xr
 from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
 
+import geowombat as gw
+
 from ..config import config
 from ..radiometry import QABits as _QABits
-from . import geoxarray
 
 try:
     import pystac.errors as pystac_errors
@@ -206,7 +207,7 @@ def open_stac(
     proj_bounds: T.Sequence[float] = None,
     start_date: str = None,
     end_date: str = None,
-    cloud_cover_perc: T.Union[float, int] = 50,
+    cloud_cover_perc: T.Union[float, int] = None,
     bands: T.Sequence[str] = None,
     chunksize: int = 256,
     mask_items: T.Sequence[str] = None,
@@ -294,7 +295,7 @@ def open_stac(
         >>> from rasterio.enums import Resampling
         >>>
         >>> data_s2, df_s2 = open_stac(
-        >>>     stac_catalog='element84',
+        >>>     stac_catalog='element84_v1',
         >>>     collection='sentinel_s2_l2a',
         >>>     start_date='2020-01-01',
         >>>     end_date='2021-01-01',
@@ -357,13 +358,18 @@ def open_stac(
         raise NameError(
             f'The STAC catalog {stac_catalog} does not have a collection {collection} ({e}).'
         )
+    # asset = catalog.get_collection(catalog_collections[0]).assets['geoparquet-items']
+
+    query = None
+    if cloud_cover_perc is not None:
+        query = {"eo:cloud_cover": {"lt": cloud_cover_perc}}
 
     # Search the STAC
     search = catalog.search(
         collections=catalog_collections,
         bbox=bounds,
         datetime=date_range,
-        query={"eo:cloud_cover": {"lt": cloud_cover_perc}},
+        query=query,
         max_items=max_items,
         limit=max_items,
     )
