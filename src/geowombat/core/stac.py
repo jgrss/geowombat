@@ -1,7 +1,6 @@
 import enum
 import typing as T
 import warnings
-from dataclasses import dataclass as _dataclass
 from pathlib import Path as _Path
 
 import dask.array as da
@@ -15,7 +14,6 @@ from tqdm.auto import tqdm as _tqdm
 
 from ..config import config
 from ..radiometry import QABits as _QABits
-from . import geoxarray
 
 try:
     import pystac.errors as pystac_errors
@@ -50,74 +48,103 @@ except (ImportError, PydanticImportError) as e:
 class STACNames(enum.Enum):
     """STAC names."""
 
-    element84 = 'element84'
+    element84_v0 = 'element84_v0'
+    element84_v1 = 'element84_v1'
     google = 'google'
     microsoft = 'microsoft'
 
 
-class _STACCollectionTypes(enum.Enum):
-    landsat = 'landsat'
-    landsat_c2_l2 = 'landsat'
-    landsat_l8_c2_l2 = 'landsat'
-    sentinel2 = 'sentinel2'
-    sentinel_s2_l2a = 'sentinel2'
-    sentinel_s2_l1c = 'sentinel2'
+class STACCollections(enum.Enum):
+    cop_dem_glo_30 = 'cop_dem_glo_30'
+    landsat_c2_l1 = 'landsat_c2_l1'
+    landsat_c2_l2 = 'landsat_c2_l2'
+    sentinel_s2_l2a = 'sentinel_s2_l2a'
+    sentinel_s2_l2a_cogs = 'sentinel_s2_l2a_cogs'
+    sentinel_s2_l1c = 'sentinel_s2_l1c'
+    sentinel_s1_l1c = 'sentinel_s1_l1c'
+    sentinel_3_lst = 'sentinel_3_lst'
+    landsat_l8_c2_l2 = 'landsat_l8_c2_l2'
+    usda_cdl = 'usda_cdl'
+    io_lulc = 'io_lulc'
 
 
-@_dataclass
-class STACCatalogs:
-    """STAC catalogs."""
-
-    element84 = 'https://earth-search.aws.element84.com/v0'
-    google = (
-        'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json'
-    )
-    microsoft = 'https://planetarycomputer.microsoft.com/api/stac/v1'
+STAC_CATALOGS = {
+    STACNames.element84_v0: 'https://earth-search.aws.element84.com/v0',
+    STACNames.element84_v1: 'https://earth-search.aws.element84.com/v1',
+    # STACNames.google: 'https://earthengine.openeo.org/v1.0',
+    STACNames.microsoft: 'https://planetarycomputer.microsoft.com/api/stac/v1',
+}
 
 
-@_dataclass
-class _STACScaling:
-    """STAC scaling coefficients."""
-
-    landsat_c2_l2 = {
-        STACNames.microsoft.value: {'gain': 0.0000275, 'offset': -0.2}
+STAC_SCALING = {
+    STACCollections.landsat_c2_l2: {
+        STACNames.microsoft: {'gain': 0.0000275, 'offset': -0.2},
     }
+}
 
-
-@_dataclass
-class STACCollections:
-    """STAC collections available for Landsat and Sentinel-2."""
-
+STAC_COLLECTIONS = {
+    # Copernicus DEM GLO-30
+    STACCollections.cop_dem_glo_30: {
+        STACNames.element84_v1: 'cop-dem-glo-30',
+        STACNames.microsoft: 'cop-dem-glo-30',
+    },
+    # All Landsat, Collection 2, Level 1
+    STACCollections.landsat_c2_l1: {
+        STACNames.microsoft: 'landsat-c2-l1',
+    },
     # All Landsat, Collection 2, Level 2 (surface reflectance)
-    landsat_c2_l2 = {
-        STACNames.google.value: [
+    STACCollections.landsat_c2_l2: {
+        STACNames.element84_v1: 'landsat-c2-l2',
+        STACNames.google: [
             'LC09/C02/T1_L2',
             'LC08/C02/T1_L2',
             'LE07/C02/T1_L2',
             'LT05/C02/T1_L2',
         ],
-        STACNames.microsoft.value: 'landsat-c2-l2',
-    }
+        STACNames.microsoft: 'landsat-c2-l2',
+    },
     # Sentinel-2, Level 2A (surface reflectance missing cirrus band)
-    sentinel_s2_l2a = {
-        STACNames.element84.value: 'sentinel-s2-l2a-cogs',
-        STACNames.google.value: 'sentinel-2-l2a',
-        STACNames.microsoft.value: 'sentinel-2-l2a',
-    }
-    # Sentinel-2, Level 1c (top of atmosphere with all 13 bands available)
-    sentinel_s2_l1c = {STACNames.element84.value: 'sentinel-s2-l1c'}
+    STACCollections.sentinel_s2_l2a_cogs: {
+        STACNames.element84_v0: 'sentinel-s2-l2a-cogs',
+    },
+    STACCollections.sentinel_s2_l2a: {
+        STACNames.element84_v1: 'sentinel-2-l2a',
+        STACNames.google: 'COPERNICUS/S2_SR',
+        STACNames.microsoft: 'sentinel-2-l2a',
+    },
+    # Sentinel-2, Level 1C (top of atmosphere with all 13 bands available)
+    STACCollections.sentinel_s2_l1c: {
+        STACNames.element84_v1: 'sentinel-2-l1c'
+    },
+    # Sentinel-1, Level 1C Ground Range Detected (GRD)
+    STACCollections.sentinel_s1_l1c: {
+        STACNames.element84_v1: 'sentinel-1-grd',
+        STACNames.microsoft: 'sentinel-1-grd',
+    },
+    STACCollections.sentinel_3_lst: {
+        STACNames.microsoft: 'sentinel-3-slstr-lst-l2-netcdf',
+    },
     # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
-    landsat_l8_c2_l2 = {
-        STACNames.google.value: 'LC08_C02_T1_L2',
-        STACNames.microsoft.value: 'landsat-8-c2-l2',
-    }
+    STACCollections.landsat_l8_c2_l2: {
+        STACNames.google: 'LC08_C02_T1_L2',
+        STACNames.microsoft: 'landsat-8-c2-l2',
+    },
+    # USDA CDL
+    STACCollections.usda_cdl: {
+        STACNames.microsoft: 'usda-cdl',
+    },
+    # Esri 10 m land cover
+    STACCollections.io_lulc: {
+        STACNames.microsoft: 'io-lulc',
+    },
+}
 
-
-@_dataclass
-class _STACCatalogOpeners:
-    element84 = _Client.open
-    google = _Catalog.from_file
-    microsoft = _Client.open
+STAC_CATALOG_OPENERS = {
+    STACNames.element84_v0: _Client.open,
+    STACNames.element84_v1: _Client.open,
+    STACNames.google: _Catalog.from_file,
+    STACNames.microsoft: _Client.open,
+}
 
 
 def merge_stac(
@@ -178,7 +205,7 @@ def open_stac(
     proj_bounds: T.Sequence[float] = None,
     start_date: str = None,
     end_date: str = None,
-    cloud_cover_perc: T.Union[float, int] = 50,
+    cloud_cover_perc: T.Union[float, int] = None,
     bands: T.Sequence[str] = None,
     chunksize: int = 256,
     mask_items: T.Sequence[str] = None,
@@ -198,8 +225,28 @@ def open_stac(
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
     Args:
-        stac_catalog (str): Choices are ['element84', 'google', 'microsoft'].
+        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft_v1'].
         collection (str): The STAC collection to open.
+            Catalog options:
+                element84_v0:
+                    sentinel_s2_l2a_cogs
+                element84_v1:
+                    cop_dem_glo_30
+                    landsat_c2_l2
+                    sentinel_s2_l2a
+                    sentinel_s2_l1c
+                    sentinel_s1_l1c
+                microsoft:
+                    cop_dem_glo_30
+                    landsat_c2_l1
+                    landsat_c2_l2
+                    landsat_l8_c2_l2
+                    sentinel_s2_l2a
+                    sentinel_s1_l1c
+                    sentinel_3_lst
+                    io_lulc
+                    usda_cdl
+
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``)
         proj_bounds (sequence): The projected bounds to return data. If ``None`` (default), the returned bounds
@@ -246,7 +293,7 @@ def open_stac(
         >>> from rasterio.enums import Resampling
         >>>
         >>> data_s2, df_s2 = open_stac(
-        >>>     stac_catalog='element84',
+        >>>     stac_catalog='element84_v1',
         >>>     collection='sentinel_s2_l2a',
         >>>     start_date='2020-01-01',
         >>>     end_date='2021-01-01',
@@ -285,22 +332,42 @@ def open_stac(
     if isinstance(bounds, gpd.GeoDataFrame):
         bounds = tuple(bounds.total_bounds.flatten().tolist())
 
-    stac_catalog_url = getattr(STACCatalogs, stac_catalog)
-    # Open the STAC catalog
-    catalog = getattr(
-        _STACCatalogOpeners, getattr(STACNames, stac_catalog).value
-    )(stac_catalog_url)
-    catalog_collections = [
-        getattr(STACCollections, collection)[
-            getattr(STACNames, stac_catalog).value
-        ]
-    ]
+    try:
+        stac_catalog_url = STAC_CATALOGS[STACNames(stac_catalog)]
+        # Open the STAC catalog
+        catalog = STAC_CATALOG_OPENERS[STACNames(stac_catalog)](
+            stac_catalog_url
+        )
+    except ValueError as e:
+        raise NameError(
+            f'The STAC catalog {stac_catalog} is not supported ({e}).'
+        )
+
+    try:
+        collection_dict = STAC_COLLECTIONS[STACCollections(collection)]
+    except ValueError as e:
+        raise NameError(
+            f'The STAC collection {collection} is not supported ({e}).'
+        )
+
+    try:
+        catalog_collections = [collection_dict[STACNames(stac_catalog)]]
+    except KeyError as e:
+        raise NameError(
+            f'The STAC catalog {stac_catalog} does not have a collection {collection} ({e}).'
+        )
+    # asset = catalog.get_collection(catalog_collections[0]).assets['geoparquet-items']
+
+    query = None
+    if cloud_cover_perc is not None:
+        query = {"eo:cloud_cover": {"lt": cloud_cover_perc}}
+
     # Search the STAC
     search = catalog.search(
         collections=catalog_collections,
         bbox=bounds,
         datetime=date_range,
-        query={"eo:cloud_cover": {"lt": cloud_cover_perc}},
+        query=query,
         max_items=max_items,
         limit=max_items,
     )
@@ -309,7 +376,7 @@ def open_stac(
         raise ValueError('No items found.')
 
     if list(search.items()):
-        if getattr(STACNames, stac_catalog) is STACNames.microsoft:
+        if STACNames(stac_catalog) is STACNames.microsoft:
             items = pc.sign(search)
         else:
             items = _ItemCollection(items=list(search.items()))
@@ -368,13 +435,6 @@ def open_stac(
             res=(data.resolution, data.resolution), collection=collection
         )
         attrs = data.attrs.copy()
-        # if (
-        #     hasattr(data, 'common_name')
-        #     and (getattr(_STACCollectionTypes, collection) is not _STACCollectionTypes.landsat)
-        # ):
-        #     data = data.assign_coords(
-        #         band=lambda x: x.common_name.rename('band')
-        #     )
 
         if mask_data:
             if mask_items is None:
@@ -401,9 +461,9 @@ def open_stac(
                 band=[band for band in bands if band != 'qa_pixel']
             ).where(mask == 0)
 
-        if hasattr(_STACScaling, collection):
-            scaling = getattr(_STACScaling, collection)[
-                getattr(STACNames, stac_catalog).value
+        if STACCollections(collection) in STAC_SCALING:
+            scaling = STAC_SCALING[STACCollections(collection)][
+                STACNames(stac_catalog).value
             ]
             if scaling:
                 data = (
