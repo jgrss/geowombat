@@ -1,3 +1,4 @@
+import concurrent.futures
 import enum
 import typing as T
 import warnings
@@ -212,7 +213,7 @@ def open_stac(
     out_path: T.Optional[T.Union[_Path, str]] = '.',
     max_items: T.Optional[int] = 100,
     tqdm_item_position: T.Optional[int] = 0,
-    tqdm_extra_position: T.Optional[int] = 1,
+    max_extra_workers: int = 1,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
@@ -390,34 +391,42 @@ def open_stac(
         if extra_assets is not None:
             out_path = _Path(out_path)
             out_path.mkdir(parents=True, exist_ok=True)
-            for item in _tqdm(
-                items, desc='Extra assets', position=tqdm_item_position
-            ):
+
+            def download_worker(item, extra):
                 df_dict = {'id': item.id}
-                for extra in _tqdm(
-                    extra_assets,
-                    desc='Asset',
-                    position=tqdm_extra_position,
-                    leave=False,
-                ):
-                    url = item.assets[extra].to_dict()['href']
-                    out_name = (
-                        out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
-                    )
-                    df_dict[extra] = str(out_name)
-                    if not out_name.is_file():
-                        try:
-                            wget.download(url, out=str(out_name), bar=None)
-                        except HTTPError:
-                            try:
-                                wget.download(url, out=str(out_name), bar=None)
-                            except HTTPError:
-                                pass
-                        finally:
-                            pass
-                df = pd.concat(
-                    (df, pd.DataFrame([df_dict])), ignore_index=True
+                url = item.assets[extra].to_dict()['href']
+                out_name = (
+                    out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
                 )
+                df_dict[extra] = str(out_name)
+                if not out_name.is_file():
+                    wget.download(url, out=str(out_name), bar=None)
+
+                return df_dict
+
+            df_dicts = []
+            with _tqdm(
+                desc='Extra assets', total=len(items) * len(extra_assets)
+            ) as pbar:
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=max_extra_workers
+                ) as executor:
+                    futures = {
+                        executor.submit(download_worker, item, extra): extra
+                        for extra in extra_assets
+                        for item in items
+                    }
+                    for future in concurrent.futures.as_completed(futures):
+                        df_dict = future.result()
+                        df_dicts.append(df_dict)
+                        pbar.update(1)
+
+            for item in items:
+                d = {'id': item.id}
+                for downloaded_dict in df_dicts:
+                    if downloaded_dict['id'] == item.id:
+                        d.update(downloaded_dict)
+                df = pd.concat((df, pd.DataFrame([d])), ignore_index=True)
 
         data = stackstac.stack(
             items,
