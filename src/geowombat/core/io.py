@@ -786,6 +786,7 @@ def save(
         compress=compress,
         tiled=True if max(blockxsize, blockysize) >= 16 else False,
         sharing=False,
+        num_threads=num_workers,
     )
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
