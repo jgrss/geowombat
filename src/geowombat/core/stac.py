@@ -199,26 +199,25 @@ def open_stac(
     start_date: str = None,
     end_date: str = None,
     cloud_cover_perc: T.Union[float, int] = None,
-    bands: T.Sequence[str] = None,
+    bands: str = None,
     chunksize: int = 256,
-    mask_items: T.Sequence[str] = None,
-    bounds_query: T.Optional[str] = None,
+    mask_items: str = None,
+    bounds_query: str = None,
     mask_data: T.Optional[bool] = False,
-    epsg: T.Optional[int] = None,
-    resolution: T.Optional[T.Union[float, int]] = None,
+    epsg: int = None,
+    resolution: T.Union[float, int] = None,
     resampling: T.Optional[_Resampling] = _Resampling.nearest,
-    nodata_fill: T.Optional[T.Union[float, int]] = None,
-    view_asset_keys: T.Optional[bool] = False,
+    nodata_fill: T.Union[float, int] = None,
+    view_asset_keys: bool = False,
     extra_assets: T.Optional[T.Sequence[str]] = None,
-    out_path: T.Optional[T.Union[_Path, str]] = '.',
-    max_items: T.Optional[int] = 100,
-    tqdm_item_position: T.Optional[int] = 0,
+    out_path: T.Union[_Path, str] = '.',
+    max_items: int = 100,
     max_extra_workers: int = 1,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
     Args:
-        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft_v1'].
+        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft'].
         collection (str): The STAC collection to open.
             Catalog options:
                 element84_v0:
@@ -229,7 +228,7 @@ def open_stac(
                     sentinel_s2_l2a
                     sentinel_s2_l1c
                     sentinel_s1_l1c
-                microsoft_v1:
+                microsoft:
                     cop_dem_glo_30
                     landsat_c2_l1
                     landsat_c2_l2
@@ -263,8 +262,7 @@ def open_stac(
         max_items (Optional[int]): The maximum number of items to return from the search, even if there are more
             matching results, passed to ``pystac_client.ItemSearch``.
             See https://pystac-client.readthedocs.io/en/latest/api.html#pystac_client.ItemSearch for details.
-        tqdm_item_position (Optional[int]): The position of the item progress bar.
-        tqdm_extra_position (Optional[int]): The position of the extra progress bar.
+        max_extra_workers (Optional[int]): The maximum number of extra assets to download concurrently.
 
     Returns:
         ``xarray.DataArray``
