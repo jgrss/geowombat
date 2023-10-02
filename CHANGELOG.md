@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.11 (2023-10-02)
+* Added ``DataArray`` alignment check ([#282](https://github.com/jgrss/geowombat/pull/282))
+
 ## v2.1.10 (2023-07-09)
 * Added support for Python 3.10 ([#277](https://github.com/jgrss/geowombat/pull/277))
 
