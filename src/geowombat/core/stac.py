@@ -3,7 +3,6 @@ import enum
 import typing as T
 import warnings
 from pathlib import Path as _Path
-from urllib.error import HTTPError
 
 import dask.array as da
 import geopandas as gpd
@@ -13,6 +12,7 @@ import pyproj
 import xarray as xr
 from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
+from wrapt_timeout_decorator import timeout
 
 from ..config import config
 from ..radiometry import QABits as _QABits
@@ -77,9 +77,14 @@ STAC_CATALOGS = {
 
 
 STAC_SCALING = {
-    # STACCollections.landsat_c2_l2: {
-    #     STACNames.microsoft_v1: {'gain': 0.0000275, 'offset': -0.2},
-    # }
+    STACCollections.landsat_c2_l2: {
+        # https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2
+        STACNames.microsoft_v1: {
+            'gain': 0.0000275,
+            'offset': -0.2,
+            'nodata': 0,
+        },
+    }
 }
 
 STAC_COLLECTIONS = {
@@ -217,7 +222,7 @@ def open_stac(
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
     Args:
-        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft'].
+        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft_v1'].
         collection (str): The STAC collection to open.
             Catalog options:
                 element84_v0:
@@ -228,7 +233,7 @@ def open_stac(
                     sentinel_s2_l2a
                     sentinel_s2_l1c
                     sentinel_s1_l1c
-                microsoft:
+                microsoft_v1:
                     cop_dem_glo_30
                     landsat_c2_l1
                     landsat_c2_l2
@@ -390,6 +395,7 @@ def open_stac(
             out_path = _Path(out_path)
             out_path.mkdir(parents=True, exist_ok=True)
 
+            @timeout(30)
             def download_worker(item, extra):
                 df_dict = {'id': item.id}
                 url = item.assets[extra].to_dict()['href']
@@ -471,12 +477,16 @@ def open_stac(
                 STACNames(stac_catalog)
             ]
             if scaling:
-                data = (
-                    (data * scaling['gain'] + scaling['offset']) * 10_000.0
+                data = xr.where(
+                    data == scaling['nodata'],
+                    np.nan,
+                    (data * scaling['gain'] + scaling['offset']).clip(0, 1),
                 ).assign_attrs(**attrs)
 
         if nodata_fill is not None:
             data = data.fillna(nodata_fill).gw.assign_nodata_attrs(nodata_fill)
+
+        df = df.set_index('id').reindex(data.id.values).reset_index()
 
         return data, df
 

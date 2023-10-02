@@ -678,15 +678,18 @@ def save(
     filename: T.Union[str, Path],
     mode: T.Optional[str] = 'w',
     nodata: T.Optional[T.Union[float, int]] = None,
-    overwrite: T.Optional[bool] = False,
+    overwrite: bool = False,
     client: T.Optional[Client] = None,
-    compute: T.Optional[bool] = True,
+    compute: bool = True,
     tags: T.Optional[dict] = None,
     compress: T.Optional[str] = 'none',
     compression: T.Optional[str] = None,
-    num_workers: T.Optional[int] = 1,
-    log_progress: T.Optional[bool] = True,
+    num_workers: int = 1,
+    log_progress: bool = True,
     tqdm_kwargs: T.Optional[dict] = None,
+    save_by_time: bool = False,
+    max_create_workers: int = 1,
+    max_time_workers: int = 1,
 ):
     """Saves a DataArray to raster using rasterio/dask.
 
@@ -712,6 +715,9 @@ def save(
             Default is 1.
         log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
         tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+        save_by_time (Optional[bool]): Whether to save files separately by time. Default is False.
+        max_create_workers (Optional[int]): The maximum number of file creation workers.
+        max_time_workers (Optional[int]): The maximum number of time workers.
 
     Returns:
         ``None``, writes to ``filename``
@@ -739,12 +745,21 @@ def save(
     if mode not in ['w', 'r+']:
         raise AttributeError("The mode must be either 'w' or 'r+'.")
 
-    if Path(filename).is_file():
-        if overwrite:
-            Path(filename).unlink()
-        else:
-            logger.warning(f'The file {str(filename)} already exists.')
-            return
+    if save_by_time:
+        for fn in filename:
+            if Path(fn).is_file():
+                if overwrite:
+                    Path(fn).unlink()
+                else:
+                    logger.warning(f'The file {str(fn)} already exists.')
+                    return
+    else:
+        if Path(filename).is_file():
+            if overwrite:
+                Path(filename).unlink()
+            else:
+                logger.warning(f'The file {str(filename)} already exists.')
+                return
 
     if nodata is None:
         if hasattr(data, '_FillValue'):
@@ -771,9 +786,24 @@ def save(
         if not data.gw.array_is_dask
         else data.gw.row_chunks
     )
+    tiled = False
+    if (blockxsize is not None) and (blockysize is not None):
+        if max(blockxsize, blockysize) >= 16:
+            if (blockxsize % 16 == 0) and (blockysize % 16 == 0):
+                if compress is not None:
+                    if compress != 'none':
+                        tiled = False
+    if not tiled:
+        blockxsize = None
+        blockysize = None
+
+    if save_by_time:
+        driver = driver_from_extension(filename[0])
+    else:
+        driver = driver_from_extension(filename)
 
     kwargs = dict(
-        driver=driver_from_extension(filename),
+        driver=driver,
         width=data.gw.ncols,
         height=data.gw.nrows,
         count=data.gw.nbands,
@@ -784,7 +814,7 @@ def save(
         crs=data.gw.crs_to_pyproj,
         transform=data.gw.transform,
         compress=compress,
-        tiled=True if max(blockxsize, blockysize) >= 16 else False,
+        tiled=tiled,
         sharing=False,
         num_threads=num_workers,
     )
@@ -800,7 +830,13 @@ def save(
 
     else:
         with RasterioStore(
-            filename, mode=mode, tags=tags, **kwargs
+            filename,
+            mode=mode,
+            tags=tags,
+            save_by_time=save_by_time,
+            max_create_workers=max_create_workers,
+            max_time_workers=max_time_workers,
+            **kwargs,
         ) as rio_store:
             # Store the data and return a lazy evaluator
             res = rio_store.write(data)

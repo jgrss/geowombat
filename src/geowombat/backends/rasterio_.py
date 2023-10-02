@@ -1,6 +1,5 @@
+import concurrent.futures
 import logging
-import os
-import shutil
 import threading
 import typing as T
 import warnings
@@ -16,6 +15,7 @@ from affine import Affine
 from dask.delayed import Delayed
 from pyproj import CRS
 from pyproj.exceptions import CRSError
+from rasterio import DatasetReader
 from rasterio.coords import BoundingBox
 from rasterio.enums import Resampling
 from rasterio.transform import array_bounds, from_bounds
@@ -27,6 +27,7 @@ from rasterio.warp import (
     transform_bounds,
 )
 from rasterio.windows import Window
+from tqdm import tqdm
 
 import geowombat as gw
 
@@ -158,6 +159,16 @@ def to_gtiff(
                 dst_.write(data, window=group_window, indexes=indexes)
 
 
+def write_chunk(
+    array: np.ndarray,
+    window: Window,
+    indexes: T.Union[int, T.Sequence[int]],
+    filename: T.Union[str, Path],
+) -> None:
+    with rio.open(filename, mode='r+') as dst:
+        dst.write(array, window=window, indexes=indexes)
+
+
 class RasterioStore(object):
     """``Rasterio`` wrapper to allow ``dask.array.store`` to save chunks as
     windows.
@@ -168,19 +179,43 @@ class RasterioStore(object):
 
     def __init__(
         self,
-        filename: T.Union[str, Path],
+        filename: T.Union[str, Path, T.Sequence[T.Union[str, Path]]],
         mode: str = 'w',
         tags: dict = None,
+        save_by_time: bool = False,
+        max_create_workers: int = 1,
+        max_time_workers: int = 1,
         **kwargs,
     ):
-        self.filename = Path(filename)
+        if save_by_time:
+            if isinstance(filename, (str, Path)):
+                raise TypeError(
+                    'The filename must be given as a sequence when writing by time.'
+                )
+
+        if save_by_time:
+            self.filename = [Path(fn) for fn in filename]
+        else:
+            self.filename = Path(filename)
         self.mode = mode
         self.tags = tags
+        self.save_by_time = save_by_time
+        self.max_create_workers = max_create_workers
+        self.max_time_workers = max_time_workers
         self.kwargs = kwargs
         self.dst = None
 
     def __setitem__(self, key, item):
-        if len(key) == 3:
+        if len(key) == 4:
+            time_range, index_range, y, x = key
+            indexes = list(
+                range(
+                    index_range.start + 1,
+                    index_range.stop + 1,
+                    index_range.step or 1,
+                )
+            )
+        elif len(key) == 3:
             index_range, y, x = key
             indexes = list(
                 range(
@@ -199,27 +234,59 @@ class RasterioStore(object):
             width=x.stop - x.start,
             height=y.stop - y.start,
         )
+        if self.save_by_time:
+            for item_slice, fn in zip(item, self.filename):
+                write_chunk(
+                    item_slice,
+                    w,
+                    indexes,
+                    fn,
+                )
 
-        self.dst.write(item, window=w, indexes=indexes)
+        else:
+            self.dst.write(item, window=w, indexes=indexes)
 
     def __enter__(self) -> 'RasterioStore':
-        return self.open()
+        return self.open_raster()
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-    def open(self) -> 'RasterioStore':
-        self.dst = self.rio_open()
-        self.update_tags()
+    def open_raster(self) -> 'RasterioStore':
+        if self.save_by_time:
+            with tqdm(desc='Creating files', total=len(self.filename)) as pbar:
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=self.max_create_workers,
+                ) as executor:
+                    futures = {
+                        executor.submit(self._create_file, fn)
+                        for fn in self.filename
+                    }
+                    for future in concurrent.futures.as_completed(futures):
+                        _ = future.result()
+                        pbar.update(1)
+
+        else:
+            self.dst = self.rio_open(self.filename)
+            self.dst = self.update_tags(self.dst)
 
         return self
 
-    def rio_open(self):
-        return rio.open(self.filename, mode=self.mode, **self.kwargs)
+    def _create_file(self, filename: T.Union[str, Path]) -> None:
+        dst = self.rio_open(filename)
+        dst = self.update_tags(dst)
+        dst.close()
 
-    def update_tags(self):
+    def rio_open(
+        self, filename: T.Union[str, Path]
+    ) -> T.Union[DatasetReader, T.Sequence[DatasetReader]]:
+        return rio.open(filename, mode=self.mode, **self.kwargs)
+
+    def update_tags(self, dst: DatasetReader) -> DatasetReader:
         if self.tags is not None:
-            self.dst.update_tags(**self.tags)
+            dst.update_tags(**self.tags)
+
+        return dst
 
     def write_delayed(self, data: xr.DataArray):
         store = da.store(
@@ -239,13 +306,18 @@ class RasterioStore(object):
         if isinstance(data.data, da.Array):
             return da.store(data.data, self, lock=True, compute=compute)
         else:
+            if self.save_by_time:
+                raise TypeError(
+                    'Only Dask arrays are supported for time writing.'
+                )
             self.dst.write(
                 data.data,
                 indexes=list(range(1, data.data.shape[0] + 1)),
             )
 
     def close(self):
-        self.dst.close()
+        if not self.save_by_time:
+            self.dst.close()
 
 
 def check_res(

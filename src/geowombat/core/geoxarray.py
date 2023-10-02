@@ -732,13 +732,16 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
         client: T.Optional[_Client] = None,
-        compute: T.Optional[bool] = True,
+        compute: bool = True,
         tags: T.Optional[dict] = None,
         compress: T.Optional[str] = 'none',
         compression: T.Optional[str] = None,
-        num_workers: T.Optional[int] = 1,
-        log_progress: T.Optional[bool] = True,
+        num_workers: int = 1,
+        log_progress: bool = True,
         tqdm_kwargs: T.Optional[dict] = None,
+        save_by_time: bool = False,
+        max_create_workers: int = 1,
+        max_time_workers: int = 1,
     ) -> None:
         """Saves a DataArray to raster using rasterio/dask.
 
@@ -764,6 +767,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Default is 1.
             log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
             tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+            save_by_time (Optional[bool]): Whether to save files separately by time. Default is False.
+            max_create_workers (Optional[int]): The maximum number of file creation workers.
+            max_time_workers (Optional[int]): The maximum number of time workers.
 
         Returns:
             ``None``, writes to ``filename``
@@ -796,6 +802,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             num_workers=num_workers,
             log_progress=log_progress,
             tqdm_kwargs=tqdm_kwargs,
+            save_by_time=save_by_time,
+            max_create_workers=max_create_workers,
+            max_time_workers=max_time_workers,
         )
 
     def to_raster(
