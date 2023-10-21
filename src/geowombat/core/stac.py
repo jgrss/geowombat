@@ -486,7 +486,8 @@ def open_stac(
         if nodata_fill is not None:
             data = data.fillna(nodata_fill).gw.assign_nodata_attrs(nodata_fill)
 
-        df = df.set_index('id').reindex(data.id.values).reset_index()
+        if not df.empty:
+            df = df.set_index('id').reindex(data.id.values).reset_index()
 
         return data, df
 
