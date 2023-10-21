@@ -131,7 +131,7 @@ class TestDownloadSingleBand(unittest.TestCase):
                 ),
                 epsg=EPSG,
                 collection='landsat_c2_l2',
-                bands=['red', 'nir'],
+                bands=['red', 'nir08'],
                 cloud_cover_perc=90,
                 chunksize=64,
                 start_date='2022-07-01',
@@ -143,7 +143,11 @@ class TestDownloadSingleBand(unittest.TestCase):
                 extra_assets=['mtl.txt'],
                 out_path=Path(tmp_path),
             )
-            self.assertTrue(stack.shape == (2, 1, 48, 64))
+
+            self.assertFalse(
+                set(stack.band.values).difference(['red', 'nir08'])
+            )
+            self.assertTrue(stack.shape == (2, 2, 48, 64))
             self.assertTrue(stack.crs == 'epsg:8857')
             self.assertTrue(stack.gw.celly == 10.0)
             self.assertTrue(stack.gw.cellx == 10.0)

@@ -204,7 +204,7 @@ def open_stac(
     start_date: str = None,
     end_date: str = None,
     cloud_cover_perc: T.Union[float, int] = None,
-    bands: str = None,
+    bands: T.Sequence[str] = None,
     chunksize: int = 256,
     mask_items: str = None,
     bounds_query: str = None,
