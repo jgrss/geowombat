@@ -2,6 +2,7 @@ import contextlib
 import logging
 import os
 import typing as T
+import warnings
 from pathlib import Path
 
 import dask.array as da
@@ -608,6 +609,20 @@ def mosaic(
             return darray
 
 
+def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
+    try:
+        for fidx in range(0, len(concat_list) - 1):
+            xr.align(concat_list[fidx], concat_list[fidx + 1], join='exact')
+    except ValueError:
+        warning_message = (
+            'The stacked dimensions are not aligned. If this was not intentional, '
+            'use gw.config.update to align coordinates. To suppress this message, use '
+            'with gw.config.update(ignore_warnings=True):.'
+        )
+        warnings.warn(warning_message, UserWarning)
+        logger.warning(warning_message)
+
+
 def concat(
     filenames,
     stack_dim='time',
@@ -669,7 +684,6 @@ def concat(
     )
 
     attrs = src_.attrs.copy()
-
     src_.close()
     src_ = None
 
@@ -726,28 +740,30 @@ def concat(
                     )
                 )
 
+        if not concat_list[0].gw.config['ignore_warnings']:
+            check_alignment(concat_list)
         # Warp all images and concatenate along the 'time' axis into a DataArray
         src = xr.concat(concat_list, dim=stack_dim.lower()).assign_coords(
             time=new_time_names
         )
 
     else:
-        src = xr.concat(
-            [
-                warp_open(
-                    fn,
-                    resampling=resampling,
-                    band_names=band_names,
-                    netcdf_vars=netcdf_vars,
-                    nodata=nodata,
-                    warp_mem_limit=warp_mem_limit,
-                    num_threads=num_threads,
-                    **kwargs,
-                )
-                for fn in filenames
-            ],
-            dim=stack_dim.lower(),
-        )
+        warp_list = [
+            warp_open(
+                fn,
+                resampling=resampling,
+                band_names=band_names,
+                netcdf_vars=netcdf_vars,
+                nodata=nodata,
+                warp_mem_limit=warp_mem_limit,
+                num_threads=num_threads,
+                **kwargs,
+            )
+            for fn in filenames
+        ]
+        if not warp_list[0].gw.config['ignore_warnings']:
+            check_alignment(warp_list)
+        src = xr.concat(warp_list, dim=stack_dim.lower())
 
     src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
 

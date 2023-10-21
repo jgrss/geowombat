@@ -1,17 +1,19 @@
 import unittest
 from pathlib import Path
 
+import dask
+import numpy as np
+import rasterio as rio
+import xarray as xr
+from pyproj import CRS
+
 import geowombat as gw
 from geowombat.data import (
-    l8_224078_20200518,
     l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
+    l8_224077_20200518_B2,
+    l8_224077_20200518_B2_60m,
+    l8_224078_20200518,
 )
-
-import numpy as np
-import dask
-import xarray as xr
-import rasterio as rio
-from pyproj import CRS
 
 
 class TestOpen(unittest.TestCase):
@@ -33,6 +35,20 @@ class TestOpen(unittest.TestCase):
     def test_open(self):
         with gw.open(l8_224078_20200518) as src:
             self.assertEqual(src.gw.nbands, 3)
+
+    def test_open_incompat_res(self):
+        with gw.open(l8_224077_20200518_B2) as src30m:
+            with gw.open(l8_224077_20200518_B2_60m) as src60m:
+                with self.assertRaises(ValueError):
+                    res = xr.align(src30m, src60m, join='exact')
+
+        with self.assertWarns(UserWarning):
+            with gw.open(
+                [l8_224077_20200518_B2, l8_224077_20200518_B2_60m],
+                stack_dim='band',
+                band_names=[1, 2],
+            ) as src:
+                pass
 
     def test_has_band_dim(self):
         with gw.open(l8_224078_20200518) as src:
@@ -57,7 +73,9 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.nodataval, 0)
 
     def test_open_multiple(self):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+        ) as src:
             self.assertEqual(src.gw.ntime, 2)
 
     def test_open_multiple_same(self):
@@ -96,19 +114,27 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.ntime, 1)
 
     def test_has_time_dim(self):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+        ) as src:
             self.assertTrue(src.gw.has_time_dim)
 
     def test_has_time_coord(self):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+        ) as src:
             self.assertTrue(src.gw.has_time_coord)
 
     def test_has_time(self):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+        ) as src:
             self.assertTrue(src.gw.has_time)
 
     def test_has_no_time_coord(self):
-        with gw.open([l8_224078_20200518, l8_224078_20200518], stack_dim='time') as src:
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+        ) as src:
             self.assertFalse(src.drop_vars('time').gw.has_time_coord)
 
     def test_open_path(self):
@@ -153,15 +179,21 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.dtype, 'float64')
 
     def test_count(self):
-        with gw.open(l8_224078_20200518) as src, rio.open(l8_224078_20200518) as rsrc:
+        with gw.open(l8_224078_20200518) as src, rio.open(
+            l8_224078_20200518
+        ) as rsrc:
             self.assertEqual(src.gw.nbands, rsrc.count)
 
     def test_width(self):
-        with gw.open(l8_224078_20200518) as src, rio.open(l8_224078_20200518) as rsrc:
+        with gw.open(l8_224078_20200518) as src, rio.open(
+            l8_224078_20200518
+        ) as rsrc:
             self.assertEqual(src.gw.nrows, rsrc.height)
 
     def test_height(self):
-        with gw.open(l8_224078_20200518) as src, rio.open(l8_224078_20200518) as rsrc:
+        with gw.open(l8_224078_20200518) as src, rio.open(
+            l8_224078_20200518
+        ) as rsrc:
             self.assertEqual(src.gw.ncols, rsrc.width)
 
     def test_transform(self):
