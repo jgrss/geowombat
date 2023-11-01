@@ -158,7 +158,6 @@ class TestSeries(unittest.TestCase):
                     processes=False,
                     num_workers=2,
                     outfile=out_path,
-                    kwargs={"BIGTIFF": "YES"},
                 )
             with gw.open(out_path) as dst:
                 self.assertEqual(dst.gw.nbands, 2)
