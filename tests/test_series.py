@@ -166,7 +166,7 @@ class TestSeries(unittest.TestCase):
                     outfile=out_path,
                 )
             with gw.open(out_path) as dst:
-                self.assertEqual(dst.gw.nbands, 3)
+                self.assertEqual(dst.shape[0] 3)
 
 
 if __name__ == "__main__":
