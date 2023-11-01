@@ -10,6 +10,13 @@ import numpy as np
 
 IMAGE_LIST = [l8_224078_20200518] * 2
 
+try:
+    import jax.numpy as jnp
+
+    JAX_INSTALLED = True
+except ImportError:
+    JAX_INSTALLED = False
+
 
 class TemporalMean(gw.TimeModule):
     def __init__(self):
@@ -54,7 +61,7 @@ class TestSeries(unittest.TestCase):
         with rio.open(l8_224078_20200518) as src:
             res = src.res
             bounds = src.bounds
-        try:
+        if JAX_INSTALLED:
             with tempfile.TemporaryDirectory() as tmp:
                 out_path = Path(tmp) / "test.tif"
                 with gw.series(
@@ -77,8 +84,7 @@ class TestSeries(unittest.TestCase):
                     )
                 with gw.open(out_path) as dst:
                     self.assertEqual(dst.gw.nbands, 1)
-        except ImportError as e:
-            print(f"ImportError caught: {e}")
+        else:
             warnings.warn("Could not import jax. Defaulting to numpy.")
             with tempfile.TemporaryDirectory() as tmp:
                 out_path = Path(tmp) / "test.tif"
