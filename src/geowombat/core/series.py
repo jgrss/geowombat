@@ -57,7 +57,7 @@ class TransferLib(object):
 
     @staticmethod
     def jax(array):
-        return jnp.asarray(array, dtype='float32')
+        return jnp.asarray(array, dtype="float32")
 
     @staticmethod
     def keras(array):
@@ -65,11 +65,11 @@ class TransferLib(object):
 
     @staticmethod
     def numpy(array):
-        return np.asarray(array, dtype='float64')
+        return np.asarray(array, dtype="float64")
 
     @staticmethod
     def pytorch(array):
-        return torch.from_numpy(array).float().to('cuda:0')
+        return torch.from_numpy(array).float().to("cuda:0")
 
     @staticmethod
     def tensorflow(array):
@@ -85,14 +85,13 @@ class _Warp(object):
         dst_crs=None,
         dst_res=None,
         dst_bounds=None,
-        resampling='nearest',
+        resampling="nearest",
         nodata=None,
         warp_mem_limit=None,
         num_threads=None,
         window_size=None,
         padding=None,
     ):
-
         if dst_crs is None:
             dst_crs = self.srcs_[0].crs
 
@@ -130,13 +129,13 @@ class _Warp(object):
 
         # The write parameters
         vrt_options = {
-            'resampling': getattr(Resampling, resampling),
-            'crs': dst_crs,
-            'transform': dst_transform,
-            'height': dst_height,
-            'width': dst_width,
-            'nodata': nodata,
-            'warp_mem_limit': warp_mem_limit,
+            "resampling": getattr(Resampling, resampling),
+            "crs": dst_crs,
+            "transform": dst_transform,
+            "height": dst_height,
+            "width": dst_width,
+            "nodata": nodata,
+            "warp_mem_limit": warp_mem_limit,
         }
 
         def _warp_window(src_):
@@ -178,7 +177,7 @@ class _Warp(object):
                 dst_width,
                 window_size[0],
                 window_size[1],
-                return_as='list',
+                return_as="list",
                 padding=padding,
             )
 
@@ -247,11 +246,10 @@ class BaseSeries(_SeriesProps, _Warp):
         x: np.ndarray,
         attrs: T.Optional[T.Dict] = None,
     ) -> xr.DataArray:
-
         return xr.DataArray(
             data,
-            dims=('time', 'band', 'y', 'x'),
-            coords={'time': image_dates, 'band': band_names, 'y': y, 'x': x},
+            dims=("time", "band", "y", "x"),
+            coords={"time": image_dates, "band": band_names, "y": y, "x": x},
             attrs=attrs,
         )
 
@@ -262,8 +260,8 @@ class BaseSeries(_SeriesProps, _Warp):
         band_names: T.List[str],
     ) -> T.Tuple[np.ndarray, T.List[datetime]]:
         """Groups data by dates."""
-        time_df = pd.DataFrame(data=image_dates, columns=['date'])
-        dupe_dates = time_df.duplicated(keep='first')
+        time_df = pd.DataFrame(data=image_dates, columns=["date"])
+        dupe_dates = time_df.duplicated(keep="first")
         if not dupe_dates.any():
             return data, image_dates
 
@@ -279,8 +277,8 @@ class BaseSeries(_SeriesProps, _Warp):
         # Group duplicated dates
         da = (
             da.where(lambda x: x != 0)
-            .groupby('time')
-            .mean('time', skipna=True)
+            .groupby("time")
+            .mean("time", skipna=True)
         )
 
         return da.values, da.gw.pydatetime.tolist()
@@ -288,10 +286,10 @@ class BaseSeries(_SeriesProps, _Warp):
 
 class TimeModule(object):
     def __init__(self):
-        self.dtype = 'float64'
+        self.dtype = "float64"
         self.count = 1
-        self.compress = 'lzw'
-        self.bigtiff = 'NO'
+        self.compress = "lzw"
+        self.bigtiff = "NO"
         self.band_dict = None
 
     def __call__(self, w, array, band_dict):
@@ -346,7 +344,6 @@ class TimeModule(object):
 
 class TimeModulePipeline(object):
     def __init__(self, module_list: T.List[TimeModule]):
-
         self.modules = module_list
 
         self.count = 0
@@ -358,17 +355,14 @@ class TimeModulePipeline(object):
         self.bigtiff = self.modules[-1].bigtiff
 
     def __add__(self, other):
-
         if isinstance(other, TimeModulePipeline):
             return TimeModulePipeline(self.modules + other.modules)
         else:
             return TimeModulePipeline(self.modules + [other])
 
     def __call__(self, w, array, band_dict):
-
         results = []
         for module in self.modules:
-
             res = module(w, array, band_dict)[1]
 
             if len(res.shape) == 2:
@@ -381,7 +375,6 @@ class TimeModulePipeline(object):
 
 class SeriesStats(TimeModule):
     def __init__(self, time_stats):
-
         super(SeriesStats, self).__init__()
 
         self.time_stats = time_stats
@@ -392,7 +385,6 @@ class SeriesStats(TimeModule):
             self.count = len(list(self.time_stats))
 
     def calculate(self, array):
-
         if isinstance(self.time_stats, str):
             return np.asarray(getattr(self, self.time_stats)(array))
         else:
@@ -406,7 +398,6 @@ class SeriesStats(TimeModule):
 
     @staticmethod
     def _lstsq(data):
-
         ndims, nbands, nrows, ncols = data.shape
 
         M = data.squeeze().transpose(1, 2, 0).reshape(nrows * ncols, ndims).T
@@ -503,8 +494,8 @@ class SeriesStats(TimeModule):
         """Calculates a stack of statistics."""
         return jnp.vstack(
             [
-                getattr(self, 'percentile')(array, int(stat[10:]))[np.newaxis]
-                if stat.startswith('percentile')
+                getattr(self, "percentile")(array, int(stat[10:]))[np.newaxis]
+                if stat.startswith("percentile")
                 else getattr(self, stat)(array)[np.newaxis]
                 for stat in stats
             ]
