@@ -1072,7 +1072,7 @@ class series(BaseSeries):
             num_workers (Optional[int]): The number of concurrent workers.
             monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
             outfile (Optional[Path | str]): The output file.
-            kwargs (Optional[dict]): Keyword arguments passed to rasterio profile.
+            kwargs (Optional[dict]): Keyword arguments passed to rasterio open profile.
 
         Returns:
             If outfile is None:
