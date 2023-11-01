@@ -158,7 +158,7 @@ class TestSeries(unittest.TestCase):
                 window_size=(512, 512),
             ) as src:
                 src.apply(
-                    [my_minimum(), my_maximum()],
+                    ["mean", "max", "cv"],
                     bands=-1,
                     gain=1e-4,
                     processes=False,
@@ -166,7 +166,7 @@ class TestSeries(unittest.TestCase):
                     outfile=out_path,
                 )
             with gw.open(out_path) as dst:
-                self.assertEqual(dst.gw.nbands, 2)
+                self.assertEqual(dst.gw.nbands, 3)
 
 
 if __name__ == "__main__":
