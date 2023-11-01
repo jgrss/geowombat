@@ -1058,7 +1058,7 @@ class series(BaseSeries):
         num_workers: int = 1,
         monitor_progress: bool = True,
         outfile: T.Union[Path, str] = None,
-        kwargs: dict = None,
+        kwargs: dict = {},
     ):
         """Applies a function concurrently over windows.
 
