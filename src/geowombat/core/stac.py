@@ -245,7 +245,8 @@ def open_stac(
                     usda_cdl
 
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
-            configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``)
+            configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``). The bounds CRS
+            must be given in WGS/84 lat/lon (i.e., EPSG=4326).
         proj_bounds (sequence): The projected bounds to return data. If ``None`` (default), the returned bounds
             are the union of all collection scenes. See ``bounds`` in
             https://github.com/gjoseph92/stackstac/blob/main/stackstac/stack.py for details.

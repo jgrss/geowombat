@@ -20,7 +20,8 @@ To open a STAC catalog with ``geowombat``, we interface through the following Py
 
 :func:`geowombat.core.stac.open_stac` currently supports the following STAC catalogs:
 
-    * `element84 <'https://earth-search.aws.element84.com/v0'>`_
+    * `element84 v0 <'https://earth-search.aws.element84.com/v0'>`_
+    * `element84 v1 <'https://earth-search.aws.element84.com/v1'>`_
     * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_
 
 To install ``geowombat`` with STAC functionality::
@@ -45,7 +46,7 @@ bottom-of-atmosphere, or also referred to as surface reflectance.
 
     data, df = open_stac(
         # Available catalog names can be found in geowombat.core.stac.STACNames
-        stac_catalog='element84',
+        stac_catalog='element84_v1',
         # Query bounds in lat/lon WGS84
         bounds=(left, bottom, right, top),
         # Projection (matching `epsg`) bounds to return data in
@@ -58,7 +59,7 @@ bottom-of-atmosphere, or also referred to as surface reflectance.
         # sentinel_s2_l2a = Sentinel-2 Level 2A (i.e., bottom-of-atmosphere, or surface, reflectance)
         collection='sentinel_s2_l2a',
         # Band names depend on the catalog
-        bands=['B02', 'B03', 'B04', 'B08'],
+        bands=['blue', 'green', 'red'],
         # Maximum cloud cover percentage in the query
         cloud_cover_perc=90,
         # Dask chunk size to return data in
