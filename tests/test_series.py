@@ -4,7 +4,7 @@ from pathlib import Path
 import warnings
 
 import geowombat as gw
-from geowombat.data import l8_224078_20200518
+from geowombat.data import l8_224078_20200518, l8_224077_20200518_B2
 import rasterio as rio
 import numpy as np
 
@@ -141,15 +141,14 @@ class TestSeries(unittest.TestCase):
                 self.assertEqual(dst.gw.nbands, 1)
 
     def test_series_multiple(self):
-        with rio.open(l8_224078_20200518) as src:
+        with rio.open(l8_224077_20200518_B2) as src:
             res = src.res
             bounds = src.bounds
 
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test3.tif"
             with gw.series(
-                IMAGE_LIST,
-                band_names=["blue", "green", "red"],
+                [l8_224077_20200518_B2, l8_224077_20200518_B2],
                 crs="epsg:32621",
                 res=res,
                 bounds=bounds,
@@ -159,7 +158,7 @@ class TestSeries(unittest.TestCase):
             ) as src:
                 src.apply(
                     ["mean", "max", "cv"],
-                    bands=-1,
+                    bands=1,
                     gain=1e-4,
                     processes=False,
                     num_workers=2,
