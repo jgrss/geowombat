@@ -12,7 +12,6 @@ import pyproj
 import xarray as xr
 from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
-from wrapt_timeout_decorator import timeout
 
 from ..config import config
 from ..radiometry import QABits as _QABits
@@ -194,6 +193,17 @@ def merge_stac(
         .assign_attrs(**data.attrs)
         .assign_attrs(collection=None)
     )
+
+
+def download_worker(item, extra: str, out_path: _Path) -> dict:
+    df_dict = {'id': item.id}
+    url = item.assets[extra].to_dict()['href']
+    out_name = out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
+    df_dict[extra] = str(out_name)
+    if not out_name.is_file():
+        wget.download(url, out=str(out_name), bar=None)
+
+    return df_dict
 
 
 def open_stac(
@@ -396,20 +406,7 @@ def open_stac(
             out_path = _Path(out_path)
             out_path.mkdir(parents=True, exist_ok=True)
 
-            @timeout(30)
-            def download_worker(item, extra):
-                df_dict = {'id': item.id}
-                url = item.assets[extra].to_dict()['href']
-                out_name = (
-                    out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
-                )
-                df_dict[extra] = str(out_name)
-                if not out_name.is_file():
-                    wget.download(url, out=str(out_name), bar=None)
-
-                return df_dict
-
-            df_dicts = []
+            df_dicts: T.List[dict] = []
             with _tqdm(
                 desc='Extra assets', total=len(items) * len(extra_assets)
             ) as pbar:
@@ -417,7 +414,9 @@ def open_stac(
                     max_workers=max_extra_workers
                 ) as executor:
                     futures = {
-                        executor.submit(download_worker, item, extra): extra
+                        executor.submit(
+                            download_worker, item, extra, out_path
+                        ): extra
                         for extra in extra_assets
                         for item in items
                     }
