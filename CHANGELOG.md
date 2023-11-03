@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.12 (2023-11-03)
+* Update STAC catalogs ([#282](https://github.com/jgrss/geowombat/pull/289))
+
 ## v2.1.11 (2023-10-02)
 * Added ``DataArray`` alignment check ([#282](https://github.com/jgrss/geowombat/pull/282))
 
