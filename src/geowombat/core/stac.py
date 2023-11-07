@@ -306,10 +306,10 @@ def open_stac(
         >>>     start_date='2020-01-01',
         >>>     end_date='2021-01-01',
         >>>     bounds='map.geojson',
-        >>>     bands=['B04', 'B03', 'B02'],
+        >>>     bands=['blue', 'green', 'red'],
         >>>     resampling=Resampling.cubic,
         >>>     epsg=int(data_l.epsg.values),
-        >>>     extra_assets=['metadata']
+        >>>     extra_assets=['granule_metadata']
         >>> )
         >>>
         >>> # Merge two temporal stacks
