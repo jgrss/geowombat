@@ -195,7 +195,8 @@ def merge_stac(
     )
 
 
-def download_worker(item, extra: str, out_path: _Path) -> dict:
+def _download_worker(item, extra: str, out_path: _Path) -> dict:
+    """Downloads a single STAC item 'extra'."""
     df_dict = {'id': item.id}
     url = item.assets[extra].to_dict()['href']
     out_name = out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
@@ -415,7 +416,7 @@ def open_stac(
                 ) as executor:
                     futures = {
                         executor.submit(
-                            download_worker, item, extra, out_path
+                            _download_worker, item, extra, out_path
                         ): extra
                         for extra in extra_assets
                         for item in items
