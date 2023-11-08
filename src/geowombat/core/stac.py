@@ -12,7 +12,6 @@ import pyproj
 import xarray as xr
 from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
-from wrapt_timeout_decorator import timeout
 
 from ..config import config
 from ..radiometry import QABits as _QABits
@@ -196,6 +195,18 @@ def merge_stac(
     )
 
 
+def _download_worker(item, extra: str, out_path: _Path) -> dict:
+    """Downloads a single STAC item 'extra'."""
+    df_dict = {'id': item.id}
+    url = item.assets[extra].to_dict()['href']
+    out_name = out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
+    df_dict[extra] = str(out_name)
+    if not out_name.is_file():
+        wget.download(url, out=str(out_name), bar=None)
+
+    return df_dict
+
+
 def open_stac(
     stac_catalog: str = 'microsoft_v1',
     collection: str = None,
@@ -295,10 +306,10 @@ def open_stac(
         >>>     start_date='2020-01-01',
         >>>     end_date='2021-01-01',
         >>>     bounds='map.geojson',
-        >>>     bands=['B04', 'B03', 'B02'],
+        >>>     bands=['blue', 'green', 'red'],
         >>>     resampling=Resampling.cubic,
         >>>     epsg=int(data_l.epsg.values),
-        >>>     extra_assets=['metadata']
+        >>>     extra_assets=['granule_metadata']
         >>> )
         >>>
         >>> # Merge two temporal stacks
@@ -396,20 +407,7 @@ def open_stac(
             out_path = _Path(out_path)
             out_path.mkdir(parents=True, exist_ok=True)
 
-            @timeout(30)
-            def download_worker(item, extra):
-                df_dict = {'id': item.id}
-                url = item.assets[extra].to_dict()['href']
-                out_name = (
-                    out_path / f"{item.id}_{_Path(url.split('?')[0]).name}"
-                )
-                df_dict[extra] = str(out_name)
-                if not out_name.is_file():
-                    wget.download(url, out=str(out_name), bar=None)
-
-                return df_dict
-
-            df_dicts = []
+            df_dicts: T.List[dict] = []
             with _tqdm(
                 desc='Extra assets', total=len(items) * len(extra_assets)
             ) as pbar:
@@ -417,7 +415,9 @@ def open_stac(
                     max_workers=max_extra_workers
                 ) as executor:
                     futures = {
-                        executor.submit(download_worker, item, extra): extra
+                        executor.submit(
+                            _download_worker, item, extra, out_path
+                        ): extra
                         for extra in extra_assets
                         for item in items
                     }
