@@ -3,7 +3,7 @@
 <!--next-version-placeholder-->
 
 ## v2.1.13 (2023-11-08)
-* Fix multi-threaded timeout when downloaded STAC extras ([#282](https://github.com/jgrss/geowombat/pull/292))
+* Fixed multi-threaded timeout raised when downloading STAC extras ([#282](https://github.com/jgrss/geowombat/pull/292))
 
 ## v2.1.12 (2023-11-03)
 * Update STAC catalogs ([#282](https://github.com/jgrss/geowombat/pull/289))
