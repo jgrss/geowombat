@@ -1058,6 +1058,7 @@ class series(BaseSeries):
         num_workers: int = 1,
         monitor_progress: bool = True,
         outfile: T.Union[Path, str] = None,
+        bigtiff: str = "NO",
         kwargs: dict = {},
     ):
         """Applies a function concurrently over windows.
@@ -1072,6 +1073,7 @@ class series(BaseSeries):
             num_workers (Optional[int]): The number of concurrent workers.
             monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
             outfile (Optional[Path | str]): The output file.
+            bigtiff (Optional[str]): Whether to create a BigTIFF file. Choices are ['YES', 'NO']. Default is 'NO'.
             kwargs (Optional[dict]): Keyword arguments passed to rasterio open profile.
 
         Returns:
@@ -1203,6 +1205,15 @@ class series(BaseSeries):
                 "blockysize": self.blockysize,
                 **kwargs,
             }
+
+            # check for bigtiff config
+            if config["with_config"]:
+                bigtiff = config["bigtiff"].upper()
+                assert bigtiff in (
+                    "YES",
+                    "NO",
+                )
+                profile["BIGTIFF"] = bigtiff
 
             # Create the file
             self._create_file(outfile, **profile)
