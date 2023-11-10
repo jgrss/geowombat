@@ -140,6 +140,59 @@ class TestSeries(unittest.TestCase):
             with gw.open(out_path) as dst:
                 self.assertEqual(dst.gw.nbands, 1)
 
+    def test_series_bigtiff_config(self):
+        with rio.open(l8_224078_20200518) as src:
+            res = src.res
+            bounds = src.bounds
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with gw.config.update(bigtiff="yes"):
+                out_path = Path(tmp) / "test.tif"
+                with gw.series(
+                    IMAGE_LIST,
+                    band_names=["blue", "green", "red"],
+                    crs="epsg:32621",
+                    res=res,
+                    bounds=bounds,
+                    nodata=0,
+                    num_threads=2,
+                    window_size=(512, 512),
+                    transfer_lib="numpy",
+                ) as src:
+                    src.apply(
+                        TemporalMean(),
+                        bands=-1,
+                        gain=1e-4,
+                        processes=False,
+                        num_workers=2,
+                        outfile=out_path,
+                    )
+                with gw.open(out_path) as dst:
+                    self.assertEqual(dst.gw.nbands, 1)
+            out_path = Path(tmp) / "test.tif"
+            with gw.series(
+                IMAGE_LIST,
+                band_names=["blue", "green", "red"],
+                crs="epsg:32621",
+                res=res,
+                bounds=bounds,
+                nodata=0,
+                num_threads=2,
+                window_size=(512, 512),
+                transfer_lib="numpy",
+            ) as src:
+                src.apply(
+                    TemporalMean(),
+                    bands=-1,
+                    gain=1e-4,
+                    processes=False,
+                    num_workers=2,
+                    outfile=out_path,
+                    kwargs={"BIGTIFF": "YES"},
+                )
+            with gw.open(out_path) as dst:
+                self.assertEqual(dst.gw.nbands, 1)
+
     def test_series_multiple(self):
         with rio.open(l8_224077_20200518_B2) as src:
             res = src.res
