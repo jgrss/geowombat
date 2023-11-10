@@ -1073,7 +1073,7 @@ class series(BaseSeries):
             num_workers (Optional[int]): The number of concurrent workers.
             monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.
             outfile (Optional[Path | str]): The output file.
-            bigtiff (Optional[str]): Whether to create a BigTIFF file. Choices are ['YES', 'NO']. Default is 'NO'.
+            bigtiff (Optional[str]): Whether to create a BigTIFF file. Choices are ['YES', 'NO',"IF_NEEDED", "IF_SAFER"]. Default is 'NO'.
             kwargs (Optional[dict]): Keyword arguments passed to rasterio open profile.
 
         Returns:
@@ -1209,10 +1209,10 @@ class series(BaseSeries):
             # check for bigtiff config
             if config["with_config"]:
                 bigtiff = config["bigtiff"].upper()
-                assert bigtiff in (
-                    "YES",
-                    "NO",
-                )
+                if bigtiff not in ("YES", "NO", "IF_NEEDED", "IF_SAFER"):
+                    raise NameError(
+                        "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
+                    )
                 profile["BIGTIFF"] = bigtiff
 
             # Create the file
