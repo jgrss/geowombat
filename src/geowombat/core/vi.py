@@ -356,10 +356,11 @@ class BandMath(object):
                     g_factor
                     * (data.sel(wavelength='nir') - data.sel(wavelength='red'))
                     / (
-                        data.sel(wavelength='nir')
-                        * c1
-                        * data.sel(wavelength='red')
-                        - c2 * data.sel(wavelength='blue')
+                        (
+                            data.sel(wavelength='nir')
+                            + c1 * data.sel(wavelength='red')
+                            - c2 * data.sel(wavelength='blue')
+                        )
                         + l_factor
                     )
                 )
@@ -374,8 +375,11 @@ class BandMath(object):
                     g_factor
                     * (data.sel(band='nir') - data.sel(band='red'))
                     / (
-                        data.sel(band='nir') * c1 * data.sel(band='red')
-                        - c2 * data.sel(band='blue')
+                        (
+                            data.sel(band='nir')
+                            + c1 * data.sel(band='red')
+                            - c2 * data.sel(band='blue')
+                        )
                         + l_factor
                     )
                 )
@@ -1084,7 +1088,7 @@ class VegetationIndices(_PropertyMixin, BandMath):
 
             .. math::
 
-                EVI = 2.5 \times \frac{NIR - red}{NIR \times 6 \times red - 7.5 \times blue + 1}
+                EVI = 2.5 \times \frac{NIR - red}{NIR + 6 \times red - 7.5 \times blue + 1}
 
         Returns:
 
