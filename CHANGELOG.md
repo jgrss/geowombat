@@ -2,11 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.14 (2023-11-28)
+* Fixed error in EVI equation ([#294](https://github.com/jgrss/geowombat/pull/294))
+
 ## v2.1.13 (2023-11-08)
-* Fixed multi-threaded timeout raised when downloading STAC extras ([#282](https://github.com/jgrss/geowombat/pull/292))
+* Fixed multi-threaded timeout raised when downloading STAC extras ([#292](https://github.com/jgrss/geowombat/pull/292))
 
 ## v2.1.12 (2023-11-03)
-* Update STAC catalogs ([#282](https://github.com/jgrss/geowombat/pull/289))
+* Update STAC catalogs ([#289](https://github.com/jgrss/geowombat/pull/289))
 
 ## v2.1.11 (2023-10-02)
 * Added ``DataArray`` alignment check ([#282](https://github.com/jgrss/geowombat/pull/282))
