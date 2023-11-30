@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.15 (2023-11-30)
+* Add BIGTIFF option in series `apply()` ([#295](https://github.com/jgrss/geowombat/pull/295))
+
 ## v2.1.14 (2023-11-28)
 * Fixed error in EVI equation ([#294](https://github.com/jgrss/geowombat/pull/294))
 
