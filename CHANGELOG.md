@@ -2,8 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.16 (2024-01-12)
+* Increased minimum `pyproj` version ([#297](https://github.com/jgrss/geowombat/pull/297))
+
 ## v2.1.15 (2023-11-30)
-* Add BIGTIFF option in series `apply()` ([#295](https://github.com/jgrss/geowombat/pull/295))
+* Added BIGTIFF option in series `apply()` ([#295](https://github.com/jgrss/geowombat/pull/295))
 
 ## v2.1.14 (2023-11-28)
 * Fixed error in EVI equation ([#294](https://github.com/jgrss/geowombat/pull/294))
@@ -12,7 +15,7 @@
 * Fixed multi-threaded timeout raised when downloading STAC extras ([#292](https://github.com/jgrss/geowombat/pull/292))
 
 ## v2.1.12 (2023-11-03)
-* Update STAC catalogs ([#289](https://github.com/jgrss/geowombat/pull/289))
+* Updated STAC catalogs ([#289](https://github.com/jgrss/geowombat/pull/289))
 
 ## v2.1.11 (2023-10-02)
 * Added ``DataArray`` alignment check ([#282](https://github.com/jgrss/geowombat/pull/282))
