@@ -40,6 +40,13 @@ try:
 except ImportError:
     PYMORPH_INSTALLED = False
 
+try:
+    import ray
+
+    RAY_INSTALLED = True
+except ImportError:
+    RAY_INSTALLED = False
+
 from ..backends.rasterio_ import array_bounds, check_crs, get_dims_from_bounds
 from ..handler import add_handler
 from .base import PropertyMixin as _PropertyMixin
@@ -689,15 +696,6 @@ class SpatialOperations(_PropertyMixin):
         else:
             return None
 
-    import ray
-
-    @staticmethod
-    @ray.remote
-    def extract_data_slice(data, bands_idx, yidx, xidx):
-        # Assuming `data` can be passed directly or you have a mechanism to access it within this function.
-        # You may need to adjust this if `data` cannot be directly serialized or is too large.
-        return data.isel(band=bands_idx, y=yidx, x=xidx).data.compute()
-
     def extract(
         self,
         data: xr.DataArray,
@@ -877,47 +875,20 @@ class SpatialOperations(_PropertyMixin):
                             data.isel(band=bands_idx, y=yidx, x=xidx).data
                         )
                     )
+        # check for ray and use ray client
         elif use_ray_client:
             import ray
 
             if not ray.is_initialized():
                 ray.init()
-
-            # extract_data_slice_ray = ray.remote(self.extract_data_slice)
-            # tasks = [
-            #     extract_data_slice_ray.remote(data, bands_idx, yidx, xidx)
-            #     for _ in range(ray.available_resources()["CPU"])
-            # ]
-            # res = ray.get(tasks)
-            # results_list = [
-            #     df.reset_index(drop=True) for df in res if len(df) > 0
-            # ]
-            # res = pd.concat(results_list, ignore_index=True, axis=0)
             res = ray.get(
-                [
-                    self.extract_data_slice.remote(data, bands_idx, yidx, xidx)
-                    for i in range(int(ray.cluster_resources()["CPU"]))
-                ]
+                self.extract_data_slice.remote(data, bands_idx, yidx, xidx)
             )
-            # create a log file to store the results
-
-            results_list = [df for df in res if len(df) > 0]
-
-            # res = pd.concat(results_list, ignore_index=True, axis=0)
-
-            with open("/home/mmann1123/Documents/ray_results.txt", "w") as f:
-                f.write(
-                    str(res) + "\n" + str(len(res)) + "\n" + str(results_list)
-                )
 
         else:
             res = data.isel(band=bands_idx, y=yidx, x=xidx).gw.compute(
                 **kwargs
             )
-            with open("/home/mmann1123/Documents/none_results.txt", "w") as f:
-                f.write(
-                    str(res) + "\n" + str(len(res)) + "\n" + str(res) + "hi"
-                )
 
         if (len(res.shape) == 1) or (
             (len(res.shape) == 2) and (res.shape[0] == 1)
@@ -1631,3 +1602,19 @@ class SpatialOperations(_PropertyMixin):
             },
             attrs=target_attrs,
         )
+
+
+if RAY_INSTALLED:
+    import ray
+
+    @staticmethod
+    @ray.remote
+    def _ray_extract_data_slice(data, bands_idx, yidx, xidx):
+        """
+        This method is intended to be used with Ray for distributed computing.
+        Assumes `data` is accessible in the scope where this function is called.
+        """
+        return data.isel(band=bands_idx, y=yidx, x=xidx).data.compute()
+
+    # Dynamically assign the Ray-enabled method to the class.
+    SpatialOperations.extract_data_slice = _ray_extract_data_slice
