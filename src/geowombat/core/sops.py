@@ -68,7 +68,7 @@ def _remove_near_points(
     tree = cKDTree(np.c_[dataframe.geometry.x, dataframe.geometry.y])
 
     # Query all pairs within ``min_dist`` of each other
-    near_pairs = tree.query_pairs(r=r, output_type='ndarray')
+    near_pairs = tree.query_pairs(r=r, output_type="ndarray")
 
     if near_pairs.shape[0] > 0:
 
@@ -112,13 +112,13 @@ class SpatialOperations(_PropertyMixin):
     def calc_area(
         data: xr.DataArray,
         values: T.Sequence[T.Union[float, int]],
-        op: str = 'eq',
-        units: str = 'km2',
+        op: str = "eq",
+        units: str = "km2",
         row_chunks: int = None,
         col_chunks: int = None,
         n_workers: int = 1,
         n_threads: int = 1,
-        scheduler: str = 'threads',
+        scheduler: str = "threads",
         n_chunks: int = 100,
     ) -> pd.DataFrame:
         """Calculates the area of data values.
@@ -165,7 +165,7 @@ class SpatialOperations(_PropertyMixin):
             )
 
             sqm = abs(data_chunk.gw.celly) * abs(data_chunk.gw.cellx)
-            area_conversion = 1e-6 if area_units == 'km2' else 0.0001
+            area_conversion = 1e-6 if area_units == "km2" else 0.0001
 
             data_totals_ = defaultdict(float)
 
@@ -173,7 +173,7 @@ class SpatialOperations(_PropertyMixin):
                 chunk_value_total = (
                     data_chunk.gw.compare(op, value, return_binary=True)
                     .sum(skipna=True)
-                    .data.compute(scheduler='threads', num_workers=n_threads)
+                    .data.compute(scheduler="threads", num_workers=n_threads)
                 )
 
                 data_totals_[value] += (
@@ -203,16 +203,16 @@ class SpatialOperations(_PropertyMixin):
         data_totals = dict(sorted(data_totals.items()))
 
         df = pd.DataFrame.from_dict(
-            data_totals, orient='index', columns=[units]
+            data_totals, orient="index", columns=[units]
         )
-        df['area_value'] = df.index
+        df["area_value"] = df.index
 
         return df
 
     def sample(
         self,
         data: xr.DataArray,
-        method: str = 'random',
+        method: str = "random",
         band: T.Union[int, str] = None,
         n: int = None,
         strata: T.Optional[T.Dict[str, T.Union[float, int]]] = None,
@@ -270,10 +270,10 @@ class SpatialOperations(_PropertyMixin):
             >>> with gw.open('image.tif') as src:
             >>>     df = gw.sample(src, band=1, n=100, min_dist=1000, strata=strata)
         """
-        if method.strip().lower() not in ['random', 'systematic']:
+        if method.strip().lower() not in ["random", "systematic"]:
             raise NameError("The method must be 'random' or 'systematic'.")
 
-        if method.strip().lower() == 'systematic':
+        if method.strip().lower() == "systematic":
             if not isinstance(spacing, float):
                 if not isinstance(spacing, int):
 
@@ -282,10 +282,10 @@ class SpatialOperations(_PropertyMixin):
                     )
                     raise TypeError
 
-        if strata and not band and (method.strip().lower() == 'random'):
+        if strata and not band and (method.strip().lower() == "random"):
 
             logger.exception(
-                '  The band name must be provided with random stratified sampling.'
+                "  The band name must be provided with random stratified sampling."
             )
             raise NameError
 
@@ -293,7 +293,7 @@ class SpatialOperations(_PropertyMixin):
 
         if not strata:
 
-            if method == 'systematic':
+            if method == "systematic":
 
                 x_samples = []
                 y_samples = []
@@ -306,8 +306,8 @@ class SpatialOperations(_PropertyMixin):
                         x_samples.append(j)
                         y_samples.append(i)
 
-                x_samples = np.array(x_samples, dtype='int64')
-                y_samples = np.array(y_samples, dtype='int64')
+                x_samples = np.array(x_samples, dtype="int64")
+                y_samples = np.array(y_samples, dtype="int64")
 
                 # Convert the map indices to map coordinates
                 x_coords, y_coords = _transform_and_shift(
@@ -322,7 +322,7 @@ class SpatialOperations(_PropertyMixin):
                     data=range(0, x_coords.shape[0]),
                     geometry=gpd.points_from_xy(x_coords, y_coords),
                     crs=data.crs,
-                    columns=['point'],
+                    columns=["point"],
                 )
 
             else:
@@ -335,7 +335,7 @@ class SpatialOperations(_PropertyMixin):
                     if attempts >= max_attempts:
                         if verbose > 0:
                             logger.warning(
-                                '  Max attempts reached. Try relaxing the distance threshold.'
+                                "  Max attempts reached. Try relaxing the distance threshold."
                             )
 
                         break
@@ -343,16 +343,20 @@ class SpatialOperations(_PropertyMixin):
                         # Sample directly from the coordinates
                     y_coords = np.random.choice(
                         data.y.values,
-                        size=sample_size
-                        if sample_size < data.y.values.shape[0]
-                        else data.y.values.shape[0] - 1,
+                        size=(
+                            sample_size
+                            if sample_size < data.y.values.shape[0]
+                            else data.y.values.shape[0] - 1
+                        ),
                         replace=False,
                     )
                     x_coords = np.random.choice(
                         data.x.values,
-                        size=sample_size
-                        if sample_size < data.x.values.shape[0]
-                        else data.x.values.shape[0] - 1,
+                        size=(
+                            sample_size
+                            if sample_size < data.x.values.shape[0]
+                            else data.x.values.shape[0] - 1
+                        ),
                         replace=False,
                     )
 
@@ -367,7 +371,7 @@ class SpatialOperations(_PropertyMixin):
                                         x_coords, y_coords
                                     ),
                                     crs=data.crs,
-                                    columns=['point'],
+                                    columns=["point"],
                                 ),
                             ),
                             axis=0,
@@ -379,7 +383,7 @@ class SpatialOperations(_PropertyMixin):
                             data=range(0, x_coords.shape[0]),
                             geometry=gpd.points_from_xy(x_coords, y_coords),
                             crs=data.crs,
-                            columns=['point'],
+                            columns=["point"],
                         )
 
                     if isinstance(min_dist, float) or isinstance(
@@ -410,18 +414,18 @@ class SpatialOperations(_PropertyMixin):
 
             for cond, stratum_size in strata.items():
 
-                conditionals = cond.split(';')
+                conditionals = cond.split(";")
 
                 if len(conditionals) > 1:
 
-                    sign, value = conditionals[0].split(',')
-                    sign2, value2 = conditionals[1].split(',')
+                    sign, value = conditionals[0].split(",")
+                    sign2, value2 = conditionals[1].split(",")
                     value = float(value)
                     value2 = float(value2)
 
                 else:
 
-                    sign, value = cond.split(',')
+                    sign, value = cond.split(",")
                     sign = sign.strip()
                     value = float(value)
 
@@ -455,97 +459,97 @@ class SpatialOperations(_PropertyMixin):
 
                     if len(conditionals) > 1:
 
-                        if (sign == '>') and (sign2 == '<'):
+                        if (sign == ">") and (sign2 == "<"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data > value)
                                 & data.sel(band=band).data
                                 < value2
                             )
-                        elif (sign == '>') and (sign2 == '>'):
+                        elif (sign == ">") and (sign2 == ">"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data > value)
                                 & data.sel(band=band).data
                                 > value2
                             )
-                        elif (sign == '>') and (sign2 == '<='):
+                        elif (sign == ">") and (sign2 == "<="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data > value)
                                 & data.sel(band=band).data
                                 <= value2
                             )
-                        elif (sign == '>') and (sign2 == '>='):
+                        elif (sign == ">") and (sign2 == ">="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data > value)
                                 & data.sel(band=band).data
                                 >= value2
                             )
-                        elif (sign == '<') and (sign2 == '<'):
+                        elif (sign == "<") and (sign2 == "<"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data < value)
                                 & data.sel(band=band).data
                                 < value2
                             )
-                        elif (sign == '<') and (sign2 == '>'):
+                        elif (sign == "<") and (sign2 == ">"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data < value)
                                 & data.sel(band=band).data
                                 > value2
                             )
-                        elif (sign == '<') and (sign2 == '<='):
+                        elif (sign == "<") and (sign2 == "<="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data < value)
                                 & data.sel(band=band).data
                                 <= value2
                             )
-                        elif (sign == '<') and (sign2 == '>='):
+                        elif (sign == "<") and (sign2 == ">="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data < value)
                                 & data.sel(band=band).data
                                 >= value2
                             )
-                        elif (sign == '>=') and (sign2 == '<'):
+                        elif (sign == ">=") and (sign2 == "<"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data >= value)
                                 & data.sel(band=band).data
                                 < value2
                             )
-                        elif (sign == '>=') and (sign2 == '>'):
+                        elif (sign == ">=") and (sign2 == ">"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data >= value)
                                 & data.sel(band=band).data
                                 > value2
                             )
-                        elif (sign == '>=') and (sign2 == '<='):
+                        elif (sign == ">=") and (sign2 == "<="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data >= value)
                                 & data.sel(band=band).data
                                 <= value2
                             )
-                        elif (sign == '>=') and (sign2 == '>='):
+                        elif (sign == ">=") and (sign2 == ">="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data >= value)
                                 & data.sel(band=band).data
                                 >= value2
                             )
-                        elif (sign == '<=') and (sign2 == '<'):
+                        elif (sign == "<=") and (sign2 == "<"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data <= value)
                                 & data.sel(band=band).data
                                 < value2
                             )
-                        elif (sign == '<=') and (sign2 == '>'):
+                        elif (sign == "<=") and (sign2 == ">"):
                             valid_samples = da.where(
                                 (data.sel(band=band).data <= value)
                                 & data.sel(band=band).data
                                 > value2
                             )
-                        elif (sign == '<=') and (sign2 == '<='):
+                        elif (sign == "<=") and (sign2 == "<="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data <= value)
                                 & data.sel(band=band).data
                                 <= value2
                             )
-                        elif (sign == '<=') and (sign2 == '>='):
+                        elif (sign == "<=") and (sign2 == ">="):
                             valid_samples = da.where(
                                 (data.sel(band=band).data <= value)
                                 & data.sel(band=band).data
@@ -553,29 +557,29 @@ class SpatialOperations(_PropertyMixin):
                             )
                         else:
                             logger.exception(
-                                '  The conditional sign was not recognized.'
+                                "  The conditional sign was not recognized."
                             )
                             raise NameError
 
                     else:
 
-                        if sign == '>':
+                        if sign == ">":
                             valid_samples = da.where(
                                 data.sel(band=band).data > value
                             )
-                        elif sign == '>=':
+                        elif sign == ">=":
                             valid_samples = da.where(
                                 data.sel(band=band).data >= value
                             )
-                        elif sign == '<':
+                        elif sign == "<":
                             valid_samples = da.where(
                                 data.sel(band=band).data < value
                             )
-                        elif sign == '<=':
+                        elif sign == "<=":
                             valid_samples = da.where(
                                 data.sel(band=band).data <= value
                             )
-                        elif sign == '==':
+                        elif sign == "==":
                             valid_samples = da.where(
                                 data.sel(band=band).data == value
                             )
@@ -588,7 +592,7 @@ class SpatialOperations(_PropertyMixin):
                     valid_samples = dask.compute(
                         valid_samples,
                         num_workers=num_workers,
-                        scheduler='threads',
+                        scheduler="threads",
                     )[0]
 
                     y_samples = valid_samples[0]
@@ -635,7 +639,7 @@ class SpatialOperations(_PropertyMixin):
                                             x_coords, y_coords
                                         ),
                                         crs=data.crs,
-                                        columns=['point'],
+                                        columns=["point"],
                                     ),
                                 ),
                                 axis=0,
@@ -649,7 +653,7 @@ class SpatialOperations(_PropertyMixin):
                                     x_coords, y_coords
                                 ),
                                 crs=data.crs,
-                                columns=['point'],
+                                columns=["point"],
                             )
 
                         if isinstance(min_dist, float) or isinstance(
@@ -685,6 +689,15 @@ class SpatialOperations(_PropertyMixin):
         else:
             return None
 
+    import ray
+
+    @staticmethod
+    @ray.remote
+    def extract_data_slice(data, bands_idx, yidx, xidx):
+        # Assuming `data` can be passed directly or you have a mechanism to access it within this function.
+        # You may need to adjust this if `data` cannot be directly serialized or is too large.
+        return data.isel(band=bands_idx, y=yidx, x=xidx).data.compute()
+
     def extract(
         self,
         data: xr.DataArray,
@@ -695,14 +708,15 @@ class SpatialOperations(_PropertyMixin):
         frac: float = 1.0,
         min_frac_area: T.Optional[T.Union[float, int]] = None,
         all_touched: T.Optional[bool] = False,
-        id_column: T.Optional[str] = 'id',
-        time_format: T.Optional[str] = '%Y%m%d',
+        id_column: T.Optional[str] = "id",
+        time_format: T.Optional[str] = "%Y%m%d",
         mask: T.Optional[T.Union[Polygon, gpd.GeoDataFrame]] = None,
         n_jobs: T.Optional[int] = 8,
         verbose: T.Optional[int] = 0,
         n_workers: T.Optional[int] = 1,
         n_threads: T.Optional[int] = -1,
         use_client: T.Optional[bool] = False,
+        use_ray_client: T.Optional[bool] = False,
         address: T.Optional[str] = None,
         total_memory: T.Optional[int] = 24,
         processes: T.Optional[bool] = False,
@@ -731,6 +745,7 @@ class SpatialOperations(_PropertyMixin):
             n_workers (Optional[int]): The number of process workers. Only applies when ``use_client`` = ``True``.
             n_threads (Optional[int]): The number of thread workers. Only applies when ``use_client`` = ``True``.
             use_client (Optional[bool]): Whether to use a ``dask`` client.
+            use_ray_client (Optional[bool]): Whether to use a ``ray`` client.
             address (Optional[str]): A cluster address to pass to client. Only used when ``use_client`` = ``True``.
             total_memory (Optional[int]): The total memory (in GB) required when ``use_client`` = ``True``.
             processes (Optional[bool]): Whether to use process workers with the ``dask.distributed`` client.
@@ -794,7 +809,7 @@ class SpatialOperations(_PropertyMixin):
         shape_len = data.gw.ndims
 
         if isinstance(bands, list):
-            bands_idx = (np.array(bands, dtype='int64') - 1).tolist()
+            bands_idx = (np.array(bands, dtype="int64") - 1).tolist()
         elif isinstance(bands, np.ndarray):
             bands_idx = (bands - 1).tolist()
         elif isinstance(bands, int):
@@ -806,7 +821,7 @@ class SpatialOperations(_PropertyMixin):
 
         if isinstance(aoi, gpd.GeoDataFrame):
             if id_column not in aoi.columns.tolist():
-                aoi['id'] = aoi.index.values
+                aoi["id"] = aoi.index.values
 
         df = converters.prepare_points(
             data,
@@ -825,7 +840,7 @@ class SpatialOperations(_PropertyMixin):
             return df
 
         if verbose > 0:
-            logger.info('  Extracting data ...')
+            logger.info("  Extracting data ...")
 
         # Convert the geometry map coordinates to array indices
         x, y = converters.coords_to_indices(
@@ -842,8 +857,8 @@ class SpatialOperations(_PropertyMixin):
             y = y[idx_nonnull]
             x = x[idx_nonnull]
 
-        yidx = xr.DataArray(y, dims='z')
-        xidx = xr.DataArray(x, dims='z')
+        yidx = xr.DataArray(y, dims="z")
+        xidx = xr.DataArray(x, dims="z")
 
         # Get the raster values for each point
         # TODO: allow neighbor indexing
@@ -853,7 +868,7 @@ class SpatialOperations(_PropertyMixin):
                 threads_per_worker=n_threads,
                 scheduler_port=0,
                 processes=processes,
-                memory_limit=f'{mem_per_core}GB',
+                memory_limit=f"{mem_per_core}GB",
             ) as cluster:
                 cluster_address = address if address else cluster
                 with client_object(address=cluster_address) as client:
@@ -862,11 +877,47 @@ class SpatialOperations(_PropertyMixin):
                             data.isel(band=bands_idx, y=yidx, x=xidx).data
                         )
                     )
+        elif use_ray_client:
+            import ray
+
+            if not ray.is_initialized():
+                ray.init()
+
+            # extract_data_slice_ray = ray.remote(self.extract_data_slice)
+            # tasks = [
+            #     extract_data_slice_ray.remote(data, bands_idx, yidx, xidx)
+            #     for _ in range(ray.available_resources()["CPU"])
+            # ]
+            # res = ray.get(tasks)
+            # results_list = [
+            #     df.reset_index(drop=True) for df in res if len(df) > 0
+            # ]
+            # res = pd.concat(results_list, ignore_index=True, axis=0)
+            res = ray.get(
+                [
+                    self.extract_data_slice.remote(data, bands_idx, yidx, xidx)
+                    for i in range(int(ray.cluster_resources()["CPU"]))
+                ]
+            )
+            # create a log file to store the results
+
+            results_list = [df for df in res if len(df) > 0]
+
+            # res = pd.concat(results_list, ignore_index=True, axis=0)
+
+            with open("/home/mmann1123/Documents/ray_results.txt", "w") as f:
+                f.write(
+                    str(res) + "\n" + str(len(res)) + "\n" + str(results_list)
+                )
 
         else:
             res = data.isel(band=bands_idx, y=yidx, x=xidx).gw.compute(
                 **kwargs
             )
+            with open("/home/mmann1123/Documents/none_results.txt", "w") as f:
+                f.write(
+                    str(res) + "\n" + str(len(res)) + "\n" + str(res) + "hi"
+                )
 
         if (len(res.shape) == 1) or (
             (len(res.shape) == 2) and (res.shape[0] == 1)
@@ -882,12 +933,12 @@ class SpatialOperations(_PropertyMixin):
                 if isinstance(time_names[0], datetime):
                     time_names = [t.strftime(time_format) for t in time_names]
             else:
-                time_names = [f't{t}' for t in range(1, res.shape[0] + 1)]
+                time_names = [f"t{t}" for t in range(1, res.shape[0] + 1)]
 
             band_names_concat = []
             for t in time_names:
                 for b in band_names:
-                    band_names_concat.append(f'{t}_{b}')
+                    band_names_concat.append(f"{t}_{b}")
 
             # `res` is shaped [time x bands x samples]
             ntime, nbands, nsamples = res.shape
@@ -896,9 +947,11 @@ class SpatialOperations(_PropertyMixin):
                 (
                     df,
                     pd.DataFrame(
-                        data=res.T.squeeze()
-                        if nbands == 1
-                        else res.reshape(ntime * nbands, nsamples).T,
+                        data=(
+                            res.T.squeeze()
+                            if nbands == 1
+                            else res.reshape(ntime * nbands, nsamples).T
+                        ),
                         columns=band_names_concat,
                     ),
                 ),
@@ -935,7 +988,7 @@ class SpatialOperations(_PropertyMixin):
         """
         if isinstance(df, (Path, str)):
             if not Path(df).is_file():
-                raise FileExistsError(f'{str(df)} does not exist.')
+                raise FileExistsError(f"{str(df)} does not exist.")
             df = gpd.read_file(df)
 
         if query is not None:
@@ -1029,14 +1082,14 @@ class SpatialOperations(_PropertyMixin):
             >>>     ds = ds.gw.clip(df, query="Id == 1")
         """
         warnings.warn(
-            'The method clip() will be deprecated in >=2.2.0. Use clip_by_polygon() instead.',
+            "The method clip() will be deprecated in >=2.2.0. Use clip_by_polygon() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
 
         if isinstance(df, (Path, str)):
             if not Path(df).is_file():
-                raise FileExistsError(f'{str(df)} does not exist.')
+                raise FileExistsError(f"{str(df)} does not exist.")
             df = gpd.read_file(df)
 
         if query is not None:
@@ -1101,7 +1154,7 @@ class SpatialOperations(_PropertyMixin):
         data: xr.DataArray,
         dataframe: T.Union[str, Path, gpd.GeoDataFrame],
         query: T.Optional[str] = None,
-        keep: T.Optional[str] = 'in',
+        keep: T.Optional[str] = "in",
     ) -> xr.DataArray:
         """Masks a DataArray by vector polygon geometry.
 
@@ -1144,16 +1197,16 @@ class SpatialOperations(_PropertyMixin):
                     out=None,
                     all_touched=True,
                     default_value=1,
-                    dtype='int32',
+                    dtype="int32",
                 ),
                 chunks=(data.gw.row_chunks, data.gw.col_chunks),
             ),
-            dims=['y', 'x'],
-            coords={'y': data.y.values, 'x': data.x.values},
+            dims=["y", "x"],
+            coords={"y": data.y.values, "x": data.x.values},
         )
 
         # Return the masked array
-        if keep == 'out':
+        if keep == "out":
             return data.where(mask != 1)
         else:
             return data.where(mask == 1)
@@ -1194,7 +1247,7 @@ class SpatialOperations(_PropertyMixin):
                 "The replace values must be a dictionary of {from: to} mappings."
             )
 
-        data = data.astype('int64')
+        data = data.astype("int64")
 
         for k, v in to_replace.items():
             data = xr.where(data == k, v + 100000, data)
@@ -1247,7 +1300,7 @@ class SpatialOperations(_PropertyMixin):
 
         for k, v in to_replace.items():
 
-            if isinstance(v, str) and (v.lower() == 'mode'):
+            if isinstance(v, str) and (v.lower() == "mode"):
 
                 data_array_np = (
                     data.squeeze()
@@ -1257,7 +1310,7 @@ class SpatialOperations(_PropertyMixin):
 
                 to_replace[k] = int(
                     sci_mode(
-                        data_array_np, axis=None, nan_policy='omit'
+                        data_array_np, axis=None, nan_policy="omit"
                     ).mode.flatten()
                 )
 
@@ -1312,7 +1365,7 @@ class SpatialOperations(_PropertyMixin):
 
         if not isinstance(cols, int):
             logger.exception(
-                '  The right coordinate or columns must be specified.'
+                "  The right coordinate or columns must be specified."
             )
             raise NameError
 
@@ -1321,7 +1374,7 @@ class SpatialOperations(_PropertyMixin):
 
         if not isinstance(rows, int):
             logger.exception(
-                '  The bottom coordinate or rows must be specified.'
+                "  The bottom coordinate or rows must be specified."
             )
             raise NameError
 
@@ -1336,12 +1389,12 @@ class SpatialOperations(_PropertyMixin):
             x_idx -= (cols / 2.0) * abs(data.gw.cellx)
         ds_sub = data.isel(
             indexers={
-                'band': slice(0, None),
-                'y': slice(y_idx, y_idx + rows),
-                'x': slice(x_idx, x_idx + cols),
+                "band": slice(0, None),
+                "y": slice(y_idx, y_idx + rows),
+                "x": slice(x_idx, x_idx + cols),
             }
         )
-        ds_sub.attrs['transform'] = ds_sub.gw.transform
+        ds_sub.attrs["transform"] = ds_sub.gw.transform
 
         if mask_corners:
             if PYMORPH_INSTALLED:
@@ -1349,16 +1402,16 @@ class SpatialOperations(_PropertyMixin):
                     disk = da.from_array(
                         pymorph.sedisk(r=int(rows / 2.0))[:rows, :cols],
                         chunks=ds_sub.data.chunksize,
-                    ).astype('uint8')
+                    ).astype("uint8")
                     ds_sub = ds_sub.where(disk == 1)
 
                 except ValueError:
                     logger.warning(
-                        '  Cannot mask corners without a square subset.'
+                        "  Cannot mask corners without a square subset."
                     )
 
             else:
-                logger.warning('  Cannot mask corners without Pymorph.')
+                logger.warning("  Cannot mask corners without Pymorph.")
 
         return ds_sub
 
@@ -1415,13 +1468,13 @@ class SpatialOperations(_PropertyMixin):
 
         if not AROSICS_INSTALLED:
             logger.exception(
-                '\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details'
+                "\nAROSICS must be installed to co-register data.\nSee https://pypi.org/project/arosics for details"
             )
             raise NameError
 
         if isinstance(reference, str):
             if not os.path.isfile(reference):
-                logger.exception('  The reference file does not exist.')
+                logger.exception("  The reference file does not exist.")
                 raise OSError
 
             with gw_.open(reference) as reference:
@@ -1429,7 +1482,7 @@ class SpatialOperations(_PropertyMixin):
 
         if isinstance(target, str):
             if not os.path.isfile(target):
-                logger.exception('  The target file does not exist.')
+                logger.exception("  The target file does not exist.")
                 raise OSError
 
             with gw_.open(target) as target:
@@ -1445,65 +1498,65 @@ class SpatialOperations(_PropertyMixin):
                 raise KeyError
 
         with tempfile.TemporaryDirectory() as tmp:
-            ref_path = Path(tmp) / '_reference.tif'
-            tar_path = Path(tmp) / '_target.tif'
+            ref_path = Path(tmp) / "_reference.tif"
+            tar_path = Path(tmp) / "_target.tif"
             ref_kwargs = (
-                {'engine': 'h5netcdf'}
-                if str(reference.filename).lower().endswith('.nc')
+                {"engine": "h5netcdf"}
+                if str(reference.filename).lower().endswith(".nc")
                 else {}
             )
             with gw_.open(
                 reference.filename,
                 band_names=band_names_reference,
                 chunks={
-                    'band': reference.gw.band_chunks,
-                    'y': reference.gw.row_chunks,
-                    'x': reference.gw.col_chunks,
+                    "band": reference.gw.band_chunks,
+                    "y": reference.gw.row_chunks,
+                    "x": reference.gw.col_chunks,
                 },
                 **ref_kwargs,
             ) as ref_src:
                 ref_src = ref_src.assign_attrs(
                     {
-                        'crs': ref_src.gw.crs_to_pyproj.to_wkt(
+                        "crs": ref_src.gw.crs_to_pyproj.to_wkt(
                             version=wkt_version
                         )
                     }
                 )
-                if 'nodata' in kwargs:
+                if "nodata" in kwargs:
                     ref_src = ref_src.fillna(
-                        kwargs['nodata'][0]
-                    ).gw.assign_nodata_attrs(kwargs['nodata'][0])
+                        kwargs["nodata"][0]
+                    ).gw.assign_nodata_attrs(kwargs["nodata"][0])
                 ref_src.gw.save(ref_path, overwrite=True, log_progress=False)
             tar_kwargs = (
-                {'engine': 'h5netcdf'}
-                if str(target.filename).lower().endswith('.nc')
+                {"engine": "h5netcdf"}
+                if str(target.filename).lower().endswith(".nc")
                 else {}
             )
             with gw_.open(
                 target.filename,
                 band_names=band_names_target,
                 chunks={
-                    'band': target.gw.band_chunks,
-                    'y': target.gw.row_chunks,
-                    'x': target.gw.col_chunks,
+                    "band": target.gw.band_chunks,
+                    "y": target.gw.row_chunks,
+                    "x": target.gw.col_chunks,
                 },
                 **tar_kwargs,
             ) as tar_src:
                 tar_src = tar_src.assign_attrs(
                     {
-                        'crs': tar_src.gw.crs_to_pyproj.to_wkt(
+                        "crs": tar_src.gw.crs_to_pyproj.to_wkt(
                             version=wkt_version
                         )
                     }
                 )
-                if 'nodata' in kwargs:
+                if "nodata" in kwargs:
                     tar_src = tar_src.fillna(
-                        kwargs['nodata'][1]
-                    ).gw.assign_nodata_attrs(kwargs['nodata'][1])
+                        kwargs["nodata"][1]
+                    ).gw.assign_nodata_attrs(kwargs["nodata"][1])
                 tar_src.gw.save(tar_path, overwrite=True, log_progress=False)
 
             with warnings.catch_warnings():
-                warnings.simplefilter('ignore', FutureWarning)
+                warnings.simplefilter("ignore", FutureWarning)
                 try:
                     cr = arosics.COREG(
                         GeoArray(
@@ -1531,17 +1584,17 @@ class SpatialOperations(_PropertyMixin):
             # Apply spatial shifts
             shift_info = cr.correct_shifts()
 
-        left = shift_info['updated geotransform'][0]
-        top = shift_info['updated geotransform'][3]
+        left = shift_info["updated geotransform"][0]
+        top = shift_info["updated geotransform"][3]
         # Update the transform
         transform = (target.gw.cellx, 0.0, left, 0.0, -target.gw.celly, top)
-        target.attrs['transform'] = transform
+        target.attrs["transform"] = transform
 
         # Check if multi-band
-        if len(shift_info['arr_shifted'].shape) > 2:
-            data = shift_info['arr_shifted'].transpose(2, 0, 1)
+        if len(shift_info["arr_shifted"].shape) > 2:
+            data = shift_info["arr_shifted"].transpose(2, 0, 1)
         else:
-            data = shift_info['arr_shifted'][np.newaxis]
+            data = shift_info["arr_shifted"][np.newaxis]
         yidx = 1
         xidx = 2
         # Get the updated coordinates
@@ -1556,10 +1609,10 @@ class SpatialOperations(_PropertyMixin):
             data.shape[xidx],
         )
         target_attrs = target.attrs.copy()
-        if hasattr(cr, 'x_shift_px'):
-            target_attrs['x_shift_px'] = cr.x_shift_px
-        if hasattr(cr, 'y_shift_px'):
-            target_attrs['y_shift_px'] = cr.y_shift_px
+        if hasattr(cr, "x_shift_px"):
+            target_attrs["x_shift_px"] = cr.x_shift_px
+        if hasattr(cr, "y_shift_px"):
+            target_attrs["y_shift_px"] = cr.y_shift_px
 
         return xr.DataArray(
             data=da.from_array(
@@ -1570,11 +1623,11 @@ class SpatialOperations(_PropertyMixin):
                     target.gw.col_chunks,
                 ),
             ),
-            dims=('band', 'y', 'x'),
+            dims=("band", "y", "x"),
             coords={
-                'band': target.band.values.tolist(),
-                'y': ycoords,
-                'x': xcoords,
+                "band": target.band.values.tolist(),
+                "y": ycoords,
+                "x": xcoords,
             },
             attrs=target_attrs,
         )
