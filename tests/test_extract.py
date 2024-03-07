@@ -74,7 +74,7 @@ class TestExtract(unittest.TestCase):
 
     @unittest.skipUnless(
         RAY_AVAILABLE, "Ray is not available - skipping ray extract"
-    )
+    )  #
     def test_clients_all_same_df(self):
         with gw.open(l8_224078_20200518_B2) as src:
             ray.init()
