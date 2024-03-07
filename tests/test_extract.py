@@ -97,8 +97,12 @@ class TestExtract(unittest.TestCase):
                 band_names=["blue", "green", "red"],
                 use_client=True,
             )
-        self.assertTrue(assert_frame_equal(df_ray, df_none, check_exact=True))
-        self.assertTrue(assert_frame_equal(df_ray, df_true, check_exact=True))
+        self.assertTrue(
+            assert_frame_equal(df_ray, df_none, check_exact=True) == None
+        )
+        self.assertTrue(
+            assert_frame_equal(df_ray, df_true, check_exact=True) == None
+        )
 
     def test_multi_image_multi_band(self):
         with gw.open([l8_224078_20200518, l8_224078_20200518]) as src:
