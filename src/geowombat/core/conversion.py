@@ -492,6 +492,70 @@ class Converters(object):
         else:
             return gpd.GeoDataFrame(data=[])
 
+    @ray.remote
+    def process_feature(
+        i, df_slice, id_column, df_columns, crs, res, all_touched, meta, frac, min_frac_area
+    ):
+        point_df = sample_feature(
+            df_slice,
+            id_column,
+            df_columns,
+            crs,
+            res,
+            all_touched,
+            meta,
+            frac,
+            min_frac_area,
+        )
+        return point_df
+
+    @staticmethod
+    def polygons_to_points_ray(
+        data: xr.DataArray,
+        df: gpd.GeoDataFrame,
+        frac: T.Optional[float] = 1.0,
+        min_frac_area: T.Optional[T.Union[float, int]] = None,
+        all_touched: T.Optional[bool] = False,
+        id_column: T.Optional[str] = 'id',
+        n_jobs: T.Optional[int] = 1,
+        **kwargs
+    ):
+        meta = data.gw.meta
+        dataframes = []
+        df_columns = df.columns.tolist()
+
+        # Launch Ray tasks for each feature in df
+        futures = [
+            process_feature.remote(
+                i,
+                df.iloc[i],
+                id_column,
+                df_columns,
+                data.crs,
+                data.res,
+                all_touched,
+                meta,
+                frac,
+                min_frac_area,
+            )
+            for i in range(len(df))
+        ]
+
+        # Gather results
+        for future in ray.get(futures):
+            if not future.empty:
+                dataframes.append(future)
+
+        if dataframes:
+            dataframes = pd.concat(dataframes, axis=0)
+            # Make the points unique
+            dataframes = dataframes.assign(point=np.arange(0, dataframes.shape[0]))
+
+            return dataframes
+        else:
+            return gpd.GeoDataFrame(data=[])
+
+
     @staticmethod
     def array_to_polygon(
         data: xr.DataArray,
