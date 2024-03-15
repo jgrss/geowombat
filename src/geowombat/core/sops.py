@@ -880,7 +880,7 @@ class SpatialOperations(_PropertyMixin):
             import ray
 
             if not ray.is_initialized():
-                ray.init()
+                ray.init(num_cpus=processes)
             res = ray.get(
                 self.extract_data_slice.remote(data, bands_idx, yidx, xidx)
             )
@@ -1614,7 +1614,7 @@ if RAY_INSTALLED:
         This method is intended to be used with Ray for distributed computing.
         Assumes `data` is accessible in the scope where this function is called.
         """
-        return data.isel(band=bands_idx, y=yidx, x=xidx).data.compute()
+        return data.isel(band=bands_idx, y=yidx, x=xidx).data.compute(num_workers=1)
 
     # Dynamically assign the Ray-enabled method to the class.
     SpatialOperations.extract_data_slice = _ray_extract_data_slice
