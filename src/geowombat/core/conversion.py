@@ -30,7 +30,11 @@ logger = add_handler(logger)
 
 def _iter_func(a):
     return a
-
+try:
+    import ray
+    RAY_INSTALLED = True
+except ImportError:
+    RAY_INSTALLED = False
 
 class Converters(object):
     def bounds_to_coords(
