@@ -1,11 +1,50 @@
+#%% 
+import rasterio 
+
+#create raster 3000x3000 with 1 band and float64, set projection to WGS84, pin to 0,0
+with rasterio.open(
+      "../data/test.tif",
+      "w",
+      driver="GTiff",
+      height=2000,
+      width=2000,
+      count=1,
+      dtype="float64",
+      crs="EPSG:4326",
+      transform=rasterio.Affine(0.0001, 0.0, 0.0, 0.0, -0.0001, 0.0),
+) as dst:
+   dst.write(
+      np.random.rand(3000, 3000),
+      1,
+   )
+# use bounds to create random 500 points in test.tif
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import rasterio
+from shapely.geometry import Point
+
+with rasterio.open("../data/test.tif") as src:
+   bounds = src.bounds
+
+np.random.seed(0)
+n = 500
+x = np.random.uniform(bounds.left, bounds.right, n)
+y = np.random.uniform(bounds.bottom, bounds.top, n)
+df = pd.DataFrame({"x": x, "y": y})
+gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),crs="EPSG:4326")
+gdf.to_file("../data/test_points.shp")
+
+
  # %% 
 import sys 
 sys.path.append("/") 
 import cProfile
 
 sys.path.append("/geowombat") 
-import geowombat as gw 
+import ray
 
+import geowombat as gw 
 
 from geowombat.data import (
     l8_224078_20200518_points,
@@ -19,10 +58,10 @@ import geopandas as gpd
 from sklearn.preprocessing import LabelEncoder
 import timeit
 
-aoi = gpd.read_file(l8_224078_20200518_polygons) 
-aoi.geometry = aoi.geometry.buffer(1000)
-aoi["id"] = LabelEncoder().fit_transform(aoi.name)
-aoi = aoi.drop(columns=["name"])
+aoi = gpd.read_file("../data/test_points.shp") 
+aoi.geometry = aoi.geometry.buffer(0.125)
+# aoi["id"] = LabelEncoder().fit_transform(aoi.name)
+# aoi = aoi.drop(columns=["name"])
 
 l8_224078_20200518_B2_values = np.array(
     [7966, 8030, 7561, 8302, 8277, 7398], dtype="float64"
@@ -38,7 +77,7 @@ l8_224078_20200518_values = np.array(
 )
 import cProfile
 def test():
-   with gw.open(l8_224078_20200518) as src:
+   with gw.open("../data/test.tif") as src:
       df_none = gw.extract(
          src, aoi, band_names=["blue", "green", "red"], use_client=False
       )
