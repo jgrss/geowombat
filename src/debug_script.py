@@ -1,5 +1,9 @@
 #%% 
 import rasterio 
+import numpy as np
+import geopandas as gpd
+import pandas as pd
+from shapely.geometry import Point
 
 #create raster 3000x3000 with 1 band and float64, set projection to WGS84, pin to 0,0
 with rasterio.open(
