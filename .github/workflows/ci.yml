@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10","3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python ${{ matrix.python-version }}
@@ -74,11 +74,21 @@ jobs:
         run: |
           # Remove compiled Cython files
           rm -rf src/geowombat/moving/*.so
-          pip install .[stac,web,ml,coreg,stac,perf,tests]
+          pip install .[stac,web,coreg,stac,perf,tests]
         if: steps.cache-gwenv.outputs.cache-hit != 'true'
-      - name: Unittests
-        run: |
-          python -m unittest
+      # - name: Unittests
+      #   run: |
+      #     python -m unittest
+      - name: Run Unittests
+          run: |
+              pip install testfixtures
+              python -m unittest discover -p 'test_*.py'  
+      - name: Run ml Unittests
+          run: |
+              pip install testfixtures
+              pip install .[ml]
+              python -m unittest ml_test.py
+
 
 #   Version:
 #     needs: Tests
