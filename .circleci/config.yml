@@ -59,20 +59,41 @@ jobs:
             pip install -U numpy
             pip install GDAL==$GDAL_VERSION
             # Install GeoWombat
-            pip install .[perf,ml]
+            pip install .[perf]
       - save_cache:
           key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
           paths:
               - gwenv
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "setup.cfg" }}
+
       - run:
           name: Run tests
           working_directory: ~/project/tests/
           command: |
               . /home/circleci/project/gwenv/bin/activate
               pip install testfixtures
-              python -m unittest
+              python -m unittest discover -s ./tests -p 'test_*.py'
+    # - run:
+    #     name: Install GeoWombat with ml addon
+    #     command: |
+    #       pip install .[ml]
+    #       export GEOWOMBAT_ADDON=ml      
+    - run:
+        name: Run ml tests
+        working_directory: ~/project/tests/
+        command: |
+            . /home/circleci/project/gwenv/bin/activate
+            pip install testfixtures
+            pip install .[ml]
+            # Run tests conditionally based on the geowombat-ml addon
+            # if [[ "$GEOWOMBAT_ADDON" == "ml" ]]; then
+            python -m unittest ml_test.py
+            # fi
+
+
+
+
 #  new_release:
 #    docker:
 #      - image: cimg/python:3.8.12
