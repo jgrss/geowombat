@@ -79,7 +79,7 @@ jobs:
         run: |
           pip install testfixtures
           pip install ".[ml]"
-          python -m unittest ml_test.py
+          python -m unittest discover -p 'ml_*.py'
 
 
 #   Version:
