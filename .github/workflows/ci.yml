@@ -9,31 +9,6 @@ on:
     branches: [ main ]
 
 jobs:
-#  Quality:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - uses: actions/setup-python@v2
-#      with:
-#        python-version: 3.8
-#    - name: Install Python Poetry
-#      uses: abatilo/actions-poetry@v2.1.0
-#      with:
-#        poetry-version: 1.1.13
-#    - name: Configure poetry
-#      shell: bash
-#      run: python -m poetry config virtualenvs.in-project true
-#    - name: View poetry version
-#      run: poetry --version
-#    - name: Install dependencies
-#      run: |
-#        python -m poetry install
-#    - name: Lint with flake8
-#      run: |
-#        # stop the build if there are Python syntax errors or undefined names
-#        python -m poetry run flake8 . --exclude .venv --count --select=E9,F63,F7,F82 --show-source --statistics
-#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-#        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
   Tests:
     runs-on: ubuntu-latest
     strategy:
@@ -80,47 +55,31 @@ jobs:
           pip install testfixtures
           pip install ".[ml]"
           python -m unittest discover -p 'ml_*.py'  
-
-  runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Cache pip
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install GDAL binaries
-        run: |
-          brew install gdal
-      - name: Install Python packages
-        run: |
-          pip install -U pip setuptools wheel
-          pip install numpy
-          GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
-          pip install GDAL==$GDAL_VERSION --no-cache-dir
-          pip install arosics
-      - name: Install GeoWombat
-        run: |
-          pip install ".[stac,web,coreg,perf,tests]"
-      - name: Run Unittests
-        run: |
-          pip install testfixtures
-          python -m unittest discover -p 'test_*.py'
-      - name: Run ml Unittests
-        run: |
-          pip install testfixtures
-          pip install ".[ml]"
-          python -m unittest discover -p 'ml_*.py'  
+#  Quality:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.8
+#    - name: Install Python Poetry
+#      uses: abatilo/actions-poetry@v2.1.0
+#      with:
+#        poetry-version: 1.1.13
+#    - name: Configure poetry
+#      shell: bash
+#      run: python -m poetry config virtualenvs.in-project true
+#    - name: View poetry version
+#      run: poetry --version
+#    - name: Install dependencies
+#      run: |
+#        python -m poetry install
+#    - name: Lint with flake8
+#      run: |
+#        # stop the build if there are Python syntax errors or undefined names
+#        python -m poetry run flake8 . --exclude .venv --count --select=E9,F63,F7,F82 --show-source --statistics
+#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 #   Version:
 #     needs: Tests
