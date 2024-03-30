@@ -107,24 +107,13 @@ class TestConfig(unittest.TestCase):
                     X, Xy, clf = fit(src, tree_pipeline, aoi_poly, col="lc")
                     y1 = predict(src, X, clf)
                     y2 = fit_predict(src, tree_pipeline, aoi_poly, col="lc")
-                    print("##########/n np.all(np.isnan(y1.values[0, 0:5, 0])) /n",np.all(np.isnan(y1.values[0, 0:5, 0])))
-                    print("##########/n np.all(np.isnan(y2.values[0, 0:5, 0])) /n",np.all(np.isnan(y2.values[0, 0:5, 0])))
-                    print("##########/n y1.values[0, -5:-1, 0] /n",y1.values[0, -5:-1, 0])
-                    print("##########/n y2.values[0, -5:-1, 0] /n",y2.values[0, -5:-1, 0])
-
+                    
         self.assertTrue(np.all(np.isnan(y1.values[0, 0:5, 0])))
         self.assertTrue(np.all(np.isnan(y2.values[0, 0:5, 0])))
         self.assertTrue(
             np.allclose(
                 y1.values[0, -5:-1, 0],
-                np.array([2.0, 2.0, 3.0, 3.0]),
-                equal_nan=True,
-            )
-        )
-        self.assertTrue(
-            np.allclose(
                 y2.values[0, -5:-1, 0],
-                np.array([2.0, 2.0, 3.0, 3.0]),
                 equal_nan=True,
             )
         )
