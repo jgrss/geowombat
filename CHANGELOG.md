@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.17 (2024-01-13)
+* Pinned scikit-learn maximum version ([#301](https://github.com/jgrss/geowombat/pull/301))
+
 ## v2.1.16 (2024-01-12)
 * Increased minimum `pyproj` version ([#297](https://github.com/jgrss/geowombat/pull/297))
 
