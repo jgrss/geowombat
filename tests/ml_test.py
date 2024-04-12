@@ -5,6 +5,7 @@ import geopandas as gpd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
 
 # from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.naive_bayes import GaussianNB
@@ -46,6 +47,13 @@ pl_wo_feat_pca1 = Pipeline(
     ]
 )
 
+tree_pipeline = Pipeline(
+    [
+        ("scaler", StandardScaler()),
+        ("clf", RandomForestClassifier(random_state=0)),
+    ]
+)
+
 cl_wo_feat = Pipeline(
     [
         ("scaler", StandardScaler()),
@@ -62,7 +70,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518, nodata=0) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
@@ -86,6 +94,30 @@ class TestConfig(unittest.TestCase):
             )
         )
 
+    def test_tree_predict(self):
+        with gw.config.update(
+            ref_res=300,
+        ):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, tree_pipeline, aoi_poly, col="lc")
+                    y1 = predict(src, X, clf)
+                    y2 = fit_predict(src, tree_pipeline, aoi_poly, col="lc")
+                    
+        self.assertTrue(np.all(np.isnan(y1.values[0, 0:5, 0])))
+        self.assertTrue(np.all(np.isnan(y2.values[0, 0:5, 0])))
+        self.assertTrue(
+            np.allclose(
+                y1.values[0, -5:-1, 0],
+                y2.values[0, -5:-1, 0],
+                equal_nan=True,
+            )
+        )
+
     def test_output_type_attri(self):
 
         with gw.config.update(
@@ -94,7 +126,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518, nodata=0) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
@@ -115,7 +147,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518, nodata=0) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
@@ -134,7 +166,7 @@ class TestConfig(unittest.TestCase):
             ) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     y1 = fit_predict(
@@ -155,7 +187,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518, nodata=0) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(data=src, clf=cl_wo_feat)
@@ -171,7 +203,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
@@ -196,7 +228,7 @@ class TestConfig(unittest.TestCase):
             with gw.open(l8_224078_20200518) as src:
                 with warnings.catch_warnings():
                     warnings.simplefilter(
-                        'ignore',
+                        "ignore",
                         (DeprecationWarning, FutureWarning, UserWarning),
                     )
                     X, Xy, clf = fit(src, pl_wo_feat, aoi_point, col="lc")
