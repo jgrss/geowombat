@@ -129,7 +129,7 @@ class TestOpen(unittest.TestCase):
         # Using a context manager for the temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
             test_file_path = os.path.join(temp_dir, 'test.tif')
-            filenames = ['l8_224077_20200518_B2.tif', 'l8_224078_20200518_B2.tif']  # Assuming these are correct file paths
+            filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]  # Assuming these are correct file paths
             try:
                 with gw.open(
                         filenames,
