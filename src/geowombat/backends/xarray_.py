@@ -55,7 +55,7 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
-def _get_raster_coords(filename):
+def _get_raster_coords(filename: T.Union[str, Path]) -> tuple:
     with open_rasterio(filename) as src:
         x = src.x.values - src.res[0] / 2.0
         y = src.y.values + src.res[1] / 2.0
@@ -63,7 +63,11 @@ def _get_raster_coords(filename):
     return x, y
 
 
-def _check_config_globals(filenames, bounds_by, ref_kwargs):
+def _check_config_globals(
+    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]],
+    bounds_by: str,
+    ref_kwargs: dict,
+) -> dict:
     """Checks global configuration parameters.
 
     Args:
@@ -216,16 +220,16 @@ def delayed_to_xarray(
 
 
 def warp_open(
-    filename,
-    band_names=None,
-    resampling='nearest',
-    dtype=None,
-    netcdf_vars=None,
-    nodata=None,
-    return_windows=False,
-    warp_mem_limit=512,
-    num_threads=1,
-    tap=False,
+    filename: T.Union[str, Path],
+    band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    resampling: str = 'nearest',
+    dtype: T.Optional[str] = None,
+    netcdf_vars: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    nodata: T.Optional[T.Union[int, float]] = None,
+    return_windows: bool = False,
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tap: bool = False,
     **kwargs,
 ):
     """Warps and opens a file.
@@ -378,15 +382,15 @@ def warp_open(
 
 
 def mosaic(
-    filenames,
-    overlap='max',
-    bounds_by='reference',
-    resampling='nearest',
-    band_names=None,
-    nodata=None,
-    dtype=None,
-    warp_mem_limit=512,
-    num_threads=1,
+    filenames: T.Sequence[T.Union[str, Path]],
+    overlap: str = 'max',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
+    band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    nodata: T.Optional[T.Union[float, int]] = None,
+    dtype: T.Optional[str] = None,
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
     **kwargs,
 ) -> xr.DataArray:
     """Mosaics a list of images.
@@ -512,22 +516,22 @@ def mosaic(
                         **{'sensor': darray.gw.sensor_names[darray.gw.sensor]}
                     )
 
-        darray = darray.assign_attrs(
-            **{'resampling': resampling, 'geometries': geometries}
-        )
+    darray = darray.assign_attrs(
+        **{'resampling': resampling, 'geometries': geometries}
+    )
 
-        if tags:
-            attrs = darray.attrs.copy()
-            attrs.update(tags)
-            darray = darray.assign_attrs(**attrs)
+    if tags:
+        attrs = darray.attrs.copy()
+        attrs.update(tags)
+        darray = darray.assign_attrs(**attrs)
 
-        if dtype is not None:
-            attrs = darray.attrs.copy()
+    if dtype is not None:
+        attrs = darray.attrs.copy()
 
-            return darray.astype(dtype).assign_attrs(**attrs)
+        return darray.astype(dtype).assign_attrs(**attrs)
 
-        else:
-            return darray
+    else:
+        return darray
 
 
 def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
