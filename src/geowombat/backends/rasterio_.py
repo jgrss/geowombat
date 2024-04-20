@@ -790,12 +790,12 @@ def warp(
             vrt_options = {
                 'resampling': getattr(Resampling, resampling),
                 'src_crs': src_crs,
-                'crs': dst_crs,
+                'crs': src_crs,
                 'src_transform': src.transform,
                 'transform': src.transform,
                 'height': dst_height,
                 'width': dst_width,
-                'nodata': nodata,
+                'nodata': None,
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {
                     'multi': True,
