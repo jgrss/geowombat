@@ -549,19 +549,19 @@ def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
 
 
 def concat(
-    filenames,
-    stack_dim='time',
-    bounds_by='reference',
-    resampling='nearest',
-    time_names=None,
-    band_names=None,
-    nodata=None,
-    dtype=None,
-    netcdf_vars=None,
-    overlap='max',
-    warp_mem_limit=512,
-    num_threads=1,
-    tap=False,
+    filenames: T.Sequence[T.Union[str, Path]],
+    stack_dim: str = 'time',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
+    time_names: T.Optional[T.Sequence[T.Any]] = None,
+    band_names: T.Optional[T.Sequence[T.Any]] = None,
+    nodata: T.Optional[T.Union[float, int]] = None,
+    dtype: T.Optional[str] = None,
+    netcdf_vars: T.Optional[T.Sequence[T.Any]] = None,
+    overlap: str = 'max',
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tap: bool = False,
     **kwargs,
 ):
     """Concatenates a list of images.
