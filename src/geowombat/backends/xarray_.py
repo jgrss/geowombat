@@ -455,97 +455,33 @@ def mosaic(
         for fidx, fn in enumerate(warped_objects[1:]):
             with open_rasterio(
                 fn, nodata=ref_kwargs['nodata'], **kwargs
-            ) as darrayb:
+            ) as darray_b:
                 with open_rasterio(
                     filenames[fidx + 1], nodata=ref_kwargs['nodata'], **kwargs
                 ) as src_:
                     geometries.append(src_.gw.geometry)
                 src_ = None
 
-                if overlap == 'min':
-                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
-                        ref_kwargs['nodata'], int
-                    ):
-                        darray = xr.where(
-                            (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (
-                                darrayb.mean(dim='band')
-                                != ref_kwargs['nodata']
-                            ),
-                            darrayb,
-                            xr.where(
-                                (
-                                    darray.mean(dim='band')
-                                    != ref_kwargs['nodata']
-                                )
-                                & (
-                                    darrayb.mean(dim='band')
-                                    == ref_kwargs['nodata']
-                                ),
-                                darray,
-                                np.minimum(darray, darrayb),
-                            ),
-                        )
+                # Stack the bands
+                nodataval = darray.gw.nodataval
+                stack = xr.concat((darray, darray_b), dim='band')
+                # Ensure 'no data' values are nans and ignored
+                stack = stack.gw.mask_nodata()
 
-                    else:
-                        darray = np.minimum(darray, darrayb)
+                if overlap == 'min':
+                    darray = stack.min(dim='band', skipna=True, keepdims=True)
 
                 elif overlap == 'max':
-                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
-                        ref_kwargs['nodata'], int
-                    ):
-                        darray = xr.where(
-                            (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (
-                                darrayb.mean(dim='band')
-                                != ref_kwargs['nodata']
-                            ),
-                            darrayb,
-                            xr.where(
-                                (
-                                    darray.mean(dim='band')
-                                    != ref_kwargs['nodata']
-                                )
-                                & (
-                                    darrayb.mean(dim='band')
-                                    == ref_kwargs['nodata']
-                                ),
-                                darray,
-                                np.maximum(darray, darrayb),
-                            ),
-                        )
-
-                    else:
-                        darray = np.maximum(darray, darrayb)
+                    darray = stack.max(dim='band', skipna=True, keepdims=True)
 
                 elif overlap == 'mean':
-                    if isinstance(ref_kwargs['nodata'], float) or isinstance(
-                        ref_kwargs['nodata'], int
-                    ):
+                    darray = stack.mean(dim='band', skipna=True, keepdims=True)
 
-                        darray = xr.where(
-                            (darray.mean(dim='band') == ref_kwargs['nodata'])
-                            & (
-                                darrayb.mean(dim='band')
-                                != ref_kwargs['nodata']
-                            ),
-                            darrayb,
-                            xr.where(
-                                (
-                                    darray.mean(dim='band')
-                                    != ref_kwargs['nodata']
-                                )
-                                & (
-                                    darrayb.mean(dim='band')
-                                    == ref_kwargs['nodata']
-                                ),
-                                darray,
-                                (darray + darrayb) / 2.0,
-                            ),
-                        )
-
-                    else:
-                        darray = (darray + darrayb) / 2.0
+                # Reset the 'no data' values
+                darray = darray.gw.set_nodata(
+                    src_nodata=np.nan,
+                    dst_nodata=nodataval,
+                )
 
         darray = darray.assign_attrs(**attrs)
 
@@ -600,7 +536,7 @@ def mosaic(
             attrs.update(tags)
             darray = darray.assign_attrs(**attrs)
 
-        if dtype:
+        if dtype is not None:
             attrs = darray.attrs.copy()
 
             return darray.astype(dtype).assign_attrs(**attrs)
