@@ -9,6 +9,7 @@ from geowombat.data import (
     l8_224077_20200518_B2,
     l8_224077_20200518_B3,
     l8_224078_20200518,
+    l8_224078_20200518_B2,
 )
 
 
@@ -162,6 +163,24 @@ class TestConfig(unittest.TestCase):
                 self.assertTrue(src.equals(tmp_src))
                 self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
                 self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+
+    def test_mosaic_save_single_band(self):
+        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                with gw.open(
+                    filenames,
+                    band_names=['blue'],
+                    mosaic=True,
+                    bounds_by='union',
+                    nodata=0,
+                ) as src:
+                    src.gw.save(Path(temp_dir) / 'test.tif', overwrite=True)
+
+            except Exception as e:
+                # If any exception is raised, fail the test with a message
+                self.fail(f"An error occurred during saving: {e}")
 
 
 if __name__ == '__main__':
