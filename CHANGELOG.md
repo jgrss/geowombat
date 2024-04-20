@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.18 (2024-04-20)
+* Fixed bug when saving single-band mosaics ([#304](https://github.com/jgrss/geowombat/pull/304))
+  
 ## v2.1.17 (2024-01-13)
 * Pinned scikit-learn maximum version ([#301](https://github.com/jgrss/geowombat/pull/301))
 
