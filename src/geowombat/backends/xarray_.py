@@ -388,7 +388,7 @@ def mosaic(
     warp_mem_limit=512,
     num_threads=1,
     **kwargs,
-):
+) -> xr.DataArray:
     """Mosaics a list of images.
 
     Args:
@@ -435,97 +435,82 @@ def mosaic(
         filenames, bounds_by=bounds_by, resampling=resampling, **ref_kwargs
     )
 
-    geometries = []
-
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
 
-    # Combine the data
+    # Get the original bounds, unsampled
     with open_rasterio(
-        warped_objects[0], nodata=ref_kwargs['nodata'], **kwargs
-    ) as darray:
-        attrs = darray.attrs.copy()
+        filenames[0], nodata=ref_kwargs['nodata'], **kwargs
+    ) as src_:
+        geometries = [src_.gw.geometry]
 
-        # Get the original bounds, unsampled
-        with open_rasterio(
-            filenames[0], nodata=ref_kwargs['nodata'], **kwargs
-        ) as src_:
-            geometries.append(src_.gw.geometry)
+    # Stack the data
+    darray = xr.concat(
+        (
+            open_rasterio(wo, nodata=ref_kwargs['nodata'], **kwargs)
+            for wo in warped_objects
+        ),
+        dim='band',
+    )
 
-        for fidx, fn in enumerate(warped_objects[1:]):
-            with open_rasterio(
-                fn, nodata=ref_kwargs['nodata'], **kwargs
-            ) as darray_b:
-                with open_rasterio(
-                    filenames[fidx + 1], nodata=ref_kwargs['nodata'], **kwargs
-                ) as src_:
-                    geometries.append(src_.gw.geometry)
-                src_ = None
+    # Ensure 'no data' values are nans and ignored
+    darray = darray.gw.set_nodata(
+        src_nodata=ref_kwargs['nodata'],
+        dst_nodata=np.nan,
+    ).gw.mask_nodata()
 
-                # Stack the bands
-                nodataval = darray.gw.nodataval
-                stack = xr.concat((darray, darray_b), dim='band')
-                # Ensure 'no data' values are nans and ignored
-                stack = stack.gw.mask_nodata()
+    if overlap == 'min':
+        darray = darray.min(
+            dim='band', skipna=True, keep_attrs=True, keepdims=True
+        )
+    elif overlap == 'max':
+        darray = darray.max(
+            dim='band', skipna=True, keep_attrs=True, keepdims=True
+        )
+    elif overlap == 'mean':
+        darray = darray.mean(
+            dim='band', skipna=True, keep_attrs=True, keepdims=True
+        )
 
-                if overlap == 'min':
-                    darray = stack.min(dim='band', skipna=True, keepdims=True)
+    # Reset the 'no data' values
+    darray = darray.gw.set_nodata(
+        src_nodata=np.nan,
+        dst_nodata=ref_kwargs['nodata'],
+    )
 
-                elif overlap == 'max':
-                    darray = stack.max(dim='band', skipna=True, keepdims=True)
+    if band_names:
+        darray.coords['band'] = band_names
+    else:
 
-                elif overlap == 'mean':
-                    darray = stack.mean(dim='band', skipna=True, keepdims=True)
+        if darray.gw.sensor:
+            if darray.gw.sensor not in darray.gw.avail_sensors:
+                if not darray.gw.config['ignore_warnings']:
 
-                # Reset the 'no data' values
-                darray = darray.gw.set_nodata(
-                    src_nodata=np.nan,
-                    dst_nodata=nodataval,
+                    logger.warning(
+                        '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
+                            darray.gw.sensor,
+                            ', '.join(darray.gw.avail_sensors),
+                        )
+                    )
+
+            else:
+
+                new_band_names = list(
+                    darray.gw.wavelengths[darray.gw.sensor]._fields
                 )
 
-        darray = darray.assign_attrs(**attrs)
-
-        if band_names:
-            darray.coords['band'] = band_names
-        else:
-
-            if darray.gw.sensor:
-
-                if darray.gw.sensor not in darray.gw.avail_sensors:
+                if len(new_band_names) != len(darray.band.values.tolist()):
 
                     if not darray.gw.config['ignore_warnings']:
-
                         logger.warning(
-                            '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
-                                darray.gw.sensor,
-                                ', '.join(darray.gw.avail_sensors),
-                            )
+                            '  The band list length does not match the sensor bands.'
                         )
 
                 else:
-
-                    new_band_names = list(
-                        darray.gw.wavelengths[darray.gw.sensor]._fields
+                    darray = darray.assign_coords(**{'band': new_band_names})
+                    darray = darray.assign_attrs(
+                        **{'sensor': darray.gw.sensor_names[darray.gw.sensor]}
                     )
-
-                    if len(new_band_names) != len(darray.band.values.tolist()):
-
-                        if not darray.gw.config['ignore_warnings']:
-                            logger.warning(
-                                '  The band list length does not match the sensor bands.'
-                            )
-
-                    else:
-                        darray = darray.assign_coords(
-                            **{'band': new_band_names}
-                        )
-                        darray = darray.assign_attrs(
-                            **{
-                                'sensor': darray.gw.sensor_names[
-                                    darray.gw.sensor
-                                ]
-                            }
-                        )
 
         darray = darray.assign_attrs(
             **{'resampling': resampling, 'geometries': geometries}
