@@ -1,4 +1,5 @@
 import contextlib
+import functools
 import logging
 import os
 import typing as T
@@ -417,9 +418,13 @@ def mosaic(
     Returns:
         ``xarray.DataArray``
     """
-    if overlap not in ['min', 'max', 'mean']:
+    if overlap not in (
+        'min',
+        'max',
+        'mean',
+    ):
         logger.exception(
-            "  The overlap argument must be one of ['min', 'max', 'mean']."
+            "  The overlap argument must be one of 'min', 'max', or 'mean'."
         )
 
     ref_kwargs = {
@@ -446,41 +451,54 @@ def mosaic(
     with open_rasterio(
         filenames[0], nodata=ref_kwargs['nodata'], **kwargs
     ) as src_:
+        attrs = src_.attrs.copy()
         geometries = [src_.gw.geometry]
 
-    # Stack the data
-    darray = xr.concat(
-        (
-            open_rasterio(wo, nodata=ref_kwargs['nodata'], **kwargs)
-            for wo in warped_objects
-        ),
-        dim='band',
-    )
-
-    # Ensure 'no data' values are nans and ignored
-    darray = darray.gw.set_nodata(
-        src_nodata=ref_kwargs['nodata'],
-        dst_nodata=np.nan,
-    ).gw.mask_nodata()
-
     if overlap == 'min':
-        darray = darray.min(
-            dim='band', skipna=True, keep_attrs=True, keepdims=True
-        )
+        reduce_func = da.minimum
+        tmp_nodata = 1e9
     elif overlap == 'max':
-        darray = darray.max(
-            dim='band', skipna=True, keep_attrs=True, keepdims=True
-        )
+        reduce_func = da.maximum
+        tmp_nodata = -1e9
     elif overlap == 'mean':
-        darray = darray.mean(
-            dim='band', skipna=True, keep_attrs=True, keepdims=True
+        tmp_nodata = -1e9
+
+        def reduce_func(
+            left: xr.DataArray, right: xr.DataArray
+        ) -> xr.DataArray:
+            return xr.where(
+                (left != tmp_nodata) & (right != tmp_nodata),
+                (left + right) / 2.0,
+                xr.where(left != tmp_nodata, left, right),
+            )
+
+    # Open all the data pointers
+    data_arrays = [
+        open_rasterio(
+            wo,
+            nodata=ref_kwargs['nodata'],
+            **kwargs,
         )
+        .gw.set_nodata(
+            src_nodata=ref_kwargs['nodata'],
+            dst_nodata=tmp_nodata,
+            dtype='float64',
+        )
+        .gw.mask_nodata()
+        for wo in warped_objects
+    ]
+
+    # Apply the reduction
+    darray = functools.reduce(
+        lambda left, right: reduce_func(left, right),
+        data_arrays,
+    )
 
     # Reset the 'no data' values
     darray = darray.gw.set_nodata(
-        src_nodata=np.nan,
+        src_nodata=tmp_nodata,
         dst_nodata=ref_kwargs['nodata'],
-    )
+    ).assign_attrs(**attrs)
 
     if band_names:
         darray.coords['band'] = band_names

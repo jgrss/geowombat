@@ -546,9 +546,11 @@ def to_vrt(
             xRes=data.gw.cellx,
             yRes=data.gw.celly,
             separate=separate,
-            outputSRS=data.crs,
+            outputSRS=data.gw.crs_to_pyproj.to_wkt(),
         )
-        ds = gdal.BuildVRT(filename, data.gw.filenames, options=vrt_options)
+        ds = gdal.BuildVRT(
+            str(filename), data.gw.filenames, options=vrt_options
+        )
         ds = None
 
 
