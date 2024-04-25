@@ -15,45 +15,45 @@ from geowombat.data import (
 
 class TestConfig(unittest.TestCase):
     def test_to_netcdf(self):
-        bands = ['blue', 'green', 'red']
+        bands = ["blue", "green", "red"]
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.nc'
+            out_path = Path(tmp) / "test.nc"
             with gw.open(l8_224078_20200518, band_names=bands) as src:
                 (
                     src.fillna(32768)
                     .gw.assign_nodata_attrs(32768)
-                    .astype('uint16')
+                    .astype("uint16")
                     .gw.to_netcdf(filename=out_path, overwrite=True)
                 )
 
     def test_to_raster(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.tif'
+            out_path = Path(tmp) / "test.tif"
             with gw.open(l8_224078_20200518) as src:
                 (
                     src.fillna(32768)
                     .gw.assign_nodata_attrs(32768)
-                    .astype('uint16')
+                    .astype("uint16")
                     .gw.to_raster(
                         filename=out_path,
                         overwrite=True,
-                        tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compress='lzw',
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="lzw",
                         num_workers=2,
                     )
                 )
                 with gw.open(out_path) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
-                    self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
-                    self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+                    self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                    self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
 
     def test_to_raster_multi(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.tif'
+            out_path = Path(tmp) / "test.tif"
             with gw.open(
                 [l8_224077_20200518_B2, l8_224077_20200518_B3],
-                stack_dim='band',
-                band_names=['B2', 'B3'],
+                stack_dim="band",
+                band_names=["B2", "B3"],
             ) as src:
                 # Xarray drops attributes
                 attrs = src.attrs.copy()
@@ -64,7 +64,7 @@ class TestConfig(unittest.TestCase):
                     out_path, overwrite=True
                 )
                 self.assertTrue(out_path.is_file())
-                with gw.open(out_path, band_names=['B2', 'B3']) as tmp_src:
+                with gw.open(out_path, band_names=["B2", "B3"]) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
 
     # def test_to_raster_bigtiff(self):
@@ -96,63 +96,82 @@ class TestConfig(unittest.TestCase):
     #             except FileExistsError:
     #                 self.assertTrue(False)
 
+    def test_bigtiff(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.config.update({"bigtiff": True}):
+                with gw.open(l8_224078_20200518) as src:
+                    (
+                        src.fillna(32768)
+                        .gw.assign_nodata_attrs(32768)
+                        .astype("uint16")
+                        .gw.save(
+                            filename=out_path,
+                            overwrite=True,
+                            compress="lzw",
+                            num_workers=2,
+                        )
+                    )
+                    with gw.open(out_path) as tmp_src:
+                        self.assertTrue(src.equals(tmp_src))
+
     def test_save(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.tif'
+            out_path = Path(tmp) / "test.tif"
             with gw.open(l8_224078_20200518) as src:
                 (
                     src.fillna(32768)
                     .gw.assign_nodata_attrs(32768)
-                    .astype('uint16')
+                    .astype("uint16")
                     .gw.save(
                         filename=out_path,
                         overwrite=True,
-                        tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compress='lzw',
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="lzw",
                         num_workers=2,
                     )
                 )
                 with gw.open(out_path) as tmp_src:
                     self.assertTrue(src.equals(tmp_src))
-                    self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
-                    self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+                    self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                    self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
 
     def test_save_small(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.tif'
+            out_path = Path(tmp) / "test.tif"
             with gw.open(l8_224078_20200518) as src:
                 data = src[:, :1, :2]
                 try:
                     (
                         data.fillna(32768)
                         .gw.assign_nodata_attrs(32768)
-                        .astype('uint16')
+                        .astype("uint16")
                         .gw.save(
                             filename=out_path,
                             overwrite=True,
-                            tags={'TEST_METADATA': 'TEST_VALUE'},
-                            compress='none',
+                            tags={"TEST_METADATA": "TEST_VALUE"},
+                            compress="none",
                             num_workers=1,
                         )
                     )
                 except ValueError:
-                    self.fail('The small array write test failed.')
+                    self.fail("The small array write test failed.")
 
     def test_delayed_save(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / 'test.tif'
+            out_path = Path(tmp) / "test.tif"
             with gw.open(l8_224078_20200518) as src:
                 src = (
                     src.fillna(32768)
                     .gw.assign_nodata_attrs(32768)
-                    .astype('uint16')
+                    .astype("uint16")
                 )
                 tasks = [
                     gw.save(
                         src,
                         filename=out_path,
-                        tags={'TEST_METADATA': 'TEST_VALUE'},
-                        compress='lzw',
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="lzw",
                         num_workers=2,
                         compute=False,
                         overwrite=True,
@@ -161,8 +180,8 @@ class TestConfig(unittest.TestCase):
             dask.compute(tasks, num_workers=2)
             with gw.open(out_path) as tmp_src:
                 self.assertTrue(src.equals(tmp_src))
-                self.assertTrue(hasattr(tmp_src, 'TEST_METADATA'))
-                self.assertEqual(tmp_src.TEST_METADATA, 'TEST_VALUE')
+                self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
 
     def test_mosaic_save_single_band(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
@@ -171,17 +190,17 @@ class TestConfig(unittest.TestCase):
             try:
                 with gw.open(
                     filenames,
-                    band_names=['blue'],
+                    band_names=["blue"],
                     mosaic=True,
-                    bounds_by='union',
+                    bounds_by="union",
                     nodata=0,
                 ) as src:
-                    src.gw.save(Path(temp_dir) / 'test.tif', overwrite=True)
+                    src.gw.save(Path(temp_dir) / "test.tif", overwrite=True)
 
             except Exception as e:
                 # If any exception is raised, fail the test with a message
                 self.fail(f"An error occurred during saving: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
