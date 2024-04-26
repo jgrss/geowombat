@@ -765,7 +765,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Default is 1.
             log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
             tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
-            bigtiff (Optional[str]): A GDAL BIGTIFF flag. E.g., 'IF_SAFER' or 'YES'.
+            bigtiff (Optional[str]): A GDAL BIGTIFF flag. Choices are ["YES", "NO", "IF_NEEDED", "IF_SAFER"].
 
         Returns:
             ``None``, writes to ``filename``

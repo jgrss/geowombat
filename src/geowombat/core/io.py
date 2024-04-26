@@ -39,6 +39,7 @@ except ImportError:
     ZARR_INSTALLED = False
 
 from ..backends.rasterio_ import RasterioStore, to_gtiff
+from ..config import config
 from ..handler import add_handler
 from .windows import get_window_offsets
 
@@ -719,6 +720,7 @@ def save(
             Default is 1.
         log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
         tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+        bigtiff (Optional[str]): A GDAL BIGTIFF flag. Choices are ["YES", "NO", "IF_NEEDED", "IF_SAFER"].
 
     Returns:
         ``None``, writes to ``filename``
@@ -780,6 +782,33 @@ def save(
         else data.gw.row_chunks
     )
 
+    tiled = True
+    if config["with_config"]:
+        if config["bigtiff"] is not None:
+            if isinstance(config["bigtiff"], bool):
+                bigtiff = "YES" if config["bigtiff"] else "NO"
+            else:
+                bigtiff = config["bigtiff"].upper()
+
+            if bigtiff not in (
+                "YES",
+                "NO",
+                "IF_NEEDED",
+                "IF_SAFER",
+            ):
+                import ipdb
+
+                ipdb.set_trace()
+                raise NameError(
+                    "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
+                )
+
+        if config["compress"] is not None:
+            compress = config["compress"]
+
+        if config["tiled"] is not None:
+            tiled = config["tiled"]
+
     kwargs = dict(
         driver=driver_from_extension(filename),
         width=data.gw.ncols,
@@ -792,13 +821,10 @@ def save(
         crs=data.gw.crs_to_pyproj,
         transform=data.gw.transform,
         compress=compress,
-        tiled=True if max(blockxsize, blockysize) >= 16 else False,
+        tiled=tiled if max(blockxsize, blockysize) >= 16 else False,
         sharing=False,
-        bigtiff=bigtiff,
+        BIGTIFF=bigtiff,
     )
-
-    if data.gw.bigtiff:
-        kwargs["bigtiff"] = data.gw.bigtiff
 
     if tqdm_kwargs is None:
         tqdm_kwargs = {}

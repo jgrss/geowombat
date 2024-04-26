@@ -88,7 +88,9 @@ class TestWrite(unittest.TestCase):
     def test_bigtiff(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test.tif"
-            with gw.config.update({"bigtiff": True}):
+            with gw.config.update(bigtiff=True):
+                self.assertTrue(gw.config.config["bigtiff"] is True)
+
                 with gw.open(l8_224078_20200518) as src:
                     data = src.gw.set_nodata(0, NODATA, dtype="uint16")
                     (
@@ -136,6 +138,37 @@ class TestWrite(unittest.TestCase):
                     self.assertEqual(data.gw.dtype, tmp_src.dtype)
                     self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
                     self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
+
+            with rio.open(out_path) as rio_src:
+                self.assertTrue(rio_src.nodata == NODATA)
+
+    def test_config_save(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.config.update(compress="deflate", bigtiff="IF_SAFER"):
+                self.assertTrue(gw.config.config["bigtiff"] == "IF_SAFER")
+
+                with gw.open(l8_224078_20200518) as src:
+                    data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                    (
+                        data.gw.save(
+                            filename=out_path,
+                            overwrite=True,
+                            tags={"TEST_METADATA": "TEST_VALUE"},
+                            compress="lzw",
+                            num_workers=2,
+                        )
+                    )
+                    with gw.open(out_path) as tmp_src:
+                        # Compare array values
+                        self.assertTrue(data.equals(tmp_src))
+                        # Compare attributes
+                        self.assertTrue(
+                            data.gw.nodataval == tmp_src.gw.nodataval == NODATA
+                        )
+                        self.assertEqual(data.gw.dtype, tmp_src.dtype)
+                        self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                        self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
 
             with rio.open(out_path) as rio_src:
                 self.assertTrue(rio_src.nodata == NODATA)
