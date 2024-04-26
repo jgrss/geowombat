@@ -762,6 +762,7 @@ def save(
                 raise AttributeError(
                     "The DataArray does not have any 'no data' attributes."
                 )
+
     dtype = data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
     if isinstance(nodata, float):
         if dtype != "float32":
@@ -998,11 +999,9 @@ def to_raster(
     else:
         compress = False
 
-    if "nodata" not in kwargs:
-        if isinstance(data.gw.nodata, int) or isinstance(
-            data.gw.nodata, float
-        ):
-            kwargs["nodata"] = data.gw.nodata
+    if kwargs.get("nodata") is None:
+        if isinstance(data.gw.nodataval, (float, int)):
+            kwargs["nodata"] = data.gw.nodataval
 
     if "blockxsize" not in kwargs:
         kwargs["blockxsize"] = data.gw.col_chunks
@@ -1044,6 +1043,7 @@ def to_raster(
             kwargs["crs"] = pyproj.CRS.from_epsg(int(crs))
         except ValueError:
             kwargs["crs"] = pyproj.CRS.from_user_input(crs)
+
     kwargs["crs"] = kwargs["crs"].to_wkt()
 
     root = None
