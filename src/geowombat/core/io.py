@@ -796,9 +796,6 @@ def save(
                 "IF_NEEDED",
                 "IF_SAFER",
             ):
-                import ipdb
-
-                ipdb.set_trace()
                 raise NameError(
                     "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
                 )
