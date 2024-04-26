@@ -693,6 +693,7 @@ def save(
     num_workers: T.Optional[int] = 1,
     log_progress: T.Optional[bool] = True,
     tqdm_kwargs: T.Optional[dict] = None,
+    bigtiff: T.Optional[str] = None,
 ):
     """Saves a DataArray to raster using rasterio/dask.
 
@@ -793,7 +794,7 @@ def save(
         compress=compress,
         tiled=True if max(blockxsize, blockysize) >= 16 else False,
         sharing=False,
-        bigtiff="IF_SAFER",
+        bigtiff=bigtiff,
     )
 
     if data.gw.bigtiff:
