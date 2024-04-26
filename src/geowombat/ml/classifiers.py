@@ -91,7 +91,7 @@ class ClassifiersMixin(object):
             # prep target axis 
             Xna = X[~X[targ_name].isnull()]
             Xna = X[X[targ_name] != 0]  # Xtarg is being generated with meaningless 0s
-            # if X.gw.nodataval is not None:
+            # TODO: if X.gw.nodataval is not None:
             #     Xna = X[X!= X.gw.nodata ]  # changes here would have to be reflected in y as well
         except KeyError:
             Xna = X
