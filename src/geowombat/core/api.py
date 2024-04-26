@@ -455,6 +455,8 @@ class open(object):
 
         if isinstance(filename, Path):
             filename = str(filename)
+        elif isinstance(filename, list) and len(filename) == 1:
+            filename = str(filename[0])
 
         self.data = data_
         self.__is_context_manager = False
