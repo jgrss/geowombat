@@ -1,4 +1,5 @@
 import contextlib
+import functools
 import logging
 import os
 import typing as T
@@ -55,7 +56,7 @@ def _update_kwarg(ref_obj, ref_kwargs, key):
     return ref_kwargs
 
 
-def _get_raster_coords(filename):
+def _get_raster_coords(filename: T.Union[str, Path]) -> tuple:
     with open_rasterio(filename) as src:
         x = src.x.values - src.res[0] / 2.0
         y = src.y.values + src.res[1] / 2.0
@@ -63,7 +64,11 @@ def _get_raster_coords(filename):
     return x, y
 
 
-def _check_config_globals(filenames, bounds_by, ref_kwargs):
+def _check_config_globals(
+    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]],
+    bounds_by: str,
+    ref_kwargs: dict,
+) -> dict:
     """Checks global configuration parameters.
 
     Args:
@@ -216,16 +221,16 @@ def delayed_to_xarray(
 
 
 def warp_open(
-    filename,
-    band_names=None,
-    resampling='nearest',
-    dtype=None,
-    netcdf_vars=None,
-    nodata=None,
-    return_windows=False,
-    warp_mem_limit=512,
-    num_threads=1,
-    tap=False,
+    filename: T.Union[str, Path],
+    band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    resampling: str = 'nearest',
+    dtype: T.Optional[str] = None,
+    netcdf_vars: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    nodata: T.Optional[T.Union[int, float]] = None,
+    return_windows: bool = False,
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tap: bool = False,
     **kwargs,
 ):
     """Warps and opens a file.
@@ -378,17 +383,17 @@ def warp_open(
 
 
 def mosaic(
-    filenames,
-    overlap='max',
-    bounds_by='reference',
-    resampling='nearest',
-    band_names=None,
-    nodata=None,
-    dtype=None,
-    warp_mem_limit=512,
-    num_threads=1,
+    filenames: T.Sequence[T.Union[str, Path]],
+    overlap: str = 'max',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
+    band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
+    nodata: T.Optional[T.Union[float, int]] = None,
+    dtype: T.Optional[str] = None,
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
     **kwargs,
-):
+) -> xr.DataArray:
     """Mosaics a list of images.
 
     Args:
@@ -413,9 +418,13 @@ def mosaic(
     Returns:
         ``xarray.DataArray``
     """
-    if overlap not in ['min', 'max', 'mean']:
+    if overlap not in (
+        'min',
+        'max',
+        'mean',
+    ):
         logger.exception(
-            "  The overlap argument must be one of ['min', 'max', 'mean']."
+            "  The overlap argument must be one of 'min', 'max', or 'mean'."
         )
 
     ref_kwargs = {
@@ -435,114 +444,112 @@ def mosaic(
         filenames, bounds_by=bounds_by, resampling=resampling, **ref_kwargs
     )
 
-    geometries = []
-
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
 
-    # Combine the data
+    # Get the original bounds, unsampled
     with open_rasterio(
-        warped_objects[0], nodata=ref_kwargs['nodata'], **kwargs
-    ) as darray:
-        attrs = darray.attrs.copy()
+        filenames[0], nodata=ref_kwargs['nodata'], **kwargs
+    ) as src_:
+        attrs = src_.attrs.copy()
+        geometries = [src_.gw.geometry]
 
-        # Get the original bounds, unsampled
-        with open_rasterio(
-            filenames[0], nodata=ref_kwargs['nodata'], **kwargs
-        ) as src_:
-            geometries.append(src_.gw.geometry)
+    if overlap == 'min':
+        reduce_func = da.minimum
+        tmp_nodata = 1e9
+    elif overlap == 'max':
+        reduce_func = da.maximum
+        tmp_nodata = -1e9
+    elif overlap == 'mean':
+        tmp_nodata = -1e9
 
-        for fidx, fn in enumerate(warped_objects[1:]):
-            with open_rasterio(
-                fn, nodata=ref_kwargs['nodata'], **kwargs
-            ) as darray_b:
-                with open_rasterio(
-                    filenames[fidx + 1], nodata=ref_kwargs['nodata'], **kwargs
-                ) as src_:
-                    geometries.append(src_.gw.geometry)
-                src_ = None
+        def reduce_func(
+            left: xr.DataArray, right: xr.DataArray
+        ) -> xr.DataArray:
+            return xr.where(
+                (left != tmp_nodata) & (right != tmp_nodata),
+                (left + right) / 2.0,
+                xr.where(left != tmp_nodata, left, right),
+            )
 
-                # Stack the bands
-                nodataval = darray.gw.nodataval
-                stack = xr.concat((darray, darray_b), dim='band')
-                # Ensure 'no data' values are nans and ignored
-                stack = stack.gw.mask_nodata()
+    # Open all the data pointers
+    data_arrays = [
+        open_rasterio(
+            wo,
+            nodata=ref_kwargs['nodata'],
+            **kwargs,
+        )
+        .gw.set_nodata(
+            src_nodata=ref_kwargs['nodata'],
+            dst_nodata=tmp_nodata,
+            dtype='float64',
+        )
+        .gw.mask_nodata()
+        for wo in warped_objects
+    ]
 
-                if overlap == 'min':
-                    darray = stack.min(dim='band', skipna=True, keepdims=True)
+    # Apply the reduction
+    darray = functools.reduce(
+        lambda left, right: reduce_func(left, right),
+        data_arrays,
+    )
 
-                elif overlap == 'max':
-                    darray = stack.max(dim='band', skipna=True, keepdims=True)
+    # Reset the 'no data' values
+    darray = darray.gw.set_nodata(
+        src_nodata=tmp_nodata,
+        dst_nodata=ref_kwargs['nodata'],
+    ).assign_attrs(**attrs)
 
-                elif overlap == 'mean':
-                    darray = stack.mean(dim='band', skipna=True, keepdims=True)
+    if band_names:
+        darray.coords['band'] = band_names
+    else:
 
-                # Reset the 'no data' values
-                darray = darray.gw.set_nodata(
-                    src_nodata=np.nan,
-                    dst_nodata=nodataval,
+        if darray.gw.sensor:
+            if darray.gw.sensor not in darray.gw.avail_sensors:
+                if not darray.gw.config['ignore_warnings']:
+
+                    logger.warning(
+                        '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
+                            darray.gw.sensor,
+                            ', '.join(darray.gw.avail_sensors),
+                        )
+                    )
+
+            else:
+
+                new_band_names = list(
+                    darray.gw.wavelengths[darray.gw.sensor]._fields
                 )
 
-        darray = darray.assign_attrs(**attrs)
-
-        if band_names:
-            darray.coords['band'] = band_names
-        else:
-
-            if darray.gw.sensor:
-
-                if darray.gw.sensor not in darray.gw.avail_sensors:
+                if len(new_band_names) != len(darray.band.values.tolist()):
 
                     if not darray.gw.config['ignore_warnings']:
-
                         logger.warning(
-                            '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
-                                darray.gw.sensor,
-                                ', '.join(darray.gw.avail_sensors),
-                            )
+                            '  The band list length does not match the sensor bands.'
                         )
 
                 else:
-
-                    new_band_names = list(
-                        darray.gw.wavelengths[darray.gw.sensor]._fields
+                    darray = darray.assign_coords(**{'band': new_band_names})
+                    darray = darray.assign_attrs(
+                        **{'sensor': darray.gw.sensor_names[darray.gw.sensor]}
                     )
 
-                    if len(new_band_names) != len(darray.band.values.tolist()):
+    darray = darray.assign_attrs(
+        **{'resampling': resampling, 'geometries': geometries}
+    )
 
-                        if not darray.gw.config['ignore_warnings']:
-                            logger.warning(
-                                '  The band list length does not match the sensor bands.'
-                            )
+    if tags:
+        attrs = darray.attrs.copy()
+        attrs.update(tags)
+        darray = darray.assign_attrs(**attrs)
 
-                    else:
-                        darray = darray.assign_coords(
-                            **{'band': new_band_names}
-                        )
-                        darray = darray.assign_attrs(
-                            **{
-                                'sensor': darray.gw.sensor_names[
-                                    darray.gw.sensor
-                                ]
-                            }
-                        )
+    if dtype is not None:
+        attrs = darray.attrs.copy()
 
-        darray = darray.assign_attrs(
-            **{'resampling': resampling, 'geometries': geometries}
-        )
+        return darray.astype(dtype).assign_attrs(**attrs)
 
-        if tags:
-            attrs = darray.attrs.copy()
-            attrs.update(tags)
-            darray = darray.assign_attrs(**attrs)
-
-        if dtype is not None:
-            attrs = darray.attrs.copy()
-
-            return darray.astype(dtype).assign_attrs(**attrs)
-
-        else:
-            return darray
+    else:
+        return darray
 
 
 def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
@@ -560,19 +567,19 @@ def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
 
 
 def concat(
-    filenames,
-    stack_dim='time',
-    bounds_by='reference',
-    resampling='nearest',
-    time_names=None,
-    band_names=None,
-    nodata=None,
-    dtype=None,
-    netcdf_vars=None,
-    overlap='max',
-    warp_mem_limit=512,
-    num_threads=1,
-    tap=False,
+    filenames: T.Sequence[T.Union[str, Path]],
+    stack_dim: str = 'time',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
+    time_names: T.Optional[T.Sequence[T.Any]] = None,
+    band_names: T.Optional[T.Sequence[T.Any]] = None,
+    nodata: T.Optional[T.Union[float, int]] = None,
+    dtype: T.Optional[str] = None,
+    netcdf_vars: T.Optional[T.Sequence[T.Any]] = None,
+    overlap: str = 'max',
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tap: bool = False,
     **kwargs,
 ):
     """Concatenates a list of images.

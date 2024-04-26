@@ -455,6 +455,8 @@ class open(object):
 
         if isinstance(filename, Path):
             filename = str(filename)
+        elif isinstance(filename, list) and len(filename) == 1:
+            filename = str(filename[0])
 
         self.data = data_
         self.__is_context_manager = False
@@ -1209,7 +1211,12 @@ class series(BaseSeries):
             # check for bigtiff config
             if config["with_config"]:
                 bigtiff = config["bigtiff"].upper()
-                if bigtiff not in ("YES", "NO", "IF_NEEDED", "IF_SAFER"):
+                if bigtiff not in (
+                    "YES",
+                    "NO",
+                    "IF_NEEDED",
+                    "IF_SAFER",
+                ):
                     raise NameError(
                         "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
                     )

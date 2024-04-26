@@ -739,6 +739,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         num_workers: T.Optional[int] = 1,
         log_progress: T.Optional[bool] = True,
         tqdm_kwargs: T.Optional[dict] = None,
+        bigtiff: T.Optional[str] = None,
     ) -> None:
         """Saves a DataArray to raster using rasterio/dask.
 
@@ -764,6 +765,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 Default is 1.
             log_progress (Optional[bool]): Whether to log the progress bar during writing. Default is True.
             tqdm_kwargs (Optional[dict]): Keyword arguments to pass to ``tqdm``.
+            bigtiff (Optional[str]): A GDAL BIGTIFF flag. Choices are ["YES", "NO", "IF_NEEDED", "IF_SAFER"].
 
         Returns:
             ``None``, writes to ``filename``
@@ -796,6 +798,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             num_workers=num_workers,
             log_progress=log_progress,
             tqdm_kwargs=tqdm_kwargs,
+            bigtiff=bigtiff,
         )
 
     def to_raster(

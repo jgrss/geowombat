@@ -1,13 +1,12 @@
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
 
-import geowombat as gw
-from osgeo import gdal
-from osgeo import osr
+import numpy as np
+from osgeo import gdal, osr
 from rasterio.coords import BoundingBox
 
-import numpy as np
+import geowombat as gw
 
 NODATA_VALUE = 255
 RASTER_ORIGIN = (1238095, -2305756)
@@ -27,7 +26,9 @@ def create_nodata_raster(filename: str):
     originY = RASTER_ORIGIN[1]
     driver = gdal.GetDriverByName('GTiff')
     outRaster = driver.Create(filename, ncol, nrow, 1, gdal.GDT_Byte)
-    outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
+    outRaster.SetGeoTransform(
+        (originX, pixelWidth, 0, originY, 0, pixelHeight)
+    )
     outband = outRaster.GetRasterBand(1)
     outband.WriteArray(egdata)
     outband.SetNoDataValue(NODATA_VALUE)
@@ -42,7 +43,7 @@ def create_nodata_raster(filename: str):
 def load(filename, bounds=None, config_nodata=None, open_nodata=None):
     with gw.config.update(ref_bounds=bounds, nodata=config_nodata):
         with gw.open(filename, dtype='uint8', nodata=open_nodata) as src:
-            nodata_block = src.squeeze()[:10, :10]
+            nodata_block = src[:, :10, :10]
 
     return nodata_block
 
@@ -54,7 +55,7 @@ class TestNodata(unittest.TestCase):
             create_nodata_raster(tmp_file)
             nodata_block = load(tmp_file)
             # The 'no data' values should be read
-            self.assertEqual(nodata_block.mean().values, NODATA_VALUE)
+            self.assertTrue((nodata_block.values == NODATA_VALUE).all())
             self.assertEqual(
                 nodata_block.attrs['nodatavals'],
                 (NODATA_VALUE,) * nodata_block.gw.nbands,
@@ -68,7 +69,7 @@ class TestNodata(unittest.TestCase):
             create_nodata_raster(tmp_file)
             nodata_block = load(tmp_file).gw.mask_nodata()
             # The 'no data' values should be nans
-            self.assertTrue(np.isnan(nodata_block.mean().values).all())
+            self.assertTrue(np.isnan(nodata_block.values).all())
             self.assertEqual(
                 nodata_block.attrs['nodatavals'],
                 (NODATA_VALUE,) * nodata_block.gw.nbands,
@@ -81,13 +82,41 @@ class TestNodata(unittest.TestCase):
             tmp_file = str(Path(tmp) / 'tmp_nodata.tif')
             create_nodata_raster(tmp_file)
             # Setting 'no data' explicitly should leave 255s
-            nodata_block = load(tmp_file, open_nodata=0).gw.mask_nodata()
-            self.assertFalse(np.isnan(nodata_block.mean().values).any())
+            nodata_block = load(tmp_file, open_nodata=0)
+            self.assertTrue((nodata_block.values == NODATA_VALUE).all())
+            # ...but change the attributes
             self.assertEqual(
                 nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
             )
             self.assertEqual(nodata_block.attrs['_FillValue'], 0)
             self.assertEqual(nodata_block.gw.nodataval, 0)
+
+            # Masking should set 'no data'
+            self.assertFalse(
+                np.isnan(nodata_block.gw.mask_nodata().values).any()
+            )
+            # ...but not persist
+            self.assertTrue((nodata_block.values == NODATA_VALUE).all())
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 0)
+            self.assertEqual(nodata_block.gw.nodataval, 0)
+
+            # Change the 'no data' value and attributes
+            nodata_block = nodata_block.gw.set_nodata(
+                src_nodata=0,
+                dst_nodata=255,
+            )
+            self.assertTrue(
+                np.isnan(nodata_block.gw.mask_nodata().values).all()
+            )
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'],
+                (255,) * nodata_block.gw.nbands,
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 255)
+            self.assertEqual(nodata_block.gw.nodataval, 255)
 
     def test_nodata_user_config(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -95,12 +124,40 @@ class TestNodata(unittest.TestCase):
             create_nodata_raster(tmp_file)
             # Setting 'no data' explicitly should leave 255s
             nodata_block = load(tmp_file, config_nodata=0).gw.mask_nodata()
-            self.assertFalse(np.isnan(nodata_block.mean().values).any())
+            self.assertTrue((nodata_block.values == NODATA_VALUE).all())
+            # ...but change the attributes
             self.assertEqual(
                 nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
             )
             self.assertEqual(nodata_block.attrs['_FillValue'], 0)
             self.assertEqual(nodata_block.gw.nodataval, 0)
+
+            # Masking should set 'no data'
+            self.assertFalse(
+                np.isnan(nodata_block.gw.mask_nodata().values).any()
+            )
+            # ...but not persist
+            self.assertTrue((nodata_block.values == NODATA_VALUE).all())
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'], (0,) * nodata_block.gw.nbands
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 0)
+            self.assertEqual(nodata_block.gw.nodataval, 0)
+
+            # Change the 'no data' value and attributes
+            nodata_block = nodata_block.gw.set_nodata(
+                src_nodata=0,
+                dst_nodata=255,
+            )
+            self.assertTrue(
+                np.isnan(nodata_block.gw.mask_nodata().values).all()
+            )
+            self.assertEqual(
+                nodata_block.attrs['nodatavals'],
+                (255,) * nodata_block.gw.nbands,
+            )
+            self.assertEqual(nodata_block.attrs['_FillValue'], 255)
+            self.assertEqual(nodata_block.gw.nodataval, 255)
 
     def test_nodata_bbox(self):
         with tempfile.TemporaryDirectory() as tmp:
