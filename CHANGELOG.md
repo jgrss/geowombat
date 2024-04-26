@@ -2,6 +2,15 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.19 (2024-04-26)
+* ([#306](https://github.com/jgrss/geowombat/pull/306))
+* Support for multi-band mosaics
+* Fixed bug in `to_raster()`, where nodata values were not being written to file
+* Added 'bigtiff' keyword argument to `save()` method
+
+## v2.1.18 (2024-04-20)
+* Fixed bug when saving single-band mosaics ([#304](https://github.com/jgrss/geowombat/pull/304))
+  
 ## v2.1.17 (2024-01-13)
 * Pinned scikit-learn maximum version ([#301](https://github.com/jgrss/geowombat/pull/301))
 

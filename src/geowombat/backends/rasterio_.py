@@ -1,6 +1,4 @@
 import logging
-import os
-import shutil
 import threading
 import typing as T
 import warnings
@@ -582,17 +580,17 @@ def get_file_bounds(
 
 
 def warp_images(
-    filenames,
-    bounds_by='union',
-    bounds=None,
-    crs=None,
-    res=None,
-    nodata=0,
-    resampling='nearest',
-    warp_mem_limit=512,
-    num_threads=1,
-    tac=None,
-):
+    filenames: T.Sequence[T.Union[str, Path]],
+    bounds_by: str = 'union',
+    bounds: T.Optional[T.Sequence[float]] = None,
+    crs: T.Optional[T.Union[CRS, dict, int, str]] = None,
+    res: T.Optional[T.Tuple[float, float]] = None,
+    nodata: T.Union[float, int] = 0,
+    resampling: str = 'nearest',
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tac: T.Optional[T.Tuple[np.ndarray, np.ndarray]] = None,
+) -> T.List[xr.DataArray]:
     """Transforms a list of images to a common grid.
 
     Args:
@@ -629,7 +627,7 @@ def warp_images(
         'tac': tac,
     }
 
-    if bounds:
+    if bounds is not None:
         warp_kwargs['bounds'] = bounds
     else:
 
@@ -667,17 +665,17 @@ def get_ref_image_meta(filename):
 
 
 def warp(
-    filename,
-    resampling='nearest',
-    bounds=None,
-    crs=None,
-    res=None,
-    nodata=0,
-    warp_mem_limit=512,
-    num_threads=1,
-    tap=False,
-    tac=None,
-):
+    filename: T.Union[str, Path],
+    resampling: str = 'nearest',
+    bounds: T.Optional[T.Sequence[float]] = None,
+    crs: T.Optional[T.Union[CRS, dict, int, str]] = None,
+    res: T.Optional[T.Tuple[float, float]] = None,
+    nodata: T.Union[float, int] = 0,
+    warp_mem_limit: int = 512,
+    num_threads: int = 1,
+    tap: bool = False,
+    tac: T.Optional[T.Tuple[np.ndarray, np.ndarray]] = None,
+) -> WarpedVRT:
     """Warps an image to a VRT object.
 
     Args:
@@ -706,7 +704,7 @@ def warp(
     with rio.open(filename) as src:
         src_info = get_file_info(src)
 
-        if res:
+        if res is not None:
             dst_res = check_res(res)
         else:
             dst_res = src_info.src_res
@@ -780,7 +778,7 @@ def warp(
 
         dst_height, dst_width = get_dims_from_bounds(dst_bounds, dst_res)
 
-        # Do not warp if all the key metadata match the reference information
+        # Do all the key metadata match the reference information?
         if (
             (tuple(src_info.src_bounds) == tuple(bounds))
             and (src_info.src_res == dst_res)
@@ -789,8 +787,21 @@ def warp(
             and (src_info.src_height == dst_height)
             and ('.nc' not in filename.lower())
         ):
-
-            output = filename
+            vrt_options = {
+                'resampling': getattr(Resampling, resampling),
+                'src_crs': src_crs,
+                'crs': src_crs,
+                'src_transform': src.transform,
+                'transform': src.transform,
+                'height': dst_height,
+                'width': dst_width,
+                'nodata': None,
+                'warp_mem_limit': warp_mem_limit,
+                'warp_extras': {
+                    'multi': True,
+                    'warp_option': f'NUM_THREADS={num_threads}',
+                },
+            }
 
         else:
             src_transform = Affine(
@@ -810,7 +821,7 @@ def warp(
                 dst_bounds.top,
             )
 
-            if tac:
+            if tac is not None:
                 # Align the cells to target coordinates
                 tap_left = tac[0][np.abs(tac[0] - dst_bounds.left).argmin()]
                 tap_top = tac[1][np.abs(tac[1] - dst_bounds.top).argmin()]
@@ -840,7 +851,8 @@ def warp(
                     'warp_option': f'NUM_THREADS={num_threads}',
                 },
             }
-            output = WarpedVRT(src, **vrt_options)
+
+        output = WarpedVRT(src, **vrt_options)
 
     return output
 
