@@ -112,12 +112,39 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(np.all(np.isnan(y2.values[0, 0:5, 0])))
         self.assertTrue(
             np.allclose(
-                y1.values[0, -5:-1, 0],
-                y2.values[0, -5:-1, 0],
+                y1.values,
+                y2.values,
                 equal_nan=True,
             )
         )
 
+    def test_tree_predict_nodata(self):
+        with gw.config.update(
+            ref_res=300,
+        ):
+            # assigning invalid nodata value
+            with gw.open(l8_224078_20200518, nodata=10) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y1 = fit_predict(src, tree_pipeline, aoi_poly, col="lc")
+            with gw.open(l8_224078_20200518) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y2 = fit_predict(src, tree_pipeline, aoi_poly, col="lc")
+
+        self.assertTrue(
+            np.allclose(
+                y1.values,
+                y2.values,
+                equal_nan=True,
+            )
+        )
     def test_output_type_attri(self):
 
         with gw.config.update(
@@ -135,7 +162,6 @@ class TestConfig(unittest.TestCase):
 
         self.assertTrue(isinstance(y1, xr_da))
         self.assertTrue(isinstance(y2, xr_da))
-        # self.assertTrue(isinstance(y1.chunks, tuple))
         self.assertTrue(len(y1.attrs) > 0)
         self.assertTrue(len(y2.attrs) > 0)
 
