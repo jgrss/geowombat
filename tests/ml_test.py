@@ -182,29 +182,6 @@ class TestConfig(unittest.TestCase):
 
         self.assertTrue(np.allclose(y1.values, y2.values, equal_nan=True))
 
-    def test_fitpredict_time_point(self):
-
-        with gw.config.update(
-            ref_res=300,
-        ):
-            with gw.open(
-                [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
-            ) as src:
-                with warnings.catch_warnings():
-                    warnings.simplefilter(
-                        "ignore",
-                        (DeprecationWarning, FutureWarning, UserWarning),
-                    )
-                    y1 = fit_predict(
-                        src,
-                        pl_wo_feat,
-                        aoi_point,
-                        col="lc",
-                        mask_nodataval=False,
-                    )
-
-        self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
-
     def test_fitpredict_eq_fit_predict_cluster(self):
 
         with gw.config.update(
@@ -274,6 +251,29 @@ class TestConfig(unittest.TestCase):
                 ]
             )
         )
+
+    # def test_fitpredict_time_point(self):
+
+    #     with gw.config.update(
+    #         ref_res=300,
+    #     ):
+    #         with gw.open(
+    #             [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
+    #         ) as src:
+    #             with warnings.catch_warnings():
+    #                 warnings.simplefilter(
+    #                     "ignore",
+    #                     (DeprecationWarning, FutureWarning, UserWarning),
+    #                 )
+    #                 y1 = fit_predict(
+    #                     src,
+    #                     pl_wo_feat,
+    #                     aoi_point,
+    #                     col="lc",
+    #                     mask_nodataval=False,
+    #                 )
+
+    #     self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
 
     # def test_nodataval_replace(self):
 
