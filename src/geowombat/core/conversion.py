@@ -760,8 +760,8 @@ class Converters(object):
                     top,
                 ) = dataframe.total_bounds.flatten().tolist()
 
-        dst_height = int((top - bottom) / abs(celly))
-        dst_width = int((right - left) / abs(cellx))
+        dst_height = int(round((top - bottom) / abs(celly), 1))
+        dst_width = int(round((right - left) / abs(cellx), 1))
         dst_transform = Affine(cellx, 0.0, left, 0.0, -celly, top)
 
         if src_res:
