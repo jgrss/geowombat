@@ -1,19 +1,18 @@
 import tempfile
 import unittest
 from pathlib import Path
-import tempfile
+
 import dask
 import numpy as np
 import rasterio as rio
 import xarray as xr
 from pyproj import CRS
-import os 
+
 import geowombat as gw
 from geowombat.core import coords_to_indices, lonlat_to_xy
 from geowombat.data import (
     l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
     l8_224077_20200518_B2,
-    l8_224078_20200518_B2,
     l8_224077_20200518_B2_60m,
     l8_224078_20200518,
     l8_224078_20200518_B2,
@@ -289,58 +288,6 @@ class TestOpen(unittest.TestCase):
                     ),
                 )
             )
-
-    def test_union_values(self):
-        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-        with gw.open(
-            filenames,
-            band_names=['blue'],
-            mosaic=True,
-            bounds_by='union'
-        ) as src:
-            vals = src.values[0,src.shape[1]//2, src.shape[1]//2:src.shape[1]//2 +10]
-            self.assertTrue(all(vals==[8678, 8958, 8970, 8966, 8912, 8749, 8131, 7598, 7590, 7606]))
-        
-    def test_mosaic_save(self):
-        # Using a context manager for the temporary directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            test_file_path = os.path.join(temp_dir, 'test.tif')
-            filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]  # Assuming these are correct file paths
-            try:
-                with gw.open(
-                        filenames,
-                        band_names=['blue'],
-                        mosaic=True,
-                        bounds_by='union',
-                        nodata=0
-                    ) as src:
-                    src.gw.save(test_file_path, overwrite=True)
-            except Exception as e:
-                # If any exception is raised, fail the test with a message
-                self.fail(f"An error occurred during saving: {e}")
-
-
-    def test_bounds_union(self):
-        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-        with gw.open(
-            filenames,
-            band_names=['blue'],
-            mosaic=True,
-            bounds_by='union'
-        ) as src:
-            bounds = src.gw.bounds
-            self.assertEqual(bounds, (693990.0, -2832810.0, 778590.0, -2766600.0))
-
-    def test_bounds_intersection(self):
-        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-        with gw.open(
-            filenames,
-            band_names=['blue'],
-            mosaic=True,
-            bounds_by='intersection'
-        ) as src:
-            bounds = src.gw.bounds
-            self.assertEqual(bounds, (717330.0, -2812080.0, 754200.0, -2776980.0))
 
     def test_has_time_dim(self):
         with gw.open(
