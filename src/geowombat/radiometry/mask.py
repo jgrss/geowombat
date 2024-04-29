@@ -1,8 +1,10 @@
+import logging
+
 import numpy as np
 import xarray as xr
 
 from ..core import ndarray_to_xarray, norm_diff
-from ..errors import logger
+from ..handler import add_handler
 
 try:
 
@@ -12,6 +14,9 @@ try:
 
 except ImportError:
     S2CLOUDLESS_INSTALLED = False
+
+logger = logging.getLogger(__name__)
+logger = add_handler(logger)
 
 
 def estimate_shadows(
@@ -74,23 +79,23 @@ def estimate_shadows(
         )
 
         # affine translation of clouds
-        cloud_shift = cloud_mask.shift({'x': x, 'y': y}, fill_value=0)
+        cloud_shift = cloud_mask.shift({"x": x, "y": y}, fill_value=0)
 
         potential_shadows.append(cloud_shift)
 
-    potential_shadows = xr.concat(potential_shadows, dim='band')
+    potential_shadows = xr.concat(potential_shadows, dim="band")
     potential_shadows = potential_shadows.assign_coords(
-        coords={'band': list(range(1, len(cloud_heights) + 1))}
+        coords={"band": list(range(1, len(cloud_heights) + 1))}
     )
-    potential_shadows = potential_shadows.max(dim='band')
-    potential_shadows = potential_shadows.expand_dims(dim='band')
-    potential_shadows = potential_shadows.assign_coords(coords={'band': [1]})
+    potential_shadows = potential_shadows.max(dim="band")
+    potential_shadows = potential_shadows.expand_dims(dim="band")
+    potential_shadows = potential_shadows.assign_coords(coords={"band": [1]})
 
     dark_pixels = norm_diff(
         data,
-        'swir2',
-        'green',
-        sensor='s2',
+        "swir2",
+        "green",
+        sensor="s2",
         nodata=nodata,
         scale_factor=scale_factor,
     )
@@ -98,13 +103,13 @@ def estimate_shadows(
     shadows = xr.where(
         (potential_shadows.sel(band=1) >= 1)
         & (cloud_mask.sel(band=1) != 1)
-        & (dark_pixels.sel(band='norm-diff') >= 0.1),
+        & (dark_pixels.sel(band="norm-diff") >= 0.1),
         1,
         0,
     )
 
-    shadows = shadows.expand_dims(dim='band')
-    shadows = shadows.assign_coords(coords={'band': [1]})
+    shadows = shadows.expand_dims(dim="band")
+    shadows = shadows.assign_coords(coords={"band": [1]})
 
     return shadows
 
@@ -194,16 +199,16 @@ class CloudShadowMasker(object):
             # Get the S2Cloudless bands
             data_cloudless = data.sel(
                 band=[
-                    'coastal',
-                    'blue',
-                    'red',
-                    'nir1',
-                    'nir',
-                    'rededge',
-                    'water',
-                    'cirrus',
-                    'swir1',
-                    'swir2',
+                    "coastal",
+                    "blue",
+                    "red",
+                    "nir1",
+                    "nir",
+                    "rededge",
+                    "water",
+                    "cirrus",
+                    "swir1",
+                    "swir2",
                 ]
             )
 
@@ -216,19 +221,19 @@ class CloudShadowMasker(object):
                         nodata,
                     )
                     .clip(0, 1)
-                    .astype('float64')
+                    .astype("float64")
                 )
             else:
                 data_cloudless = (
                     (data_cloudless * scale_factor)
                     .clip(0, 1)
-                    .astype('float64')
+                    .astype("float64")
                 )
 
             # Reshape for predictions ..
             #   from [bands x rows x columns]
             #   to [images x rows x columns x bands]
-            X = data_cloudless.transpose('y', 'x', 'band').data.compute(
+            X = data_cloudless.transpose("y", "x", "band").data.compute(
                 num_workers=num_workers
             )[np.newaxis, :, :, :]
 
@@ -248,10 +253,10 @@ class CloudShadowMasker(object):
 
             # Scale the angles to degrees
             sza = solar_za * 0.01
-            sza.coords['band'] = [1]
+            sza.coords["band"] = [1]
 
             saa = solar_az * 0.01
-            saa.coords['band'] = [1]
+            saa.coords["band"] = [1]
 
             # Convert to radians
             rad_sza = np.deg2rad(sza)
@@ -277,29 +282,29 @@ class CloudShadowMasker(object):
                     xr.where(
                         shadow_mask.sel(band=1) == 1,
                         2,
-                        xr.where(data.max(dim='band') == nodata, 255, 0),
+                        xr.where(data.max(dim="band") == nodata, 255, 0),
                     ),
                 )
-                .expand_dims(dim='band')
-                .astype('uint8')
+                .expand_dims(dim="band")
+                .astype("uint8")
             )
 
-            mask = mask.assign_coords(coords={'band': ['mask']})
+            mask = mask.assign_coords(coords={"band": ["mask"]})
 
-            new_attrs['nodatavals'] = (255,)
-            new_attrs['scales'] = (1.0,)
-            new_attrs['offsets'] = (0.0,)
-            new_attrs['pre-scaling'] = scale_factor
-            new_attrs['sensor'] = 's2'
-            new_attrs['clearval'] = (0,)
-            new_attrs['shadowval'] = (2,)
-            new_attrs['cloudval'] = (4,)
-            new_attrs['fillval'] = (255,)
+            new_attrs["nodatavals"] = (255,)
+            new_attrs["scales"] = (1.0,)
+            new_attrs["offsets"] = (0.0,)
+            new_attrs["pre-scaling"] = scale_factor
+            new_attrs["sensor"] = "s2"
+            new_attrs["clearval"] = (0,)
+            new_attrs["shadowval"] = (2,)
+            new_attrs["cloudval"] = (4,)
+            new_attrs["fillval"] = (255,)
 
             mask = mask.assign_attrs(**new_attrs)
 
         else:
-            logger.warning('  S2Cloudless is not installed.')
+            logger.warning("  S2Cloudless is not installed.")
             mask = None
 
         return mask
