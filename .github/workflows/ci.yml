@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python ${{ matrix.python-version }}
@@ -54,7 +54,7 @@ jobs:
         run: |
           pip install testfixtures
           pip install ".[ml]"
-          python -m unittest discover -p 'ml_*.py'  
+          python -m unittest discover -p 'ml_*.py'
 #  Quality:
 #    runs-on: ubuntu-latest
 #    steps:
