@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.20 (2024-04-30)
+* ([#313](https://github.com/jgrss/geowombat/pull/313))
+* Added all file geometries to DataArray mosaic
+* Fixed import error
+* Fixed Sphinx doc builds
+
 ## v2.1.19 (2024-04-26)
 * ([#306](https://github.com/jgrss/geowombat/pull/306))
 * Support for multi-band mosaics

@@ -884,10 +884,12 @@ class DataProperties(object):
             )
         import geowombat as gw_
 
+        geometries = []
         if hasattr(self._obj, 'geometries'):
-            geometries = self._obj.geometries
-        else:
-            geometries = []
+            if len(self._obj.geometries) == len(self._obj.gw.filenames):
+                geometries = self._obj.geometries
+
+        if not geometries:
             for fn in self._obj.gw.filenames:
                 kwargs = (
                     {'engine': 'h5netcdf'}
