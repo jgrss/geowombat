@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.21 (2024-05-01)
+* Pinned `sklearn` version for 'ml' extra ([#310](https://github.com/jgrss/geowombat/pull/310))
+
 ## v2.1.20 (2024-04-30)
 * ([#313](https://github.com/jgrss/geowombat/pull/313))
 * Added all file geometries to DataArray mosaic
