@@ -289,6 +289,37 @@ class TestOpen(unittest.TestCase):
                 )
             )
 
+    def test_footprint_grid(self):
+        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+        with gw.open(
+            filenames,
+            band_names=['blue'],
+            mosaic=True,
+            overlap='mean',
+            bounds_by='intersection',
+            nodata=0,
+            persist_filenames=True,
+        ) as src:
+            self.assertEqual(len(src.gw.chunk_grid), 25)
+            self.assertEqual(len(src.gw.footprint_grid), 2)
+            self.assertEqual(
+                filenames, src.gw.footprint_grid.footprint.values.tolist()
+            )
+
+        with gw.open(
+            filenames,
+            band_names=['blue'],
+            mosaic=True,
+            overlap='mean',
+            bounds_by='intersection',
+            nodata=0,
+            chunks=128,
+            persist_filenames=False,
+        ) as src:
+            self.assertEqual(len(src.gw.chunk_grid), 100)
+            with self.assertRaises(AttributeError):
+                src.gw.footprint_grid
+
     def test_has_time_dim(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518], stack_dim='time'

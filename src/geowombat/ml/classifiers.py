@@ -88,8 +88,11 @@ class ClassifiersMixin(object):
 
         # drop nans
         try:
+            # prep target axis 
             Xna = X[~X[targ_name].isnull()]
-            Xna = X[X[targ_name] != X.gw.nodataval]
+            Xna = X[X[targ_name] != 0]  # Xtarg is being generated with meaningless 0s
+            # TODO: if X.gw.nodataval is not None:
+            #     Xna = X[X!= X.gw.nodata ]  # changes here would have to be reflected in y as well
         except KeyError:
             Xna = X
 
@@ -250,6 +253,11 @@ class Classifiers(ClassifiersMixin):
             >>> with gw.open(l8_224078_20200518) as src:
             >>>    X, Xy, clf = fit(src, cl)
         """
+        if data.gw.has_time_coord:
+            # throw error
+            raise ValueError(
+                "DataArray must not have a time coordinate. Use stack_dim='band' with gw.open() or use .isel(time=0) to select a single time slice."
+            )
         if clf._estimator_type == "clusterer":
             data = self._add_time_dim(data)
             X, Xna = self._prepare_predictors(data, targ_name)

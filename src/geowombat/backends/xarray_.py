@@ -452,7 +452,11 @@ def mosaic(
         filenames[0], nodata=ref_kwargs['nodata'], **kwargs
     ) as src_:
         attrs = src_.attrs.copy()
-        geometries = [src_.gw.geometry]
+
+    geometries = []
+    for fn in filenames:
+        with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
+            geometries.append(src_.gw.geometry)
 
     if overlap == 'min':
         reduce_func = da.minimum
@@ -472,6 +476,7 @@ def mosaic(
                 xr.where(left != tmp_nodata, left, right),
             )
 
+          
     # Open all the data pointers
     data_arrays = [
         open_rasterio(
@@ -543,9 +548,9 @@ def mosaic(
         attrs.update(tags)
         darray = darray.assign_attrs(**attrs)
 
+ 
     if dtype is not None:
         attrs = darray.attrs.copy()
-
         return darray.astype(dtype).assign_attrs(**attrs)
 
     else:
