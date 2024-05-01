@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.22 (2024-05-01)
+* Added Python 3.11 as option ([#311](https://github.com/jgrss/geowombat/pull/311))
+
 ## v2.1.21 (2024-05-01)
 * Pinned `sklearn` version for 'ml' extra ([#310](https://github.com/jgrss/geowombat/pull/310))
 
