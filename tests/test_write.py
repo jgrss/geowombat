@@ -2,8 +2,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import dask
+import numpy as np
 import rasterio as rio
+from dask.distributed import Client, LocalCluster
 
 import geowombat as gw
 from geowombat.data import (
@@ -142,6 +143,76 @@ class TestWrite(unittest.TestCase):
             with rio.open(out_path) as rio_src:
                 self.assertTrue(rio_src.nodata == NODATA)
 
+    def test_write_numpy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(l8_224078_20200518) as src:
+                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                # Load data and convert from dask to numpy
+                data.load()
+
+                self.assertTrue(isinstance(data.data, np.ndarray))
+
+                (
+                    data.gw.save(
+                        filename=out_path,
+                        overwrite=True,
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="lzw",
+                    )
+                )
+                with gw.open(out_path) as tmp_src:
+                    # Compare array values
+                    self.assertTrue(data.equals(tmp_src))
+                    # Compare attributes
+                    self.assertTrue(
+                        data.gw.nodataval == tmp_src.gw.nodataval == NODATA
+                    )
+                    self.assertEqual(data.gw.dtype, tmp_src.dtype)
+                    self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                    self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
+
+            with rio.open(out_path) as rio_src:
+                self.assertTrue(rio_src.nodata == NODATA)
+
+    def test_client_save(self):
+
+        with LocalCluster(
+            processes=True,
+            n_workers=4,
+            threads_per_worker=1,
+            memory_limit="2GB",
+        ) as cluster:
+            with Client(cluster) as client:
+                with tempfile.TemporaryDirectory() as tmp:
+                    out_path = Path(tmp) / "test.tif"
+                    with gw.open(l8_224078_20200518) as src:
+                        data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                        data.gw.save(
+                            filename=out_path,
+                            overwrite=True,
+                            tags={"TEST_METADATA": "TEST_VALUE"},
+                            compress="lzw",
+                            client=client,
+                        )
+                        with gw.open(out_path) as tmp_src:
+                            # Compare array values
+                            self.assertTrue(data.equals(tmp_src))
+                            # Compare attributes
+                            self.assertTrue(
+                                data.gw.nodataval
+                                == tmp_src.gw.nodataval
+                                == NODATA
+                            )
+                            self.assertEqual(data.gw.dtype, tmp_src.dtype)
+                            self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                            self.assertEqual(
+                                tmp_src.TEST_METADATA, "TEST_VALUE"
+                            )
+
+                    with rio.open(out_path) as rio_src:
+                        self.assertTrue(rio_src.nodata == NODATA)
+
     def test_config_save(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test.tif"
@@ -190,37 +261,6 @@ class TestWrite(unittest.TestCase):
                     )
                 except ValueError:
                     self.fail("The small array write test failed.")
-
-    def test_delayed_save(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / "test.tif"
-            with gw.open(l8_224078_20200518) as src:
-                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
-                tasks = [
-                    gw.save(
-                        data,
-                        filename=out_path,
-                        tags={"TEST_METADATA": "TEST_VALUE"},
-                        compress="lzw",
-                        num_workers=2,
-                        compute=False,
-                        overwrite=True,
-                    )
-                ]
-            dask.compute(tasks, num_workers=2)
-            with gw.open(out_path) as tmp_src:
-                # Compare array values
-                self.assertTrue(data.equals(tmp_src))
-                # Compare attributes
-                self.assertTrue(
-                    data.gw.nodataval == tmp_src.gw.nodataval == NODATA
-                )
-                self.assertEqual(data.gw.dtype, tmp_src.dtype)
-                self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
-                self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
-
-            with rio.open(out_path) as rio_src:
-                self.assertTrue(rio_src.nodata == NODATA)
 
     def test_mosaic_save_single_band(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
