@@ -683,16 +683,15 @@ def to_netcdf(
 def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
-    mode: T.Optional[str] = "w",
     nodata: T.Optional[T.Union[float, int]] = None,
-    overwrite: T.Optional[bool] = False,
+    overwrite: bool = False,
     client: T.Optional[Client] = None,
-    compute: T.Optional[bool] = True,
+    compute: bool = True,
     tags: T.Optional[dict] = None,
     compress: T.Optional[str] = "none",
     compression: T.Optional[str] = None,
-    num_workers: T.Optional[int] = 1,
-    log_progress: T.Optional[bool] = True,
+    num_workers: int = 1,
+    log_progress: bool = True,
     tqdm_kwargs: T.Optional[dict] = None,
     bigtiff: T.Optional[str] = None,
 ):
@@ -701,7 +700,6 @@ def save(
     Args:
         filename (str | Path): The output file name to write to.
         overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
-        mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
         nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
             value is taken from the ``DataArray`` metadata.
         client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
@@ -745,15 +743,9 @@ def save(
         )
         compress = compression
 
-    if mode not in ["w", "r+"]:
-        raise AttributeError("The mode must be either 'w' or 'r+'.")
-
-    if Path(filename).is_file():
+    if Path(filename).exists():
         if overwrite:
             Path(filename).unlink()
-        else:
-            logger.warning(f"The file {str(filename)} already exists.")
-            return
 
     if nodata is None:
         if hasattr(data, "_FillValue"):
@@ -770,6 +762,16 @@ def save(
     if isinstance(nodata, float):
         if dtype != "float32":
             dtype = "float64"
+
+    if client is not None:
+        if compress not in (
+            None,
+            "none",
+        ):
+            logger.warning(
+                "  Cannot write to a compressed file with a Dask Client(). Data will be uncompressed."
+            )
+            compress = None
 
     blockxsize = (
         data.gw.check_chunksize(512, data.gw.ncols)
@@ -826,33 +828,26 @@ def save(
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
 
-    if not compute:
-        return (
-            RasterioStore(filename, mode=mode, tags=tags, **kwargs)
-            .open()
-            .write_delayed(data)
-        )
+    with RasterioStore(filename, tags=tags, **kwargs) as rio_store:
+        # Store the data and return a lazy evaluator
+        res = rio_store.write(data)
 
-    else:
-        with RasterioStore(
-            filename, mode=mode, tags=tags, **kwargs
-        ) as rio_store:
-            # Store the data and return a lazy evaluator
-            res = rio_store.write(data)
+        if not compute:
+            return res
 
-            if client is not None:
-                results = client.persist(res)
-                if log_progress:
-                    progress(results)
-                dask.compute(results)
-            else:
-                if log_progress:
-                    with TqdmCallback(**tqdm_kwargs):
-                        dask.compute(res, num_workers=num_workers)
-                else:
+        if client is not None:
+            results = client.persist(res)
+            if log_progress:
+                progress(results)
+
+            dask.compute(results)
+
+        else:
+            if log_progress:
+                with TqdmCallback(**tqdm_kwargs):
                     dask.compute(res, num_workers=num_workers)
-
-    return None
+            else:
+                dask.compute(res, num_workers=num_workers)
 
 
 def to_raster(
