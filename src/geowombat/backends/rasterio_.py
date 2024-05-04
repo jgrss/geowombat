@@ -12,6 +12,7 @@ import rasterio as rio
 import xarray as xr
 from affine import Affine
 from dask.delayed import Delayed
+from dask.utils import SerializableLock
 from pyproj import CRS
 from pyproj.exceptions import CRSError
 from rasterio.coords import BoundingBox
@@ -164,20 +165,20 @@ class RasterioStore(object):
         Code modified from https://github.com/dymaxionlabs/dask-rasterio
     """
 
+    # https://github.com/dask/distributed/issues/780#issuecomment-270153518
+    lock_ = SerializableLock()
+
     def __init__(
         self,
         filename: T.Union[str, Path],
-        mode: str = 'w',
         tags: dict = None,
         **kwargs,
     ):
         self.filename = Path(filename)
-        self.mode = mode
         self.tags = tags
         self.kwargs = kwargs
-        self.dst = None
 
-    def __setitem__(self, key, item):
+    def __setitem__(self, key: tuple, item: np.ndarray) -> None:
         if len(key) == 3:
             index_range, y, x = key
             indexes = list(
@@ -191,59 +192,55 @@ class RasterioStore(object):
             indexes = 1
             y, x = key
 
-        w = Window(
+        chunk_window = Window(
             col_off=x.start,
             row_off=y.start,
             width=x.stop - x.start,
             height=y.stop - y.start,
         )
 
-        self.dst.write(item, window=w, indexes=indexes)
+        self._write_window(item, indexes=indexes, window=chunk_window)
 
     def __enter__(self) -> 'RasterioStore':
-        return self.open()
+        self.closed = False
+
+        return self._open()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
+        self.closed = True
 
-    def open(self) -> 'RasterioStore':
-        self.dst = self.rio_open()
-        self.update_tags()
+    def _open(self) -> 'RasterioStore':
+        self._create_image()
 
         return self
 
-    def rio_open(self):
-        return rio.open(self.filename, mode=self.mode, **self.kwargs)
+    def _create_image(self) -> None:
+        mode = 'r+' if self.filename.exists() else 'w'
+        with rio.open(self.filename, mode=mode, **self.kwargs) as dst:
+            if self.tags is not None:
+                dst.update_tags(**self.tags)
 
-    def update_tags(self):
-        if self.tags is not None:
-            self.dst.update_tags(**self.tags)
-
-    def write_delayed(self, data: xr.DataArray):
-        store = da.store(
-            data.transpose('band', 'y', 'x').squeeze().data,
-            self,
-            lock=True,
-            compute=False,
-        )
-
-        return self.close_delayed(store)
-
-    @dask.delayed
-    def close_delayed(self, store):
-        return self.close()
+    def _write_window(
+        self,
+        data: np.ndarray,
+        indexes: T.Union[int, np.ndarray],
+        window: T.Optional[Window] = None,
+    ) -> None:
+        with rio.open(self.filename, mode='r+', **self.kwargs) as dst:
+            dst.write(
+                data,
+                indexes=indexes,
+                window=window,
+            )
 
     def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
         if isinstance(data.data, da.Array):
-            return da.store(data.data, self, lock=True, compute=compute)
+            return da.store(data.data, self, lock=self.lock_, compute=compute)
         else:
-            self.dst.write(
+            self._write_window(
                 data.data,
                 indexes=list(range(1, data.data.shape[0] + 1)),
             )
-
-    def close(self):
-        self.dst.close()
 
 
 def check_res(
