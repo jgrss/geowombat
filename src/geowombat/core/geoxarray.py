@@ -728,16 +728,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def save(
         self,
         filename: T.Union[str, _Path],
-        mode: T.Optional[str] = 'w',
         nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
         client: T.Optional[_Client] = None,
-        compute: T.Optional[bool] = True,
+        compute: bool = True,
         tags: T.Optional[dict] = None,
         compress: T.Optional[str] = 'none',
         compression: T.Optional[str] = None,
-        num_workers: T.Optional[int] = 1,
-        log_progress: T.Optional[bool] = True,
+        num_workers: int = 1,
+        log_progress: bool = True,
         tqdm_kwargs: T.Optional[dict] = None,
         bigtiff: T.Optional[str] = None,
     ) -> None:
@@ -745,7 +744,6 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str | Path): The output file name to write to.
-            mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
             nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
                 value is taken from the ``DataArray`` metadata.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
@@ -785,10 +783,9 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             )
             compress = compression
 
-        return save(
+        save(
             self._obj,
             filename=filename,
-            mode=mode,
             nodata=nodata,
             overwrite=overwrite,
             client=client,
