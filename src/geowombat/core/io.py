@@ -21,7 +21,6 @@ from dask import is_dask_collection
 from dask.distributed import Client, progress
 from osgeo import gdal
 from rasterio import shutil as rio_shutil
-from rasterio.drivers import driver_from_extension
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import Window
@@ -39,7 +38,6 @@ except ImportError:
     ZARR_INSTALLED = False
 
 from ..backends.rasterio_ import RasterioStore, to_gtiff
-from ..config import config
 from ..handler import add_handler
 from .windows import get_window_offsets
 
@@ -683,8 +681,8 @@ def to_netcdf(
 def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
-    nodata: T.Optional[T.Union[float, int]] = None,
     overwrite: bool = False,
+    scatter: T.Optional[str] = None,
     client: T.Optional[Client] = None,
     compute: bool = True,
     tags: T.Optional[dict] = None,
@@ -698,10 +696,10 @@ def save(
     """Saves a DataArray to raster using rasterio/dask.
 
     Args:
+        data (xarray.DataArray): The data to write.
         filename (str | Path): The output file name to write to.
         overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
-        nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
-            value is taken from the ``DataArray`` metadata.
+        scatter (Optional[str]): Scatter 'band' or 'time' to separate file. Default is None.
         client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
             Default is None.
         compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
@@ -747,22 +745,6 @@ def save(
         if overwrite:
             Path(filename).unlink()
 
-    if nodata is None:
-        if hasattr(data, "_FillValue"):
-            nodata = data.attrs["_FillValue"]
-        else:
-            if hasattr(data, "nodatavals"):
-                nodata = data.attrs["nodatavals"][0]
-            else:
-                raise AttributeError(
-                    "The DataArray does not have any 'no data' attributes."
-                )
-
-    dtype = data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
-    if isinstance(nodata, float):
-        if dtype != "float32":
-            dtype = "float64"
-
     if client is not None:
         if compress not in (
             None,
@@ -773,64 +755,19 @@ def save(
             )
             compress = None
 
-    blockxsize = (
-        data.gw.check_chunksize(512, data.gw.ncols)
-        if not data.gw.array_is_dask
-        else data.gw.col_chunks
-    )
-    blockysize = (
-        data.gw.check_chunksize(512, data.gw.nrows)
-        if not data.gw.array_is_dask
-        else data.gw.row_chunks
-    )
-
-    tiled = True
-    if config["with_config"]:
-        if config["bigtiff"] is not None:
-            if isinstance(config["bigtiff"], bool):
-                bigtiff = "YES" if config["bigtiff"] else "NO"
-            else:
-                bigtiff = config["bigtiff"].upper()
-
-            if bigtiff not in (
-                "YES",
-                "NO",
-                "IF_NEEDED",
-                "IF_SAFER",
-            ):
-                raise NameError(
-                    "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
-                )
-
-        if config["compress"] is not None:
-            compress = config["compress"]
-
-        if config["tiled"] is not None:
-            tiled = config["tiled"]
-
-    kwargs = dict(
-        driver=driver_from_extension(filename),
-        width=data.gw.ncols,
-        height=data.gw.nrows,
-        count=data.gw.nbands,
-        dtype=dtype,
-        nodata=nodata,
-        blockxsize=blockxsize,
-        blockysize=blockysize,
-        crs=data.gw.crs_to_pyproj,
-        transform=data.gw.transform,
-        compress=compress,
-        tiled=tiled if max(blockxsize, blockysize) >= 16 else False,
-        sharing=False,
-        BIGTIFF=bigtiff,
-    )
-
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
 
-    with RasterioStore(filename, tags=tags, **kwargs) as rio_store:
+    with RasterioStore(
+        data=data,
+        filename=filename,
+        scatter=scatter,
+        tags=tags,
+        compress=compress,
+        bigtiff=bigtiff,
+    ) as rio_store:
         # Store the data and return a lazy evaluator
-        res = rio_store.write(data)
+        res = rio_store.write()
 
         if not compute:
             return res
