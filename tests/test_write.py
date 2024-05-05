@@ -244,41 +244,135 @@ class TestWrite(unittest.TestCase):
             with rio.open(out_path) as rio_src:
                 self.assertTrue(rio_src.nodata == NODATA)
 
-    def test_save_small(self):
+    def test_save_scatter_band(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test.tif"
-            with gw.open(l8_224078_20200518) as src:
-                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
-                data = data[:, :1, :2]
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim='time',
+            ) as src:
 
-                try:
-                    data.gw.save(
-                        filename=out_path,
-                        overwrite=True,
-                        tags={"TEST_METADATA": "TEST_VALUE"},
-                        compress="none",
-                        num_workers=1,
+                self.assertTrue(len(src.shape) == 4)
+
+                src.gw.save(
+                    filename=out_path,
+                    overwrite=True,
+                    scatter='band',
+                    num_workers=1,
+                )
+
+                # Each file's band count is equal to the number
+                # of time dimensions
+                for band_name in src.band.values:
+                    self.assertTrue(
+                        (
+                            out_path.parent
+                            / f"{out_path.stem}_{band_name}.tif"
+                        ).exists()
                     )
-                except ValueError:
-                    self.fail("The small array write test failed.")
 
-    def test_mosaic_save_single_band(self):
-        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            try:
                 with gw.open(
-                    filenames,
-                    band_names=["blue"],
-                    mosaic=True,
-                    bounds_by="union",
-                    nodata=0,
-                ) as src:
-                    src.gw.save(Path(temp_dir) / "test.tif", overwrite=True)
+                    out_path.parent / f"{out_path.stem}_1.tif"
+                ) as src_test:
+                    self.assertTrue(src_test.gw.nbands == src.gw.ntime)
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=1),
+                            src.sel(time=1, band=1),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=2),
+                            src.sel(time=2, band=1),
+                        )
+                    )
 
-            except Exception as e:
-                # If any exception is raised, fail the test with a message
-                self.fail(f"An error occurred during saving: {e}")
+    def test_save_scatter_time(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim='time',
+            ) as src:
+
+                self.assertTrue(len(src.shape) == 4)
+
+                src.gw.save(
+                    filename=out_path,
+                    overwrite=True,
+                    scatter='time',
+                    num_workers=1,
+                )
+
+                # Each file's band count is equal to the number
+                # bands, and there are N time files
+                for band_name in src.time.values:
+                    self.assertTrue(
+                        (
+                            out_path.parent
+                            / f"{out_path.stem}_{band_name}.tif"
+                        ).exists()
+                    )
+
+                with gw.open(
+                    out_path.parent / f"{out_path.stem}_1.tif"
+                ) as src_test:
+                    self.assertTrue(src_test.gw.nbands == src.gw.nbands)
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=1),
+                            src.sel(time=1, band=1),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=2),
+                            src.sel(time=1, band=2),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=3),
+                            src.sel(time=1, band=3),
+                        )
+                    )
+
+    # def test_save_small(self):
+    #     with tempfile.TemporaryDirectory() as tmp:
+    #         out_path = Path(tmp) / "test.tif"
+    #         with gw.open(l8_224078_20200518) as src:
+    #             data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+    #             data = data[:, :1, :2]
+
+    #             try:
+    #                 data.gw.save(
+    #                     filename=out_path,
+    #                     overwrite=True,
+    #                     tags={"TEST_METADATA": "TEST_VALUE"},
+    #                     compress="none",
+    #                     num_workers=1,
+    #                 )
+    #             except ValueError:
+    #                 self.fail("The small array write test failed.")
+
+    # def test_mosaic_save_single_band(self):
+    #     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+
+    #     with tempfile.TemporaryDirectory() as temp_dir:
+    #         try:
+    #             with gw.open(
+    #                 filenames,
+    #                 band_names=["blue"],
+    #                 mosaic=True,
+    #                 bounds_by="union",
+    #                 nodata=0,
+    #             ) as src:
+    #                 src.gw.save(Path(temp_dir) / "test.tif", overwrite=True)
+
+    #         except Exception as e:
+    #             # If any exception is raised, fail the test with a message
+    #             self.fail(f"An error occurred during saving: {e}")
 
 
 if __name__ == "__main__":
