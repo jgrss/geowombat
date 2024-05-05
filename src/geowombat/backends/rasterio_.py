@@ -389,18 +389,10 @@ class RasterioStore(object):
             for i, band_name in enumerate(band_name_iter):
                 if self.scatter == 'band':
                     # Take all time and the ith band
-                    band_slice = (
-                        slice(0, None),
-                        slice(i, i + 1),
-                    )
-                    data_ = data[band_slice].squeeze(axis=1)
+                    data_ = data[:, i]
                 else:
                     # Take all bands and the ith time
-                    band_slice = (
-                        slice(i, i + 1),
-                        slice(0, None),
-                    )
-                    data_ = data[band_slice].squeeze(axis=0)
+                    data_ = data[i]
 
                 with rio.open(
                     self.get_band_filename(band_name),
