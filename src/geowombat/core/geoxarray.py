@@ -728,8 +728,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def save(
         self,
         filename: T.Union[str, _Path],
-        nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
+        scatter: T.Optional[str] = None,
         client: T.Optional[_Client] = None,
         compute: bool = True,
         tags: T.Optional[dict] = None,
@@ -747,6 +747,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
                 value is taken from the ``DataArray`` metadata.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+            scatter (Optional[str]): Scatter 'band' or 'time' to separate file. Default is None.
             client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
                 Default is None.
             compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
@@ -786,8 +787,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         save(
             self._obj,
             filename=filename,
-            nodata=nodata,
             overwrite=overwrite,
+            scatter=scatter,
             client=client,
             compute=compute,
             tags=tags,
