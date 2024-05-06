@@ -178,9 +178,9 @@ class TestWrite(unittest.TestCase):
     def test_client_save(self):
 
         with LocalCluster(
-            processes=True,
-            n_workers=4,
-            threads_per_worker=1,
+            processes=False,
+            n_workers=2,
+            threads_per_worker=2,
             memory_limit="2GB",
         ) as cluster:
             with Client(cluster) as client:
@@ -338,41 +338,41 @@ class TestWrite(unittest.TestCase):
                         )
                     )
 
-    # def test_save_small(self):
-    #     with tempfile.TemporaryDirectory() as tmp:
-    #         out_path = Path(tmp) / "test.tif"
-    #         with gw.open(l8_224078_20200518) as src:
-    #             data = src.gw.set_nodata(0, NODATA, dtype="uint16")
-    #             data = data[:, :1, :2]
+    def test_save_small(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(l8_224078_20200518) as src:
+                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                data = data[:, :1, :2]
 
-    #             try:
-    #                 data.gw.save(
-    #                     filename=out_path,
-    #                     overwrite=True,
-    #                     tags={"TEST_METADATA": "TEST_VALUE"},
-    #                     compress="none",
-    #                     num_workers=1,
-    #                 )
-    #             except ValueError:
-    #                 self.fail("The small array write test failed.")
+                try:
+                    data.gw.save(
+                        filename=out_path,
+                        overwrite=True,
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="none",
+                        num_workers=1,
+                    )
+                except ValueError:
+                    self.fail("The small array write test failed.")
 
-    # def test_mosaic_save_single_band(self):
-    #     filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+    def test_mosaic_save_single_band(self):
+        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
 
-    #     with tempfile.TemporaryDirectory() as temp_dir:
-    #         try:
-    #             with gw.open(
-    #                 filenames,
-    #                 band_names=["blue"],
-    #                 mosaic=True,
-    #                 bounds_by="union",
-    #                 nodata=0,
-    #             ) as src:
-    #                 src.gw.save(Path(temp_dir) / "test.tif", overwrite=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                with gw.open(
+                    filenames,
+                    band_names=["blue"],
+                    mosaic=True,
+                    bounds_by="union",
+                    nodata=0,
+                ) as src:
+                    src.gw.save(Path(temp_dir) / "test.tif", overwrite=True)
 
-    #         except Exception as e:
-    #             # If any exception is raised, fail the test with a message
-    #             self.fail(f"An error occurred during saving: {e}")
+            except Exception as e:
+                # If any exception is raised, fail the test with a message
+                self.fail(f"An error occurred during saving: {e}")
 
 
 if __name__ == "__main__":

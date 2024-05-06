@@ -755,6 +755,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 return the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
             compress (Optional[str]): The file compression type. Default is 'none', or no compression.
+
+                .. note::
+                    When using a client, it is advised to use threading. E.g.,
+                    ``dask.distributed.LocalCluster(processes=False)``. Process-based concurrency could
+                    result in corrupted file blocks.
+
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
 
                 .. deprecated:: 2.1.4

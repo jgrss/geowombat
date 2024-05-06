@@ -707,6 +707,12 @@ def save(
             return the ``dask`` task graph. Default is ``True``.
         tags (Optional[dict]): Metadata tags to write to file. Default is None.
         compress (Optional[str]): The file compression type. Default is 'none', or no compression.
+
+            .. note::
+                When using a client, it is advised to use threading. E.g.,
+                ``dask.distributed.LocalCluster(processes=False)``. Process-based concurrency could
+                result in corrupted file blocks.
+
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
 
             .. deprecated:: 2.1.4
@@ -744,16 +750,6 @@ def save(
     if Path(filename).exists():
         if overwrite:
             Path(filename).unlink()
-
-    if client is not None:
-        if compress not in (
-            None,
-            "none",
-        ):
-            logger.warning(
-                "  Cannot write to a compressed file with a Dask Client(). Data will be uncompressed."
-            )
-            compress = None
 
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
