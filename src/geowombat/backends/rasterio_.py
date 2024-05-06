@@ -343,30 +343,34 @@ class RasterioStore(object):
 
         return self
 
+    def _write_file(self, filename: Path, mode: str) -> None:
+        with rio.open(
+            filename,
+            mode=mode,
+            **self.kwargs,
+        ) as dst:
+            if self.tags is not None:
+                dst.update_tags(**self.tags)
+
     def _create_image(self) -> None:
         mode = 'r+' if self.filename.exists() else 'w'
         if self.scatter == 'band':
             for band_name in self.data.band.values:
-                with rio.open(
+                self._write_file(
                     self.get_band_filename(band_name),
                     mode=mode,
-                    **self.kwargs,
-                ) as dst:
-                    if self.tags is not None:
-                        dst.update_tags(**self.tags)
+                )
         elif self.scatter == 'time':
             for band_name in self.data.time.values:
-                with rio.open(
+                self._write_file(
                     self.get_band_filename(band_name),
                     mode=mode,
-                    **self.kwargs,
-                ) as dst:
-                    if self.tags is not None:
-                        dst.update_tags(**self.tags)
+                )
         else:
-            with rio.open(self.filename, mode=mode, **self.kwargs) as dst:
-                if self.tags is not None:
-                    dst.update_tags(**self.tags)
+            self._write_file(
+                self.filename,
+                mode=mode,
+            )
 
     def get_band_filename(self, band_name: str) -> Path:
         return self.filename.parent / f"{self.filename.stem}_{band_name}.tif"
