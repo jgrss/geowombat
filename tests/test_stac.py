@@ -52,10 +52,10 @@ naip_geojson = {
 def geosjon_to_df(
     geojson: dict,
     epsg: int,
-):
-    df = gpd.GeoDataFrame(geometry=[shape(geojson)], crs=4326)
-    proj_df = df.to_crs(f'epsg:{epsg}')
-    df = (
+) -> tuple:
+    latlon_df = gpd.GeoDataFrame(geometry=[shape(geojson)], crs=4326)
+    proj_df = latlon_df.to_crs(f'epsg:{epsg}')
+    buffer_df = (
         proj_df.buffer(
             100, cap_style=CAP_STYLE.square, join_style=JOIN_STYLE.mitre
         )
@@ -63,7 +63,7 @@ def geosjon_to_df(
         .to_frame(name='geometry')
     )
 
-    return df, tuple(proj_df.total_bounds.flatten().tolist())
+    return buffer_df, tuple(proj_df.total_bounds.flatten().tolist())
 
 
 SEARCH_EPSG = 8857
@@ -106,7 +106,7 @@ class TestSearchSingleBand(unittest.TestCase):
         )[0]
 
         self.assertTrue(stack.shape == (20, 1, 3, 4))
-        self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(EPSG))
+        self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(SEARCH_EPSG))
         self.assertTrue(stack.gw.celly == 300.0)
         self.assertTrue(stack.gw.cellx == 300.0)
         self.assertTrue(stack.gw.nodataval == 32768)
@@ -129,7 +129,7 @@ class TestSearchSingleBand(unittest.TestCase):
             max_items=None,
         )[0]
         self.assertTrue(stack.shape == (2, 1, 48, 64))
-        self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(EPSG))
+        self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(SEARCH_EPSG))
         self.assertTrue(stack.gw.celly == 10.0)
         self.assertTrue(stack.gw.cellx == 10.0)
         self.assertTrue(stack.gw.nodataval == 32768)
@@ -198,7 +198,9 @@ class TestSearchSingleBand(unittest.TestCase):
                 set(stack.band.values).difference(['red', 'nir08'])
             )
             self.assertTrue(stack.shape == (2, 2, 48, 64))
-            self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(EPSG))
+            self.assertTrue(
+                stack.gw.crs_to_pyproj == CRS.from_epsg(SEARCH_EPSG)
+            )
             self.assertTrue(stack.gw.celly == 10.0)
             self.assertTrue(stack.gw.cellx == 10.0)
             self.assertTrue(stack.gw.nodataval == 32768)
@@ -210,9 +212,7 @@ class TestSearchSingleBand(unittest.TestCase):
             stack, df = open_stac(
                 stac_catalog='element84_v1',
                 bounds=SEARCH_DF,
-                proj_bounds=tuple(
-                    DF.to_crs(f'epsg:{EPSG}').total_bounds.flatten().tolist()
-                ),
+                proj_bounds=SEARCH_BOUNDS,
                 epsg=SEARCH_EPSG,
                 collection='sentinel_s2_l2a',
                 bands=['blue'],
@@ -229,7 +229,9 @@ class TestSearchSingleBand(unittest.TestCase):
             )
 
             self.assertTrue(stack.shape == (2, 1, 48, 64))
-            self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(EPSG))
+            self.assertTrue(
+                stack.gw.crs_to_pyproj == CRS.from_epsg(SEARCH_EPSG)
+            )
             self.assertTrue(stack.gw.celly == 10.0)
             self.assertTrue(stack.gw.cellx == 10.0)
             self.assertTrue(stack.gw.nodataval == 32768)
