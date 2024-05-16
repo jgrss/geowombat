@@ -10,6 +10,7 @@ Modifications:
 import os
 import typing as T
 import warnings
+from functools import singledispatch
 from pathlib import Path
 
 import numpy as np
@@ -172,6 +173,25 @@ def _parse_envi(meta):
     parse = {'wavelength': parsevec, 'fwhm': parsevec}
     parsed_meta = {k: parse.get(k, default)(v) for k, v in meta.items()}
     return parsed_meta
+
+
+@singledispatch
+def check_chunks(chunks: dict) -> dict:
+    return chunks
+
+
+@check_chunks.register
+def _(chunks: tuple) -> dict:
+    return dict(
+        zip(
+            (
+                'band',
+                'y',
+                'x',
+            ),
+            chunks,
+        )
+    )
 
 
 def open_rasterio(
@@ -424,7 +444,11 @@ def open_rasterio(
             mtime = None
         token = tokenize(filename, mtime, chunks)
         name_prefix = f"open_rasterio-{token}"
-        result = result.chunk(chunks, name_prefix=name_prefix, token=token)
+        result = result.chunk(
+            check_chunks(chunks),
+            name_prefix=name_prefix,
+            token=token,
+        )
 
     # Make the file closeable
     result.set_close(manager.close)
