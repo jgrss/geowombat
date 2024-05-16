@@ -476,7 +476,6 @@ def mosaic(
                 xr.where(left != tmp_nodata, left, right),
             )
 
-          
     # Open all the data pointers
     data_arrays = [
         open_rasterio(
@@ -548,7 +547,6 @@ def mosaic(
         attrs.update(tags)
         darray = darray.assign_attrs(**attrs)
 
- 
     if dtype is not None:
         attrs = darray.attrs.copy()
         return darray.astype(dtype).assign_attrs(**attrs)
@@ -615,7 +613,10 @@ def concat(
     Returns:
         ``xarray.DataArray``
     """
-    if stack_dim.lower() not in ['band', 'time']:
+    if stack_dim.lower() not in (
+        'band',
+        'time',
+    ):
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
     with rio_open(filenames[0]) as src_:
@@ -690,6 +691,7 @@ def concat(
 
         if not concat_list[0].gw.config['ignore_warnings']:
             check_alignment(concat_list)
+
         # Warp all images and concatenate along the 'time' axis into a DataArray
         src = xr.concat(concat_list, dim=stack_dim.lower()).assign_coords(
             time=new_time_names
@@ -711,6 +713,7 @@ def concat(
         ]
         if not warp_list[0].gw.config['ignore_warnings']:
             check_alignment(warp_list)
+
         src = xr.concat(warp_list, dim=stack_dim.lower())
 
     src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
@@ -740,7 +743,7 @@ def concat(
                 src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
-        src.coords['band'] = band_names
+        src = src.assign_coords(band=band_names)
     else:
         if src.gw.sensor:
             if src.gw.sensor not in src.gw.avail_sensors:
@@ -768,6 +771,8 @@ def concat(
                     src = src.assign_attrs(
                         **{'sensor': src.gw.sensor_names[src.gw.sensor]}
                     )
+        else:
+            src = src.assign_coords(band=range(1, src.gw.nbands + 1))
 
     if dtype:
         attrs = src.attrs.copy()
