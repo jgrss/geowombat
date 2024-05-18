@@ -82,7 +82,12 @@ def get_image_chunks(filename: str) -> int:
 
 
 @get_image_chunks.register
-def _(filename: list | tuple) -> int:
+def _(filename: list) -> int:
+    return get_image_chunks(filename([0]))
+
+
+@get_image_chunks.register
+def _(filename: tuple) -> int:
     return get_image_chunks(filename([0]))
 
 
