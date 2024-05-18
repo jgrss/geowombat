@@ -12,9 +12,11 @@ import rasterio as rio
 import xarray as xr
 from affine import Affine
 from dask.delayed import Delayed
+from dask.utils import SerializableLock
 from pyproj import CRS
 from pyproj.exceptions import CRSError
 from rasterio.coords import BoundingBox
+from rasterio.drivers import driver_from_extension
 from rasterio.enums import Resampling
 from rasterio.transform import array_bounds, from_bounds
 from rasterio.vrt import WarpedVRT
@@ -27,6 +29,8 @@ from rasterio.warp import (
 from rasterio.windows import Window
 
 import geowombat as gw
+
+from ..config import config
 
 try:
     import numcodecs
@@ -166,21 +170,145 @@ class RasterioStore(object):
         Code modified from https://github.com/dymaxionlabs/dask-rasterio
     """
 
+    # https://github.com/dask/distributed/issues/780#issuecomment-270153518
+    lock_ = SerializableLock()
+
     def __init__(
         self,
+        data: xr.DataArray,
         filename: T.Union[str, Path],
-        mode: str = 'w',
+        scatter: T.Optional[str] = None,
         tags: dict = None,
-        **kwargs,
+        compress: T.Optional[str] = "none",
+        bigtiff: T.Optional[str] = None,
     ):
+        self.data = data
         self.filename = Path(filename)
-        self.mode = mode
+        self.scatter = scatter
         self.tags = tags
-        self.kwargs = kwargs
-        self.dst = None
+        self.compress = compress
+        self.bigtiff = bigtiff
 
-    def __setitem__(self, key, item):
-        if len(key) == 3:
+    def _setup(self):
+        if self.scatter is None:
+            if len(self.data.shape) > 3:
+                raise ValueError(
+                    "Only 3-band arrays can be written when scatter=None."
+                )
+
+        if hasattr(self.data, "_FillValue"):
+            nodata = self.data.attrs["_FillValue"]
+        else:
+            if hasattr(self.data, "nodatavals"):
+                nodata = self.data.attrs["nodatavals"][0]
+            else:
+                raise AttributeError(
+                    "The DataArray does not have any 'no data' attributes."
+                )
+
+        dtype = (
+            self.data.dtype.name
+            if isinstance(self.data.dtype, np.dtype)
+            else self.data.dtype
+        )
+        if isinstance(nodata, float):
+            if dtype != "float32":
+                dtype = "float64"
+
+        if self.scatter is None:
+            band_count = self.data.gw.nbands
+        else:
+            if self.scatter == 'band':
+                self.data = self.data.chunk(
+                    {
+                        'time': 1,
+                        'band': -1,
+                        'y': self.data.gw.row_chunks,
+                        'x': self.data.gw.col_chunks,
+                    }
+                )
+                band_count = self.data.gw.ntime
+            elif self.scatter == 'time':
+                self.data = self.data.chunk(
+                    {
+                        'time': -1,
+                        'band': 1,
+                        'y': self.data.gw.row_chunks,
+                        'x': self.data.gw.col_chunks,
+                    }
+                )
+                band_count = self.data.gw.nbands
+
+        blockxsize = (
+            self.data.gw.check_chunksize(512, self.data.gw.ncols)
+            if not self.data.gw.array_is_dask
+            else self.data.gw.col_chunks
+        )
+        blockysize = (
+            self.data.gw.check_chunksize(512, self.data.gw.nrows)
+            if not self.data.gw.array_is_dask
+            else self.data.gw.row_chunks
+        )
+
+        tiled = True
+        bigtiff = self.bigtiff
+        compress = self.compress
+        if config["with_config"]:
+            if config["bigtiff"] is not None:
+                if isinstance(config["bigtiff"], bool):
+                    bigtiff = "YES" if config["bigtiff"] else "NO"
+                else:
+                    bigtiff = config["bigtiff"].upper()
+
+                if bigtiff not in (
+                    "YES",
+                    "NO",
+                    "IF_NEEDED",
+                    "IF_SAFER",
+                ):
+                    raise NameError(
+                        "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
+                    )
+
+            if config["compress"] is not None:
+                compress = config["compress"]
+
+            if config["tiled"] is not None:
+                tiled = config["tiled"]
+
+        self.kwargs = dict(
+            driver=driver_from_extension(self.filename),
+            width=self.data.gw.ncols,
+            height=self.data.gw.nrows,
+            count=band_count,
+            dtype=dtype,
+            nodata=nodata,
+            blockxsize=blockxsize,
+            blockysize=blockysize,
+            crs=self.data.gw.crs_to_pyproj,
+            transform=self.data.gw.transform,
+            compress=compress,
+            tiled=tiled if max(blockxsize, blockysize) >= 16 else False,
+            sharing=False,
+            BIGTIFF=bigtiff,
+        )
+
+    def __setitem__(self, key: tuple, item: np.ndarray) -> None:
+        if len(key) == 4:
+            if self.scatter == 'band':
+                index_range, _, y, x = key
+            else:
+                _, index_range, y, x = key
+
+            indexes = list(
+                range(
+                    index_range.start + 1,
+                    index_range.stop + 1,
+                    index_range.step or 1,
+                )
+            )
+
+        elif len(key) == 3:
             index_range, y, x = key
             indexes = list(
                 range(
@@ -189,63 +317,117 @@ class RasterioStore(object):
                     index_range.step or 1,
                 )
             )
+
         else:
             indexes = 1
             y, x = key
 
-        w = Window(
+        chunk_window = Window(
             col_off=x.start,
             row_off=y.start,
             width=x.stop - x.start,
             height=y.stop - y.start,
         )
 
-        self.dst.write(item, window=w, indexes=indexes)
+        self._write_window(item, indexes=indexes, window=chunk_window)
 
     def __enter__(self) -> 'RasterioStore':
-        return self.open()
+        self.closed = False
+        self._setup()
+
+        return self._open()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
+        self.closed = True
 
-    def open(self) -> 'RasterioStore':
-        self.dst = self.rio_open()
-        self.update_tags()
+    def _open(self) -> 'RasterioStore':
+        self._create_image()
 
         return self
 
-    def rio_open(self):
-        return rio.open(self.filename, mode=self.mode, **self.kwargs)
+    def _write_file(self, filename: Path, mode: str) -> None:
+        with rio.open(
+            filename,
+            mode=mode,
+            **self.kwargs,
+        ) as dst:
+            if self.tags is not None:
+                dst.update_tags(**self.tags)
 
-    def update_tags(self):
-        if self.tags is not None:
-            self.dst.update_tags(**self.tags)
-
-    def write_delayed(self, data: xr.DataArray):
-        store = da.store(
-            data.transpose('band', 'y', 'x').squeeze().data,
-            self,
-            lock=True,
-            compute=False,
-        )
-
-        return self.close_delayed(store)
-
-    @dask.delayed
-    def close_delayed(self, store):
-        return self.close()
-
-    def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
-        if isinstance(data.data, da.Array):
-            return da.store(data.data, self, lock=True, compute=compute)
+    def _create_image(self) -> None:
+        mode = 'r+' if self.filename.exists() else 'w'
+        if self.scatter == 'band':
+            for band_name in self.data.band.values:
+                self._write_file(
+                    self.get_band_filename(band_name),
+                    mode=mode,
+                )
+        elif self.scatter == 'time':
+            for band_name in self.data.time.values:
+                self._write_file(
+                    self.get_band_filename(band_name),
+                    mode=mode,
+                )
         else:
-            self.dst.write(
-                data.data,
-                indexes=list(range(1, data.data.shape[0] + 1)),
+            self._write_file(
+                self.filename,
+                mode=mode,
             )
 
-    def close(self):
-        self.dst.close()
+    def get_band_filename(self, band_name: str) -> Path:
+        return self.filename.parent / f"{self.filename.stem}_{band_name}.tif"
+
+    def _write_window(
+        self,
+        data: np.ndarray,
+        indexes: T.Union[int, np.ndarray],
+        window: T.Optional[Window] = None,
+    ) -> None:
+        if self.scatter in (
+            'band',
+            'time',
+        ):
+            band_name_iter = (
+                self.data.band.values
+                if self.scatter == 'band'
+                else self.data.time.values
+            )
+            for i, band_name in enumerate(band_name_iter):
+                if self.scatter == 'band':
+                    # Take all time and the ith band
+                    data_ = data[:, i]
+                else:
+                    # Take all bands and the ith time
+                    data_ = data[i]
+
+                with rio.open(
+                    self.get_band_filename(band_name),
+                    mode='r+',
+                    **self.kwargs,
+                ) as dst:
+                    dst.write(
+                        data_,
+                        indexes=indexes,
+                        window=window,
+                    )
+        else:
+            with rio.open(self.filename, mode='r+', **self.kwargs) as dst:
+                dst.write(
+                    data,
+                    indexes=indexes,
+                    window=window,
+                )
+
+    def write(self, compute: bool = False) -> Delayed:
+        if isinstance(self.data.data, da.Array):
+            return da.store(
+                self.data.data, self, lock=self.lock_, compute=compute
+            )
+        else:
+            self._write_window(
+                self.data.data,
+                indexes=list(range(1, self.data.data.shape[0] + 1)),
+            )
 
 
 def check_res(
