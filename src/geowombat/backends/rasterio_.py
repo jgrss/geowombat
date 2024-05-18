@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
 def transform_from_corner(
     bounds: BoundingBox, res: T.Sequence[float]
 ) -> Affine:
+    """Gets an affine transform from an upper left corner."""
     return Affine(
         res[0],
         0.0,
@@ -59,9 +60,10 @@ def transform_from_corner(
     )
 
 
-def get_dims_from_bounds(
+def get_window_from_bounds(
     bounds: BoundingBox, res: T.Sequence[float]
 ) -> Window:
+    """Gets."""
     transform = transform_from_corner(bounds, res)
 
     return window_from_bounds(*bounds, transform=transform)
@@ -961,7 +963,7 @@ def warp(
                 )
                 raise TypeError
 
-        dst_window = get_dims_from_bounds(dst_bounds, dst_res)
+        dst_window = get_window_from_bounds(dst_bounds, dst_res)
 
         # Do all the key metadata match the reference information?
         if (
@@ -993,9 +995,7 @@ def warp(
                 src_info.src_bounds, src_info.src_res
             )
 
-            dst_transform = transform_from_corner(
-                dst_bounds.src_bounds, dst_res.src_res
-            )
+            dst_transform = transform_from_corner(dst_bounds, dst_res)
 
             if tac is not None:
                 # Align the cells to target coordinates

@@ -12,8 +12,8 @@ from geowombat.backends.rasterio_ import (
     check_crs,
     check_file_crs,
     check_res,
-    get_dims_from_bounds,
     get_file_info,
+    get_window_from_bounds,
     unpack_bounding_box,
     unpack_window,
     window_to_bounds,
@@ -54,15 +54,15 @@ class TestRasterio(unittest.TestCase):
             ),
         )
 
-    def test_get_dims_from_bounds(self):
+    def test_get_window_from_bounds(self):
         bounds = BoundingBox(
             left=-100,
             bottom=-100,
             right=100,
             top=100,
         )
-        height, width = get_dims_from_bounds(bounds=bounds, res=(10, 10))
-        self.assertEqual((height, width), (20, 20))
+        dst_window = get_window_from_bounds(bounds=bounds, res=(10, 10))
+        self.assertEqual((dst_window.height, dst_window.width), (20, 20))
 
     def test_get_file_info(self):
         with rio.open(l8_224077_20200518_B2) as src:
