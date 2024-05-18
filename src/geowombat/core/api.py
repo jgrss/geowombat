@@ -15,6 +15,7 @@ import threading
 import typing as T
 import warnings
 from contextlib import contextmanager
+from functools import singledispatch
 from pathlib import Path
 
 import dask
@@ -69,6 +70,20 @@ IO_DICT = dict(
 @contextmanager
 def _tqdm(*args, **kwargs):
     yield None
+
+
+@singledispatch
+def get_image_chunks(filename: str) -> int:
+    with rio.open(filename) as src_:
+        w = src_.block_window(1, 0, 0)
+        chunks = (-1, w.height, w.width)
+
+    return chunks
+
+
+@get_image_chunks.register
+def _(filename: list | tuple) -> int:
+    return get_image_chunks(filename([0]))
 
 
 def _get_attrs(src, **kwargs):
@@ -268,7 +283,7 @@ def read(
 data_ = None
 
 
-class open(object):
+class open:
     """Opens one or more raster files.
 
     Args:
@@ -447,15 +462,17 @@ class open(object):
         num_workers: T.Optional[int] = 1,
         **kwargs,
     ):
-        if stack_dim not in ["band", "time"]:
+        if stack_dim not in (
+            "band",
+            "time",
+        ):
             logger.exception(
                 f"  The 'stack_dim' keyword argument must be either 'band' or 'time', but not {stack_dim}"
             )
-            raise NameError
 
         if isinstance(filename, Path):
             filename = str(filename)
-        elif isinstance(filename, list) and len(filename) == 1:
+        elif isinstance(filename, (list, tuple)) and (len(filename) == 1):
             filename = str(filename[0])
 
         self.data = data_
@@ -466,25 +483,15 @@ class open(object):
 
         band_chunks = -1
         if "chunks" in kwargs:
-            if kwargs["chunks"] is not None:
-                kwargs["chunks"] = ch.check_chunktype(
-                    kwargs["chunks"], output="3d"
-                )
+            kwargs["chunks"] = ch.check_chunktype(
+                kwargs["chunks"], output="3d"
+            )
 
-        if bounds or (
-            "window" in kwargs and isinstance(kwargs["window"], Window)
+        if (bounds is not None) or (
+            ("window" in kwargs) and isinstance(kwargs["window"], Window)
         ):
             if "chunks" not in kwargs:
-                if isinstance(filename, list):
-                    with rio.open(filename[0]) as src_:
-                        w = src_.block_window(1, 0, 0)
-                        chunks = (band_chunks, w.height, w.width)
-
-                else:
-                    with rio.open(filename) as src_:
-                        w = src_.block_window(1, 0, 0)
-                        chunks = (band_chunks, w.height, w.width)
-
+                chunks = get_image_chunks(filename)
             else:
                 chunks = kwargs["chunks"]
                 del kwargs["chunks"]
@@ -501,17 +508,14 @@ class open(object):
             self.__filenames = [str(filename)]
 
         else:
-            if (isinstance(filename, str) and "*" in filename) or isinstance(
+            if (isinstance(filename, str) and ("*" in filename)) or isinstance(
                 filename, list
             ):
-                # Build the filename list
                 if isinstance(filename, str):
                     filename = parse_wildcard(filename)
 
                 if "chunks" not in kwargs:
-                    with rio.open(filename[0]) as src:
-                        w = src.block_window(1, 0, 0)
-                        kwargs["chunks"] = (band_chunks, w.height, w.width)
+                    kwargs["chunks"] = get_image_chunks(filename)
 
                 if mosaic:
                     # Mosaic images over space

@@ -52,6 +52,8 @@ def get_dims_from_bounds(
 def get_file_info(
     src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
 ) -> namedtuple:
+    """Gets image file information."""
+
     src_bounds = src_obj.bounds
     src_res = src_obj.res
     src_width = src_obj.width
@@ -254,7 +256,7 @@ def check_res(
         int,
     ]
 ) -> T.Tuple[float, float]:
-    """Checks a resolution.
+    """Checks an image's resolution.
 
     Args:
         res (int | float | tuple): The resolution.
@@ -347,10 +349,10 @@ def check_file_crs(filename: T.Union[str, Path]) -> CRS:
         # rasterio does not open and read metadata from NetCDF files
         if str(filename).lower().startswith('netcdf:'):
             with xr.open_dataset(filename.split(':')[1], chunks=256) as src:
-                src_crs = src.crs
+                src_crs = check_src_crs(src)
         else:
             with xr.open_dataset(filename, chunks=256) as src:
-                src_crs = src.crs
+                src_crs = check_src_crs(src)
 
     else:
         with rio.open(filename) as src:
@@ -359,7 +361,7 @@ def check_file_crs(filename: T.Union[str, Path]) -> CRS:
     return check_crs(src_crs)
 
 
-def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
+def unpack_bounding_box(bounds: str) -> BoundingBox:
     """Unpacks a BoundBox() string.
 
     Args:
@@ -372,15 +374,15 @@ def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
 
     for str_ in bounds_str:
         if str_.strip().startswith('left='):
-            left_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            left = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('bottom='):
-            bottom_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            bottom = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('right='):
-            right_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            right = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('top='):
-            top_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            top = float(str_.strip().split('=')[1].replace(')', ''))
 
-    return left_coord, bottom_coord, right_coord, top_coord
+    return BoundingBox(left=left, bottom=bottom, right=right, top=top)
 
 
 def unpack_window(bounds: str) -> Window:
@@ -408,30 +410,26 @@ def unpack_window(bounds: str) -> Window:
 
 
 def window_to_bounds(
-    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
-) -> T.Tuple[float, float, float, float]:
+    filename: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
+) -> BoundingBox:
     """Transforms a rasterio Window() object to image bounds.
 
     Args:
-        filenames (str or str list)
+        filename (str or str list)
         w (object)
 
     Returns:
         ``tuple``
     """
-    if isinstance(filenames, str):
-        src = rio.open(filenames)
-    else:
-        src = rio.open(filenames[0])
+    if isinstance(filename, (list, tuple)):
+        filename = filename[0]
 
-    left, top = src.transform * (w.col_off, w.row_off)
+    with rio.open(filename) as src:
+        left, top = src.transform * (w.col_off, w.row_off)
+        right = left + w.width * abs(src.res[0])
+        bottom = top - w.height * abs(src.res[1])
 
-    right = left + w.width * abs(src.res[0])
-    bottom = top - w.height * abs(src.res[1])
-
-    src.close()
-
-    return left, bottom, right, top
+    return BoundingBox(left=left, bottom=bottom, right=right, top=top)
 
 
 def align_bounds(
@@ -441,7 +439,7 @@ def align_bounds(
     maxy: float,
     res: T.Union[T.Tuple[float, float], T.Sequence[float], float, int],
 ) -> T.Tuple[Affine, int, int]:
-    """Aligns bounds to resolution.
+    """Aligns bounds to a resolution.
 
     Args:
         minx (float)
@@ -478,7 +476,7 @@ def get_file_bounds(
     """Gets the union of all files.
 
     Args:
-        filenames (list): The file names to mosaic.
+        filenames (list): The file names from which to get bounds overlap.
         bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         crs (Optional[crs]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
@@ -504,7 +502,7 @@ def get_file_bounds(
         with rio.open(filenames[0]) as src:
             src_info = get_file_info(src)
 
-            if res:
+            if res is not None:
                 dst_res = check_res(res)
             else:
                 dst_res = src_info.src_res
@@ -525,7 +523,10 @@ def get_file_bounds(
                 densify_pts=21,
             )
 
-        if bounds_by.lower() in ['union', 'intersection']:
+        if bounds_by.lower() in (
+            'union',
+            'intersection',
+        ):
             for fn in filenames[1:]:
                 src_crs = check_file_crs(fn)
 
@@ -644,7 +645,7 @@ def warp_images(
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
 
-def get_ref_image_meta(filename):
+def get_ref_image_meta(filename: T.Union[Path, str]) -> namedtuple:
     """Gets warping information from a reference image.
 
     Args:
