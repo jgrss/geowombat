@@ -18,7 +18,8 @@ from pyproj.exceptions import CRSError
 from rasterio.coords import BoundingBox
 from rasterio.drivers import driver_from_extension
 from rasterio.enums import Resampling
-from rasterio.transform import array_bounds, from_bounds
+from rasterio.transform import array_bounds
+from rasterio.transform import from_bounds as transform_from_bounds
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import (
     aligned_target,
@@ -27,6 +28,7 @@ from rasterio.warp import (
     transform_bounds,
 )
 from rasterio.windows import Window
+from rasterio.windows import from_bounds as window_from_bounds
 
 import geowombat as gw
 
@@ -44,13 +46,25 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def get_dims_from_bounds(
-    bounds: BoundingBox, res: T.Tuple[float, float]
-) -> T.Tuple[int, int]:
-    width = int((bounds.right - bounds.left) / abs(res[0]))
-    height = int((bounds.top - bounds.bottom) / abs(res[1]))
+def transform_from_corner(
+    bounds: BoundingBox, res: T.Sequence[float]
+) -> Affine:
+    return Affine(
+        res[0],
+        0.0,
+        bounds.left,
+        0.0,
+        -res[1],
+        bounds.top,
+    )
 
-    return height, width
+
+def get_dims_from_bounds(
+    bounds: BoundingBox, res: T.Sequence[float]
+) -> Window:
+    transform = transform_from_corner(bounds, res)
+
+    return window_from_bounds(*bounds, transform=transform)
 
 
 def get_file_info(
@@ -747,7 +761,7 @@ def get_file_bounds(
             bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
             bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
-            bounds_transform = from_bounds(
+            bounds_transform = transform_from_bounds(
                 bounds_left,
                 bounds_bottom,
                 bounds_right,
@@ -894,7 +908,7 @@ def warp(
 
         # Check if the data need to be subset
         if (bounds is None) or (tuple(bounds) == tuple(src_info.src_bounds)):
-            if crs:
+            if crs is not None:
                 (
                     left_coord,
                     bottom_coord,
@@ -927,22 +941,10 @@ def warp(
             elif isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
-                    (
-                        left_coord,
-                        bottom_coord,
-                        right_coord,
-                        top_coord,
-                    ) = unpack_bounding_box(bounds)
+                    dst_bounds = unpack_bounding_box(bounds)
                 else:
                     logger.exception('  The bounds were not accepted.')
                     raise TypeError
-
-                dst_bounds = BoundingBox(
-                    left=left_coord,
-                    bottom=bottom_coord,
-                    right=right_coord,
-                    top=top_coord,
-                )
 
             elif isinstance(bounds, (list, np.ndarray, tuple)):
                 dst_bounds = BoundingBox(
@@ -959,15 +961,15 @@ def warp(
                 )
                 raise TypeError
 
-        dst_height, dst_width = get_dims_from_bounds(dst_bounds, dst_res)
+        dst_window = get_dims_from_bounds(dst_bounds, dst_res)
 
         # Do all the key metadata match the reference information?
         if (
             (tuple(src_info.src_bounds) == tuple(bounds))
             and (src_info.src_res == dst_res)
             and (src_crs == dst_crs)
-            and (src_info.src_width == dst_width)
-            and (src_info.src_height == dst_height)
+            and (src_info.src_width == dst_window.width)
+            and (src_info.src_height == dst_window.height)
             and ('.nc' not in filename.lower())
         ):
             vrt_options = {
@@ -976,8 +978,8 @@ def warp(
                 'crs': src_crs,
                 'src_transform': src.transform,
                 'transform': src.transform,
-                'height': dst_height,
-                'width': dst_width,
+                'height': dst_window.height,
+                'width': dst_window.width,
                 'nodata': None,
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {
@@ -987,21 +989,12 @@ def warp(
             }
 
         else:
-            src_transform = Affine(
-                src_info.src_res[0],
-                0.0,
-                src_info.src_bounds.left,
-                0.0,
-                -src_info.src_res[1],
-                src_info.src_bounds.top,
+            src_transform = transform_from_corner(
+                src_info.src_bounds, src_info.src_res
             )
-            dst_transform = Affine(
-                dst_res[0],
-                0.0,
-                dst_bounds.left,
-                0.0,
-                -dst_res[1],
-                dst_bounds.top,
+
+            dst_transform = transform_from_corner(
+                dst_bounds.src_bounds, dst_res.src_res
             )
 
             if tac is not None:
@@ -1016,7 +1009,10 @@ def warp(
             if tap:
                 # Align the cells to the resolution
                 dst_transform, dst_width, dst_height = aligned_target(
-                    dst_transform, dst_width, dst_height, dst_res
+                    dst_transform, dst_window.width, dst_window.height, dst_res
+                )
+                dst_window = Window(
+                    row_off=0, col_off=0, width=dst_width, height=dst_height
                 )
 
             vrt_options = {
@@ -1025,8 +1021,8 @@ def warp(
                 'crs': dst_crs,
                 'src_transform': src_transform,
                 'transform': dst_transform,
-                'height': dst_height,
-                'width': dst_width,
+                'height': dst_window.height,
+                'width': dst_window.width,
                 'nodata': nodata,
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {
