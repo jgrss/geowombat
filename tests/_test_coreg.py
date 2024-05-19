@@ -1,12 +1,12 @@
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
 
-import geowombat as gw
-from geowombat.data import l8_224077_20200518_B2
-from geowombat.data import l8_224077_20200518_B4
 import numpy as np
 import xarray as xr
+
+import geowombat as gw
+from geowombat.data import l8_224077_20200518_B2, l8_224077_20200518_B4
 
 
 def shift(data: xr.DataArray, x: int, y: int) -> xr.DataArray:

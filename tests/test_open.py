@@ -91,6 +91,38 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.nbands, 2)
             self.assertTrue(src.gw.has_band_dim)
             self.assertTrue(src.gw.has_band_coord)
+            self.assertEqual(src.band.values.tolist(), [1, 2])
+
+        with gw.open(
+            [
+                l8_224078_20200518_B2,
+                l8_224078_20200518_B2,
+                l8_224078_20200518_B2,
+            ],
+            stack_dim='band',
+        ) as src:
+            self.assertEqual(src.band.values.tolist(), [1, 2, 3])
+
+        with gw.open(
+            [
+                l8_224078_20200518_B2,
+                l8_224078_20200518_B2,
+                l8_224078_20200518,
+            ],
+            stack_dim='band',
+        ) as src:
+            self.assertEqual(src.band.values.tolist(), [1, 2, 3, 4, 5])
+
+        with gw.open(
+            [
+                l8_224078_20200518_B2,
+                l8_224078_20200518_B2,
+                l8_224078_20200518_B2,
+            ],
+            stack_dim='band',
+            band_names=['a', 'b', 'c'],
+        ) as src:
+            self.assertEqual(src.band.values.tolist(), ['a', 'b', 'c'])
 
     def test_open_multiple_same(self):
         with gw.open(
