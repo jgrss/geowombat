@@ -63,7 +63,7 @@ def transform_from_corner(
 def get_window_from_bounds(
     bounds: BoundingBox, res: T.Sequence[float]
 ) -> Window:
-    """Gets."""
+    """Gets a ``rasterio.Window`` a bounding box."""
     transform = transform_from_corner(bounds, res)
 
     return window_from_bounds(*bounds, transform=transform)
