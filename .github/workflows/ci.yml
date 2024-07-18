@@ -42,9 +42,7 @@ jobs:
           pip install numpy
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
           echo "GDAL Version: $GDAL_VERSION"
-          pip install GDAL==$GDAL_VERSION --no-cache-dir
-          pip install arosics --no-deps
-          pip install cartopy cmocean geoarray>=0.15.0 geojson joblib>=1.3.0 folium>=0.6.0,!=0.12.0 geopandas matplotlib numpy pandas plotly pykrige pyproj>2.2.0 py_tools_ds>=0.18.0 scikit-image>=0.21.0 scikit-learn scipy>=1.7.0 shapely
+          pip install arosics GDAL==$GDAL_VERSION --no-cache-dir
 
       - name: Install GeoWombat
         run: |
