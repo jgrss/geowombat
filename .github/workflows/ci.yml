@@ -43,7 +43,7 @@ jobs:
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
           echo "GDAL Version: $GDAL_VERSION"
           pip install arosics GDAL==$GDAL_VERSION --no-cache-dir
-
+          
       - name: Install GeoWombat
         run: |
           pip install ".[stac,web,coreg,perf,tests]"
@@ -56,6 +56,10 @@ jobs:
           pip install testfixtures
           pip install ".[ml]"
           python -m unittest discover -p 'ml_*.py'
+      - name: Print Versions
+        run: |
+          echo "$(pip list )"
+
 #  Quality:
 #    runs-on: ubuntu-latest
 #    steps:
