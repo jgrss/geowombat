@@ -41,8 +41,9 @@ jobs:
           pip install -U pip setuptools wheel
           pip install numpy
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
+          echo "GDAL Version: $GDAL_VERSION"
           pip install GDAL==$GDAL_VERSION --no-cache-dir
-          pip install arosics==1.10.1 
+          pip install arosics 
       - name: Install GeoWombat
         run: |
           pip install ".[stac,web,coreg,perf,tests]"
