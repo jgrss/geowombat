@@ -47,6 +47,9 @@ jobs:
       - name: Install GeoWombat
         run: |
           pip install ".[stac,web,coreg,perf,tests]"
+      - name: Print Versions
+        run: |
+          echo "$(pip list )"
       - name: Run Unittests
         run: |
           pip install testfixtures
@@ -56,9 +59,7 @@ jobs:
           pip install testfixtures
           pip install ".[ml]"
           python -m unittest discover -p 'ml_*.py'
-      - name: Print Versions
-        run: |
-          echo "$(pip list )"
+
 
 #  Quality:
 #    runs-on: ubuntu-latest
