@@ -244,7 +244,7 @@ class TestOpen(unittest.TestCase):
             band_names=["blue"],
             mosaic=True,
             overlap="max",
-            bounds_by="intersection",
+            bounds_by="union",
             nodata=0,
         ) as src:
             start_values = src.values[
@@ -346,7 +346,7 @@ class TestOpen(unittest.TestCase):
             band_names=["blue"],
             mosaic=True,
             overlap="min",
-            bounds_by="intersection",
+            bounds_by="union",
             nodata=0,
         ) as src:
             start_values = src.values[
@@ -381,6 +381,7 @@ class TestOpen(unittest.TestCase):
                     ),
                 ),
             )
+            print(mid_values)
             self.assertTrue(
                 np.allclose(
                     mid_values,
@@ -415,7 +416,33 @@ class TestOpen(unittest.TestCase):
             )
 
     def test_mosaic_mean(self):
+        filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
+        with gw.open(
+            filenames,
+            band_names=["blue"],
+            mosaic=True,
+            overlap="mean",
+            bounds_by="intersection",
+            nodata=0,
+        ) as src:
+            x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
+            j, i = coords_to_indices(x, y, src)
+            block = src[0, i : i + 3, j : j + 3].values
+            self.assertTrue(
+                np.allclose(
+                    block,
+                    np.array(
+                        [
+                            [8385.5, 8183, 8049.5],
+                            [7936, 7868, 7887],
+                            [7861.5, 7827, 7721],
+                        ],
+                        dtype="float32",
+                    ),
+                )
+            )
 
+    def test_mosaic_mean_nan(self):
         filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
         with gw.open(
             filenames,
@@ -423,42 +450,21 @@ class TestOpen(unittest.TestCase):
             mosaic=True,
             overlap="mean",
             bounds_by="union",
+            nodata=0,
         ) as src:
             start_values = src.values[
                 0,
                 0,
                 0:10,
             ]
-            mid_values = src.values[
-                0,
-                src.gw.nrows // 2,
-                src.gw.ncols // 2 : src.gw.ncols // 2 + 10,
-            ]
             end_values = src.values[
                 0,
                 -2,
                 -10:,
             ]
-            self.assertTrue(
-                np.allclose(
-                    mid_values,
-                    np.array(
-                        [
-                            7523,
-                            7538,
-                            7573,
-                            7625,
-                            7683,
-                            7660,
-                            7642,
-                            7772,
-                            7696,
-                            7565,
-                        ]
-                    ),
-                )
-            )
-
+            x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
+            j, i = coords_to_indices(x, y, src)
+            mid_values = src[0, i : i + 3, j : j + 3].values
             self.assertTrue(
                 np.allclose(
                     start_values,
@@ -476,9 +482,21 @@ class TestOpen(unittest.TestCase):
                             8125.0,
                         ]
                     ),
+                ),
+            )
+            print(mid_values)
+            self.assertTrue(
+                np.allclose(
+                    mid_values,
+                    np.array(
+                        [
+                            [8385.5, 8183.0, 8049.5],
+                            [7936.0, 7868.0, 7887.0],
+                            [7861.5, 7827.0, 7721.0],
+                        ]
+                    ),
                 )
             )
-
             self.assertTrue(
                 np.allclose(
                     end_values,
@@ -497,7 +515,7 @@ class TestOpen(unittest.TestCase):
                         ]
                     ),
                     equal_nan=True,
-                )
+                ),
             )
 
     def test_footprint_grid(self):
