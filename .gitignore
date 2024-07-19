@@ -58,4 +58,3 @@ notebooks/stac*.py
 dask-worker-space/
 .vscode/
 
-act/
