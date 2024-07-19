@@ -28,7 +28,7 @@ from tqdm.auto import tqdm
 
 from ..backends import concat as gw_concat
 from ..backends import mosaic as gw_mosaic
-from ..backends import warp_open
+from ..backends import warp_open, _check_config_globals
 from ..backends.rasterio_ import check_src_crs
 from ..config import _set_defaults, config
 from ..handler import add_handler
@@ -512,6 +512,20 @@ class open(object):
                     with rio.open(filename[0]) as src:
                         w = src.block_window(1, 0, 0)
                         kwargs["chunks"] = (band_chunks, w.height, w.width)
+                ref_kwargs = {
+                    "crs": None,
+                    "res": None,
+                }
+
+                ref_kwargs = _check_config_globals(
+                    filename, "reference", ref_kwargs
+                )
+
+                if all(value is not None for value in ref_kwargs.values()):
+                    logger.exception(
+                        """ Changes to the reference image, CRS, or resolution are not allowed when opening multiple images.\nPlease write changes to disk before opening multiple images."""
+                    )
+                    # raise ValueError
 
                 if mosaic:
                     # Mosaic images over space
@@ -770,12 +784,12 @@ def load(
         with open(
             image_list[0],
             time_names=time_names[0],
-            band_names=band_names
-            if not str(image_list[0]).endswith(".nc")
-            else None,
-            netcdf_vars=band_names
-            if str(image_list[0]).endswith(".nc")
-            else None,
+            band_names=(
+                band_names if not str(image_list[0]).endswith(".nc") else None
+            ),
+            netcdf_vars=(
+                band_names if str(image_list[0]).endswith(".nc") else None
+            ),
             chunks=chunks,
         ) as src:
             pass
@@ -1230,19 +1244,24 @@ class series(BaseSeries):
                 with pool(num_workers) as executor:
                     data_gen = (
                         (
-                            w,
-                            self.read(
-                                bands, window=w[1], gain=gain, offset=offset
-                            ),
-                            self.band_dict,
-                        )
-                        if self.padding
-                        else (
-                            w,
-                            self.read(
-                                bands, window=w, gain=gain, offset=offset
-                            ),
-                            self.band_dict,
+                            (
+                                w,
+                                self.read(
+                                    bands,
+                                    window=w[1],
+                                    gain=gain,
+                                    offset=offset,
+                                ),
+                                self.band_dict,
+                            )
+                            if self.padding
+                            else (
+                                w,
+                                self.read(
+                                    bands, window=w, gain=gain, offset=offset
+                                ),
+                                self.band_dict,
+                            )
                         )
                         for w in self.windows_
                     )
