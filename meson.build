@@ -115,14 +115,14 @@ py3.install_sources(
 
 py3.install_sources(
     [
-'src/geowombat/radiometry/__init__.py',
-'src/geowombat/radiometry/sr.py',
-'src/geowombat/radiometry/topo.py',
-'src/geowombat/radiometry/sixs.py',
-'src/geowombat/radiometry/angles.py',
-'src/geowombat/radiometry/mask.py',
-'src/geowombat/radiometry/qa.py',
-'src/geowombat/radiometry/brdf.py'
+    'src/geowombat/radiometry/__init__.py',
+    'src/geowombat/radiometry/sr.py',
+    'src/geowombat/radiometry/topo.py',
+    'src/geowombat/radiometry/sixs.py',
+    'src/geowombat/radiometry/angles.py',
+    'src/geowombat/radiometry/mask.py',
+    'src/geowombat/radiometry/qa.py',
+    'src/geowombat/radiometry/brdf.py'
     ],
     subdir: 'geowombat/radiometry',
     pure: false

@@ -5,7 +5,7 @@ import('python').find_installation().extension_module(
   '_moving',
   '_moving.pyx',
   dependencies : [numpy_dep, omp],
-  subdir: 'rastercrf/transforms',
+  subdir: 'geowombat/transforms',
   install : true
 )
 

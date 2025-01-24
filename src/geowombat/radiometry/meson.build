@@ -5,6 +5,6 @@ import('python').find_installation().extension_module(
   '_fusion',
   '_fusion.pyx',
   dependencies : [numpy_dep, omp],
-  subdir: 'rastercrf/transforms',
+  subdir: 'geowombat/radiometry',
   install : true
 )
