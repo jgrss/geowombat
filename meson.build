@@ -63,7 +63,6 @@ py3.install_sources(
 
 py3.install_sources(
     [
-        'src/geowombat/data',
         'src/geowombat/data/LC08_L1TP_224077_20200518_20200518_01_RT_B4.TIF',
         'src/geowombat/data/rgbn_suba.tif',
         'src/geowombat/data/LE07_L2SP_225078_20110306_02_T1_SZA.tif',
