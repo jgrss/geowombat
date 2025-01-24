@@ -107,7 +107,7 @@ py3.install_sources(
 
 py3.install_sources(
     [
-    'src/geowombat/moving/__init__py',
+    'src/geowombat/moving/__init__.py',
     ],
     subdir: 'geowombat/moving',
     pure: false
