@@ -143,7 +143,7 @@ py3.install_sources(
     'src/geowombat/util/plotting.py',
     'src/geowombat/util/web.py',
     ],
-    subdir: 'geowombt/util',
+    subdir: 'geowombat/util',
     pure: false
 )
 
