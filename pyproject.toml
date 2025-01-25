@@ -34,6 +34,93 @@ dependencies = [
   "threadpoolctl"
 ]
 
+[project.optional-dependencies]
+docs = [
+    'numpydoc',
+    'sphinx',
+    'sphinx-automodapi',
+    'sphinxcontrib-bibtex<2.0.0',
+    'sphinx_tabs',
+    'pydata-sphinx-theme==0.13.1', # from https://github.com/google/jax/blob/main/docs/requirements.txt
+    'sphinx-book-theme>=1.0.0',
+    'sphinx-copybutton>=0.5.0',
+    'sphinx-autodoc-typehints',
+    'ipython',
+    'graphviz'
+]
+
+
+tests = [
+    'testfixtures',
+    'jax',
+    "jaxlib",
+    "pre-commit",
+    "black",
+    "flake8",
+    "docformatter",
+    "isort",
+    "validators"
+]
+
+coreg = [
+  "earthpy",
+  "pyfftw==0.13.1",
+  "bottleneck",
+  "cartopy",
+  "cmocean",
+  "dill",
+  "geoarray>=0.15.0",
+  "geojson",
+  "folium>=0.6.0,!=0.12.0",
+  "pykrige",
+  "py_tools_ds>=0.18.0",
+]
+
+zarr = [
+  'zarr',
+  'numcodecs'
+  ]
+
+ml = [
+  'dask-ml>=2022.5.27',
+  'scikit-learn==1.2.0',
+  'lightgbm',
+  'sklearn-xarray@git+https://github.com/mmann1123/sklearn-xarray.git',
+  'numpy_groupies'
+    ]
+
+perf = [
+  'rtree',
+  'pygeos',
+  'netCDF4',
+  'ray>=2.3.0'
+]
+
+time = ["dateparser"]
+
+view = [
+    "ipython",
+    "bokeh",
+    "descartes",
+    "graphviz",
+]
+
+
+stac = [
+    'stackstac[viz]@git+https://github.com/jgrss/stackstac.git',
+    "pystac-client",
+    "sat-search",
+    "planetary-computer",
+    "Rich",
+    "wget",
+    "wrapt-timeout-decorator",
+]
+web = [
+    "gsutil",
+    "requests",
+    "wget",
+]
+
 
 [tool.black]
 line-length = 79
