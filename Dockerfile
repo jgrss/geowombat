@@ -14,6 +14,5 @@ ARG CACHEBUST=0
 RUN cd \
     && uv venv \
     && . .venv/bin/activate \
-    && uv pip install setuptools numpy \
-    && uv pip install gdal[numpy]==$(gdal-config --version) --no-build-isolation \
+    && uv pip install gdal[numpy]==$(gdal-config --version)  \
     && uv pip install git+https://github.com/rdenham/geowombat@meson 
