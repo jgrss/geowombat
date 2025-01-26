@@ -9,6 +9,7 @@ py3.install_sources(
     [
     'src/geowombat/__init__.py',
     'src/geowombat/config.py',
+    'src/geowombat/config.ini',
     'src/geowombat/handler.py',
     ],
     subdir: 'geowombat',
