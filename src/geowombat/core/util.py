@@ -545,6 +545,51 @@ class MapProcesses(object):
         )
 
 
+def azimuthal_avg(image, center=None):
+    """
+    Calculate the azimuthally averaged radial profile.
+
+    image - The 2D image
+    center - The [x,y] pixel coordinates used as the center. The default is
+             None, which then uses the center of the image (including
+             fractional pixels).
+    """
+
+    # Calculate the indices from the image
+    y, x = np.indices(image.shape)
+
+    if not center:
+        center = np.array(
+            [(x.max() - x.min()) / 2.0, (x.max() - x.min()) / 2.0]
+        )
+
+    # Get hypotenuse
+    r = np.hypot(np.subtract(x, center[0]), np.subtract(y, center[1]))
+
+    # Get sorted radii indices
+    ind = np.argsort(r.flat)
+    rSorted = r.flat[ind]
+
+    # Get image values from index positions
+    iSorted = image.flat[ind]
+
+    # Get the integer part of the radii (bin size = 1)
+    rInt = rSorted.astype(int)
+
+    # Find all pixels that fall within each radial bin
+    deltar = np.subtract(rInt[1:], rInt[:-1])  # Assumes all radii represented
+    rind = np.where(deltar)[0]  # location of changed radius
+    nr = np.subtract(rind[1:], rind[:-1])  # number of radius bin
+
+    # Cumulative sum to figure out sums for each radius bin
+    csim = np.cumsum(iSorted, dtype=float)
+    tbin = np.subtract(csim[rind[1:]], csim[rind[:-1]])
+
+    radialProf = np.divide(tbin, nr)
+
+    return radialProf
+
+
 def sample_feature(
     df_row,
     id_column,
