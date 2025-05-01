@@ -47,20 +47,24 @@ def test_moving_fourier_rgb():
 def test_moving_fourier_greyscale():
     # Create an RGB test image
     data = np.random.rand(3, 100, 100)
-    coords = {'band': ['R', 'G', 'B'], 'y': np.arange(100), 'x': np.arange(100)}
-    rgb_image = xr.DataArray(data, dims=('band', 'y', 'x'), coords=coords)
+    coords = {
+        "band": ["R", "G", "B"],
+        "y": np.arange(100),
+        "x": np.arange(100),
+    }
+    rgb_image = xr.DataArray(data, dims=("band", "y", "x"), coords=coords)
 
     # Apply moving Fourier Transform with greyscale=True
     result = MapProcesses.moving_fourier(rgb_image, w=5, greyscale=True)
 
     # Assert the result contains the expected keys
-    assert 'fourier_mean' in result
-    assert 'fourier_variance' in result
+    assert "fourier_mean" in result
+    assert "fourier_variance" in result
 
     # Assert the output has a single band
-    assert result['fourier_mean'].dims == ('y', 'x')
-    assert result['fourier_variance'].dims == ('y', 'x')
+    assert result["fourier_mean"].dims == ("y", "x")
+    assert result["fourier_variance"].dims == ("y", "x")
 
     # Assert the shapes match the input spatial dimensions
-    assert result['fourier_mean'].shape == (100, 100)
-    assert result['fourier_variance'].shape == (100, 100)
+    assert result["fourier_mean"].shape == (100, 100)
+    assert result["fourier_variance"].shape == (100, 100)

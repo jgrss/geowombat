@@ -517,8 +517,15 @@ class MapProcesses(object):
         data = data.chunk() if not isinstance(data.data, da.Array) else data
 
         # Pad the data to ensure the output shape matches the input shape
-        pad_width = ((hw, hw), (hw, hw)) if "band" not in data.dims else ((0, 0), (hw, hw), (hw, hw))
-        data = data.pad({dim: (hw, hw) for dim in data.dims if dim != "band"}, mode="reflect")
+        pad_width = (
+            ((hw, hw), (hw, hw))
+            if "band" not in data.dims
+            else ((0, 0), (hw, hw), (hw, hw))
+        )
+        data = data.pad(
+            {dim: (hw, hw) for dim in data.dims if dim != "band"},
+            mode="reflect",
+        )
 
         results_mean = []
         results_var = []
@@ -544,6 +551,10 @@ class MapProcesses(object):
             results_mean.append(res_mean)
             results_var.append(res_var)
 
+        # Update coordinates to match padded dimensions
+        padded_y = np.arange(-hw, y.size + hw)
+        padded_x = np.arange(-hw, x.size + hw)
+
         results_mean = xr.DataArray(
             data=(
                 da.stack(results_mean, axis=0)
@@ -552,9 +563,9 @@ class MapProcesses(object):
             ),
             dims=("band", "y", "x") if "band" in data.dims else ("y", "x"),
             coords=(
-                {"band": data.band, "y": y[:results_mean[0].shape[0]], "x": x}
+                {"band": data.band, "y": padded_y[:results_mean[0].shape[0]], "x": padded_x[:results_mean[0].shape[1]]}
                 if "band" in data.dims
-                else {"y": y[:results_mean[0].shape[0]], "x": x}
+                else {"y": padded_y[:results_mean[0].shape[0]], "x": padded_x[:results_mean[0].shape[1]]}
             ),
             attrs=attrs,
         )
@@ -567,9 +578,9 @@ class MapProcesses(object):
             ),
             dims=("band", "y", "x") if "band" in data.dims else ("y", "x"),
             coords=(
-                {"band": data.band, "y": y[:results_var[0].shape[0]], "x": x}
+                {"band": data.band, "y": padded_y[:results_var[0].shape[0]], "x": padded_x[:results_var[0].shape[1]]}
                 if "band" in data.dims
-                else {"y": y[:results_var[0].shape[0]], "x": x}
+                else {"y": padded_y[:results_var[0].shape[0]], "x": padded_x[:results_var[0].shape[1]]}
             ),
             attrs=attrs,
         )
