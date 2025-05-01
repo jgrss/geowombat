@@ -39,7 +39,6 @@ def lazy_wombat(func):
 
 
 def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
-
     """Estimates the size of an array in-memory.
 
     Args:
@@ -60,9 +59,8 @@ def estimate_array_mem(ntime, nbands, nrows, ncols, dtype):
 
 
 def parse_filename_dates(
-    filenames: T.Sequence[T.Union[str, Path]]
+    filenames: T.Sequence[T.Union[str, Path]],
 ) -> T.Sequence:
-
     """Parses dates from file names.
 
     Args:
@@ -83,11 +81,11 @@ def parse_filename_dates(
                 __, dt = list(
                     zip(
                         *search_dates(
-                            ' '.join(' '.join(f_base.split('_')).split('-')),
+                            " ".join(" ".join(f_base.split("_")).split("-")),
                             settings={
-                                'DATE_ORDER': 'YMD',
-                                'STRICT_PARSING': False,
-                                'PREFER_LANGUAGE_DATE_ORDER': False,
+                                "DATE_ORDER": "YMD",
+                                "STRICT_PARSING": False,
+                                "PREFER_LANGUAGE_DATE_ORDER": False,
                             },
                         )
                     )
@@ -105,7 +103,6 @@ def parse_filename_dates(
 
 
 def parse_wildcard(string: str) -> T.Sequence:
-
     """Parses a search wildcard from a string.
 
     Args:
@@ -119,7 +116,7 @@ def parse_wildcard(string: str) -> T.Sequence:
         d_name, wildcard = os.path.split(string)
     else:
 
-        d_name = '.'
+        d_name = "."
         wildcard = string
 
     matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
@@ -129,7 +126,7 @@ def parse_wildcard(string: str) -> T.Sequence:
 
     if not matches:
         logger.exception(
-            '  There were no images found with the string search.'
+            "  There were no images found with the string search."
         )
 
     return matches
@@ -141,8 +138,8 @@ def sort_images_by_date(
     date_pos: int = 0,
     date_start: int = 0,
     date_end: int = 8,
-    split_by: str = '_',
-    date_format: str = '%Y%m%d',
+    split_by: str = "_",
+    date_format: str = "%Y%m%d",
     file_list: T.Optional[T.Sequence[Path]] = None,
     prepend_str: T.Optional[str] = None,
 ) -> OrderedDict:
@@ -180,7 +177,7 @@ def sort_images_by_date(
         fl = list(image_path.glob(image_wildcard))
 
     if prepend_str:
-        fl = [Path(f'{prepend_str}{str(fn)}') for fn in fl]
+        fl = [Path(f"{prepend_str}{str(fn)}") for fn in fl]
 
     dates = [
         datetime.strptime(
@@ -197,7 +194,7 @@ def sort_images_by_date(
     )
 
 
-def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
+def project_coords(x, y, src_crs, dst_crs, return_as="1d", **kwargs):
     """Projects coordinates to a new CRS.
 
     Args:
@@ -212,7 +209,7 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
         ``numpy.array``, ``numpy.array`` or ``xr.DataArray``
     """
 
-    if return_as == '1d':
+    if return_as == "1d":
 
         df_tmp = gpd.GeoDataFrame(
             np.arange(0, x.shape[0]),
@@ -227,14 +224,14 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
     else:
 
         if not isinstance(x, np.ndarray):
-            x = np.array(x, dtype='float64')
+            x = np.array(x, dtype="float64")
 
         if not isinstance(y, np.ndarray):
-            y = np.array(y, dtype='float64')
+            y = np.array(y, dtype="float64")
 
         yy = np.meshgrid(x, y)[1]
 
-        latitudes = np.zeros(yy.shape, dtype='float64')
+        latitudes = np.zeros(yy.shape, dtype="float64")
 
         src_transform = from_bounds(
             x[0], y[-1], x[-1], y[0], latitudes.shape[1], latitudes.shape[0]
@@ -252,7 +249,7 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
             destination=latitudes,
             src_transform=src_transform,
             dst_transform=dst_transform,
-            src_crs=CRS.from_epsg(src_crs.split(':')[1]),
+            src_crs=CRS.from_epsg(src_crs.split(":")[1]),
             dst_crs=CRS(dst_crs),
             **kwargs,
         )[0]
@@ -261,11 +258,11 @@ def project_coords(x, y, src_crs, dst_crs, return_as='1d', **kwargs):
             data=da.from_array(
                 latitudes[np.newaxis, :, :], chunks=(1, 512, 512)
             ),
-            dims=('band', 'y', 'x'),
+            dims=("band", "y", "x"),
             coords={
-                'band': ['lat'],
-                'y': ('y', latitudes[:, 0]),
-                'x': ('x', np.arange(1, latitudes.shape[1] + 1)),
+                "band": ["lat"],
+                "y": ("y", latitudes[:, 0]),
+                "x": ("x", np.arange(1, latitudes.shape[1] + 1)),
             },
         )
 
@@ -280,7 +277,7 @@ def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     Returns:
         Geometry information as ``namedtuple``.
     """
-    GeomInfo = namedtuple('GeomInfo', 'left bottom right top shape affine')
+    GeomInfo = namedtuple("GeomInfo", "left bottom right top shape affine")
 
     resx, resy = abs(res[1]), abs(res[0])
     minx, miny, maxx, maxy = geometry.bounds
@@ -309,7 +306,7 @@ def get_file_extension(filename: str) -> namedtuple:
         Name information as ``namedtuple``.
     """
 
-    FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
+    FileNames = namedtuple("FileNames", "d_name f_name f_base f_ext")
 
     d_name, f_name = os.path.splitext(filename)
     f_base, f_ext = os.path.split(f_name)
@@ -318,7 +315,6 @@ def get_file_extension(filename: str) -> namedtuple:
 
 
 def n_rows_cols(pixel_index: int, block_size: int, rows_cols: int) -> int:
-
     """Adjusts block size for the end of image rows and columns.
 
     Args:
@@ -339,9 +335,9 @@ def n_rows_cols(pixel_index: int, block_size: int, rows_cols: int) -> int:
 class Chunks(object):
     @staticmethod
     def get_chunk_dim(chunksize):
-        return '{:d}d'.format(len(chunksize))
+        return "{:d}d".format(len(chunksize))
 
-    def check_chunktype(self, chunksize: int, output: str = '3d'):
+    def check_chunktype(self, chunksize: int, output: str = "3d"):
         if isinstance(chunksize, int):
             chunksize = (-1, chunksize, chunksize)
 
@@ -352,7 +348,7 @@ class Chunks(object):
             if not isinstance(chunksize, dict):
                 if not isinstance(chunksize, int):
                     logger.warning(
-                        '  The chunksize parameter should be a tuple, dictionary, or integer.'
+                        "  The chunksize parameter should be a tuple, dictionary, or integer."
                     )
 
         if chunk_len != output_len:
@@ -361,7 +357,7 @@ class Chunks(object):
             return chunksize
 
     @staticmethod
-    def check_chunksize(chunksize: int, output: str = '3d') -> tuple:
+    def check_chunksize(chunksize: int, output: str = "3d") -> tuple:
         chunk_len = len(chunksize)
         output_len = int(output[0])
 
@@ -378,7 +374,7 @@ class MapProcesses(object):
     @staticmethod
     def moving(
         data: xr.DataArray,
-        stat: str = 'mean',
+        stat: str = "mean",
         perc: T.Union[float, int] = 50,
         w: int = 3,
         nodata: T.Optional[T.Union[float, int]] = None,
@@ -411,17 +407,17 @@ class MapProcesses(object):
             >>>     res.data.compute(num_workers=4)
         """
         if w % 2 == 0:
-            logger.exception('  The window size must be an odd number.')
+            logger.exception("  The window size must be an odd number.")
 
         if not isinstance(data, xr.DataArray):
-            logger.exception('  The input data must be an Xarray DataArray.')
+            logger.exception("  The input data must be an Xarray DataArray.")
 
         y = data.y.values
         x = data.x.values
         attrs = data.attrs
         hw = int(w * 0.5)
 
-        @threadpool_limits.wrap(limits=1, user_api='blas')
+        @threadpool_limits.wrap(limits=1, user_api="blas")
         def _move_func(block_data: np.ndarray) -> np.ndarray:
             """
             Args:
@@ -442,30 +438,30 @@ class MapProcesses(object):
 
         results = []
         for band in data.band.values.tolist():
-            band_array = data.sel(band=band).astype('float64')
+            band_array = data.sel(band=band).astype("float64")
             res = band_array.data.map_overlap(
                 _move_func,
                 depth=(hw, hw),
                 trim=True,
-                boundary='reflect',
-                dtype='float64',
+                boundary="reflect",
+                dtype="float64",
             )
 
             results.append(res)
 
         results = xr.DataArray(
             data=da.stack(results, axis=0),
-            dims=('band', 'y', 'x'),
-            coords={'band': data.band, 'y': y, 'x': x},
+            dims=("band", "y", "x"),
+            coords={"band": data.band, "y": y, "x": x},
             attrs=attrs,
         )
 
         new_attrs = {
-            'moving_stat': stat,
-            'moving_window_size': w,
+            "moving_stat": stat,
+            "moving_window_size": w,
         }
-        if stat == 'perc':
-            new_attrs['moving_perc'] = perc
+        if stat == "perc":
+            new_attrs["moving_perc"] = perc
 
         return results.assign_attrs(**new_attrs)
 
@@ -475,6 +471,7 @@ class MapProcesses(object):
         w: int = 3,
         nodata: T.Optional[T.Union[float, int]] = None,
         weights: T.Optional[bool] = False,
+        greyscale: bool = False,
     ) -> xr.Dataset:
         """
         Applies a moving window Fourier Transform and calculates mean and variance.
@@ -484,66 +481,102 @@ class MapProcesses(object):
             w (Optional[int]): The moving window size (in pixels).
             nodata (Optional[int or float]): A 'no data' value to ignore.
             weights (Optional[bool]): Whether to weight values by distance from window center.
+            greyscale (Optional[bool]): Whether to convert multiband image to greyscale before processing.
 
         Returns:
             ``xarray.Dataset`` containing Fourier mean and variance.
         """
         if w % 2 == 0:
-            logger.exception('  The window size must be an odd number.')
+            logger.exception("  The window size must be an odd number.")
 
         if not isinstance(data, xr.DataArray):
-            logger.exception('  The input data must be an Xarray DataArray.')
+            logger.exception("  The input data must be an Xarray DataArray.")
+
+        if greyscale and "band" in data.dims:
+            # Convert to greyscale by averaging across bands
+            data = data.mean(dim="band")
 
         y = data.y.values
         x = data.x.values
         attrs = data.attrs
         hw = int(w * 0.5)
 
-        def _fourier_func(block_data: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
+        def _fourier_func(block_data: np.ndarray) -> np.ndarray:
             """
             Computes Fourier Transform mean and variance for a block.
             """
             if max(block_data.shape) <= hw:
-                return block_data, block_data
+                return np.array([np.mean(block_data), np.var(block_data)])
             else:
                 fft_result = scipy.fftpack.fft2(block_data)
                 fft_mean = np.mean(np.abs(fft_result))
                 fft_var = np.var(np.abs(fft_result))
-                return fft_mean, fft_var
+                return np.array([fft_mean, fft_var])
+
+        # Ensure data is a Dask array
+        data = data.chunk() if not isinstance(data.data, da.Array) else data
+
+        # Pad the data to ensure the output shape matches the input shape
+        pad_width = ((hw, hw), (hw, hw)) if "band" not in data.dims else ((0, 0), (hw, hw), (hw, hw))
+        data = data.pad({dim: (hw, hw) for dim in data.dims if dim != "band"}, mode="reflect")
 
         results_mean = []
         results_var = []
-        for band in data.band.values.tolist():
-            band_array = data.sel(band=band).astype('float64')
-            res_mean, res_var = band_array.data.map_overlap(
+        for band in (
+            data.band.values.tolist() if "band" in data.dims else [None]
+        ):
+            band_array = (
+                data.sel(band=band).astype("float64")
+                if band
+                else data.astype("float64")
+            )
+            res = band_array.data.map_overlap(
                 _fourier_func,
                 depth=(hw, hw),
-                trim=True,
-                boundary='reflect',
-                dtype='float64',
+                trim=True,  # Trim to remove padding
+                boundary="reflect",
+                dtype="float64",
             )
 
+            # Extract mean and variance from the result
+            res_mean = res[0::2]  # Even indices for mean
+            res_var = res[1::2]  # Odd indices for variance
             results_mean.append(res_mean)
             results_var.append(res_var)
 
         results_mean = xr.DataArray(
-            data=da.stack(results_mean, axis=0),
-            dims=('band', 'y', 'x'),
-            coords={'band': data.band, 'y': y, 'x': x},
+            data=(
+                da.stack(results_mean, axis=0)
+                if "band" in data.dims
+                else results_mean[0]
+            ),
+            dims=("band", "y", "x") if "band" in data.dims else ("y", "x"),
+            coords=(
+                {"band": data.band, "y": y[:results_mean[0].shape[0]], "x": x}
+                if "band" in data.dims
+                else {"y": y[:results_mean[0].shape[0]], "x": x}
+            ),
             attrs=attrs,
         )
 
         results_var = xr.DataArray(
-            data=da.stack(results_var, axis=0),
-            dims=('band', 'y', 'x'),
-            coords={'band': data.band, 'y': y, 'x': x},
+            data=(
+                da.stack(results_var, axis=0)
+                if "band" in data.dims
+                else results_var[0]
+            ),
+            dims=("band", "y", "x") if "band" in data.dims else ("y", "x"),
+            coords=(
+                {"band": data.band, "y": y[:results_var[0].shape[0]], "x": x}
+                if "band" in data.dims
+                else {"y": y[:results_var[0].shape[0]], "x": x}
+            ),
             attrs=attrs,
         )
 
-        return xr.Dataset({
-            'fourier_mean': results_mean,
-            'fourier_variance': results_var
-        })
+        return xr.Dataset(
+            {"fourier_mean": results_mean, "fourier_variance": results_var}
+        )
 
 
 def sample_feature(
@@ -585,7 +618,7 @@ def sample_feature(
 
     fid = df_row[id_column]
     other_cols = [
-        col for col in df_columns if col not in [id_column, 'geometry']
+        col for col in df_columns if col not in [id_column, "geometry"]
     ]
 
     if not isinstance(feature_array, np.ndarray):
@@ -598,7 +631,7 @@ def sample_feature(
             transform=geom_info.affine,
             all_touched=all_touched,
             default_value=1,
-            dtype='int64',
+            dtype="int64",
         )
 
     # Get the indices of the feature's envelope
@@ -630,7 +663,7 @@ def sample_feature(
     n_samples = y_coords.shape[0]
     try:
         fid_ = int(fid)
-        fid_ = np.zeros(n_samples, dtype='int64') + fid_
+        fid_ = np.zeros(n_samples, dtype="int64") + fid_
     except ValueError:
         fid_ = str(fid)
         fid_ = np.zeros([fid_] * n_samples, dtype=object)
@@ -640,7 +673,7 @@ def sample_feature(
         data=np.c_[fid_, np.arange(0, n_samples)],
         geometry=gpd.points_from_xy(x_coords, y_coords),
         crs=crs,
-        columns=[id_column, 'point'],
+        columns=[id_column, "point"],
     )
 
     if not fea_df.empty:
