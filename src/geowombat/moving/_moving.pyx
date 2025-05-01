@@ -14,7 +14,9 @@ np._import_array
 
 from ..util cimport percentiles
 from cython.parallel import parallel, prange
-
+from cpython.ref cimport PyObject
+cdef extern from "numpy/arrayobject.h":
+    PyObject* PyArray_SimpleNewFromData(int ndim, np.npy_intp *dims, int typenum, void *data)
 
 cdef extern from 'math.h':
    double floor(double val) nogil
