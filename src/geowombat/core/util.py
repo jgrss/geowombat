@@ -16,6 +16,7 @@ from rasterio.crs import CRS
 from rasterio.transform import from_bounds
 from rasterio.warp import reproject, transform_bounds
 from threadpoolctl import threadpool_limits
+import scipy.fftpack
 
 from ..handler import add_handler
 from ..moving import moving_window
@@ -467,6 +468,82 @@ class MapProcesses(object):
             new_attrs['moving_perc'] = perc
 
         return results.assign_attrs(**new_attrs)
+
+    @staticmethod
+    def moving_fourier(
+        data: xr.DataArray,
+        w: int = 3,
+        nodata: T.Optional[T.Union[float, int]] = None,
+        weights: T.Optional[bool] = False,
+    ) -> xr.Dataset:
+        """
+        Applies a moving window Fourier Transform and calculates mean and variance.
+
+        Args:
+            data (DataArray): The ``xarray.DataArray`` to process.
+            w (Optional[int]): The moving window size (in pixels).
+            nodata (Optional[int or float]): A 'no data' value to ignore.
+            weights (Optional[bool]): Whether to weight values by distance from window center.
+
+        Returns:
+            ``xarray.Dataset`` containing Fourier mean and variance.
+        """
+        if w % 2 == 0:
+            logger.exception('  The window size must be an odd number.')
+
+        if not isinstance(data, xr.DataArray):
+            logger.exception('  The input data must be an Xarray DataArray.')
+
+        y = data.y.values
+        x = data.x.values
+        attrs = data.attrs
+        hw = int(w * 0.5)
+
+        def _fourier_func(block_data: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
+            """
+            Computes Fourier Transform mean and variance for a block.
+            """
+            if max(block_data.shape) <= hw:
+                return block_data, block_data
+            else:
+                fft_result = scipy.fftpack.fft2(block_data)
+                fft_mean = np.mean(np.abs(fft_result))
+                fft_var = np.var(np.abs(fft_result))
+                return fft_mean, fft_var
+
+        results_mean = []
+        results_var = []
+        for band in data.band.values.tolist():
+            band_array = data.sel(band=band).astype('float64')
+            res_mean, res_var = band_array.data.map_overlap(
+                _fourier_func,
+                depth=(hw, hw),
+                trim=True,
+                boundary='reflect',
+                dtype='float64',
+            )
+
+            results_mean.append(res_mean)
+            results_var.append(res_var)
+
+        results_mean = xr.DataArray(
+            data=da.stack(results_mean, axis=0),
+            dims=('band', 'y', 'x'),
+            coords={'band': data.band, 'y': y, 'x': x},
+            attrs=attrs,
+        )
+
+        results_var = xr.DataArray(
+            data=da.stack(results_var, axis=0),
+            dims=('band', 'y', 'x'),
+            coords={'band': data.band, 'y': y, 'x': x},
+            attrs=attrs,
+        )
+
+        return xr.Dataset({
+            'fourier_mean': results_mean,
+            'fourier_variance': results_var
+        })
 
 
 def sample_feature(
