@@ -1,38 +1,59 @@
-import pytest
+import unittest
 import numpy as np
 import xarray as xr
 from geowombat.core.util import MapProcesses
 
-def test_moving_fourier_single_band():
-    # Create a single-band test image
-    data = np.random.rand(100, 100)
-    coords = {'y': np.arange(100), 'x': np.arange(100)}
-    single_band = xr.DataArray(data, dims=('y', 'x'), coords=coords)
 
-    # Apply moving Fourier Transform
-    result = MapProcesses.moving_fourier(single_band, w=5)
+class TestMovingFourier(unittest.TestCase):
+    def setUp(self):
+        # Create a single-band test image
+        self.single_band_data = np.random.rand(100, 100)
+        self.single_band_coords = {"y": np.arange(100), "x": np.arange(100)}
+        self.single_band = xr.DataArray(
+            self.single_band_data,
+            dims=("y", "x"),
+            coords=self.single_band_coords,
+        )
 
-    # Assert the result contains the expected keys
-    assert 'fourier_mean' in result
-    assert 'fourier_variance' in result
+        # Create an RGB test image
+        self.rgb_data = np.random.rand(3, 100, 100)
+        self.rgb_coords = {
+            "band": ["R", "G", "B"],
+            "y": np.arange(100),
+            "x": np.arange(100),
+        }
+        self.rgb_image = xr.DataArray(
+            self.rgb_data, dims=("band", "y", "x"), coords=self.rgb_coords
+        )
 
-    # Assert the shapes match the input
-    assert result['fourier_mean'].shape == single_band.shape
-    assert result['fourier_variance'].shape == single_band.shape
+    def test_moving_fourier_single_band(self):
+        # Apply moving Fourier Transform
+        result = MapProcesses.moving_fourier(self.single_band, w=5)
 
-def test_moving_fourier_rgb():
-    # Create an RGB test image
-    data = np.random.rand(3, 100, 100)
-    coords = {'band': ['R', 'G', 'B'], 'y': np.arange(100), 'x': np.arange(100)}
-    rgb_image = xr.DataArray(data, dims=('band', 'y', 'x'), coords=coords)
+        # Assert the result contains the expected keys
+        self.assertIn("fourier_mean", result)
+        self.assertIn("fourier_variance", result)
 
-    # Apply moving Fourier Transform
-    result = MapProcesses.moving_fourier(rgb_image, w=5)
+        # Assert the shapes match the input
+        self.assertEqual(result["fourier_mean"].shape, self.single_band.shape)
+        self.assertEqual(
+            result["fourier_variance"].shape, self.single_band.shape
+        )
 
-    # Assert the result contains the expected keys
-    assert 'fourier_mean' in result
-    assert 'fourier_variance' in result
+    def test_moving_fourier_rgb(self):
+        # Apply moving Fourier Transform
+        result = MapProcesses.moving_fourier(self.rgb_image, w=5)
 
-    # Assert the shapes match the input
-    assert result['fourier_mean'].shape == rgb_image.shape
-    assert result['fourier_variance'].shape == rgb_image.shape
+        # Assert the result contains the expected keys
+        self.assertIn("fourier_mean", result)
+        self.assertIn("fourier_variance", result)
+
+        # Assert the shapes match the input
+        self.assertEqual(result["fourier_mean"].shape, self.rgb_image.shape)
+        self.assertEqual(
+            result["fourier_variance"].shape, self.rgb_image.shape
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
