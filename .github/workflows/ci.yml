@@ -25,9 +25,9 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/poetry.lock') }}
+          key: ${{ runner.os }}-pip-v2-${{ hashFiles('**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-v2-
       - name: Install GDAL binaries
         run: |
           sudo apt-get update
