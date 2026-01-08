@@ -58,13 +58,8 @@ def get_extensions():
     return extensions
 
 
-def setup_package():
-    metadata = dict(
-        ext_modules=cythonize(get_extensions()), include_dirs=[np.get_include()]
-    )
-
-    setup(**metadata)
-
-
-if __name__ == '__main__':
-    setup_package()
+# Call setup at module level for PEP 517 build backend compatibility
+setup(
+    ext_modules=cythonize(get_extensions()),
+    include_dirs=[np.get_include()]
+)
