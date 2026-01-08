@@ -47,9 +47,14 @@ jobs:
           pip install "numpy<2"
           GDAL_VERSION=$(gdal-config --version)
           echo "GDAL Version: $GDAL_VERSION"
-          # Install GDAL with numpy support for gdal_array
-          pip install "GDAL[numpy]==$GDAL_VERSION" --no-cache-dir
-          
+          echo "NumPy Version: $(python -c 'import numpy; print(numpy.__version__)')"
+          # Uninstall any existing GDAL, then rebuild from source with numpy support
+          pip uninstall -y gdal || true
+          pip install "GDAL==$GDAL_VERSION" --no-binary gdal --no-cache-dir --no-build-isolation
+      - name: Verify GDAL numpy support
+        run: |
+          python -c "from osgeo import gdal_array; print('GDAL numpy bindings: OK')"
+          python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"
       - name: Install GeoWombat
         run: |
           pip install ".[stac,web,coreg,perf,tests]" --no-cache-dir -v 2>&1 | tee install.log
