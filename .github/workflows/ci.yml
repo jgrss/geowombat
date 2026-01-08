@@ -61,12 +61,12 @@ jobs:
       - name: Run Unittests
         run: |
           pip install testfixtures
-          python -m unittest discover -p 'test_*.py'
+          cd tests && python -m unittest discover -p 'test_*.py'
       - name: Run ml Unittests
         run: |
           pip install testfixtures
           pip install ".[ml]" --no-cache-dir
-          python -m unittest discover -p 'ml_*.py'
+          cd tests && python -m unittest discover -p 'ml_*.py'
 
 
 #  Quality:
