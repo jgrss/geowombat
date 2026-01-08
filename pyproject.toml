@@ -5,7 +5,7 @@ requires = [
     'Cython>=0.29.0,<3.0.0',
     'numpy>=1.19.0'
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "setuptools.build_meta:__legacy__"
 
 [tool.black]
 line-length = 79
