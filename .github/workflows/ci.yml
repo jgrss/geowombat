@@ -30,19 +30,23 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install GDAL binaries
         run: |
-          sudo apt update && sudo apt install -y software-properties-common
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
           sudo add-apt-repository ppa:ubuntugis/ppa -y
-          sudo apt update && sudo apt install -y gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ libmysqlclient-dev
+          sudo apt-get update
+          sudo apt-get install -y gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ libmysqlclient-dev
           echo "CPLUS_INCLUDE_PATH=/usr/include/gdal" >> $GITHUB_ENV
           echo "C_INCLUDE_PATH=/usr/include/gdal" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
+          # Verify GDAL installation
+          gdal-config --version
       - name: Install Python packages
         run: |
           pip install -U pip setuptools wheel
           pip install numpy
           GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
           echo "GDAL Version: $GDAL_VERSION"
-          pip install arosics GDAL==$GDAL_VERSION --no-cache-dir
+          pip install GDAL==$GDAL_VERSION --no-cache-dir
           
       - name: Install GeoWombat
         run: |
