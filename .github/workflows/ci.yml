@@ -50,7 +50,11 @@ jobs:
           
       - name: Install GeoWombat
         run: |
-          pip install ".[stac,web,coreg,perf,tests]" --no-cache-dir
+          pip install ".[stac,web,coreg,perf,tests]" --no-cache-dir -v 2>&1 | tee install.log
+          echo "=== Checking for Cython compilation ==="
+          grep -i "cython\|compil\|_moving\|building.*extension" install.log || echo "No Cython compilation found"
+          echo "=== Checking wheel contents ==="
+          pip show -f geowombat | grep -i "_moving" || echo "No _moving files found in package"
       - name: Print Versions
         run: |
           echo "$(pip list )"
