@@ -50,7 +50,7 @@ jobs:
           
       - name: Install GeoWombat
         run: |
-          pip install ".[stac,web,coreg,perf,tests]"
+          pip install ".[stac,web,coreg,perf,tests]" --no-cache-dir
       - name: Print Versions
         run: |
           echo "$(pip list )"
@@ -61,7 +61,7 @@ jobs:
       - name: Run ml Unittests
         run: |
           pip install testfixtures
-          pip install ".[ml]"
+          pip install ".[ml]" --no-cache-dir
           python -m unittest discover -p 'ml_*.py'
 
 
