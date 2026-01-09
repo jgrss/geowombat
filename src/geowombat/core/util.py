@@ -103,7 +103,7 @@ def parse_filename_dates(
     return date_filenames
 
 
-def parse_wildcard(string: str) -> T.Sequence:
+def parse_wildcard(string: str) -> T.List[Path]:
 
     """Parses a search wildcard from a string.
 
@@ -115,16 +115,13 @@ def parse_wildcard(string: str) -> T.Sequence:
     """
 
     if os.path.dirname(string):
-        d_name, wildcard = os.path.split(string)
+        dir_name, wildcard = os.path.split(string)
     else:
 
-        d_name = '.'
+        dir_name = '.'
         wildcard = string
 
-    matches = sorted(fnmatch.filter(os.listdir(d_name), wildcard))
-
-    if matches:
-        matches = [os.path.join(d_name, fn) for fn in matches]
+    matches = sorted(list(Path(dir_name).glob(wildcard)))
 
     if not matches:
         logger.exception(
@@ -341,6 +338,9 @@ class Chunks(object):
         return '{:d}d'.format(len(chunksize))
 
     def check_chunktype(self, chunksize: int, output: str = '3d'):
+        if chunksize is None:
+            return chunksize
+
         if isinstance(chunksize, int):
             chunksize = (-1, chunksize, chunksize)
 
