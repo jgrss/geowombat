@@ -76,126 +76,100 @@ def _check_config_globals(
         bounds_by (str)
         ref_kwargs (dict)
     """
-    if config["nodata"] is not None:
-        ref_kwargs = _update_kwarg(config["nodata"], ref_kwargs, "nodata")
+    assert bounds_by.lower() in (
+        "intersection",
+        "reference",
+        "union",
+    ), "The bounds_by argument must be 'intersection', 'reference', or 'union'."
+
+    if config['nodata'] is not None:
+        ref_kwargs = _update_kwarg(config['nodata'], ref_kwargs, 'nodata')
+
     # Check if there is a reference image
-    if config["ref_image"]:
-        if isinstance(config["ref_image"], str) and os.path.isfile(
-            config["ref_image"]
+    if config['ref_image']:
+        if (
+            isinstance(config['ref_image'], (Path, str))
+            and Path(config['ref_image']).is_file()
         ):
             # Get the metadata from the reference image
-            ref_meta = get_ref_image_meta(config["ref_image"])
-            ref_kwargs["bounds"] = ref_meta.bounds
-            ref_kwargs["crs"] = ref_meta.crs
-            ref_kwargs["res"] = ref_meta.res
+            ref_meta = get_ref_image_meta(config['ref_image'])
+            ref_kwargs['bounds'] = ref_meta.bounds
+            ref_kwargs['crs'] = ref_meta.crs
+            ref_kwargs['res'] = ref_meta.res
 
         else:
-            if not config["ignore_warnings"]:
-                logger.warning("  The reference image does not exist")
+            if not config['ignore_warnings']:
+                logger.warning('  The reference image does not exist')
 
     else:
-        if config["ref_bounds"]:
-            if isinstance(config["ref_bounds"], str) and config[
-                "ref_bounds"
-            ].startswith("Window"):
-                ref_bounds_ = window_to_bounds(
-                    filenames, unpack_window(config["ref_bounds"])
+        if config['ref_bounds']:
+            if isinstance(config['ref_bounds'], str) and config[
+                'ref_bounds'
+            ].startswith('Window'):
+                ref_bounds = window_to_bounds(
+                    filenames, unpack_window(config['ref_bounds'])
                 )
-            elif isinstance(config["ref_bounds"], str) and config[
-                "ref_bounds"
-            ].startswith("BoundingBox"):
-                ref_bounds_ = unpack_bounding_box(config["ref_bounds"])
-            elif isinstance(config["ref_bounds"], Window):
-                ref_bounds_ = window_to_bounds(filenames, config["ref_bounds"])
-            elif isinstance(config["ref_bounds"], BoundingBox):
-
-                ref_bounds_ = (
-                    config["ref_bounds"].left,
-                    config["ref_bounds"].bottom,
-                    config["ref_bounds"].right,
-                    config["ref_bounds"].top,
-                )
-
+            elif isinstance(config['ref_bounds'], str) and config[
+                'ref_bounds'
+            ].startswith('BoundingBox'):
+                ref_bounds = unpack_bounding_box(config['ref_bounds'])
+            elif isinstance(config['ref_bounds'], Window):
+                ref_bounds = window_to_bounds(filenames, config['ref_bounds'])
+            elif isinstance(config['ref_bounds'], BoundingBox):
+                ref_bounds = config['ref_bounds']
             else:
-                ref_bounds_ = config["ref_bounds"]
+                ref_bounds = config['ref_bounds']
 
-            ref_kwargs = _update_kwarg(ref_bounds_, ref_kwargs, "bounds")
+            ref_kwargs = _update_kwarg(tuple(ref_bounds), ref_kwargs, 'bounds')
 
         else:
-            if isinstance(filenames, str) or isinstance(filenames, Path):
-                # Use the bounds of the image
-                ref_kwargs["bounds"] = get_file_bounds(
+            if isinstance(filenames, (Path, str)):
+                # Use the bounds of the input image
+                ref_kwargs['bounds'] = get_file_bounds(
                     [filenames],
-                    bounds_by="reference",
-                    crs=ref_kwargs["crs"],
-                    res=ref_kwargs["res"],
+                    bounds_by='reference',
+                    crs=ref_kwargs['crs'],
+                    res=ref_kwargs['res'],
                     return_bounds=True,
                 )
 
             else:
-                # Replace the bounds keyword, if needed
-                if bounds_by.lower() == "intersection":
-                    # Get the intersecting bounds of all images
-                    ref_kwargs["bounds"] = get_file_bounds(
-                        filenames,
-                        bounds_by="intersection",
-                        crs=ref_kwargs["crs"],
-                        res=ref_kwargs["res"],
-                        return_bounds=True,
-                    )
+                # Get the union bounds of all images
+                ref_kwargs['bounds'] = get_file_bounds(
+                    filenames,
+                    bounds_by=bounds_by.lower(),
+                    crs=ref_kwargs['crs'],
+                    res=ref_kwargs['res'],
+                    return_bounds=True,
+                )
 
-                elif bounds_by.lower() == "union":
-                    # Get the union bounds of all images
-                    ref_kwargs["bounds"] = get_file_bounds(
-                        filenames,
-                        bounds_by="union",
-                        crs=ref_kwargs["crs"],
-                        res=ref_kwargs["res"],
-                        return_bounds=True,
-                    )
+                config['ref_bounds'] = ref_kwargs['bounds']
 
-                elif bounds_by.lower() == "reference":
-                    # Use the bounds of the first image
-                    ref_kwargs["bounds"] = get_file_bounds(
-                        filenames,
-                        bounds_by="reference",
-                        crs=ref_kwargs["crs"],
-                        res=ref_kwargs["res"],
-                        return_bounds=True,
-                    )
+        if config['ref_crs'] is not None:
+            ref_kwargs = _update_kwarg(config['ref_crs'], ref_kwargs, 'crs')
 
-                else:
-                    logger.exception(
-                        "  Choose from 'intersection', 'union', or 'reference'."
-                    )
+        if config['ref_res'] is not None:
+            ref_kwargs = _update_kwarg(config['ref_res'], ref_kwargs, 'res')
 
-                config["ref_bounds"] = ref_kwargs["bounds"]
-
-        if config["ref_crs"] is not None:
-            ref_kwargs = _update_kwarg(config["ref_crs"], ref_kwargs, "crs")
-
-        if config["ref_res"] is not None:
-            ref_kwargs = _update_kwarg(config["ref_res"], ref_kwargs, "res")
-
-        if config["ref_tar"] is not None:
-            if isinstance(config["ref_tar"], str):
-                if os.path.isfile(config["ref_tar"]):
+        if config['ref_tar'] is not None:
+            if isinstance(config['ref_tar'], str):
+                if Path(config['ref_tar']).is_file():
                     ref_kwargs = _update_kwarg(
-                        _get_raster_coords(config["ref_tar"]),
+                        _get_raster_coords(config['ref_tar']),
                         ref_kwargs,
-                        "tac",
+                        'tac',
                     )
                 else:
 
-                    if not config["ignore_warnings"]:
+                    if not config['ignore_warnings']:
                         logger.warning(
-                            "  The target aligned raster does not exist."
+                            '  The target aligned raster does not exist.'
                         )
 
             else:
-                if not config["ignore_warnings"]:
+                if not config['ignore_warnings']:
                     logger.warning(
-                        "  The target aligned raster must be an image."
+                        '  The target aligned raster must be an image.'
                     )
 
     return ref_kwargs
@@ -214,7 +188,7 @@ def delayed_to_xarray(
         da.from_delayed(delayed_data, shape=shape, dtype=dtype).rechunk(
             chunks
         ),
-        dims=("band", "y", "x"),
+        dims=('band', 'y', 'x'),
         coords=coords,
         attrs=attrs,
     )
@@ -223,7 +197,7 @@ def delayed_to_xarray(
 def warp_open(
     filename: T.Union[str, Path],
     band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
-    resampling: str = "nearest",
+    resampling: str = 'nearest',
     dtype: T.Optional[str] = None,
     netcdf_vars: T.Optional[T.Sequence[T.Union[int, str]]] = None,
     nodata: T.Optional[T.Union[int, float]] = None,
@@ -253,39 +227,39 @@ def warp_open(
         ``xarray.DataArray``
     """
     ref_kwargs = {
-        "bounds": None,
-        "crs": None,
-        "res": None,
-        "nodata": nodata,
-        "warp_mem_limit": warp_mem_limit,
-        "num_threads": num_threads,
-        "tap": tap,
-        "tac": None,
+        'bounds': None,
+        'crs': None,
+        'res': None,
+        'nodata': nodata,
+        'warp_mem_limit': warp_mem_limit,
+        'num_threads': num_threads,
+        'tap': tap,
+        'tac': None,
     }
 
     ref_kwargs_netcdf_stack = ref_kwargs.copy()
-    ref_kwargs_netcdf_stack["bounds_by"] = "union"
-    del ref_kwargs_netcdf_stack["tap"]
+    ref_kwargs_netcdf_stack['bounds_by'] = 'union'
+    del ref_kwargs_netcdf_stack['tap']
 
-    ref_kwargs = _check_config_globals(filename, "reference", ref_kwargs)
+    ref_kwargs = _check_config_globals(filename, 'reference', ref_kwargs)
     filenames = None
 
     # Create a list of variables to open
-    if filename.lower().startswith("netcdf:") and netcdf_vars:
-        filenames = (f"{filename}:" + f",{filename}:".join(netcdf_vars)).split(
-            ","
+    if filename.lower().startswith('netcdf:') and netcdf_vars:
+        filenames = (f'{filename}:' + f',{filename}:'.join(netcdf_vars)).split(
+            ','
         )
 
     if filenames:
         ref_kwargs_netcdf_stack = _check_config_globals(
-            filenames[0], "reference", ref_kwargs_netcdf_stack
+            filenames[0], 'reference', ref_kwargs_netcdf_stack
         )
         with rio_open(filenames[0]) as src:
             tags = src.tags()
 
     else:
         ref_kwargs_netcdf_stack = _check_config_globals(
-            filename, "reference", ref_kwargs_netcdf_stack
+            filename, 'reference', ref_kwargs_netcdf_stack
         )
 
         with rio_open(filename) as src:
@@ -301,37 +275,33 @@ def warp_open(
         yield xr.concat(
             (
                 open_rasterio(
-                    wobj, nodata=ref_kwargs["nodata"], **kwargs
+                    wobj, nodata=ref_kwargs['nodata'], **kwargs
                 ).assign_coords(
                     band=[band_names[wi]] if band_names else [netcdf_vars[wi]]
                 )
                 for wi, wobj in enumerate(warped_objects)
             ),
-            dim="band",
+            dim='band',
         )
 
-    with (
-        open_rasterio(
-            warp(filename, resampling=resampling, **ref_kwargs),
-            nodata=ref_kwargs["nodata"],
-            **kwargs,
-        )
-        if not filenames
-        else warp_netcdf_vars()
-    ) as src:
+    with open_rasterio(
+        warp(filename, resampling=resampling, **ref_kwargs),
+        nodata=ref_kwargs['nodata'],
+        **kwargs,
+    ) if not filenames else warp_netcdf_vars() as src:
         if band_names:
             if len(band_names) > src.gw.nbands:
-                src.coords["band"] = band_names[: src.gw.nbands]
+                src.coords['band'] = band_names[: src.gw.nbands]
             else:
-                src.coords["band"] = band_names
+                src.coords['band'] = band_names
 
         else:
             if src.gw.sensor:
                 if src.gw.sensor not in src.gw.avail_sensors:
-                    if not src.gw.config["ignore_warnings"]:
+                    if not src.gw.config['ignore_warnings']:
                         logger.warning(
-                            "  The {} sensor is not currently supported.\nChoose from [{}].".format(
-                                src.gw.sensor, ", ".join(src.gw.avail_sensors)
+                            '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
+                                src.gw.sensor, ', '.join(src.gw.avail_sensors)
                             )
                         )
 
@@ -341,35 +311,35 @@ def warp_open(
                     )
                     # Avoid nested opens within a `config` context
                     if len(new_band_names) != len(src.band.values.tolist()):
-                        if not src.gw.config["ignore_warnings"]:
+                        if not src.gw.config['ignore_warnings']:
                             logger.warning(
-                                "  The new bands, {}, do not match the sensor bands, {}.".format(
+                                '  The new bands, {}, do not match the sensor bands, {}.'.format(
                                     new_band_names, src.band.values.tolist()
                                 )
                             )
 
                     else:
-                        src = src.assign_coords(**{"band": new_band_names})
+                        src = src.assign_coords(**{'band': new_band_names})
                         src = src.assign_attrs(
-                            **{"sensor": src.gw.sensor_names[src.gw.sensor]}
+                            **{'sensor': src.gw.sensor_names[src.gw.sensor]}
                         )
 
         if return_windows:
-            if isinstance(kwargs["chunks"], tuple):
-                chunksize = kwargs["chunks"][-1]
+            if isinstance(kwargs['chunks'], tuple):
+                chunksize = kwargs['chunks'][-1]
             else:
-                chunksize = kwargs["chunks"]
+                chunksize = kwargs['chunks']
 
-            src.attrs["block_windows"] = get_window_offsets(
+            src.attrs['block_windows'] = get_window_offsets(
                 src.shape[-2],
                 src.shape[-1],
                 chunksize,
                 chunksize,
-                return_as="list",
+                return_as='list',
             )
 
         src = src.assign_attrs(
-            **{"filename": filename, "resampling": resampling}
+            **{'filename': filename, 'resampling': resampling}
         )
 
         if tags:
@@ -388,9 +358,9 @@ def warp_open(
 
 def mosaic(
     filenames: T.Sequence[T.Union[str, Path]],
-    overlap: str = "max",
-    bounds_by: str = "reference",
-    resampling: str = "nearest",
+    overlap: str = 'max',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
     band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
     nodata: T.Optional[T.Union[float, int]] = None,
     dtype: T.Optional[str] = None,
@@ -423,22 +393,22 @@ def mosaic(
         ``xarray.DataArray``
     """
     if overlap not in (
-        "min",
-        "max",
-        "mean",
+        'min',
+        'max',
+        'mean',
     ):
         logger.exception(
             "  The overlap argument must be one of 'min', 'max', or 'mean'."
         )
 
     ref_kwargs = {
-        "bounds": None,
-        "crs": None,
-        "res": None,
-        "nodata": nodata,
-        "warp_mem_limit": warp_mem_limit,
-        "num_threads": num_threads,
-        "tac": None,
+        'bounds': None,
+        'crs': None,
+        'res': None,
+        'nodata': nodata,
+        'warp_mem_limit': warp_mem_limit,
+        'num_threads': num_threads,
+        'tac': None,
     }
 
     ref_kwargs = _check_config_globals(filenames, bounds_by, ref_kwargs)
@@ -453,15 +423,16 @@ def mosaic(
 
     # Get the original bounds, unsampled
     with open_rasterio(
-        filenames[0], nodata=ref_kwargs["nodata"], **kwargs
+        filenames[0], nodata=ref_kwargs['nodata'], **kwargs
     ) as src_:
         attrs = src_.attrs.copy()
 
     geometries = []
     for fn in filenames:
-        with open_rasterio(fn, nodata=ref_kwargs["nodata"], **kwargs) as src_:
+        with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
+    # NaN-aware reduce functions for mosaic overlap handling
     def custom_nanmax(left, right):
         max_data = da.nanmax(da.stack([left.data, right.data]), axis=0)
         return xr.DataArray(max_data, dims=left.dims, coords=left.coords)
@@ -474,13 +445,13 @@ def mosaic(
         mean_data = da.nanmean(da.stack([left.data, right.data]), axis=0)
         return xr.DataArray(mean_data, dims=left.dims, coords=left.coords)
 
-    if overlap == "min":
+    if overlap == 'min':
         reduce_func = custom_nanmin
         tmp_nodata = 1e9
-    elif overlap == "max":
+    elif overlap == 'max':
         reduce_func = custom_nanmax
         tmp_nodata = -1e9
-    elif overlap == "mean":
+    elif overlap == 'mean':
         tmp_nodata = -1e9
         reduce_func = custom_nanmean
 
@@ -488,13 +459,13 @@ def mosaic(
     data_arrays = [
         open_rasterio(
             wo,
-            nodata=ref_kwargs["nodata"],
+            nodata=ref_kwargs['nodata'],
             **kwargs,
         )
         .gw.set_nodata(
-            src_nodata=ref_kwargs["nodata"],
+            src_nodata=ref_kwargs['nodata'],
             dst_nodata=tmp_nodata,
-            dtype="float64",
+            dtype='float64',
         )
         .gw.mask_nodata()
         for wo in warped_objects
@@ -505,24 +476,25 @@ def mosaic(
         lambda left, right: reduce_func(left, right),
         data_arrays,
     )
+
     # Reset the 'no data' values
     darray = darray.gw.set_nodata(
         src_nodata=tmp_nodata,
-        dst_nodata=ref_kwargs["nodata"],
+        dst_nodata=ref_kwargs['nodata'],
     ).assign_attrs(**attrs)
 
     if band_names:
-        darray.coords["band"] = band_names
+        darray.coords['band'] = band_names
     else:
 
         if darray.gw.sensor:
             if darray.gw.sensor not in darray.gw.avail_sensors:
-                if not darray.gw.config["ignore_warnings"]:
+                if not darray.gw.config['ignore_warnings']:
 
                     logger.warning(
-                        "  The {} sensor is not currently supported.\nChoose from [{}].".format(
+                        '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
                             darray.gw.sensor,
-                            ", ".join(darray.gw.avail_sensors),
+                            ', '.join(darray.gw.avail_sensors),
                         )
                     )
 
@@ -534,19 +506,19 @@ def mosaic(
 
                 if len(new_band_names) != len(darray.band.values.tolist()):
 
-                    if not darray.gw.config["ignore_warnings"]:
+                    if not darray.gw.config['ignore_warnings']:
                         logger.warning(
-                            "  The band list length does not match the sensor bands."
+                            '  The band list length does not match the sensor bands.'
                         )
 
                 else:
-                    darray = darray.assign_coords(**{"band": new_band_names})
+                    darray = darray.assign_coords(**{'band': new_band_names})
                     darray = darray.assign_attrs(
-                        **{"sensor": darray.gw.sensor_names[darray.gw.sensor]}
+                        **{'sensor': darray.gw.sensor_names[darray.gw.sensor]}
                     )
 
     darray = darray.assign_attrs(
-        **{"resampling": resampling, "geometries": geometries}
+        **{'resampling': resampling, 'geometries': geometries}
     )
 
     if tags:
@@ -565,12 +537,12 @@ def mosaic(
 def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
     try:
         for fidx in range(0, len(concat_list) - 1):
-            xr.align(concat_list[fidx], concat_list[fidx + 1], join="exact")
+            xr.align(concat_list[fidx], concat_list[fidx + 1], join='exact')
     except ValueError:
         warning_message = (
-            "The stacked dimensions are not aligned. If this was not intentional, "
-            "use gw.config.update to align coordinates. To suppress this message, use "
-            "with gw.config.update(ignore_warnings=True):."
+            'The stacked dimensions are not aligned. If this was not intentional, '
+            'use gw.config.update to align coordinates. To suppress this message, use '
+            'with gw.config.update(ignore_warnings=True):.'
         )
         warnings.warn(warning_message, UserWarning)
         logger.warning(warning_message)
@@ -578,15 +550,15 @@ def check_alignment(concat_list: T.Sequence[xr.DataArray]) -> None:
 
 def concat(
     filenames: T.Sequence[T.Union[str, Path]],
-    stack_dim: str = "time",
-    bounds_by: str = "reference",
-    resampling: str = "nearest",
+    stack_dim: str = 'time',
+    bounds_by: str = 'reference',
+    resampling: str = 'nearest',
     time_names: T.Optional[T.Sequence[T.Any]] = None,
     band_names: T.Optional[T.Sequence[T.Any]] = None,
     nodata: T.Optional[T.Union[float, int]] = None,
     dtype: T.Optional[str] = None,
     netcdf_vars: T.Optional[T.Sequence[T.Any]] = None,
-    overlap: str = "max",
+    overlap: str = 'max',
     warp_mem_limit: int = 512,
     num_threads: int = 1,
     tap: bool = False,
@@ -620,14 +592,17 @@ def concat(
     Returns:
         ``xarray.DataArray``
     """
-    if stack_dim.lower() not in ["band", "time"]:
+    if stack_dim.lower() not in (
+        'band',
+        'time',
+    ):
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
     with rio_open(filenames[0]) as src_:
         tags = src_.tags()
 
     src_ = warp_open(
-        f"{filenames[0]}:{netcdf_vars[0]}" if netcdf_vars else filenames[0],
+        f'{filenames[0]}:{netcdf_vars[0]}' if netcdf_vars else filenames[0],
         resampling=resampling,
         band_names=[netcdf_vars[0]] if netcdf_vars else band_names,
         nodata=nodata,
@@ -640,7 +615,7 @@ def concat(
     src_.close()
     src_ = None
 
-    if time_names and not (str(filenames[0]).lower().startswith("netcdf:")):
+    if time_names and not (str(filenames[0]).lower().startswith('netcdf:')):
 
         concat_list = []
         new_time_names = []
@@ -693,8 +668,9 @@ def concat(
                     )
                 )
 
-        if not concat_list[0].gw.config["ignore_warnings"]:
+        if not concat_list[0].gw.config['ignore_warnings']:
             check_alignment(concat_list)
+
         # Warp all images and concatenate along the 'time' axis into a DataArray
         src = xr.concat(concat_list, dim=stack_dim.lower()).assign_coords(
             time=new_time_names
@@ -714,11 +690,12 @@ def concat(
             )
             for fn in filenames
         ]
-        if not warp_list[0].gw.config["ignore_warnings"]:
+        if not warp_list[0].gw.config['ignore_warnings']:
             check_alignment(warp_list)
+
         src = xr.concat(warp_list, dim=stack_dim.lower())
 
-    src = src.assign_attrs(**{"filename": [Path(fn).name for fn in filenames]})
+    src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
 
     if tags:
         attrs = src.attrs.copy()
@@ -726,33 +703,33 @@ def concat(
 
     src = src.assign_attrs(**attrs)
 
-    if stack_dim == "time":
+    if stack_dim == 'time':
 
-        if str(filenames[0]).lower().startswith("netcdf:"):
+        if str(filenames[0]).lower().startswith('netcdf:'):
 
             if time_names:
-                src.coords["time"] = time_names
+                src.coords['time'] = time_names
             else:
-                src.coords["time"] = parse_filename_dates(filenames)
+                src.coords['time'] = parse_filename_dates(filenames)
 
             try:
-                src = src.groupby("time").max().assign_attrs(**attrs)
+                src = src.groupby('time').max().assign_attrs(**attrs)
             except ValueError:
                 pass
 
         else:
             if not time_names:
-                src.coords["time"] = parse_filename_dates(filenames)
+                src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
-        src.coords["band"] = band_names
+        src = src.assign_coords(band=band_names)
     else:
         if src.gw.sensor:
             if src.gw.sensor not in src.gw.avail_sensors:
-                if not src.gw.config["ignore_warnings"]:
+                if not src.gw.config['ignore_warnings']:
                     logger.warning(
-                        "  The {} sensor is not currently supported.\nChoose from [{}].".format(
-                            src.gw.sensor, ", ".join(src.gw.avail_sensors)
+                        '  The {} sensor is not currently supported.\nChoose from [{}].'.format(
+                            src.gw.sensor, ', '.join(src.gw.avail_sensors)
                         )
                     )
 
@@ -761,18 +738,20 @@ def concat(
                     src.gw.wavelengths[src.gw.sensor]._fields
                 )
                 if len(new_band_names) != len(src.band.values.tolist()):
-                    if not src.gw.config["ignore_warnings"]:
+                    if not src.gw.config['ignore_warnings']:
                         logger.warning(
-                            "  The new bands, {}, do not match the sensor bands, {}.".format(
+                            '  The new bands, {}, do not match the sensor bands, {}.'.format(
                                 new_band_names, src.band.values.tolist()
                             )
                         )
 
                 else:
-                    src = src.assign_coords(**{"band": new_band_names})
+                    src = src.assign_coords(**{'band': new_band_names})
                     src = src.assign_attrs(
-                        **{"sensor": src.gw.sensor_names[src.gw.sensor]}
+                        **{'sensor': src.gw.sensor_names[src.gw.sensor]}
                     )
+        else:
+            src = src.assign_coords(band=range(1, src.gw.nbands + 1))
 
     if dtype:
         attrs = src.attrs.copy()
@@ -792,7 +771,7 @@ def transform_crs(
     src_nodata=None,
     dst_nodata=None,
     coords_only=False,
-    resampling="nearest",
+    resampling='nearest',
     warp_mem_limit=512,
     num_threads=1,
 ):
@@ -839,10 +818,10 @@ def transform_crs(
         return_as_dict=True,
         delayed_array=True,
     )
-    dst_transform = data_dict["transform"]
-    dst_crs = data_dict["crs"]
-    dst_height = data_dict["height"]
-    dst_width = data_dict["width"]
+    dst_transform = data_dict['transform']
+    dst_crs = data_dict['crs']
+    dst_height = data_dict['height']
+    dst_width = data_dict['width']
 
     # Get the transformed coordinates
     left = dst_transform[2]
@@ -861,9 +840,9 @@ def transform_crs(
     if coords_only:
         attrs.update(
             {
-                "crs": dst_crs,
-                "transform": dst_transform[:6],
-                "res": (cellx, celly),
+                'crs': dst_crs,
+                'transform': dst_transform[:6],
+                'res': (cellx, celly),
             }
         )
 
@@ -871,17 +850,17 @@ def transform_crs(
 
     else:
         # The transformed array is a dask Delayed object
-        data_dst = data_dict["array"]
+        data_dst = data_dict['array']
 
         if not dst_res:
             dst_res = (abs(x[1] - x[0]), abs(y[0] - y[1]))
 
         attrs.update(
             {
-                "transform": tuple(dst_transform)[:6],
-                "crs": dst_crs,
-                "res": dst_res,
-                "resampling": resampling,
+                'transform': tuple(dst_transform)[:6],
+                'crs': dst_crs,
+                'res': dst_res,
+                'resampling': resampling,
             }
         )
         # Get the DataArray from the delayed object
@@ -890,7 +869,7 @@ def transform_crs(
             shape=(data_src.gw.nbands, dst_height, dst_width),
             dtype=data_src.dtype,
             chunks=data_src.data.chunksize,
-            coords={"band": data_src.band.values.tolist(), "y": y, "x": x},
+            coords={'band': data_src.band.values.tolist(), 'y': y, 'x': x},
             attrs=attrs,
         )
 
