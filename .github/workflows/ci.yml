@@ -72,6 +72,8 @@ jobs:
       - name: Run ml Unittests
         run: |
           pip install testfixtures
+          # Force reinstall sklearn-xarray from git to get latest fix
+          pip uninstall -y sklearn-xarray || true
           pip install ".[ml]" --no-cache-dir
           cd tests && python -m unittest discover -p 'ml_*.py'
 
