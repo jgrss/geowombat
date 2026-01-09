@@ -130,3 +130,7 @@ See the `Dockerfile`, or for more details instructions, see the guide on [pygis.
 ## Learning
 
 If you are new to geospatial programming in Python please refer to [pygis.io](https://pygis.io)
+
+## Citation
+
+Graesser, J., & Mann, M. (2025). GeoWombat (v2.1.22): Utilities for geospatial data. Zenodo. https://doi.org/10.5281/zenodo.15483823
