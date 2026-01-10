@@ -72,6 +72,10 @@ l7_225078_20110306_B1 = str(p / 'LE07_L2SP_225078_20110306_02_T1_B1.tif')
 srtm30m_bounding_boxes = str(p / 'srtm30m_bounding_boxes.gpkg')
 wrs2 = str(p / 'wrs2.tar.gz')
 
+# NaN versions of Landsat files for mosaic testing
+l8_224077_20200518_B2_nan = str(p / 'l8_224077_20200518_B2_nan.tif')
+l8_224078_20200518_B2_nan = str(p / 'l8_224078_20200518_B2_nan.tif')
+
 
 class PassKey(object):
     @staticmethod
