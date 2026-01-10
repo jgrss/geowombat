@@ -432,23 +432,28 @@ def mosaic(
         with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
+    # NaN-aware reduce functions for mosaic overlap handling
+    def custom_nanmax(left, right):
+        max_data = da.nanmax(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(max_data, dims=left.dims, coords=left.coords)
+
+    def custom_nanmin(left, right):
+        min_data = da.nanmin(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(min_data, dims=left.dims, coords=left.coords)
+
+    def custom_nanmean(left, right):
+        mean_data = da.nanmean(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(mean_data, dims=left.dims, coords=left.coords)
+
     if overlap == 'min':
-        reduce_func = da.minimum
+        reduce_func = custom_nanmin
         tmp_nodata = 1e9
     elif overlap == 'max':
-        reduce_func = da.maximum
+        reduce_func = custom_nanmax
         tmp_nodata = -1e9
     elif overlap == 'mean':
         tmp_nodata = -1e9
-
-        def reduce_func(
-            left: xr.DataArray, right: xr.DataArray
-        ) -> xr.DataArray:
-            return xr.where(
-                (left != tmp_nodata) & (right != tmp_nodata),
-                (left + right) / 2.0,
-                xr.where(left != tmp_nodata, left, right),
-            )
+        reduce_func = custom_nanmean
 
     # Open all the data pointers
     data_arrays = [
