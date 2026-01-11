@@ -32,7 +32,7 @@ jobs:
           enable-cache: true
 
       - name: Create venv
-        run: uv venv
+        run: uv venv --force
 
       - name: Install Python packages
         run: |
