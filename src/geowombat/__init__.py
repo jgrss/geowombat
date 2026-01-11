@@ -1,5 +1,9 @@
 __path__: str = __import__('pkgutil').extend_path(__path__, __name__)
-__version__ = '2.1.22'
+
+try:
+    from ._version import version as __version__
+except ImportError:
+    __version__ = "unknown"
 
 from . import config
 from .core import (

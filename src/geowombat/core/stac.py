@@ -26,10 +26,17 @@ try:
     from rich.console import Console as _Console
     from rich.table import Table as _Table
 except ImportError as e:
+    pystac = None
+    pystac_errors = None
+    stackstac = None
+    wget = None
+    _EOExtension = None
+    _Client = None
+    _Console = None
+    _Table = None
     warnings.warn(
-        "Install geowombat with 'pip install .[stac]' to use the STAC API."
+        f"Install geowombat with 'pip install .[stac]' to use the STAC API. ({e})"
     )
-    warnings.warn(e)
 
 try:
     from pydantic.errors import PydanticImportError
@@ -39,10 +46,10 @@ except ImportError:
 try:
     import planetary_computer as pc
 except (ImportError, PydanticImportError) as e:
+    pc = None
     warnings.warn(
-        'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited.'
+        f'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited. ({e})'
     )
-    warnings.warn(e)
 
 
 class StrEnum(str, enum.Enum):
