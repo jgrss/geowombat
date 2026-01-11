@@ -26,10 +26,17 @@ try:
     from rich.console import Console as _Console
     from rich.table import Table as _Table
 except ImportError as e:
+    pystac = None
+    pystac_errors = None
+    stackstac = None
+    wget = None
+    _EOExtension = None
+    _Client = None
+    _Console = None
+    _Table = None
     warnings.warn(
-        "Install geowombat with 'pip install .[stac]' to use the STAC API."
+        f"Install geowombat with 'pip install .[stac]' to use the STAC API. ({e})"
     )
-    warnings.warn(e)
 
 try:
     from pydantic.errors import PydanticImportError
@@ -39,10 +46,10 @@ except ImportError:
 try:
     import planetary_computer as pc
 except (ImportError, PydanticImportError) as e:
+    pc = None
     warnings.warn(
-        'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited.'
+        f'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited. ({e})'
     )
-    warnings.warn(e)
 
 
 class StrEnum(str, enum.Enum):
@@ -85,6 +92,10 @@ class STACCollections(StrEnum):
     USDA_CDL = 'usda_cdl'
     IO_LULC = 'io_lulc'
     NAIP = 'naip'
+    # Harmonized Landsat Sentinel-2
+    HLS = 'hls'
+    # ESA WorldCover 10m land cover
+    ESA_WORLDCOVER = 'esa_worldcover'
 
 
 class STACCollectionURLNames(StrEnum):
@@ -108,6 +119,8 @@ class STACCollectionURLNames(StrEnum):
     USDA_CDL = STACCollections.USDA_CDL.replace('_', '-')
     IO_LULC = STACCollections.IO_LULC.replace('_', '-')
     NAIP = STACCollections.NAIP
+    HLS = STACCollections.HLS
+    ESA_WORLDCOVER = 'esa-worldcover'
 
 
 STAC_CATALOGS = {
@@ -125,7 +138,15 @@ STAC_SCALING = {
             'offset': -0.2,
             'nodata': 0,
         },
-    }
+    },
+    STACCollections.HLS: {
+        # https://planetarycomputer.microsoft.com/dataset/hls
+        STACNames.MICROSOFT_V1: {
+            'gain': 0.0001,
+            'offset': 0,
+            'nodata': -9999,
+        },
+    },
 }
 
 STAC_COLLECTIONS = {
@@ -148,6 +169,8 @@ STAC_COLLECTIONS = {
         STACCollectionURLNames.LANDSAT_L8_C2_L2,
         STACCollectionURLNames.USDA_CDL,
         STACCollectionURLNames.IO_LULC,
+        STACCollectionURLNames.HLS,
+        STACCollectionURLNames.ESA_WORLDCOVER,
     ),
 }
 
@@ -263,6 +286,8 @@ def open_stac(
                     sentinel_3_lst
                     io_lulc
                     usda_cdl
+                    hls
+                    esa_worldcover
 
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``). The bounds CRS
