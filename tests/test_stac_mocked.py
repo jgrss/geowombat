@@ -16,7 +16,11 @@ from geowombat.core.stac import (
     STACCollectionURLNames,
     STACNames,
     open_stac,
+    _Client,
 )
+
+# Check if STAC dependencies are available
+STAC_AVAILABLE = _Client is not None
 
 CONNECTIVITY_TIMEOUT = 5  # seconds
 
@@ -44,13 +48,16 @@ class TestSTACConnectivity(unittest.TestCase):
 
 
 def create_mock_data_array(
-    shape=(2, 1, 48, 64),
+    shape=None,
     bands=['blue'],
     crs=8857,
     res=10.0,
     collection='sentinel_s2_l2a',
 ):
     """Create a mock xarray DataArray matching expected STAC output."""
+    # Default shape based on bands length
+    if shape is None:
+        shape = (2, len(bands), 48, 64)
     data = da.random.random(shape, chunks=(1, 1, 32, 32))
     return xr.DataArray(
         data,
@@ -260,8 +267,8 @@ class TestSTACMocked(unittest.TestCase):
         self.assertIsNone(df)
 
     def test_invalid_collection_raises_error(self):
-        """Test that invalid collection name raises NameError."""
-        with self.assertRaises(NameError):
+        """Test that invalid collection name raises ValueError."""
+        with self.assertRaises(ValueError):
             open_stac(
                 stac_catalog='element84_v1',
                 collection='invalid_collection_name',
