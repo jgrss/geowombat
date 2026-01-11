@@ -4,6 +4,17 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - '3.11'
+          - '3.12'
 
 jobs:
   Tests:
@@ -12,7 +23,7 @@ jobs:
       image: ghcr.io/osgeo/gdal:ubuntu-small-3.10.1
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ${{ github.event.inputs.python-version == '3.11' && fromJson('["3.11"]') || github.event.inputs.python-version == '3.12' && fromJson('["3.12"]') || fromJson('["3.11", "3.12"]') }}
     steps:
       - name: Install system requirements
         run: apt update -y && apt install -y nodejs g++ git python3-dev
@@ -32,7 +43,7 @@ jobs:
           enable-cache: true
 
       - name: Create venv
-        run: uv venv --force
+        run: rm -rf .venv && uv venv
 
       - name: Install Python packages
         run: |
