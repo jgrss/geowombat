@@ -266,10 +266,9 @@ class TestSTACMocked(unittest.TestCase):
         self.assertIsNone(result)
         self.assertIsNone(df)
 
-    @unittest.skipUnless(STAC_AVAILABLE, "STAC dependencies not installed")
     def test_invalid_collection_raises_error(self):
-        """Test that invalid collection name raises NameError."""
-        with self.assertRaises(NameError):
+        """Test that invalid collection name raises ValueError."""
+        with self.assertRaises(ValueError):
             open_stac(
                 stac_catalog='element84_v1',
                 collection='invalid_collection_name',
@@ -278,7 +277,6 @@ class TestSTACMocked(unittest.TestCase):
                 end_date='2022-07-07',
             )
 
-    @unittest.skipUnless(STAC_AVAILABLE, "STAC dependencies not installed")
     def test_missing_collection_raises_error(self):
         """Test that missing collection parameter raises NameError."""
         with self.assertRaises(NameError):

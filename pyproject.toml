@@ -114,7 +114,7 @@ view = [
 stac = [
     "pystac",
     "pystac-client",
-    "stackstac[viz]@git+https://github.com/jgrss/stackstac.git",
+    "stackstac",
     "planetary-computer",
     "Rich",
     "wget",
