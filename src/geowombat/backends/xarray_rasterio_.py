@@ -376,10 +376,12 @@ def open_rasterio(
     if hasattr(riods, 'res'):
         # (width, height) tuple of pixels in units of CRS
         attrs['res'] = riods.res
-    if hasattr(riods, 'is_tiled'):
+    if hasattr(riods, 'block_shapes'):
         # Is the TIF tiled? (bool)
+        # Check if block width != dataset width (per rasterio discussion #3014)
         # We cast it to an int for netCDF compatibility
-        attrs['is_tiled'] = np.uint8(riods.is_tiled)
+        is_tiled = riods.block_shapes[0][1] != riods.width
+        attrs['is_tiled'] = np.uint8(is_tiled)
     if hasattr(riods, 'nodatavals'):
         # The nodata values for the raster bands
         nodatavals = (
