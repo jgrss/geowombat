@@ -2,6 +2,30 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.23 (2026-01-12)
+
+### Features
+
+* Migrated to Meson build backend ([#334](https://github.com/jgrss/geowombat/pull/334))
+* Added HLS (Harmonized Landsat Sentinel-2) and ESA WorldCover collections for Microsoft STAC catalog ([#333](https://github.com/jgrss/geowombat/pull/333))
+* Added mocked STAC tests to reduce flaky CI failures from external API timeouts
+
+### Bug Fixes
+
+* Fixed NaN values in mosaic overlap regions ([#322](https://github.com/jgrss/geowombat/issues/322))
+* Fixed mosaic `bounds_by='union'` functionality ([#328](https://github.com/jgrss/geowombat/issues/328))
+* Fixed sklearn 1.6+ compatibility for clusterer detection ([#331](https://github.com/jgrss/geowombat/issues/331))
+* Fixed non-unique band names when using `gw.open(..., stack_dim='band')` without `band_names` ([#316](https://github.com/jgrss/geowombat/issues/316), [#317](https://github.com/jgrss/geowombat/pull/317))
+* Fixed `RasterBlockError` when saving with non-multiple-of-16 chunk sizes ([#237](https://github.com/jgrss/geowombat/issues/237))
+* Fixed `is_tiled` deprecation warning from rasterio by using `block_shapes` check
+* Pinned `rasterio<1.5.0` to avoid edge case in warp behavior
+* Pinned `h5py<3.10.0` to fix netCDF dimension scales issue
+
+### CI/Build
+
+* Updated CI configuration with uv package manager
+* Added Python 3.12 support in CI testing
+
 ## v2.1.22 (2024-05-01)
 * Added Python 3.11 as option ([#311](https://github.com/jgrss/geowombat/pull/311))
 

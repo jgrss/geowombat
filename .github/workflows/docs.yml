@@ -1,0 +1,52 @@
+name: Documentation
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  trigger-rtd-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ReadTheDocs build
+        run: |
+          # ReadTheDocs webhook to trigger a build
+          # This requires setting up RTD_WEBHOOK_URL secret in GitHub
+          # Get the URL from: ReadTheDocs > Admin > Integrations > Add integration > Generic API incoming webhook
+          if [ -n "${{ secrets.RTD_WEBHOOK_URL }}" ]; then
+            curl -X POST -d "branches=main" -d "token=${{ secrets.RTD_WEBHOOK_TOKEN }}" "${{ secrets.RTD_WEBHOOK_URL }}"
+            echo "Triggered ReadTheDocs build"
+          else
+            echo "RTD_WEBHOOK_URL secret not set - ReadTheDocs will build automatically on push"
+          fi
+
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # For setuptools-scm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Build documentation
+        run: |
+          cd doc
+          make html
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: doc/build/html/
+          retention-days: 7

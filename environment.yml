@@ -1,11 +1,11 @@
 name: gwenv
 channels:
-- defaults
+  - conda-forge
+  - defaults
 dependencies:
-- python=3.9.16
-- libspatialindex
-- libgdal=3.0.2
-- gdal=3.0.2
-- pip
-- pip:
-  - -r requirements_docs.txt
+  - python>=3.10,<3.13
+  - libspatialindex
+  - gdal>=3.4
+  - pip
+  - pip:
+    - -r requirements_docs.txt

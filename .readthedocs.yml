@@ -1,20 +1,24 @@
 version: 2
+
 build:
-  os: ubuntu-20.04
+  os: ubuntu-22.04
   tools:
-    python: mambaforge-4.10
+    python: "3.11"
+  apt_packages:
+    - libgdal-dev
+    - gdal-bin
+    - python3-gdal
+
 python:
   install:
-    - requirements: requirements_docs.txt
     - method: pip
       path: .
       extra_requirements:
         - docs
-        - perf
-        - ml
-        - stac
+
 sphinx:
   configuration: doc/source/conf.py
-conda:
-  environment: environment.yml
+  builder: html
+  fail_on_warning: false
+
 formats: []
