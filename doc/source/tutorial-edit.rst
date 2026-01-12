@@ -56,8 +56,10 @@ file the 'no data' attributes should be set as 0.
         with tempfile.TemporaryDirectory() as tmp:
             # Set the temporary file name
             tmp_file = Path(tmp) / 'tmp_raster.tif'
-            # Save the data to file, setting 'no data' as 0
-            src.gw.save(tmp_file, nodata=0)
+            # Set the 'no data' value in the DataArray attributes
+            src.attrs['nodatavals'] = (0,) * src.gw.nbands
+            # Save the data to file
+            src.gw.save(tmp_file)
             # Open the temporary file and view the data
             with gw.open(tmp_file) as src_nodata:
                 print(src_nodata)

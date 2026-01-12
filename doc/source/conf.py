@@ -57,6 +57,16 @@ extensions = [
     'numpydoc',
 ]
 
+# sphinxcontrib-bibtex configuration (required for version 2.x+)
+bibtex_bibfiles = [
+    'api/references_vi.bib',
+    'api/references_brdf.bib',
+    'api/references_tcap.bib',
+    'api/references_bandpass.bib',
+    'api/references_topo.bib',
+    'api/references_radtransforms.bib',
+    'api/references_angles.bib',
+]
 
 # mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js'
 

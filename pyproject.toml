@@ -44,9 +44,9 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "numpydoc",
-    "sphinx",
+    "sphinx>=6.0",
     "sphinx-automodapi",
-    "sphinxcontrib-bibtex<2.0.0",
+    "sphinxcontrib-bibtex>=2.5.0",
     "sphinx_tabs",
     "pydata-sphinx-theme==0.13.1",
     "sphinx-book-theme>=1.0.0",

@@ -29,6 +29,11 @@ jobs:
         with:
           fetch-depth: 0  # For setuptools-scm
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev gdal-bin python3-gdal ninja-build
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -37,7 +42,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -e ".[docs]"
+          pip install meson-python ninja numpy cython
+          pip install ".[docs]"
 
       - name: Build documentation
         run: |
