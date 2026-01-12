@@ -27,7 +27,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pyproj",
-    "rasterio",
+    "rasterio<1.5.0",
     "retry",
     "requests",
     "scikit-learn",
