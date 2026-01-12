@@ -10,7 +10,7 @@ readme = "README.md"
 license = {file = "LICENSE.txt"}
 authors = [{name = "Jordan Graesser"}]
 maintainers = [{name = "Jordan Graesser"}]
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.10,<3.13"
 classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: GIS",
