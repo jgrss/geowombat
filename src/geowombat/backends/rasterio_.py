@@ -255,15 +255,14 @@ class RasterioStore(object):
                 )
                 band_count = self.data.gw.nbands
 
-        blockxsize = (
-            self.data.gw.check_chunksize(512, self.data.gw.ncols)
-            if not self.data.gw.array_is_dask
-            else self.data.gw.col_chunks
+        # Always validate block sizes to ensure they are multiples of 16
+        blockxsize = self.data.gw.check_chunksize(
+            self.data.gw.col_chunks if self.data.gw.array_is_dask else 512,
+            self.data.gw.ncols,
         )
-        blockysize = (
-            self.data.gw.check_chunksize(512, self.data.gw.nrows)
-            if not self.data.gw.array_is_dask
-            else self.data.gw.row_chunks
+        blockysize = self.data.gw.check_chunksize(
+            self.data.gw.row_chunks if self.data.gw.array_is_dask else 512,
+            self.data.gw.nrows,
         )
 
         tiled = True

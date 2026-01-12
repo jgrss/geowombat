@@ -374,6 +374,44 @@ class TestWrite(unittest.TestCase):
                 # If any exception is raised, fail the test with a message
                 self.fail(f"An error occurred during saving: {e}")
 
+    def test_save_non_multiple_16_chunks(self):
+        """Test that saving with non-multiple-of-16 chunks doesn't raise
+        RasterBlockError (issue #237).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            # Open with chunks that are NOT multiples of 16 (e.g., 250)
+            with gw.open(
+                l8_224078_20200518,
+                chunks={'band': 1, 'y': 250, 'x': 250},
+            ) as src:
+                try:
+                    src.gw.save(
+                        filename=out_path,
+                        overwrite=True,
+                        num_workers=1,
+                    )
+                except Exception as e:
+                    self.fail(
+                        f"RasterBlockError or other error with "
+                        f"non-multiple-of-16 chunks: {e}"
+                    )
+
+            # Verify the output file was created and is valid
+            self.assertTrue(out_path.exists())
+            with rio.open(out_path) as rio_src:
+                # Block sizes should be multiples of 16
+                block_shapes = rio_src.block_shapes
+                for block_height, block_width in block_shapes:
+                    self.assertTrue(
+                        block_width % 16 == 0 or block_width == rio_src.width,
+                        f"Block width {block_width} is not a multiple of 16",
+                    )
+                    self.assertTrue(
+                        block_height % 16 == 0 or block_height == rio_src.height,
+                        f"Block height {block_height} is not a multiple of 16",
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

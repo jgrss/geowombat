@@ -956,10 +956,14 @@ def to_raster(
             kwargs["nodata"] = data.gw.nodataval
 
     if "blockxsize" not in kwargs:
-        kwargs["blockxsize"] = data.gw.col_chunks
+        kwargs["blockxsize"] = data.gw.check_chunksize(
+            data.gw.col_chunks, data.gw.ncols
+        )
 
     if "blockysize" not in kwargs:
-        kwargs["blockysize"] = data.gw.row_chunks
+        kwargs["blockysize"] = data.gw.check_chunksize(
+            data.gw.row_chunks, data.gw.nrows
+        )
 
     if "bigtiff" not in kwargs:
         kwargs["bigtiff"] = data.gw.bigtiff

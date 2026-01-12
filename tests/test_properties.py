@@ -39,8 +39,18 @@ class TestProperties(unittest.TestCase):
 
     def test_chunksize_check(self):
         with gw.open(l8_224078_20200518) as src:
+            # Valid multiple of 16 within bounds
             self.assertEqual(src.gw.check_chunksize(64, 128), 64)
+            # Valid multiple of 16 but exceeds bounds - should reduce
             self.assertEqual(src.gw.check_chunksize(64, 60), 32)
+            # Non-multiple of 16 should round to nearest (250 -> 256)
+            self.assertEqual(src.gw.check_chunksize(250, 512), 256)
+            # Non-multiple of 16 should round to nearest (100 -> 96)
+            self.assertEqual(src.gw.check_chunksize(100, 512), 96)
+            # Invalid/zero should default to 512
+            self.assertEqual(src.gw.check_chunksize(0, 1024), 512)
+            # Negative should default to 512
+            self.assertEqual(src.gw.check_chunksize(-10, 1024), 512)
 
 
 if __name__ == '__main__':

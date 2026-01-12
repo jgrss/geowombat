@@ -116,8 +116,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         )
 
     def check_chunksize(self, chunksize: int, array_size: int) -> int:
-        """Asserts that the chunk size fits within intervals of 16 and is
-        smaller than the array.
+        """Ensures the chunk size is a multiple of 16 and fits within the
+        array dimension.
 
         Args:
             chunksize (int): The chunk size to check.
@@ -126,15 +126,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``int``
         """
-        if not (chunksize % 16 == 0) or (chunksize > array_size):
-            if chunksize % 16 == 0:
-                chunksize = 1024
-            while True:
-                if chunksize < array_size:
-                    break
-                chunksize /= 2
-                if chunksize <= 2:
-                    break
+        # Handle invalid input
+        if chunksize <= 0:
+            chunksize = 512
+
+        # Round to nearest multiple of 16
+        if chunksize % 16 != 0:
+            chunksize = max(16, ((chunksize + 8) // 16) * 16)
+
+        # Ensure chunk doesn't exceed array dimension
+        while chunksize > array_size and chunksize > 16:
+            chunksize //= 2
+            # Re-align to multiple of 16 after halving
+            chunksize = max(16, (chunksize // 16) * 16)
 
         return int(chunksize)
 
