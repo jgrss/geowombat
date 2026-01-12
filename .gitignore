@@ -59,3 +59,4 @@ dask-worker-space/
 .vscode/
 
 bin/act
+CLAUDE.md
