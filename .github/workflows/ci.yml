@@ -60,3 +60,17 @@ jobs:
           uv pip install testfixtures
           uv pip install --reinstall-package geowombat ".[ml]"
           cd tests && python -m unittest discover -p 'ml_*.py'
+
+  Tests-result:
+    if: always()
+    needs: [Tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ "${{ needs.Tests.result }}" == "success" ]]; then
+            echo "All tests passed"
+            exit 0
+          else
+            echo "Some tests failed"
+            exit 1
+          fi
