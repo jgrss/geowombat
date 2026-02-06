@@ -56,13 +56,16 @@ Fit a classifier and predict on an array
 Fit a classifier with multiple dates
 ------------------------------------
 
+When classifying with multiple image dates, stack them along the band dimension
+(not time) so each date becomes additional feature bands.
+
 .. ipython:: python
 
     with gw.config.update(ref_res=100):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            time_names=['t1', 't2'],
-            stack_dim='time',
+            band_names=['red_t1', 'green_t1', 'blue_t1', 'red_t2', 'green_t2', 'blue_t2'],
+            stack_dim='band',
             chunks=128
         ) as src:
             y = fit_predict(src, pl, labels, col='lc')

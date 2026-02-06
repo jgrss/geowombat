@@ -21,7 +21,6 @@ from dask import is_dask_collection
 from dask.distributed import Client, progress
 from osgeo import gdal
 from rasterio import shutil as rio_shutil
-from rasterio.drivers import driver_from_extension
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import Window
@@ -39,7 +38,6 @@ except ImportError:
     ZARR_INSTALLED = False
 
 from ..backends.rasterio_ import RasterioStore, to_gtiff
-from ..config import config
 from ..handler import add_handler
 from .windows import get_window_offsets
 
@@ -683,27 +681,25 @@ def to_netcdf(
 def save(
     data: xr.DataArray,
     filename: T.Union[str, Path],
-    mode: T.Optional[str] = "w",
-    nodata: T.Optional[T.Union[float, int]] = None,
-    overwrite: T.Optional[bool] = False,
+    overwrite: bool = False,
+    scatter: T.Optional[str] = None,
     client: T.Optional[Client] = None,
-    compute: T.Optional[bool] = True,
+    compute: bool = True,
     tags: T.Optional[dict] = None,
     compress: T.Optional[str] = "none",
     compression: T.Optional[str] = None,
-    num_workers: T.Optional[int] = 1,
-    log_progress: T.Optional[bool] = True,
+    num_workers: int = 1,
+    log_progress: bool = True,
     tqdm_kwargs: T.Optional[dict] = None,
     bigtiff: T.Optional[str] = None,
 ):
     """Saves a DataArray to raster using rasterio/dask.
 
     Args:
+        data (xarray.DataArray): The data to write.
         filename (str | Path): The output file name to write to.
         overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
-        mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
-        nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
-            value is taken from the ``DataArray`` metadata.
+        scatter (Optional[str]): Scatter 'band' or 'time' to separate file. Default is None.
         client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
             Default is None.
         compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
@@ -711,6 +707,12 @@ def save(
             return the ``dask`` task graph. Default is ``True``.
         tags (Optional[dict]): Metadata tags to write to file. Default is None.
         compress (Optional[str]): The file compression type. Default is 'none', or no compression.
+
+            .. note::
+                When using a client, it is advised to use threading. E.g.,
+                ``dask.distributed.LocalCluster(processes=False)``. Process-based concurrency could
+                result in corrupted file blocks.
+
         compression (Optional[str]): The file compression type. Default is 'none', or no compression.
 
             .. deprecated:: 2.1.4
@@ -745,114 +747,40 @@ def save(
         )
         compress = compression
 
-    if mode not in ["w", "r+"]:
-        raise AttributeError("The mode must be either 'w' or 'r+'.")
-
-    if Path(filename).is_file():
+    if Path(filename).exists():
         if overwrite:
             Path(filename).unlink()
-        else:
-            logger.warning(f"The file {str(filename)} already exists.")
-            return
-
-    if nodata is None:
-        if hasattr(data, "_FillValue"):
-            nodata = data.attrs["_FillValue"]
-        else:
-            if hasattr(data, "nodatavals"):
-                nodata = data.attrs["nodatavals"][0]
-            else:
-                raise AttributeError(
-                    "The DataArray does not have any 'no data' attributes."
-                )
-
-    dtype = data.dtype.name if isinstance(data.dtype, np.dtype) else data.dtype
-    if isinstance(nodata, float):
-        if dtype != "float32":
-            dtype = "float64"
-
-    blockxsize = (
-        data.gw.check_chunksize(512, data.gw.ncols)
-        if not data.gw.array_is_dask
-        else data.gw.col_chunks
-    )
-    blockysize = (
-        data.gw.check_chunksize(512, data.gw.nrows)
-        if not data.gw.array_is_dask
-        else data.gw.row_chunks
-    )
-
-    tiled = True
-    if config["with_config"]:
-        if config["bigtiff"] is not None:
-            if isinstance(config["bigtiff"], bool):
-                bigtiff = "YES" if config["bigtiff"] else "NO"
-            else:
-                bigtiff = config["bigtiff"].upper()
-
-            if bigtiff not in (
-                "YES",
-                "NO",
-                "IF_NEEDED",
-                "IF_SAFER",
-            ):
-                raise NameError(
-                    "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
-                )
-
-        if config["compress"] is not None:
-            compress = config["compress"]
-
-        if config["tiled"] is not None:
-            tiled = config["tiled"]
-
-    kwargs = dict(
-        driver=driver_from_extension(filename),
-        width=data.gw.ncols,
-        height=data.gw.nrows,
-        count=data.gw.nbands,
-        dtype=dtype,
-        nodata=nodata,
-        blockxsize=blockxsize,
-        blockysize=blockysize,
-        crs=data.gw.crs_to_pyproj,
-        transform=data.gw.transform,
-        compress=compress,
-        tiled=tiled if max(blockxsize, blockysize) >= 16 else False,
-        sharing=False,
-        BIGTIFF=bigtiff,
-    )
 
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
 
-    if not compute:
-        return (
-            RasterioStore(filename, mode=mode, tags=tags, **kwargs)
-            .open()
-            .write_delayed(data)
-        )
+    with RasterioStore(
+        data=data,
+        filename=filename,
+        scatter=scatter,
+        tags=tags,
+        compress=compress,
+        bigtiff=bigtiff,
+    ) as rio_store:
+        # Store the data and return a lazy evaluator
+        res = rio_store.write()
 
-    else:
-        with RasterioStore(
-            filename, mode=mode, tags=tags, **kwargs
-        ) as rio_store:
-            # Store the data and return a lazy evaluator
-            res = rio_store.write(data)
+        if not compute:
+            return res
 
-            if client is not None:
-                results = client.persist(res)
-                if log_progress:
-                    progress(results)
-                dask.compute(results)
-            else:
-                if log_progress:
-                    with TqdmCallback(**tqdm_kwargs):
-                        dask.compute(res, num_workers=num_workers)
-                else:
+        if client is not None:
+            results = client.persist(res)
+            if log_progress:
+                progress(results)
+
+            dask.compute(results)
+
+        else:
+            if log_progress:
+                with TqdmCallback(**tqdm_kwargs):
                     dask.compute(res, num_workers=num_workers)
-
-    return None
+            else:
+                dask.compute(res, num_workers=num_workers)
 
 
 def to_raster(
@@ -1028,10 +956,14 @@ def to_raster(
             kwargs["nodata"] = data.gw.nodataval
 
     if "blockxsize" not in kwargs:
-        kwargs["blockxsize"] = data.gw.col_chunks
+        kwargs["blockxsize"] = data.gw.check_chunksize(
+            data.gw.col_chunks, data.gw.ncols
+        )
 
     if "blockysize" not in kwargs:
-        kwargs["blockysize"] = data.gw.row_chunks
+        kwargs["blockysize"] = data.gw.check_chunksize(
+            data.gw.row_chunks, data.gw.nrows
+        )
 
     if "bigtiff" not in kwargs:
         kwargs["bigtiff"] = data.gw.bigtiff

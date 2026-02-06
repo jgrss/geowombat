@@ -1,136 +1,76 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: CI
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - '3.10'
+          - '3.11'
+          - '3.12'
 
 jobs:
   Tests:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/osgeo/gdal:ubuntu-small-3.10.1
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ${{ github.event.inputs.python-version == '3.10' && fromJson('["3.10"]') || github.event.inputs.python-version == '3.11' && fromJson('["3.11"]') || github.event.inputs.python-version == '3.12' && fromJson('["3.12"]') || fromJson('["3.10", "3.11", "3.12"]') }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Install system requirements
+        run: apt update -y && apt install -y nodejs g++ git python3-dev
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # For setuptools-scm
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Cache pip
-        uses: actions/cache@v2
+
+      - name: Enable caching
+        uses: astral-sh/setup-uv@v5
         with:
-          path: |
-            ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install GDAL binaries
-        run: |
-          sudo apt update && sudo apt install -y software-properties-common
-          sudo add-apt-repository ppa:ubuntugis/ppa -y
-          sudo apt update && sudo apt install -y gdal-bin libgdal-dev libgl1 libspatialindex-dev g++ libmysqlclient-dev
-          echo "CPLUS_INCLUDE_PATH=/usr/include/gdal" >> $GITHUB_ENV
-          echo "C_INCLUDE_PATH=/usr/include/gdal" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
+          enable-cache: true
+
+      - name: Create venv
+        run: rm -rf .venv && uv venv
+
       - name: Install Python packages
         run: |
-          pip install -U pip setuptools wheel
-          pip install numpy
-          GDAL_VERSION=$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
-          pip install GDAL==$GDAL_VERSION --no-cache-dir
-          pip install arosics
-      - name: Install GeoWombat
-        run: |
-          pip install ".[stac,web,coreg,perf,tests]"
+          uv pip install gdal[numpy]==$(gdal-config --version)
+          uv pip install .[stac,web,tests]
+
       - name: Run Unittests
         run: |
-          pip install testfixtures
-          python -m unittest discover -p 'test_*.py'
+          cd tests && python -m unittest discover -p 'test_*.py'
+
       - name: Run ml Unittests
         run: |
-          pip install testfixtures
-          pip install ".[ml]"
-          python -m unittest discover -p 'ml_*.py'
-#  Quality:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - uses: actions/setup-python@v2
-#      with:
-#        python-version: 3.8
-#    - name: Install Python Poetry
-#      uses: abatilo/actions-poetry@v2.1.0
-#      with:
-#        poetry-version: 1.1.13
-#    - name: Configure poetry
-#      shell: bash
-#      run: python -m poetry config virtualenvs.in-project true
-#    - name: View poetry version
-#      run: poetry --version
-#    - name: Install dependencies
-#      run: |
-#        python -m poetry install
-#    - name: Lint with flake8
-#      run: |
-#        # stop the build if there are Python syntax errors or undefined names
-#        python -m poetry run flake8 . --exclude .venv --count --select=E9,F63,F7,F82 --show-source --statistics
-#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-#        python -m poetry run flake8 . --exclude .venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          uv pip install testfixtures
+          uv pip install --reinstall-package geowombat ".[ml]"
+          cd tests && python -m unittest discover -p 'ml_*.py'
 
-#   Version:
-#     needs: Tests
-#     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
-#     runs-on: ubuntu-latest
-#     concurrency: release
-#     steps:
-#       - uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#           token: ${{ secrets.GW_TOKEN }}
-#       - uses: actions/setup-python@v2
-#         with:
-#           python-version: 3.8.12
-#       - name: Python Semantic Release
-#         run: |
-#           pip install -U pip setuptools wheel
-#           pip install Cython>=0.29.* numpy>=1.19.0
-#           python -m pip install python-semantic-release
-#           # Add credentials
-#           git config user.name "github-actions"
-#           git config user.email "github-actions@github.com"
-#           # Bump GeoWombat version
-#           semantic-release publish
-#         env:
-#           GH_TOKEN: ${{ secrets.GW_TOKEN }}
-
-  # https://github.com/fnkr/github-action-ghr
-#   Release:
-#     needs: Version
-#     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
-#     name: Upload release
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: actions/setup-python@v2
-#         with:
-#           python-version: 3.8.12
-#           token: ${{ secrets.GW_TOKEN }}
-#       - uses: syphar/restore-virtualenv@v1
-#         id: cache-gwenv
-#         with:
-#           requirement_files: setup.cfg
-#       - uses: syphar/restore-pip-download-cache@v1
-#         if: steps.cache-gwenv.outputs.cache-hit != 'true'
-#       - name: Release version
-#         uses: fnkr/github-action-ghr@v1
-#         if: startsWith(github.ref, 'refs/tags/')
-#         env:
-#           GHR_PATH: .
-#           GHR_COMPRESS: gz
-#           GHR_DELETE: true
-#           GHR_REPLACE: true
-#           GITHUB_TOKEN: ${{ secrets.GW_TOKEN }}
+  Tests-result:
+    if: always()
+    needs: [Tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ "${{ needs.Tests.result }}" == "success" ]]; then
+            echo "All tests passed"
+            exit 0
+          else
+            echo "Some tests failed"
+            exit 1
+          fi

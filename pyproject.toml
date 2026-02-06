@@ -1,10 +1,140 @@
 [build-system]
-requires = [
-    'setuptools>=59.5.0',
-    'wheel',
-    'Cython>=0.29.0,<3.0.0',
-    'numpy>=1.19.0'
+build-backend = "mesonpy"
+requires = ["meson-python", "numpy", "cython", "setuptools-scm"]
+
+[project]
+name = "geowombat"
+dynamic = ["version"]
+description = "Utilities for geospatial data"
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+authors = [{name = "Jordan Graesser"}]
+maintainers = [{name = "Jordan Graesser"}]
+requires-python = ">=3.10,<3.13"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
+dependencies = [
+    "dask[array,dataframe]",
+    "distributed",
+    "geopandas",
+    "joblib",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pyproj",
+    "rasterio<1.5.0",
+    "retry",
+    "requests",
+    "scikit-learn",
+    "scipy",
+    "shapely",
+    "tqdm",
+    "xarray",
+    "h5netcdf",
+    "h5py",
+    "cryptography",
+    "threadpoolctl",
+]
+
+[project.optional-dependencies]
+docs = [
+    "numpydoc",
+    "sphinx>=6.0",
+    "sphinx-automodapi",
+    "sphinxcontrib-bibtex>=2.5.0",
+    "sphinx_tabs",
+    "pydata-sphinx-theme==0.13.1",
+    "sphinx-book-theme>=1.0.0",
+    "sphinx-copybutton>=0.5.0",
+    "sphinx-autodoc-typehints",
+    "ipython",
+    "graphviz",
+]
+
+tests = [
+    "testfixtures",
+    "jax",
+    "jaxlib",
+    "pre-commit",
+    "black",
+    "flake8",
+    "docformatter",
+    "isort",
+    "validators",
+]
+
+coreg = [
+    "earthpy",
+    "pyfftw==0.13.1",
+    "bottleneck",
+    "cartopy",
+    "cmocean",
+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",
+    "folium>=0.6.0,!=0.12.0",
+    "pykrige",
+    "py_tools_ds>=0.18.0",
+]
+
+zarr = [
+    "zarr",
+    "numcodecs",
+]
+
+ml = [
+    "dask-ml>=2024.4.4",
+    "scikit-learn>=1.3.0",
+    "lightgbm",
+    "sklearn-xarray@git+https://github.com/mmann1123/sklearn-xarray.git",
+    "numpy_groupies",
+    "numba>=0.57.0",
+]
+
+perf = [
+    "rtree",
+    "pygeos",
+    "netCDF4",
+    "ray>=2.3.0",
+]
+
+time = ["dateparser"]
+
+view = [
+    "ipython",
+    "bokeh",
+    "descartes",
+    "graphviz",
+]
+
+stac = [
+    "pystac",
+    "pystac-client",
+    "stackstac",
+    "planetary-computer",
+    "Rich",
+    "wget",
+    "wrapt-timeout-decorator",
+]
+
+web = [
+    "gsutil",
+    "requests",
+    "wget",
+]
+
+[project.urls]
+Homepage = "https://github.com/jgrss/geowombat"
+Documentation = "https://geowombat.readthedocs.io"
+Repository = "https://github.com/jgrss/geowombat"
+
+[tool.setuptools_scm]
+write_to = "src/geowombat/_version.py"
 
 [tool.black]
 line-length = 79

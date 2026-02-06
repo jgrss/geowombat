@@ -21,6 +21,7 @@ from pyproj.enums import WktVersion
 from pyproj.exceptions import CRSError
 from rasterio import features
 from rasterio.coords import BoundingBox
+from rasterio.transform import array_bounds
 from scipy.spatial import cKDTree
 from scipy.stats import mode as sci_mode
 from shapely.geometry import Polygon
@@ -40,7 +41,7 @@ try:
 except ImportError:
     PYMORPH_INSTALLED = False
 
-from ..backends.rasterio_ import array_bounds, check_crs, get_dims_from_bounds
+from ..backends.rasterio_ import check_crs, get_window_from_bounds
 from ..handler import add_handler
 from .base import PropertyMixin as _PropertyMixin
 from .base import _client_dummy, _cluster_dummy
@@ -956,7 +957,7 @@ class SpatialOperations(_PropertyMixin):
             right=right,
             top=top,
         )
-        align_height, align_width = get_dims_from_bounds(
+        align_window = get_window_from_bounds(
             dst_bounds, (data.gw.cellx, data.gw.celly)
         )
         align_transform = Affine(
@@ -964,7 +965,7 @@ class SpatialOperations(_PropertyMixin):
         )
         # Get the new bounds
         new_left, new_bottom, new_right, new_top = array_bounds(
-            align_height, align_width, align_transform
+            align_window.height, align_window.width, align_transform
         )
 
         if expand_by > 0:
@@ -1057,7 +1058,7 @@ class SpatialOperations(_PropertyMixin):
             right=right,
             top=top,
         )
-        align_height, align_width = get_dims_from_bounds(
+        align_window = get_window_from_bounds(
             dst_bounds, (data.gw.cellx, data.gw.celly)
         )
         align_transform = Affine(
@@ -1065,7 +1066,7 @@ class SpatialOperations(_PropertyMixin):
         )
         # Get the new bounds
         new_left, new_bottom, new_right, new_top = array_bounds(
-            align_height, align_width, align_transform
+            align_window.height, align_window.width, align_transform
         )
 
         if expand_by > 0:

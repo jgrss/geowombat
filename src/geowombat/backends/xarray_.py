@@ -76,12 +76,20 @@ def _check_config_globals(
         bounds_by (str)
         ref_kwargs (dict)
     """
+    assert bounds_by.lower() in (
+        "intersection",
+        "reference",
+        "union",
+    ), "The bounds_by argument must be 'intersection', 'reference', or 'union'."
+
     if config['nodata'] is not None:
         ref_kwargs = _update_kwarg(config['nodata'], ref_kwargs, 'nodata')
+
     # Check if there is a reference image
     if config['ref_image']:
-        if isinstance(config['ref_image'], str) and os.path.isfile(
-            config['ref_image']
+        if (
+            isinstance(config['ref_image'], (Path, str))
+            and Path(config['ref_image']).is_file()
         ):
             # Get the metadata from the reference image
             ref_meta = get_ref_image_meta(config['ref_image'])
@@ -98,32 +106,25 @@ def _check_config_globals(
             if isinstance(config['ref_bounds'], str) and config[
                 'ref_bounds'
             ].startswith('Window'):
-                ref_bounds_ = window_to_bounds(
+                ref_bounds = window_to_bounds(
                     filenames, unpack_window(config['ref_bounds'])
                 )
             elif isinstance(config['ref_bounds'], str) and config[
                 'ref_bounds'
             ].startswith('BoundingBox'):
-                ref_bounds_ = unpack_bounding_box(config['ref_bounds'])
+                ref_bounds = unpack_bounding_box(config['ref_bounds'])
             elif isinstance(config['ref_bounds'], Window):
-                ref_bounds_ = window_to_bounds(filenames, config['ref_bounds'])
+                ref_bounds = window_to_bounds(filenames, config['ref_bounds'])
             elif isinstance(config['ref_bounds'], BoundingBox):
-
-                ref_bounds_ = (
-                    config['ref_bounds'].left,
-                    config['ref_bounds'].bottom,
-                    config['ref_bounds'].right,
-                    config['ref_bounds'].top,
-                )
-
+                ref_bounds = config['ref_bounds']
             else:
-                ref_bounds_ = config['ref_bounds']
+                ref_bounds = config['ref_bounds']
 
-            ref_kwargs = _update_kwarg(ref_bounds_, ref_kwargs, 'bounds')
+            ref_kwargs = _update_kwarg(tuple(ref_bounds), ref_kwargs, 'bounds')
 
         else:
-            if isinstance(filenames, str) or isinstance(filenames, Path):
-                # Use the bounds of the image
+            if isinstance(filenames, (Path, str)):
+                # Use the bounds of the input image
                 ref_kwargs['bounds'] = get_file_bounds(
                     [filenames],
                     bounds_by='reference',
@@ -133,41 +134,14 @@ def _check_config_globals(
                 )
 
             else:
-                # Replace the bounds keyword, if needed
-                if bounds_by.lower() == 'intersection':
-                    # Get the intersecting bounds of all images
-                    ref_kwargs['bounds'] = get_file_bounds(
-                        filenames,
-                        bounds_by='intersection',
-                        crs=ref_kwargs['crs'],
-                        res=ref_kwargs['res'],
-                        return_bounds=True,
-                    )
-
-                elif bounds_by.lower() == 'union':
-                    # Get the union bounds of all images
-                    ref_kwargs['bounds'] = get_file_bounds(
-                        filenames,
-                        bounds_by='union',
-                        crs=ref_kwargs['crs'],
-                        res=ref_kwargs['res'],
-                        return_bounds=True,
-                    )
-
-                elif bounds_by.lower() == 'reference':
-                    # Use the bounds of the first image
-                    ref_kwargs['bounds'] = get_file_bounds(
-                        filenames,
-                        bounds_by='reference',
-                        crs=ref_kwargs['crs'],
-                        res=ref_kwargs['res'],
-                        return_bounds=True,
-                    )
-
-                else:
-                    logger.exception(
-                        "  Choose from 'intersection', 'union', or 'reference'."
-                    )
+                # Get the union bounds of all images
+                ref_kwargs['bounds'] = get_file_bounds(
+                    filenames,
+                    bounds_by=bounds_by.lower(),
+                    crs=ref_kwargs['crs'],
+                    res=ref_kwargs['res'],
+                    return_bounds=True,
+                )
 
                 config['ref_bounds'] = ref_kwargs['bounds']
 
@@ -179,7 +153,7 @@ def _check_config_globals(
 
         if config['ref_tar'] is not None:
             if isinstance(config['ref_tar'], str):
-                if os.path.isfile(config['ref_tar']):
+                if Path(config['ref_tar']).is_file():
                     ref_kwargs = _update_kwarg(
                         _get_raster_coords(config['ref_tar']),
                         ref_kwargs,
@@ -458,25 +432,29 @@ def mosaic(
         with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
+    # NaN-aware reduce functions for mosaic overlap handling
+    def custom_nanmax(left, right):
+        max_data = da.nanmax(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(max_data, dims=left.dims, coords=left.coords)
+
+    def custom_nanmin(left, right):
+        min_data = da.nanmin(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(min_data, dims=left.dims, coords=left.coords)
+
+    def custom_nanmean(left, right):
+        mean_data = da.nanmean(da.stack([left.data, right.data]), axis=0)
+        return xr.DataArray(mean_data, dims=left.dims, coords=left.coords)
+
     if overlap == 'min':
-        reduce_func = da.minimum
+        reduce_func = custom_nanmin
         tmp_nodata = 1e9
     elif overlap == 'max':
-        reduce_func = da.maximum
+        reduce_func = custom_nanmax
         tmp_nodata = -1e9
     elif overlap == 'mean':
         tmp_nodata = -1e9
+        reduce_func = custom_nanmean
 
-        def reduce_func(
-            left: xr.DataArray, right: xr.DataArray
-        ) -> xr.DataArray:
-            return xr.where(
-                (left != tmp_nodata) & (right != tmp_nodata),
-                (left + right) / 2.0,
-                xr.where(left != tmp_nodata, left, right),
-            )
-
-          
     # Open all the data pointers
     data_arrays = [
         open_rasterio(
@@ -548,7 +526,6 @@ def mosaic(
         attrs.update(tags)
         darray = darray.assign_attrs(**attrs)
 
- 
     if dtype is not None:
         attrs = darray.attrs.copy()
         return darray.astype(dtype).assign_attrs(**attrs)
@@ -615,7 +592,10 @@ def concat(
     Returns:
         ``xarray.DataArray``
     """
-    if stack_dim.lower() not in ['band', 'time']:
+    if stack_dim.lower() not in (
+        'band',
+        'time',
+    ):
         logger.exception("  The stack dimension should be 'band' or 'time'.")
 
     with rio_open(filenames[0]) as src_:
@@ -690,6 +670,7 @@ def concat(
 
         if not concat_list[0].gw.config['ignore_warnings']:
             check_alignment(concat_list)
+
         # Warp all images and concatenate along the 'time' axis into a DataArray
         src = xr.concat(concat_list, dim=stack_dim.lower()).assign_coords(
             time=new_time_names
@@ -711,6 +692,7 @@ def concat(
         ]
         if not warp_list[0].gw.config['ignore_warnings']:
             check_alignment(warp_list)
+
         src = xr.concat(warp_list, dim=stack_dim.lower())
 
     src = src.assign_attrs(**{'filename': [Path(fn).name for fn in filenames]})
@@ -740,7 +722,7 @@ def concat(
                 src.coords['time'] = parse_filename_dates(filenames)
 
     if band_names:
-        src.coords['band'] = band_names
+        src = src.assign_coords(band=band_names)
     else:
         if src.gw.sensor:
             if src.gw.sensor not in src.gw.avail_sensors:
@@ -768,6 +750,8 @@ def concat(
                     src = src.assign_attrs(
                         **{'sensor': src.gw.sensor_names[src.gw.sensor]}
                     )
+        else:
+            src = src.assign_coords(band=range(1, src.gw.nbands + 1))
 
     if dtype:
         attrs = src.attrs.copy()

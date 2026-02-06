@@ -12,11 +12,14 @@ import rasterio as rio
 import xarray as xr
 from affine import Affine
 from dask.delayed import Delayed
+from dask.utils import SerializableLock
 from pyproj import CRS
 from pyproj.exceptions import CRSError
 from rasterio.coords import BoundingBox
+from rasterio.drivers import driver_from_extension
 from rasterio.enums import Resampling
-from rasterio.transform import array_bounds, from_bounds
+from rasterio.transform import array_bounds
+from rasterio.transform import from_bounds as transform_from_bounds
 from rasterio.vrt import WarpedVRT
 from rasterio.warp import (
     aligned_target,
@@ -25,8 +28,11 @@ from rasterio.warp import (
     transform_bounds,
 )
 from rasterio.windows import Window
+from rasterio.windows import from_bounds as window_from_bounds
 
 import geowombat as gw
+
+from ..config import config
 
 try:
     import numcodecs
@@ -40,18 +46,34 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def get_dims_from_bounds(
-    bounds: BoundingBox, res: T.Tuple[float, float]
-) -> T.Tuple[int, int]:
-    width = int((bounds.right - bounds.left) / abs(res[0]))
-    height = int((bounds.top - bounds.bottom) / abs(res[1]))
+def transform_from_corner(
+    bounds: BoundingBox, res: T.Sequence[float]
+) -> Affine:
+    """Gets an affine transform from an upper left corner."""
+    return Affine(
+        res[0],
+        0.0,
+        bounds.left,
+        0.0,
+        -res[1],
+        bounds.top,
+    )
 
-    return height, width
+
+def get_window_from_bounds(
+    bounds: BoundingBox, res: T.Sequence[float]
+) -> Window:
+    """Gets a ``rasterio.Window`` a bounding box."""
+    transform = transform_from_corner(bounds, res)
+
+    return window_from_bounds(*bounds, transform=transform)
 
 
 def get_file_info(
     src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
 ) -> namedtuple:
+    """Gets image file information."""
+
     src_bounds = src_obj.bounds
     src_res = src_obj.res
     src_width = src_obj.width
@@ -164,21 +186,144 @@ class RasterioStore(object):
         Code modified from https://github.com/dymaxionlabs/dask-rasterio
     """
 
+    # https://github.com/dask/distributed/issues/780#issuecomment-270153518
+    lock_ = SerializableLock()
+
     def __init__(
         self,
+        data: xr.DataArray,
         filename: T.Union[str, Path],
-        mode: str = 'w',
+        scatter: T.Optional[str] = None,
         tags: dict = None,
-        **kwargs,
+        compress: T.Optional[str] = "none",
+        bigtiff: T.Optional[str] = None,
     ):
+        self.data = data
         self.filename = Path(filename)
-        self.mode = mode
+        self.scatter = scatter
         self.tags = tags
-        self.kwargs = kwargs
-        self.dst = None
+        self.compress = compress
+        self.bigtiff = bigtiff
 
-    def __setitem__(self, key, item):
-        if len(key) == 3:
+    def _setup(self):
+        if self.scatter is None:
+            if len(self.data.shape) > 3:
+                raise ValueError(
+                    "Only 3-band arrays can be written when scatter=None."
+                )
+
+        if hasattr(self.data, "_FillValue"):
+            nodata = self.data.attrs["_FillValue"]
+        else:
+            if hasattr(self.data, "nodatavals"):
+                nodata = self.data.attrs["nodatavals"][0]
+            else:
+                raise AttributeError(
+                    "The DataArray does not have any 'no data' attributes."
+                )
+
+        dtype = (
+            self.data.dtype.name
+            if isinstance(self.data.dtype, np.dtype)
+            else self.data.dtype
+        )
+        if isinstance(nodata, float):
+            if dtype != "float32":
+                dtype = "float64"
+
+        if self.scatter is None:
+            band_count = self.data.gw.nbands
+        else:
+            if self.scatter == 'band':
+                self.data = self.data.chunk(
+                    {
+                        'time': 1,
+                        'band': -1,
+                        'y': self.data.gw.row_chunks,
+                        'x': self.data.gw.col_chunks,
+                    }
+                )
+                band_count = self.data.gw.ntime
+            elif self.scatter == 'time':
+                self.data = self.data.chunk(
+                    {
+                        'time': -1,
+                        'band': 1,
+                        'y': self.data.gw.row_chunks,
+                        'x': self.data.gw.col_chunks,
+                    }
+                )
+                band_count = self.data.gw.nbands
+
+        # Always validate block sizes to ensure they are multiples of 16
+        blockxsize = self.data.gw.check_chunksize(
+            self.data.gw.col_chunks if self.data.gw.array_is_dask else 512,
+            self.data.gw.ncols,
+        )
+        blockysize = self.data.gw.check_chunksize(
+            self.data.gw.row_chunks if self.data.gw.array_is_dask else 512,
+            self.data.gw.nrows,
+        )
+
+        tiled = True
+        bigtiff = self.bigtiff
+        compress = self.compress
+        if config["with_config"]:
+            if config["bigtiff"] is not None:
+                if isinstance(config["bigtiff"], bool):
+                    bigtiff = "YES" if config["bigtiff"] else "NO"
+                else:
+                    bigtiff = config["bigtiff"].upper()
+
+                if bigtiff not in (
+                    "YES",
+                    "NO",
+                    "IF_NEEDED",
+                    "IF_SAFER",
+                ):
+                    raise NameError(
+                        "The GDAL BIGTIFF must be one of 'YES', 'NO', 'IF_NEEDED', or 'IF_SAFER'. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information."
+                    )
+
+            if config["compress"] is not None:
+                compress = config["compress"]
+
+            if config["tiled"] is not None:
+                tiled = config["tiled"]
+
+        self.kwargs = dict(
+            driver=driver_from_extension(self.filename),
+            width=self.data.gw.ncols,
+            height=self.data.gw.nrows,
+            count=band_count,
+            dtype=dtype,
+            nodata=nodata,
+            blockxsize=blockxsize,
+            blockysize=blockysize,
+            crs=self.data.gw.crs_to_pyproj,
+            transform=self.data.gw.transform,
+            compress=compress,
+            tiled=tiled if max(blockxsize, blockysize) >= 16 else False,
+            sharing=False,
+            BIGTIFF=bigtiff,
+        )
+
+    def __setitem__(self, key: tuple, item: np.ndarray) -> None:
+        if len(key) == 4:
+            if self.scatter == 'band':
+                index_range, _, y, x = key
+            else:
+                _, index_range, y, x = key
+
+            indexes = list(
+                range(
+                    index_range.start + 1,
+                    index_range.stop + 1,
+                    index_range.step or 1,
+                )
+            )
+
+        elif len(key) == 3:
             index_range, y, x = key
             indexes = list(
                 range(
@@ -187,63 +332,117 @@ class RasterioStore(object):
                     index_range.step or 1,
                 )
             )
+
         else:
             indexes = 1
             y, x = key
 
-        w = Window(
+        chunk_window = Window(
             col_off=x.start,
             row_off=y.start,
             width=x.stop - x.start,
             height=y.stop - y.start,
         )
 
-        self.dst.write(item, window=w, indexes=indexes)
+        self._write_window(item, indexes=indexes, window=chunk_window)
 
     def __enter__(self) -> 'RasterioStore':
-        return self.open()
+        self.closed = False
+        self._setup()
+
+        return self._open()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
+        self.closed = True
 
-    def open(self) -> 'RasterioStore':
-        self.dst = self.rio_open()
-        self.update_tags()
+    def _open(self) -> 'RasterioStore':
+        self._create_image()
 
         return self
 
-    def rio_open(self):
-        return rio.open(self.filename, mode=self.mode, **self.kwargs)
+    def _write_file(self, filename: Path, mode: str) -> None:
+        with rio.open(
+            filename,
+            mode=mode,
+            **self.kwargs,
+        ) as dst:
+            if self.tags is not None:
+                dst.update_tags(**self.tags)
 
-    def update_tags(self):
-        if self.tags is not None:
-            self.dst.update_tags(**self.tags)
-
-    def write_delayed(self, data: xr.DataArray):
-        store = da.store(
-            data.transpose('band', 'y', 'x').squeeze().data,
-            self,
-            lock=True,
-            compute=False,
-        )
-
-        return self.close_delayed(store)
-
-    @dask.delayed
-    def close_delayed(self, store):
-        return self.close()
-
-    def write(self, data: xr.DataArray, compute: bool = False) -> Delayed:
-        if isinstance(data.data, da.Array):
-            return da.store(data.data, self, lock=True, compute=compute)
+    def _create_image(self) -> None:
+        mode = 'r+' if self.filename.exists() else 'w'
+        if self.scatter == 'band':
+            for band_name in self.data.band.values:
+                self._write_file(
+                    self.get_band_filename(band_name),
+                    mode=mode,
+                )
+        elif self.scatter == 'time':
+            for band_name in self.data.time.values:
+                self._write_file(
+                    self.get_band_filename(band_name),
+                    mode=mode,
+                )
         else:
-            self.dst.write(
-                data.data,
-                indexes=list(range(1, data.data.shape[0] + 1)),
+            self._write_file(
+                self.filename,
+                mode=mode,
             )
 
-    def close(self):
-        self.dst.close()
+    def get_band_filename(self, band_name: str) -> Path:
+        return self.filename.parent / f"{self.filename.stem}_{band_name}.tif"
+
+    def _write_window(
+        self,
+        data: np.ndarray,
+        indexes: T.Union[int, np.ndarray],
+        window: T.Optional[Window] = None,
+    ) -> None:
+        if self.scatter in (
+            'band',
+            'time',
+        ):
+            band_name_iter = (
+                self.data.band.values
+                if self.scatter == 'band'
+                else self.data.time.values
+            )
+            for i, band_name in enumerate(band_name_iter):
+                if self.scatter == 'band':
+                    # Take all time and the ith band
+                    data_ = data[:, i]
+                else:
+                    # Take all bands and the ith time
+                    data_ = data[i]
+
+                with rio.open(
+                    self.get_band_filename(band_name),
+                    mode='r+',
+                    **self.kwargs,
+                ) as dst:
+                    dst.write(
+                        data_,
+                        indexes=indexes,
+                        window=window,
+                    )
+        else:
+            with rio.open(self.filename, mode='r+', **self.kwargs) as dst:
+                dst.write(
+                    data,
+                    indexes=indexes,
+                    window=window,
+                )
+
+    def write(self, compute: bool = False) -> Delayed:
+        if isinstance(self.data.data, da.Array):
+            return da.store(
+                self.data.data, self, lock=self.lock_, compute=compute
+            )
+        else:
+            self._write_window(
+                self.data.data,
+                indexes=list(range(1, self.data.data.shape[0] + 1)),
+            )
 
 
 def check_res(
@@ -254,7 +453,7 @@ def check_res(
         int,
     ]
 ) -> T.Tuple[float, float]:
-    """Checks a resolution.
+    """Checks an image's resolution.
 
     Args:
         res (int | float | tuple): The resolution.
@@ -347,10 +546,10 @@ def check_file_crs(filename: T.Union[str, Path]) -> CRS:
         # rasterio does not open and read metadata from NetCDF files
         if str(filename).lower().startswith('netcdf:'):
             with xr.open_dataset(filename.split(':')[1], chunks=256) as src:
-                src_crs = src.crs
+                src_crs = check_src_crs(src)
         else:
             with xr.open_dataset(filename, chunks=256) as src:
-                src_crs = src.crs
+                src_crs = check_src_crs(src)
 
     else:
         with rio.open(filename) as src:
@@ -359,7 +558,7 @@ def check_file_crs(filename: T.Union[str, Path]) -> CRS:
     return check_crs(src_crs)
 
 
-def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
+def unpack_bounding_box(bounds: str) -> BoundingBox:
     """Unpacks a BoundBox() string.
 
     Args:
@@ -372,15 +571,15 @@ def unpack_bounding_box(bounds: str) -> T.Tuple[float, float, float, float]:
 
     for str_ in bounds_str:
         if str_.strip().startswith('left='):
-            left_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            left = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('bottom='):
-            bottom_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            bottom = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('right='):
-            right_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            right = float(str_.strip().split('=')[1].replace(')', ''))
         elif str_.strip().startswith('top='):
-            top_coord = float(str_.strip().split('=')[1].replace(')', ''))
+            top = float(str_.strip().split('=')[1].replace(')', ''))
 
-    return left_coord, bottom_coord, right_coord, top_coord
+    return BoundingBox(left=left, bottom=bottom, right=right, top=top)
 
 
 def unpack_window(bounds: str) -> Window:
@@ -408,30 +607,26 @@ def unpack_window(bounds: str) -> Window:
 
 
 def window_to_bounds(
-    filenames: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
-) -> T.Tuple[float, float, float, float]:
+    filename: T.Union[str, Path, T.Sequence[T.Union[str, Path]]], w: Window
+) -> BoundingBox:
     """Transforms a rasterio Window() object to image bounds.
 
     Args:
-        filenames (str or str list)
+        filename (str or str list)
         w (object)
 
     Returns:
         ``tuple``
     """
-    if isinstance(filenames, str):
-        src = rio.open(filenames)
-    else:
-        src = rio.open(filenames[0])
+    if isinstance(filename, (list, tuple)):
+        filename = filename[0]
 
-    left, top = src.transform * (w.col_off, w.row_off)
+    with rio.open(filename) as src:
+        left, top = src.transform * (w.col_off, w.row_off)
+        right = left + w.width * abs(src.res[0])
+        bottom = top - w.height * abs(src.res[1])
 
-    right = left + w.width * abs(src.res[0])
-    bottom = top - w.height * abs(src.res[1])
-
-    src.close()
-
-    return left, bottom, right, top
+    return BoundingBox(left=left, bottom=bottom, right=right, top=top)
 
 
 def align_bounds(
@@ -441,7 +636,7 @@ def align_bounds(
     maxy: float,
     res: T.Union[T.Tuple[float, float], T.Sequence[float], float, int],
 ) -> T.Tuple[Affine, int, int]:
-    """Aligns bounds to resolution.
+    """Aligns bounds to a resolution.
 
     Args:
         minx (float)
@@ -478,7 +673,7 @@ def get_file_bounds(
     """Gets the union of all files.
 
     Args:
-        filenames (list): The file names to mosaic.
+        filenames (list): The file names from which to get bounds overlap.
         bounds_by (Optional[str]): How to concatenate the output extent. Choices are ['intersection', 'union'].
         crs (Optional[crs]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
@@ -504,7 +699,7 @@ def get_file_bounds(
         with rio.open(filenames[0]) as src:
             src_info = get_file_info(src)
 
-            if res:
+            if res is not None:
                 dst_res = check_res(res)
             else:
                 dst_res = src_info.src_res
@@ -525,7 +720,10 @@ def get_file_bounds(
                 densify_pts=21,
             )
 
-        if bounds_by.lower() in ['union', 'intersection']:
+        if bounds_by.lower() in (
+            'union',
+            'intersection',
+        ):
             for fn in filenames[1:]:
                 src_crs = check_file_crs(fn)
 
@@ -564,7 +762,7 @@ def get_file_bounds(
             bounds_width = int((bounds_right - bounds_left) / abs(dst_res[0]))
             bounds_height = int((bounds_top - bounds_bottom) / abs(dst_res[1]))
 
-            bounds_transform = from_bounds(
+            bounds_transform = transform_from_bounds(
                 bounds_left,
                 bounds_bottom,
                 bounds_right,
@@ -644,7 +842,7 @@ def warp_images(
     return [warp(fn, **warp_kwargs) for fn in filenames]
 
 
-def get_ref_image_meta(filename):
+def get_ref_image_meta(filename: T.Union[Path, str]) -> namedtuple:
     """Gets warping information from a reference image.
 
     Args:
@@ -711,7 +909,7 @@ def warp(
 
         # Check if the data need to be subset
         if (bounds is None) or (tuple(bounds) == tuple(src_info.src_bounds)):
-            if crs:
+            if crs is not None:
                 (
                     left_coord,
                     bottom_coord,
@@ -744,22 +942,10 @@ def warp(
             elif isinstance(bounds, str):
 
                 if bounds.startswith('BoundingBox'):
-                    (
-                        left_coord,
-                        bottom_coord,
-                        right_coord,
-                        top_coord,
-                    ) = unpack_bounding_box(bounds)
+                    dst_bounds = unpack_bounding_box(bounds)
                 else:
                     logger.exception('  The bounds were not accepted.')
                     raise TypeError
-
-                dst_bounds = BoundingBox(
-                    left=left_coord,
-                    bottom=bottom_coord,
-                    right=right_coord,
-                    top=top_coord,
-                )
 
             elif isinstance(bounds, (list, np.ndarray, tuple)):
                 dst_bounds = BoundingBox(
@@ -776,15 +962,15 @@ def warp(
                 )
                 raise TypeError
 
-        dst_height, dst_width = get_dims_from_bounds(dst_bounds, dst_res)
+        dst_window = get_window_from_bounds(dst_bounds, dst_res)
 
         # Do all the key metadata match the reference information?
         if (
             (tuple(src_info.src_bounds) == tuple(bounds))
             and (src_info.src_res == dst_res)
             and (src_crs == dst_crs)
-            and (src_info.src_width == dst_width)
-            and (src_info.src_height == dst_height)
+            and (src_info.src_width == dst_window.width)
+            and (src_info.src_height == dst_window.height)
             and ('.nc' not in filename.lower())
         ):
             vrt_options = {
@@ -793,8 +979,8 @@ def warp(
                 'crs': src_crs,
                 'src_transform': src.transform,
                 'transform': src.transform,
-                'height': dst_height,
-                'width': dst_width,
+                'height': dst_window.height,
+                'width': dst_window.width,
                 'nodata': None,
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {
@@ -804,22 +990,11 @@ def warp(
             }
 
         else:
-            src_transform = Affine(
-                src_info.src_res[0],
-                0.0,
-                src_info.src_bounds.left,
-                0.0,
-                -src_info.src_res[1],
-                src_info.src_bounds.top,
+            src_transform = transform_from_corner(
+                src_info.src_bounds, src_info.src_res
             )
-            dst_transform = Affine(
-                dst_res[0],
-                0.0,
-                dst_bounds.left,
-                0.0,
-                -dst_res[1],
-                dst_bounds.top,
-            )
+
+            dst_transform = transform_from_corner(dst_bounds, dst_res)
 
             if tac is not None:
                 # Align the cells to target coordinates
@@ -833,7 +1008,10 @@ def warp(
             if tap:
                 # Align the cells to the resolution
                 dst_transform, dst_width, dst_height = aligned_target(
-                    dst_transform, dst_width, dst_height, dst_res
+                    dst_transform, dst_window.width, dst_window.height, dst_res
+                )
+                dst_window = Window(
+                    row_off=0, col_off=0, width=dst_width, height=dst_height
                 )
 
             vrt_options = {
@@ -842,8 +1020,8 @@ def warp(
                 'crs': dst_crs,
                 'src_transform': src_transform,
                 'transform': dst_transform,
-                'height': dst_height,
-                'width': dst_width,
+                'height': dst_window.height,
+                'width': dst_window.width,
                 'nodata': nodata,
                 'warp_mem_limit': warp_mem_limit,
                 'warp_extras': {

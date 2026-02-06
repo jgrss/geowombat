@@ -116,8 +116,8 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         )
 
     def check_chunksize(self, chunksize: int, array_size: int) -> int:
-        """Asserts that the chunk size fits within intervals of 16 and is
-        smaller than the array.
+        """Ensures the chunk size is a multiple of 16 and fits within the
+        array dimension.
 
         Args:
             chunksize (int): The chunk size to check.
@@ -126,15 +126,19 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Returns:
             ``int``
         """
-        if not (chunksize % 16 == 0) or (chunksize > array_size):
-            if chunksize % 16 == 0:
-                chunksize = 1024
-            while True:
-                if chunksize < array_size:
-                    break
-                chunksize /= 2
-                if chunksize <= 2:
-                    break
+        # Handle invalid input
+        if chunksize <= 0:
+            chunksize = 512
+
+        # Round to nearest multiple of 16
+        if chunksize % 16 != 0:
+            chunksize = max(16, ((chunksize + 8) // 16) * 16)
+
+        # Ensure chunk doesn't exceed array dimension
+        while chunksize > array_size and chunksize > 16:
+            chunksize //= 2
+            # Re-align to multiple of 16 after halving
+            chunksize = max(16, (chunksize // 16) * 16)
 
         return int(chunksize)
 
@@ -728,16 +732,15 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
     def save(
         self,
         filename: T.Union[str, _Path],
-        mode: T.Optional[str] = 'w',
-        nodata: T.Optional[T.Union[float, int]] = None,
         overwrite: bool = False,
+        scatter: T.Optional[str] = None,
         client: T.Optional[_Client] = None,
-        compute: T.Optional[bool] = True,
+        compute: bool = True,
         tags: T.Optional[dict] = None,
         compress: T.Optional[str] = 'none',
         compression: T.Optional[str] = None,
-        num_workers: T.Optional[int] = 1,
-        log_progress: T.Optional[bool] = True,
+        num_workers: int = 1,
+        log_progress: bool = True,
         tqdm_kwargs: T.Optional[dict] = None,
         bigtiff: T.Optional[str] = None,
     ) -> None:
@@ -745,10 +748,10 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             filename (str | Path): The output file name to write to.
-            mode (Optional[str]): The file storage mode. Choices are ['w', 'r+'].
             nodata (Optional[float | int]): The 'no data' value. If ``None`` (default), the 'no data'
                 value is taken from the ``DataArray`` metadata.
             overwrite (Optional[bool]): Whether to overwrite an existing file. Default is False.
+            scatter (Optional[str]): Scatter 'band' or 'time' to separate file. Default is None.
             client (Optional[Client object]): A ``dask.distributed.Client`` client object to persist data.
                 Default is None.
             compute (Optinoal[bool]): Whether to compute and write to ``filename``. Otherwise, return
@@ -756,6 +759,12 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                 return the ``dask`` task graph. Default is ``True``.
             tags (Optional[dict]): Metadata tags to write to file. Default is None.
             compress (Optional[str]): The file compression type. Default is 'none', or no compression.
+
+                .. note::
+                    When using a client, it is advised to use threading. E.g.,
+                    ``dask.distributed.LocalCluster(processes=False)``. Process-based concurrency could
+                    result in corrupted file blocks.
+
             compression (Optional[str]): The file compression type. Default is 'none', or no compression.
 
                 .. deprecated:: 2.1.4
@@ -785,12 +794,11 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             )
             compress = compression
 
-        return save(
+        save(
             self._obj,
             filename=filename,
-            mode=mode,
-            nodata=nodata,
             overwrite=overwrite,
+            scatter=scatter,
             client=client,
             compute=compute,
             tags=tags,

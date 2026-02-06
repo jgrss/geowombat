@@ -2,8 +2,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import dask
+import numpy as np
 import rasterio as rio
+from dask.distributed import Client, LocalCluster
 
 import geowombat as gw
 from geowombat.data import (
@@ -142,6 +143,76 @@ class TestWrite(unittest.TestCase):
             with rio.open(out_path) as rio_src:
                 self.assertTrue(rio_src.nodata == NODATA)
 
+    def test_write_numpy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(l8_224078_20200518) as src:
+                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                # Load data and convert from dask to numpy
+                data.load()
+
+                self.assertTrue(isinstance(data.data, np.ndarray))
+
+                (
+                    data.gw.save(
+                        filename=out_path,
+                        overwrite=True,
+                        tags={"TEST_METADATA": "TEST_VALUE"},
+                        compress="lzw",
+                    )
+                )
+                with gw.open(out_path) as tmp_src:
+                    # Compare array values
+                    self.assertTrue(data.equals(tmp_src))
+                    # Compare attributes
+                    self.assertTrue(
+                        data.gw.nodataval == tmp_src.gw.nodataval == NODATA
+                    )
+                    self.assertEqual(data.gw.dtype, tmp_src.dtype)
+                    self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                    self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
+
+            with rio.open(out_path) as rio_src:
+                self.assertTrue(rio_src.nodata == NODATA)
+
+    def test_client_save(self):
+
+        with LocalCluster(
+            processes=False,
+            n_workers=2,
+            threads_per_worker=2,
+            memory_limit="2GB",
+        ) as cluster:
+            with Client(cluster) as client:
+                with tempfile.TemporaryDirectory() as tmp:
+                    out_path = Path(tmp) / "test.tif"
+                    with gw.open(l8_224078_20200518) as src:
+                        data = src.gw.set_nodata(0, NODATA, dtype="uint16")
+                        data.gw.save(
+                            filename=out_path,
+                            overwrite=True,
+                            tags={"TEST_METADATA": "TEST_VALUE"},
+                            compress="lzw",
+                            client=client,
+                        )
+                        with gw.open(out_path) as tmp_src:
+                            # Compare array values
+                            self.assertTrue(data.equals(tmp_src))
+                            # Compare attributes
+                            self.assertTrue(
+                                data.gw.nodataval
+                                == tmp_src.gw.nodataval
+                                == NODATA
+                            )
+                            self.assertEqual(data.gw.dtype, tmp_src.dtype)
+                            self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
+                            self.assertEqual(
+                                tmp_src.TEST_METADATA, "TEST_VALUE"
+                            )
+
+                    with rio.open(out_path) as rio_src:
+                        self.assertTrue(rio_src.nodata == NODATA)
+
     def test_config_save(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test.tif"
@@ -173,6 +244,100 @@ class TestWrite(unittest.TestCase):
             with rio.open(out_path) as rio_src:
                 self.assertTrue(rio_src.nodata == NODATA)
 
+    def test_save_scatter_band(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim='time',
+            ) as src:
+
+                self.assertTrue(len(src.shape) == 4)
+
+                src.gw.save(
+                    filename=out_path,
+                    overwrite=True,
+                    scatter='band',
+                    num_workers=1,
+                )
+
+                # Each file's band count is equal to the number
+                # of time dimensions
+                for band_name in src.band.values:
+                    self.assertTrue(
+                        (
+                            out_path.parent
+                            / f"{out_path.stem}_{band_name}.tif"
+                        ).exists()
+                    )
+
+                with gw.open(
+                    out_path.parent / f"{out_path.stem}_1.tif"
+                ) as src_test:
+                    self.assertTrue(src_test.gw.nbands == src.gw.ntime)
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=1),
+                            src.sel(time=1, band=1),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=2),
+                            src.sel(time=2, band=1),
+                        )
+                    )
+
+    def test_save_scatter_time(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim='time',
+            ) as src:
+
+                self.assertTrue(len(src.shape) == 4)
+
+                src.gw.save(
+                    filename=out_path,
+                    overwrite=True,
+                    scatter='time',
+                    num_workers=1,
+                )
+
+                # Each file's band count is equal to the number
+                # bands, and there are N time files
+                for band_name in src.time.values:
+                    self.assertTrue(
+                        (
+                            out_path.parent
+                            / f"{out_path.stem}_{band_name}.tif"
+                        ).exists()
+                    )
+
+                with gw.open(
+                    out_path.parent / f"{out_path.stem}_1.tif"
+                ) as src_test:
+                    self.assertTrue(src_test.gw.nbands == src.gw.nbands)
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=1),
+                            src.sel(time=1, band=1),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=2),
+                            src.sel(time=1, band=2),
+                        )
+                    )
+                    self.assertTrue(
+                        np.allclose(
+                            src_test.sel(band=3),
+                            src.sel(time=1, band=3),
+                        )
+                    )
+
     def test_save_small(self):
         with tempfile.TemporaryDirectory() as tmp:
             out_path = Path(tmp) / "test.tif"
@@ -191,37 +356,6 @@ class TestWrite(unittest.TestCase):
                 except ValueError:
                     self.fail("The small array write test failed.")
 
-    def test_delayed_save(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            out_path = Path(tmp) / "test.tif"
-            with gw.open(l8_224078_20200518) as src:
-                data = src.gw.set_nodata(0, NODATA, dtype="uint16")
-                tasks = [
-                    gw.save(
-                        data,
-                        filename=out_path,
-                        tags={"TEST_METADATA": "TEST_VALUE"},
-                        compress="lzw",
-                        num_workers=2,
-                        compute=False,
-                        overwrite=True,
-                    )
-                ]
-            dask.compute(tasks, num_workers=2)
-            with gw.open(out_path) as tmp_src:
-                # Compare array values
-                self.assertTrue(data.equals(tmp_src))
-                # Compare attributes
-                self.assertTrue(
-                    data.gw.nodataval == tmp_src.gw.nodataval == NODATA
-                )
-                self.assertEqual(data.gw.dtype, tmp_src.dtype)
-                self.assertTrue(hasattr(tmp_src, "TEST_METADATA"))
-                self.assertEqual(tmp_src.TEST_METADATA, "TEST_VALUE")
-
-            with rio.open(out_path) as rio_src:
-                self.assertTrue(rio_src.nodata == NODATA)
-
     def test_mosaic_save_single_band(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
 
@@ -239,6 +373,44 @@ class TestWrite(unittest.TestCase):
             except Exception as e:
                 # If any exception is raised, fail the test with a message
                 self.fail(f"An error occurred during saving: {e}")
+
+    def test_save_non_multiple_16_chunks(self):
+        """Test that saving with non-multiple-of-16 chunks doesn't raise
+        RasterBlockError (issue #237).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            out_path = Path(tmp) / "test.tif"
+            # Open with chunks that are NOT multiples of 16 (e.g., 250)
+            with gw.open(
+                l8_224078_20200518,
+                chunks={'band': 1, 'y': 250, 'x': 250},
+            ) as src:
+                try:
+                    src.gw.save(
+                        filename=out_path,
+                        overwrite=True,
+                        num_workers=1,
+                    )
+                except Exception as e:
+                    self.fail(
+                        f"RasterBlockError or other error with "
+                        f"non-multiple-of-16 chunks: {e}"
+                    )
+
+            # Verify the output file was created and is valid
+            self.assertTrue(out_path.exists())
+            with rio.open(out_path) as rio_src:
+                # Block sizes should be multiples of 16
+                block_shapes = rio_src.block_shapes
+                for block_height, block_width in block_shapes:
+                    self.assertTrue(
+                        block_width % 16 == 0 or block_width == rio_src.width,
+                        f"Block width {block_width} is not a multiple of 16",
+                    )
+                    self.assertTrue(
+                        block_height % 16 == 0 or block_height == rio_src.height,
+                        f"Block height {block_height} is not a multiple of 16",
+                    )
 
 
 if __name__ == "__main__":

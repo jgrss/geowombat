@@ -16,6 +16,8 @@ from geowombat.data import (
     l8_224077_20200518_B2_60m,
     l8_224078_20200518,
     l8_224078_20200518_B2,
+    l8_224077_20200518_B2_nan,
+    l8_224078_20200518_B2_nan,
 )
 
 
@@ -23,14 +25,14 @@ class TestOpen(unittest.TestCase):
     def test_open_netcdf(self):
         with gw.open(
             l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
-            chunks={'band': -1, 'y': 256, 'x': 256},
-            engine='h5netcdf',
+            chunks={"band": -1, "y": 256, "x": 256},
+            engine="h5netcdf",
         ) as src:
             self.assertEqual(src.shape, (6, 668, 668))
             with xr.open_dataset(
                 l3b_s2b_00390821jxn0l2a_20210319_20220730_c01,
-                chunks={'band': -1, 'y': 256, 'x': 256},
-                engine='h5netcdf',
+                chunks={"band": -1, "y": 256, "x": 256},
+                engine="h5netcdf",
             ) as ds:
                 self.assertTrue(np.allclose(src.y.values, ds.y.values))
                 self.assertTrue(np.allclose(src.x.values, ds.x.values))
@@ -43,12 +45,12 @@ class TestOpen(unittest.TestCase):
         with gw.open(l8_224077_20200518_B2) as src30m:
             with gw.open(l8_224077_20200518_B2_60m) as src60m:
                 with self.assertRaises(ValueError):
-                    res = xr.align(src30m, src60m, join='exact')
+                    res = xr.align(src30m, src60m, join="exact")
 
         with self.assertWarns(UserWarning):
             with gw.open(
                 [l8_224077_20200518_B2, l8_224077_20200518_B2_60m],
-                stack_dim='band',
+                stack_dim="band",
                 band_names=[1, 2],
             ) as src:
                 pass
@@ -67,7 +69,7 @@ class TestOpen(unittest.TestCase):
 
     def test_has_no_band_coord(self):
         with gw.open(l8_224078_20200518) as src:
-            self.assertFalse(src.drop_vars('band').gw.has_band_coord)
+            self.assertFalse(src.drop_vars("band").gw.has_band_coord)
 
     def test_nodata(self):
         with gw.open(l8_224078_20200518) as src:
@@ -78,7 +80,7 @@ class TestOpen(unittest.TestCase):
     def test_open_multiple(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            stack_dim='time',
+            stack_dim="time",
         ) as src:
             self.assertEqual(src.gw.ntime, 2),
             self.assertTrue(src.gw.has_time_dim)
@@ -86,7 +88,7 @@ class TestOpen(unittest.TestCase):
 
         with gw.open(
             [l8_224078_20200518_B2, l8_224078_20200518_B2],
-            stack_dim='band',
+            stack_dim="band",
         ) as src:
             self.assertEqual(src.gw.nbands, 2)
             self.assertTrue(src.gw.has_band_dim)
@@ -95,8 +97,8 @@ class TestOpen(unittest.TestCase):
     def test_open_multiple_same(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            time_names=['20200518', '20200518'],
-            stack_dim='time',
+            time_names=["20200518", "20200518"],
+            stack_dim="time",
         ) as src:
             self.assertEqual(src.gw.ntime, 1)
             self.assertTrue(src.gw.has_time_dim)
@@ -105,9 +107,9 @@ class TestOpen(unittest.TestCase):
     def test_open_multiple_same_max(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            time_names=['20200518', '20200518'],
-            stack_dim='time',
-            overlap='max',
+            time_names=["20200518", "20200518"],
+            stack_dim="time",
+            overlap="max",
         ) as src:
             self.assertEqual(src.gw.ntime, 1)
             self.assertTrue(src.gw.has_time_dim)
@@ -116,9 +118,9 @@ class TestOpen(unittest.TestCase):
     def test_open_multiple_same_min(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            time_names=['20200518', '20200518'],
-            stack_dim='time',
-            overlap='min',
+            time_names=["20200518", "20200518"],
+            stack_dim="time",
+            overlap="min",
         ) as src:
             self.assertEqual(src.gw.ntime, 1)
             self.assertTrue(src.gw.has_time_dim)
@@ -127,9 +129,9 @@ class TestOpen(unittest.TestCase):
     def test_open_multiple_same_mean(self):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
-            time_names=['20200518', '20200518'],
-            stack_dim='time',
-            overlap='mean',
+            time_names=["20200518", "20200518"],
+            stack_dim="time",
+            overlap="mean",
         ) as src:
             self.assertEqual(src.gw.ntime, 1)
             self.assertTrue(src.gw.has_time_dim)
@@ -139,9 +141,9 @@ class TestOpen(unittest.TestCase):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            bounds_by='union',
+            bounds_by="union",
         ) as src:
             values = src.values[
                 0,
@@ -172,9 +174,9 @@ class TestOpen(unittest.TestCase):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            bounds_by='union',
+            bounds_by="union",
         ) as src:
             bounds = src.gw.bounds
             self.assertEqual(
@@ -185,9 +187,9 @@ class TestOpen(unittest.TestCase):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            bounds_by='intersection',
+            bounds_by="intersection",
         ) as src:
             bounds = src.gw.bounds
             self.assertEqual(
@@ -198,10 +200,10 @@ class TestOpen(unittest.TestCase):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='max',
-            bounds_by='intersection',
+            overlap="max",
+            bounds_by="intersection",
             nodata=0,
         ) as src:
             self.assertTrue(src.gw.has_band_dim)
@@ -212,10 +214,10 @@ class TestOpen(unittest.TestCase):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='max',
-            bounds_by='intersection',
+            overlap="max",
+            bounds_by="intersection",
             nodata=0,
         ) as src:
             x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
@@ -230,19 +232,94 @@ class TestOpen(unittest.TestCase):
                             [7938, 7869, 7889],
                             [7862, 7828, 7721],
                         ],
-                        dtype='float32',
+                        dtype="float32",
                     ),
                 )
+            )
+
+    def test_mosaic_max_nan(self):
+        filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
+        with gw.open(
+            filenames,
+            band_names=["blue"],
+            mosaic=True,
+            overlap="max",
+            bounds_by="union",
+            nodata=0,
+        ) as src:
+            start_values = src.values[
+                0,
+                0,
+                0:10,
+            ]
+            end_values = src.values[
+                0,
+                -2,
+                -10:,
+            ]
+            x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
+            j, i = coords_to_indices(x, y, src)
+            mid_values = src[0, i : i + 3, j : j + 3].values
+            self.assertTrue(
+                np.allclose(
+                    start_values,
+                    np.array(
+                        [
+                            8482.0,
+                            8489.0,
+                            8483.0,
+                            8547.0,
+                            8561.0,
+                            8574.0,
+                            8616.0,
+                            8530.0,
+                            8396.0,
+                            8125.0,
+                        ]
+                    ),
+                ),
+            )
+            self.assertTrue(
+                np.allclose(
+                    mid_values,
+                    np.array(
+                        [
+                            [8387.0, 8183.0, 8050.0],
+                            [7938.0, 7869.0, 7889.0],
+                            [7862.0, 7828.0, 7721.0],
+                        ]
+                    ),
+                )
+            )
+            self.assertTrue(
+                np.allclose(
+                    end_values,
+                    np.array(
+                        [
+                            7409.0,
+                            7427.0,
+                            7490.0,
+                            7444.0,
+                            7502.0,
+                            7472.0,
+                            7464.0,
+                            7443.0,
+                            7406.0,
+                            np.nan,
+                        ]
+                    ),
+                    equal_nan=True,
+                ),
             )
 
     def test_mosaic_min(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='min',
-            bounds_by='intersection',
+            overlap="min",
+            bounds_by="intersection",
             nodata=0,
         ) as src:
             x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
@@ -257,19 +334,95 @@ class TestOpen(unittest.TestCase):
                             [7934, 7867, 7885],
                             [7861, 7826, 7721],
                         ],
-                        dtype='float32',
+                        dtype="float32",
                     ),
                 )
+            )
+
+    def test_mosaic_min_nan(self):
+        filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
+        with gw.open(
+            filenames,
+            band_names=["blue"],
+            mosaic=True,
+            overlap="min",
+            bounds_by="union",
+            nodata=0,
+        ) as src:
+            start_values = src.values[
+                0,
+                0,
+                0:10,
+            ]
+            end_values = src.values[
+                0,
+                -2,
+                -10:,
+            ]
+            x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
+            j, i = coords_to_indices(x, y, src)
+            mid_values = src[0, i : i + 3, j : j + 3].values
+            self.assertTrue(
+                np.allclose(
+                    start_values,
+                    np.array(
+                        [
+                            8482.0,
+                            8489.0,
+                            8483.0,
+                            8547.0,
+                            8561.0,
+                            8574.0,
+                            8616.0,
+                            8530.0,
+                            8396.0,
+                            8125.0,
+                        ]
+                    ),
+                ),
+            )
+            print(mid_values)
+            self.assertTrue(
+                np.allclose(
+                    mid_values,
+                    np.array(
+                        [
+                            [8384.0, 8183.0, 8049.0],
+                            [7934.0, 7867.0, 7885.0],
+                            [7861.0, 7826.0, 7721.0],
+                        ]
+                    ),
+                )
+            )
+            self.assertTrue(
+                np.allclose(
+                    end_values,
+                    np.array(
+                        [
+                            7409.0,
+                            7427.0,
+                            7490.0,
+                            7444.0,
+                            7502.0,
+                            7472.0,
+                            7464.0,
+                            7443.0,
+                            7406.0,
+                            np.nan,
+                        ]
+                    ),
+                    equal_nan=True,
+                ),
             )
 
     def test_mosaic_mean(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='mean',
-            bounds_by='intersection',
+            overlap="mean",
+            bounds_by="intersection",
             nodata=0,
         ) as src:
             x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
@@ -284,19 +437,95 @@ class TestOpen(unittest.TestCase):
                             [7936, 7868, 7887],
                             [7861.5, 7827, 7721],
                         ],
-                        dtype='float32',
+                        dtype="float32",
                     ),
                 )
+            )
+
+    def test_mosaic_mean_nan(self):
+        filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
+        with gw.open(
+            filenames,
+            band_names=["blue"],
+            mosaic=True,
+            overlap="mean",
+            bounds_by="union",
+            nodata=0,
+        ) as src:
+            start_values = src.values[
+                0,
+                0,
+                0:10,
+            ]
+            end_values = src.values[
+                0,
+                -2,
+                -10:,
+            ]
+            x, y = lonlat_to_xy(-54.78604601, -25.23023330, dst_crs=src)
+            j, i = coords_to_indices(x, y, src)
+            mid_values = src[0, i : i + 3, j : j + 3].values
+            self.assertTrue(
+                np.allclose(
+                    start_values,
+                    np.array(
+                        [
+                            8482.0,
+                            8489.0,
+                            8483.0,
+                            8547.0,
+                            8561.0,
+                            8574.0,
+                            8616.0,
+                            8530.0,
+                            8396.0,
+                            8125.0,
+                        ]
+                    ),
+                ),
+            )
+            print(mid_values)
+            self.assertTrue(
+                np.allclose(
+                    mid_values,
+                    np.array(
+                        [
+                            [8385.5, 8183.0, 8049.5],
+                            [7936.0, 7868.0, 7887.0],
+                            [7861.5, 7827.0, 7721.0],
+                        ]
+                    ),
+                )
+            )
+            self.assertTrue(
+                np.allclose(
+                    end_values,
+                    np.array(
+                        [
+                            7409.0,
+                            7427.0,
+                            7490.0,
+                            7444.0,
+                            7502.0,
+                            7472.0,
+                            7464.0,
+                            7443.0,
+                            7406.0,
+                            np.nan,
+                        ]
+                    ),
+                    equal_nan=True,
+                ),
             )
 
     def test_footprint_grid(self):
         filenames = [l8_224077_20200518_B2, l8_224078_20200518_B2]
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='mean',
-            bounds_by='intersection',
+            overlap="mean",
+            bounds_by="intersection",
             nodata=0,
             persist_filenames=True,
         ) as src:
@@ -308,10 +537,10 @@ class TestOpen(unittest.TestCase):
 
         with gw.open(
             filenames,
-            band_names=['blue'],
+            band_names=["blue"],
             mosaic=True,
-            overlap='mean',
-            bounds_by='intersection',
+            overlap="mean",
+            bounds_by="intersection",
             nodata=0,
             chunks=128,
             persist_filenames=False,
@@ -322,27 +551,27 @@ class TestOpen(unittest.TestCase):
 
     def test_has_time_dim(self):
         with gw.open(
-            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+            [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
         ) as src:
             self.assertTrue(src.gw.has_time_dim)
 
     def test_has_time_coord(self):
         with gw.open(
-            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+            [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
         ) as src:
             self.assertTrue(src.gw.has_time_coord)
 
     def test_has_time(self):
         with gw.open(
-            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+            [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
         ) as src:
             self.assertTrue(src.gw.has_time)
 
     def test_has_no_time_coord(self):
         with gw.open(
-            [l8_224078_20200518, l8_224078_20200518], stack_dim='time'
+            [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
         ) as src:
-            self.assertFalse(src.drop_vars('time').gw.has_time_coord)
+            self.assertFalse(src.drop_vars("time").gw.has_time_coord)
 
     def test_open_path(self):
         with gw.open(Path(l8_224078_20200518)) as src:
@@ -382,8 +611,8 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.col_chunks, 64)
 
     def test_dtype(self):
-        with gw.open(l8_224078_20200518, dtype='float64') as src:
-            self.assertEqual(src.dtype, 'float64')
+        with gw.open(l8_224078_20200518, dtype="float64") as src:
+            self.assertEqual(src.dtype, "float64")
 
     def test_count(self):
         with gw.open(l8_224078_20200518) as src, rio.open(
@@ -404,7 +633,7 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(src.gw.ncols, rsrc.width)
 
     def test_transform(self):
-        test_crs = CRS.from_user_input('epsg:4326')
+        test_crs = CRS.from_user_input("epsg:4326")
         with gw.open(l8_224078_20200518) as src:
             result = src.gw.transform_crs(
                 dst_crs=4326,
@@ -416,5 +645,5 @@ class TestOpen(unittest.TestCase):
             self.assertEqual(test_crs, result.gw.crs_to_pyproj)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

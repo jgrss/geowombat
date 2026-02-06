@@ -10,6 +10,7 @@ Modifications:
 import os
 import typing as T
 import warnings
+from functools import singledispatch
 from pathlib import Path
 
 import numpy as np
@@ -172,6 +173,25 @@ def _parse_envi(meta):
     parse = {'wavelength': parsevec, 'fwhm': parsevec}
     parsed_meta = {k: parse.get(k, default)(v) for k, v in meta.items()}
     return parsed_meta
+
+
+@singledispatch
+def check_chunks(chunks: dict) -> dict:
+    return chunks
+
+
+@check_chunks.register
+def _(chunks: tuple) -> dict:
+    return dict(
+        zip(
+            (
+                'band',
+                'y',
+                'x',
+            ),
+            chunks,
+        )
+    )
 
 
 def open_rasterio(
@@ -356,10 +376,12 @@ def open_rasterio(
     if hasattr(riods, 'res'):
         # (width, height) tuple of pixels in units of CRS
         attrs['res'] = riods.res
-    if hasattr(riods, 'is_tiled'):
+    if hasattr(riods, 'block_shapes'):
         # Is the TIF tiled? (bool)
+        # Check if block width != dataset width (per rasterio discussion #3014)
         # We cast it to an int for netCDF compatibility
-        attrs['is_tiled'] = np.uint8(riods.is_tiled)
+        is_tiled = riods.block_shapes[0][1] != riods.width
+        attrs['is_tiled'] = np.uint8(is_tiled)
     if hasattr(riods, 'nodatavals'):
         # The nodata values for the raster bands
         nodatavals = (
@@ -424,7 +446,11 @@ def open_rasterio(
             mtime = None
         token = tokenize(filename, mtime, chunks)
         name_prefix = f"open_rasterio-{token}"
-        result = result.chunk(chunks, name_prefix=name_prefix, token=token)
+        result = result.chunk(
+            check_chunks(chunks),
+            name_prefix=name_prefix,
+            token=token,
+        )
 
     # Make the file closeable
     result.set_close(manager.close)

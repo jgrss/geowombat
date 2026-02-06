@@ -26,10 +26,17 @@ try:
     from rich.console import Console as _Console
     from rich.table import Table as _Table
 except ImportError as e:
+    pystac = None
+    pystac_errors = None
+    stackstac = None
+    wget = None
+    _EOExtension = None
+    _Client = None
+    _Console = None
+    _Table = None
     warnings.warn(
-        "Install geowombat with 'pip install .[stac]' to use the STAC API."
+        f"Install geowombat with 'pip install .[stac]' to use the STAC API. ({e})"
     )
-    warnings.warn(e)
 
 try:
     from pydantic.errors import PydanticImportError
@@ -39,108 +46,132 @@ except ImportError:
 try:
     import planetary_computer as pc
 except (ImportError, PydanticImportError) as e:
+    pc = None
     warnings.warn(
-        'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited.'
+        f'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited. ({e})'
     )
-    warnings.warn(e)
 
 
-class STACNames(enum.Enum):
+class StrEnum(str, enum.Enum):
+    """
+    Source:
+        https://github.com/irgeek/StrEnum/blob/master/strenum/__init__.py
+    """
+
+    def __new__(cls, value, *args, **kwargs):
+        return super().__new__(cls, value, *args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class STACNames(StrEnum):
     """STAC names."""
 
-    element84_v0 = 'element84_v0'
-    element84_v1 = 'element84_v1'
-    microsoft_v1 = 'microsoft_v1'
+    ELEMENT84_V0 = 'element84_v0'
+    ELEMENT84_V1 = 'element84_v1'
+    MICROSOFT_V1 = 'microsoft_v1'
 
 
-class STACCollections(enum.Enum):
-    cop_dem_glo_30 = 'cop_dem_glo_30'
-    landsat_c2_l1 = 'landsat_c2_l1'
-    landsat_c2_l2 = 'landsat_c2_l2'
-    sentinel_s2_l2a = 'sentinel_s2_l2a'
-    sentinel_s2_l2a_cogs = 'sentinel_s2_l2a_cogs'
-    sentinel_s2_l1c = 'sentinel_s2_l1c'
-    sentinel_s1_l1c = 'sentinel_s1_l1c'
-    sentinel_3_lst = 'sentinel_3_lst'
-    landsat_l8_c2_l2 = 'landsat_l8_c2_l2'
-    usda_cdl = 'usda_cdl'
-    io_lulc = 'io_lulc'
+class STACCollections(StrEnum):
+    # Copernicus DEM GLO-30
+    COP_DEM_GLO_30 = 'cop_dem_glo_30'
+    # All Landsat, Collection 2, Level 1
+    LANDSAT_C2_L1 = 'landsat_c2_l1'
+    # All Landsat, Collection 2, Level 2 (surface reflectance)
+    LANDSAT_C2_L2 = 'landsat_c2_l2'
+    # Sentinel-2, Level 2A (surface reflectance missing cirrus band)
+    SENTINEL_S2_L2A = 'sentinel_s2_l2a'
+    SENTINEL_S2_L2A_COGS = 'sentinel_s2_l2a_cogs'
+    # Sentinel-2, Level 1C (top of atmosphere with all 13 bands available)
+    SENTINEL_S2_L1C = 'sentinel_s2_l1c'
+    # Sentinel-1, Level 1C Ground Range Detected (GRD)
+    SENTINEL_S1_L1C = 'sentinel_s1_l1c'
+    SENTINEL_3_LST = 'sentinel_3_lst'
+    LANDSAT_L8_C2_L2 = 'landsat_l8_c2_l2'
+    USDA_CDL = 'usda_cdl'
+    IO_LULC = 'io_lulc'
+    NAIP = 'naip'
+    # Harmonized Landsat Sentinel-2
+    HLS = 'hls'
+    # ESA WorldCover 10m land cover
+    ESA_WORLDCOVER = 'esa_worldcover'
+
+
+class STACCollectionURLNames(StrEnum):
+    # Copernicus DEM GLO-30
+    COP_DEM_GLO_30 = STACCollections.COP_DEM_GLO_30.replace('_', '-')
+    # All Landsat, Collection 2, Level 1
+    LANDSAT_C2_L1 = STACCollections.LANDSAT_C2_L1.replace('_', '-')
+    # All Landsat, Collection 2, Level 2 (surface reflectance)
+    LANDSAT_C2_L2 = STACCollections.LANDSAT_C2_L2.replace('_', '-')
+    # Sentinel-2, Level 2A (surface reflectance missing cirrus band)
+    SENTINEL_S2_L2A = 'sentinel-2-l2a'
+    SENTINEL_S2_L2A_COGS = STACCollections.SENTINEL_S2_L2A_COGS.replace(
+        '_', '-'
+    )
+    # Sentinel-2, Level 1C (top of atmosphere with all 13 bands available)
+    SENTINEL_S2_L1C = 'sentinel-2-l1c'
+    # Sentinel-1, Level 1C Ground Range Detected (GRD)
+    SENTINEL_S1_L1C = 'sentinel-1-grd'
+    SENTINEL_3_LST = 'sentinel-3-slstr-lst-l2-netcdf'
+    LANDSAT_L8_C2_L2 = 'landsat-8-c2-l2'
+    USDA_CDL = STACCollections.USDA_CDL.replace('_', '-')
+    IO_LULC = STACCollections.IO_LULC.replace('_', '-')
+    NAIP = STACCollections.NAIP
+    HLS = STACCollections.HLS
+    ESA_WORLDCOVER = 'esa-worldcover'
 
 
 STAC_CATALOGS = {
-    STACNames.element84_v0: 'https://earth-search.aws.element84.com/v0',
-    STACNames.element84_v1: 'https://earth-search.aws.element84.com/v1',
+    STACNames.ELEMENT84_V0: 'https://earth-search.aws.element84.com/v0',
+    STACNames.ELEMENT84_V1: 'https://earth-search.aws.element84.com/v1',
     # STACNames.google: 'https://earthengine.openeo.org/v1.0',
-    STACNames.microsoft_v1: 'https://planetarycomputer.microsoft.com/api/stac/v1',
+    STACNames.MICROSOFT_V1: 'https://planetarycomputer.microsoft.com/api/stac/v1',
 }
 
-
 STAC_SCALING = {
-    STACCollections.landsat_c2_l2: {
+    STACCollections.LANDSAT_C2_L2: {
         # https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2
-        STACNames.microsoft_v1: {
+        STACNames.MICROSOFT_V1: {
             'gain': 0.0000275,
             'offset': -0.2,
             'nodata': 0,
         },
-    }
+    },
+    STACCollections.HLS: {
+        # https://planetarycomputer.microsoft.com/dataset/hls
+        STACNames.MICROSOFT_V1: {
+            'gain': 0.0001,
+            'offset': 0,
+            'nodata': -9999,
+        },
+    },
 }
 
 STAC_COLLECTIONS = {
-    # Copernicus DEM GLO-30
-    STACCollections.cop_dem_glo_30: {
-        STACNames.element84_v1: 'cop-dem-glo-30',
-        STACNames.microsoft_v1: 'cop-dem-glo-30',
-    },
-    # All Landsat, Collection 2, Level 1
-    STACCollections.landsat_c2_l1: {
-        STACNames.microsoft_v1: 'landsat-c2-l1',
-    },
-    # All Landsat, Collection 2, Level 2 (surface reflectance)
-    STACCollections.landsat_c2_l2: {
-        STACNames.element84_v1: 'landsat-c2-l2',
-        # STACNames.google: [
-        #     'LC09/C02/T1_L2',
-        #     'LC08/C02/T1_L2',
-        #     'LE07/C02/T1_L2',
-        #     'LT05/C02/T1_L2',
-        # ],
-        STACNames.microsoft_v1: 'landsat-c2-l2',
-    },
-    # Sentinel-2, Level 2A (surface reflectance missing cirrus band)
-    STACCollections.sentinel_s2_l2a_cogs: {
-        STACNames.element84_v0: 'sentinel-s2-l2a-cogs',
-    },
-    STACCollections.sentinel_s2_l2a: {
-        STACNames.element84_v1: 'sentinel-2-l2a',
-        # STACNames.google: 'COPERNICUS/S2_SR',
-        STACNames.microsoft_v1: 'sentinel-2-l2a',
-    },
-    # Sentinel-2, Level 1C (top of atmosphere with all 13 bands available)
-    STACCollections.sentinel_s2_l1c: {
-        STACNames.element84_v1: 'sentinel-2-l1c'
-    },
-    # Sentinel-1, Level 1C Ground Range Detected (GRD)
-    STACCollections.sentinel_s1_l1c: {
-        STACNames.element84_v1: 'sentinel-1-grd',
-        STACNames.microsoft_v1: 'sentinel-1-grd',
-    },
-    STACCollections.sentinel_3_lst: {
-        STACNames.microsoft_v1: 'sentinel-3-slstr-lst-l2-netcdf',
-    },
-    # Landsat 8, Collection 2, Tier 1 (Level 2 (surface reflectance))
-    STACCollections.landsat_l8_c2_l2: {
-        # STACNames.google: 'LC08_C02_T1_L2',
-        STACNames.microsoft_v1: 'landsat-8-c2-l2',
-    },
-    # USDA CDL
-    STACCollections.usda_cdl: {
-        STACNames.microsoft_v1: 'usda-cdl',
-    },
-    # Esri 10 m land cover
-    STACCollections.io_lulc: {
-        STACNames.microsoft_v1: 'io-lulc',
-    },
+    STACNames.ELEMENT84_V0: (STACCollectionURLNames.SENTINEL_S2_L2A_COGS,),
+    STACNames.ELEMENT84_V1: (
+        STACCollectionURLNames.COP_DEM_GLO_30,
+        STACCollectionURLNames.LANDSAT_C2_L2,
+        STACCollectionURLNames.SENTINEL_S2_L2A,
+        STACCollectionURLNames.SENTINEL_S2_L1C,
+        STACCollectionURLNames.SENTINEL_S1_L1C,
+        STACCollectionURLNames.NAIP,
+    ),
+    STACNames.MICROSOFT_V1: (
+        STACCollectionURLNames.COP_DEM_GLO_30,
+        STACCollectionURLNames.LANDSAT_C2_L1,
+        STACCollectionURLNames.LANDSAT_C2_L2,
+        STACCollectionURLNames.SENTINEL_S2_L2A,
+        STACCollectionURLNames.SENTINEL_S1_L1C,
+        STACCollectionURLNames.SENTINEL_3_LST,
+        STACCollectionURLNames.LANDSAT_L8_C2_L2,
+        STACCollectionURLNames.USDA_CDL,
+        STACCollectionURLNames.IO_LULC,
+        STACCollectionURLNames.HLS,
+        STACCollectionURLNames.ESA_WORLDCOVER,
+    ),
 }
 
 
@@ -208,7 +239,7 @@ def _download_worker(item, extra: str, out_path: _Path) -> dict:
 
 
 def open_stac(
-    stac_catalog: str = 'microsoft_v1',
+    stac_catalog: str = STACNames.ELEMENT84_V1,
     collection: str = None,
     bounds: T.Union[T.Sequence[float], str, _Path, gpd.GeoDataFrame] = None,
     proj_bounds: T.Sequence[float] = None,
@@ -244,6 +275,7 @@ def open_stac(
                     sentinel_s2_l2a
                     sentinel_s2_l1c
                     sentinel_s1_l1c
+                    naip
                 microsoft_v1:
                     cop_dem_glo_30
                     landsat_c2_l1
@@ -254,6 +286,8 @@ def open_stac(
                     sentinel_3_lst
                     io_lulc
                     usda_cdl
+                    hls
+                    esa_worldcover
 
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``). The bounds CRS
@@ -341,7 +375,7 @@ def open_stac(
         bounds = tuple(bounds.total_bounds.flatten().tolist())
 
     try:
-        stac_catalog_url = STAC_CATALOGS[STACNames(stac_catalog)]
+        stac_catalog_url = STAC_CATALOGS[stac_catalog]
         # Open the STAC catalog
         catalog = _Client.open(stac_catalog_url)
     except ValueError as e:
@@ -349,20 +383,15 @@ def open_stac(
             f'The STAC catalog {stac_catalog} is not supported ({e}).'
         )
 
-    try:
-        collection_dict = STAC_COLLECTIONS[STACCollections(collection)]
-    except ValueError as e:
-        raise NameError(
-            f'The STAC collection {collection} is not supported ({e}).'
-        )
+    if (
+        STACCollectionURLNames[STACCollections(collection).name]
+        not in STAC_COLLECTIONS[stac_catalog]
+    ):
+        raise NameError(f'The STAC collection {collection} is not supported.')
 
-    try:
-        catalog_collections = [collection_dict[STACNames(stac_catalog)]]
-    except KeyError as e:
-        raise NameError(
-            f'The STAC catalog {stac_catalog} does not have a collection {collection} ({e}).'
-        )
-    # asset = catalog.get_collection(catalog_collections[0]).assets['geoparquet-items']
+    catalog_collections = [
+        STACCollectionURLNames[STACCollections(collection).name]
+    ]
 
     query = None
     if cloud_cover_perc is not None:
@@ -382,7 +411,7 @@ def open_stac(
         raise ValueError('No items found.')
 
     if list(search.items()):
-        if STACNames(stac_catalog) is STACNames.microsoft_v1:
+        if STACNames(stac_catalog) == STACNames.MICROSOFT_V1:
             items = pc.sign(search)
         else:
             items = pystac.ItemCollection(items=list(search.items()))
@@ -394,6 +423,7 @@ def open_stac(
                 )
             except pystac_errors.ExtensionNotImplemented:
                 selected_item = items.items[0]
+
             table = _Table("Asset Key", "Description")
             for asset_key, asset in selected_item.assets.items():
                 table.add_row(asset_key, asset.title)
@@ -491,5 +521,7 @@ def open_stac(
             df = df.set_index('id').reindex(data.id.values).reset_index()
 
         return data, df
+
+    warnings.warn("No asset items were found.")
 
     return None, None

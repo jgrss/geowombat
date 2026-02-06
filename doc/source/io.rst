@@ -195,13 +195,15 @@ Setup a plot function
 
     def plot(bounds_by, ref_image=None, cmap='viridis'):
         fig, ax = plt.subplots(figsize=(10, 7), dpi=200)
+        # Use 'reference' when a ref_image is provided, otherwise use the specified bounds_by
+        effective_bounds_by = 'reference' if ref_image is not None else bounds_by
         with gw.config.update(ref_image=ref_image):
             with gw.open(
                 [l8_224077_20200518_B4, l8_224078_20200518_B4],
                 band_names=['nir'],
                 chunks=256,
                 mosaic=True,
-                bounds_by=bounds_by,
+                bounds_by=effective_bounds_by,
                 persist_filenames=True
             ) as srca:
                 # Plot the NIR band
