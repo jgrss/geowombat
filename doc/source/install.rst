@@ -6,8 +6,16 @@ Installing GeoWombat
 Install with pip
 ----------------
 
-If your system has `GDAL <https://gdal.org/>`_ installed, then ``geowombat`` can be installed via
-`pip <https://pypi.org/project/pip/>`_ directly from the `GitHub repository <https://github.com/jgrss/geowombat>`_.
+``geowombat`` can be installed via `pip <https://pypi.org/project/pip/>`_ directly from the
+`GitHub repository <https://github.com/jgrss/geowombat>`_. **No system GDAL installation is required** for
+core features (opening, saving, vegetation indices, classification, etc.) because ``rasterio`` ships with
+bundled GDAL binaries.
+
+.. note::
+
+    **Optional GDAL Python bindings:** A few advanced features (VRT creation, GDAL warp backend,
+    topographic normalization, and web download utilities) require the GDAL Python bindings (``osgeo``).
+    If you use these features, see :ref:`install-gdal-bindings` below.
 
 .. tabs::
 
@@ -78,11 +86,66 @@ Alternatively, install in one line following the `GeoWombat Conda page <https://
     conda install -c conda-forge geowombat
 
 
-Detailed install
-----------------
+.. _install-gdal-bindings:
 
-The GDAL binaries must be installed prior to installing ``geowombat``. Below are instructions on how to build GDAL for your
-operating system.
+Installing GDAL Python bindings (optional)
+------------------------------------------
+
+The GDAL Python bindings are **only needed** for these features:
+
+- VRT creation (``to_vrt``)
+- GDAL warp backend (``geowombat.backends.gdal_.warp``)
+- Topographic normalization (slope/aspect calculation)
+- Web download utilities with GDAL resampling
+
+If you do not use these features, you can skip this section entirely.
+
+.. tabs::
+
+    .. tab:: Conda (easiest, all platforms)
+
+        The simplest way to install GDAL on any platform::
+
+            conda install -c conda-forge gdal
+
+    .. tab:: Linux (Ubuntu/Debian)
+
+        Install GDAL system libraries and Python bindings::
+
+            sudo apt update
+            sudo apt install -y gdal-bin libgdal-dev python3-gdal
+
+        Or, to install in a virtualenv via pip after installing system GDAL::
+
+            sudo apt install -y gdal-bin libgdal-dev
+            pip install gdal[numpy]=="$(gdal-config --version).*"
+
+        For more recent GDAL versions, use the UbuntuGIS PPA::
+
+            sudo add-apt-repository ppa:ubuntugis/ppa
+            sudo apt update
+            sudo apt install -y gdal-bin libgdal-dev python3-gdal
+
+    .. tab:: macOS (Homebrew)
+
+        Install GDAL via Homebrew, then install the matching Python bindings::
+
+            brew install gdal
+            pip install gdal[numpy]=="$(gdal-config --version).*"
+
+    .. tab:: Windows
+
+        On Windows, use Conda (recommended)::
+
+            conda install -c conda-forge gdal
+
+        Alternatively, download pre-built wheels from
+        `Christoph Gohlke's geospatial-wheels <https://github.com/cgohlke/geospatial-wheels/releases>`_.
+
+Detailed install (legacy)
+-------------------------
+
+Below are detailed instructions for a full system GDAL build, if needed.
 
 .. tabs::
 
@@ -345,10 +408,10 @@ Installation Notes
 
 .. note::
 
-    **GDAL install:**
-    GeoWombat requires `GDAL <https://gdal.org/>`_ and `libspatialindex <https://libspatialindex.org/>`_.
-
-    This GDAL requirement is a prerequisite itself for the `Python GDAL bindings <https://pypi.org/project/GDAL/>`_.
+    **GDAL install (optional):**
+    Most ``geowombat`` features work without system GDAL because ``rasterio`` ships bundled GDAL binaries.
+    The GDAL Python bindings (``osgeo``) are only needed for a few advanced features.
+    See :ref:`install-gdal-bindings` above for instructions.
 
 .. note::
 
