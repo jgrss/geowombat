@@ -1,8 +1,6 @@
 import typing as T
 from pathlib import Path
 
-from osgeo import gdal
-
 
 def warp(
     in_image: T.Union[str, Path],
@@ -33,6 +31,13 @@ def warp(
             metadataConflictValue=None, setColorInterpretation=False,
             callback=None, callback_data=None
     """
+    try:
+        from osgeo import gdal
+    except ImportError:
+        from ..handler import GDAL_INSTALL_MSG
+
+        raise ImportError(GDAL_INSTALL_MSG)
+
     if overwrite:
         if Path(out_image).is_file():
             Path(out_image).unlink()

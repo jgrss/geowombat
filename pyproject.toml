@@ -115,7 +115,7 @@ view = [
 stac = [
     "pystac",
     "pystac-client",
-    "stackstac",
+    "stackstac>=0.5.1",
     "planetary-computer",
     "Rich",
     "wget",

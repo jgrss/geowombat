@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 import psutil
 import xarray as xr
-from osgeo import gdal
 from shapely.geometry import Polygon
 
 import geowombat as gw
@@ -54,11 +53,16 @@ logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
-RESAMPLING_DICT = dict(
-    bilinear=gdal.GRA_Bilinear,
-    cubic=gdal.GRA_Cubic,
-    nearest=gdal.GRA_NearestNeighbour,
-)
+try:
+    from osgeo import gdal
+
+    RESAMPLING_DICT = dict(
+        bilinear=gdal.GRA_Bilinear,
+        cubic=gdal.GRA_Cubic,
+        nearest=gdal.GRA_NearestNeighbour,
+    )
+except ImportError:
+    RESAMPLING_DICT = {}
 
 OrbitDates = namedtuple('OrbitDates', 'start end')
 FileInfo = namedtuple('FileInfo', 'name key')

@@ -4,7 +4,6 @@ import dask
 import dask.array as da
 import numpy as np
 import xarray as xr
-from osgeo import gdal, gdal_array
 from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 from ..handler import add_handler
@@ -55,6 +54,12 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
     Returns:
         ``numpy.ndarray``
     """
+    try:
+        from osgeo import gdal, gdal_array
+    except ImportError:
+        from ..handler import GDAL_INSTALL_MSG
+
+        raise ImportError(GDAL_INSTALL_MSG)
 
     inrows, incols = elev.shape
 
@@ -104,6 +109,12 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
     Returns:
         ``numpy.ndarray``
     """
+    try:
+        from osgeo import gdal, gdal_array
+    except ImportError:
+        from ..handler import GDAL_INSTALL_MSG
+
+        raise ImportError(GDAL_INSTALL_MSG)
 
     inrows, incols = elev.shape
 
