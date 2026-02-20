@@ -50,8 +50,10 @@ Fit a classifier and predict on an array
     with gw.config.update(ref_res=100):
         with gw.open(l8_224078_20200518 ) as src:
             y = fit_predict(src, pl, labels, col='lc')
-            y.plot(robust=True, ax=ax)
             print(y)
+
+    @savefig ml_fit_predict.png
+    y.plot(robust=True, ax=ax)
 
 Fit a classifier with multiple dates
 ------------------------------------
@@ -84,6 +86,7 @@ Train a supervised classifier and predict
             X, Xy, clf = fit(src, pl, labels, col="lc")
             y = predict(src, X, clf)
             y.plot(robust=True, ax=ax)
+    @savefig ml_supervised_predict.png
     plt.tight_layout(pad=1)
 
 Train an unsupervised classifier and predict
@@ -105,6 +108,7 @@ Unsupervised classifiers can also be used in a pipeline
             X, Xy, clf = fit(src, cl)
             y = predict(src, X, clf)
             y.plot(robust=True, ax=ax)
+    @savefig ml_unsupervised_predict.png
     plt.tight_layout(pad=1)
 
     fig, ax = plt.subplots(dpi=200,figsize=(5,5))
@@ -114,6 +118,7 @@ Unsupervised classifiers can also be used in a pipeline
         with gw.open(l8_224078_20200518) as src:
             y = fit_predict(src, cl)
             y.plot(robust=True, ax=ax)
+    @savefig ml_unsupervised_fit_predict.png
     plt.tight_layout(pad=1)
 
 Predict with cross validation and parameter tuning
@@ -152,6 +157,7 @@ Cross-validation and parameter tuning is now possible
             clf.set_params(**gridsearch.best_params_)
             y = predict(src, X, clf)
             y.plot(robust=True, ax=ax)
+    @savefig ml_cv_predict.png
     plt.tight_layout(pad=1)
 
 Save prediction output
