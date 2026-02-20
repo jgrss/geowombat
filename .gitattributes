@@ -1,0 +1,11 @@
+# Exclude development-only directories from sdist (meson dist / git archive)
+act/** export-ignore
+doc/** export-ignore
+notebooks/** export-ignore
+scripts/** export-ignore
+.github/** export-ignore
+.circleci/** export-ignore
+.pre-commit-config.yaml export-ignore
+.gitignore export-ignore
+.flake8 export-ignore
+CLAUDE.md export-ignore
