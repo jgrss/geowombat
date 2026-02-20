@@ -54,6 +54,7 @@ docs = [
     "sphinx-autodoc-typehints",
     "ipython",
     "graphviz",
+    "sklearn-xarray@git+https://github.com/mmann1123/sklearn-xarray.git",
 ]
 
 tests = [
