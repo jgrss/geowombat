@@ -4,79 +4,163 @@ Streaming data from cloud sources
 =================================
 
 GeoWombat integrates easy access to Spatial Temporal Asset Catalog (`STAC <https://stacspec.org/en>`_) APIs.
-STAC is a standardized way to expose collections of spatial temporal data for easy data retrieval of products
-such as Sentinel-2, Landsat, and Digital Earth. For a full list of public STAC
-APIs refer to the following `STAC list <https://stacspec.org/en/about/datasets/>`_.
+STAC is a standardized way to expose collections of spatial temporal data. Instead of downloading
+large files, STAC lets you search for exactly the imagery you need (by location, date, and cloud cover)
+and stream it directly into your analysis. For a full list of public STAC APIs, refer to the
+`STAC datasets page <https://stacspec.org/en/about/datasets/>`_.
 
-Spatial Temporal Asset Catalogs
--------------------------------
-
-To open a STAC catalog with ``geowombat``, we interface through the following Python libraries:
-
-    * `pystac <https://pystac.readthedocs.io/en/latest/>`_
-    * `pystac_client <https://pystac-client.readthedocs.io/en/latest/>`_
-    * `stackstac <https://stackstac.readthedocs.io/en/latest/>`_
-    * `planetary_computer <https://pypi.org/project/planetary-computer/>`_
-
-:func:`geowombat.core.stac.open_stac` currently supports the following STAC catalogs:
-
-    * `element84 v0 <'https://earth-search.aws.element84.com/v0'>`_
-    * `element84 v1 <'https://earth-search.aws.element84.com/v1'>`_
-    * `microsoft <'https://planetarycomputer.microsoft.com/api/stac/v1>`_
+Installation
+------------
 
 To install ``geowombat`` with STAC functionality::
 
-    pip install "geowombat[stac]@git+https://github.com/jgrss/geowombat.git"
+    pip install "geowombat[stac]"
 
-STAC example
-------------
+This installs the required dependencies: ``pystac``, ``pystac_client``, ``stackstac``,
+and ``planetary_computer``.
+
+Supported catalogs and collections
+----------------------------------
+
+:func:`geowombat.core.stac.open_stac` supports the following STAC catalogs:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Catalog
+     - Collections
+   * - ``element84_v0``
+     - ``sentinel_s2_l2a_cogs``
+   * - ``element84_v1``
+     - ``cop_dem_glo_30``, ``landsat_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s2_l1c``, ``sentinel_s1_l1c``, ``naip``
+   * - ``microsoft_v1``
+     - ``cop_dem_glo_30``, ``landsat_c2_l1``, ``landsat_c2_l2``, ``landsat_l8_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s1_l1c``, ``sentinel_3_lst``, ``io_lulc``, ``usda_cdl``, ``hls``, ``esa_worldcover``
+
+STAC examples
+-------------
 
 Stream Sentinel-2 data from Element 84
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example streams selected Sentinel-2 bands using `Element 84's <https://www.element84.com/>`_
-Sentinel-2 STAC catalog. The Sentinel-2 data are Level 2A, which means they have been corrected to
-bottom-of-atmosphere, or also referred to as surface reflectance.
+The following example streams Sentinel-2 Level 2A (surface reflectance) bands for
+the Washington, D.C. area using `Element 84's <https://www.element84.com/>`_ STAC catalog.
 
 .. code:: python
 
-    from pathlib import Path
     from geowombat.core.stac import open_stac
-    from rasterio.enums import Resampling
 
     data, df = open_stac(
-        # Available catalog names can be found in geowombat.core.stac.STACNames
-        stac_catalog='element84_v1',
-        # Query bounds in lat/lon WGS84
-        bounds=(left, bottom, right, top),
-        # Projection (matching `epsg`) bounds to return data in
-        # If not given, data are returned from the bounds query
-        proj_bounds=None,
-        # An EPSG code to warp the outputs to
-        epsg='epsg:8858',
-        nodata_fill=32768,
-        # Available collections can be found in geowombat.core.stac.STACCollections
-        # sentinel_s2_l2a = Sentinel-2 Level 2A (i.e., bottom-of-atmosphere, or surface, reflectance)
-        collection='sentinel_s2_l2a',
-        # Band names depend on the catalog
-        bands=['blue', 'green', 'red'],
-        # Maximum cloud cover percentage in the query
-        cloud_cover_perc=90,
-        # Dask chunk size to return data in
-        chunksize=512,
-        # Query start and end dates (YYYY-MM-DD)
-        start_date='2022-01-01',
-        end_date='2022-04-01',
-        # Cell size to resample outputs to
+        stac_catalog="element84_v1",
+        bounds=(-77.1, 38.85, -76.95, 38.95),  # DC area (left, bottom, right, top)
+        epsg=32618,  # UTM Zone 18N
+        collection="sentinel_s2_l2a",  # Sentinel-2 Level 2A (surface reflectance)
+        bands=["blue", "green", "red", "nir"],
+        cloud_cover_perc=20,
+        start_date="2023-06-01",
+        end_date="2023-07-31",
         resolution=10.0,
-        # Resampling method as a rasterio Resampling enum
-        resampling=Resampling.cubic,
-        # Non-raster extras to download, e.g., metadata files
-        extra_assets=['metadata'],
-        out_path=Path('/out_path'),
-        # No limit on returned item count
-        max_items=None
+        chunksize=512,
     )
+
+    # data is a lazy dask-backed xarray DataArray with dims (time, band, y, x)
+    print(data)
+
+Plot the results:
+
+.. code:: python
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(dpi=200, figsize=(3, 3))
+    data.sel(time=data.time[0], band=["red", "green", "blue"]).plot.imshow(
+        robust=True, ax=ax
+    )
+    ax.set_title("Sentinel-2 RGB - Washington, D.C.")
+    plt.tight_layout(pad=1)
+
+.. image:: _static/stac_sentinel2_rgb.png
+   :width: 400
+   :alt: Sentinel-2 RGB composite of Washington, D.C.
+
+Stream Landsat data from Microsoft Planetary Computer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from geowombat.core.stac import open_stac
+
+    data_l, df_l = open_stac(
+        stac_catalog='microsoft_v1',
+        collection='landsat_c2_l2',
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=['red', 'green', 'blue', 'qa_pixel'],
+        mask_data=True,
+        start_date='2023-06-01',
+        end_date='2023-07-31',
+        resolution=30.0,
+        chunksize=512,
+    )
+
+    print(data_l)
+
+.. code:: python
+
+    fig, ax = plt.subplots(dpi=200, figsize=(3, 3))
+    data_l.sel(time=data_l.time[0], band=["red", "green", "blue"]).plot.imshow(
+        robust=True, ax=ax
+    )
+    ax.set_title("Landsat RGB - Washington, D.C.")
+    plt.tight_layout(pad=1)
+
+.. note::
+
+    When using ``mask_data=True`` with a ``qa_pixel`` band, cloud and shadow pixels
+    are automatically masked. The ``qa_pixel`` band is removed from the output after masking.
+    Add ``max_items=10`` to cap the number of scenes returned.
+
+
+Merge multiple collections
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use :func:`geowombat.core.stac.merge_stac` to combine data from different sensors
+into a single time series:
+
+.. code:: python
+
+    from geowombat.core.stac import open_stac, merge_stac
+    from rasterio.enums import Resampling
+
+    # Load Landsat
+    data_l, df_l = open_stac(
+        stac_catalog="microsoft_v1",
+        collection="landsat_c2_l2",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        bands=["red", "green", "blue", "qa_pixel"],
+        mask_data=True,
+        start_date="2023-01-01",
+        end_date="2023-12-31",
+        epsg=32618,
+        resolution=30.0,
+    )
+
+    # Load Sentinel-2, reprojected to match Landsat
+    data_s2, df_s2 = open_stac(
+        stac_catalog="element84_v1",
+        collection="sentinel_s2_l2a",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        bands=["blue", "green", "red"],
+        resampling=Resampling.cubic,
+        epsg=32618,
+        start_date="2023-01-01",
+        end_date="2023-12-31",
+        resolution=30.0,
+    )
+
+    # Merge into a single time series
+    stack = merge_stac(data_l, data_s2)
+    print(stack)
 
 Other examples
 --------------
