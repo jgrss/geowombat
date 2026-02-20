@@ -1,7 +1,7 @@
 .. _web:
 
-Streaming data from cloud sources
-=================================
+Accessing STAC Catalogs
+=======================
 
 GeoWombat integrates easy access to Spatial Temporal Asset Catalog (`STAC <https://stacspec.org/en>`_) APIs.
 STAC is a standardized way to expose collections of spatial temporal data. Instead of downloading
