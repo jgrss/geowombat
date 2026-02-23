@@ -1,12 +1,13 @@
-import functools
 import warnings
+from pathlib import Path
 
+import geopandas as gpd
 import numpy as np
 import xarray as xr
 from geopandas.geodataframe import GeoDataFrame
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 from sklearn_xarray import Target, wrap
 
 from .. import polygon_to_array
@@ -51,28 +52,17 @@ def _is_clusterer(estimator):
 
     return False
 
-# from .transformers import Featurizer_GW as Featurizer
-
-
-def wrapped_cls(cls):
-    @functools.wraps(cls)
-    def wrapper(self):
-
-        if self.__module__.split(".")[0] != "sklearn_xarray":
-            self = wrap(self, reshapes="band")
-
-        return self
-
-    return wrapper
-
-
-@wrapped_cls
-class WrappedClassifier(object):
-    pass
+def _wrap_classifier(clf):
+    """Wrap a classifier with sklearn_xarray if not already wrapped."""
+    if clf.__module__.split(".")[0] != "sklearn_xarray":
+        clf = wrap(clf, reshapes="band")
+    return clf
 
 
 class ClassifiersMixin(object):
-    le = LabelEncoder()
+
+    def __init__(self):
+        self.le = LabelEncoder()
 
     @staticmethod
     def _add_time_dim(data):
@@ -97,17 +87,21 @@ class ClassifiersMixin(object):
         return self.le.transform(labels) + 1
 
     def _prepare_labels(self, data, labels, col, targ_name):
-        if (labels[col].dtype != int) or (labels[col].min() == 0):
-            self._fit_labels(labels[col])
-            labels[col] = self._transform_labels(labels[col])
-            warnings.warn(
-                "target labels were not integers or min class is 0 (conflicts with missing), "
-                f"applying LabelEncoder and adding 1. Input classes = {','.join(self.le.classes_.astype(str).tolist())}; "
-                f"Transformed classes = {','.join(self._transform_labels(self.le.classes_).astype(str).tolist())}",
-                UserWarning,
-            )
+        # Convert path to GeoDataFrame first
+        if isinstance(labels, (str, Path)):
+            labels = gpd.read_file(labels)
 
-        if isinstance(labels, str) or isinstance(labels, GeoDataFrame):
+        # Now safe to access labels[col] and rasterize
+        if isinstance(labels, GeoDataFrame):
+            if (labels[col].dtype != int) or (labels[col].min() == 0):
+                self._fit_labels(labels[col])
+                labels[col] = self._transform_labels(labels[col])
+                warnings.warn(
+                    "target labels were not integers or min class is 0 (conflicts with missing), "
+                    f"applying LabelEncoder and adding 1. Input classes = {','.join(self.le.classes_.astype(str).tolist())}; "
+                    f"Transformed classes = {','.join(self._transform_labels(self.le.classes_).astype(str).tolist())}",
+                    UserWarning,
+                )
             labels = polygon_to_array(labels, col=col, data=data)
 
         labels = xr.concat([labels] * data.gw.ntime, dim="band").assign_coords(
@@ -130,7 +124,7 @@ class ClassifiersMixin(object):
         try:
             # prep target axis 
             Xna = X[~X[targ_name].isnull()]
-            Xna = X[X[targ_name] != 0]  # Xtarg is being generated with meaningless 0s
+            Xna = Xna[Xna[targ_name] != 0]  # filter zero targets (fill from polygon_to_array)
             # TODO: if X.gw.nodataval is not None:
             #     Xna = X[X!= X.gw.nodata ]  # changes here would have to be reflected in y as well
         except KeyError:
@@ -155,7 +149,7 @@ class ClassifiersMixin(object):
             )
 
         else:
-            clf = WrappedClassifier(clf)
+            clf = _wrap_classifier(clf)
 
         return clf
 
@@ -209,6 +203,28 @@ class ClassifiersMixin(object):
         return data
 
     @staticmethod
+    def _flatten_time(data):
+        """Reshape (time, band, y, x) -> (time*band, y, x).
+
+        Flattens all temporal bands into a single band dimension so
+        each pixel is one sample with all spectral-temporal features.
+        Dask-friendly (preserves lazy evaluation).
+        """
+        time_vals = data.time.values
+        band_vals = data.band.values
+        new_bands = [
+            f"{t}_{b}" for t in time_vals for b in band_vals
+        ]
+
+        slices = [
+            data.isel(time=i).drop_vars("time")
+            for i in range(len(time_vals))
+        ]
+        result = xr.concat(slices, dim="band")
+        result = result.assign_coords(band=new_bands)
+        return result
+
+    @staticmethod
     def _mask_nodata(y, x, src_nodata=None, dst_nodata=np.nan):
         """Remove missing data value and replace with another.
 
@@ -244,6 +260,7 @@ class Classifiers(ClassifiersMixin):
         col=None,
         targ_name="targ",
         targ_dim_name="sample",
+        temporal_mode="panel",
     ):
         """Fits a classifier given class labels.
 
@@ -255,6 +272,12 @@ class Classifiers(ClassifiersMixin):
                 If ``None``, creates a binary raster.
             targ_name (Optional[str]): The target name.
             targ_dim_name (Optional[str]): The target coordinate name.
+            temporal_mode (Optional[str]): How to handle time-dimensioned data.
+                'panel' — each pixel-time is an independent sample (B features).
+                    Output has time dimension with per-time predictions.
+                'flatten' — flatten time into band (T*B features per pixel).
+                    Output has no time dimension, one prediction per pixel.
+                Ignored when data has no time dimension.
 
         Returns:
             X (xarray.DataArray): Original DataArray augmented to accept prediction dimension
@@ -268,7 +291,6 @@ class Classifiers(ClassifiersMixin):
             >>> from geowombat.ml import fit
             >>>
             >>> import geopandas as gpd
-            >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
             >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
             >>> from sklearn.decomposition import PCA
@@ -289,15 +311,14 @@ class Classifiers(ClassifiersMixin):
 
             >>> # Fit an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
-            >>>                ('cst', KMeans()))])
+            >>>                ('cst', KMeans())])
             >>> with gw.open(l8_224078_20200518) as src:
             >>>    X, Xy, clf = fit(src, cl)
         """
-        if data.gw.has_time_coord:
-            # throw error
-            raise ValueError(
-                "DataArray must not have a time coordinate. Use stack_dim='band' with gw.open() or use .isel(time=0) to select a single time slice."
-            )
+        # Flatten time into band if requested
+        if data.gw.has_time_coord and temporal_mode == 'flatten':
+            data = self._flatten_time(data)
+
         if _is_clusterer(clf):
             data = self._add_time_dim(data)
             X, Xna = self._prepare_predictors(data, targ_name)
@@ -339,18 +360,22 @@ class Classifiers(ClassifiersMixin):
         targ_name="targ",
         targ_dim_name="sample",
         mask_nodataval=True,
+        temporal_mode="panel",
     ):
-        """Fits a classifier given class labels and predicts on a DataArray.
+        """Predicts on a DataArray using a fitted classifier.
 
         Args:
             data (DataArray): The data to predict on.
-            X (str | Path | DataArray): Data array generated by geowombat.ml.fit
+            X (DataArray): Data array generated by geowombat.ml.fit.
             clf (object): The classifier or classification pipeline.
             targ_name (Optional[str]): The target name.
             targ_dim_name (Optional[str]): The target coordinate name.
             mask_nodataval (Optional[Bool]): If true, data.attrs["nodatavals"][0]
                 are replaced with np.nan and the array is returned as type float
-
+            temporal_mode (Optional[str]): How to handle time-dimensioned data.
+                'panel' — each pixel-time is an independent sample.
+                'flatten' — flatten time into band.
+                Must match the temporal_mode used in fit().
 
         Returns:
             ``xarray.DataArray``:
@@ -363,7 +388,6 @@ class Classifiers(ClassifiersMixin):
             >>> from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
             >>> from geowombat.ml import fit, predict
             >>> import geopandas as gpd
-            >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
             >>> from sklearn.preprocessing import LabelEncoder, StandardScaler
             >>> from sklearn.decomposition import PCA
@@ -376,7 +400,7 @@ class Classifiers(ClassifiersMixin):
             >>> # Use a data pipeline
             >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
-            >>>                ('clf', GaussianNB()))])
+            >>>                ('clf', GaussianNB())])
 
             >>> # Fit and predict the classifier
             >>> with gw.config.update(ref_res=100):
@@ -387,11 +411,15 @@ class Classifiers(ClassifiersMixin):
 
             >>> # Fit and predict an unsupervised classifier
             >>> cl = Pipeline([('pca', PCA()),
-            >>>                ('cst', KMeans()))])
+            >>>                ('cst', KMeans())])
             >>> with gw.open(l8_224078_20200518) as src:
             >>>    X, Xy, clf = fit(src, cl)
             >>>    y1 = predict(src, X, clf)
         """
+        # Flatten time into band if requested (for mask_nodata)
+        if data.gw.has_time_coord and temporal_mode == 'flatten':
+            data = self._flatten_time(data)
+
         check_is_fitted(clf)
 
         y = (
@@ -406,16 +434,18 @@ class Classifiers(ClassifiersMixin):
             y = self._mask_nodata(y=y, x=data)
 
         if y.gw.ntime == 1:
-            y = y.sel(time="t1")
+            y = y.isel(time=0).drop_vars("time")
 
-        # covert to dask array
-        y = (
-            y.chunk(
-                {"band": -1, "y": data.gw.row_chunks, "x": data.gw.col_chunks}
-            )
-            # Assign geo-attributes
-            .assign_attrs(**data.attrs)
-        )
+        # Convert to dask array
+        chunks = {
+            "band": -1,
+            "y": data.gw.row_chunks,
+            "x": data.gw.col_chunks,
+        }
+        if "time" in y.dims:
+            chunks["time"] = -1
+
+        y = y.chunk(chunks).assign_attrs(**data.attrs)
 
         return y
 
@@ -428,6 +458,7 @@ class Classifiers(ClassifiersMixin):
         targ_name="targ",
         targ_dim_name="sample",
         mask_nodataval=True,
+        temporal_mode="panel",
     ):
         """Fits a classifier given class labels and predicts on a DataArray.
 
@@ -441,6 +472,9 @@ class Classifiers(ClassifiersMixin):
             targ_dim_name (Optional[str]): The target coordinate name.
             mask_nodataval (Optional[Bool]): If true, data.attrs["nodatavals"][0]
                 are replaced with np.nan and the array is returned as type float
+            temporal_mode (Optional[str]): How to handle time-dimensioned data.
+                'panel' — each pixel-time is an independent sample.
+                'flatten' — flatten time into band.
 
         Returns:
             ``xarray.DataArray``:
@@ -453,7 +487,6 @@ class Classifiers(ClassifiersMixin):
             >>> from geowombat.ml import fit_predict
             >>>
             >>> import geopandas as gpd
-            >>> from sklearn_xarray.preprocessing import Featurizer
             >>> from sklearn.pipeline import Pipeline
             >>> from sklearn.preprocessing import StandardScaler, LabelEncoder
             >>> from sklearn.decomposition import PCA
@@ -468,22 +501,22 @@ class Classifiers(ClassifiersMixin):
             >>> # Use a supervised classification pipeline
             >>> pl = Pipeline([('scaler', StandardScaler()),
             >>>                ('pca', PCA()),
-            >>>                ('clf', GaussianNB()))])
+            >>>                ('clf', GaussianNB())])
             >>>
             >>> with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>     y = fit_predict(src, pl, labels, col='lc')
-            >>>     y.isel(time=0).sel(band='targ').gw.imshow()
-            >>>
-            >>> with gw.open([l8_224078_20200518,l8_224078_20200518], nodata=0) as src:
-            >>>     y = fit_predict(src, pl, labels, col='lc')
-            >>>     y.isel(time=1).sel(band='targ').gw.imshow()
+            >>>     y.sel(band='targ').gw.imshow()
             >>>
             >>> # Use an unsupervised classification pipeline
             >>> cl = Pipeline([('pca', PCA()),
-            >>>                ('cst', KMeans()))])
+            >>>                ('cst', KMeans())])
             >>> with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>     y2 = fit_predict(src, cl)
         """
+        # Flatten time into band once if requested,
+        # so both fit() and predict() see the same data
+        if data.gw.has_time_coord and temporal_mode == 'flatten':
+            data = self._flatten_time(data)
 
         X, Xy, clf = self.fit(
             data,
@@ -492,10 +525,12 @@ class Classifiers(ClassifiersMixin):
             col=col,
             targ_name=targ_name,
             targ_dim_name=targ_dim_name,
+            temporal_mode=temporal_mode,
         )
 
         y = self.predict(
-            data, X, clf, targ_name, targ_dim_name, mask_nodataval
+            data, X, clf, targ_name, targ_dim_name,
+            mask_nodataval, temporal_mode,
         )
 
         return y

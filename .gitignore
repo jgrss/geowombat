@@ -60,3 +60,4 @@ dask-worker-space/
 
 bin/act
 CLAUDE.md
+doc/test.ipynb
