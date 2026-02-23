@@ -3,6 +3,66 @@
 Machine learning
 ================
 
+GeoWombat's ML module works with any scikit-learn compatible classifier or pipeline. Pass a classifier
+to :func:`~geowombat.ml.fit`, :func:`~geowombat.ml.predict`, or :func:`~geowombat.ml.fit_predict`
+and it will be applied to the raster data as an xarray DataArray.
+
+To install ML dependencies::
+
+    pip install "geowombat[ml]"
+
+Recommended classifiers for remote sensing
+------------------------------------------
+
+Supervised
+~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
+
+   * - Classifier
+     - Module
+     - Notes
+   * - Random Forest
+     - ``sklearn.ensemble.RandomForestClassifier``
+     - Most widely used in remote sensing; handles high-dimensional data well, robust to noise
+   * - LightGBM
+     - ``lightgbm.LGBMClassifier``
+     - Fast gradient boosting; strong accuracy with large datasets, supports categorical features
+   * - Gradient Boosted Trees
+     - ``sklearn.ensemble.GradientBoostingClassifier``
+     - Strong accuracy; slower than LightGBM on large datasets
+   * - Support Vector Machine
+     - ``sklearn.svm.SVC``
+     - Effective in high-dimensional spaces; works well with small training sets
+   * - Gaussian Naive Bayes
+     - ``sklearn.naive_bayes.GaussianNB``
+     - Fast and simple baseline; assumes feature independence
+   * - k-Nearest Neighbors
+     - ``sklearn.neighbors.KNeighborsClassifier``
+     - Non-parametric; useful for complex class boundaries
+
+Unsupervised
+~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
+
+   * - Classifier
+     - Module
+     - Notes
+   * - K-Means
+     - ``sklearn.cluster.KMeans``
+     - Standard clustering; fast, works well for spectrally distinct classes
+   * - Mini-Batch K-Means
+     - ``sklearn.cluster.MiniBatchKMeans``
+     - Faster K-Means variant for large rasters
+   * - Gaussian Mixture Model
+     - ``sklearn.mixture.GaussianMixture``
+     - Soft clustering; models class overlap better than K-Means
+
 Fit a classifier
 ----------------
 
