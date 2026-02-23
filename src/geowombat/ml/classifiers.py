@@ -13,20 +13,23 @@ from sklearn_xarray import Target, wrap
 from .. import polygon_to_array
 
 
-def _is_clusterer(estimator):
-    """Check if an estimator is a clusterer, compatible with all sklearn versions.
+def _is_unsupervised(estimator):
+    """Check if an estimator is unsupervised (clusterer or density model).
 
     For Pipeline objects, checks the final estimator.
     Supports both old (_estimator_type) and new (__sklearn_tags__) sklearn APIs.
+    Detects KMeans, MiniBatchKMeans, GaussianMixture, etc.
     """
+    _UNSUPERVISED_TYPES = {'clusterer', 'DensityEstimator', 'density_estimator'}
+
     # Handle sklearn_xarray wrapped estimators
     if hasattr(estimator, 'estimator'):
-        return _is_clusterer(estimator.estimator)
+        return _is_unsupervised(estimator.estimator)
 
     if isinstance(estimator, Pipeline):
         # Get the final estimator in the pipeline
         final_estimator = estimator.steps[-1][1]
-        return _is_clusterer(final_estimator)
+        return _is_unsupervised(final_estimator)
 
     # Try new sklearn 1.6+ tags API first
     if hasattr(estimator, '__sklearn_tags__'):
@@ -34,14 +37,14 @@ def _is_clusterer(estimator):
             tags = estimator.__sklearn_tags__()
             # In sklearn 1.6+, tags has estimator_type attribute
             if hasattr(tags, 'estimator_type'):
-                return tags.estimator_type == 'clusterer'
+                return tags.estimator_type in _UNSUPERVISED_TYPES
         except Exception:
             pass
 
     # Fall back to old _estimator_type attribute (sklearn < 1.6)
     estimator_type = getattr(estimator, '_estimator_type', None)
     if estimator_type is not None:
-        return estimator_type == 'clusterer'
+        return estimator_type in _UNSUPERVISED_TYPES
 
     # Last resort: check if it inherits from ClusterMixin
     try:
@@ -319,7 +322,7 @@ class Classifiers(ClassifiersMixin):
         if data.gw.has_time_coord and temporal_mode == 'flatten':
             data = self._flatten_time(data)
 
-        if _is_clusterer(clf):
+        if _is_unsupervised(clf):
             data = self._add_time_dim(data)
             X, Xna = self._prepare_predictors(data, targ_name)
 
