@@ -135,6 +135,7 @@ html_theme_options = {
 # so a file named 'default.css' will overwrite the builtin 'default.css'.
 html_static_path = ['_static']
 ipython_savefig_dir = '_static'
+html_css_files = ['custom.css']
 
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
