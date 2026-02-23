@@ -19,7 +19,6 @@ import xarray as xr
 from affine import Affine
 from dask import is_dask_collection
 from dask.distributed import Client, progress
-from osgeo import gdal
 from rasterio import shutil as rio_shutil
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
@@ -533,6 +532,13 @@ def to_vrt(
                 "  The data filenames attribute is empty. Use gw.open(..., persist_filenames=True)."
             )
             raise KeyError
+
+        try:
+            from osgeo import gdal
+        except ImportError:
+            from ..handler import GDAL_INSTALL_MSG
+
+            raise ImportError(GDAL_INSTALL_MSG)
 
         separate = (
             True

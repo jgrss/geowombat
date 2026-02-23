@@ -252,78 +252,112 @@ class TestConfig(unittest.TestCase):
             )
         )
 
-    # def test_fitpredict_time_point(self):
+    def test_fitpredict_time_panel(self):
+        """Panel mode: each pixel-time is an independent sample."""
+        with gw.config.update(ref_res=300):
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim="time",
+            ) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y1 = fit_predict(
+                        src,
+                        pl_wo_feat,
+                        aoi_point,
+                        col="lc",
+                        mask_nodataval=False,
+                        temporal_mode="panel",
+                    )
 
-    #     with gw.config.update(
-    #         ref_res=300,
-    #     ):
-    #         with gw.open(
-    #             [l8_224078_20200518, l8_224078_20200518], stack_dim="time"
-    #         ) as src:
-    #             with warnings.catch_warnings():
-    #                 warnings.simplefilter(
-    #                     "ignore",
-    #                     (DeprecationWarning, FutureWarning, UserWarning),
-    #                 )
-    #                 y1 = fit_predict(
-    #                     src,
-    #                     pl_wo_feat,
-    #                     aoi_point,
-    #                     col="lc",
-    #                     mask_nodataval=False,
-    #                 )
+        # Output should have time dimension
+        self.assertIn("time", y1.dims)
+        self.assertEqual(y1.dims, ("time", "band", "y", "x"))
+        # Same image duplicated → predictions at both time steps match
+        self.assertTrue(
+            np.allclose(
+                y1.isel(time=0).values,
+                y1.isel(time=1).values,
+                equal_nan=True,
+            )
+        )
 
-    #     self.assertTrue(np.all(y1.sel(time=1).values == y1.sel(time=2).values))
+    def test_fitpredict_time_flatten(self):
+        """Flatten mode: time bands become features, one prediction per pixel."""
+        with gw.config.update(ref_res=300):
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim="time",
+            ) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y1 = fit_predict(
+                        src,
+                        pl_wo_feat_pca1,
+                        aoi_point,
+                        col="lc",
+                        mask_nodataval=False,
+                        temporal_mode="flatten",
+                    )
 
-    # def test_nodataval_replace(self):
+        # Flattened → no time dimension in output
+        self.assertNotIn("time", y1.dims)
+        self.assertIn("band", y1.dims)
 
-    #     with gw.config.update(ref_res=300):
-    #         with gw.open(l8_224078_20200518, nodata=0) as src:
-    #             y1 = fit_predict(
-    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
-    #             )
-    #             y2 = fit_predict(
-    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
-    #             )
+    def test_fitpredict_time_cluster(self):
+        """Unsupervised clustering with time-stacked data."""
+        with gw.config.update(ref_res=300):
+            with gw.open(
+                [l8_224078_20200518, l8_224078_20200518],
+                stack_dim="time",
+            ) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    y1 = fit_predict(
+                        data=src,
+                        clf=cl_wo_feat,
+                        temporal_mode="panel",
+                    )
 
-    #     self.assertFalse(np.allclose(y1.values, y2.values))
-    #     self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
-    #     self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
+        self.assertIn("time", y1.dims)
+        self.assertTrue(
+            np.allclose(
+                y1.isel(time=0).values,
+                y1.isel(time=1).values,
+                equal_nan=True,
+            )
+        )
 
-    # def test_nodataval_replace2(self):
+    def test_nan_zero_filter_chaining(self):
+        """Verify NaN and zero targets are properly filtered from training."""
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(
+                        "ignore",
+                        (DeprecationWarning, FutureWarning, UserWarning),
+                    )
+                    X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
+                    Xna, y = Xy
 
-    #     with gw.config.update(ref_res=300):
-    #         with gw.open(l8_224078_20200518, chunks=128) as src:
-    #             y1 = fit_predict(
-    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=False
-    #             )
-    #             y2 = fit_predict(
-    #                 src, pl_wo_feat, aoi_poly, col="lc", mask_nodataval=True
-    #             )
-
-    #     self.assertTrue(~np.all(y1.values != y2.values))
-    #     self.assertTrue(y1.values[1:3, 1, 0].tolist() == [0, 0])
-    #     self.assertTrue(np.all(np.isnan(y2.values[1:3, 1, 0])))
-
-
-# def test_fitpredict_eq_fit_predict_cluster2(self):
-
-#     cv = CrossValidatorWrapper(KFold())
-#     gridsearch = GridSearchCV(
-#         pl_wo_feat, cv=cv, param_grid={"pca__n_components": [1, 2]}
-#     )
-
-#     with gw.config.update(ref_res=300):
-#         with gw.open(l8_224078_20200518) as src:
-#             X, Xy, clf = fit(src, pl_wo_feat, aoi_poly, col="lc")
-#             gridsearch.fit(*Xy)
-#             clf.set_params(**gridsearch.best_params_)
-#             y1 = predict(src, X, clf)
-
-#     self.assertTrue(
-#         y1.values[-10:, 1, 0].tolist()
-#         == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-#     )
+        if y is not None:
+            self.assertFalse(
+                np.any(np.isnan(y.values)),
+                "Training data should not contain NaN targets",
+            )
+            self.assertFalse(
+                np.any(y.values == 0),
+                "Training data should not contain zero targets",
+            )
 
 
 if __name__ == "__main__":
