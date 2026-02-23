@@ -69,7 +69,7 @@ class ClassifiersMixin(object):
 
     @staticmethod
     def _add_time_dim(data):
-        if not hasattr(data, "time"):
+        if "time" not in data.dims:
 
             return (
                 data.assign_coords(coords={"time": "t1"})
@@ -119,8 +119,24 @@ class ClassifiersMixin(object):
     def _stack_it(data):
         return data.stack(sample=("x", "y", "time")).T
 
+    @staticmethod
+    def _clean_coords(data, targ_name="targ"):
+        """Drop non-essential coordinates that break sklearn_xarray.
+
+        STAC data (via stackstac) carries extra metadata coordinates
+        (title, id, collection, etc.) as DataArray objects. These cause
+        TypeError in sklearn_xarray when constructing xarray Variables.
+        Keep only the dimension coordinates plus the target coordinate.
+        """
+        essential = set(data.dims) | {targ_name}
+        drop = [c for c in data.coords if c not in essential]
+        if drop:
+            return data.drop_vars(drop)
+        return data
+
     def _prepare_predictors(self, data, targ_name):
 
+        data = self._clean_coords(data, targ_name)
         X = self._stack_it(data)
 
         # drop nans
@@ -238,7 +254,10 @@ class ClassifiersMixin(object):
             dst_nodata (int,float): Replacement value, default is np.nan - but converts y to float
         """
         if src_nodata is None:
-            src_nodata = x.attrs["nodatavals"][0]
+            nodatavals = x.attrs.get("nodatavals")
+            if nodatavals is None or len(nodatavals) == 0:
+                return y
+            src_nodata = nodatavals[0]
 
         if len(x.shape) == 3:
             mask = np.any((x == src_nodata).values, 0)
