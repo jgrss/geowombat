@@ -91,6 +91,14 @@ Development install
 
 For contributors who want an editable install:
 
+.. warning::
+
+    **Editable installs require** ``--no-build-isolation``. Meson-python
+    caches the NumPy include path at configure time. With build isolation,
+    this path points to a temporary directory that is deleted after install,
+    causing ``import geowombat`` to fail on the next rebuild. Using
+    ``--no-build-isolation`` ensures paths point to your actual environment.
+
 .. tabs::
 
     .. tab:: Setup and install
@@ -99,17 +107,17 @@ For contributors who want an editable install:
 
             git clone https://github.com/jgrss/geowombat.git
             cd geowombat/
-            pip install -e ".[tests]"
+            pip install --no-build-isolation -e ".[tests]"
 
         To include additional extras for development (e.g., ML and docs)::
 
-            pip install -e ".[ml,tests,docs]"
+            pip install --no-build-isolation -e ".[ml,tests,docs]"
 
     .. tab:: Rebuild after changes
 
         After modifying Python or Cython source, rebuild in place::
 
-            pip install -e .
+            pip install --no-build-isolation -e .
 
     .. tab:: Code formatting
 
@@ -220,6 +228,17 @@ Troubleshooting
         pip install "numpy<2"
         C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
           pip install --no-build-isolation git+https://github.com/jgrss/geowombat
+
+.. note::
+
+    **Editable install fails with** ``re-building the geowombat meson-python editable wheel package failed``
+
+    This means the meson build cache has stale paths (usually from a
+    previous build isolation environment). Delete the build directory and
+    reinstall::
+
+        rm -rf build/
+        pip install --no-build-isolation -e ".[tests]"
 
 .. note::
 

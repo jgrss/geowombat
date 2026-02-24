@@ -352,6 +352,85 @@ just as you would for a single image.
     plt.tight_layout(pad=1)
 
 
+Classification with STAC satellite imagery
+--------------------------------------------
+
+GeoWombat can stream satellite imagery directly from cloud catalogs using
+``open_stac()``. The returned data has shape ``(time, band, y, x)`` and works
+directly with ``fit_predict()``. No file downloads are needed — data is read
+from Cloud Optimized GeoTIFFs (COGs) on the fly.
+
+To install STAC dependencies::
+
+    pip install "geowombat[stac]"
+
+Search and load imagery
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``open_stac()`` to search a STAC catalog and load the matching scenes.
+Set ``compute=True`` to download the data into memory with a progress bar.
+
+.. code-block:: python
+
+    from geowombat.core.stac import open_stac
+
+    # Search for Sentinel-2 imagery over Washington, DC
+    data, df = open_stac(
+        stac_catalog="element84_v1",
+        collection="sentinel_s2_l2a",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["blue", "green", "red", "nir"],
+        start_date="2023-06-01",
+        end_date="2023-07-31",
+        cloud_cover_perc=20,
+        resolution=100.0,
+        chunksize=256,
+        max_items=2,
+        compute=True,
+    )
+
+    print(f"Shape: {data.shape}")   # (2, 4, 115, 134)
+    print(f"Dims:  {data.dims}")    # ('time', 'band', 'y', 'x')
+
+    # Plot an RGB composite of the first time step
+    fig, ax = plt.subplots(dpi=200, figsize=(3, 3))
+    data.sel(time=data.time[0], band=["red", "green", "blue"]).plot.imshow(
+        robust=True, ax=ax
+    )
+    ax.set_title("Sentinel-2 RGB - Washington, D.C.")
+    plt.tight_layout(pad=1)
+
+.. image:: _static/stac_sentinel2_rgb.png
+    :width: 400px
+
+Unsupervised classification on a single STAC image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Select one time step with ``.isel(time=0)`` and pass it directly to
+``fit_predict()``. No training labels are needed for unsupervised classifiers.
+
+.. code-block:: python
+
+    from sklearn.cluster import MiniBatchKMeans
+
+    cl_stac = Pipeline([
+        ("clf", MiniBatchKMeans(n_clusters=5, random_state=0)),
+    ])
+
+    # Select a single time step and classify
+    single_image = data.isel(time=0)
+    y_single = fit_predict(data=single_image, clf=cl_stac)
+
+    fig, ax = plt.subplots(dpi=200, figsize=(5, 5))
+    y_single.plot(robust=True, ax=ax)
+    ax.set_title("KMeans on single STAC image")
+    plt.tight_layout(pad=1)
+
+.. image:: _static/stac_kmeans_single.png
+    :width: 400px
+
+
 Save prediction output
 ----------------------
 
