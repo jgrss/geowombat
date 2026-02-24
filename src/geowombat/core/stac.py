@@ -15,6 +15,7 @@ from tqdm.auto import tqdm as _tqdm
 
 from ..config import config
 from ..radiometry import QABits as _QABits
+from ..radiometry import SCLValues as _SCLValues
 
 try:
     import pystac
@@ -174,6 +175,25 @@ STAC_COLLECTIONS = {
     ),
 }
 
+_LANDSAT_COLLECTIONS = {
+    STACCollections.LANDSAT_C2_L1,
+    STACCollections.LANDSAT_C2_L2,
+    STACCollections.LANDSAT_L8_C2_L2,
+}
+
+_SENTINEL_S2_COLLECTIONS = {
+    STACCollections.SENTINEL_S2_L2A,
+    STACCollections.SENTINEL_S2_L2A_COGS,
+}
+
+
+def _is_landsat(collection: str) -> bool:
+    return STACCollections(collection) in _LANDSAT_COLLECTIONS
+
+
+def _is_sentinel_s2(collection: str) -> bool:
+    return STACCollections(collection) in _SENTINEL_S2_COLLECTIONS
+
 
 def merge_stac(
     data: xr.DataArray, *other: T.Sequence[xr.DataArray]
@@ -260,7 +280,8 @@ def open_stac(
     out_path: T.Union[_Path, str] = '.',
     max_items: int = 100,
     max_extra_workers: int = 1,
-    compute: bool = False,
+    compute: bool = True,
+    num_workers: int = 4,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
@@ -302,8 +323,17 @@ def open_stac(
         bands (sequence): The bands to open.
         chunksize (int): The dask chunk size.
         mask_items (sequence): The items to mask.
-        bounds_query (Optional[str]): A query to select bounds from the ``geopandas.GeoDataFrame``.
-        mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
+            For Landsat: QA bit names. Defaults to
+            ``['fill', 'dilated_cloud', 'cirrus', 'cloud',
+            'cloud_shadow', 'snow']``.
+            For Sentinel-2: SCL class names. Defaults to
+            ``['no_data', 'saturated_defective', 'cloud_shadow',
+            'cloud_medium_prob', 'cloud_high_prob', 'thin_cirrus']``.
+        bounds_query (Optional[str]): A query to select bounds
+            from the ``geopandas.GeoDataFrame``.
+        mask_data (Optional[bool]): Whether to mask the data.
+            When ``True``, the appropriate QA/SCL band is
+            automatically loaded and used for masking.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
         resampling (Optional[rasterio.enumsResampling enum]): The resampling method.
@@ -316,8 +346,12 @@ def open_stac(
             See https://pystac-client.readthedocs.io/en/latest/api.html#pystac_client.ItemSearch for details.
         max_extra_workers (Optional[int]): The maximum number of extra assets to download concurrently.
         compute (Optional[bool]): Whether to eagerly load data into memory.
-            If ``True``, downloads all remote data with a progress bar.
-            If ``False`` (default), returns a lazy dask-backed array.
+            If ``True`` (default), downloads all remote data with a
+            progress bar using parallel threads.
+            If ``False``, returns a lazy dask-backed array.
+        num_workers (Optional[int]): Number of threads for parallel
+            downloads when ``compute=True``. Default is 4. Higher
+            values can speed up I/O-bound downloads from cloud storage.
 
     Returns:
         ``xarray.DataArray``
@@ -467,16 +501,27 @@ def open_stac(
                         d.update(downloaded_dict)
                 df = pd.concat((df, pd.DataFrame([d])), ignore_index=True)
 
+        # Auto-inject QA/SCL band for pixel-level masking
+        stack_bands = list(bands) if bands else []
+        if mask_data and bands is not None:
+            if _is_landsat(collection):
+                if 'qa_pixel' not in stack_bands:
+                    stack_bands = stack_bands + ['qa_pixel']
+            elif _is_sentinel_s2(collection):
+                if 'scl' not in stack_bands:
+                    stack_bands = stack_bands + ['scl']
+
         data = stackstac.stack(
             items,
             bounds=proj_bounds,
             bounds_latlon=None if proj_bounds is not None else bounds,
-            assets=bands,
+            assets=stack_bands or bands,
             chunksize=chunksize,
             epsg=epsg,
             resolution=resolution,
             resampling=resampling,
             properties=False,
+            rescale=False,
         )
         data = data.assign_attrs(
             res=(data.resolution, data.resolution), collection=collection
@@ -484,29 +529,64 @@ def open_stac(
         attrs = data.attrs.copy()
 
         if mask_data:
-            if mask_items is None:
-                mask_items = [
-                    'fill',
-                    'dilated_cloud',
-                    'cirrus',
-                    'cloud',
-                    'cloud_shadow',
-                    'snow',
+            if _is_landsat(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'fill',
+                        'dilated_cloud',
+                        'cirrus',
+                        'cloud',
+                        'cloud_shadow',
+                        'snow',
+                    ]
+                mask_bitfields = [
+                    getattr(_QABits, collection).value[mask_item]
+                    for mask_item in mask_items
                 ]
-            mask_bitfields = [
-                getattr(_QABits, collection).value[mask_item]
-                for mask_item in mask_items
-            ]
-            # Source: https://stackstac.readthedocs.io/en/v0.3.0/examples/gif.html
-            bitmask = 0
-            for field in mask_bitfields:
-                bitmask |= 1 << field
-            # TODO: get qa_pixel name for different sensors
-            qa = data.sel(band='qa_pixel').astype('uint16')
-            mask = qa & bitmask
-            data = data.sel(
-                band=[band for band in bands if band != 'qa_pixel']
-            ).where(mask == 0)
+                bitmask = 0
+                for field in mask_bitfields:
+                    bitmask |= 1 << field
+                qa = data.sel(band='qa_pixel').astype('uint16')
+                mask = qa & bitmask
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b != 'qa_pixel'
+                    ]
+                ).where(mask == 0)
+
+            elif _is_sentinel_s2(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'no_data',
+                        'saturated_defective',
+                        'cloud_shadow',
+                        'cloud_medium_prob',
+                        'cloud_high_prob',
+                        'thin_cirrus',
+                    ]
+                scl_values = getattr(
+                    _SCLValues, 'sentinel_s2_l2a'
+                ).value
+                bad_values = [
+                    scl_values[item] for item in mask_items
+                ]
+                scl = data.sel(band='scl')
+                scl_mask = scl.isin(bad_values)
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b != 'scl'
+                    ]
+                ).where(~scl_mask)
+
+            else:
+                warnings.warn(
+                    f"mask_data=True is not supported for "
+                    f"collection '{collection}'."
+                )
 
         if STACCollections(collection) in STAC_SCALING:
             scaling = STAC_SCALING[STACCollections(collection)][
@@ -526,13 +606,167 @@ def open_stac(
             df = df.set_index('id').reindex(data.id.values).reset_index()
 
         if compute:
+            import dask
             from tqdm.dask import TqdmCallback
 
-            with TqdmCallback(desc="Downloading"):
-                data = data.compute()
+            with dask.config.set(
+                scheduler='threads', num_workers=num_workers
+            ):
+                with TqdmCallback(desc="Downloading"):
+                    data = data.compute()
 
         return data, df
 
     warnings.warn("No asset items were found.")
 
     return None, None
+
+
+def composite_stac(
+    stac_catalog: str = STACNames.ELEMENT84_V1,
+    collection: str = None,
+    bounds: T.Union[
+        T.Sequence[float], str, _Path, gpd.GeoDataFrame
+    ] = None,
+    proj_bounds: T.Sequence[float] = None,
+    start_date: str = None,
+    end_date: str = None,
+    cloud_cover_perc: T.Union[float, int] = None,
+    bands: T.Sequence[str] = None,
+    chunksize: int = 256,
+    mask_items: T.Optional[T.Sequence[str]] = None,
+    bounds_query: str = None,
+    epsg: int = None,
+    resolution: T.Union[float, int] = None,
+    resampling: T.Optional[_Resampling] = _Resampling.nearest,
+    nodata_fill: T.Union[float, int] = None,
+    frequency: str = 'MS',
+    max_items: int = 100,
+    compute: bool = True,
+    num_workers: int = 4,
+) -> T.Optional[
+    T.Tuple[xr.DataArray, pd.DataFrame]
+]:
+    """Creates cloud-free temporal composites from STAC data.
+
+    Wraps ``open_stac()`` to produce median composites at a
+    specified temporal frequency. Data is cloud-masked using
+    pixel-level QA (Landsat ``qa_pixel``) or SCL (Sentinel-2)
+    bands, then aggregated using median resampling.
+
+    Args:
+        stac_catalog (str): The STAC catalog.
+            See ``open_stac()`` for options.
+        collection (str): The STAC collection.
+            See ``open_stac()`` for options.
+        bounds: The search bounding box.
+            See ``open_stac()``.
+        proj_bounds: The projected bounds.
+            See ``open_stac()``.
+        start_date (str): The start search date (yyyy-mm-dd).
+        end_date (str): The end search date (yyyy-mm-dd).
+        cloud_cover_perc (float | int): Maximum cloud cover
+            percentage for scene-level filtering.
+        bands (sequence): The bands to open. Do not include
+            ``qa_pixel`` or ``scl``; these are added
+            automatically for masking.
+        chunksize (int): The dask chunk size.
+        mask_items (sequence): Items to mask.
+            See ``open_stac()`` for sensor-specific defaults.
+        bounds_query (str): A query for GeoDataFrame bounds.
+        epsg (int): An EPSG code to warp to.
+        resolution (float | int): Cell resolution.
+        resampling: The resampling method.
+        nodata_fill (float | int): Fill value for nodata.
+        frequency (str): Pandas offset alias for temporal
+            grouping. Default ``'MS'`` (month start). Other
+            values: ``'W'`` (weekly), ``'QS'`` (quarter),
+            ``'YS'`` (yearly).
+        max_items (int): Maximum STAC search items.
+        compute (bool): Whether to eagerly load data.
+        num_workers (int): Number of threads for parallel
+            downloads when ``compute=True``. Default is 4.
+
+    Returns:
+        tuple of (``xarray.DataArray``, ``pandas.DataFrame``)
+        or ``(None, None)`` if no data found.
+
+    Examples:
+        >>> from geowombat.core.stac import composite_stac
+        >>>
+        >>> # Monthly median composite of Sentinel-2
+        >>> composite, df = composite_stac(
+        ...     collection='sentinel_s2_l2a',
+        ...     start_date='2022-01-01',
+        ...     end_date='2022-12-31',
+        ...     bounds='aoi.geojson',
+        ...     bands=['blue', 'green', 'red', 'nir'],
+        ...     cloud_cover_perc=50,
+        ...     frequency='MS',
+        ...     resolution=10.0,
+        ... )
+        >>>
+        >>> # Quarterly composite of Landsat
+        >>> composite, df = composite_stac(
+        ...     stac_catalog='microsoft_v1',
+        ...     collection='landsat_c2_l2',
+        ...     start_date='2022-01-01',
+        ...     end_date='2022-12-31',
+        ...     bounds='aoi.geojson',
+        ...     bands=['red', 'green', 'blue'],
+        ...     cloud_cover_perc=30,
+        ...     frequency='QS',
+        ...     resolution=30.0,
+        ... )
+    """
+    result = open_stac(
+        stac_catalog=stac_catalog,
+        collection=collection,
+        bounds=bounds,
+        proj_bounds=proj_bounds,
+        start_date=start_date,
+        end_date=end_date,
+        cloud_cover_perc=cloud_cover_perc,
+        bands=bands,
+        chunksize=chunksize,
+        mask_items=mask_items,
+        bounds_query=bounds_query,
+        mask_data=True,
+        epsg=epsg,
+        resolution=resolution,
+        resampling=resampling,
+        nodata_fill=nodata_fill,
+        max_items=max_items,
+        compute=False,
+    )
+
+    if result is None or result[0] is None:
+        return None, None
+
+    data, df = result
+    attrs = data.attrs.copy()
+
+    # Resample to the requested frequency using median
+    composite = (
+        data.resample(time=frequency)
+        .median(dim='time', skipna=True)
+        .assign_attrs(**attrs)
+    )
+
+    # Drop all-NaN time slices (periods with no valid data)
+    valid_times = ~composite.isnull().all(
+        dim=['band', 'y', 'x']
+    )
+    composite = composite.sel(time=valid_times)
+
+    if compute:
+        import dask
+        from tqdm.dask import TqdmCallback
+
+        with dask.config.set(
+            scheduler='threads', num_workers=num_workers
+        ):
+            with TqdmCallback(desc="Computing composite"):
+                composite = composite.compute()
+
+    return composite, df
