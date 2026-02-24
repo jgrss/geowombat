@@ -43,8 +43,9 @@ Install with pip
 
 GeoWombat can be installed from the
 `GitHub repository <https://github.com/jgrss/geowombat>`_ using pip. Because
-GeoWombat includes Cython extensions that must be compiled, the build requires
-a few extra steps compared to a pure-Python package.
+GeoWombat includes Cython extensions that must be compiled, a C compiler is
+required (``gcc`` on Linux, Xcode command-line tools on macOS, or Visual Studio
+Build Tools on Windows).
 
 .. note::
 
@@ -52,38 +53,21 @@ a few extra steps compared to a pure-Python package.
     which bundles its own GDAL libraries. You do not need to install GDAL
     binaries separately.
 
-.. warning::
-
-    **NumPy 2.x is not yet supported** for building from source. The Cython
-    extensions use the NumPy 1.x C API. You must pin ``numpy<2`` in your build
-    environment. Additionally, pip's default build isolation pulls in NumPy 2.x,
-    so you must use ``--no-build-isolation`` and set ``C_INCLUDE_PATH`` as shown
-    below.
-
 .. tabs::
 
     .. tab:: Linux / macOS
 
-        1. Create a conda environment with build dependencies::
+        Install GeoWombat from GitHub::
 
-            conda create --name gwenv python=3.11 cython "numpy<2" -y
-            conda activate gwenv
-            pip install meson-python meson ninja setuptools_scm
-
-        2. Install GeoWombat::
-
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation git+https://github.com/jgrss/geowombat
+            pip install git+https://github.com/jgrss/geowombat
 
         To install a specific version (e.g., ``v2.1.22``)::
 
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation git+https://github.com/jgrss/geowombat@v2.1.22
+            pip install git+https://github.com/jgrss/geowombat@v2.1.22
 
         To include optional extras (e.g., ``ml`` and ``stac``)::
 
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+            pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
 
     .. tab:: Windows
 
@@ -93,19 +77,13 @@ a few extra steps compared to a pure-Python package.
         - Install `Visual Studio Build Tools <https://visualstudio.microsoft.com/visual-cpp-build-tools/>`_
           with the **"Desktop development with C++"** workload.
 
-        Then, in a conda environment with PowerShell::
+        Then install::
 
-            conda create --name gwenv python=3.11 cython "numpy<2" -y
-            conda activate gwenv
-            pip install meson-python meson ninja setuptools_scm
-
-            $env:C_INCLUDE_PATH = (python -c "import numpy; print(numpy.get_include())")
-            pip install --no-build-isolation git+https://github.com/jgrss/geowombat
+            pip install git+https://github.com/jgrss/geowombat
 
         To include optional extras::
 
-            $env:C_INCLUDE_PATH = (python -c "import numpy; print(numpy.get_include())")
-            pip install --no-build-isolation "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+            pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
 
 
 Development install
@@ -117,28 +95,21 @@ For contributors who want an editable install:
 
     .. tab:: Setup and install
 
-        Create the environment and install in editable mode::
-
-            conda create --name gwenv python=3.11 cython "numpy<2" -y
-            conda activate gwenv
-            pip install meson-python meson ninja setuptools_scm
+        Clone and install in editable mode::
 
             git clone https://github.com/jgrss/geowombat.git
             cd geowombat/
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation -e ".[tests]"
+            pip install -e ".[tests]"
 
         To include additional extras for development (e.g., ML and docs)::
 
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation -e ".[ml,tests,docs]"
+            pip install -e ".[ml,tests,docs]"
 
     .. tab:: Rebuild after changes
 
         After modifying Python or Cython source, rebuild in place::
 
-            C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-              pip install --no-build-isolation -e .
+            pip install -e .
 
     .. tab:: Code formatting
 
@@ -191,8 +162,7 @@ Multiple extras can be combined::
     conda install geowombat
 
     # pip (specify extras explicitly)
-    C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-      pip install --no-build-isolation "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+    pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
 
 
 Test the installation
@@ -235,11 +205,17 @@ Troubleshooting
 
     **Build fails with NumPy errors**
 
-    If you see errors mentioning ``numpy.dtype``, ``PyArray_Descr has no member
-    named 'subarray'``, ``NPY_NO_DEPRECATED_API``, or
-    ``numpy/_core/include not found``, you likely have NumPy 2.x installed.
-    Ensure ``numpy<2`` is installed and that you are using
-    ``--no-build-isolation`` with ``C_INCLUDE_PATH`` set::
+    If you see errors mentioning ``PyArray_Descr has no member named
+    'subarray'`` or ``numpy/_core/include not found``, your build environment
+    may have NumPy 2.x despite the ``numpy<2`` pin in ``pyproject.toml``.
+    This can happen with older pip versions or cached build artifacts.
+    Try upgrading pip and clearing the build cache::
+
+        pip install --upgrade pip
+        pip install --no-cache-dir git+https://github.com/jgrss/geowombat
+
+    If the problem persists, install numpy<2 explicitly and bypass build
+    isolation::
 
         pip install "numpy<2"
         C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \

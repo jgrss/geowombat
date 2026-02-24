@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "mesonpy"
-requires = ["meson-python", "numpy", "cython", "setuptools-scm"]
+requires = ["meson-python", "numpy<2", "cython", "setuptools-scm"]
 
 [project]
 name = "geowombat"
@@ -24,7 +24,7 @@ dependencies = [
     "geopandas",
     "joblib",
     "matplotlib",
-    "numpy",
+    "numpy<2",
     "pandas",
     "pyproj",
     "rasterio<1.5.0",
