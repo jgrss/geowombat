@@ -1,6 +1,5 @@
 import concurrent.futures
 import enum
-import os
 import typing as T
 import warnings
 from pathlib import Path as _Path
@@ -134,7 +133,6 @@ class STACCollectionURLNames(StrEnum):
 STAC_CATALOGS = {
     STACNames.ELEMENT84_V0: 'https://earth-search.aws.element84.com/v0',
     STACNames.ELEMENT84_V1: 'https://earth-search.aws.element84.com/v1',
-    # STACNames.google: 'https://earthengine.openeo.org/v1.0',
     STACNames.MICROSOFT_V1: 'https://planetarycomputer.microsoft.com/api/stac/v1',
     STACNames.NASA_LP_CLOUD: 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD',
 }

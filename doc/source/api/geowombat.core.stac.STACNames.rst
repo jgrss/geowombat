@@ -10,12 +10,14 @@ STACNames
 
    .. autosummary::
 
-      ~STACNames.element84
-      ~STACNames.google
-      ~STACNames.microsoft
+      ~STACNames.ELEMENT84_V0
+      ~STACNames.ELEMENT84_V1
+      ~STACNames.MICROSOFT_V1
+      ~STACNames.NASA_LP_CLOUD
 
    .. rubric:: Attributes Documentation
 
-   .. autoattribute:: element84
-   .. autoattribute:: google
-   .. autoattribute:: microsoft
+   .. autoattribute:: ELEMENT84_V0
+   .. autoattribute:: ELEMENT84_V1
+   .. autoattribute:: MICROSOFT_V1
+   .. autoattribute:: NASA_LP_CLOUD
