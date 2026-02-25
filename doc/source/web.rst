@@ -304,18 +304,18 @@ parameter:
         mask_items=["cloud", "cloud_shadow"],
     )
 
-Monthly composites
-~~~~~~~~~~~~~~~~~~
+Temporal composites
+~~~~~~~~~~~~~~~~~~~
 
 Use :func:`geowombat.core.stac.composite_stac` to create cloud-free
 temporal composites. It wraps ``open_stac()`` with automatic cloud
-masking and median resampling:
+masking and temporal aggregation:
 
 .. code:: python
 
     from geowombat.core.stac import composite_stac
 
-    # Monthly Sentinel-2 composite
+    # Monthly Sentinel-2 composite (median, the default)
     comp_s2, df = composite_stac(
         stac_catalog="element84_v1",
         collection="sentinel_s2_l2a",
@@ -332,13 +332,70 @@ masking and median resampling:
 
     print(comp_s2.shape)  # (time=3, band=4, y, x) — one per month
 
-The ``frequency`` parameter accepts `pandas offset aliases
-<https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases>`_:
+Temporal frequency
+^^^^^^^^^^^^^^^^^^
 
-- ``'MS'`` — monthly (default)
-- ``'W'`` — weekly
-- ``'QS'`` — quarterly
-- ``'YS'`` — yearly
+The ``frequency`` parameter accepts any `pandas offset alias
+<https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases>`_.
+Common values:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 40
+
+   * - Alias
+     - Description
+   * - ``'D'``
+     - Daily
+   * - ``'W'``
+     - Weekly
+   * - ``'2W'``
+     - Biweekly (every 2 weeks)
+   * - ``'MS'``
+     - Monthly — month start (default)
+   * - ``'QS'``
+     - Quarterly — quarter start
+   * - ``'YS'``
+     - Yearly — year start
+
+Multiplied forms are supported: ``'15D'`` (every 15 days),
+``'2MS'`` (every 2 months), etc.
+
+Aggregation method
+^^^^^^^^^^^^^^^^^^
+
+The ``agg`` parameter controls how observations within each time
+period are combined. Default is ``'median'``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 40
+
+   * - Value
+     - Description
+   * - ``'median'``
+     - Median (default) — robust to outliers
+   * - ``'mean'``
+     - Mean — sensitive to outliers
+   * - ``'min'``
+     - Minimum value per pixel
+   * - ``'max'``
+     - Maximum value per pixel
+
+.. code:: python
+
+    # Biweekly mean composite
+    comp, df = composite_stac(
+        collection="sentinel_s2_l2a",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["blue", "green", "red", "nir"],
+        start_date="2023-06-01",
+        end_date="2023-08-31",
+        resolution=10.0,
+        frequency="2W",
+        agg="mean",
+    )
 
 .. code:: python
 

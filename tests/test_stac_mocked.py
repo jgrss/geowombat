@@ -569,6 +569,130 @@ class TestCompositeSTAC(unittest.TestCase):
         self.assertLessEqual(composite.sizes['time'], 5)
 
 
+class TestCompositeSTACParams(unittest.TestCase):
+    """Tests for composite_stac frequency and agg parameters."""
+
+    def test_invalid_frequency_raises_error(self):
+        """Test that invalid frequency raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            composite_stac(
+                collection='sentinel_s2_l2a',
+                bounds=(-77.1, 38.85, -76.95, 38.95),
+                bands=['red'],
+                start_date='2022-01-01',
+                end_date='2022-01-31',
+                frequency='INVALID',
+            )
+        self.assertIn('Invalid frequency', str(ctx.exception))
+
+    def test_invalid_agg_raises_error(self):
+        """Test that invalid agg raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            composite_stac(
+                collection='sentinel_s2_l2a',
+                bounds=(-77.1, 38.85, -76.95, 38.95),
+                bands=['red'],
+                start_date='2022-01-01',
+                end_date='2022-01-31',
+                agg='percentile',
+            )
+        self.assertIn('Invalid agg', str(ctx.exception))
+
+    @patch('geowombat.core.stac.open_stac')
+    def test_agg_mean(self, mock_open_stac):
+        """Test agg='mean' produces mean composites."""
+        times = pd.date_range('2022-01-01', periods=60, freq='D')
+        # Use fixed data so mean != median
+        rng = np.random.RandomState(42)
+        raw = rng.exponential(size=(len(times), 1, 4, 4))
+        data = da.from_array(raw, chunks=(30, 1, 4, 4))
+        mock_data = xr.DataArray(
+            data,
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': times,
+                'band': ['red'],
+                'y': np.arange(4) * -10.0,
+                'x': np.arange(4) * 10.0,
+            },
+            attrs={
+                'crs': 'epsg:32618',
+                'res': (10.0, 10.0),
+                'transform': (10.0, 0, 0, 0, -10.0, 0),
+                'collection': 'sentinel_s2_l2a',
+            },
+        )
+        mock_open_stac.return_value = (mock_data, pd.DataFrame())
+
+        comp_mean, _ = composite_stac(
+            collection='sentinel_s2_l2a',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            bands=['red'],
+            start_date='2022-01-01',
+            end_date='2022-02-28',
+            frequency='MS',
+            agg='mean',
+        )
+
+        mock_open_stac.return_value = (mock_data, pd.DataFrame())
+        comp_median, _ = composite_stac(
+            collection='sentinel_s2_l2a',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            bands=['red'],
+            start_date='2022-01-01',
+            end_date='2022-02-28',
+            frequency='MS',
+            agg='median',
+        )
+
+        # mean and median of skewed data should differ
+        self.assertFalse(
+            np.allclose(comp_mean.values, comp_median.values),
+            "mean and median composites should differ "
+            "for skewed data",
+        )
+
+    @patch('geowombat.core.stac.open_stac')
+    def test_multiplied_frequency(self, mock_open_stac):
+        """Test multiplied frequency like '2MS' works."""
+        times = pd.date_range(
+            '2022-01-01', periods=180, freq='D'
+        )
+        data = da.random.random(
+            (len(times), 1, 4, 4), chunks=(60, 1, 4, 4)
+        )
+        mock_data = xr.DataArray(
+            data,
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': times,
+                'band': ['red'],
+                'y': np.arange(4) * -10.0,
+                'x': np.arange(4) * 10.0,
+            },
+            attrs={
+                'crs': 'epsg:32618',
+                'res': (10.0, 10.0),
+                'transform': (10.0, 0, 0, 0, -10.0, 0),
+                'collection': 'sentinel_s2_l2a',
+            },
+        )
+        mock_open_stac.return_value = (mock_data, pd.DataFrame())
+
+        composite, _ = composite_stac(
+            collection='sentinel_s2_l2a',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            bands=['red'],
+            start_date='2022-01-01',
+            end_date='2022-06-30',
+            frequency='2MS',
+        )
+
+        # 6 months / 2 = 3 bimonthly periods
+        self.assertGreater(composite.sizes['time'], 0)
+        self.assertLessEqual(composite.sizes['time'], 4)
+
+
 class TestSTACHLS(unittest.TestCase):
     """Tests for HLS (Harmonized Landsat Sentinel-2) support."""
 

@@ -845,6 +845,7 @@ def composite_stac(
     resampling: T.Optional[_Resampling] = _Resampling.nearest,
     nodata_fill: T.Union[float, int] = None,
     frequency: str = 'MS',
+    agg: str = 'median',
     max_items: int = 100,
     compute: bool = True,
     num_workers: int = 4,
@@ -853,11 +854,11 @@ def composite_stac(
 ]:
     """Creates cloud-free temporal composites from STAC data.
 
-    Wraps ``open_stac()`` to produce median composites at a
-    specified temporal frequency. Data is cloud-masked using
-    pixel-level QA (Landsat ``qa_pixel``), SCL (Sentinel-2),
-    or Fmask (HLS) bands, then aggregated using median
-    resampling.
+    Wraps ``open_stac()`` to produce composites at a specified
+    temporal frequency. Data is cloud-masked using pixel-level
+    QA (Landsat ``qa_pixel``), SCL (Sentinel-2), or Fmask
+    (HLS) bands, then aggregated using the chosen method
+    (default: median).
 
     Args:
         stac_catalog (str): The STAC catalog.
@@ -890,9 +891,22 @@ def composite_stac(
         resampling: The resampling method.
         nodata_fill (float | int): Fill value for nodata.
         frequency (str): Pandas offset alias for temporal
-            grouping. Default ``'MS'`` (month start). Other
-            values: ``'W'`` (weekly), ``'QS'`` (quarter),
-            ``'YS'`` (yearly).
+            grouping. Default ``'MS'`` (month start). Common
+            values:
+
+            - ``'D'`` — daily
+            - ``'W'`` — weekly
+            - ``'2W'`` — biweekly (every 2 weeks)
+            - ``'MS'`` — monthly (month start)
+            - ``'QS'`` — quarterly (quarter start)
+            - ``'YS'`` — yearly (year start)
+
+            Multiplied forms (e.g., ``'15D'``, ``'2MS'``) are
+            supported. See `pandas offset aliases
+            <https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases>`_.
+        agg (str): Aggregation method for compositing.
+            Default ``'median'``. Options: ``'median'``,
+            ``'mean'``, ``'min'``, ``'max'``.
         max_items (int): Maximum STAC search items.
         compute (bool): Whether to eagerly load data.
         num_workers (int): Number of threads for parallel
@@ -942,6 +956,26 @@ def composite_stac(
         ...     frequency='MS',
         ... )
     """
+    # Validate frequency
+    try:
+        pd.tseries.frequencies.to_offset(frequency)
+    except ValueError:
+        raise ValueError(
+            f"Invalid frequency {frequency!r}. Use a pandas "
+            "offset alias: 'D' (daily), 'W' (weekly), "
+            "'MS' (month start), 'QS' (quarter start), "
+            "'YS' (year start), or multiples like '2W', "
+            "'15D'. See: https://pandas.pydata.org/docs/"
+            "user_guide/timeseries.html#offset-aliases"
+        )
+
+    # Validate aggregation method
+    valid_aggs = ('median', 'mean', 'min', 'max')
+    if agg not in valid_aggs:
+        raise ValueError(
+            f"Invalid agg {agg!r}. Choose from: {valid_aggs}"
+        )
+
     # Combined HLS: query both L30 and S30, merge, then composite
     if collection == STACCollections.HLS:
         _hls_common = set(_HLS_L30_BAND_MAP) & set(
@@ -1047,13 +1081,12 @@ def composite_stac(
         df = pd.concat(dfs, ignore_index=True)
         attrs = data.attrs.copy()
 
-        # Resample to the requested frequency using median
+        # Resample to the requested frequency
         print("Computing composite...")
-        composite = (
-            data.resample(time=frequency)
-            .median(dim='time', skipna=True)
-            .assign_attrs(**attrs)
-        )
+        resampled = data.resample(time=frequency)
+        composite = getattr(resampled, agg)(
+            dim='time', skipna=True
+        ).assign_attrs(**attrs)
 
         # Drop all-NaN time slices
         valid_times = ~composite.isnull().all(
@@ -1094,12 +1127,11 @@ def composite_stac(
         data, df = result
         attrs = data.attrs.copy()
 
-    # Resample to the requested frequency using median
-    composite = (
-        data.resample(time=frequency)
-        .median(dim='time', skipna=True)
-        .assign_attrs(**attrs)
-    )
+    # Resample to the requested frequency
+    resampled = data.resample(time=frequency)
+    composite = getattr(resampled, agg)(
+        dim='time', skipna=True
+    ).assign_attrs(**attrs)
 
     # Drop all-NaN time slices (periods with no valid data)
     valid_times = ~composite.isnull().all(
