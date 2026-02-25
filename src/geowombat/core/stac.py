@@ -854,14 +854,21 @@ def composite_stac(
 
     Wraps ``open_stac()`` to produce median composites at a
     specified temporal frequency. Data is cloud-masked using
-    pixel-level QA (Landsat ``qa_pixel``) or SCL (Sentinel-2)
-    bands, then aggregated using median resampling.
+    pixel-level QA (Landsat ``qa_pixel``), SCL (Sentinel-2),
+    or Fmask (HLS) bands, then aggregated using median
+    resampling.
 
     Args:
         stac_catalog (str): The STAC catalog.
-            See ``open_stac()`` for options.
+            See ``open_stac()`` for options. Ignored when
+            ``collection='hls'`` (uses ``nasa_lp_cloud``).
         collection (str): The STAC collection.
-            See ``open_stac()`` for options.
+            See ``open_stac()`` for options. Use ``'hls'``
+            to query both ``hls_l30`` and ``hls_s30``, merge
+            observations, then composite. Only bands common
+            to both sensors are allowed (``blue``, ``green``,
+            ``red``, ``nir``, ``swir1``, ``swir2``,
+            ``coastal``, ``cirrus``).
         bounds: The search bounding box.
             See ``open_stac()``.
         proj_bounds: The projected bounds.
@@ -871,8 +878,8 @@ def composite_stac(
         cloud_cover_perc (float | int): Maximum cloud cover
             percentage for scene-level filtering.
         bands (sequence): The bands to open. Do not include
-            ``qa_pixel`` or ``scl``; these are added
-            automatically for masking.
+            ``qa_pixel``, ``scl``, or ``Fmask``; these are
+            added automatically for masking.
         chunksize (int): The dask chunk size.
         mask_items (sequence): Items to mask.
             See ``open_stac()`` for sensor-specific defaults.
@@ -921,33 +928,132 @@ def composite_stac(
         ...     frequency='QS',
         ...     resolution=30.0,
         ... )
+        >>>
+        >>> # Combined HLS (Landsat + Sentinel-2) composite
+        >>> composite, df = composite_stac(
+        ...     collection='hls',
+        ...     start_date='2023-06-01',
+        ...     end_date='2023-08-31',
+        ...     bounds=(-77.1, 38.85, -76.95, 38.95),
+        ...     bands=['blue', 'green', 'red', 'nir'],
+        ...     epsg=32618,
+        ...     resolution=30.0,
+        ...     frequency='MS',
+        ... )
     """
-    result = open_stac(
-        stac_catalog=stac_catalog,
-        collection=collection,
-        bounds=bounds,
-        proj_bounds=proj_bounds,
-        start_date=start_date,
-        end_date=end_date,
-        cloud_cover_perc=cloud_cover_perc,
-        bands=bands,
-        chunksize=chunksize,
-        mask_items=mask_items,
-        bounds_query=bounds_query,
-        mask_data=True,
-        epsg=epsg,
-        resolution=resolution,
-        resampling=resampling,
-        nodata_fill=nodata_fill,
-        max_items=max_items,
-        compute=False,
-    )
+    # Combined HLS: query both L30 and S30, merge, then composite
+    if collection == STACCollections.HLS:
+        _hls_common = set(_HLS_L30_BAND_MAP) & set(
+            _HLS_S30_BAND_MAP
+        )
+        if bands:
+            bad = {
+                b
+                for b in bands
+                if b not in _hls_common and not b.startswith('B')
+            }
+            if bad:
+                raise ValueError(
+                    f"Bands {bad} are not common to both "
+                    f"HLS L30 and S30. Use one of: "
+                    f"{sorted(_hls_common)}"
+                )
 
-    if result is None or result[0] is None:
-        return None, None
+        shared_kwargs = dict(
+            stac_catalog=STACNames.NASA_LP_CLOUD,
+            bounds=bounds,
+            proj_bounds=proj_bounds,
+            start_date=start_date,
+            end_date=end_date,
+            cloud_cover_perc=cloud_cover_perc,
+            bands=bands,
+            chunksize=chunksize,
+            mask_items=mask_items,
+            bounds_query=bounds_query,
+            mask_data=True,
+            epsg=epsg,
+            resolution=resolution,
+            resampling=resampling,
+            nodata_fill=nodata_fill,
+            max_items=max_items,
+            compute=False,
+        )
+        r_l30 = open_stac(collection='hls_l30', **shared_kwargs)
+        r_s30 = open_stac(collection='hls_s30', **shared_kwargs)
 
-    data, df = result
-    attrs = data.attrs.copy()
+        has_l30 = r_l30 is not None and r_l30[0] is not None
+        has_s30 = r_s30 is not None and r_s30[0] is not None
+
+        if not has_l30 and not has_s30:
+            return None, None
+
+        parts = []
+        dfs = []
+        if has_l30:
+            parts.append(r_l30[0])
+            dfs.append(r_l30[1])
+        if has_s30:
+            parts.append(r_s30[0])
+            dfs.append(r_s30[1])
+
+        if len(parts) == 1:
+            data = parts[0]
+        else:
+            # Simple concatenation along time — skip merge_stac's
+            # groupby('time').mean() since L30/S30 never share
+            # timestamps and resample().median() handles aggregation.
+            data = xr.DataArray(
+                da.concatenate(
+                    [
+                        p.transpose(
+                            'time', 'band', 'y', 'x'
+                        ).data
+                        for p in parts
+                    ],
+                    axis=0,
+                ),
+                dims=('time', 'band', 'y', 'x'),
+                coords={
+                    'time': np.concatenate(
+                        [p.time.values for p in parts]
+                    ),
+                    'band': parts[0].band.values,
+                    'y': parts[0].y.values,
+                    'x': parts[0].x.values,
+                },
+                attrs=parts[0].attrs,
+            ).sortby('time')
+
+        df = pd.concat(dfs, ignore_index=True)
+        attrs = data.attrs.copy()
+
+    else:
+        result = open_stac(
+            stac_catalog=stac_catalog,
+            collection=collection,
+            bounds=bounds,
+            proj_bounds=proj_bounds,
+            start_date=start_date,
+            end_date=end_date,
+            cloud_cover_perc=cloud_cover_perc,
+            bands=bands,
+            chunksize=chunksize,
+            mask_items=mask_items,
+            bounds_query=bounds_query,
+            mask_data=True,
+            epsg=epsg,
+            resolution=resolution,
+            resampling=resampling,
+            nodata_fill=nodata_fill,
+            max_items=max_items,
+            compute=False,
+        )
+
+        if result is None or result[0] is None:
+            return None, None
+
+        data, df = result
+        attrs = data.attrs.copy()
 
     # Resample to the requested frequency using median
     composite = (

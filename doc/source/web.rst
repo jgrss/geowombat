@@ -201,6 +201,14 @@ Then set file permissions:
         max_items=5,
     )
 
+.. tip::
+
+    Use ``collection='hls'`` with :func:`~geowombat.core.stac.composite_stac`
+    to combine observations from both L30 and S30 into a single cloud-free
+    composite. Only bands common to both sensors are allowed (``blue``,
+    ``green``, ``red``, ``nir``, ``swir1``, ``swir2``, ``coastal``,
+    ``cirrus``). See the `Monthly composites`_ section below.
+
 Cloud masking
 ~~~~~~~~~~~~~
 
@@ -347,6 +355,23 @@ The ``frequency`` parameter accepts `pandas offset aliases
         resolution=30.0,
         frequency="QS",
     )
+
+.. code:: python
+
+    # Combined HLS (Landsat + Sentinel-2) monthly composite
+    comp_hls, df = composite_stac(
+        collection="hls",  # queries both hls_l30 and hls_s30
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["blue", "green", "red", "nir"],
+        start_date="2023-06-01",
+        end_date="2023-08-31",
+        resolution=30.0,
+        frequency="MS",
+        max_items=20,
+    )
+
+    print(comp_hls.shape)  # more observations per period from two sensors
 
 .. note::
 

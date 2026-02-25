@@ -843,6 +843,160 @@ class TestSTACHLS(unittest.TestCase):
             np.isnan(vals[0, :, 0:3, 0:3]).all()
         )
 
+    def test_composite_hls_rejects_sensor_specific_bands(self):
+        """Test collection='hls' rejects L30/S30-only bands."""
+        with self.assertRaises(ValueError) as ctx:
+            composite_stac(
+                collection='hls',
+                bounds=(-77.1, 38.85, -76.95, 38.95),
+                bands=['red', 'rededge1'],
+                start_date='2022-07-01',
+                end_date='2022-07-31',
+                resolution=30.0,
+            )
+        self.assertIn('rededge1', str(ctx.exception))
+
+    @patch('geowombat.core.stac.stackstac')
+    @patch('geowombat.core.stac._Client')
+    @patch('geowombat.core.stac.pystac')
+    def test_composite_hls_combined_mocked(
+        self, mock_pystac, mock_client_class, mock_stackstac
+    ):
+        """Test composite_stac with collection='hls' merges L30+S30."""
+        # Include Fmask band (all zeros = clear) since
+        # composite_stac uses mask_data=True
+        mock_l30 = create_mock_data_array(
+            shape=(2, 3, 16, 16),
+            bands=['red', 'green', 'Fmask'],
+            res=30.0,
+            collection='hls_l30',
+        )
+        mock_s30 = xr.DataArray(
+            da.random.random(
+                (3, 3, 16, 16), chunks=(1, 1, 16, 16)
+            ),
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': pd.date_range('2022-07-05', periods=3),
+                'band': ['red', 'green', 'Fmask'],
+                'y': mock_l30.y.values,
+                'x': mock_l30.x.values,
+            },
+            attrs=mock_l30.attrs.copy(),
+        )
+        mock_s30.attrs['collection'] = 'hls_s30'
+
+        # stackstac.stack returns L30 on first call, S30 on second
+        mock_stackstac.stack = MagicMock(
+            side_effect=[mock_l30, mock_s30]
+        )
+        mock_stackstac.DEFAULT_GDAL_ENV = MagicMock()
+        mock_stackstac.DEFAULT_GDAL_ENV.updated.return_value = (
+            'mocked_gdal_env'
+        )
+
+        mock_catalog = MagicMock()
+        mock_client_class.open.return_value = mock_catalog
+        mock_search = MagicMock()
+        mock_item = MagicMock()
+        mock_item.id = 'HLS.L30.T18SUJ.2022185.v2.0'
+        mock_search.items.return_value = [mock_item]
+        mock_catalog.search.return_value = mock_search
+        mock_item_collection = MagicMock()
+        mock_item_collection.__iter__ = lambda self: iter(
+            [mock_item]
+        )
+        mock_pystac.ItemCollection.return_value = (
+            mock_item_collection
+        )
+
+        result, df = composite_stac(
+            collection='hls',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            proj_bounds=(0, 0, 480, 480),
+            epsg=32618,
+            bands=['red', 'green'],
+            start_date='2022-07-01',
+            end_date='2022-07-31',
+            resolution=30.0,
+            frequency='MS',
+            compute=False,
+        )
+
+        self.assertIsNotNone(result)
+        # stackstac.stack should be called twice (L30 + S30)
+        self.assertEqual(mock_stackstac.stack.call_count, 2)
+        # Fmask should be stripped; result has spectral bands only
+        self.assertIn('red', result.band.values)
+        self.assertIn('green', result.band.values)
+        self.assertNotIn('Fmask', result.band.values)
+
+    @patch('geowombat.core.stac.stackstac')
+    @patch('geowombat.core.stac._Client')
+    @patch('geowombat.core.stac.pystac')
+    def test_composite_hls_single_sensor_no_data(
+        self, mock_pystac, mock_client_class, mock_stackstac
+    ):
+        """Test composite_stac('hls') works when one sensor has
+        no data."""
+        mock_l30 = create_mock_data_array(
+            shape=(2, 3, 16, 16),
+            bands=['red', 'green', 'Fmask'],
+            res=30.0,
+            collection='hls_l30',
+        )
+
+        # First call (L30) returns data, second (S30) returns
+        # empty search
+        mock_stackstac.DEFAULT_GDAL_ENV = MagicMock()
+        mock_stackstac.DEFAULT_GDAL_ENV.updated.return_value = (
+            'mocked_gdal_env'
+        )
+
+        mock_catalog = MagicMock()
+        mock_client_class.open.return_value = mock_catalog
+
+        # First search returns items, second returns empty
+        mock_item = MagicMock()
+        mock_item.id = 'HLS.L30.T18SUJ.2022185.v2.0'
+        mock_search_with_items = MagicMock()
+        mock_search_with_items.items.return_value = [mock_item]
+        mock_search_empty = MagicMock()
+        mock_search_empty.items.return_value = []
+
+        mock_catalog.search = MagicMock(
+            side_effect=[
+                mock_search_with_items,
+                mock_search_empty,
+            ]
+        )
+
+        mock_item_collection = MagicMock()
+        mock_item_collection.__iter__ = lambda self: iter(
+            [mock_item]
+        )
+        mock_pystac.ItemCollection.return_value = (
+            mock_item_collection
+        )
+        mock_stackstac.stack.return_value = mock_l30
+
+        result, df = composite_stac(
+            collection='hls',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            proj_bounds=(0, 0, 480, 480),
+            epsg=32618,
+            bands=['red', 'green'],
+            start_date='2022-07-01',
+            end_date='2022-07-31',
+            resolution=30.0,
+            frequency='MS',
+            compute=False,
+        )
+
+        # Should still return a valid composite from L30 only
+        self.assertIsNotNone(result)
+        self.assertIn('red', result.band.values)
+
 
 if __name__ == '__main__':
     unittest.main()
