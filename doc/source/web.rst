@@ -35,7 +35,9 @@ Supported catalogs and collections
    * - ``element84_v1``
      - ``cop_dem_glo_30``, ``landsat_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s2_l1c``, ``sentinel_s1_l1c``, ``naip``
    * - ``microsoft_v1``
-     - ``cop_dem_glo_30``, ``landsat_c2_l1``, ``landsat_c2_l2``, ``landsat_l8_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s1_l1c``, ``sentinel_3_lst``, ``io_lulc``, ``usda_cdl``, ``hls``, ``esa_worldcover``
+     - ``cop_dem_glo_30``, ``landsat_c2_l1``, ``landsat_c2_l2``, ``landsat_l8_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s1_l1c``, ``sentinel_3_lst``, ``io_lulc``, ``usda_cdl``, ``esa_worldcover``
+   * - ``nasa_lp_cloud``
+     - ``hls_l30`` (HLS Landsat 30m), ``hls_s30`` (HLS Sentinel-2 30m)
 
 STAC examples
 -------------
@@ -114,6 +116,91 @@ Stream Landsat data from Microsoft Planetary Computer
     ax.set_title("Landsat RGB - Washington, D.C.")
     plt.tight_layout(pad=1)
 
+Stream Harmonized Landsat Sentinel-2 (HLS) data from NASA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`HLS <https://lpdaac.usgs.gov/data/get-started-data/collection-overview/missions/harmonized-landsat-sentinel-2-hls-overview/>`_
+is a NASA product that provides BRDF-normalized surface reflectance from both
+Landsat OLI and Sentinel-2 MSI, resampled to a common 30m MGRS grid. This makes
+it straightforward to combine observations from both sensors into a single
+analysis-ready time series.
+
+Two collections are available via the ``nasa_lp_cloud`` catalog:
+
+- **``hls_l30``** — Landsat OLI (30m, ~8-day revisit)
+- **``hls_s30``** — Sentinel-2 MSI (30m, ~5-day revisit)
+
+You can use friendly band names (``red``, ``green``, ``blue``, ``nir``, etc.)
+and GeoWombat automatically translates them to the correct HLS asset keys.
+
+.. list-table:: Common band names
+   :header-rows: 1
+   :widths: 20 20 20
+
+   * - Name
+     - L30 key
+     - S30 key
+   * - ``blue``
+     - B02
+     - B02
+   * - ``green``
+     - B03
+     - B03
+   * - ``red``
+     - B04
+     - B04
+   * - ``nir``
+     - B05
+     - B8A
+   * - ``swir1``
+     - B06
+     - B11
+   * - ``swir2``
+     - B07
+     - B12
+
+**Authentication**: HLS requires a free `NASA Earthdata <https://urs.earthdata.nasa.gov/users/new>`_
+account. Create a ``~/.netrc`` file with your credentials::
+
+    machine urs.earthdata.nasa.gov
+    login <your_username>
+    password <your_password>
+
+Then set file permissions:
+
+- Linux/macOS: ``chmod 600 ~/.netrc``
+- Windows: ``icacls %USERPROFILE%\.netrc /inheritance:r /grant:r %USERNAME%:R``
+
+.. code:: python
+
+    from geowombat.core.stac import open_stac
+
+    # HLS Landsat 30m
+    data_l30, df = open_stac(
+        stac_catalog="nasa_lp_cloud",
+        collection="hls_l30",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["red", "green", "blue", "nir"],
+        start_date="2023-06-01",
+        end_date="2023-06-30",
+        resolution=30.0,
+        max_items=5,
+    )
+
+    # HLS Sentinel-2 30m
+    data_s30, df = open_stac(
+        stac_catalog="nasa_lp_cloud",
+        collection="hls_s30",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["red", "green", "blue", "nir"],
+        start_date="2023-06-01",
+        end_date="2023-06-30",
+        resolution=30.0,
+        max_items=5,
+    )
+
 Cloud masking
 ~~~~~~~~~~~~~
 
@@ -128,6 +215,10 @@ or ``scl`` in your ``bands`` list.
   ``thin_cirrus``.
 - **Landsat**: Loads the ``qa_pixel`` band and applies a bitmask for
   fill, dilated cloud, cirrus, cloud, cloud shadow, and snow.
+- **HLS**: Loads the ``Fmask`` band and applies a bitmask for
+  cirrus, cloud, adjacent cloud, cloud shadow, and snow/ice.
+  Default mask classes: ``cirrus``, ``cloud``, ``adjacent_cloud``,
+  ``cloud_shadow``, ``snow_ice``.
 
 .. code:: python
 
@@ -161,6 +252,20 @@ or ``scl`` in your ``bands`` list.
         mask_data=True,  # <-- auto-loads qa_pixel, masks clouds
     )
 
+    # HLS with cloud masking
+    data_hls, df = open_stac(
+        stac_catalog="nasa_lp_cloud",
+        collection="hls_l30",
+        bounds=(-77.1, 38.85, -76.95, 38.95),
+        epsg=32618,
+        bands=["red", "green", "blue"],
+        start_date="2023-06-01",
+        end_date="2023-07-31",
+        resolution=30.0,
+        max_items=5,
+        mask_data=True,  # <-- auto-loads Fmask, masks clouds
+    )
+
 You can customize which classes are masked with the ``mask_items``
 parameter:
 
@@ -180,6 +285,15 @@ parameter:
         collection="landsat_c2_l2",
         mask_data=True,
         mask_items=["fill", "cloud", "cloud_shadow"],
+    )
+
+    # Only mask clouds for HLS
+    data, df = open_stac(
+        ...,
+        stac_catalog="nasa_lp_cloud",
+        collection="hls_l30",
+        mask_data=True,
+        mask_items=["cloud", "cloud_shadow"],
     )
 
 Monthly composites
