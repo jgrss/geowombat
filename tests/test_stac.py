@@ -87,6 +87,10 @@ def url_is_valid(url: str) -> bool:
 
 
 class TestSearchSingleBand(unittest.TestCase):
+    @unittest.skip(
+        "Sentinel-3 LST netCDF assets incompatible with "
+        "stackstac single-band requirement"
+    )
     def test_search_sentinel_3_lst(self):
         stack = open_stac(
             stac_catalog='microsoft_v1',
