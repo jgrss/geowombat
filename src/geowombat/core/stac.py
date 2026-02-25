@@ -377,7 +377,7 @@ def open_stac(
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
     Args:
-        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft_v1'].
+        stac_catalog (str): Choices are ['element84_v0', 'element84_v1', 'microsoft_v1', 'nasa_lp_cloud'].
         collection (str): The STAC collection to open.
             Catalog options:
                 element84_v0:
@@ -543,6 +543,9 @@ def open_stac(
         gdal_env_dict = {
             'GDAL_HTTP_COOKIEFILE': '/tmp/gw_cookies.txt',
             'GDAL_HTTP_COOKIEJAR': '/tmp/gw_cookies.txt',
+            'GDAL_HTTP_TIMEOUT': '60',
+            'GDAL_HTTP_MAX_RETRY': '3',
+            'GDAL_HTTP_RETRY_DELAY': '5',
         }
 
     if (
@@ -560,6 +563,7 @@ def open_stac(
         query = {"eo:cloud_cover": {"lt": cloud_cover_perc}}
 
     # Search the STAC
+    print(f"Searching {stac_catalog} for {collection}...")
     search = catalog.search(
         collections=catalog_collections,
         bbox=bounds,
@@ -577,6 +581,7 @@ def open_stac(
             items = pc.sign(search)
         else:
             items = pystac.ItemCollection(items=list(search.items()))
+        print(f"Found {len(items)} items.")
 
         if view_asset_keys:
             try:
@@ -793,7 +798,9 @@ def open_stac(
                 with dask.config.set(
                     scheduler='threads', num_workers=num_workers
                 ):
-                    with TqdmCallback(desc="Downloading"):
+                    with TqdmCallback(
+                        desc=f"Downloading {collection}"
+                    ):
                         data = data.compute()
             except RuntimeError as e:
                 if (
@@ -996,12 +1003,31 @@ def composite_stac(
             parts.append(r_s30[0])
             dfs.append(r_s30[1])
 
+        # Download each sensor separately so users see progress
+        if compute:
+            import dask
+            from tqdm.dask import TqdmCallback
+
+            _labels = []
+            if has_l30:
+                _labels.append('HLS L30 (Landsat)')
+            if has_s30:
+                _labels.append('HLS S30 (Sentinel-2)')
+            for i, label in enumerate(_labels):
+                with dask.config.set(
+                    scheduler='threads',
+                    num_workers=num_workers,
+                ):
+                    with TqdmCallback(desc=label):
+                        parts[i] = parts[i].compute()
+
         if len(parts) == 1:
             data = parts[0]
         else:
             # Simple concatenation along time — skip merge_stac's
             # groupby('time').mean() since L30/S30 never share
-            # timestamps and resample().median() handles aggregation.
+            # timestamps and resample().median() handles
+            # aggregation.
             data = xr.DataArray(
                 da.concatenate(
                     [
@@ -1026,6 +1052,25 @@ def composite_stac(
 
         df = pd.concat(dfs, ignore_index=True)
         attrs = data.attrs.copy()
+
+        # Resample to the requested frequency using median
+        print("Computing composite...")
+        composite = (
+            data.resample(time=frequency)
+            .median(dim='time', skipna=True)
+            .assign_attrs(**attrs)
+        )
+
+        # Drop all-NaN time slices
+        valid_times = ~composite.isnull().all(
+            dim=['band', 'y', 'x']
+        )
+        composite = composite.sel(time=valid_times)
+
+        if compute and hasattr(composite, 'compute'):
+            composite = composite.compute()
+
+        return composite, df
 
     else:
         result = open_stac(
@@ -1075,7 +1120,9 @@ def composite_stac(
         with dask.config.set(
             scheduler='threads', num_workers=num_workers
         ):
-            with TqdmCallback(desc="Computing composite"):
+            with TqdmCallback(
+                desc=f"Downloading & compositing {collection}"
+            ):
                 composite = composite.compute()
 
     return composite, df
