@@ -90,7 +90,6 @@ class STACCollections(StrEnum):
     SENTINEL_S2_L1C = 'sentinel_s2_l1c'
     # Sentinel-1, Level 1C Ground Range Detected (GRD)
     SENTINEL_S1_L1C = 'sentinel_s1_l1c'
-    SENTINEL_3_LST = 'sentinel_3_lst'
     LANDSAT_L8_C2_L2 = 'landsat_l8_c2_l2'
     USDA_CDL = 'usda_cdl'
     IO_LULC = 'io_lulc'
@@ -119,7 +118,6 @@ class STACCollectionURLNames(StrEnum):
     SENTINEL_S2_L1C = 'sentinel-2-l1c'
     # Sentinel-1, Level 1C Ground Range Detected (GRD)
     SENTINEL_S1_L1C = 'sentinel-1-grd'
-    SENTINEL_3_LST = 'sentinel-3-slstr-lst-l2-netcdf'
     LANDSAT_L8_C2_L2 = 'landsat-8-c2-l2'
     USDA_CDL = STACCollections.USDA_CDL.replace('_', '-')
     IO_LULC = STACCollections.IO_LULC.replace('_', '-')
@@ -180,7 +178,6 @@ STAC_COLLECTIONS = {
         STACCollectionURLNames.LANDSAT_C2_L2,
         STACCollectionURLNames.SENTINEL_S2_L2A,
         STACCollectionURLNames.SENTINEL_S1_L1C,
-        STACCollectionURLNames.SENTINEL_3_LST,
         STACCollectionURLNames.LANDSAT_L8_C2_L2,
         STACCollectionURLNames.USDA_CDL,
         STACCollectionURLNames.IO_LULC,
@@ -394,7 +391,6 @@ def open_stac(
                     landsat_l8_c2_l2
                     sentinel_s2_l2a
                     sentinel_s1_l1c
-                    sentinel_3_lst
                     io_lulc
                     usda_cdl
                     esa_worldcover

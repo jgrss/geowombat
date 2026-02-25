@@ -117,7 +117,6 @@ class TestSTACCollectionRegistry(unittest.TestCase):
             STACCollectionURLNames.LANDSAT_C2_L2,
             STACCollectionURLNames.SENTINEL_S2_L2A,
             STACCollectionURLNames.SENTINEL_S1_L1C,
-            STACCollectionURLNames.SENTINEL_3_LST,
             STACCollectionURLNames.LANDSAT_L8_C2_L2,
             STACCollectionURLNames.USDA_CDL,
             STACCollectionURLNames.IO_LULC,

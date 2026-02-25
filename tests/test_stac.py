@@ -87,34 +87,6 @@ def url_is_valid(url: str) -> bool:
 
 
 class TestSearchSingleBand(unittest.TestCase):
-    @unittest.skip(
-        "Sentinel-3 LST netCDF assets incompatible with "
-        "stackstac single-band requirement"
-    )
-    def test_search_sentinel_3_lst(self):
-        stack = open_stac(
-            stac_catalog='microsoft_v1',
-            bounds=SEARCH_DF,
-            proj_bounds=SEARCH_BOUNDS,
-            epsg=SEARCH_EPSG,
-            collection='sentinel_3_lst',
-            bands=['lst-in'],
-            cloud_cover_perc=90,
-            chunksize=64,
-            start_date='2022-07-01',
-            end_date='2022-07-07',
-            resolution=300.0,
-            nodata_fill=32768,
-            resampling=Resampling.nearest,
-            max_items=None,
-        )[0]
-
-        self.assertTrue(stack.shape == (20, 1, 3, 4))
-        self.assertTrue(stack.gw.crs_to_pyproj == CRS.from_epsg(SEARCH_EPSG))
-        self.assertTrue(stack.gw.celly == 300.0)
-        self.assertTrue(stack.gw.cellx == 300.0)
-        self.assertTrue(stack.gw.nodataval == 32768)
-
     def test_search_blue_sentinel_s2_l1c(self):
         stack = open_stac(
             stac_catalog='element84_v1',

@@ -18,7 +18,6 @@ STACCollections
       ~STACCollections.SENTINEL_S2_L2A_COGS
       ~STACCollections.SENTINEL_S2_L1C
       ~STACCollections.SENTINEL_S1_L1C
-      ~STACCollections.SENTINEL_3_LST
       ~STACCollections.USDA_CDL
       ~STACCollections.IO_LULC
       ~STACCollections.NAIP
@@ -37,7 +36,6 @@ STACCollections
    .. autoattribute:: SENTINEL_S2_L2A_COGS
    .. autoattribute:: SENTINEL_S2_L1C
    .. autoattribute:: SENTINEL_S1_L1C
-   .. autoattribute:: SENTINEL_3_LST
    .. autoattribute:: USDA_CDL
    .. autoattribute:: IO_LULC
    .. autoattribute:: NAIP

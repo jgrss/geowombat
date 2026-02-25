@@ -35,7 +35,7 @@ Supported catalogs and collections
    * - ``element84_v1``
      - ``cop_dem_glo_30``, ``landsat_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s2_l1c``, ``sentinel_s1_l1c``, ``naip``
    * - ``microsoft_v1``
-     - ``cop_dem_glo_30``, ``landsat_c2_l1``, ``landsat_c2_l2``, ``landsat_l8_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s1_l1c``, ``sentinel_3_lst``, ``io_lulc``, ``usda_cdl``, ``esa_worldcover``
+     - ``cop_dem_glo_30``, ``landsat_c2_l1``, ``landsat_c2_l2``, ``landsat_l8_c2_l2``, ``sentinel_s2_l2a``, ``sentinel_s1_l1c``, ``io_lulc``, ``usda_cdl``, ``esa_worldcover``
    * - ``nasa_lp_cloud``
      - ``hls_l30`` (HLS Landsat 30m), ``hls_s30`` (HLS Sentinel-2 30m)
 
