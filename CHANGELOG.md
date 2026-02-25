@@ -1,6 +1,6 @@
 # Changelog
 
-<!--next-version-placeholder-->
+<!-- version list -->
 
 ## v2.1.23 (2026-01-12)
 

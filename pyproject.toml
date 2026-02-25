@@ -137,6 +137,23 @@ Repository = "https://github.com/jgrss/geowombat"
 [tool.setuptools_scm]
 write_to = "src/geowombat/_version.py"
 
+[tool.semantic_release]
+version_toml = []
+version_variables = []
+tag_format = "v{version}"
+commit_message = "chore(release): v{version}"
+changelog_file = "CHANGELOG.md"
+build_command = ""
+major_on_zero = false
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "style", "test", "chore"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
 [tool.black]
 line-length = 79
 include = '\.pyi?$'
