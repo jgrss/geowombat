@@ -1,5 +1,6 @@
 import concurrent.futures
 import enum
+import os
 import typing as T
 import warnings
 from pathlib import Path as _Path
@@ -14,6 +15,7 @@ from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
 
 from ..config import config
+from ..radiometry import HLSFmaskBits as _HLSFmaskBits
 from ..radiometry import QABits as _QABits
 from ..radiometry import SCLValues as _SCLValues
 
@@ -72,6 +74,7 @@ class STACNames(StrEnum):
     ELEMENT84_V0 = 'element84_v0'
     ELEMENT84_V1 = 'element84_v1'
     MICROSOFT_V1 = 'microsoft_v1'
+    NASA_LP_CLOUD = 'nasa_lp_cloud'
 
 
 class STACCollections(StrEnum):
@@ -95,6 +98,8 @@ class STACCollections(StrEnum):
     NAIP = 'naip'
     # Harmonized Landsat Sentinel-2
     HLS = 'hls'
+    HLS_L30 = 'hls_l30'
+    HLS_S30 = 'hls_s30'
     # ESA WorldCover 10m land cover
     ESA_WORLDCOVER = 'esa_worldcover'
 
@@ -121,6 +126,8 @@ class STACCollectionURLNames(StrEnum):
     IO_LULC = STACCollections.IO_LULC.replace('_', '-')
     NAIP = STACCollections.NAIP
     HLS = STACCollections.HLS
+    HLS_L30 = 'HLSL30.v2.0'
+    HLS_S30 = 'HLSS30.v2.0'
     ESA_WORLDCOVER = 'esa-worldcover'
 
 
@@ -129,6 +136,7 @@ STAC_CATALOGS = {
     STACNames.ELEMENT84_V1: 'https://earth-search.aws.element84.com/v1',
     # STACNames.google: 'https://earthengine.openeo.org/v1.0',
     STACNames.MICROSOFT_V1: 'https://planetarycomputer.microsoft.com/api/stac/v1',
+    STACNames.NASA_LP_CLOUD: 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD',
 }
 
 STAC_SCALING = {
@@ -140,9 +148,17 @@ STAC_SCALING = {
             'nodata': 0,
         },
     },
-    STACCollections.HLS: {
-        # https://planetarycomputer.microsoft.com/dataset/hls
-        STACNames.MICROSOFT_V1: {
+    STACCollections.HLS_L30: {
+        # https://lpdaac.usgs.gov/products/hlsl30v002/
+        STACNames.NASA_LP_CLOUD: {
+            'gain': 0.0001,
+            'offset': 0,
+            'nodata': -9999,
+        },
+    },
+    STACCollections.HLS_S30: {
+        # https://lpdaac.usgs.gov/products/hlss30v002/
+        STACNames.NASA_LP_CLOUD: {
             'gain': 0.0001,
             'offset': 0,
             'nodata': -9999,
@@ -170,8 +186,11 @@ STAC_COLLECTIONS = {
         STACCollectionURLNames.LANDSAT_L8_C2_L2,
         STACCollectionURLNames.USDA_CDL,
         STACCollectionURLNames.IO_LULC,
-        STACCollectionURLNames.HLS,
         STACCollectionURLNames.ESA_WORLDCOVER,
+    ),
+    STACNames.NASA_LP_CLOUD: (
+        STACCollectionURLNames.HLS_L30,
+        STACCollectionURLNames.HLS_S30,
     ),
 }
 
@@ -193,6 +212,78 @@ def _is_landsat(collection: str) -> bool:
 
 def _is_sentinel_s2(collection: str) -> bool:
     return STACCollections(collection) in _SENTINEL_S2_COLLECTIONS
+
+
+_HLS_COLLECTIONS = {
+    STACCollections.HLS_L30,
+    STACCollections.HLS_S30,
+}
+
+
+def _is_hls(collection: str) -> bool:
+    return STACCollections(collection) in _HLS_COLLECTIONS
+
+
+# HLS L30 band mapping: friendly name -> STAC asset key
+_HLS_L30_BAND_MAP = {
+    'coastal': 'B01',
+    'blue': 'B02',
+    'green': 'B03',
+    'red': 'B04',
+    'nir': 'B05',
+    'swir1': 'B06',
+    'swir2': 'B07',
+    'cirrus': 'B09',
+    'thermal1': 'B10',
+    'thermal2': 'B11',
+}
+
+# HLS S30 band mapping: friendly name -> STAC asset key
+_HLS_S30_BAND_MAP = {
+    'coastal': 'B01',
+    'blue': 'B02',
+    'green': 'B03',
+    'red': 'B04',
+    'rededge1': 'B05',
+    'rededge2': 'B06',
+    'rededge3': 'B07',
+    'nir_broad': 'B08',
+    'nir': 'B8A',
+    'water_vapor': 'B09',
+    'cirrus': 'B10',
+    'swir1': 'B11',
+    'swir2': 'B12',
+}
+
+
+def _translate_hls_bands(
+    bands: T.Sequence[str],
+    collection: str,
+) -> T.Tuple[T.List[str], T.Dict[str, str]]:
+    """Translate friendly band names to STAC asset keys for HLS.
+
+    Returns:
+        Tuple of (translated_bands, reverse_map) where reverse_map
+        maps STAC keys back to the original friendly names.
+    """
+    if STACCollections(collection) == STACCollections.HLS_L30:
+        band_map = _HLS_L30_BAND_MAP
+    elif STACCollections(collection) == STACCollections.HLS_S30:
+        band_map = _HLS_S30_BAND_MAP
+    else:
+        return list(bands), {}
+
+    translated = []
+    reverse = {}
+    for b in bands:
+        if b in band_map:
+            stac_key = band_map[b]
+            translated.append(stac_key)
+            reverse[stac_key] = b
+        else:
+            # Assume already a STAC asset key (e.g., 'B02')
+            translated.append(b)
+    return translated, reverse
 
 
 def merge_stac(
@@ -308,8 +399,10 @@ def open_stac(
                     sentinel_3_lst
                     io_lulc
                     usda_cdl
-                    hls
                     esa_worldcover
+                nasa_lp_cloud:
+                    hls_l30 (HLS Landsat 30m)
+                    hls_s30 (HLS Sentinel-2 30m)
 
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``). The bounds CRS
@@ -329,10 +422,13 @@ def open_stac(
             For Sentinel-2: SCL class names. Defaults to
             ``['no_data', 'saturated_defective', 'cloud_shadow',
             'cloud_medium_prob', 'cloud_high_prob', 'thin_cirrus']``.
+            For HLS: Fmask bit names. Defaults to
+            ``['cirrus', 'cloud', 'adjacent_cloud',
+            'cloud_shadow', 'snow_ice']``.
         bounds_query (Optional[str]): A query to select bounds
             from the ``geopandas.GeoDataFrame``.
         mask_data (Optional[bool]): Whether to mask the data.
-            When ``True``, the appropriate QA/SCL band is
+            When ``True``, the appropriate QA/SCL/Fmask band is
             automatically loaded and used for masking.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
@@ -421,6 +517,34 @@ def open_stac(
             f'The STAC catalog {stac_catalog} is not supported ({e}).'
         )
 
+    # NASA Earthdata auth check
+    gdal_env_dict = {}
+    if STACNames(stac_catalog) == STACNames.NASA_LP_CLOUD:
+        netrc_path = _Path.home() / '.netrc'
+        has_netrc = netrc_path.exists()
+        if has_netrc:
+            netrc_content = netrc_path.read_text()
+            has_netrc = 'urs.earthdata.nasa.gov' in netrc_content
+        if not has_netrc:
+            raise PermissionError(
+                "NASA Earthdata authentication is required for "
+                "HLS data access but no credentials were found.\n\n"
+                "1. Register at: "
+                "https://urs.earthdata.nasa.gov/users/new\n\n"
+                "2. Create a ~/.netrc file with:\n\n"
+                "  machine urs.earthdata.nasa.gov\n"
+                "  login <your_username>\n"
+                "  password <your_password>\n\n"
+                "3. Set file permissions:\n"
+                "  Linux/macOS:  chmod 600 ~/.netrc\n"
+                "  Windows:      icacls %USERPROFILE%\\.netrc "
+                "/inheritance:r /grant:r %USERNAME%:R"
+            )
+        gdal_env_dict = {
+            'GDAL_HTTP_COOKIEFILE': '/tmp/gw_cookies.txt',
+            'GDAL_HTTP_COOKIEJAR': '/tmp/gw_cookies.txt',
+        }
+
     if (
         STACCollectionURLNames[STACCollections(collection).name]
         not in STAC_COLLECTIONS[stac_catalog]
@@ -501,8 +625,16 @@ def open_stac(
                         d.update(downloaded_dict)
                 df = pd.concat((df, pd.DataFrame([d])), ignore_index=True)
 
-        # Auto-inject QA/SCL band for pixel-level masking
+        # Auto-inject QA/SCL/Fmask band for pixel-level masking
         stack_bands = list(bands) if bands else []
+
+        # Translate friendly band names for HLS collections
+        band_reverse_map = {}
+        if _is_hls(collection) and stack_bands:
+            stack_bands, band_reverse_map = _translate_hls_bands(
+                stack_bands, collection
+            )
+
         if mask_data and bands is not None:
             if _is_landsat(collection):
                 if 'qa_pixel' not in stack_bands:
@@ -510,9 +642,11 @@ def open_stac(
             elif _is_sentinel_s2(collection):
                 if 'scl' not in stack_bands:
                     stack_bands = stack_bands + ['scl']
+            elif _is_hls(collection):
+                if 'Fmask' not in stack_bands:
+                    stack_bands = stack_bands + ['Fmask']
 
-        data = stackstac.stack(
-            items,
+        stack_kwargs = dict(
             bounds=proj_bounds,
             bounds_latlon=None if proj_bounds is not None else bounds,
             assets=stack_bands or bands,
@@ -523,6 +657,20 @@ def open_stac(
             properties=False,
             rescale=False,
         )
+        if gdal_env_dict:
+            stack_kwargs['gdal_env'] = stackstac.DEFAULT_GDAL_ENV.updated(
+                always=gdal_env_dict
+            )
+
+        data = stackstac.stack(items, **stack_kwargs)
+
+        # Rename HLS bands back to friendly names
+        if band_reverse_map:
+            new_band_names = [
+                band_reverse_map.get(str(b), str(b))
+                for b in data.band.values
+            ]
+            data = data.assign_coords(band=new_band_names)
         data = data.assign_attrs(
             res=(data.resolution, data.resolution), collection=collection
         )
@@ -582,6 +730,38 @@ def open_stac(
                     ]
                 ).where(~scl_mask)
 
+            elif _is_hls(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'cirrus',
+                        'cloud',
+                        'adjacent_cloud',
+                        'cloud_shadow',
+                        'snow_ice',
+                    ]
+                mask_bitfields = [
+                    _HLSFmaskBits.hls.value[mask_item]
+                    for mask_item in mask_items
+                ]
+                bitmask = 0
+                for field in mask_bitfields:
+                    bitmask |= 1 << field
+                # Fmask band name (friendly or raw)
+                fmask_name = (
+                    'fmask'
+                    if 'fmask' in data.band.values
+                    else 'Fmask'
+                )
+                qa = data.sel(band=fmask_name).astype('uint8')
+                mask = qa & bitmask
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b not in ('fmask', 'Fmask')
+                    ]
+                ).where(mask == 0)
+
             else:
                 warnings.warn(
                     f"mask_data=True is not supported for "
@@ -609,11 +789,34 @@ def open_stac(
             import dask
             from tqdm.dask import TqdmCallback
 
-            with dask.config.set(
-                scheduler='threads', num_workers=num_workers
-            ):
-                with TqdmCallback(desc="Downloading"):
-                    data = data.compute()
+            try:
+                with dask.config.set(
+                    scheduler='threads', num_workers=num_workers
+                ):
+                    with TqdmCallback(desc="Downloading"):
+                        data = data.compute()
+            except RuntimeError as e:
+                if (
+                    STACNames(stac_catalog) == STACNames.NASA_LP_CLOUD
+                    and 'not recognized as' in str(e)
+                ):
+                    raise RuntimeError(
+                        "NASA Earthdata authentication failed. "
+                        "GDAL received an HTML login page instead "
+                        "of raster data.\n\n"
+                        "To fix this, create a ~/.netrc file with "
+                        "your NASA Earthdata credentials:\n\n"
+                        "  machine urs.earthdata.nasa.gov\n"
+                        "  login <your_username>\n"
+                        "  password <your_password>\n\n"
+                        "Then set file permissions:\n"
+                        "  Linux/macOS:  chmod 600 ~/.netrc\n"
+                        "  Windows:      icacls %USERPROFILE%\\.netrc "
+                        "/inheritance:r /grant:r %USERNAME%:R\n\n"
+                        "Register at: "
+                        "https://urs.earthdata.nasa.gov/users/new"
+                    ) from e
+                raise
 
         return data, df
 

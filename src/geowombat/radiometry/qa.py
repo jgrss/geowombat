@@ -48,6 +48,23 @@ class SCLValues(enum.Enum):
     }
 
 
+class HLSFmaskBits(enum.Enum):
+    """HLS Fmask quality bit definitions (uint8).
+
+    Reference:
+        https://lpdaac.usgs.gov/documents/1698/HLS_User_Guide_V20.pdf
+    """
+
+    hls = {
+        'cirrus': 0,
+        'cloud': 1,
+        'adjacent_cloud': 2,
+        'cloud_shadow': 3,
+        'snow_ice': 4,
+        'water': 5,
+    }
+
+
 class QAMasker(object):
     """A class for masking bit-packed quality flags.
 

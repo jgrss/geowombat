@@ -18,6 +18,8 @@ from geowombat.core.stac import (
     open_stac,
     composite_stac,
     _Client,
+    _is_hls,
+    _translate_hls_bands,
 )
 
 # Check if STAC dependencies are available
@@ -566,6 +568,280 @@ class TestCompositeSTAC(unittest.TestCase):
         # Quarterly: should have up to 5 quarters
         self.assertGreater(composite.sizes['time'], 0)
         self.assertLessEqual(composite.sizes['time'], 5)
+
+
+class TestSTACHLS(unittest.TestCase):
+    """Tests for HLS (Harmonized Landsat Sentinel-2) support."""
+
+    def setUp(self):
+        """Patch .netrc check for all HLS tests."""
+        mock_netrc = MagicMock()
+        mock_netrc.exists.return_value = True
+        mock_netrc.read_text.return_value = (
+            'machine urs.earthdata.nasa.gov login x password x'
+        )
+        patcher = patch(
+            'geowombat.core.stac._Path.home',
+            return_value=MagicMock(
+                **{'__truediv__': lambda self, x: mock_netrc}
+            ),
+        )
+        self._netrc_patcher = patcher
+        patcher.start()
+
+    def tearDown(self):
+        self._netrc_patcher.stop()
+
+    def test_nasa_lp_cloud_collections(self):
+        """Verify NASA LP CLOUD has expected HLS collections."""
+        self.assertIn(
+            STACCollectionURLNames.HLS_L30,
+            STAC_COLLECTIONS[STACNames.NASA_LP_CLOUD],
+        )
+        self.assertIn(
+            STACCollectionURLNames.HLS_S30,
+            STAC_COLLECTIONS[STACNames.NASA_LP_CLOUD],
+        )
+
+    def test_nasa_lp_cloud_reachable(self):
+        """Verify NASA CMR STAC catalog responds."""
+        url = STAC_CATALOGS[STACNames.NASA_LP_CLOUD]
+        response = requests.get(url, timeout=CONNECTIVITY_TIMEOUT)
+        self.assertEqual(response.status_code, 200)
+
+    def test_is_hls_detection(self):
+        """Test _is_hls correctly detects HLS collections."""
+        self.assertTrue(_is_hls('hls_l30'))
+        self.assertTrue(_is_hls('hls_s30'))
+        self.assertFalse(_is_hls('landsat_c2_l2'))
+        self.assertFalse(_is_hls('sentinel_s2_l2a'))
+
+    def test_hls_l30_band_translation(self):
+        """Test friendly band names translate to STAC keys for L30."""
+        translated, reverse = _translate_hls_bands(
+            ['red', 'green', 'blue', 'nir'], 'hls_l30'
+        )
+        self.assertEqual(translated, ['B04', 'B03', 'B02', 'B05'])
+        self.assertEqual(reverse['B04'], 'red')
+        self.assertEqual(reverse['B03'], 'green')
+        self.assertEqual(reverse['B02'], 'blue')
+        self.assertEqual(reverse['B05'], 'nir')
+
+    def test_hls_s30_band_translation(self):
+        """Test friendly band names translate to STAC keys for S30."""
+        translated, reverse = _translate_hls_bands(
+            ['red', 'green', 'blue', 'nir'], 'hls_s30'
+        )
+        self.assertEqual(translated, ['B04', 'B03', 'B02', 'B8A'])
+        self.assertEqual(reverse['B04'], 'red')
+        self.assertEqual(reverse['B8A'], 'nir')
+
+    def test_hls_raw_band_names_passthrough(self):
+        """Test raw STAC keys pass through untranslated."""
+        translated, reverse = _translate_hls_bands(
+            ['B02', 'B03', 'B04'], 'hls_l30'
+        )
+        self.assertEqual(translated, ['B02', 'B03', 'B04'])
+        self.assertEqual(reverse, {})
+
+    def test_missing_netrc_raises_error(self):
+        """Test that missing .netrc raises PermissionError."""
+        self._netrc_patcher.stop()
+        mock_netrc = MagicMock()
+        mock_netrc.exists.return_value = False
+        with patch(
+            'geowombat.core.stac._Path.home',
+            return_value=MagicMock(
+                **{'__truediv__': lambda self, x: mock_netrc}
+            ),
+        ):
+            with self.assertRaises(PermissionError) as ctx:
+                open_stac(
+                    stac_catalog='nasa_lp_cloud',
+                    collection='hls_l30',
+                    bounds=(-77.1, 38.85, -76.95, 38.95),
+                    bands=['red'],
+                    start_date='2022-07-01',
+                    end_date='2022-07-07',
+                )
+            self.assertIn('~/.netrc', str(ctx.exception))
+            self.assertIn(
+                'urs.earthdata.nasa.gov', str(ctx.exception)
+            )
+        self._netrc_patcher.start()
+
+    def test_hls_collection_url_names(self):
+        """Test HLS URL names match NASA CMR collection IDs."""
+        self.assertEqual(
+            str(STACCollectionURLNames.HLS_L30), 'HLSL30.v2.0'
+        )
+        self.assertEqual(
+            str(STACCollectionURLNames.HLS_S30), 'HLSS30.v2.0'
+        )
+
+    def _setup_mocks(
+        self, mock_pystac, mock_client_class, mock_stackstac,
+        mock_data,
+    ):
+        """Common mock setup for HLS open_stac tests."""
+        mock_catalog = MagicMock()
+        mock_client_class.open.return_value = mock_catalog
+        mock_search = MagicMock()
+        mock_item = MagicMock()
+        mock_item.id = 'HLS.L30.T18SUJ.2022185.v2.0'
+        mock_search.items.return_value = [mock_item]
+        mock_catalog.search.return_value = mock_search
+        mock_item_collection = MagicMock()
+        mock_item_collection.__iter__ = lambda self: iter(
+            [mock_item]
+        )
+        mock_pystac.ItemCollection.return_value = (
+            mock_item_collection
+        )
+        mock_stackstac.stack.return_value = mock_data
+        mock_stackstac.DEFAULT_GDAL_ENV = MagicMock()
+        mock_stackstac.DEFAULT_GDAL_ENV.updated.return_value = (
+            'mocked_gdal_env'
+        )
+
+    @patch('geowombat.core.stac.stackstac')
+    @patch('geowombat.core.stac._Client')
+    @patch('geowombat.core.stac.pystac')
+    def test_open_stac_hls_l30_mocked(
+        self, mock_pystac, mock_client_class, mock_stackstac
+    ):
+        """Test open_stac with mocked NASA HLS L30 catalog."""
+        mock_data = create_mock_data_array(
+            bands=['red', 'green', 'blue'],
+            res=30.0,
+            collection='hls_l30',
+        )
+        self._setup_mocks(
+            mock_pystac, mock_client_class,
+            mock_stackstac, mock_data,
+        )
+
+        result, df = open_stac(
+            stac_catalog='nasa_lp_cloud',
+            collection='hls_l30',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            proj_bounds=(0, 0, 640, 480),
+            epsg=32618,
+            bands=['red', 'green', 'blue'],
+            start_date='2022-07-01',
+            end_date='2022-07-07',
+            resolution=30.0,
+        )
+
+        # Verify catalog was opened with NASA URL
+        mock_client_class.open.assert_called_once_with(
+            STAC_CATALOGS[STACNames.NASA_LP_CLOUD]
+        )
+        mock_stackstac.stack.assert_called_once()
+        # Verify bands were translated to STAC keys
+        call_kwargs = mock_stackstac.stack.call_args[1]
+        self.assertEqual(
+            call_kwargs['assets'], ['B04', 'B03', 'B02']
+        )
+        # Verify GDAL env was set for NASA auth
+        self.assertIn('gdal_env', call_kwargs)
+
+    @patch('geowombat.core.stac.stackstac')
+    @patch('geowombat.core.stac._Client')
+    @patch('geowombat.core.stac.pystac')
+    def test_hls_auto_injects_fmask(
+        self, mock_pystac, mock_client_class, mock_stackstac
+    ):
+        """Test mask_data=True auto-adds Fmask band for HLS."""
+        mock_data = create_mock_data_array(
+            bands=['red', 'Fmask'],
+            res=30.0,
+            collection='hls_l30',
+        )
+        self._setup_mocks(
+            mock_pystac, mock_client_class,
+            mock_stackstac, mock_data,
+        )
+
+        open_stac(
+            stac_catalog='nasa_lp_cloud',
+            collection='hls_l30',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            proj_bounds=(0, 0, 160, 160),
+            epsg=32618,
+            bands=['red'],
+            mask_data=True,
+            start_date='2022-07-01',
+            end_date='2022-07-07',
+            resolution=30.0,
+        )
+
+        call_kwargs = mock_stackstac.stack.call_args[1]
+        assets = call_kwargs['assets']
+        self.assertIn('Fmask', assets)
+
+    @patch('geowombat.core.stac.stackstac')
+    @patch('geowombat.core.stac._Client')
+    @patch('geowombat.core.stac.pystac')
+    def test_hls_fmask_masking(
+        self, mock_pystac, mock_client_class, mock_stackstac
+    ):
+        """Test Fmask-based cloud masking for HLS."""
+        # Create data with spectral band + Fmask
+        spectral = np.ones((2, 1, 16, 16), dtype=np.float32)
+        # Fmask: 0=clear, 2=cloud (bit 1 set)
+        fmask = np.zeros((2, 1, 16, 16), dtype=np.float32)
+        fmask[:, :, 5:10, 5:10] = 2  # cloud (bit 1)
+        all_data = da.from_array(
+            np.concatenate([spectral, fmask], axis=1)
+        )
+        mock_data = xr.DataArray(
+            all_data,
+            dims=('time', 'band', 'y', 'x'),
+            coords={
+                'time': pd.date_range('2022-07-01', periods=2),
+                'band': ['red', 'Fmask'],
+                'y': np.arange(16) * -30.0,
+                'x': np.arange(16) * 30.0,
+            },
+            attrs={
+                'crs': 'epsg:32618',
+                'res': (30.0, 30.0),
+                'transform': (30.0, 0, 0, 0, -30.0, 0),
+                'resolution': 30.0,
+                'epsg': 32618,
+                'collection': 'hls_l30',
+            },
+        )
+        self._setup_mocks(
+            mock_pystac, mock_client_class,
+            mock_stackstac, mock_data,
+        )
+
+        result, df = open_stac(
+            stac_catalog='nasa_lp_cloud',
+            collection='hls_l30',
+            bounds=(-77.1, 38.85, -76.95, 38.95),
+            proj_bounds=(0, 0, 480, 480),
+            epsg=32618,
+            bands=['red'],
+            mask_data=True,
+            start_date='2022-07-01',
+            end_date='2022-07-07',
+            resolution=30.0,
+        )
+
+        # Fmask band should be removed
+        self.assertNotIn('Fmask', result.band.values)
+        # Cloud pixels (Fmask=2, bit 1 set) should be NaN
+        vals = result.values
+        self.assertTrue(
+            np.isnan(vals[0, :, 5:10, 5:10]).all()
+        )
+        # Clear pixels (Fmask=0) should NOT be NaN
+        self.assertFalse(
+            np.isnan(vals[0, :, 0:3, 0:3]).all()
+        )
 
 
 if __name__ == '__main__':

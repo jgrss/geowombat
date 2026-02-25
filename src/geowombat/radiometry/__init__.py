@@ -1,6 +1,6 @@
 from .angles import landsat_pixel_angles, sentinel_pixel_angles
 from .brdf import BRDF
-from .qa import QABits, QAMasker, SCLValues
+from .qa import HLSFmaskBits, QABits, QAMasker, SCLValues
 from .sixs import SixS
 from .sr import DOS, LinearAdjustments, RadTransforms
 from .topo import Topo
@@ -17,4 +17,5 @@ __all__ = [
     'QAMasker',
     'QABits',
     'SCLValues',
+    'HLSFmaskBits',
 ]
