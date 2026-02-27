@@ -1,7 +1,9 @@
 project(
     'geowombat',
     ['c', 'cython'],
-    version: run_command('python3', '-c', 'from setuptools_scm import get_version; print(get_version())', check: true).stdout().strip()
+    version: run_command('python3', '-c',
+        'import os\ntry:\n    from setuptools_scm import get_version\n    print(get_version())\nexcept Exception:\n    print(os.environ.get("SETUPTOOLS_SCM_PRETEND_VERSION", "0.0.0"))',
+        check: true).stdout().strip()
 )
 
 py_mod = import('python')
