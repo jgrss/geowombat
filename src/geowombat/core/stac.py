@@ -260,6 +260,7 @@ def open_stac(
     out_path: T.Union[_Path, str] = '.',
     max_items: int = 100,
     max_extra_workers: int = 1,
+    compute: bool = False,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
@@ -314,6 +315,9 @@ def open_stac(
             matching results, passed to ``pystac_client.ItemSearch``.
             See https://pystac-client.readthedocs.io/en/latest/api.html#pystac_client.ItemSearch for details.
         max_extra_workers (Optional[int]): The maximum number of extra assets to download concurrently.
+        compute (Optional[bool]): Whether to eagerly load data into memory.
+            If ``True``, downloads all remote data with a progress bar.
+            If ``False`` (default), returns a lazy dask-backed array.
 
     Returns:
         ``xarray.DataArray``
@@ -472,6 +476,7 @@ def open_stac(
             epsg=epsg,
             resolution=resolution,
             resampling=resampling,
+            properties=False,
         )
         data = data.assign_attrs(
             res=(data.resolution, data.resolution), collection=collection
@@ -519,6 +524,12 @@ def open_stac(
 
         if not df.empty:
             df = df.set_index('id').reindex(data.id.values).reset_index()
+
+        if compute:
+            from tqdm.dask import TqdmCallback
+
+            with TqdmCallback(desc="Downloading"):
+                data = data.compute()
 
         return data, df
 

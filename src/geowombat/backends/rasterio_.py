@@ -218,9 +218,10 @@ class RasterioStore(object):
             if hasattr(self.data, "nodatavals"):
                 nodata = self.data.attrs["nodatavals"][0]
             else:
-                raise AttributeError(
-                    "The DataArray does not have any 'no data' attributes."
-                )
+                if np.issubdtype(self.data.dtype, np.integer):
+                    nodata = np.iinfo(self.data.dtype).max
+                else:
+                    nodata = np.nan
 
         dtype = (
             self.data.dtype.name

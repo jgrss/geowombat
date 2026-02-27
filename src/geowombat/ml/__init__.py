@@ -1,7 +1,9 @@
 from .classifiers import Classifiers
 
-fit = Classifiers().fit
-fit_predict = Classifiers().fit_predict
-predict = Classifiers().predict
+_classifier = Classifiers()
+
+fit = _classifier.fit
+fit_predict = _classifier.fit_predict
+predict = _classifier.predict
 
 __all__ = ['fit', 'fit_predict', 'predict']
