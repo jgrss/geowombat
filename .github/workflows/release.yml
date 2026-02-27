@@ -1,7 +1,9 @@
 name: Release
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 permissions:
@@ -12,6 +14,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     concurrency: release
+    # Only run if CI succeeded and was triggered by a push (not a PR)
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,7 +31,32 @@ jobs:
       - name: Install python-semantic-release
         run: pip install python-semantic-release
 
-      - name: Run semantic-release
+      - name: Determine next version
+        id: version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: semantic-release version --changelog --tag --push --vcs-release
+        run: |
+          NEXT=$(semantic-release version --print 2>/dev/null || echo "")
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+          if [ -z "$NEXT" ]; then
+            echo "No release needed"
+          else
+            echo "Next version: $NEXT"
+          fi
+
+      - name: Create tag and GitHub release
+        if: steps.version.outputs.next != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.next }}"
+          TAG="v${VERSION}"
+
+          # Create and push the tag
+          git tag "$TAG"
+          git push origin "$TAG"
+
+          # Create GitHub release (triggers publish.yml)
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes
