@@ -458,16 +458,18 @@ class Classifiers(ClassifiersMixin):
         if y.gw.ntime == 1:
             y = y.isel(time=0).drop_vars("time")
 
-        # Convert to dask array
-        chunks = {
-            "band": -1,
-            "y": data.gw.row_chunks,
-            "x": data.gw.col_chunks,
-        }
-        if "time" in y.dims:
-            chunks["time"] = -1
+        # Re-chunk if data is dask-backed; otherwise just assign attrs
+        if hasattr(data.data, 'chunksize'):
+            chunks = {
+                "band": -1,
+                "y": data.gw.row_chunks,
+                "x": data.gw.col_chunks,
+            }
+            if "time" in y.dims:
+                chunks["time"] = -1
+            y = y.chunk(chunks)
 
-        y = y.chunk(chunks).assign_attrs(**data.attrs)
+        y = y.assign_attrs(**data.attrs)
 
         return y
 

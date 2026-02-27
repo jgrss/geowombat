@@ -24,6 +24,47 @@ class QABits(enum.Enum):
     }
 
 
+class SCLValues(enum.Enum):
+    """Sentinel-2 Scene Classification Layer (SCL) values.
+
+    Reference:
+        https://sentinels.copernicus.eu/web/sentinel/
+        technical-guides/sentinel-2-msi/level-2a/algorithm-overview
+    """
+
+    sentinel_s2_l2a = {
+        'no_data': 0,
+        'saturated_defective': 1,
+        'dark_area': 2,
+        'cloud_shadow': 3,
+        'vegetation': 4,
+        'not_vegetated': 5,
+        'water': 6,
+        'unclassified': 7,
+        'cloud_medium_prob': 8,
+        'cloud_high_prob': 9,
+        'thin_cirrus': 10,
+        'snow_ice': 11,
+    }
+
+
+class HLSFmaskBits(enum.Enum):
+    """HLS Fmask quality bit definitions (uint8).
+
+    Reference:
+        https://lpdaac.usgs.gov/documents/1698/HLS_User_Guide_V20.pdf
+    """
+
+    hls = {
+        'cirrus': 0,
+        'cloud': 1,
+        'adjacent_cloud': 2,
+        'cloud_shadow': 3,
+        'snow_ice': 4,
+        'water': 5,
+    }
+
+
 class QAMasker(object):
     """A class for masking bit-packed quality flags.
 

@@ -10,14 +10,36 @@ STACCollections
 
    .. autosummary::
 
-      ~STACCollections.landsat_c2_l2
-      ~STACCollections.landsat_l8_c2_l2
-      ~STACCollections.sentinel_s2_l1c
-      ~STACCollections.sentinel_s2_l2a
+      ~STACCollections.COP_DEM_GLO_30
+      ~STACCollections.LANDSAT_C2_L1
+      ~STACCollections.LANDSAT_C2_L2
+      ~STACCollections.LANDSAT_L8_C2_L2
+      ~STACCollections.SENTINEL_S2_L2A
+      ~STACCollections.SENTINEL_S2_L2A_COGS
+      ~STACCollections.SENTINEL_S2_L1C
+      ~STACCollections.SENTINEL_S1_L1C
+      ~STACCollections.USDA_CDL
+      ~STACCollections.IO_LULC
+      ~STACCollections.NAIP
+      ~STACCollections.HLS
+      ~STACCollections.HLS_L30
+      ~STACCollections.HLS_S30
+      ~STACCollections.ESA_WORLDCOVER
 
    .. rubric:: Attributes Documentation
 
-   .. autoattribute:: landsat_c2_l2
-   .. autoattribute:: landsat_l8_c2_l2
-   .. autoattribute:: sentinel_s2_l1c
-   .. autoattribute:: sentinel_s2_l2a
+   .. autoattribute:: COP_DEM_GLO_30
+   .. autoattribute:: LANDSAT_C2_L1
+   .. autoattribute:: LANDSAT_C2_L2
+   .. autoattribute:: LANDSAT_L8_C2_L2
+   .. autoattribute:: SENTINEL_S2_L2A
+   .. autoattribute:: SENTINEL_S2_L2A_COGS
+   .. autoattribute:: SENTINEL_S2_L1C
+   .. autoattribute:: SENTINEL_S1_L1C
+   .. autoattribute:: USDA_CDL
+   .. autoattribute:: IO_LULC
+   .. autoattribute:: NAIP
+   .. autoattribute:: HLS
+   .. autoattribute:: HLS_L30
+   .. autoattribute:: HLS_S30
+   .. autoattribute:: ESA_WORLDCOVER

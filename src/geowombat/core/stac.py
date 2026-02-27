@@ -14,7 +14,9 @@ from rasterio.enums import Resampling as _Resampling
 from tqdm.auto import tqdm as _tqdm
 
 from ..config import config
+from ..radiometry import HLSFmaskBits as _HLSFmaskBits
 from ..radiometry import QABits as _QABits
+from ..radiometry import SCLValues as _SCLValues
 
 try:
     import pystac
@@ -71,6 +73,7 @@ class STACNames(StrEnum):
     ELEMENT84_V0 = 'element84_v0'
     ELEMENT84_V1 = 'element84_v1'
     MICROSOFT_V1 = 'microsoft_v1'
+    NASA_LP_CLOUD = 'nasa_lp_cloud'
 
 
 class STACCollections(StrEnum):
@@ -87,13 +90,14 @@ class STACCollections(StrEnum):
     SENTINEL_S2_L1C = 'sentinel_s2_l1c'
     # Sentinel-1, Level 1C Ground Range Detected (GRD)
     SENTINEL_S1_L1C = 'sentinel_s1_l1c'
-    SENTINEL_3_LST = 'sentinel_3_lst'
     LANDSAT_L8_C2_L2 = 'landsat_l8_c2_l2'
     USDA_CDL = 'usda_cdl'
     IO_LULC = 'io_lulc'
     NAIP = 'naip'
     # Harmonized Landsat Sentinel-2
     HLS = 'hls'
+    HLS_L30 = 'hls_l30'
+    HLS_S30 = 'hls_s30'
     # ESA WorldCover 10m land cover
     ESA_WORLDCOVER = 'esa_worldcover'
 
@@ -114,20 +118,21 @@ class STACCollectionURLNames(StrEnum):
     SENTINEL_S2_L1C = 'sentinel-2-l1c'
     # Sentinel-1, Level 1C Ground Range Detected (GRD)
     SENTINEL_S1_L1C = 'sentinel-1-grd'
-    SENTINEL_3_LST = 'sentinel-3-slstr-lst-l2-netcdf'
     LANDSAT_L8_C2_L2 = 'landsat-8-c2-l2'
     USDA_CDL = STACCollections.USDA_CDL.replace('_', '-')
     IO_LULC = STACCollections.IO_LULC.replace('_', '-')
     NAIP = STACCollections.NAIP
     HLS = STACCollections.HLS
+    HLS_L30 = 'HLSL30.v2.0'
+    HLS_S30 = 'HLSS30.v2.0'
     ESA_WORLDCOVER = 'esa-worldcover'
 
 
 STAC_CATALOGS = {
     STACNames.ELEMENT84_V0: 'https://earth-search.aws.element84.com/v0',
     STACNames.ELEMENT84_V1: 'https://earth-search.aws.element84.com/v1',
-    # STACNames.google: 'https://earthengine.openeo.org/v1.0',
     STACNames.MICROSOFT_V1: 'https://planetarycomputer.microsoft.com/api/stac/v1',
+    STACNames.NASA_LP_CLOUD: 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD',
 }
 
 STAC_SCALING = {
@@ -139,9 +144,17 @@ STAC_SCALING = {
             'nodata': 0,
         },
     },
-    STACCollections.HLS: {
-        # https://planetarycomputer.microsoft.com/dataset/hls
-        STACNames.MICROSOFT_V1: {
+    STACCollections.HLS_L30: {
+        # https://lpdaac.usgs.gov/products/hlsl30v002/
+        STACNames.NASA_LP_CLOUD: {
+            'gain': 0.0001,
+            'offset': 0,
+            'nodata': -9999,
+        },
+    },
+    STACCollections.HLS_S30: {
+        # https://lpdaac.usgs.gov/products/hlss30v002/
+        STACNames.NASA_LP_CLOUD: {
             'gain': 0.0001,
             'offset': 0,
             'nodata': -9999,
@@ -165,14 +178,107 @@ STAC_COLLECTIONS = {
         STACCollectionURLNames.LANDSAT_C2_L2,
         STACCollectionURLNames.SENTINEL_S2_L2A,
         STACCollectionURLNames.SENTINEL_S1_L1C,
-        STACCollectionURLNames.SENTINEL_3_LST,
         STACCollectionURLNames.LANDSAT_L8_C2_L2,
         STACCollectionURLNames.USDA_CDL,
         STACCollectionURLNames.IO_LULC,
-        STACCollectionURLNames.HLS,
         STACCollectionURLNames.ESA_WORLDCOVER,
     ),
+    STACNames.NASA_LP_CLOUD: (
+        STACCollectionURLNames.HLS_L30,
+        STACCollectionURLNames.HLS_S30,
+    ),
 }
+
+_LANDSAT_COLLECTIONS = {
+    STACCollections.LANDSAT_C2_L1,
+    STACCollections.LANDSAT_C2_L2,
+    STACCollections.LANDSAT_L8_C2_L2,
+}
+
+_SENTINEL_S2_COLLECTIONS = {
+    STACCollections.SENTINEL_S2_L2A,
+    STACCollections.SENTINEL_S2_L2A_COGS,
+}
+
+
+def _is_landsat(collection: str) -> bool:
+    return STACCollections(collection) in _LANDSAT_COLLECTIONS
+
+
+def _is_sentinel_s2(collection: str) -> bool:
+    return STACCollections(collection) in _SENTINEL_S2_COLLECTIONS
+
+
+_HLS_COLLECTIONS = {
+    STACCollections.HLS_L30,
+    STACCollections.HLS_S30,
+}
+
+
+def _is_hls(collection: str) -> bool:
+    return STACCollections(collection) in _HLS_COLLECTIONS
+
+
+# HLS L30 band mapping: friendly name -> STAC asset key
+_HLS_L30_BAND_MAP = {
+    'coastal': 'B01',
+    'blue': 'B02',
+    'green': 'B03',
+    'red': 'B04',
+    'nir': 'B05',
+    'swir1': 'B06',
+    'swir2': 'B07',
+    'cirrus': 'B09',
+    'thermal1': 'B10',
+    'thermal2': 'B11',
+}
+
+# HLS S30 band mapping: friendly name -> STAC asset key
+_HLS_S30_BAND_MAP = {
+    'coastal': 'B01',
+    'blue': 'B02',
+    'green': 'B03',
+    'red': 'B04',
+    'rededge1': 'B05',
+    'rededge2': 'B06',
+    'rededge3': 'B07',
+    'nir_broad': 'B08',
+    'nir': 'B8A',
+    'water_vapor': 'B09',
+    'cirrus': 'B10',
+    'swir1': 'B11',
+    'swir2': 'B12',
+}
+
+
+def _translate_hls_bands(
+    bands: T.Sequence[str],
+    collection: str,
+) -> T.Tuple[T.List[str], T.Dict[str, str]]:
+    """Translate friendly band names to STAC asset keys for HLS.
+
+    Returns:
+        Tuple of (translated_bands, reverse_map) where reverse_map
+        maps STAC keys back to the original friendly names.
+    """
+    if STACCollections(collection) == STACCollections.HLS_L30:
+        band_map = _HLS_L30_BAND_MAP
+    elif STACCollections(collection) == STACCollections.HLS_S30:
+        band_map = _HLS_S30_BAND_MAP
+    else:
+        return list(bands), {}
+
+    translated = []
+    reverse = {}
+    for b in bands:
+        if b in band_map:
+            stac_key = band_map[b]
+            translated.append(stac_key)
+            reverse[stac_key] = b
+        else:
+            # Assume already a STAC asset key (e.g., 'B02')
+            translated.append(b)
+    return translated, reverse
 
 
 def merge_stac(
@@ -260,12 +366,13 @@ def open_stac(
     out_path: T.Union[_Path, str] = '.',
     max_items: int = 100,
     max_extra_workers: int = 1,
-    compute: bool = False,
+    compute: bool = True,
+    num_workers: int = 4,
 ) -> xr.DataArray:
     """Opens a collection from a spatio-temporal asset catalog (STAC).
 
     Args:
-        stac_catalog (str): Choices are ['element84_v0', 'element84_v1, 'google', 'microsoft_v1'].
+        stac_catalog (str): Choices are ['element84_v0', 'element84_v1', 'microsoft_v1', 'nasa_lp_cloud'].
         collection (str): The STAC collection to open.
             Catalog options:
                 element84_v0:
@@ -284,11 +391,12 @@ def open_stac(
                     landsat_l8_c2_l2
                     sentinel_s2_l2a
                     sentinel_s1_l1c
-                    sentinel_3_lst
                     io_lulc
                     usda_cdl
-                    hls
                     esa_worldcover
+                nasa_lp_cloud:
+                    hls_l30 (HLS Landsat 30m)
+                    hls_s30 (HLS Sentinel-2 30m)
 
         bounds (sequence | str | Path | GeoDataFrame): The search bounding box. This can also be given with the
             configuration manager (e.g., ``gw.config.update(ref_bounds=bounds)``). The bounds CRS
@@ -302,8 +410,20 @@ def open_stac(
         bands (sequence): The bands to open.
         chunksize (int): The dask chunk size.
         mask_items (sequence): The items to mask.
-        bounds_query (Optional[str]): A query to select bounds from the ``geopandas.GeoDataFrame``.
-        mask_data (Optional[bool]): Whether to mask the data. Only relevant if ``mask_items=True``.
+            For Landsat: QA bit names. Defaults to
+            ``['fill', 'dilated_cloud', 'cirrus', 'cloud',
+            'cloud_shadow', 'snow']``.
+            For Sentinel-2: SCL class names. Defaults to
+            ``['no_data', 'saturated_defective', 'cloud_shadow',
+            'cloud_medium_prob', 'cloud_high_prob', 'thin_cirrus']``.
+            For HLS: Fmask bit names. Defaults to
+            ``['cirrus', 'cloud', 'adjacent_cloud',
+            'cloud_shadow', 'snow_ice']``.
+        bounds_query (Optional[str]): A query to select bounds
+            from the ``geopandas.GeoDataFrame``.
+        mask_data (Optional[bool]): Whether to mask the data.
+            When ``True``, the appropriate QA/SCL/Fmask band is
+            automatically loaded and used for masking.
         epsg (Optional[int]): An EPSG code to warp to.
         resolution (Optional[float | int]): The cell resolution to resample to.
         resampling (Optional[rasterio.enumsResampling enum]): The resampling method.
@@ -316,8 +436,12 @@ def open_stac(
             See https://pystac-client.readthedocs.io/en/latest/api.html#pystac_client.ItemSearch for details.
         max_extra_workers (Optional[int]): The maximum number of extra assets to download concurrently.
         compute (Optional[bool]): Whether to eagerly load data into memory.
-            If ``True``, downloads all remote data with a progress bar.
-            If ``False`` (default), returns a lazy dask-backed array.
+            If ``True`` (default), downloads all remote data with a
+            progress bar using parallel threads.
+            If ``False``, returns a lazy dask-backed array.
+        num_workers (Optional[int]): Number of threads for parallel
+            downloads when ``compute=True``. Default is 4. Higher
+            values can speed up I/O-bound downloads from cloud storage.
 
     Returns:
         ``xarray.DataArray``
@@ -387,6 +511,37 @@ def open_stac(
             f'The STAC catalog {stac_catalog} is not supported ({e}).'
         )
 
+    # NASA Earthdata auth check
+    gdal_env_dict = {}
+    if STACNames(stac_catalog) == STACNames.NASA_LP_CLOUD:
+        netrc_path = _Path.home() / '.netrc'
+        has_netrc = netrc_path.exists()
+        if has_netrc:
+            netrc_content = netrc_path.read_text()
+            has_netrc = 'urs.earthdata.nasa.gov' in netrc_content
+        if not has_netrc:
+            raise PermissionError(
+                "NASA Earthdata authentication is required for "
+                "HLS data access but no credentials were found.\n\n"
+                "1. Register at: "
+                "https://urs.earthdata.nasa.gov/users/new\n\n"
+                "2. Create a ~/.netrc file with:\n\n"
+                "  machine urs.earthdata.nasa.gov\n"
+                "  login <your_username>\n"
+                "  password <your_password>\n\n"
+                "3. Set file permissions:\n"
+                "  Linux/macOS:  chmod 600 ~/.netrc\n"
+                "  Windows:      icacls %USERPROFILE%\\.netrc "
+                "/inheritance:r /grant:r %USERNAME%:R"
+            )
+        gdal_env_dict = {
+            'GDAL_HTTP_COOKIEFILE': '/tmp/gw_cookies.txt',
+            'GDAL_HTTP_COOKIEJAR': '/tmp/gw_cookies.txt',
+            'GDAL_HTTP_TIMEOUT': '60',
+            'GDAL_HTTP_MAX_RETRY': '3',
+            'GDAL_HTTP_RETRY_DELAY': '5',
+        }
+
     if (
         STACCollectionURLNames[STACCollections(collection).name]
         not in STAC_COLLECTIONS[stac_catalog]
@@ -402,6 +557,7 @@ def open_stac(
         query = {"eo:cloud_cover": {"lt": cloud_cover_perc}}
 
     # Search the STAC
+    print(f"Searching {stac_catalog} for {collection}...")
     search = catalog.search(
         collections=catalog_collections,
         bbox=bounds,
@@ -419,6 +575,7 @@ def open_stac(
             items = pc.sign(search)
         else:
             items = pystac.ItemCollection(items=list(search.items()))
+        print(f"Found {len(items)} items.")
 
         if view_asset_keys:
             try:
@@ -467,46 +624,148 @@ def open_stac(
                         d.update(downloaded_dict)
                 df = pd.concat((df, pd.DataFrame([d])), ignore_index=True)
 
-        data = stackstac.stack(
-            items,
+        # Auto-inject QA/SCL/Fmask band for pixel-level masking
+        stack_bands = list(bands) if bands else []
+
+        # Translate friendly band names for HLS collections
+        band_reverse_map = {}
+        if _is_hls(collection) and stack_bands:
+            stack_bands, band_reverse_map = _translate_hls_bands(
+                stack_bands, collection
+            )
+
+        if mask_data and bands is not None:
+            if _is_landsat(collection):
+                if 'qa_pixel' not in stack_bands:
+                    stack_bands = stack_bands + ['qa_pixel']
+            elif _is_sentinel_s2(collection):
+                if 'scl' not in stack_bands:
+                    stack_bands = stack_bands + ['scl']
+            elif _is_hls(collection):
+                if 'Fmask' not in stack_bands:
+                    stack_bands = stack_bands + ['Fmask']
+
+        stack_kwargs = dict(
             bounds=proj_bounds,
             bounds_latlon=None if proj_bounds is not None else bounds,
-            assets=bands,
+            assets=stack_bands or bands,
             chunksize=chunksize,
             epsg=epsg,
             resolution=resolution,
             resampling=resampling,
             properties=False,
+            rescale=False,
         )
+        if gdal_env_dict:
+            stack_kwargs['gdal_env'] = stackstac.DEFAULT_GDAL_ENV.updated(
+                always=gdal_env_dict
+            )
+
+        data = stackstac.stack(items, **stack_kwargs)
+
+        # Rename HLS bands back to friendly names
+        if band_reverse_map:
+            new_band_names = [
+                band_reverse_map.get(str(b), str(b))
+                for b in data.band.values
+            ]
+            data = data.assign_coords(band=new_band_names)
         data = data.assign_attrs(
             res=(data.resolution, data.resolution), collection=collection
         )
         attrs = data.attrs.copy()
 
         if mask_data:
-            if mask_items is None:
-                mask_items = [
-                    'fill',
-                    'dilated_cloud',
-                    'cirrus',
-                    'cloud',
-                    'cloud_shadow',
-                    'snow',
+            if _is_landsat(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'fill',
+                        'dilated_cloud',
+                        'cirrus',
+                        'cloud',
+                        'cloud_shadow',
+                        'snow',
+                    ]
+                mask_bitfields = [
+                    getattr(_QABits, collection).value[mask_item]
+                    for mask_item in mask_items
                 ]
-            mask_bitfields = [
-                getattr(_QABits, collection).value[mask_item]
-                for mask_item in mask_items
-            ]
-            # Source: https://stackstac.readthedocs.io/en/v0.3.0/examples/gif.html
-            bitmask = 0
-            for field in mask_bitfields:
-                bitmask |= 1 << field
-            # TODO: get qa_pixel name for different sensors
-            qa = data.sel(band='qa_pixel').astype('uint16')
-            mask = qa & bitmask
-            data = data.sel(
-                band=[band for band in bands if band != 'qa_pixel']
-            ).where(mask == 0)
+                bitmask = 0
+                for field in mask_bitfields:
+                    bitmask |= 1 << field
+                qa = data.sel(band='qa_pixel').astype('uint16')
+                mask = qa & bitmask
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b != 'qa_pixel'
+                    ]
+                ).where(mask == 0)
+
+            elif _is_sentinel_s2(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'no_data',
+                        'saturated_defective',
+                        'cloud_shadow',
+                        'cloud_medium_prob',
+                        'cloud_high_prob',
+                        'thin_cirrus',
+                    ]
+                scl_values = getattr(
+                    _SCLValues, 'sentinel_s2_l2a'
+                ).value
+                bad_values = [
+                    scl_values[item] for item in mask_items
+                ]
+                scl = data.sel(band='scl')
+                scl_mask = scl.isin(bad_values)
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b != 'scl'
+                    ]
+                ).where(~scl_mask)
+
+            elif _is_hls(collection):
+                if mask_items is None:
+                    mask_items = [
+                        'cirrus',
+                        'cloud',
+                        'adjacent_cloud',
+                        'cloud_shadow',
+                        'snow_ice',
+                    ]
+                mask_bitfields = [
+                    _HLSFmaskBits.hls.value[mask_item]
+                    for mask_item in mask_items
+                ]
+                bitmask = 0
+                for field in mask_bitfields:
+                    bitmask |= 1 << field
+                # Fmask band name (friendly or raw)
+                fmask_name = (
+                    'fmask'
+                    if 'fmask' in data.band.values
+                    else 'Fmask'
+                )
+                qa = data.sel(band=fmask_name).astype('uint8')
+                mask = qa & bitmask
+                data = data.sel(
+                    band=[
+                        b
+                        for b in data.band.values
+                        if b not in ('fmask', 'Fmask')
+                    ]
+                ).where(mask == 0)
+
+            else:
+                warnings.warn(
+                    f"mask_data=True is not supported for "
+                    f"collection '{collection}'."
+                )
 
         if STACCollections(collection) in STAC_SCALING:
             scaling = STAC_SCALING[STACCollections(collection)][
@@ -526,13 +785,370 @@ def open_stac(
             df = df.set_index('id').reindex(data.id.values).reset_index()
 
         if compute:
+            import dask
             from tqdm.dask import TqdmCallback
 
-            with TqdmCallback(desc="Downloading"):
-                data = data.compute()
+            try:
+                with dask.config.set(
+                    scheduler='threads', num_workers=num_workers
+                ):
+                    with TqdmCallback(
+                        desc=f"Downloading {collection}"
+                    ):
+                        data = data.compute()
+            except RuntimeError as e:
+                if (
+                    STACNames(stac_catalog) == STACNames.NASA_LP_CLOUD
+                    and 'not recognized as' in str(e)
+                ):
+                    raise RuntimeError(
+                        "NASA Earthdata authentication failed. "
+                        "GDAL received an HTML login page instead "
+                        "of raster data.\n\n"
+                        "To fix this, create a ~/.netrc file with "
+                        "your NASA Earthdata credentials:\n\n"
+                        "  machine urs.earthdata.nasa.gov\n"
+                        "  login <your_username>\n"
+                        "  password <your_password>\n\n"
+                        "Then set file permissions:\n"
+                        "  Linux/macOS:  chmod 600 ~/.netrc\n"
+                        "  Windows:      icacls %USERPROFILE%\\.netrc "
+                        "/inheritance:r /grant:r %USERNAME%:R\n\n"
+                        "Register at: "
+                        "https://urs.earthdata.nasa.gov/users/new"
+                    ) from e
+                raise
 
         return data, df
 
     warnings.warn("No asset items were found.")
 
     return None, None
+
+
+def composite_stac(
+    stac_catalog: str = STACNames.ELEMENT84_V1,
+    collection: str = None,
+    bounds: T.Union[
+        T.Sequence[float], str, _Path, gpd.GeoDataFrame
+    ] = None,
+    proj_bounds: T.Sequence[float] = None,
+    start_date: str = None,
+    end_date: str = None,
+    cloud_cover_perc: T.Union[float, int] = None,
+    bands: T.Sequence[str] = None,
+    chunksize: int = 256,
+    mask_items: T.Optional[T.Sequence[str]] = None,
+    bounds_query: str = None,
+    epsg: int = None,
+    resolution: T.Union[float, int] = None,
+    resampling: T.Optional[_Resampling] = _Resampling.nearest,
+    nodata_fill: T.Union[float, int] = None,
+    frequency: str = 'MS',
+    agg: str = 'median',
+    max_items: int = 100,
+    compute: bool = True,
+    num_workers: int = 4,
+) -> T.Optional[
+    T.Tuple[xr.DataArray, pd.DataFrame]
+]:
+    """Creates cloud-free temporal composites from STAC data.
+
+    Wraps ``open_stac()`` to produce composites at a specified
+    temporal frequency. Data is cloud-masked using pixel-level
+    QA (Landsat ``qa_pixel``), SCL (Sentinel-2), or Fmask
+    (HLS) bands, then aggregated using the chosen method
+    (default: median).
+
+    Args:
+        stac_catalog (str): The STAC catalog.
+            See ``open_stac()`` for options. Ignored when
+            ``collection='hls'`` (uses ``nasa_lp_cloud``).
+        collection (str): The STAC collection.
+            See ``open_stac()`` for options. Use ``'hls'``
+            to query both ``hls_l30`` and ``hls_s30``, merge
+            observations, then composite. Only bands common
+            to both sensors are allowed (``blue``, ``green``,
+            ``red``, ``nir``, ``swir1``, ``swir2``,
+            ``coastal``, ``cirrus``).
+        bounds: The search bounding box.
+            See ``open_stac()``.
+        proj_bounds: The projected bounds.
+            See ``open_stac()``.
+        start_date (str): The start search date (yyyy-mm-dd).
+        end_date (str): The end search date (yyyy-mm-dd).
+        cloud_cover_perc (float | int): Maximum cloud cover
+            percentage for scene-level filtering.
+        bands (sequence): The bands to open. Do not include
+            ``qa_pixel``, ``scl``, or ``Fmask``; these are
+            added automatically for masking.
+        chunksize (int): The dask chunk size.
+        mask_items (sequence): Items to mask.
+            See ``open_stac()`` for sensor-specific defaults.
+        bounds_query (str): A query for GeoDataFrame bounds.
+        epsg (int): An EPSG code to warp to.
+        resolution (float | int): Cell resolution.
+        resampling: The resampling method.
+        nodata_fill (float | int): Fill value for nodata.
+        frequency (str): Pandas offset alias for temporal
+            grouping. Default ``'MS'`` (month start). Common
+            values:
+
+            - ``'D'`` — daily
+            - ``'W'`` — weekly
+            - ``'2W'`` — biweekly (every 2 weeks)
+            - ``'MS'`` — monthly (month start)
+            - ``'QS'`` — quarterly (quarter start)
+            - ``'YS'`` — yearly (year start)
+
+            Multiplied forms (e.g., ``'15D'``, ``'2MS'``) are
+            supported. See `pandas offset aliases
+            <https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases>`_.
+        agg (str): Aggregation method for compositing.
+            Default ``'median'``. Options: ``'median'``,
+            ``'mean'``, ``'min'``, ``'max'``.
+        max_items (int): Maximum STAC search items.
+        compute (bool): Whether to eagerly load data.
+        num_workers (int): Number of threads for parallel
+            downloads when ``compute=True``. Default is 4.
+
+    Returns:
+        tuple of (``xarray.DataArray``, ``pandas.DataFrame``)
+        or ``(None, None)`` if no data found.
+
+    Examples:
+        >>> from geowombat.core.stac import composite_stac
+        >>>
+        >>> # Monthly median composite of Sentinel-2
+        >>> composite, df = composite_stac(
+        ...     collection='sentinel_s2_l2a',
+        ...     start_date='2022-01-01',
+        ...     end_date='2022-12-31',
+        ...     bounds='aoi.geojson',
+        ...     bands=['blue', 'green', 'red', 'nir'],
+        ...     cloud_cover_perc=50,
+        ...     frequency='MS',
+        ...     resolution=10.0,
+        ... )
+        >>>
+        >>> # Quarterly composite of Landsat
+        >>> composite, df = composite_stac(
+        ...     stac_catalog='microsoft_v1',
+        ...     collection='landsat_c2_l2',
+        ...     start_date='2022-01-01',
+        ...     end_date='2022-12-31',
+        ...     bounds='aoi.geojson',
+        ...     bands=['red', 'green', 'blue'],
+        ...     cloud_cover_perc=30,
+        ...     frequency='QS',
+        ...     resolution=30.0,
+        ... )
+        >>>
+        >>> # Combined HLS (Landsat + Sentinel-2) composite
+        >>> composite, df = composite_stac(
+        ...     collection='hls',
+        ...     start_date='2023-06-01',
+        ...     end_date='2023-08-31',
+        ...     bounds=(-77.1, 38.85, -76.95, 38.95),
+        ...     bands=['blue', 'green', 'red', 'nir'],
+        ...     epsg=32618,
+        ...     resolution=30.0,
+        ...     frequency='MS',
+        ... )
+    """
+    # Validate frequency
+    try:
+        pd.tseries.frequencies.to_offset(frequency)
+    except ValueError:
+        raise ValueError(
+            f"Invalid frequency {frequency!r}. Use a pandas "
+            "offset alias: 'D' (daily), 'W' (weekly), "
+            "'MS' (month start), 'QS' (quarter start), "
+            "'YS' (year start), or multiples like '2W', "
+            "'15D'. See: https://pandas.pydata.org/docs/"
+            "user_guide/timeseries.html#offset-aliases"
+        )
+
+    # Validate aggregation method
+    valid_aggs = ('median', 'mean', 'min', 'max')
+    if agg not in valid_aggs:
+        raise ValueError(
+            f"Invalid agg {agg!r}. Choose from: {valid_aggs}"
+        )
+
+    # Combined HLS: query both L30 and S30, merge, then composite
+    if collection == STACCollections.HLS:
+        _hls_common = set(_HLS_L30_BAND_MAP) & set(
+            _HLS_S30_BAND_MAP
+        )
+        if bands:
+            bad = {
+                b
+                for b in bands
+                if b not in _hls_common and not b.startswith('B')
+            }
+            if bad:
+                raise ValueError(
+                    f"Bands {bad} are not common to both "
+                    f"HLS L30 and S30. Use one of: "
+                    f"{sorted(_hls_common)}"
+                )
+
+        shared_kwargs = dict(
+            stac_catalog=STACNames.NASA_LP_CLOUD,
+            bounds=bounds,
+            proj_bounds=proj_bounds,
+            start_date=start_date,
+            end_date=end_date,
+            cloud_cover_perc=cloud_cover_perc,
+            bands=bands,
+            chunksize=chunksize,
+            mask_items=mask_items,
+            bounds_query=bounds_query,
+            mask_data=True,
+            epsg=epsg,
+            resolution=resolution,
+            resampling=resampling,
+            nodata_fill=nodata_fill,
+            max_items=max_items,
+            compute=False,
+        )
+        r_l30 = open_stac(collection='hls_l30', **shared_kwargs)
+        r_s30 = open_stac(collection='hls_s30', **shared_kwargs)
+
+        has_l30 = r_l30 is not None and r_l30[0] is not None
+        has_s30 = r_s30 is not None and r_s30[0] is not None
+
+        if not has_l30 and not has_s30:
+            return None, None
+
+        parts = []
+        dfs = []
+        if has_l30:
+            parts.append(r_l30[0])
+            dfs.append(r_l30[1])
+        if has_s30:
+            parts.append(r_s30[0])
+            dfs.append(r_s30[1])
+
+        # Download each sensor separately so users see progress
+        if compute:
+            import dask
+            from tqdm.dask import TqdmCallback
+
+            _labels = []
+            if has_l30:
+                _labels.append('HLS L30 (Landsat)')
+            if has_s30:
+                _labels.append('HLS S30 (Sentinel-2)')
+            for i, label in enumerate(_labels):
+                with dask.config.set(
+                    scheduler='threads',
+                    num_workers=num_workers,
+                ):
+                    with TqdmCallback(desc=label):
+                        parts[i] = parts[i].compute()
+
+        if len(parts) == 1:
+            data = parts[0]
+        else:
+            # Simple concatenation along time — skip merge_stac's
+            # groupby('time').mean() since L30/S30 never share
+            # timestamps and resample().median() handles
+            # aggregation.
+            data = xr.DataArray(
+                da.concatenate(
+                    [
+                        p.transpose(
+                            'time', 'band', 'y', 'x'
+                        ).data
+                        for p in parts
+                    ],
+                    axis=0,
+                ),
+                dims=('time', 'band', 'y', 'x'),
+                coords={
+                    'time': np.concatenate(
+                        [p.time.values for p in parts]
+                    ),
+                    'band': parts[0].band.values,
+                    'y': parts[0].y.values,
+                    'x': parts[0].x.values,
+                },
+                attrs=parts[0].attrs,
+            ).sortby('time')
+
+        df = pd.concat(dfs, ignore_index=True)
+        attrs = data.attrs.copy()
+
+        # Resample to the requested frequency
+        print("Computing composite...")
+        resampled = data.resample(time=frequency)
+        composite = getattr(resampled, agg)(
+            dim='time', skipna=True
+        ).assign_attrs(**attrs)
+
+        # Drop all-NaN time slices
+        valid_times = ~composite.isnull().all(
+            dim=['band', 'y', 'x']
+        )
+        composite = composite.sel(time=valid_times)
+
+        if compute and hasattr(composite, 'compute'):
+            composite = composite.compute()
+
+        return composite, df
+
+    else:
+        result = open_stac(
+            stac_catalog=stac_catalog,
+            collection=collection,
+            bounds=bounds,
+            proj_bounds=proj_bounds,
+            start_date=start_date,
+            end_date=end_date,
+            cloud_cover_perc=cloud_cover_perc,
+            bands=bands,
+            chunksize=chunksize,
+            mask_items=mask_items,
+            bounds_query=bounds_query,
+            mask_data=True,
+            epsg=epsg,
+            resolution=resolution,
+            resampling=resampling,
+            nodata_fill=nodata_fill,
+            max_items=max_items,
+            compute=False,
+        )
+
+        if result is None or result[0] is None:
+            return None, None
+
+        data, df = result
+        attrs = data.attrs.copy()
+
+    # Resample to the requested frequency
+    resampled = data.resample(time=frequency)
+    composite = getattr(resampled, agg)(
+        dim='time', skipna=True
+    ).assign_attrs(**attrs)
+
+    # Drop all-NaN time slices (periods with no valid data)
+    valid_times = ~composite.isnull().all(
+        dim=['band', 'y', 'x']
+    )
+    composite = composite.sel(time=valid_times)
+
+    if compute:
+        import dask
+        from tqdm.dask import TqdmCallback
+
+        with dask.config.set(
+            scheduler='threads', num_workers=num_workers
+        ):
+            with TqdmCallback(
+                desc=f"Downloading & compositing {collection}"
+            ):
+                composite = composite.compute()
+
+    return composite, df
