@@ -275,6 +275,37 @@ def relative_azimuth(saa: xr.DataArray, vaa: xr.DataArray) -> xr.DataArray:
     return np.fabs(np.rad2deg(raa))
 
 
+_PSD_VERSIONS = ('psd-14', 'psd-15')
+
+
+def _sentinel_geocoding_base(root: ET.Element) -> str:
+    """Detects the PSD namespace version and returns the base XPath string
+    for Geometric_Info/Tile_Geocoding.
+
+    Tries psd-14 first (pre-Sept 2024), then psd-15 (post-Sept 2024).
+    Falls back to a namespace-free search if neither matches.
+    """
+    for psd in _PSD_VERSIONS:
+        base = (
+            f'.//{{https://{psd}.sentinel2.eo.esa.int/PSD/'
+            f'S2_PDI_Level-2A_Tile_Metadata.xsd}}'
+            f'Geometric_Info/Tile_Geocoding'
+        )
+        if root.findall(base):
+            return base
+
+    # Fallback: try without namespace (some reprocessed products)
+    base = './/Geometric_Info/Tile_Geocoding'
+    if root.findall(base):
+        return base
+
+    raise ValueError(
+        'Could not find Geometric_Info/Tile_Geocoding in the '
+        'Sentinel-2 metadata. Supported PSD versions: '
+        f'{_PSD_VERSIONS}'
+    )
+
+
 def get_sentinel_sensor(metadata: T.Union[str, Path]) -> str:
     """Gets the Sentinel sensor from metadata.
 
@@ -307,7 +338,7 @@ def get_sentinel_crs_transform(
     tree = ET.parse(str(metadata))
     root = tree.getroot()
 
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/'
+    base_str = _sentinel_geocoding_base(root) + '/'
     crs = base_str + '/HORIZONTAL_CS_CODE'
     left = base_str + '/Geoposition[@resolution="10"]/ULX'
     top = base_str + '/Geoposition[@resolution="10"]/ULY'
@@ -339,7 +370,7 @@ def get_sentinel_angle_shape(metadata: T.Union[str, Path]) -> tuple:
     angles_view_list = root.findall('.//Tile_Angles')[0]
     row_step = float(root.findall('.//ROW_STEP')[0].text)
     col_step = float(root.findall('.//COL_STEP')[0].text)
-    base_str = './/{https://psd-14.sentinel2.eo.esa.int/PSD/S2_PDI_Level-2A_Tile_Metadata.xsd}Geometric_Info/Tile_Geocoding/Size[@resolution="10"]'
+    base_str = _sentinel_geocoding_base(root) + '/Size[@resolution="10"]'
     nrows_str = base_str + '/NROWS'
     ncols_str = base_str + '/NCOLS'
     nrows = int(root.findall(nrows_str)[0].text)
