@@ -7,7 +7,7 @@ project(
 )
 
 py_mod = import('python')
-py3 = py_mod.find_installation('python3')
+py3 = py_mod.find_installation()
 
 # Root package files
 py3.install_sources(
