@@ -409,6 +409,7 @@ For example::
         bands=[1, 2, 3],
     )
 
+see the `TorchGeo pretrained weights reference <https://torchgeo.readthedocs.io/en/stable/api/models.html#pretrained-weights>`_ for more details.
 
 STAC + pretrained model example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
