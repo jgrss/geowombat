@@ -110,6 +110,7 @@ py3.install_sources(
     [
         'src/geowombat/ml/__init__.py',
         'src/geowombat/ml/classifiers.py',
+        'src/geowombat/ml/dl_classifiers.py',
         'src/geowombat/ml/transformers.py',
     ],
     subdir: 'geowombat/ml',

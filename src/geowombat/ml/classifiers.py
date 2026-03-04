@@ -337,6 +337,14 @@ class Classifiers(ClassifiersMixin):
             >>> with gw.open(l8_224078_20200518) as src:
             >>>    X, Xy, clf = fit(src, cl)
         """
+        # Delegate to DL classifier's own data handling
+        if hasattr(clf, '_is_gw_dl_classifier'):
+            clf.fit(
+                data, labels=labels, col=col,
+                targ_name=targ_name,
+            )
+            return data, (None, None), clf
+
         # Flatten time into band if requested
         if data.gw.has_time_coord and temporal_mode == 'flatten':
             data = self._flatten_time(data)
@@ -438,6 +446,10 @@ class Classifiers(ClassifiersMixin):
             >>>    X, Xy, clf = fit(src, cl)
             >>>    y1 = predict(src, X, clf)
         """
+        # Delegate to DL classifier's own prediction
+        if hasattr(clf, '_is_gw_dl_classifier'):
+            return clf.predict(data)
+
         # Flatten time into band if requested (for mask_nodata)
         if data.gw.has_time_coord and temporal_mode == 'flatten':
             data = self._flatten_time(data)
@@ -537,6 +549,14 @@ class Classifiers(ClassifiersMixin):
             >>> with gw.open(l8_224078_20200518, nodata=0) as src:
             >>>     y2 = fit_predict(src, cl)
         """
+        # Delegate to DL classifier
+        if hasattr(clf, '_is_gw_dl_classifier'):
+            clf.fit(
+                data, labels=labels, col=col,
+                targ_name=targ_name,
+            )
+            return clf.predict(data)
+
         # Flatten time into band once if requested,
         # so both fit() and predict() see the same data
         if data.gw.has_time_coord and temporal_mode == 'flatten':
