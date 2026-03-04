@@ -324,8 +324,11 @@ Pre-trained encoder weights
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TorchGeo provides encoder weights pre-trained on satellite imagery
-(Sentinel-2, Landsat, NAIP). Use the ``weights`` parameter and
-``bands`` to match the model's expected input:
+(Sentinel-2, Landsat, NAIP). For a complete list of all available weights
+and their required inputs, see the
+`TorchGeo pretrained weights reference <https://torchgeo.readthedocs.io/en/stable/api/models.html#pretrained-weights>`_.
+
+Use the ``weights`` parameter and ``bands`` to match the model's expected input:
 
 .. code-block:: python
 
@@ -377,7 +380,7 @@ of all 60+ weights generated programmatically.
      - ``LANDSAT_TM_TOA_MOCO``
      - ResNet18, ResNet50
    * - Landsat OLI SR
-     - 6
+     - 7
      - ``LANDSAT_OLI_SR_MOCO``
      - ResNet18, ResNet50
    * - Landsat OLI+TIRS
@@ -386,7 +389,7 @@ of all 60+ weights generated programmatically.
      - ResNet18, ResNet50
    * - Sentinel-1 SAR
      - 2
-     - ``SENTINEL1_ALL_MOCO``
+     - ``SENTINEL1_GRD_MOCO``
      - ResNet50
    * - NAIP RGB
      - 3
