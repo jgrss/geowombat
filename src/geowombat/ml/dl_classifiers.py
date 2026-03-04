@@ -331,6 +331,8 @@ class TabNetClassifier(GeoWombatDLClassifier):
         self.tabnet_params = tabnet_params
         self._model = None
         self._n_classes = None
+        self._feat_mean = None
+        self._feat_std = None
         self.fitted_ = False
 
     def fit(self, data, labels=None, col=None, targ_name="targ",
@@ -368,6 +370,11 @@ class TabNetClassifier(GeoWombatDLClassifier):
         X_train = pixels[mask].astype(np.float32)
         y_train = (flat_labels[mask] - 1).astype(np.int64)  # 0-based
 
+        # Standardize features (important for raw DN values)
+        self._feat_mean = X_train.mean(axis=0)
+        self._feat_std = X_train.std(axis=0) + 1e-8
+        X_train = (X_train - self._feat_mean) / self._feat_std
+
         device_name = self.device
         if device_name == 'auto':
             device_name = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -377,12 +384,19 @@ class TabNetClassifier(GeoWombatDLClassifier):
             verbose=self.verbose,
             **self.tabnet_params,
         )
-        self._model.fit(
-            X_train, y_train,
-            max_epochs=self.max_epochs,
-            patience=self.patience,
-            batch_size=self.batch_size,
-        )
+
+        fit_kwargs = {
+            'max_epochs': self.max_epochs,
+            'patience': self.patience,
+            'batch_size': min(self.batch_size, len(X_train)),
+        }
+        # For small datasets, use training data as eval set
+        # to enable early stopping without a split
+        if len(X_train) < 200:
+            fit_kwargs['eval_set'] = [(X_train, y_train)]
+            fit_kwargs['eval_metric'] = ['accuracy']
+
+        self._model.fit(X_train, y_train, **fit_kwargs)
         self.fitted_ = True
 
     def predict(self, data, **kwargs):
@@ -400,6 +414,9 @@ class TabNetClassifier(GeoWombatDLClassifier):
 
         n_features = data_np.shape[0]
         pixels = data_np.reshape(n_features, -1).T.astype(np.float32)
+
+        # Apply same standardization as training
+        pixels = (pixels - self._feat_mean) / self._feat_std
 
         preds = self._model.predict(pixels)
         preds = (preds + 1).astype(np.float32)  # back to 1-based
@@ -617,6 +634,8 @@ class LTAEClassifier(GeoWombatDLClassifier):
         self._n_classes = None
         self._n_bands = None
         self._n_timesteps = None
+        self._feat_mean = None
+        self._feat_std = None
         self.fitted_ = False
 
     def fit(self, data, labels=None, col=None, targ_name="targ",
@@ -651,6 +670,13 @@ class LTAEClassifier(GeoWombatDLClassifier):
         mask = flat_labels > 0
         X_train = pixels[mask].astype(np.float32)
         y_train = (flat_labels[mask] - 1).astype(np.int64)
+
+        # Standardize features per band (across time and pixels)
+        self._feat_mean = X_train.mean(axis=(0, 1))
+        self._feat_std = X_train.std(axis=(0, 1)) + 1e-8
+        X_train = (
+            (X_train - self._feat_mean) / self._feat_std
+        )
 
         dev = _resolve_device(self.device)
 
@@ -700,6 +726,9 @@ class LTAEClassifier(GeoWombatDLClassifier):
         pixels = data_np.transpose(2, 3, 0, 1).reshape(
             ny * nx, nt, nb
         ).astype(np.float32)
+
+        # Apply same standardization as training
+        pixels = (pixels - self._feat_mean) / self._feat_std
 
         self._model.eval()
         preds = []
