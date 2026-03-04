@@ -248,6 +248,35 @@ L-TAE raises a clear error if the data is missing the ``time`` dimension:
     # with a 'time' dimension. Open data with stack_dim='time'.
 
 
+Comparison with sklearn classifiers
+------------------------------------
+
+The DL classifiers use the exact same API as sklearn classifiers — just
+swap the classifier object:
+
+.. code-block:: python
+
+    from sklearn.ensemble import RandomForestClassifier
+
+    with gw.config.update(ref_res=150):
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            # sklearn
+            y_rf = fit_predict(
+                src, RandomForestClassifier(n_estimators=50),
+                labels, col='lc',
+            )
+            # DL
+            y_tabnet = fit_predict(
+                src, TabNetClassifier(max_epochs=50, verbose=0),
+                labels, col='lc',
+            )
+
+.. image:: _static/dl_rf_vs_tabnet.png
+   :width: 700px
+   :alt: Random Forest vs TabNet comparison
+
+
+
 TorchGeo segmentation models
 -----------------------------
 
@@ -436,34 +465,6 @@ Classify the composite with a U-Net using a Sentinel-2 RGB pretrained encoder:
    ``composite_stac()`` requires network access and ``pip install geowombat[stac]``.
    See the ``notebooks/dl_classifiers.ipynb`` notebook for a runnable version
    with error handling for offline use.
-
-
-Comparison with sklearn classifiers
-------------------------------------
-
-The DL classifiers use the exact same API as sklearn classifiers — just
-swap the classifier object:
-
-.. code-block:: python
-
-    from sklearn.ensemble import RandomForestClassifier
-
-    with gw.config.update(ref_res=150):
-        with gw.open(l8_224078_20200518, nodata=0) as src:
-            # sklearn
-            y_rf = fit_predict(
-                src, RandomForestClassifier(n_estimators=50),
-                labels, col='lc',
-            )
-            # DL
-            y_tabnet = fit_predict(
-                src, TabNetClassifier(max_epochs=50, verbose=0),
-                labels, col='lc',
-            )
-
-.. image:: _static/dl_rf_vs_tabnet.png
-   :width: 700px
-   :alt: Random Forest vs TabNet comparison
 
 
 Notes
