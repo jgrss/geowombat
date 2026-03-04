@@ -316,6 +316,127 @@ TorchGeo provides encoder weights pre-trained on satellite imagery
 If the number of input bands doesn't match the model's expectations,
 a clear error is raised with guidance on how to fix it.
 
+Available pretrained weights
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The table below summarizes the most common TorchGeo pretrained weight families.
+See the ``notebooks/dl_classifiers.ipynb`` notebook for an interactive table
+of all 60+ weights generated programmatically.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 10 35 30
+
+   * - Sensor
+     - Bands
+     - Example Weight
+     - Backbones
+   * - Sentinel-2 RGB
+     - 3
+     - ``SENTINEL2_RGB_MOCO``
+     - ResNet18, ResNet50
+   * - Sentinel-2 All
+     - 13
+     - ``SENTINEL2_ALL_MOCO``
+     - ResNet18, ResNet50, ViTSmall16
+   * - Sentinel-2 MS
+     - 9
+     - ``SENTINEL2_MI_MS_SATLAS``
+     - ResNet50, Swin_V2_B
+   * - Landsat TM
+     - 7
+     - ``LANDSAT_TM_TOA_MOCO``
+     - ResNet18, ResNet50
+   * - Landsat OLI SR
+     - 6
+     - ``LANDSAT_OLI_SR_MOCO``
+     - ResNet18, ResNet50
+   * - Landsat OLI+TIRS
+     - 11
+     - ``LANDSAT_OLI_TIRS_TOA_MOCO``
+     - ResNet18, ResNet50
+   * - Sentinel-1 SAR
+     - 2
+     - ``SENTINEL1_ALL_MOCO``
+     - ResNet50
+   * - NAIP RGB
+     - 3
+     - ``NAIP_RGB_MI_SATLAS``
+     - Swin_V2_B
+   * - fMoW RGB
+     - 3
+     - ``FMOW_RGB_GASSL``
+     - ResNet50
+
+To use a weight, pass it as ``weights='<BackboneName>_Weights.<WEIGHT_NAME>'``.
+For example::
+
+    TorchGeoClassifier(
+        backbone='resnet18',
+        weights='ResNet18_Weights.SENTINEL2_RGB_MOCO',
+        bands=[1, 2, 3],
+    )
+
+
+STAC + pretrained model example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Download Sentinel-2 imagery from a STAC catalog and classify it using a
+pretrained TorchGeo encoder. ``composite_stac()`` creates a cloud-free
+median composite with automatic cloud masking via the Sentinel-2 SCL band.
+
+.. code-block:: python
+
+    from geowombat.core.stac import composite_stac
+    from geowombat.ml.dl_classifiers import TorchGeoClassifier
+
+    # Cloud-free yearly median composite
+    data, metadata = composite_stac(
+        stac_catalog="element84_v1",
+        collection="sentinel_s2_l2a",
+        bounds=(-54.65, -25.41, -54.58, -25.25),
+        epsg=32621,
+        bands=["red", "green", "blue"],
+        start_date="2023-01-01",
+        end_date="2023-12-31",
+        cloud_cover_perc=30,
+        resolution=100.0,
+        frequency="YS",       # yearly composite
+        agg="median",
+        max_items=20,
+        compute=True,
+    )
+    img = data.isel(time=0)
+
+.. image:: _static/dl_stac_composite.png
+   :width: 500px
+   :alt: Sentinel-2 RGB composite with training polygons
+
+Classify the composite with a U-Net using a Sentinel-2 RGB pretrained encoder:
+
+.. code-block:: python
+
+    clf = TorchGeoClassifier(
+        model='unet',
+        backbone='resnet18',
+        weights='ResNet18_Weights.SENTINEL2_RGB_MOCO',
+        patch_size=32,
+        max_epochs=5,
+        batch_size=4,
+        verbose=0,
+    )
+    y = fit_predict(img, clf, labels, col='lc')
+
+.. image:: _static/dl_stac_torchgeo_result.png
+   :width: 700px
+   :alt: TorchGeo pretrained U-Net classification of STAC imagery
+
+.. note::
+
+   ``composite_stac()`` requires network access and ``pip install geowombat[stac]``.
+   See the ``notebooks/dl_classifiers.ipynb`` notebook for a runnable version
+   with error handling for offline use.
+
 
 Comparison with sklearn classifiers
 ------------------------------------

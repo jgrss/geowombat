@@ -82,6 +82,13 @@ def _rasterize_labels(data, labels, col):
     le.fit(labels[col])
     labels[col] = le.transform(labels[col]) + 1
 
+    # Ensure data is dask-backed (polygon_to_array needs .chunksize)
+    if not hasattr(data.data, 'chunksize'):
+        data = data.chunk(
+            {'y': min(256, data.sizes['y']),
+             'x': min(256, data.sizes['x'])}
+        )
+
     label_raster = polygon_to_array(labels, col=col, data=data)
     label_arr = label_raster.values.squeeze()
 
