@@ -24,8 +24,8 @@ classifiers in the :ref:`ml` module. Three architectures are included:
      - U-Net, DeepLabV3+, FPN segmentation
      - Spatial-context classification with optional pre-trained encoders
 
-Installation
-------------
+Setup and installation
+----------------------
 
 Install the deep learning dependencies::
 
