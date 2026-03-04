@@ -129,6 +129,13 @@ web = [
     "wget",
 ]
 
+dl = [
+    "torch>=2.0.0",
+    "pytorch-tabnet>=4.0",
+    "torchgeo>=0.6.0",
+    "segmentation-models-pytorch>=0.3.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/jgrss/geowombat"
 Documentation = "https://geowombat.readthedocs.io"
