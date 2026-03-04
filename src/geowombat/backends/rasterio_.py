@@ -906,6 +906,19 @@ def warp(
         if res is not None:
             dst_res = check_res(res)
         else:
+            # Check for CRS unit mismatch (e.g., projected meters -> geographic degrees)
+            if crs is not None and src_crs.is_projected != dst_crs.is_projected:
+                src_label = f"EPSG:{src_crs.to_epsg()}" if src_crs.to_epsg() else str(src_crs)
+                dst_label = f"EPSG:{dst_crs.to_epsg()}" if dst_crs.to_epsg() else str(dst_crs)
+                src_units = 'projected (meters)' if src_crs.is_projected else 'geographic (degrees)'
+                dst_units = 'projected (meters)' if dst_crs.is_projected else 'geographic (degrees)'
+                raise ValueError(
+                    f"Cannot reproject from {src_label} ({src_units}) to "
+                    f"{dst_label} ({dst_units}) without specifying the target "
+                    f"resolution. Set ref_res in gw.config.update() with the "
+                    f"target CRS units (e.g., ref_res=0.00005 for ~5m in "
+                    f"degrees, or ref_res=10 for 10m in meters)."
+                )
             dst_res = src_info.src_res
 
         # Check if the data need to be subset
