@@ -12,6 +12,7 @@ Examples
    band-math
    apply
    ml
+   dl
    moving
    radiometry
    coreg
