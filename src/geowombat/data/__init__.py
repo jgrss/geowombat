@@ -56,6 +56,7 @@ l8_224078_20200518_points = str(
 l8_224078_20200518_polygons = str(
     p / 'LC08_L1TP_224078_20200518_20200518_01_RT_polygons.gpkg'
 )
+stac_training = str(p / 'stac_training.geojson')
 l3b_s2b_00390821jxn0l2a_20210319_20220730_c01 = str(
     p / 'L3B_S2B_00390821JXN0L2A_20210319_20220730_C01.nc'
 )

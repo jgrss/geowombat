@@ -69,7 +69,7 @@ Then pass ``device='cuda'`` or ``device='auto'`` to any DL classifier::
 Prepare training labels
 -----------------------
 
-All examples below use the bundled Landsat 8 test image and polygon labels.
+All examples below use the bundled Landsat 8 test image and training polygons.
 
 .. code-block:: python
 
@@ -79,20 +79,15 @@ All examples below use the bundled Landsat 8 test image and polygon labels.
     import matplotlib.pyplot as plt
     import geopandas as gpd
     import numpy as np
-    from sklearn.preprocessing import LabelEncoder
 
     import geowombat as gw
-    from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons
+    from geowombat.data import l8_224078_20200518, stac_training
     from geowombat.ml import fit, fit_predict, predict
 
-    # Load polygon labels and encode classes as integers
-    labels = gpd.read_file(l8_224078_20200518_polygons)
-    le = LabelEncoder()
-    labels['lc'] = le.fit_transform(labels['name'])
-    labels = labels.drop(columns=['name'])
-
-    print(dict(zip(le.classes_, le.transform(le.classes_))))
-    # {'crop': 0, 'developed': 1, 'tree': 2, 'water': 3}
+    # Load training polygons (integer 'lc' column, EPSG:4326)
+    labels = gpd.read_file(stac_training)
+    print(f"Classes: {sorted(labels['lc'].unique())}")
+    print(f"Number of classes: {labels['lc'].nunique()}")
 
 .. image:: _static/dl_training_data.png
    :width: 500px
