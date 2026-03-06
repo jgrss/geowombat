@@ -214,19 +214,27 @@ class Topo(object):
             ``dask.array``
         """
 
-        nodata = nodata_samps.compute().flatten()
-        idx = np.where(nodata == 0)[0]
-
-        if idx.shape[0] < min_samples:
-            return sr
-
-        X = il.compute().flatten()[idx][:, np.newaxis]
-
+        # Batch compute to avoid redundant graph traversals
         if band_coeffs:
+            nodata, X_raw = dask.compute(nodata_samps, il)
+            nodata = nodata.flatten()
+            idx = np.where(nodata == 0)[0]
+
+            if idx.shape[0] < min_samples:
+                return sr
+
+            X = X_raw.flatten()[idx][:, np.newaxis]
             slope_m, intercept_b = band_coeffs[band]
         else:
+            nodata, X_raw, y_raw = dask.compute(nodata_samps, il, sr)
+            nodata = nodata.flatten()
+            idx = np.where(nodata == 0)[0]
 
-            y = sr.compute().flatten()[idx]
+            if idx.shape[0] < min_samples:
+                return sr
+
+            X = X_raw.flatten()[idx][:, np.newaxis]
+            y = y_raw.flatten()[idx]
 
             slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
 
@@ -296,19 +304,27 @@ class Topo(object):
             ``dask.array``
         """
 
-        nodata = nodata_samps.compute().flatten()
-        idx = np.where(nodata == 0)[0]
-
-        if idx.shape[0] < min_samples:
-            return sr
-
-        X = il.compute().flatten()[idx][:, np.newaxis]
-
+        # Batch compute to avoid redundant graph traversals
         if band_coeffs:
+            nodata, X_raw = dask.compute(nodata_samps, il)
+            nodata = nodata.flatten()
+            idx = np.where(nodata == 0)[0]
+
+            if idx.shape[0] < min_samples:
+                return sr
+
+            X = X_raw.flatten()[idx][:, np.newaxis]
             slope_m, intercept_b = band_coeffs[band]
         else:
+            nodata, X_raw, y_raw = dask.compute(nodata_samps, il, sr)
+            nodata = nodata.flatten()
+            idx = np.where(nodata == 0)[0]
 
-            y = sr.compute().flatten()[idx]
+            if idx.shape[0] < min_samples:
+                return sr
+
+            X = X_raw.flatten()[idx][:, np.newaxis]
+            y = y_raw.flatten()[idx]
 
             slope_m, intercept_b = self._regress_a(X, y, robust, n_jobs)
 

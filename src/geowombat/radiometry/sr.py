@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from collections import namedtuple
 from datetime import datetime as dtime
 
+import dask
 import dask.array as da
 import numpy as np
 import pandas as pd
@@ -1251,10 +1252,11 @@ class DOS(AOT, RadTransforms):
         # a simple linear transformation (Masek et al., 2006)
         blue_p = swir2_toar_dark * 0.33
 
-        # Get reflectance and radiance data as numpy arrays
-        blue_p_data = blue_p.squeeze().data.compute(num_workers=n_jobs)
-        blue_rad_dark_data = blue_rad_dark.squeeze().data.compute(
-            num_workers=n_jobs
+        # Batch compute to share intermediate graph traversal
+        blue_p_data, blue_rad_dark_data = dask.compute(
+            blue_p.squeeze().data,
+            blue_rad_dark.squeeze().data,
+            num_workers=n_jobs,
         )
 
         valid_idx = np.where(~np.isnan(blue_p_data))

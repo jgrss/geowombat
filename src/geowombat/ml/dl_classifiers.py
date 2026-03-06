@@ -21,9 +21,36 @@ Example
 import warnings
 from pathlib import Path
 
+import dask.array as da
 import geopandas as gpd
 import numpy as np
 import xarray as xr
+
+
+def _get_nodata_mask(data):
+    """Return a 2-D boolean mask (y, x) that is True for nodata pixels.
+
+    Prefers the ``_nodata_mask`` coordinate (warped from the original
+    file) when available.  Falls back to value comparison using
+    ``nodatavals`` from attributes.
+    """
+    if '_nodata_mask' in data.coords:
+        return data.coords['_nodata_mask']
+
+    nodatavals = data.attrs.get("nodatavals")
+    if not nodatavals or len(nodatavals) == 0:
+        return None
+
+    src_nd = nodatavals[0]
+    if isinstance(src_nd, float) and np.isnan(src_nd):
+        _is_nd = lambda a: a.isnull()
+    else:
+        _is_nd = lambda a: a == src_nd
+
+    if data.ndim == 4:
+        return _is_nd(data.isel(time=0)).any(dim='band')
+    else:
+        return _is_nd(data).any(dim='band')
 
 try:
     import torch
@@ -410,29 +437,47 @@ class TabNetClassifier(GeoWombatDLClassifier):
         if not self.fitted_:
             raise RuntimeError("Call fit() before predict().")
 
-        data_np = data.values
-        orig_shape = data_np.shape
-
-        if data_np.ndim == 4:
-            nt, nb, ny, nx = orig_shape
-            data_np = data_np.reshape(nt * nb, ny, nx)
+        # Flatten time*band if multi-temporal
+        if data.ndim == 4:
+            slices = [
+                data.isel(time=i).drop_vars('time')
+                for i in range(data.sizes['time'])
+            ]
+            data_flat = xr.concat(slices, dim='band')
         else:
-            nb, ny, nx = orig_shape
+            data_flat = data
 
-        n_features = data_np.shape[0]
-        pixels = data_np.reshape(n_features, -1).T.astype(np.float32)
+        # Ensure dask-backed with band as single chunk
+        if not hasattr(data_flat.data, 'dask'):
+            data_flat = data_flat.chunk({
+                'band': -1,
+                'y': min(512, data_flat.sizes['y']),
+                'x': min(512, data_flat.sizes['x']),
+            })
+        else:
+            data_flat = data_flat.chunk({'band': -1})
 
-        # Apply same standardization as training
-        pixels = (pixels - self._feat_mean) / self._feat_std
+        feat_mean = self._feat_mean
+        feat_std = self._feat_std
+        tabnet_model = self._model
 
-        preds = self._model.predict(pixels)
-        preds = (preds + 1).astype(np.float32)  # back to 1-based
+        def _predict_block(block):
+            n_feat, cy, cx = block.shape
+            pixels = block.reshape(n_feat, -1).T.astype(np.float32)
+            pixels = (pixels - feat_mean) / feat_std
+            preds = tabnet_model.predict(pixels)
+            return (preds + 1).astype(np.float32).reshape(1, cy, cx)
 
-        pred_2d = preds.reshape(ny, nx)
+        result_da = da.map_blocks(
+            _predict_block,
+            data_flat.data,
+            dtype=np.float32,
+            drop_axis=0,
+            new_axis=0,
+        )
 
-        # Build xarray DataArray matching input
         result = xr.DataArray(
-            pred_2d[np.newaxis, :, :],
+            result_da,
             dims=("band", "y", "x"),
             coords={
                 "band": ["targ"],
@@ -441,20 +486,10 @@ class TabNetClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            if data_np.ndim == 3:
-                mask = np.any(
-                    data.values == src_nd, axis=0
-                )
-            else:
-                mask = np.any(
-                    data.values.reshape(-1, ny, nx) == src_nd,
-                    axis=0,
-                )
-            result = xr.where(mask, np.nan, result)
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
+            result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)
         return result
@@ -719,42 +754,65 @@ class LTAEClassifier(GeoWombatDLClassifier):
         if not self.fitted_:
             raise RuntimeError("Call fit() before predict().")
 
-        data_np = data.values
-        if data_np.ndim == 3:
+        if data.ndim != 4:
             raise ValueError(
                 "LTAEClassifier.predict() requires time-dimensioned "
                 "data (time, band, y, x)."
             )
 
-        nt, nb, ny, nx = data_np.shape
-        dev = _resolve_device(self.device)
+        # Ensure dask-backed with time and band as single chunks
+        if not hasattr(data.data, 'dask'):
+            data = data.chunk({
+                'time': -1, 'band': -1,
+                'y': min(512, data.sizes['y']),
+                'x': min(512, data.sizes['x']),
+            })
+        else:
+            data = data.chunk({'time': -1, 'band': -1})
 
-        # Reshape to (pixels, time, bands)
-        pixels = data_np.transpose(2, 3, 0, 1).reshape(
-            ny * nx, nt, nb
-        ).astype(np.float32)
+        feat_mean = self._feat_mean
+        feat_std = self._feat_std
+        ltae_model = self._model
+        batch_size = self.batch_size
+        device_str = self.device
 
-        # Apply same standardization as training
-        pixels = (pixels - self._feat_mean) / self._feat_std
+        def _predict_block(block):
+            # block: (time, band, y, x) numpy array
+            nt, nb, cy, cx = block.shape
+            dev = _resolve_device(device_str)
 
-        self._model.eval()
-        preds = []
-        with torch.no_grad():
-            for i in range(0, len(pixels), self.batch_size):
-                batch = torch.from_numpy(
-                    pixels[i:i + self.batch_size]
-                ).to(dev)
-                logits = self._model(batch)
-                preds.append(
-                    logits.argmax(dim=1).cpu().numpy()
-                )
+            # Reshape to (pixels, time, bands)
+            pixels = block.transpose(
+                2, 3, 0, 1
+            ).reshape(cy * cx, nt, nb).astype(np.float32)
+            pixels = (pixels - feat_mean) / feat_std
 
-        pred_flat = np.concatenate(preds)
-        pred_flat = (pred_flat + 1).astype(np.float32)  # 1-based
-        pred_2d = pred_flat.reshape(ny, nx)
+            ltae_model.eval()
+            preds = []
+            with torch.no_grad():
+                for i in range(0, len(pixels), batch_size):
+                    batch = torch.from_numpy(
+                        pixels[i:i + batch_size]
+                    ).to(dev)
+                    logits = ltae_model(batch)
+                    preds.append(
+                        logits.argmax(dim=1).cpu().numpy()
+                    )
+
+            pred_flat = np.concatenate(preds)
+            pred_flat = (pred_flat + 1).astype(np.float32)
+            return pred_flat.reshape(1, cy, cx)
+
+        result_da = da.map_blocks(
+            _predict_block,
+            data.data,
+            dtype=np.float32,
+            drop_axis=[0, 1],
+            new_axis=0,
+        )
 
         result = xr.DataArray(
-            pred_2d[np.newaxis, :, :],
+            result_da,
             dims=("band", "y", "x"),
             coords={
                 "band": ["targ"],
@@ -763,13 +821,9 @@ class LTAEClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            nd_mask = np.any(
-                data_np.reshape(-1, ny, nx) == src_nd, axis=0
-            )
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
             result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)
@@ -1037,23 +1091,55 @@ class TorchGeoClassifier(GeoWombatDLClassifier):
         if not self.fitted_:
             raise RuntimeError("Call fit() before predict().")
 
-        data_np = data.values
-        if data_np.ndim == 4:
-            data_np = data_np[0]
-        data_np = data_np.astype(np.float32)
+        # Select bands and flatten time at the DataArray level
+        if data.ndim == 4:
+            data_3d = data.isel(time=0).drop_vars('time')
+        else:
+            data_3d = data
 
-        data_np = self._select_bands(data_np, data)
-        ny, nx = data_np.shape[1], data_np.shape[2]
+        if self.bands is not None:
+            if isinstance(self.bands[0], (int, np.integer)):
+                indices = [b - 1 if b > 0 else b for b in self.bands]
+                data_3d = data_3d.isel(band=indices)
+            else:
+                data_3d = data_3d.sel(band=self.bands)
 
-        dev = _resolve_device(self.device)
+        # Ensure dask-backed with band as single chunk
+        if not hasattr(data_3d.data, 'dask'):
+            data_3d = data_3d.chunk({
+                'band': -1,
+                'y': min(512, data_3d.sizes['y']),
+                'x': min(512, data_3d.sizes['x']),
+            })
+        else:
+            data_3d = data_3d.chunk({'band': -1})
 
-        pred_2d = _sliding_window_predict(
-            self._model, data_np, self._n_classes,
-            self.patch_size, self.stride, dev,
+        seg_model = self._model
+        n_classes = self._n_classes
+        patch_size = self.patch_size
+        stride = self.stride
+        device_str = self.device
+
+        def _predict_block(block):
+            # block: (band, y, x) numpy array
+            block_np = block.astype(np.float32)
+            dev = _resolve_device(device_str)
+            pred_2d = _sliding_window_predict(
+                seg_model, block_np, n_classes,
+                patch_size, stride, dev,
+            )
+            return pred_2d[np.newaxis].astype(np.float32)
+
+        result_da = da.map_blocks(
+            _predict_block,
+            data_3d.data,
+            dtype=np.float32,
+            drop_axis=0,
+            new_axis=0,
         )
 
         result = xr.DataArray(
-            pred_2d[np.newaxis, :, :].astype(np.float32),
+            result_da,
             dims=("band", "y", "x"),
             coords={
                 "band": ["targ"],
@@ -1062,18 +1148,9 @@ class TorchGeoClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            if data.values.ndim == 4:
-                nd_mask = np.any(
-                    data.values[0] == src_nd, axis=0
-                )
-            else:
-                nd_mask = np.any(
-                    data.values == src_nd, axis=0
-                )
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
             result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)

@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import logging
 import os
 import typing as T
@@ -17,6 +16,9 @@ from rasterio.windows import Window
 from ..config import config
 from ..core.util import parse_filename_dates
 from ..core.windows import get_window_offsets
+from rasterio.enums import Resampling as RioResampling
+from rasterio.warp import reproject
+
 from ..handler import add_handler
 from .rasterio_ import get_file_bounds, get_ref_image_meta
 from .rasterio_ import transform_crs as rio_transform_crs
@@ -194,6 +196,61 @@ def delayed_to_xarray(
     )
 
 
+def _attach_nodata_mask(filename, src, nodata_value):
+    """Create a nodata mask from the original file and warp it.
+
+    Reads band 1 of *filename* at native resolution, builds a binary
+    mask (1 = nodata), warps it with nearest-neighbour to the grid of
+    *src*, and attaches it as the ``_nodata_mask`` coordinate (bool,
+    ``True`` where nodata).
+    """
+    try:
+        with rio_open(filename) as raw:
+            native_data = raw.read(1)
+            src_transform = raw.transform
+            src_crs = raw.crs
+
+        # Build mask: True where ANY band has the nodata value
+        if isinstance(nodata_value, float) and np.isnan(nodata_value):
+            nd_native = np.isnan(native_data).astype(np.uint8)
+        else:
+            nd_native = (native_data == nodata_value).astype(np.uint8)
+
+        if nd_native.sum() == 0:
+            return src
+
+        # Destination grid from the DataArray
+        dst_height, dst_width = src.shape[-2], src.shape[-1]
+        t = src.attrs.get('transform')
+        if t is None:
+            return src
+        from rasterio.transform import Affine
+        dst_transform = Affine(*t[:6]) if not isinstance(t, Affine) else t
+        dst_crs = src_crs  # same CRS assumed after warp
+
+        dst_mask = np.zeros((dst_height, dst_width), dtype=np.uint8)
+        reproject(
+            nd_native,
+            dst_mask,
+            src_transform=src_transform,
+            src_crs=src_crs,
+            dst_transform=dst_transform,
+            dst_crs=dst_crs,
+            resampling=RioResampling.nearest,
+        )
+
+        mask_da = xr.DataArray(
+            dst_mask.astype(bool),
+            dims=('y', 'x'),
+            coords={'y': src.y, 'x': src.x},
+        )
+        src = src.assign_coords(_nodata_mask=mask_da)
+    except Exception:
+        pass
+
+    return src
+
+
 def warp_open(
     filename: T.Union[str, Path],
     band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
@@ -347,6 +404,15 @@ def warp_open(
             attrs.update(tags)
             src = src.assign_attrs(**attrs)
 
+        # Build a nodata mask from the original (pre-warp) file.
+        # After GDAL warping, nodata pixels may get interpolated
+        # to non-nodata values, making them undetectable via
+        # simple value comparison. This warps a binary mask with
+        # nearest-neighbor to preserve the nodata footprint.
+        nd = ref_kwargs.get('nodata')
+        if nd is not None and not filenames:
+            src = _attach_nodata_mask(filename, src, nd)
+
         if dtype:
 
             attrs = src.attrs.copy()
@@ -432,28 +498,10 @@ def mosaic(
         with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
-    # NaN-aware reduce functions for mosaic overlap handling
-    def custom_nanmax(left, right):
-        max_data = da.nanmax(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(max_data, dims=left.dims, coords=left.coords)
-
-    def custom_nanmin(left, right):
-        min_data = da.nanmin(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(min_data, dims=left.dims, coords=left.coords)
-
-    def custom_nanmean(left, right):
-        mean_data = da.nanmean(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(mean_data, dims=left.dims, coords=left.coords)
-
     if overlap == 'min':
-        reduce_func = custom_nanmin
         tmp_nodata = 1e9
-    elif overlap == 'max':
-        reduce_func = custom_nanmax
+    elif overlap in ('max', 'mean'):
         tmp_nodata = -1e9
-    elif overlap == 'mean':
-        tmp_nodata = -1e9
-        reduce_func = custom_nanmean
 
     # Open all the data pointers
     data_arrays = [
@@ -471,10 +519,19 @@ def mosaic(
         for wo in warped_objects
     ]
 
-    # Apply the reduction
-    darray = functools.reduce(
-        lambda left, right: reduce_func(left, right),
-        data_arrays,
+    # Stack all arrays and reduce in one operation (O(1) graph
+    # depth instead of O(N) from pairwise functools.reduce)
+    stacked = da.stack([d.data for d in data_arrays], axis=0)
+    if overlap == 'min':
+        reduced = da.nanmin(stacked, axis=0)
+    elif overlap == 'max':
+        reduced = da.nanmax(stacked, axis=0)
+    elif overlap == 'mean':
+        reduced = da.nanmean(stacked, axis=0)
+    darray = xr.DataArray(
+        reduced,
+        dims=data_arrays[0].dims,
+        coords=data_arrays[0].coords,
     )
 
     # Reset the 'no data' values

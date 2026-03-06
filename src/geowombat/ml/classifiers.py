@@ -253,18 +253,38 @@ class ClassifiersMixin(object):
             src_nodata (int,float): Value to replace , default is x.attrs["nodatavals"][0]
             dst_nodata (int,float): Replacement value, default is np.nan - but converts y to float
         """
+        # Prefer the pre-computed nodata mask (survives GDAL warping)
+        if '_nodata_mask' in x.coords:
+            mask = x.coords['_nodata_mask'].values
+            if len(y.shape) == 3:
+                return xr.where(mask, dst_nodata, y)
+            else:
+                return xr.where(
+                    mask[np.newaxis, :, :], dst_nodata, y
+                )
+
         if src_nodata is None:
             nodatavals = x.attrs.get("nodatavals")
             if nodatavals is None or len(nodatavals) == 0:
                 return y
             src_nodata = nodatavals[0]
 
+        # Use np.isnan for NaN nodata (IEEE 754: NaN != NaN)
+        if isinstance(src_nodata, float) and np.isnan(src_nodata):
+            _eq = lambda arr: arr.isnull()
+        else:
+            _eq = lambda arr: arr == src_nodata
+
         if len(x.shape) == 3:
-            mask = np.any((x == src_nodata).values, 0)
+            # Reduce lazily over band dim, then compute the 2D mask
+            # (avoids materializing the full 3D boolean array)
+            mask = _eq(x).any(dim=x.dims[0]).values
             return xr.where(mask, dst_nodata, y)
         else:
-            mask = np.any((x == src_nodata).values, 1, keepdims=True)
-            return xr.where(mask, dst_nodata, y)
+            mask = _eq(x).any(dim=x.dims[1]).values
+            return xr.where(
+                mask[:, np.newaxis], dst_nodata, y
+            )
 
         # suggested by jordan
         # Set the 'no data' attribute

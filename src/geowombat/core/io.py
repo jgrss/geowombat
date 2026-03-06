@@ -760,6 +760,11 @@ def save(
     if tqdm_kwargs is None:
         tqdm_kwargs = {}
 
+    # Optimize the dask graph to fuse tasks and eliminate
+    # common subexpressions before writing
+    if hasattr(data.data, 'dask'):
+        (data.data,) = dask.optimize(data.data)
+
     with RasterioStore(
         data=data,
         filename=filename,
@@ -1028,6 +1033,11 @@ def to_raster(
 
     if verbose > 0:
         logger.info("  Writing data to file ...\n")
+
+    # Optimize the dask graph to fuse tasks and eliminate
+    # common subexpressions before writing
+    if hasattr(data.data, 'dask'):
+        (data.data,) = dask.optimize(data.data)
 
     with rio.Env(GDAL_CACHEMAX=gdal_cache):
         windows = get_window_offsets(
