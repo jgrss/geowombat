@@ -26,6 +26,32 @@ import geopandas as gpd
 import numpy as np
 import xarray as xr
 
+
+def _get_nodata_mask(data):
+    """Return a 2-D boolean mask (y, x) that is True for nodata pixels.
+
+    Prefers the ``_nodata_mask`` coordinate (warped from the original
+    file) when available.  Falls back to value comparison using
+    ``nodatavals`` from attributes.
+    """
+    if '_nodata_mask' in data.coords:
+        return data.coords['_nodata_mask']
+
+    nodatavals = data.attrs.get("nodatavals")
+    if not nodatavals or len(nodatavals) == 0:
+        return None
+
+    src_nd = nodatavals[0]
+    if isinstance(src_nd, float) and np.isnan(src_nd):
+        _is_nd = lambda a: a.isnull()
+    else:
+        _is_nd = lambda a: a == src_nd
+
+    if data.ndim == 4:
+        return _is_nd(data.isel(time=0)).any(dim='band')
+    else:
+        return _is_nd(data).any(dim='band')
+
 try:
     import torch
     import torch.nn as nn
@@ -460,14 +486,9 @@ class TabNetClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata lazily (no .values materialization)
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            if data.ndim == 4:
-                nd_mask = (data.isel(time=0) == src_nd).any(dim='band')
-            else:
-                nd_mask = (data == src_nd).any(dim='band')
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
             result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)
@@ -800,11 +821,9 @@ class LTAEClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata lazily (no .values materialization)
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            nd_mask = (data.isel(time=0) == src_nd).any(dim='band')
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
             result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)
@@ -1129,14 +1148,9 @@ class TorchGeoClassifier(GeoWombatDLClassifier):
             },
         )
 
-        # Mask nodata lazily (no .values materialization)
-        nodatavals = data.attrs.get("nodatavals")
-        if nodatavals and len(nodatavals) > 0:
-            src_nd = nodatavals[0]
-            if data.ndim == 4:
-                nd_mask = (data.isel(time=0) == src_nd).any(dim='band')
-            else:
-                nd_mask = (data == src_nd).any(dim='band')
+        # Mask nodata pixels in prediction output
+        nd_mask = _get_nodata_mask(data)
+        if nd_mask is not None:
             result = xr.where(nd_mask, np.nan, result)
 
         result = result.assign_attrs(**data.attrs)

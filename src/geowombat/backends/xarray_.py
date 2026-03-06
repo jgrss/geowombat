@@ -16,6 +16,9 @@ from rasterio.windows import Window
 from ..config import config
 from ..core.util import parse_filename_dates
 from ..core.windows import get_window_offsets
+from rasterio.enums import Resampling as RioResampling
+from rasterio.warp import reproject
+
 from ..handler import add_handler
 from .rasterio_ import get_file_bounds, get_ref_image_meta
 from .rasterio_ import transform_crs as rio_transform_crs
@@ -193,6 +196,61 @@ def delayed_to_xarray(
     )
 
 
+def _attach_nodata_mask(filename, src, nodata_value):
+    """Create a nodata mask from the original file and warp it.
+
+    Reads band 1 of *filename* at native resolution, builds a binary
+    mask (1 = nodata), warps it with nearest-neighbour to the grid of
+    *src*, and attaches it as the ``_nodata_mask`` coordinate (bool,
+    ``True`` where nodata).
+    """
+    try:
+        with rio_open(filename) as raw:
+            native_data = raw.read(1)
+            src_transform = raw.transform
+            src_crs = raw.crs
+
+        # Build mask: True where ANY band has the nodata value
+        if isinstance(nodata_value, float) and np.isnan(nodata_value):
+            nd_native = np.isnan(native_data).astype(np.uint8)
+        else:
+            nd_native = (native_data == nodata_value).astype(np.uint8)
+
+        if nd_native.sum() == 0:
+            return src
+
+        # Destination grid from the DataArray
+        dst_height, dst_width = src.shape[-2], src.shape[-1]
+        t = src.attrs.get('transform')
+        if t is None:
+            return src
+        from rasterio.transform import Affine
+        dst_transform = Affine(*t[:6]) if not isinstance(t, Affine) else t
+        dst_crs = src_crs  # same CRS assumed after warp
+
+        dst_mask = np.zeros((dst_height, dst_width), dtype=np.uint8)
+        reproject(
+            nd_native,
+            dst_mask,
+            src_transform=src_transform,
+            src_crs=src_crs,
+            dst_transform=dst_transform,
+            dst_crs=dst_crs,
+            resampling=RioResampling.nearest,
+        )
+
+        mask_da = xr.DataArray(
+            dst_mask.astype(bool),
+            dims=('y', 'x'),
+            coords={'y': src.y, 'x': src.x},
+        )
+        src = src.assign_coords(_nodata_mask=mask_da)
+    except Exception:
+        pass
+
+    return src
+
+
 def warp_open(
     filename: T.Union[str, Path],
     band_names: T.Optional[T.Sequence[T.Union[int, str]]] = None,
@@ -345,6 +403,15 @@ def warp_open(
             attrs = src.attrs.copy()
             attrs.update(tags)
             src = src.assign_attrs(**attrs)
+
+        # Build a nodata mask from the original (pre-warp) file.
+        # After GDAL warping, nodata pixels may get interpolated
+        # to non-nodata values, making them undetectable via
+        # simple value comparison. This warps a binary mask with
+        # nearest-neighbor to preserve the nodata footprint.
+        nd = ref_kwargs.get('nodata')
+        if nd is not None and not filenames:
+            src = _attach_nodata_mask(filename, src, nd)
 
         if dtype:
 
