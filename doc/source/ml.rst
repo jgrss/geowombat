@@ -3,9 +3,10 @@
 Machine learning
 ================
 
-GeoWombat's ML module works with any scikit-learn compatible classifier or pipeline. Pass a classifier
-to :func:`~geowombat.ml.fit`, :func:`~geowombat.ml.predict`, or :func:`~geowombat.ml.fit_predict`
-and it will be applied to the raster data as an xarray DataArray.
+GeoWombat's ML module works with any scikit-learn compatible classifier or
+pipeline. Pass a classifier to :func:`~geowombat.ml.fit`,
+:func:`~geowombat.ml.predict`, or :func:`~geowombat.ml.fit_predict` and it
+will be applied to the raster data as an xarray DataArray.
 
 To install ML dependencies::
 
@@ -63,118 +64,157 @@ Unsupervised
      - ``sklearn.mixture.GaussianMixture``
      - Soft clustering; models class overlap better than K-Means
 
-Fit a classifier
-----------------
 
-.. ipython:: python
+Setup
+-----
+
+.. code-block:: python
 
     import geowombat as gw
-    from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons, l8_224078_20200518_points
+    from geowombat.data import (
+        l8_224078_20200518,
+        l8_224078_20200518_points,
+        stac_training,
+    )
     from geowombat.ml import fit, predict, fit_predict
 
     import geopandas as gpd
+    import matplotlib.pyplot as plt
+    import numpy as np
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import LabelEncoder, StandardScaler
     from sklearn.decomposition import PCA
     from sklearn.naive_bayes import GaussianNB
     from sklearn.cluster import KMeans
-    from sklearn.mixture import GaussianMixture
 
+    # Polygon labels (integer 'lc' column, EPSG:4326)
+    labels_poly = gpd.read_file(stac_training)
+
+    # Point labels (need LabelEncoder for string names)
     le = LabelEncoder()
+    labels_point = gpd.read_file(l8_224078_20200518_points)
+    labels_point['lc'] = le.fit(labels_point.name).transform(labels_point.name)
+    labels_point = labels_point.drop(columns=['name'])
 
-    # The labels are string names, so here we convert them to integers
-    labels = gpd.read_file(l8_224078_20200518_polygons)
-    labels['lc'] = le.fit(labels.name).transform(labels.name)
 
-    # Point labels (used for time-stacked examples below)
-    labels_pts = gpd.read_file(l8_224078_20200518_points)
-    labels_pts['lc'] = le.fit(labels_pts.name).transform(labels_pts.name)
-    labels_pts = labels_pts.drop(columns=['name'])
+Nodata handling
+---------------
 
-    # Use a data pipeline
-    pl = Pipeline([('scaler', StandardScaler()),
-                    ('pca', PCA()),
-                    ('clf', GaussianNB())])
+By default, ``fit_predict()`` and ``predict()`` mask nodata pixels in the
+output with NaN (``mask_nodataval=True``). This prevents nodata regions from
+being assigned a class label.
 
-    # Fit the classifier
-    with gw.config.update(ref_res=100):
-        with gw.open(l8_224078_20200518, nodata=0, chunks=128) as src:
-            X, Xy, clf = fit(src, pl, labels, col='lc')
+When opening a file with ``gw.open(..., nodata=0)``, GeoWombat builds a
+binary nodata mask from the original file *before* warping. This mask is
+attached as the ``_nodata_mask`` coordinate and survives reprojection and
+time-stacking. The ``_mask_nodata()`` method uses it to replace predictions
+at nodata locations with NaN.
 
-    print(clf)
+.. code-block:: python
 
-Fit a classifier and predict on an array
-----------------------------------------
-
-.. ipython:: python
-
-    from geowombat.ml import fit_predict
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots(dpi=200)
-
-    with gw.config.update(ref_res=100):
+    with gw.config.update(ref_res=150):
         with gw.open(l8_224078_20200518, nodata=0) as src:
-            y = fit_predict(src, pl, labels, col='lc')
-            print(y)
+            # _nodata_mask is automatically attached
+            print('Has nodata mask:', '_nodata_mask' in src.coords)
 
-    @savefig ml_fit_predict.png
-    y.plot(robust=True, ax=ax)
+            # mask_nodataval=True (default) masks nodata in predictions
+            y = fit_predict(src, pl, labels_poly, col='lc')
 
-Train a supervised classifier and predict
------------------------------------------
+To disable nodata masking, pass ``mask_nodataval=False``. This is useful
+when you want to handle masking yourself or inspect raw predictions.
 
-.. ipython:: python
 
-    fig, ax = plt.subplots(dpi=200,figsize=(5,5))
+Supervised classification
+-------------------------
 
-    # Fit the classifier
-    with gw.config.update(ref_res=100):
-        with gw.open(l8_224078_20200518, nodata=0, chunks=128) as src:
-            X, Xy, clf = fit(src, pl, labels, col="lc")
-            y = predict(src, X, clf)
-            y.plot(robust=True, ax=ax)
-    @savefig ml_supervised_predict.png
-    plt.tight_layout(pad=1)
+Using ``fit()`` then ``predict()`` (two-step)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Train an unsupervised classifier and predict
---------------------------------------------
+.. code-block:: python
 
-Unsupervised classifiers can also be used in a pipeline
+    pl = Pipeline([
+        ('scaler', StandardScaler()),
+        ('pca', PCA()),
+        ('clf', GaussianNB()),
+    ])
 
-.. ipython:: python
-
-    cl = Pipeline([ ('scaler', StandardScaler()),
-                    ('pca', PCA()),
-                    ('clf', KMeans(n_clusters=3, random_state=0))])
-
-    fig, ax = plt.subplots(dpi=200,figsize=(5,5))
-
-    # fit and predict unsupervised classifier
-    with gw.config.update(ref_res=300):
+    with gw.config.update(ref_res=150):
         with gw.open(l8_224078_20200518, nodata=0) as src:
-            X, Xy, clf = fit(src, cl)
+            X, Xy, clf = fit(src, pl, labels_poly, col='lc')
             y = predict(src, X, clf)
-            y.plot(robust=True, ax=ax)
-    @savefig ml_unsupervised_predict.png
-    plt.tight_layout(pad=1)
+            y.plot(robust=True)
 
-    fig, ax = plt.subplots(dpi=200,figsize=(5,5))
+.. image:: _static/ml_supervised_predict.png
+   :width: 500px
+   :alt: Supervised classification (fit + predict)
 
-    # Fit_predict unsupervised classifier
-    with gw.config.update(ref_res=300):
+
+Using ``fit_predict()`` (one-step)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    with gw.config.update(ref_res=150):
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            y = fit_predict(src, pl, labels_poly, col='lc')
+            y.plot(robust=True)
+
+.. image:: _static/ml_fit_predict.png
+   :width: 500px
+   :alt: Supervised classification (fit_predict)
+
+
+Unsupervised classification (KMeans)
+-------------------------------------
+
+No training labels needed. The algorithm identifies clusters directly from
+the pixel values.
+
+.. code-block:: python
+
+    cl = Pipeline([('clf', KMeans(n_clusters=6, random_state=0))])
+
+    with gw.config.update(ref_res=150):
         with gw.open(l8_224078_20200518, nodata=0) as src:
             y = fit_predict(src, cl)
-            y.plot(robust=True, ax=ax)
-    @savefig ml_unsupervised_fit_predict.png
-    plt.tight_layout(pad=1)
+            y.plot(robust=True)
 
-Predict with cross validation and parameter tuning
---------------------------------------------------
+.. image:: _static/ml_unsupervised_predict.png
+   :width: 500px
+   :alt: Unsupervised KMeans classification
 
-Cross-validation and parameter tuning is now possible
 
-.. ipython:: python
+Band-stacked classification
+-----------------------------
+
+Stack multiple images along the band dimension with ``stack_dim='band'``.
+This concatenates spectral bands from each date into one long feature vector
+per pixel.
+
+.. code-block:: python
+
+    with gw.config.update(ref_res=150):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            stack_dim='band',
+            nodata=0,
+        ) as src:
+            print('Band-stacked shape:', src.shape)
+            y = fit_predict(src, pl, labels_poly, col='lc')
+            y.plot(robust=True)
+
+.. image:: _static/ml_unsupervised_fit_predict.png
+   :width: 500px
+   :alt: Band-stacked classification
+
+
+Cross-validation and hyperparameter tuning
+-------------------------------------------
+
+Use ``GridSearchCV`` with ``CrossValidatorWrapper`` to tune pipeline
+hyperparameters.
+
+.. code-block:: python
 
     from sklearn.model_selection import GridSearchCV, KFold
     from sklearn_xarray.model_selection import CrossValidatorWrapper
@@ -184,29 +224,27 @@ Cross-validation and parameter tuning is now possible
         pl,
         cv=cv,
         scoring='balanced_accuracy',
-        param_grid={"pca__n_components": [1, 2, 3]}
+        param_grid={
+            'scaler__with_std': [True, False],
+            'pca__n_components': [1, 2, 3],
+        },
     )
 
-    fig, ax = plt.subplots(dpi=200,figsize=(5,5))
-
-    with gw.config.update(ref_res=300):
+    with gw.config.update(ref_res=150):
         with gw.open(l8_224078_20200518, nodata=0) as src:
-            # fit a model to get Xy used to train model
-            X, Xy, clf = fit(src, pl, labels, col="lc")
+            X, Xy, pipe = fit(src, pl, labels_poly, col='lc')
 
-            # fit cross valiation and parameter tuning
-            # NOTE: must unpack * object Xy
             gridsearch.fit(*Xy)
-            print(gridsearch.best_params_)
-            print(gridsearch.best_score_)
+            print('Best params:', gridsearch.best_params_)
 
-            # get set tuned parameters
-            # Note: predict(gridsearch.best_model_) not currently supported
-            clf.set_params(**gridsearch.best_params_)
-            y = predict(src, X, clf)
-            y.plot(robust=True, ax=ax)
-    @savefig ml_cv_predict.png
-    plt.tight_layout(pad=1)
+            pipe.set_params(**gridsearch.best_params_)
+            y = predict(src, X, pipe)
+            y.plot(robust=True)
+
+.. image:: _static/ml_cv_predict.png
+   :width: 500px
+   :alt: Tuned classifier prediction
+
 
 Time-stacked classification with ``temporal_mode``
 ---------------------------------------------------
@@ -243,113 +281,107 @@ Panel mode
 ~~~~~~~~~~
 
 Each pixel-time combination is treated as an independent sample. The output
-retains the time dimension, giving one prediction map per time step.
+retains the time dimension, giving one prediction map per time step. Nodata
+pixels are masked automatically (``mask_nodataval=True`` by default).
 
-.. ipython:: python
+.. code-block:: python
 
-    import numpy as np
+    pl_panel = Pipeline([
+        ('scaler', StandardScaler()),
+        ('pca', PCA()),
+        ('clf', GaussianNB()),
+    ])
 
-    pl_gmm = Pipeline([('scaler', StandardScaler()),
-                        ('clf', GaussianMixture(n_components=4, random_state=0))])
-
-    fig, axes = plt.subplots(1, 2, dpi=200, figsize=(10, 5))
-
-    with gw.config.update(ref_res=300):
+    with gw.config.update(ref_res=150):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
             stack_dim='time',
             nodata=0,
         ) as src:
-            y = fit_predict(
-                data=src, clf=pl_gmm,
+            y_panel = fit_predict(
+                src, pl_panel, labels_point, col='lc',
                 temporal_mode='panel',
             )
-            print(f"Dims:  {y.dims}")
-            print(f"Shape: {y.shape}")
 
-            y.isel(time=0).plot(robust=True, ax=axes[0])
-            axes[0].set_title('Panel - time 0')
-            y.isel(time=1).plot(robust=True, ax=axes[1])
-            axes[1].set_title('Panel - time 1')
+    print(f'Shape: {y_panel.shape}')  # (2, 1, 372, 408)
+    print(f'Dims:  {y_panel.dims}')   # ('time', 'band', 'y', 'x')
 
-    @savefig ml_panel.png
-    plt.tight_layout(pad=1)
+    # Since both time steps use the same image, predictions should match
+    print('Time steps identical:',
+          np.allclose(y_panel.isel(time=0).values,
+                      y_panel.isel(time=1).values, equal_nan=True))
 
-Since both time steps use the same input image, the predictions are identical:
-
-.. ipython:: python
-
-    print("Time steps match:",
-          np.allclose(y.isel(time=0).values, y.isel(time=1).values, equal_nan=True))
+.. image:: _static/ml_panel.png
+   :width: 700px
+   :alt: Panel mode predictions (per time step)
 
 
 Flatten mode
 ~~~~~~~~~~~~
 
 All time steps are flattened into the band dimension, creating T×B features
-per pixel. This produces a single prediction map regardless of how many time
-steps exist.
+per pixel. This produces a single prediction map regardless of how many
+time steps exist.
 
-.. ipython:: python
+.. code-block:: python
 
-    # Use PCA(n_components=1) since flattening doubles the feature count
-    pl_gmm_flat = Pipeline([('scaler', StandardScaler()),
-                            ('pca', PCA(n_components=1)),
-                            ('clf', GaussianMixture(n_components=4, random_state=0))])
+    pl_flatten = Pipeline([
+        ('scaler', StandardScaler()),
+        ('pca', PCA(n_components=1)),
+        ('clf', GaussianNB()),
+    ])
 
-    fig, ax = plt.subplots(dpi=200, figsize=(5, 5))
-
-    with gw.config.update(ref_res=300):
+    with gw.config.update(ref_res=150):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
             stack_dim='time',
             nodata=0,
         ) as src:
-            y = fit_predict(
-                data=src, clf=pl_gmm_flat,
+            y_flat = fit_predict(
+                src, pl_flatten, labels_point, col='lc',
                 temporal_mode='flatten',
             )
-            print(f"Dims:  {y.dims}")
-            print(f"Shape: {y.shape}")
-            y.plot(robust=True, ax=ax)
 
-    @savefig ml_flatten.png
-    plt.tight_layout(pad=1)
+    print(f'Shape: {y_flat.shape}')  # (1, 372, 408)
+    print(f'Dims:  {y_flat.dims}')   # ('band', 'y', 'x')
+
+.. image:: _static/ml_flatten.png
+   :width: 500px
+   :alt: Flatten mode prediction (all times as features)
 
 
-Supervised classification with time-stacked data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unsupervised clustering with time-stacked data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Supervised classifiers also work with time-stacked data. Pass training labels
-just as you would for a single image.
+.. code-block:: python
 
-.. ipython:: python
+    cl_time = Pipeline([
+        ('scaler', StandardScaler()),
+        ('clf', KMeans(n_clusters=4, random_state=0)),
+    ])
 
-    pl_time = Pipeline([('scaler', StandardScaler()),
-                        ('pca', PCA()),
-                        ('clf', GaussianNB())])
-
-    fig, axes = plt.subplots(1, 2, dpi=200, figsize=(10, 5))
-
-    with gw.config.update(ref_res=300):
+    with gw.config.update(ref_res=150):
         with gw.open(
             [l8_224078_20200518, l8_224078_20200518],
             stack_dim='time',
             nodata=0,
         ) as src:
-            y = fit_predict(
-                src, pl_time, labels_pts, col='lc',
+            y_cl = fit_predict(
+                data=src, clf=cl_time,
                 temporal_mode='panel',
             )
-            print(f"Dims:  {y.dims}")
 
-            y.isel(time=0).plot(robust=True, ax=axes[0])
-            axes[0].set_title('Supervised - time 0')
-            y.isel(time=1).plot(robust=True, ax=axes[1])
-            axes[1].set_title('Supervised - time 1')
+.. image:: _static/ml_cluster_time.png
+   :width: 700px
+   :alt: Unsupervised panel clustering over time
 
-    @savefig ml_supervised_time.png
-    plt.tight_layout(pad=1)
+
+Compare panel vs flatten
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: _static/ml_supervised_time.png
+   :width: 700px
+   :alt: Panel vs flatten comparison
 
 
 Classification with STAC satellite imagery
@@ -393,14 +425,6 @@ Set ``compute=True`` to download the data into memory with a progress bar.
     print(f"Shape: {data.shape}")   # (2, 4, 115, 134)
     print(f"Dims:  {data.dims}")    # ('time', 'band', 'y', 'x')
 
-    # Plot an RGB composite of the first time step
-    fig, ax = plt.subplots(dpi=200, figsize=(3, 3))
-    data.sel(time=data.time[0], band=["red", "green", "blue"]).plot.imshow(
-        robust=True, ax=ax
-    )
-    ax.set_title("Sentinel-2 RGB - Washington, D.C.")
-    plt.tight_layout(pad=1)
-
 .. image:: _static/stac_sentinel2_rgb.png
     :width: 400px
 
@@ -418,14 +442,9 @@ Select one time step with ``.isel(time=0)`` and pass it directly to
         ("clf", MiniBatchKMeans(n_clusters=5, random_state=0)),
     ])
 
-    # Select a single time step and classify
     single_image = data.isel(time=0)
     y_single = fit_predict(data=single_image, clf=cl_stac)
-
-    fig, ax = plt.subplots(dpi=200, figsize=(5, 5))
-    y_single.plot(robust=True, ax=ax)
-    ax.set_title("KMeans on single STAC image")
-    plt.tight_layout(pad=1)
+    y_single.plot(robust=True)
 
 .. image:: _static/stac_kmeans_single.png
     :width: 400px
@@ -434,6 +453,6 @@ Select one time step with ``.isel(time=0)`` and pass it directly to
 Save prediction output
 ----------------------
 
-.. code:: python
+.. code-block:: python
 
     y.gw.save('output.tif', overwrite=True)
