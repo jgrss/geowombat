@@ -58,7 +58,7 @@ jobs:
       - name: Run ml Unittests
         run: |
           uv pip install testfixtures
-          uv pip install --reinstall-package geowombat ".[ml]"
+          uv pip install --reinstall-package geowombat ".[ml,dl]"
           cd tests && python -m unittest discover -p 'ml_*.py'
 
   Tests-result:
