@@ -260,11 +260,15 @@ class ClassifiersMixin(object):
             src_nodata = nodatavals[0]
 
         if len(x.shape) == 3:
-            mask = np.any((x == src_nodata).values, 0)
+            # Reduce lazily over band dim, then compute the 2D mask
+            # (avoids materializing the full 3D boolean array)
+            mask = (x == src_nodata).any(dim=x.dims[0]).values
             return xr.where(mask, dst_nodata, y)
         else:
-            mask = np.any((x == src_nodata).values, 1, keepdims=True)
-            return xr.where(mask, dst_nodata, y)
+            mask = (x == src_nodata).any(dim=x.dims[1]).values
+            return xr.where(
+                mask[:, np.newaxis], dst_nodata, y
+            )
 
         # suggested by jordan
         # Set the 'no data' attribute

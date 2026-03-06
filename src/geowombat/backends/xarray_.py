@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import logging
 import os
 import typing as T
@@ -432,28 +431,10 @@ def mosaic(
         with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
             geometries.append(src_.gw.geometry)
 
-    # NaN-aware reduce functions for mosaic overlap handling
-    def custom_nanmax(left, right):
-        max_data = da.nanmax(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(max_data, dims=left.dims, coords=left.coords)
-
-    def custom_nanmin(left, right):
-        min_data = da.nanmin(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(min_data, dims=left.dims, coords=left.coords)
-
-    def custom_nanmean(left, right):
-        mean_data = da.nanmean(da.stack([left.data, right.data]), axis=0)
-        return xr.DataArray(mean_data, dims=left.dims, coords=left.coords)
-
     if overlap == 'min':
-        reduce_func = custom_nanmin
         tmp_nodata = 1e9
-    elif overlap == 'max':
-        reduce_func = custom_nanmax
+    elif overlap in ('max', 'mean'):
         tmp_nodata = -1e9
-    elif overlap == 'mean':
-        tmp_nodata = -1e9
-        reduce_func = custom_nanmean
 
     # Open all the data pointers
     data_arrays = [
@@ -471,10 +452,19 @@ def mosaic(
         for wo in warped_objects
     ]
 
-    # Apply the reduction
-    darray = functools.reduce(
-        lambda left, right: reduce_func(left, right),
-        data_arrays,
+    # Stack all arrays and reduce in one operation (O(1) graph
+    # depth instead of O(N) from pairwise functools.reduce)
+    stacked = da.stack([d.data for d in data_arrays], axis=0)
+    if overlap == 'min':
+        reduced = da.nanmin(stacked, axis=0)
+    elif overlap == 'max':
+        reduced = da.nanmax(stacked, axis=0)
+    elif overlap == 'mean':
+        reduced = da.nanmean(stacked, axis=0)
+    darray = xr.DataArray(
+        reduced,
+        dims=data_arrays[0].dims,
+        coords=data_arrays[0].coords,
     )
 
     # Reset the 'no data' values

@@ -421,39 +421,39 @@ class MapProcesses(object):
         hw = int(w * 0.5)
 
         @threadpool_limits.wrap(limits=1, user_api='blas')
-        def _move_func(block_data: np.ndarray) -> np.ndarray:
-            """
+        def _move_func_3d(block_data: np.ndarray) -> np.ndarray:
+            """Process all bands in a single block.
+
             Args:
-                block_data (2d array)
+                block_data: 3D array (band, y, x)
             """
-            if max(block_data.shape) <= hw:
-                return block_data
-            else:
-                return moving_window(
-                    block_data,
-                    stat=stat,
-                    w=w,
-                    perc=perc,
-                    nodata=nodata,
-                    weights=weights,
-                    n_jobs=1,
-                )
+            result = np.empty_like(block_data)
+            for i in range(block_data.shape[0]):
+                band_slice = block_data[i]
+                if max(band_slice.shape) <= hw:
+                    result[i] = band_slice
+                else:
+                    result[i] = moving_window(
+                        band_slice,
+                        stat=stat,
+                        w=w,
+                        perc=perc,
+                        nodata=nodata,
+                        weights=weights,
+                        n_jobs=1,
+                    )
+            return result
 
-        results = []
-        for band in data.band.values.tolist():
-            band_array = data.sel(band=band).astype('float64')
-            res = band_array.data.map_overlap(
-                _move_func,
-                depth=(hw, hw),
-                trim=True,
-                boundary='reflect',
-                dtype='float64',
-            )
-
-            results.append(res)
+        results = data.astype('float64').data.map_overlap(
+            _move_func_3d,
+            depth={0: 0, 1: hw, 2: hw},
+            trim=True,
+            boundary='reflect',
+            dtype='float64',
+        )
 
         results = xr.DataArray(
-            data=da.stack(results, axis=0),
+            data=results,
             dims=('band', 'y', 'x'),
             coords={'band': data.band, 'y': y, 'x': x},
             attrs=attrs,
