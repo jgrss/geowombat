@@ -1,0 +1,345 @@
+%% Journal of Open Research Software Latex template -- Created By Stephen Bonner and John Brennan, Durham Universtiy, UK.
+
+%https://openresearchsoftware.metajnl.com/articles/10.5334/jors.148/
+
+\documentclass{jors}
+
+%% Set the header information
+\pagestyle{fancy}
+\definecolor{mygray}{gray}{0.6}
+\renewcommand\headrule{}
+\rhead{\footnotesize 3}
+\rhead{\textcolor{gray}{UP JORS software Latex paper template version 0.1}}
+
+
+%%% JORDAN FEEL FREE TO MAKE ANY EDITS ANYWHERE! JUST LAYING OUT THE BASICS!
+%%% the journals instructions were inserted in blue text, most of which is commented out at the moment, but worth reading. 
+
+
+\usepackage[
+backend=biber,
+style=numeric,%authoryear-ibid,
+sorting=ynt
+]{biblatex} %Imports biblatex package
+\addbibresource{geowombat.bib} %Import the bibliography file 
+\usepackage{graphicx}
+
+
+\begin{document}
+
+{\bf Software paper for submission to the Journal of Open Research Software} \\
+
+To complete this template, please replace the blue text with your own. The paper has three main sections: (1) Overview; (2) Availability; (3) Reuse potential. \\
+
+Please submit the completed paper to: editor.jors@ubiquitypress.com
+
+\rule{\textwidth}{1pt}
+
+\section*{(1) Overview}
+
+\vspace{0.5cm}
+
+\section*{Title}
+
+%\textcolor{blue}
+%{The title of the software paper should focus on the software, e.g. “Text mining software from the X project”. If the software is closely linked to a specific research paper, then “Software from Paper Title” is appropriate. The title should be factual, relating to the functionality of the software and the area it relates to rather than making claims about the software, e.g. “Easy-to-use”.}
+
+GeoWombat - Scalable, on-the-fly handling of raster and remote sensing operations in Python
+
+\section*{Paper Authors}
+
+%\textcolor{blue}{1. Last name, first name; (Lead/corresponding author first) \\
+%2. Last name, first name; etc.}
+1. Graesser, Jordan  \\
+2. Mann, Michael L. 
+
+
+\section*{Paper Author Roles and Affiliations}
+%\textcolor{blue}{1. First author role and affiliation \\
+%2. Second author role and affiliation etc.}
+1. Senior Data Scientist - Indigo Agriculture\\
+2. Associate Professor - Department of Geography - The George Washington University
+
+\section*{Abstract}
+
+%\textcolor{blue}{A short (ca. 100 word) summary of the software being described: what problem the software addresses, how it was implemented and architected, where it is stored, and its reuse potential.}
+
+GeoWombat is an open source project and Python project that provides utilities to process spatial and time series of raster data at scale. One of the key features of GeoWombat is the on-the-fly handling of multiple raster files. In particular, GeoWombat leverages Rasterio and xarray to transform and align rasters with varying projections and spatial resolutions. It also provides a wide variety of common methods like cloud and STAC reads, co-registration, BRDF correction, mosaicing, deep-learning through PyTorch/Tensorflow/Keras, and Sklearn-base machine learning and prediction. GeoWombat utilizes the task graphs of Dask arrays to simplify parallel computations of one or more raster files of any size. 
+
+\section*{Keywords}
+remote sensing, raster, gridded data, python, machine learning, deep-learning, data analysis
+
+%\textcolor{blue}{keyword 1; keyword 2; etc. \\
+%Keywords should make it easy to identify who and what the software will be useful for.}
+
+\section*{Introduction}
+%\textcolor{blue}{An overview of the software, how it was produced, and the research for which it has been used, including references to relevant research articles. A short comparison with software which implements similar functionality should be included in this section. }
+
+Satellite remote sensing is a technique used to acquire information about the Earth's surface and atmosphere using sensors mounted on satellites. This technology enables the collection of large amounts of data over vast areas, making it a valuable tool for environmental monitoring, disaster management, agriculture, and other applications. Remote sensing data is collected in various wavelengths of the electromagnetic spectrum, including visible, infrared, and microwave, which enables the detection and characterization of physical and biological properties of the Earth's surface. The data collected by remote sensing satellites can be used to create maps, monitor land use changes, assess environmental impacts, and inform decision-making in various sectors. With the increasing availability of remote sensing data, this technology has become an essential tool for researchers and practitioners working in the field of Earth observation.\newline
+
+Python has become the leading programming language in a wide variety of sciences including remote sensing \cite{srinath2017python}. Developments in N-dimensional array handling using numpy \cite{harris2020array}, and particularly xarray \cite{xarray} and its integration with projects like Dask \cite{dask}, jax \cite{jax2018github}, and CUDA \cite{cuda} allow for intuitive and scalable analysis of multi-dimensional data in Python. Spatial data types can now be handle by projects like rasterio \cite{rasterio} and GDAL (\cite{GDAL}) for gridded spatial data formats like GeoTIFF, and geopandas \cite{geopandas} for spatial vectors. Once gridded arrays are accessible, they can be passed to tools like scikit-learn \cite{scikit-learn} for machine learning or for use in deep-learning with packages like Keras \cite{keras,pytorch,tensorflow} to predict labels. Together these packages provide all the core components for an end-to-end raster and remote sensing operations. Although these operations are possible outside of GeoWombat, implementing even simple operations, like co-registering or mosaicing multiple rasters requires a deep understanding of the underlying data structures, coordinate reference systems, and even affine transformations.  
+
+
+\subsection*{Purpose} 
+
+GeoWombat aims to fill this gap by providing an intuitive end-to-end platform for a variety of common spatial modeling and remote sensing operations in Python. It provides a wide variety of common methods like cloud and STAC reads, sub-pixel image co-registration, BRDF correction, mosaicing, point and polygon sampling/extraction, moving window operations, vegetation indices and transforms like EVI, NDVI and Tasseled-Cap, deep-learning through PyTorch/Tensorflow/Keras, and Sklearn modeling and prediction.
+\newline
+
+For instance, mosaicing two tiles using the mean for overlapping cells can be accomplished in a few line of code:
+
+\begin{verbatim}
+with gw.open([l8_224077_20200518, l8_224078_20200518],
+             band_names=['b','g','r','n'],
+             mosaic=True,
+             overlap='mean') as src:
+    print(src)    
+
+<xarray.DataArray (band: 4, y: 1515, x: 2006)>
+dask.array<maximum, shape=(4, 1515, 2006), dtype=uint16, chunksize=(1, 256, 256), chunktype=numpy.ndarray>
+Coordinates:
+  * band     (band) <U1 'b','g','r','n'
+  * x        (x) float64 6.94e+05 6.940e+05 6.941e+05 ... 7.541e+05 7.542e+05
+  * y        (y) float64 -2.767e+06 -2.767e+06 ... -2.812e+06 -2.812e+06
+Attributes: (12/13)
+    transform:           (30.0, 0.0, 694005.0, 0.0, -30.0, -2766615.0)
+    crs:                 32621
+    res:                 (30.0, 30.0)
+    is_tiled:            1
+    nodatavals:          (nan,)
+    _FillValue:          nan
+    ...                  ...
+    offsets:             (0.0,)
+    AREA_OR_POINT:       Point
+    resampling:          nearest
+    geometries:          [<POLYGON ((754185 -2812065, 754185 -2766615, 694005...
+    _data_are_separate:  1
+    _data_are_stacked:   0
+\end{verbatim}
+
+Complex operations like training and fitting machine learning models are also simple. In this example we will use a shapefile of land cover class examples to create labels, specify a sklearn pipeline that centers and scales the data, runs principal components, and trains/predicts using a Gaussian Naive Bayes model, with the output shown in Figure 1 below.
+
+\begin{verbatim}
+# create labels from polygons of different land cover types
+le = LabelEncoder()
+labels = gpd.read_file(l8_224078_20200518_polygons)
+labels['lc'] = le.fit(labels.name).transform(labels.name)
+
+# set up plot
+fig, ax = plt.subplots(dpi=200,figsize=(5,5))
+
+# create sklearn pipeline
+pl = Pipeline([('scaler', StandardScaler()),
+                ('pca', PCA()),
+                ('clf', GaussianNB())])
+
+# fit and predict pipeline based on training data labels
+with gw.open(l8_224078_20200518) as src:
+        y = fit_predict(src, pl, labels, col='landcover')
+        y.plot(robust=True, ax=ax)
+plt.tight_layout(pad=1)
+\end{verbatim}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{geowombat_jors_submissoin/images/f_rs_ml_predict_5_0.png}
+    \caption{Rendered land cover prediction using example labels.}
+    \label{fig:galaxy}
+\end{figure}
+\newpage
+
+On it's face it is designed with novice python users in mind, but likes its namesake, it's back end is strong enough to scale up cubes for a continental level analysis.  In order to scale, GeoWombat uses Dask arrays to build task graphs built on smaller chunks of data for parallel computations of one or more raster files of any size. To speed up computationally intensive methods - like generating time-series statistics on a pixel-by-pixel basis - also GeoWombat provides an intuitive interface for applying functions using a GPU with CUDA. \newline
+
+For instance time series statistics can be generated on a pixel-by-pixel basis using the apply function with jax:
+
+\begin{verbatim}
+filenames = ['image1.tif', 'image2.tif', ...]
+
+with gw.series(filenames) as src:
+    src.apply(['mean', 'max', 'cv'],
+              'temporal_stats.tif',
+              bands=1,
+              num_workers=4)    
+\end{verbatim}
+
+GeoWombat is an excellent tool for anyone working with spatial data, including GIS professionals, remote sensing scientists, and machine learning practitioners who need to process, analyze, and visualize large-scale raster data. Its extensive documentation and increasingly active development community make it a valuable resource for anyone looking to efficiently handle large-scale spatial data in Python.
+
+
+\section{Implementation and architecture}
+% python -m pydoc -b
+%\textcolor{blue}{How the software was implemented, with details of the architecture where relevant. Use of relevant diagrams is appropriate. Please also describe any variants and associated implementation differences.}
+
+\subsection*{Data Structure}
+
+\textcolor{red}{   NOT SURE WHAT TO PUT HERE. Look here for example \newline
+https://openresearchsoftware.metajnl.com/articles/10.5334/jors.148/ or here \newline
+https://openresearchsoftware.metajnl.com/articles/10.5334/jors.377/}
+
+
+\subsection*{Core Features}
+GeoWombat spans a wide set of features focusing on common raster and remote sensing methods. The online documentation will provide the most up-to-date description \cite{graesser_mann}.
+
+\begin{itemize}
+\item \textit{Simple read/write for a variety of sensors }: Common sensors profiles like ((Landsat, Sentinel etc)) and band configurations (RGBNir etc) allow of seamless I/O, scaling, and transforms based on spectral signature. 
+\item \textit{Cloud \& STAC reads}: Allows for each access to  collection from a spatio-temporal asset catalog (STAC) like AWS, microsoft and element84 as well as reading of cloud optimized GeoTIFFs.  
+\item \textit{Image mosaic \& masking}: Easily mosaic multiple images and handle missing data.   
+\item \textit{On-the-fly image transformations \& co-registration}: Reprojecting an image or aligning to a common grid can be done quickly an easily across multiple bands and across a time series. Automatic subpixel co-registration  of mulitple images is provided using AROSICS 
+\item \textit{Radiometry, QA masking }: Mask clouds, snow and water using QA bit-packed quality flags for HLS, Landsat, and Sentinel. Calcuate BRDF adjusted surface reflectance using the global c-factor method \cite{ROY2016255} for Landsat
+\item \textit{Point/Polygon extraction, rasterization}: Extract raster value - bands and time periods - using sample points or polygons or rasterize vector features to match an array.  
+\item \textit{Band math and common indices}: Using sensor profiles calculate a number of vegetation indices like avi, evi, gcvi, nbr, ndvi etc. 
+\item \textit{Image classification \& regression}: Utilize sklearn pipelines and cross validation to develop world-class supervised and unsupervised classification and regression models. 
+\item \textit{GPU driven time series analysis}: Utilize the power of GPU to calculate custom time series statistics (mean, max, trend etc) on a pixel by pixel basis.    
+\item \textit{Deep-learning}:   \textcolor{red}{ Same here}
+
+\end{itemize}
+
+
+\section*{Quality control}
+
+%\\textcolor{blue}{Detail the level of testing that has been carried out on the code (e.g. unit, functional, load etc.), and in which environments. If not already included in the software documentation, provide details of how a user could quickly understand if the software is working (e.g. providing examples of running the software with sample input and output data). }
+
+Unit and functional testing has been established for most of the core functions in GeoWombat. We employ Continuous Integration (CI) to continuously integrate code changes into a shared repository and regularly building, testing, and validating the software application to ensure that it meets our quality standards. 
+
+To run all tests after local installation simply run the following:
+
+\begin{verbatim}
+# install test fixtures
+pip install testfixtures
+
+# Run all unittests inside GeoWombat’s /tests directory:
+git clone https://github.com/jgrss/geowombat.git
+cd geowombat/tests
+python -m unittest
+
+# Run an individual test:
+python test_open.py
+\end{verbatim}
+
+\section*{(2) Availability}
+\vspace{0.5cm}
+\section*{Operating system}
+Linux, Windows and Mac OS X.
+%\textcolor{blue}{Please include minimum version compatibility.}
+
+\section*{Programming language}
+Python 3.8 and later
+%\textcolor{blue}{Please include minimum version compatibility.}
+
+\section*{Additional system requirements}
+Suggested minimum 16GB RAM
+%/\textcolor{blue}{E.g. memory, disk space, processor, input devices, output devices.}
+
+\section*{Dependencies}
+\begin{itemize}
+\item python  $\ge$ 3.8
+\item cython  $\ge$ 0.29.*
+\item dask  $\ge$ 2022.1.1
+\item distributed  $\ge$ 2022.1.1
+\item geopandas  $\ge$ 0.8.0
+\item joblib  $\ge$ 0.16.0
+\item matplotlib  $\ge$ 3.3.0
+\item numpy  $\ge$ 1.19.0
+\item opencv-python   
+\item pandas  $\ge$ 1.*
+\item pyproj  $\ge$ 3.0.0, $<$ 4.0.0
+\item rasterio  $\ge$ 1.3.0, $<$ 2.0.0
+\item requests  $\ge$ 2.20.0
+\item scikit-learn  $\ge$ 0.23.0
+\item scipy  $\ge$ 1.5.0
+\item shapely  $\ge$ 1.7.0
+\item tqdm  $\ge$ 4.62.0
+\item xarray  $\ge$ 2022.6.0
+\item h5netcdf $\ge$ 1.0.2
+\item opencv-python $\ge$ 4.6.*
+\item threadpoolctl $\ge$ 3.1.0
+\item setuptools  $\ge$ 59.5.0
+\item retry   
+\item cryptography
+\end{itemize}
+
+    
+% \textcolor{blue}{E.g. libraries, frameworks, incl. minimum version compatibility.}
+
+\section*{List of contributors}
+The vast majority of design and code was developed by Jordan Graesser. Additional support including sklearn and conda integration was provided by Michael Mann. 
+%/\textcolor{blue}{Please list anyone who helped to create the software (who may also not be an author of this paper), including their roles and affiliations.}
+
+\section*{Software location:}
+
+%/{\bf Archive} \textcolor{blue}{(e.g. institutional repository, general repository) (required – please see instructions on journal website for depositing archive copy of software in a suitable repository)} 
+
+%/\begin{description}[noitemsep,topsep=0pt]
+%/	\item[Name:] \textcolor{blue}{The name of the archive.}
+%/	\item[Persistent identifier:] \textcolor{blue}{e.g. DOI, handle, PURL, etc.}
+%/	\item[Licence:] \textcolor{blue}{Open license under which the software is licensed.}
+%/	\item[Publisher:]  \textcolor{blue}{Name of the person who deposited the software.}
+%/	\item[Version published:] \textcolor{blue}{The version number of the software archived.}
+%/	\item[Date published:] \textcolor{blue}{dd/mm/yy}
+%/\end{description}
+
+
+
+{\bf Code repository} 
+%\textcolor{blue}{(e.g. SourceForge, GitHub etc.) (required)}
+GitHub
+
+\begin{description}[noitemsep,topsep=0pt]
+	\item[Name:] geowombat
+	\item[Persistent identifier:] https://github.com/jgrss/geowombat/ %\textcolor{blue}{e.g. DOI, handle, PURL, etc.}
+	\item[Licence:] MIT
+	\item[Date published:]  16/01/20
+\end{description}
+
+%/{\bf Emulation environment} \textcolor{blue}{(if appropriate)}
+
+%/\begin{description}[noitemsep,topsep=0pt]
+%/	\item[Name:] \textcolor{blue}{The name of the archive.}
+%/	\item[Persistent identifier:] \textcolor{blue}{e.g. DOI, handle, PURL, etc.}
+%/	\item[Licence:] \textcolor{blue}{Open license under which the software is licensed.}
+%/	\item[Date published:] \textcolor{blue}{dd/mm/yy}
+%/\end{description}
+
+\section*{Language}
+English
+%\textcolor{blue}{Language of repository, software and supporting files.}
+
+\section*{(3) Reuse potential}
+
+\textcolor{blue}{Please describe in as much detail as possible the ways in which the software could be reused by other researchers both within and outside of your field. This should include the use cases for the software, and also details of how the software might be modified or extended (including how contributors should contact you) if appropriate. Also you must include details of what support mechanisms are in place for this software (even if there is no support).}
+
+%/\section*{Acknowledgements}
+
+%/\textcolor{blue}{Please add any relevant acknowledgements to anyone else who supported the project in which the software was created, but did not work directly on the software itself.}
+
+\section*{Funding statement}
+This project was not financially supported.
+%/\textcolor{blue}{If the software resulted from funded research please give the funder and grant number.}
+
+\section*{Competing interests}
+The authors declare that they have no competing interests.
+%/\textcolor{blue}{If any of the authors have any competing interests then these must be declared. The authors’ initials should be used to denote differing competing interests. For example: “BH has minority shares in [company name], which part funded the research grant for this project. All other authors have no competing interests." \\}
+
+\section*{References}
+
+%\textcolor{blue}{Please enter references in the Harvard style and include a DOI where available, citing them in the text with a number in square brackets, e.g. \\ }
+
+%\textcolor{blue}{[1] Piwowar, H A 2011 Who Shares? Who Doesn't? Factors Associated with Openly Archiving Raw Research Data. PLoS ONE 6(7): e18657. DOI: \\ http://dx.doi.org/10.1371/journal.pone.0018657.}
+
+
+
+\printbibliography %Prints bibliography
+
+\vspace{2cm}
+
+\rule{\textwidth}{1pt}
+
+{ \bf Copyright Notice} \\
+Authors who publish with this journal agree to the following terms: \\
+
+Authors retain copyright and grant the journal right of first publication with the work simultaneously licensed under a  \href{http://creativecommons.org/licenses/by/3.0/}{Creative Commons Attribution License} that allows others to share the work with an acknowledgement of the work's authorship and initial publication in this journal. \\
+
+Authors are able to enter into separate, additional contractual arrangements for the non-exclusive distribution of the journal's published version of the work (e.g., post it to an institutional repository or publish it in a book), with an acknowledgement of its initial publication in this journal. \\
+
+By submitting this paper you agree to the terms of this Copyright Notice, which will apply to this submission if and when it is published by this journal.
+
+
+\end{document}
