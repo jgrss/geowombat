@@ -1,4 +1,4 @@
-, 
+---
 title: 'GeoWombat: Scalable geospatial and remote sensing analysis in Python'
 tags:
   - Python
@@ -34,7 +34,7 @@ affiliations:
     index: 4
 date: 7 April 2026
 bibliography: paper.bib
-, 
+---
 
 # Summary
 
@@ -90,15 +90,31 @@ The library is organized into the following modules:
 
 - **Machine learning** (`ml/`): Integration with scikit-learn pipelines for supervised and unsupervised classification and regression, including `fit()`, `predict()`, and `fit_predict()` workflows with built-in support for spatial cross-validation (\autoref{fig:classification}). Deep learning is supported via PyTorch [@pytorch] with TorchGeo [@torchgeo] integration for architectures including TabNet, Lightweight Temporal Attention Encoder (L-TAE), and segmentation models (UNet, DeepLabV3).
 
+
 - **Time series analysis** (`core/series.py`): The `gw.series()` interface processes multi-date image stacks with GPU acceleration via JAX [@jax2018github], computing per-pixel temporal statistics including mean, median, amplitude, coefficient of variation, linear slope, percentiles, and quarterly decompositions.
 
 - **Task workflows** (`tasks/`): A directed acyclic graph builder for defining and executing multi-step processing pipelines, with optional distributed execution via Ray.
 
-![Multi-temporal land cover classification using GeoWombat's scikit-learn pipeline integration. Panel predictions at two time steps demonstrate the library's ability to train and predict across image time series with minimal code.\label{fig:classification}](ml_cluster_time.png){ width=90% }
+``` python
+labels_poly = gpd.read_file(training_labels.geojson)
+
+pipe = Pipeline(
+    [('scaler', StandardScaler()),
+        ('pca', PCA(2)),
+        ('clf', GaussianNB()),]
+)
+
+with gw.config.update(ref_res=150):
+    with gw.open(l8_224078_20200518, nodata=0) as src:
+        y = fit_predict(data=src, clf=pipe, labels=labels_poly, col='lc')
+        y.plot(robust=True)
+```
+
+![Multi-band land cover classification using GeoWombat's scikit-learn pipeline integration. The `fit_predict` method demonstrate the library's ability to train and predict ML piplines with minimal code.\label{fig:classification}](fit_predict.png){ width=90% }
 
 # Research impact
 
-GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 50,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
+GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 50,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
 
 
 # AI usage disclosure
