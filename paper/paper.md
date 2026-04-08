@@ -101,6 +101,10 @@ The library is organized into the following modules:
 GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 50,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
 
 
+# AI usage disclosure
+
+The paper was initially drafted in full by the authors. Generative AI (Claude, Anthropic) was subsequently used to improve clarity, restructure content, and conform the manuscript to JOSS formatting requirements. All content was reviewed and verified by the authors. No generative AI was used in the initial five years of development of the GeoWombat software but is now being used to help maintain it and add new features.
+
 # Acknowledgements
 
 We thank all contributors to the GeoWombat project, including Leonardo Hardtke, Robert Denham, and Sharon Xu. This project was not financially supported by any grant funding.
