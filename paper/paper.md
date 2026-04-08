@@ -114,7 +114,7 @@ with gw.config.update(ref_res=150):
 
 # Research impact
 
-GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 50,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
+GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 540,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
 
 
 # AI usage disclosure
