@@ -8,9 +8,10 @@ Prerequisites
 
 GeoWombat requires **Python 3.10, 3.11, or 3.12**.
 
-The recommended installation method is **Conda**, which handles all
-dependencies automatically on every platform. If you prefer pip, see the
-sections below — no system GDAL installation is required.
+The recommended installation method is **Conda**, which handles the core
+dependencies (including GDAL/rasterio) automatically on every platform.
+Optional extras are available as separate Conda sub-packages (see
+:ref:`optional-extras` below). If you prefer pip, see the sections below.
 
 
 Install with Conda (recommended)
@@ -47,12 +48,6 @@ GeoWombat includes Cython extensions that must be compiled, a C compiler is
 required (``gcc`` on Linux, Xcode command-line tools on macOS, or Visual Studio
 Build Tools on Windows).
 
-.. note::
-
-    **System GDAL is not required.** GeoWombat depends on ``rasterio<1.5.0``,
-    which bundles its own GDAL libraries. You do not need to install GDAL
-    binaries separately.
-
 .. tabs::
 
     .. tab:: Linux / macOS
@@ -84,6 +79,70 @@ Build Tools on Windows).
         To include optional extras::
 
             pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+
+
+GDAL system libraries
+---------------------
+
+**Most users do not need to install GDAL separately.** GeoWombat depends on
+``rasterio<1.5.0``, which ships with its own bundled GDAL libraries on all
+platforms. The bundled GDAL is sufficient for reading and writing GeoTIFFs,
+reprojection, warping, and all standard GeoWombat operations.
+
+However, a **system GDAL installation** may be needed if you:
+
+- Want to use GDAL command-line tools (``gdalinfo``, ``gdal_translate``, etc.)
+  outside of Python
+- Need drivers not included in the rasterio wheel (e.g., certain HDF or
+  database-backed formats)
+- Are building rasterio or GDAL Python bindings from source
+
+.. tabs::
+
+    .. tab:: macOS
+
+        Install GDAL via `Homebrew <https://brew.sh/>`_::
+
+            brew install gdal
+
+        Verify the installation::
+
+            gdalinfo --version
+
+    .. tab:: Windows
+
+        The easiest option is to use **Conda**, which installs GDAL
+        automatically as a dependency of rasterio::
+
+            conda install -c conda-forge gdal
+
+        Alternatively, install via `OSGeo4W <https://trac.osgeo.org/osgeo4w/>`_:
+
+        1. Download the `OSGeo4W installer <https://trac.osgeo.org/osgeo4w/>`_.
+        2. Run the installer and select **GDAL** from the package list.
+        3. Add the OSGeo4W ``bin`` directory to your system ``PATH``.
+
+        Verify::
+
+            gdalinfo --version
+
+    .. tab:: Linux
+
+        Install from your package manager::
+
+            # Ubuntu / Debian
+            sudo apt install gdal-bin libgdal-dev
+
+            # Fedora / RHEL
+            sudo dnf install gdal gdal-devel
+
+        Or via Conda::
+
+            conda install -c conda-forge gdal
+
+        Verify::
+
+            gdalinfo --version
 
 
 Development install
@@ -131,11 +190,12 @@ For contributors who want an editable install:
             pre-commit run --all-files
 
 
+.. _optional-extras:
+
 Optional extras
 ---------------
 
 GeoWombat provides optional dependency groups for specific functionality.
-Append ``[extra_name]`` to your install command to include them.
 
 .. list-table::
    :header-rows: 1
@@ -144,11 +204,13 @@ Append ``[extra_name]`` to your install command to include them.
    * - Extra
      - Description
    * - ``ml``
-     - Machine learning and classification (dask-ml, lightgbm, sklearn-xarray)
+     - Machine learning and classification (dask-ml, lightgbm, sklearn-xarray, numba)
+   * - ``dl``
+     - Deep learning (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
    * - ``stac``
      - STAC catalog data access (pystac, stackstac, planetary-computer)
    * - ``coreg``
-     - Co-registration (arosics and dependencies)
+     - Sub-pixel co-registration (arosics and dependencies)
    * - ``perf``
      - Performance: rtree, pygeos, netCDF4, ray
    * - ``time``
@@ -164,13 +226,45 @@ Append ``[extra_name]`` to your install command to include them.
    * - ``tests``
      - Testing dependencies (testfixtures, pre-commit, etc.)
 
-Multiple extras can be combined::
+Installing extras with pip
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # Conda (all extras are included automatically)
-    conda install geowombat
+Append ``[extra_name]`` to your pip install command. Multiple extras can be
+combined::
 
-    # pip (specify extras explicitly)
     pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+
+Installing extras with Conda
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With Conda, optional extras are installed as **separate sub-packages** — they
+are *not* included by a plain ``conda install geowombat``. Install them by
+name, e.g.::
+
+    conda install geowombat-ml geowombat-stac
+
+The available Conda sub-packages are: ``geowombat-ml``, ``geowombat-stac``,
+``geowombat-coreg``, ``geowombat-perf``, ``geowombat-view``, ``geowombat-web``,
+``geowombat-zarr``, ``geowombat-docs``, and ``geowombat-tests``.
+
+See the `conda-forge feedstock <https://github.com/conda-forge/geowombat-feedstock>`_
+for the full recipe.
+
+.. note::
+
+    **Conda differences from pip extras:**
+
+    - ``time`` (dateparser) is included in the **base** Conda package
+      automatically; with pip it is an optional extra.
+    - ``dl`` (deep learning) is **not available** as a Conda sub-package.
+      Install deep learning dependencies with pip::
+
+          pip install torch pytorch-tabnet torchgeo segmentation-models-pytorch
+
+    - A few packages are unavailable on conda-forge and are omitted from the
+      Conda sub-packages: ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs``
+      (docs), and ``pygeos`` (perf; deprecated — its functionality is now in
+      shapely 2.0+).
 
 
 Test the installation
