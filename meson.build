@@ -112,6 +112,9 @@ py3.install_sources(
         'src/geowombat/ml/classifiers.py',
         'src/geowombat/ml/dl_classifiers.py',
         'src/geowombat/ml/transformers.py',
+        'src/geowombat/ml/detection_data.py',
+        'src/geowombat/ml/detectors.py',
+        'src/geowombat/ml/detection_metrics.py',
     ],
     subdir: 'geowombat/ml',
     pure: false

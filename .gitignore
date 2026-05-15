@@ -62,3 +62,14 @@ bin/act
 CLAUDE.md
 doc/test.ipynb
 test.ipynb
+
+.venv/*
+
+# Object detection module artifacts (object_detection.ipynb runtime)
+# - VHR-10 dataset (~700 MB), NAIP clips, YOLO training tiles, review GPKG
+# - Ultralytics weights and training run output
+object_detection_demo/
+notebooks/object_detection_demo/
+runs/
+notebooks/runs/
+*.pt

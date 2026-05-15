@@ -486,3 +486,37 @@ Save predictions
 .. code-block:: python
 
     y.gw.save('classification.tif', overwrite=True)
+
+
+Object detection
+----------------
+
+In addition to pixel/patch classification, geowombat ships object
+detectors (axis-aligned and oriented bounding boxes) that return
+georeferenced ``GeoDataFrame`` outputs:
+
+- ``geowombat.ml.YOLODetector`` — Ultralytics YOLO (AGPL-3.0). Requires
+  ``pip install geowombat[detect]``.
+- ``geowombat.ml.TorchGeoDetector`` — Faster R-CNN / RetinaNet via
+  TorchVision + optional TorchGeo weights. Already covered by
+  ``geowombat[dl]``.
+- ``geowombat.ml.SAMRefiner`` — refine boxes to polygon masks with
+  Segment Anything. Requires ``pip install geowombat[sam]``.
+
+Training-data builders and accuracy assessment:
+
+- ``geowombat.ml.boxes_from_polygons`` — convert polygon labels to
+  axis-aligned or oriented boxes.
+- ``geowombat.ml.build_yolo_dataset`` — tile a ``gw.open()``'d raster
+  + label GeoDataFrame into a YOLO-format dataset on disk.
+- ``geowombat.ml.detection_accuracy`` — per-class precision / recall /
+  F1 / AP at one or more IoU thresholds, with a review-ready
+  ``GeoDataFrame``.
+- ``geowombat.ml.export_for_review`` / ``recompute_from_review`` —
+  write a GeoPackage you can step through in QGIS (e.g. with the
+  GoToNextFeature3+ plugin), and recompute metrics after a human has
+  filled in the ``reviewer_label`` field.
+
+See the ``notebooks/object_detection.ipynb`` notebook for an end-to-end
+walkthrough using NAIP aerial imagery plus OpenStreetMap building
+footprints.

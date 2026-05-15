@@ -136,6 +136,18 @@ dl = [
     "segmentation-models-pytorch>=0.3.0",
 ]
 
+detect = [
+    "ultralytics>=8.2",
+    "torchmetrics>=1.0",
+    "pycocotools",
+    "pyyaml",
+    "pillow",
+]
+
+sam = [
+    "segment-anything>=1.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/jgrss/geowombat"
 Documentation = "https://geowombat.readthedocs.io"

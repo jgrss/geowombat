@@ -21,3 +21,40 @@ try:
     ]
 except ImportError:
     pass
+
+# Object detection: training-data builders + metrics import without
+# requiring the heavy [detect]/[sam] extras (they only need shapely,
+# geopandas, pandas, numpy, matplotlib). Detector classes themselves
+# import lazily inside their constructors.
+try:
+    from .detection_data import boxes_from_polygons, build_yolo_dataset
+    from .detection_metrics import (
+        detection_accuracy,
+        export_for_review,
+        recompute_from_review,
+        plot_detections,
+    )
+    __all__ += [
+        'boxes_from_polygons',
+        'build_yolo_dataset',
+        'detection_accuracy',
+        'export_for_review',
+        'recompute_from_review',
+        'plot_detections',
+    ]
+except ImportError:
+    pass
+
+try:
+    from .detectors import (
+        YOLODetector,
+        TorchGeoDetector,
+        SAMRefiner,
+    )
+    __all__ += [
+        'YOLODetector',
+        'TorchGeoDetector',
+        'SAMRefiner',
+    ]
+except ImportError:
+    pass
