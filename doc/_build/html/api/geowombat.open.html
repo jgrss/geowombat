@@ -443,17 +443,11 @@ Default is None.</p></li>
 <li><p><strong>stack_dim</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The stack dimension. Choices are [‘time’, ‘band’].</p></li>
 <li><p><strong>bounds</strong> (<em>Optional</em><em>[</em><em>1d array-like</em><em>]</em>) – A bounding box to subset to, given as [minx, maxy, miny, maxx].
 Default is None.</p></li>
-<li><p><strong>bounds_by</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – <p>How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and
-<code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>. Choices are [‘intersection’, ‘union’, ‘reference’].
-* reference: Use the bounds of the reference image. If a <code class="docutils literal notranslate"><span class="pre">ref_image</span></code> is not given, the first image in</p>
-<blockquote>
-<div><p>the <code class="docutils literal notranslate"><span class="pre">filename</span></code> list is used.</p>
-</div></blockquote>
-<ul>
-<li><p>intersection: Use the intersection (i.e., minimum extent) of all the image bounds</p></li>
-<li><p>union: Use the union (i.e., maximum extent) of all the image bounds</p></li>
-</ul>
-</p></li>
+<li><p><strong>bounds_by</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to concatenate the output extent if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mosaic</span></code> = <code class="docutils literal notranslate"><span class="pre">False</span></code>. Choices are <code class="docutils literal notranslate"><span class="pre">'intersection'</span></code> (use the minimum extent of all image
+bounds), <code class="docutils literal notranslate"><span class="pre">'union'</span></code> (use the maximum extent of all image bounds), or <code class="docutils literal notranslate"><span class="pre">'reference'</span></code>
+(use the bounds of the reference image; if a <code class="docutils literal notranslate"><span class="pre">ref_image</span></code> is not given, the first image
+in the <code class="docutils literal notranslate"><span class="pre">filename</span></code> list is used).</p></li>
 <li><p><strong>resampling</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The resampling method if <code class="docutils literal notranslate"><span class="pre">filename</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>. Choices are
 [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘gauss’,
 ‘lanczos’, ‘max’, ‘med’, ‘min’, ‘mode’, ‘nearest’].</p></li>

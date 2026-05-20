@@ -669,12 +669,10 @@ document.write(`
 <span class="sd">        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].</span>
 <span class="sd">            Default is None.</span>
 <span class="sd">        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and</span>
-<span class="sd">            ``mosaic`` = ``False``. Choices are [&#39;intersection&#39;, &#39;union&#39;, &#39;reference&#39;].</span>
-<span class="sd">            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in</span>
-<span class="sd">              the ``filename`` list is used.</span>
-<span class="sd">            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds</span>
-<span class="sd">            * union: Use the union (i.e., maximum extent) of all the image bounds</span>
-
+<span class="sd">            ``mosaic`` = ``False``. Choices are ``&#39;intersection&#39;`` (use the minimum extent of all image</span>
+<span class="sd">            bounds), ``&#39;union&#39;`` (use the maximum extent of all image bounds), or ``&#39;reference&#39;``</span>
+<span class="sd">            (use the bounds of the reference image; if a ``ref_image`` is not given, the first image</span>
+<span class="sd">            in the ``filename`` list is used).</span>
 <span class="sd">        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are</span>
 <span class="sd">            [&#39;average&#39;, &#39;bilinear&#39;, &#39;cubic&#39;, &#39;cubic_spline&#39;, &#39;gauss&#39;,</span>
 <span class="sd">            &#39;lanczos&#39;, &#39;max&#39;, &#39;med&#39;, &#39;min&#39;, &#39;mode&#39;, &#39;nearest&#39;].</span>

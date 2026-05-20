@@ -1,3 +1,5 @@
+:orphan:
+
 geowombat package
 =================
 
@@ -7,10 +9,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   geowombat.backends
-   geowombat.bin
    geowombat.core
-   geowombat.data
    geowombat.ml
    geowombat.moving
    geowombat.radiometry
