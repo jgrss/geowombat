@@ -73,3 +73,7 @@ notebooks/object_detection_demo/
 runs/
 notebooks/runs/
 *.pt
+
+# Sphinx build output (built by RTD on demand; never commit)
+doc/_build/
+doc/source/.jupyter_cache/

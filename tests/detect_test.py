@@ -7,12 +7,14 @@ Detector-class tests (YOLO / TorchGeo / SAM) are guarded by import
 flags and skipped when the optional dependencies are missing.
 """
 
+import os
 import tempfile
 import unittest
 import warnings
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 from shapely.geometry import Polygon, box as shapely_box
 
 import geowombat as gw
@@ -27,6 +29,13 @@ from geowombat.detect import (
     export_for_review,
     recompute_from_review,
 )
+from geowombat.detect._tiling import overlapped_windows
+from geowombat.detect.data import (
+    _polygon_to_yolo_aabb,
+    _polygon_to_yolo_obb,
+    _scale_to_uint8,
+)
+from geowombat.detect.detectors import _nms_geodataframe
 
 try:
     import PIL  # noqa: F401
@@ -45,6 +54,22 @@ try:
     ULTRALYTICS_AVAILABLE = True
 except ImportError:
     ULTRALYTICS_AVAILABLE = False
+
+try:
+    import torchvision  # noqa: F401
+    TORCHVISION_AVAILABLE = True
+except ImportError:
+    TORCHVISION_AVAILABLE = False
+
+try:
+    import segment_anything  # noqa: F401
+    SAM_AVAILABLE = True
+except ImportError:
+    SAM_AVAILABLE = False
+
+# Optional SAM checkpoint path for refiner tests. Skipped unless set
+# because the constructor needs to load a real ~375 MB weights file.
+SAM_CHECKPOINT = os.environ.get('GEOWOMBAT_SAM_CHECKPOINT')
 
 
 # ---------------------------------------------------------------------------
@@ -178,6 +203,58 @@ class TestBuildYoloDataset(unittest.TestCase):
                         # class_id + 8 corner coords
                         self.assertEqual(len(parts), 9)
 
+    def test_background_ratio_retains_empty_tiles(self):
+        """background_ratio=1.0 keeps every empty tile; 0.0 drops them all."""
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                labels = self._label_gdf(src)
+                kwargs = dict(
+                    class_col='class_name', tile_size=64, overlap=0.0,
+                    band_indices=[2, 1, 0], scale=(0, 10000),
+                    min_box_pixels=2, val_split=0.0, seed=0,
+                )
+                with tempfile.TemporaryDirectory() as td_drop:
+                    info_drop = build_yolo_dataset(
+                        src, labels, out_dir=td_drop,
+                        background_ratio=0.0, **kwargs,
+                    )
+                with tempfile.TemporaryDirectory() as td_keep:
+                    info_keep = build_yolo_dataset(
+                        src, labels, out_dir=td_keep,
+                        background_ratio=1.0, **kwargs,
+                    )
+        # Same labelled-tile count, but background_ratio=1.0 keeps the
+        # empty tiles too — strictly more total training tiles.
+        total_drop = info_drop['n_train'] + info_drop['n_val']
+        total_keep = info_keep['n_train'] + info_keep['n_val']
+        self.assertGreater(total_keep, total_drop)
+
+    def test_class_names_override_writes_yaml_order(self):
+        """Passing class_names=[...] pins the order in data.yaml."""
+        import yaml as yaml_mod
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                labels = self._label_gdf(src)
+                # Force a specific (non-alphabetical) ordering.
+                forced = ['water', 'crop', 'tree', 'developed']
+                with tempfile.TemporaryDirectory() as td:
+                    info = build_yolo_dataset(
+                        src, labels, class_col='class_name',
+                        out_dir=td, tile_size=128, overlap=0.0,
+                        band_indices=[2, 1, 0], scale=(0, 10000),
+                        min_box_pixels=2, class_names=forced,
+                    )
+                    with open(Path(td) / 'data.yaml') as f:
+                        cfg = yaml_mod.safe_load(f)
+        self.assertEqual(info['classes'], forced)
+        # data.yaml's `names` block should reflect the override order.
+        names = cfg['names']
+        if isinstance(names, dict):
+            ordered = [names[i] for i in sorted(names)]
+        else:
+            ordered = list(names)
+        self.assertEqual(ordered, forced)
+
 
 # ---------------------------------------------------------------------------
 # detection_accuracy
@@ -271,6 +348,54 @@ class TestDetectionAccuracy(unittest.TestCase):
         self.assertIn('FP_class', statuses)
         self.assertIn('FN', statuses)
 
+    def test_coco_thresholds_emits_50_95_summary(self):
+        """iou_thresholds='coco' expands to 0.5..0.95 and adds mAP@[.5:.95]."""
+        truth, pred = self._make(
+            [(shapely_box(0, 0, 10, 10), 'a')],
+            [(shapely_box(0, 0, 10, 10), 'a', 0.9)],
+        )
+        res = detection_accuracy(pred, truth, iou_thresholds='coco')
+        summary = res['summary']
+        self.assertIn('mAP@[.5:.95]', summary)
+        # 10 thresholds 0.5, 0.55, ..., 0.95
+        per_thr_keys = [k for k in summary
+                        if k.startswith('mAP@') and k != 'mAP@[.5:.95]']
+        self.assertEqual(len(per_thr_keys), 10)
+        # Perfect alignment → 1.0 across the board.
+        self.assertAlmostEqual(summary['mAP@[.5:.95]'], 1.0, places=5)
+
+    def test_class_agnostic_ignores_class_labels(self):
+        """class_agnostic=True matches any-class pred to any-class truth."""
+        truth, pred = self._make(
+            [(shapely_box(0, 0, 10, 10), 'a')],
+            # Same geometry but a different class label
+            [(shapely_box(0, 0, 10, 10), 'b', 0.9)],
+        )
+        # With classes considered, this is FP_class + FN (see test above).
+        res_classed = detection_accuracy(pred, truth, iou_thresholds=(0.5,))
+        self.assertIn('FP_class', res_classed['matched']['status'].tolist())
+        # With class_agnostic=True it's a clean TP.
+        res_agn = detection_accuracy(
+            pred, truth, iou_thresholds=(0.5,), class_agnostic=True,
+        )
+        self.assertEqual(res_agn['metrics'].loc[(0.5, '_all_'), 'tp'], 1)
+        self.assertEqual(res_agn['metrics'].loc[(0.5, '_all_'), 'fp'], 0)
+        self.assertEqual(res_agn['metrics'].loc[(0.5, '_all_'), 'fn'], 0)
+
+    def test_crs_mismatch_reprojected_before_matching(self):
+        """Truth in EPSG:4326 + preds in EPSG:32617 still match correctly."""
+        truth, pred = self._make(
+            [(shapely_box(500000, 4000000, 500100, 4000100), 'a')],
+            [(shapely_box(500000, 4000000, 500100, 4000100), 'a', 0.9)],
+        )
+        # Reproject only the truth to a different CRS.
+        truth_4326 = truth.to_crs('EPSG:4326')
+        res = detection_accuracy(pred, truth_4326, iou_thresholds=(0.5,))
+        # After reprojection the matched IoU is very close to 1.0 — small
+        # imprecision from the 4326 round-trip is acceptable.
+        self.assertEqual(res['metrics'].loc[(0.5, 'a'), 'tp'], 1)
+        self.assertEqual(res['metrics'].loc[(0.5, 'a'), 'fp'], 0)
+
 
 # ---------------------------------------------------------------------------
 # QGIS review round-trip
@@ -347,6 +472,25 @@ class TestYOLODetectorSmoke(unittest.TestCase):
         self.assertIsInstance(gdf, gpd.GeoDataFrame)
         for col in ['geometry', 'class_id', 'class_name', 'score']:
             self.assertIn(col, gdf.columns)
+
+    def test_oriented_auto_detected_from_filename(self):
+        """`-obb.pt` filenames flip self.oriented to True without an explicit kwarg."""
+        from unittest.mock import patch, MagicMock
+        from geowombat.detect import YOLODetector
+
+        fake_model = MagicMock()
+        fake_model.names = {0: 'plane'}
+        # Don't actually load weights — stub ultralytics.YOLO.
+        with patch('ultralytics.YOLO', return_value=fake_model):
+            det_aabb = YOLODetector(weights='yolov8n.pt')
+            det_obb = YOLODetector(weights='yolov8n-obb.pt')
+            det_explicit = YOLODetector(
+                weights='yolov8n.pt', oriented=True,
+            )
+        self.assertFalse(det_aabb.oriented)
+        self.assertTrue(det_obb.oriented)
+        # Explicit kwarg wins over filename heuristic.
+        self.assertTrue(det_explicit.oriented)
 
 
 # ---------------------------------------------------------------------------
@@ -453,6 +597,346 @@ class TestDetectAccessor(unittest.TestCase):
                     c = predict(src, det, **kwargs)
         self.assertEqual(len(a), len(b))
         self.assertEqual(len(a), len(c))
+
+
+# ---------------------------------------------------------------------------
+# Tiling: overlapped_windows
+# ---------------------------------------------------------------------------
+
+class TestTilingWindows(unittest.TestCase):
+
+    def test_zero_overlap_covers_whole_image(self):
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                wins = list(overlapped_windows(src, tile_size=64, overlap=0.0))
+        self.assertGreater(len(wins), 0)
+        # Every tile should be the full tile_size (last-tile-shifted-back).
+        for _, _, w in wins:
+            self.assertLessEqual(w.width, 64)
+            self.assertLessEqual(w.height, 64)
+        # No tile should exceed image bounds.
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                for _, _, w in wins:
+                    self.assertLessEqual(w.col_off + w.width, src.gw.ncols)
+                    self.assertLessEqual(w.row_off + w.height, src.gw.nrows)
+
+    def test_overlap_yields_more_tiles(self):
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                no = list(overlapped_windows(src, tile_size=64, overlap=0.0))
+                hi = list(overlapped_windows(src, tile_size=64, overlap=0.5))
+        # Higher overlap → strictly more (or equal) tiles.
+        self.assertGreaterEqual(len(hi), len(no))
+
+    def test_last_tile_shifted_back_for_non_divisible(self):
+        """When image isn't a multiple of tile_size, the last tile shifts
+        backwards so it still fits — never overflows."""
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                # Pick a tile_size that won't divide the image evenly.
+                w = src.gw.ncols
+                h = src.gw.nrows
+                tile = max(1, min(w, h) - 7)
+                wins = list(overlapped_windows(src, tile_size=tile, overlap=0.0))
+                # The last column's right edge equals image width.
+                last_col = max(w_.col_off + w_.width for _, _, w_ in wins)
+                last_row = max(w_.row_off + w_.height for _, _, w_ in wins)
+                self.assertEqual(last_col, w)
+                self.assertEqual(last_row, h)
+
+
+# ---------------------------------------------------------------------------
+# YOLO label math (polygon → normalized label)
+# ---------------------------------------------------------------------------
+
+class TestYoloLabelMath(unittest.TestCase):
+    """Direct unit tests for the pixel math in _polygon_to_yolo_aabb /
+    _polygon_to_yolo_obb. Subtle bugs here would silently corrupt the
+    training data on disk, so we test them in isolation rather than only
+    through build_yolo_dataset."""
+
+    def test_aabb_inside_tile_normalizes_correctly(self):
+        # tile_xmin=0, tile_ymax=10 (UL corner in CRS), 1m/px, tile 10 px.
+        poly = shapely_box(0, 0, 5, 5)  # CRS coords
+        out = _polygon_to_yolo_aabb(
+            poly, tile_xmin=0, tile_ymax=10,
+            cellx=1.0, celly=1.0, tile_size=10,
+        )
+        self.assertIsNotNone(out)
+        cx_n, cy_n, w_n, h_n, w_px, h_px = out
+        # Box covers pixels (0..5, 5..10) → center (2.5, 7.5) → 0.25, 0.75.
+        self.assertAlmostEqual(cx_n, 0.25)
+        self.assertAlmostEqual(cy_n, 0.75)
+        self.assertAlmostEqual(w_n, 0.5)
+        self.assertAlmostEqual(h_n, 0.5)
+        self.assertAlmostEqual(w_px, 5.0)
+        self.assertAlmostEqual(h_px, 5.0)
+
+    def test_aabb_clipped_at_tile_edge(self):
+        """Polygon extending past the right edge is clipped before normalizing."""
+        # Polygon spans CRS x = [8, 15]; tile only covers [0, 10].
+        poly = shapely_box(8, 0, 15, 5)
+        out = _polygon_to_yolo_aabb(
+            poly, tile_xmin=0, tile_ymax=10,
+            cellx=1.0, celly=1.0, tile_size=10,
+        )
+        self.assertIsNotNone(out)
+        _, _, w_n, _, w_px, _ = out
+        # Clipped width is 2 px, not 7 px.
+        self.assertAlmostEqual(w_px, 2.0)
+        self.assertAlmostEqual(w_n, 0.2)
+
+    def test_aabb_outside_tile_returns_none(self):
+        poly = shapely_box(20, 20, 25, 25)  # entirely past the tile
+        out = _polygon_to_yolo_aabb(
+            poly, tile_xmin=0, tile_ymax=10,
+            cellx=1.0, celly=1.0, tile_size=10,
+        )
+        self.assertIsNone(out)
+
+    def test_obb_inside_tile_returns_eight_normalized_coords(self):
+        # Rotated 4-corner polygon
+        rot = Polygon([(2, 2), (5, 3), (4, 6), (1, 5)])
+        out = _polygon_to_yolo_obb(
+            rot, tile_xmin=0, tile_ymax=10,
+            cellx=1.0, celly=1.0, tile_size=10,
+        )
+        self.assertIsNotNone(out)
+        # 8 corner coordinates + width + height
+        self.assertEqual(len(out), 10)
+        coords = out[:8]
+        # All normalized coords should fall in [0, 1].
+        for c in coords:
+            self.assertGreaterEqual(c, 0.0)
+            self.assertLessEqual(c, 1.0)
+
+    def test_obb_outside_tile_returns_none(self):
+        rot = Polygon([(100, 100), (105, 100), (105, 105), (100, 105)])
+        out = _polygon_to_yolo_obb(
+            rot, tile_xmin=0, tile_ymax=10,
+            cellx=1.0, celly=1.0, tile_size=10,
+        )
+        self.assertIsNone(out)
+
+
+# ---------------------------------------------------------------------------
+# _scale_to_uint8
+# ---------------------------------------------------------------------------
+
+class TestScaleToUint8(unittest.TestCase):
+
+    def test_linear_range_maps_endpoints(self):
+        arr = np.array([[[0, 5000, 10000]]], dtype=np.float32)
+        out = _scale_to_uint8(arr, scale=(0, 10000))
+        self.assertEqual(out.dtype, np.uint8)
+        self.assertEqual(out[0, 0, 0], 0)
+        self.assertEqual(out[0, 0, 2], 255)
+        # Midpoint maps to ~127.
+        self.assertIn(out[0, 0, 1], (127, 128))
+
+    def test_percentile_stretch_with_scale_none(self):
+        rng = np.random.default_rng(0)
+        arr = rng.integers(100, 200, size=(1, 32, 32)).astype(np.float32)
+        out = _scale_to_uint8(arr, scale=None)
+        self.assertEqual(out.dtype, np.uint8)
+        # 2-98 percentile stretch → covers most of [0, 255].
+        self.assertLess(out.min(), 20)
+        self.assertGreater(out.max(), 235)
+
+    def test_constant_input_does_not_divide_by_zero(self):
+        """hi == lo (constant array) is the historically-risky edge case."""
+        arr = np.full((1, 4, 4), 42.0, dtype=np.float32)
+        out = _scale_to_uint8(arr, scale=(42, 42))
+        # Should not raise and should produce a valid uint8 array.
+        self.assertEqual(out.dtype, np.uint8)
+        self.assertEqual(out.shape, (1, 4, 4))
+
+
+# ---------------------------------------------------------------------------
+# Cross-tile NMS
+# ---------------------------------------------------------------------------
+
+class TestNMS(unittest.TestCase):
+
+    def _gdf(self, rows):
+        return gpd.GeoDataFrame(
+            {
+                'class_id': [r['class_id'] for r in rows],
+                'score': [r['score'] for r in rows],
+            },
+            geometry=[r['geom'] for r in rows],
+            crs='EPSG:32617',
+        )
+
+    def test_overlapping_same_class_collapses_to_highest_score(self):
+        gdf = self._gdf([
+            {'class_id': 0, 'score': 0.9, 'geom': shapely_box(0, 0, 10, 10)},
+            # ~80% IoU with the first
+            {'class_id': 0, 'score': 0.5, 'geom': shapely_box(1, 1, 11, 11)},
+        ])
+        out = _nms_geodataframe(gdf, iou_threshold=0.5)
+        self.assertEqual(len(out), 1)
+        self.assertAlmostEqual(out['score'].iloc[0], 0.9)
+
+    def test_overlapping_different_classes_both_kept(self):
+        gdf = self._gdf([
+            {'class_id': 0, 'score': 0.9, 'geom': shapely_box(0, 0, 10, 10)},
+            {'class_id': 1, 'score': 0.5, 'geom': shapely_box(1, 1, 11, 11)},
+        ])
+        out = _nms_geodataframe(gdf, iou_threshold=0.5)
+        self.assertEqual(len(out), 2)
+
+    def test_disjoint_boxes_all_kept(self):
+        gdf = self._gdf([
+            {'class_id': 0, 'score': 0.9, 'geom': shapely_box(0, 0, 5, 5)},
+            {'class_id': 0, 'score': 0.8, 'geom': shapely_box(20, 20, 25, 25)},
+            {'class_id': 0, 'score': 0.7, 'geom': shapely_box(40, 40, 45, 45)},
+        ])
+        out = _nms_geodataframe(gdf, iou_threshold=0.5)
+        self.assertEqual(len(out), 3)
+
+    def test_empty_input_returns_empty(self):
+        empty = gpd.GeoDataFrame(
+            {'class_id': [], 'score': []}, geometry=[], crs='EPSG:32617',
+        )
+        out = _nms_geodataframe(empty, iou_threshold=0.5)
+        self.assertTrue(out.empty)
+
+
+# ---------------------------------------------------------------------------
+# plot_detections (smoke)
+# ---------------------------------------------------------------------------
+
+class TestPlotDetections(unittest.TestCase):
+
+    def test_plot_detections_returns_axes(self):
+        # Use the non-interactive Agg backend so this works on a headless box.
+        import matplotlib
+        matplotlib.use('Agg', force=True)
+        import matplotlib.pyplot as plt
+        from geowombat.detect import plot_detections
+
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                truth = gpd.read_file(l8_224078_20200518_polygons)
+                if truth.crs.to_epsg() != src.gw.crs_to_pyproj.to_epsg():
+                    truth = truth.to_crs(src.gw.crs_to_pyproj)
+                # Build a synthetic "matched" set: half of the truth as TP preds.
+                preds = truth.head(2).copy()
+                preds['score'] = 0.9
+                preds['status'] = 'TP'
+                fig, ax = plt.subplots(figsize=(4, 4))
+                returned = plot_detections(
+                    src, predictions=preds, truth=truth,
+                    ax=ax, band_indices=[2, 1, 0], scale=(0, 10000),
+                )
+        self.assertIsNotNone(returned)
+        self.assertTrue(hasattr(returned, 'plot'))
+        plt.close('all')
+
+
+# ---------------------------------------------------------------------------
+# TorchGeoDetector smoke (requires torchvision)
+# ---------------------------------------------------------------------------
+
+@unittest.skipUnless(
+    TORCHVISION_AVAILABLE,
+    "torchvision not installed (pip install geowombat[detect,dl])",
+)
+class TestTorchGeoDetectorSmoke(unittest.TestCase):
+
+    def test_predict_returns_geodataframe(self):
+        from geowombat.detect import TorchGeoDetector
+
+        # Default torchvision COCO weights (auto-downloaded on first use).
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            det = TorchGeoDetector(model='faster-rcnn')
+            with gw.config.update(ref_res=300):
+                with gw.open(l8_224078_20200518, nodata=0) as src:
+                    gdf = det.predict(
+                        src,
+                        tile_size=320,
+                        overlap=0.0,
+                        conf=0.05,
+                        band_indices=[2, 1, 0],
+                        scale=(0, 10000),
+                    )
+        self.assertIsInstance(gdf, gpd.GeoDataFrame)
+        for col in ['geometry', 'class_id', 'class_name', 'score']:
+            self.assertIn(col, gdf.columns)
+
+
+# ---------------------------------------------------------------------------
+# SAMRefiner (skipped unless a checkpoint path is exported)
+# ---------------------------------------------------------------------------
+
+@unittest.skipUnless(
+    SAM_AVAILABLE and SAM_CHECKPOINT and Path(SAM_CHECKPOINT).exists(),
+    "segment-anything + GEOWOMBAT_SAM_CHECKPOINT env var required",
+)
+class TestSAMRefiner(unittest.TestCase):
+
+    def test_empty_input_short_circuits(self):
+        """refine() returns an empty GeoDataFrame without invoking SAM."""
+        from geowombat.detect import SAMRefiner
+        refiner = SAMRefiner(checkpoint=SAM_CHECKPOINT, model_type='vit_b')
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            empty = gpd.GeoDataFrame(
+                {'class_name': [], 'score': []},
+                geometry=[],
+                crs=src.gw.crs_to_pyproj,
+            )
+            out = refiner.refine(src, empty)
+        self.assertTrue(out.empty)
+
+
+# ---------------------------------------------------------------------------
+# fit_predict end-to-end smoke (1 epoch on bundled data)
+# ---------------------------------------------------------------------------
+
+@unittest.skipUnless(
+    ULTRALYTICS_AVAILABLE and PIL_AVAILABLE and YAML_AVAILABLE,
+    "ultralytics + Pillow + PyYAML required",
+)
+class TestFitPredict(unittest.TestCase):
+
+    def test_fit_predict_runs_end_to_end(self):
+        """Build a tiny dataset, fine-tune for 1 epoch, run inference."""
+        from geowombat.detect import YOLODetector, fit_predict
+
+        with tempfile.TemporaryDirectory() as td:
+            det = YOLODetector(weights='yolov8n.pt')
+            with gw.config.update(ref_res=300):
+                with gw.open(l8_224078_20200518, nodata=0) as src:
+                    polys = gpd.read_file(l8_224078_20200518_polygons)
+                    if polys.crs.to_epsg() != src.gw.crs_to_pyproj.to_epsg():
+                        polys = polys.to_crs(src.gw.crs_to_pyproj)
+                    polys['class_name'] = polys['name']
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        preds, summary = fit_predict(
+                            src,
+                            det,
+                            polys,
+                            class_col='class_name',
+                            out_dir=Path(td) / 'ds',
+                            tile_size=128,
+                            overlap=0.0,
+                            epochs=1,
+                            min_box_pixels=2,
+                            band_indices=[2, 1, 0],
+                            scale=(0, 10000),
+                            val_split=0.5,
+                            seed=42,
+                            predict_kwargs={'conf': 0.05},
+                        )
+        # The summary echoes the build_dataset return.
+        self.assertIn('classes', summary)
+        self.assertIn('n_boxes', summary)
+        # preds is a GeoDataFrame (may be empty — that's OK for a 1-epoch run).
+        self.assertIsInstance(preds, gpd.GeoDataFrame)
 
 
 if __name__ == '__main__':
