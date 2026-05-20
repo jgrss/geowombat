@@ -2,6 +2,38 @@
 
 <!-- version list -->
 
+## Unreleased
+
+### Features
+
+* Added `geowombat.detect` submodule for tiled, georeferenced object detection on overhead imagery, mirroring the `fit / predict / fit_predict` shape of `geowombat.ml`:
+  * `YOLODetector` (Ultralytics YOLO) supporting axis-aligned (AABB) and DOTA-v1 oriented (OBB) boxes.
+  * `TorchGeoDetector` wrapping TorchVision Faster R-CNN / RetinaNet with optional TorchGeo pretrained weights (e.g. `FASTERRCNN_RESNET50_FPN_XVIEW`).
+  * `SAMRefiner` for refining bounding-box detections into polygon masks via Meta's Segment Anything Model.
+* Added geowombat-native accessors: `src.gw.detect(detector, ...)` (tiled inference with cross-tile NMS and pixel→CRS conversion) and `src.gw.to_yolo_dataset(labels, class_col=..., out_dir=...)` (Ultralytics-layout training-dataset builder).
+* Added module-level wrappers: `predict`, `fit`, `fit_predict`, `build_dataset`, `boxes_from_polygons` (AABB ↔ OBB), `detection_accuracy` (per-class precision/recall/F1/AP at one or more IoU thresholds, plus `iou_thresholds='coco'` for mAP@[.5:.95] and `class_agnostic=True`), `plot_detections`, and `export_for_review` / `recompute_from_review` for QGIS GeoPackage round-trip review.
+* Sensor-aware band selection: when `gw.config.update(sensor=...)` is active, detection accessors auto-resolve RGB band indices from `src.band.values` — no need to pass `band_indices` per call.
+* Added deep-learning classifiers `TabNet`, `L-TAE`, and `TorchGeo` ([#347](https://github.com/jgrss/geowombat/pull/347)).
+
+### Documentation
+
+* New object-detection walkthrough at `doc/source/object-detection.rst` with a "Recommended setup for aerial / satellite imagery" callout (DOTA-v1 OBB weights + `oriented=True`), the AABB vs OBB explainer, and a "Digitizing polygons for high-quality OBB labels" subsection.
+* Added a **Notebooks** chapter rendering all 7 Jupyter notebooks (`open_plot`, `mosaic_ndvi_mask`, `moving_windows`, `stac`, `ml_classifiers`, `dl_classifiers`, `object_detection`) inline via `nbsphinx`. Notebooks live in `notebooks/` and are symlinked into the docs tree; outputs are baked in, so the docs build never re-executes.
+* Updated install guide with conda extras, GDAL instructions, and the `dl` extra ([#349](https://github.com/jgrss/geowombat/pull/349)).
+
+### Bug Fixes
+
+* Improved block usage and nodata handling ([#348](https://github.com/jgrss/geowombat/pull/348)).
+
+### Build
+
+* Added `nbsphinx`, `ipykernel`, and `myst-parser` to the `[docs]` extras so the docs build can render the notebook chapter and embed `CHANGELOG.md`.
+* Added new optional extras: `[detect]` (ultralytics, torchmetrics, pycocotools, pillow, pyyaml, opencv-python) and `[sam]` (segment-anything).
+
+### Testing
+
+* Added 29 new tests for the detect module covering: tiled-inference window math (`overlapped_windows`), polygon → YOLO label math for AABB and OBB, `_scale_to_uint8` edge cases, cross-tile NMS, IoU/COCO/class-agnostic accuracy modes, CRS reprojection in accuracy assessment, QGIS review round-trip, smoke tests for `YOLODetector` / `TorchGeoDetector` / `SAMRefiner` / `plot_detections`, and an end-to-end `fit_predict` smoke test.
+
 ## v2.1.23 (2026-01-12)
 
 ### Features

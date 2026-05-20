@@ -113,6 +113,19 @@ One of the key features of GeoWombat is the on-the-fly handling of multiple file
 .. toctree::
    :maxdepth: 1
    :hidden:
+   :caption: Examples
+
+   open_plot
+   mosaic_ndvi_mask
+   moving_windows
+   stac
+   ml_classifiers
+   dl_classifiers
+   object_detection
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
    :caption: Changes
 
    changelog
