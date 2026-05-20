@@ -412,7 +412,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_norm_indices"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.get_norm_indices">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_norm_indices</span><span class="p">(</span><span class="n">n_bands</span><span class="p">,</span> <span class="n">window_slice</span><span class="p">,</span> <span class="n">indexes_multi</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_norm_indices</span><span class="p">(</span><span class="n">n_bands</span><span class="p">,</span> <span class="n">window_slice</span><span class="p">,</span> <span class="n">indexes_multi</span><span class="p">):</span>
     <span class="c1"># Prepend the band position index to the window slice</span>
     <span class="k">if</span> <span class="n">n_bands</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">window_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">window_slice</span><span class="p">))</span>
@@ -421,7 +421,7 @@ document.write(`
         <span class="n">window_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bands</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">window_slice</span><span class="p">))</span>
         <span class="n">indexes</span> <span class="o">=</span> <span class="n">indexes_multi</span>
 
-    <span class="k">return</span> <span class="n">window_slice</span><span class="p">,</span> <span class="n">indexes</span></div>
+    <span class="k">return</span> <span class="n">window_slice</span><span class="p">,</span> <span class="n">indexes</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_window_worker</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
@@ -1742,7 +1742,7 @@ document.write(`
         <span class="k">yield</span> <span class="n">arg_</span>
 
 
-<div class="viewcode-block" id="apply"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.apply">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
+<div class="viewcode-block" id="apply"><a class="viewcode-back" href="../../../api/geowombat.apply.html#geowombat.apply">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
     <span class="n">infile</span><span class="p">,</span>
     <span class="n">outfile</span><span class="p">,</span>
     <span class="n">block_func</span><span class="p">,</span>
@@ -1882,7 +1882,7 @@ document.write(`
     <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">block</span>
 
 
-<div class="viewcode-block" id="compress_raster"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.compress_raster">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">compress_raster</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compress_raster</span><span class="p">(</span>
     <span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gdal_cache</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s2">&quot;lzw&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compresses a raster file.</span>
@@ -1917,7 +1917,7 @@ document.write(`
             <span class="n">blockxsize</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;blockxsize&quot;</span><span class="p">],</span>
             <span class="n">blockysize</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;blockysize&quot;</span><span class="p">],</span>
             <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 </pre></div>
 
                 </article>

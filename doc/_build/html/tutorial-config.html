@@ -446,7 +446,7 @@ The configuration manager allows easy control over opened raster dimensions, ali
 </section>
 <section id="how-do-i-use-it">
 <h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this heading">#</a></h2>
-<p>To use the <code class="docutils literal notranslate"><span class="pre">geowombat</span></code> configuration manager, just call <a class="reference internal" href="api/geowombat.html#geowombat.config.update" title="geowombat.config.update"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.config.update</span></code></a> before opening a file. For example,</p>
+<p>To use the <code class="docutils literal notranslate"><span class="pre">geowombat</span></code> configuration manager, just call <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.config.update</span></code> before opening a file. For example,</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
 
 <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">&lt;</span><span class="n">keywords</span><span class="o">&gt;...</span><span class="p">):</span>
@@ -457,7 +457,7 @@ The configuration manager allows easy control over opened raster dimensions, ali
         <span class="c1"># do something</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="api/geowombat.html#geowombat.config.update" title="geowombat.config.update"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.config.update</span></code></a> stores keywords in a dictionary. To see all GeoWombat configuration keywords, just
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.config.update</span></code> stores keywords in a dictionary. To see all GeoWombat configuration keywords, just
 iterate over the dictionary.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
 

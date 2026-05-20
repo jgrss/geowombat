@@ -382,17 +382,17 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Special"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Special</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Special.get_distance"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special.get_distance">[docs]</a>    <span class="nd">@staticmethod</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Special</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_distance</span><span class="p">(</span><span class="n">tan1</span><span class="p">,</span> <span class="n">tan2</span><span class="p">,</span> <span class="n">cos3</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets distance component of Li kernels.&quot;&quot;&quot;</span>
 
         <span class="n">temp</span> <span class="o">=</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan1</span> <span class="o">+</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">cos3</span>
 
-        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Special.get_overlap"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special.get_overlap">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_overlap</span><span class="p">(</span><span class="n">cos1</span><span class="p">,</span> <span class="n">cos2</span><span class="p">,</span> <span class="n">tan1</span><span class="p">,</span> <span class="n">tan2</span><span class="p">,</span> <span class="n">sin3</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">hb</span><span class="p">,</span> <span class="n">m_pi</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the HB ratio transformation.&quot;&quot;&quot;</span>
@@ -417,11 +417,11 @@ document.write(`
         <span class="n">overlap</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">m_pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">tvar</span> <span class="o">-</span> <span class="n">sint</span> <span class="o">*</span> <span class="n">cost</span><span class="p">)</span> <span class="o">*</span> <span class="n">temp</span>
         <span class="n">overlap</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">OverlapInfo</span><span class="p">(</span><span class="n">tvar</span><span class="o">=</span><span class="n">tvar</span><span class="p">,</span> <span class="n">sint</span><span class="o">=</span><span class="n">sint</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span> <span class="n">temp</span><span class="o">=</span><span class="n">temp</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">OverlapInfo</span><span class="p">(</span><span class="n">tvar</span><span class="o">=</span><span class="n">tvar</span><span class="p">,</span> <span class="n">sint</span><span class="o">=</span><span class="n">sint</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span> <span class="n">temp</span><span class="o">=</span><span class="n">temp</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Angles</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Angles.get_phaang"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_phaang">[docs]</a>    <span class="nd">@staticmethod</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Angles</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phaang</span><span class="p">(</span><span class="n">cos_vza</span><span class="p">,</span> <span class="n">cos_sza</span><span class="p">,</span> <span class="n">sin_vza</span><span class="p">,</span> <span class="n">sin_sza</span><span class="p">,</span> <span class="n">cos_raa</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the phase angle.&quot;&quot;&quot;</span>
@@ -432,9 +432,9 @@ document.write(`
         <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_phase_angle</span><span class="p">)</span>
         <span class="n">sin_phase_angle</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">cos_phase_angle</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">,</span> <span class="n">sin_phase_angle</span></div>
+        <span class="k">return</span> <span class="n">cos_phase_angle</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">,</span> <span class="n">sin_phase_angle</span>
 
-<div class="viewcode-block" id="Angles.get_pangles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_pangles">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pangles</span><span class="p">(</span><span class="n">tan1</span><span class="p">,</span> <span class="n">br</span><span class="p">,</span> <span class="n">nearly_zero</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the prime angles.&quot;&quot;&quot;</span>
@@ -450,9 +450,9 @@ document.write(`
         <span class="c1"># have to make sure c is not 0</span>
         <span class="n">cosp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosp</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nearly_zero</span><span class="p">,</span> <span class="n">cosp</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">cosp</span><span class="p">,</span> <span class="n">sinp</span><span class="p">,</span> <span class="n">tanp</span></div>
+        <span class="k">return</span> <span class="n">cosp</span><span class="p">,</span> <span class="n">sinp</span><span class="p">,</span> <span class="n">tanp</span>
 
-<div class="viewcode-block" id="Angles.get_angle_info"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_angle_info">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_angle_info</span><span class="p">(</span><span class="n">vza</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">raa</span><span class="p">,</span> <span class="n">m_pi</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the angle information.&quot;&quot;&quot;</span>
@@ -482,11 +482,11 @@ document.write(`
             <span class="n">vza_rad</span><span class="o">=</span><span class="n">vza_abs</span><span class="p">,</span>
             <span class="n">sza_rad</span><span class="o">=</span><span class="n">sza_abs</span><span class="p">,</span>
             <span class="n">raa_rad</span><span class="o">=</span><span class="n">raa_abs</span><span class="p">,</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span>
 
 
-<div class="viewcode-block" id="LiKernel"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.LiKernel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LiKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
-<div class="viewcode-block" id="LiKernel.get_li"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.LiKernel.get_li">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_li</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">,</span> <span class="n">li_recip</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_li</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">,</span> <span class="n">li_recip</span><span class="p">):</span>
 
         <span class="c1"># relative azimuth angle</span>
         <span class="c1"># ensure it is in a [0,2] pi range</span>
@@ -553,11 +553,11 @@ document.write(`
                         <span class="n">cos1</span> <span class="o">*</span> <span class="p">(</span><span class="n">overlap_info</span><span class="o">.</span><span class="n">temp</span> <span class="o">-</span> <span class="n">overlap_info</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span>
                     <span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span>
 
-        <span class="k">return</span> <span class="n">li</span></div></div>
+        <span class="k">return</span> <span class="n">li</span>
 
 
-<div class="viewcode-block" id="RossKernel"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RossKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
-<div class="viewcode-block" id="RossKernel.ross_part"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_part">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ross_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_info</span><span class="p">,</span> <span class="n">global_args</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RossKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ross_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_info</span><span class="p">,</span> <span class="n">global_args</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the main part of Ross kernel.&quot;&quot;&quot;</span>
 
@@ -591,9 +591,9 @@ document.write(`
             <span class="n">phase_angle</span><span class="o">=</span><span class="n">phase_angle</span><span class="p">,</span>
             <span class="n">sin_phase_angle</span><span class="o">=</span><span class="n">sin_phase_angle</span><span class="p">,</span>
             <span class="n">ross</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="RossKernel.ross_thin"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_thin">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ross_thin</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">):</span>
 
         <span class="n">RossThinOutputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RossThinOutputs&#39;</span><span class="p">,</span> <span class="s1">&#39;ross phase_angle&#39;</span><span class="p">)</span>
@@ -604,9 +604,9 @@ document.write(`
 
         <span class="k">return</span> <span class="n">RossThinOutputs</span><span class="p">(</span>
             <span class="n">ross</span><span class="o">=</span><span class="n">ross_</span><span class="p">,</span> <span class="n">phase_angle</span><span class="o">=</span><span class="n">ross_outputs</span><span class="o">.</span><span class="n">phase_angle</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="RossKernel.ross_thick"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_thick">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ross_thick</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">):</span>
 
         <span class="n">RossThickOutputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RossThickOutputs&#39;</span><span class="p">,</span> <span class="s1">&#39;ross phase_angle&#39;</span><span class="p">)</span>
@@ -617,9 +617,9 @@ document.write(`
 
         <span class="k">return</span> <span class="n">RossThickOutputs</span><span class="p">(</span>
             <span class="n">ross</span><span class="o">=</span><span class="n">ross_</span><span class="p">,</span> <span class="n">phase_angle</span><span class="o">=</span><span class="n">ross_outputs</span><span class="o">.</span><span class="n">phase_angle</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="RossKernel.get_ross"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.get_ross">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_ross</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ross</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">):</span>
 
         <span class="n">ross_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ross_part</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="p">)</span>
 
@@ -635,10 +635,10 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ross</span> <span class="o">=</span> <span class="n">ross_kernel_outputs</span><span class="o">.</span><span class="n">ross</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span> <span class="o">/</span> <span class="mf">4.0</span>
 
-        <span class="k">return</span> <span class="n">ross</span></div></div>
+        <span class="k">return</span> <span class="n">ross</span>
 
 
-<div class="viewcode-block" id="BRDFKernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.BRDFKernels">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BRDFKernels</span><span class="p">(</span><span class="n">LiKernel</span><span class="p">,</span> <span class="n">RossKernel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BRDFKernels</span><span class="p">(</span><span class="n">LiKernel</span><span class="p">,</span> <span class="n">RossKernel</span><span class="p">):</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for the Li and Ross BRDF kernels.</span>
 
@@ -675,11 +675,11 @@ document.write(`
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">li_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_li</span><span class="p">(</span><span class="n">li_type</span><span class="p">,</span> <span class="n">li_recip</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ross_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ross</span><span class="p">(</span><span class="n">ross_type</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ross_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ross</span><span class="p">(</span><span class="n">ross_type</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GeoVolKernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">GeoVolKernels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="GeoVolKernels.get_mean_sza"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels.get_mean_sza">[docs]</a>    <span class="nd">@staticmethod</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeoVolKernels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mean_sza</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the mean solar zenith angle (SZA) as a function of the</span>
@@ -704,9 +704,9 @@ document.write(`
             <span class="o">+</span> <span class="o">-</span><span class="mf">9.48e-07</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
             <span class="o">+</span> <span class="o">-</span><span class="mf">1.95e-09</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
             <span class="o">+</span> <span class="mf">6.15e-11</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">6</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="GeoVolKernels.get_kernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels.get_kernels">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_kernels</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_kernels</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">central_latitude</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span>
     <span class="p">):</span>
 
@@ -734,7 +734,7 @@ document.write(`
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">geo_sensor</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">li_k</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vol_sensor</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">ross_k</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol_sensor</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">ross_k</span>
 
 
 <div class="viewcode-block" id="BRDF"><a class="viewcode-back" href="../../../api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BRDF</span><span class="p">(</span><span class="n">GeoVolKernels</span><span class="p">):</span>

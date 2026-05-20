@@ -397,7 +397,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="AngleInfo"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.AngleInfo">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AngleInfo</span><span class="p">:</span>
     <span class="n">vza</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span>
         <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">Delayed</span><span class="p">,</span> <span class="n">DelayedAttr</span><span class="p">,</span> <span class="n">DelayedLeaf</span>
@@ -410,10 +410,10 @@ document.write(`
     <span class="p">]</span>
     <span class="n">saa</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span>
         <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">Delayed</span><span class="p">,</span> <span class="n">DelayedAttr</span><span class="p">,</span> <span class="n">DelayedLeaf</span>
-    <span class="p">]</span></div>
+    <span class="p">]</span>
 
 
-<div class="viewcode-block" id="shift_objects"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.shift_objects">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">shift_objects</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">shift_objects</span><span class="p">(</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span><span class="p">,</span> <span class="n">object_height</span><span class="p">,</span> <span class="n">num_workers</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Shifts objects along x and y dimensions.</span>
@@ -486,10 +486,10 @@ document.write(`
         <span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">shifts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">},</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">shifts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">},</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="estimate_cloud_shadows"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.estimate_cloud_shadows">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">estimate_cloud_shadows</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_cloud_shadows</span><span class="p">(</span>
     <span class="n">data</span><span class="p">,</span>
     <span class="n">clouds</span><span class="p">,</span>
     <span class="n">solar_za</span><span class="p">,</span>
@@ -569,10 +569,10 @@ document.write(`
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span>
     <span class="n">data</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
 
-    <span class="k">return</span> <span class="n">data</span></div>
+    <span class="k">return</span> <span class="n">data</span>
 
 
-<div class="viewcode-block" id="scattering_angle"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.scattering_angle">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">scattering_angle</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">scattering_angle</span><span class="p">(</span>
     <span class="n">cos_sza</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
     <span class="n">cos_vza</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
     <span class="n">sin_sza</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
@@ -614,10 +614,10 @@ document.write(`
         <span class="o">-</span><span class="n">cos_sza</span> <span class="o">*</span> <span class="n">cos_vza</span> <span class="o">-</span> <span class="n">sin_sza</span> <span class="o">*</span> <span class="n">sin_vza</span> <span class="o">*</span> <span class="n">cos_raa</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">scattering_angle</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">scattering_angle</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
 
-<div class="viewcode-block" id="relative_azimuth"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.relative_azimuth">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">relative_azimuth</span><span class="p">(</span><span class="n">saa</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">vaa</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">relative_azimuth</span><span class="p">(</span><span class="n">saa</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">vaa</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates the relative azimuth angle.</span>
 
 <span class="sd">    Args:</span>
@@ -640,7 +640,7 @@ document.write(`
     <span class="n">raa</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">raa_plus</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">raa</span> <span class="o">-</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">raa</span><span class="p">)</span>
     <span class="n">raa</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">raa_minus</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">raa</span> <span class="o">+</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">raa</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">raa</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">raa</span><span class="p">))</span>
 
 
 <span class="n">_PSD_VERSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;psd-14&#39;</span><span class="p">,</span> <span class="s1">&#39;psd-15&#39;</span><span class="p">)</span>
@@ -674,7 +674,7 @@ document.write(`
     <span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_sentinel_sensor"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.get_sentinel_sensor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_sensor</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_sensor</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Sentinel sensor from metadata.</span>
 
 <span class="sd">    Args:</span>
@@ -691,10 +691,10 @@ document.write(`
         <span class="k">if</span> <span class="n">ginfo</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s1">&#39;TILE_ID&#39;</span><span class="p">:</span>
             <span class="n">file_name</span> <span class="o">=</span> <span class="n">ginfo</span><span class="o">.</span><span class="n">text</span>
 
-    <span class="k">return</span> <span class="n">file_name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">file_name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="get_sentinel_crs_transform"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.get_sentinel_crs_transform">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_crs_transform</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_crs_transform</span><span class="p">(</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">resample_res</span><span class="o">=</span><span class="mf">10.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Sentinel scene transformation information.</span>
@@ -722,10 +722,10 @@ document.write(`
     <span class="n">ncols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ncols</span> <span class="o">/</span> <span class="p">(</span><span class="n">resample_res</span> <span class="o">/</span> <span class="mf">10.0</span><span class="p">))</span>
     <span class="n">transform</span> <span class="o">=</span> <span class="n">Affine</span><span class="p">(</span><span class="n">resample_res</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">resample_res</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">crs</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span></div>
+    <span class="k">return</span> <span class="n">crs</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span>
 
 
-<div class="viewcode-block" id="get_sentinel_angle_shape"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.get_sentinel_angle_shape">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_angle_shape</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sentinel_angle_shape</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Sentinel scene angle array shape.</span>
 
 <span class="sd">    Args:</span>
@@ -746,10 +746,10 @@ document.write(`
     <span class="n">angle_nrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nrows</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="o">/</span> <span class="n">row_step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">angle_ncols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">ncols</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="o">/</span> <span class="n">col_step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="k">return</span> <span class="n">angles_view_list</span><span class="p">,</span> <span class="n">angle_nrows</span><span class="p">,</span> <span class="n">angle_ncols</span></div>
+    <span class="k">return</span> <span class="n">angles_view_list</span><span class="p">,</span> <span class="n">angle_nrows</span><span class="p">,</span> <span class="n">angle_ncols</span>
 
 
-<div class="viewcode-block" id="parse_sentinel_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.parse_sentinel_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">parse_sentinel_angles</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_sentinel_angles</span><span class="p">(</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">proc_angles</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Sentinel-2 solar angles from metadata.</span>
@@ -831,10 +831,10 @@ document.write(`
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">azimuth_array</span><span class="p">[</span><span class="n">ridx</span><span class="p">]</span> <span class="o">=</span> <span class="n">azimuth_values_array</span>
 
-    <span class="k">return</span> <span class="n">zenith_array</span><span class="p">,</span> <span class="n">azimuth_array</span></div>
+    <span class="k">return</span> <span class="n">zenith_array</span><span class="p">,</span> <span class="n">azimuth_array</span>
 
 
-<div class="viewcode-block" id="run_espa_command"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.run_espa_command">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">run_espa_command</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_espa_command</span><span class="p">(</span>
     <span class="n">ref_angle_file</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">angles_file</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">sensor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -909,10 +909,10 @@ document.write(`
         <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
             <span class="n">file_</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">angle_paths</span></div>
+    <span class="k">return</span> <span class="n">angle_paths</span>
 
 
-<div class="viewcode-block" id="open_angle_file"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.open_angle_file">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">open_angle_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">open_angle_file</span><span class="p">(</span>
     <span class="n">in_angle_path</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">band_pos</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -942,10 +942,10 @@ document.write(`
             <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int16&#39;</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">angle_data</span></div>
+    <span class="k">return</span> <span class="n">angle_data</span>
 
 
-<div class="viewcode-block" id="postprocess_espa_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.postprocess_espa_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">postprocess_espa_angles</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">postprocess_espa_angles</span><span class="p">(</span>
     <span class="n">ref_file</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">angle_paths_in</span><span class="p">:</span> <span class="n">namedtuple</span><span class="p">,</span>
     <span class="n">angle_paths_out</span><span class="p">:</span> <span class="n">namedtuple</span><span class="p">,</span>
@@ -1004,10 +1004,10 @@ document.write(`
         <span class="n">vza</span><span class="o">=</span><span class="n">angle_array_dict</span><span class="p">[</span><span class="s1">&#39;vza&#39;</span><span class="p">],</span>
         <span class="n">saa</span><span class="o">=</span><span class="n">angle_array_dict</span><span class="p">[</span><span class="s1">&#39;saa&#39;</span><span class="p">],</span>
         <span class="n">sza</span><span class="o">=</span><span class="n">angle_array_dict</span><span class="p">[</span><span class="s1">&#39;sza&#39;</span><span class="p">],</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="landsat_angle_prep"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.landsat_angle_prep">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">landsat_angle_prep</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">landsat_angle_prep</span><span class="p">(</span>
     <span class="n">ref_file</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">out_dir</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">l57_angles_path</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1053,7 +1053,7 @@ document.write(`
         <span class="n">sza</span><span class="o">=</span><span class="n">solar_zenith_path</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">angle_paths_out</span><span class="p">,</span> <span class="n">l57_angles_path</span><span class="p">,</span> <span class="n">l8_angles_path</span></div>
+    <span class="k">return</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">angle_paths_out</span><span class="p">,</span> <span class="n">l57_angles_path</span><span class="p">,</span> <span class="n">l8_angles_path</span>
 
 
 <div class="viewcode-block" id="landsat_pixel_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html#geowombat.radiometry.landsat_pixel_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">landsat_pixel_angles</span><span class="p">(</span>
@@ -1122,7 +1122,7 @@ document.write(`
     <span class="k">return</span> <span class="n">angle_info</span></div>
 
 
-<div class="viewcode-block" id="resample_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.resample_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">resample_angles</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resample_angles</span><span class="p">(</span>
     <span class="n">angle_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">nrows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">ncols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1141,10 +1141,10 @@ document.write(`
         <span class="o">/</span> <span class="mf">0.01</span>
     <span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">chunksize</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">chunksize</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="transform_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.transform_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">transform_angles</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_angles</span><span class="p">(</span>
     <span class="n">ref_file</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
     <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
@@ -1180,7 +1180,7 @@ document.write(`
             <span class="p">)</span>
         <span class="n">angle_array_dict</span><span class="p">[</span><span class="n">angle_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">angle_array_resamp_da_transform</span>
 
-    <span class="k">return</span> <span class="n">angle_array_dict</span></div>
+    <span class="k">return</span> <span class="n">angle_array_dict</span>
 
 
 <div class="viewcode-block" id="sentinel_pixel_angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html#geowombat.radiometry.sentinel_pixel_angles">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sentinel_pixel_angles</span><span class="p">(</span>

@@ -405,7 +405,7 @@ document.write(`
     <span class="n">JAX_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="TransferLib"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TransferLib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransferLib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device transfers.</span>
 
@@ -423,28 +423,28 @@ document.write(`
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transfer_lib</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transfer_lib</span> <span class="o">=</span> <span class="n">transfer_lib</span>
 
-<div class="viewcode-block" id="TransferLib.jax"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib.jax">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">jax</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TransferLib.keras"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib.keras">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">keras</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="TransferLib.numpy"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib.numpy">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">numpy</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TransferLib.pytorch"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib.pytorch">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pytorch</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TransferLib.tensorflow"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TransferLib.tensorflow">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tensorflow</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_lib</span><span class="p">)(</span><span class="n">array</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_lib</span><span class="p">)(</span><span class="n">array</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_Warp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -602,11 +602,11 @@ document.write(`
         <span class="p">)</span>
 
 
-<div class="viewcode-block" id="BaseSeries"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.BaseSeries">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseSeries</span><span class="p">(</span><span class="n">_SeriesProps</span><span class="p">,</span> <span class="n">_Warp</span><span class="p">):</span>
-<div class="viewcode-block" id="BaseSeries.open"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.BaseSeries.open">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">srcs_</span> <span class="o">=</span> <span class="p">[</span><span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">]</span></div>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseSeries</span><span class="p">(</span><span class="n">_SeriesProps</span><span class="p">,</span> <span class="n">_Warp</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srcs_</span> <span class="o">=</span> <span class="p">[</span><span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">]</span>
 
-<div class="viewcode-block" id="BaseSeries.ndarray_to_darray"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.BaseSeries.ndarray_to_darray">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ndarray_to_darray</span><span class="p">(</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">image_dates</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">datetime</span><span class="p">],</span>
@@ -621,9 +621,9 @@ document.write(`
             <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
             <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">image_dates</span><span class="p">,</span> <span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="n">band_names</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">},</span>
             <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="BaseSeries.group_dates"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.BaseSeries.group_dates">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">group_dates</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">group_dates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">image_dates</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">datetime</span><span class="p">],</span>
@@ -651,10 +651,10 @@ document.write(`
             <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">pydatetime</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">pydatetime</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="TimeModule"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TimeModule">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TimeModule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeModule"><a class="viewcode-back" href="../../../api/geowombat.TimeModule.html#geowombat.TimeModule">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TimeModule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float64&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
@@ -692,7 +692,7 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">TimeModulePipeline</span><span class="p">([</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">])</span>
 
-<div class="viewcode-block" id="TimeModule.calculate"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TimeModule.calculate">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="TimeModule.calculate"><a class="viewcode-back" href="../../../api/geowombat.TimeModule.html#geowombat.TimeModule.calculate">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the user function.</span>
 
@@ -707,7 +707,7 @@ document.write(`
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="TimeModulePipeline"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.TimeModulePipeline">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TimeModulePipeline</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeModulePipeline"><a class="viewcode-back" href="../../../api/geowombat.TimeModulePipeline.html#geowombat.TimeModulePipeline">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TimeModulePipeline</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_list</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">TimeModule</span><span class="p">]):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="n">module_list</span>
@@ -742,7 +742,7 @@ document.write(`
         <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="SeriesStats"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesStats</span><span class="p">(</span><span class="n">TimeModule</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SeriesStats</span><span class="p">(</span><span class="n">TimeModule</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_stats</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">SeriesStats</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -754,12 +754,12 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stats</span><span class="p">))</span>
 
-<div class="viewcode-block" id="SeriesStats.calculate"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.calculate">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stats</span><span class="p">)(</span><span class="n">array</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stats</span><span class="p">))</span></div>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stats</span><span class="p">))</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_scale_min_max</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">mni</span><span class="p">,</span> <span class="n">mxi</span><span class="p">,</span> <span class="n">mno</span><span class="p">,</span> <span class="n">mxo</span><span class="p">):</span>
@@ -779,88 +779,88 @@ document.write(`
         <span class="c1"># Fit a least squares solution to each sample</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">)],</span> <span class="n">M</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-<div class="viewcode-block" id="SeriesStats.abs_slope_q1"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.abs_slope_q1">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the absolute slope of the first quarter.&quot;&quot;&quot;</span>
         <span class="n">b1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lstsq</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.25</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])])[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">b1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">b1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.abs_slope_q2"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.abs_slope_q2">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the absolute slope of the second quarter.&quot;&quot;&quot;</span>
         <span class="n">b1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lstsq</span><span class="p">(</span>
             <span class="n">data</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.25</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
         <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">b1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">b1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.abs_slope_q3"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.abs_slope_q3">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the absolute slope of the third quarter.&quot;&quot;&quot;</span>
         <span class="n">b1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lstsq</span><span class="p">(</span>
             <span class="n">data</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
         <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">b1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">b1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.abs_slope_q4"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.abs_slope_q4">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abs_slope_q4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the absolute slope of the fourth quarter.&quot;&quot;&quot;</span>
         <span class="n">b1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lstsq</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">:])[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">b1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">b1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.amp"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.amp">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">amp</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the amplitude.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">jnp</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
             <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.cv"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.cv">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cv</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the coefficient of variation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span>
             <span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">+</span> <span class="mf">1e-9</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.max"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.max">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the max.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SeriesStats.mean"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.mean">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mean</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the mean.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SeriesStats.median"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.median">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">median</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the median.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SeriesStats.mean_abs_diff"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.mean_abs_diff">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">mean_abs_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mean_abs_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the mean absolute difference.&quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span>
             <span class="n">jnp</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
         <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_min_max</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.min"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.min">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the min.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SeriesStats.norm_abs_energy"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.norm_abs_energy">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">norm_abs_energy</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the normalized absolute energy.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">jnp</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">array</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
             <span class="o">/</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="SeriesStats.percentile"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.SeriesStats.percentile">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">percentile</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the nth percentile.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">stats</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates a stack of statistics.&quot;&quot;&quot;</span>
@@ -871,7 +871,7 @@ document.write(`
                 <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">)(</span><span class="n">array</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">stats</span>
             <span class="p">]</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+        <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 </pre></div>
 
                 </article>

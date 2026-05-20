@@ -853,7 +853,7 @@ document.write(`
 <h3>Bug fixes<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Added check for AOT object type to generate a NumPy array when a float is given.</p></li>
-<li><p>Fixed type conversion in <a class="reference internal" href="api/geowombat.core.html#geowombat.core.vi.TasseledCap" title="geowombat.core.vi.TasseledCap"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.vi.TasseledCap</span></code></a> outputs.</p></li>
+<li><p>Fixed type conversion in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.vi.TasseledCap</span></code> outputs.</p></li>
 <li><p>Fixed band lookup order in Landsat angle file creation.</p></li>
 <li><p>Improved masking in <cite>geowombat.core.vi</cite> module.</p></li>
 </ul>
@@ -1044,7 +1044,7 @@ document.write(`
 <ul class="simple">
 <li><p>Added optional <code class="docutils literal notranslate"><span class="pre">dask.distributed</span></code> <code class="docutils literal notranslate"><span class="pre">Client</span></code> in <a class="reference internal" href="api/geowombat.extract.html#geowombat.extract" title="geowombat.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.extract()</span></code></a></p></li>
 <li><dl class="simple">
-<dt><a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>.</dt><dd><ul>
+<dt><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</dt><dd><ul>
 <li><p>Added ‘ray’ as an optional scheduler with <code class="docutils literal notranslate"><span class="pre">&#64;ray.remote</span></code> user functions.</p></li>
 <li><p>Added the option of iterating over a list of raster files.</p></li>
 </ul>
@@ -1067,7 +1067,7 @@ document.write(`
 <h3>Bug fixes<a class="headerlink" href="#id39" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Added <cite>shapely.geometry.MultiPolygon</cite> as an accepted data type in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.prepare_points()</span></code>.</p></li>
-<li><p>Added missing <cite>GeoDataFrame</cite> columns in <a class="reference internal" href="api/geowombat.core.html#geowombat.core.polygons_to_points" title="geowombat.core.polygons_to_points"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.polygons_to_points()</span></code></a>.</p></li>
+<li><p>Added missing <cite>GeoDataFrame</cite> columns in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.polygons_to_points()</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -1094,7 +1094,7 @@ document.write(`
 <section id="id45">
 <h3>Bug fixes<a class="headerlink" href="#id45" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added batch id to the window count id in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a> and <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>.</p></li>
+<li><p>Added batch id to the window count id in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -1119,7 +1119,7 @@ document.write(`
 <section id="id49">
 <h3>Enhancements<a class="headerlink" href="#id49" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added window id in <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>.</p></li>
+<li><p>Added window id in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -1191,7 +1191,7 @@ document.write(`
 <li><dl class="simple">
 <dt>Added tasks visualization in <cite>geowombat.tasks</cite>.</dt><dd><ul>
 <li><dl class="simple">
-<dt>Tasks can be setup and visualized with the <a class="reference internal" href="api/geowombat.tasks.GeoTask.html#geowombat.tasks.GeoTask" title="geowombat.tasks.GeoTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.tasks.GeoTask</span></code></a> class.</dt><dd><ul>
+<dt>Tasks can be setup and visualized with the <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.tasks.GeoTask</span></code> class.</dt><dd><ul>
 <li><p>Visualization graph implementation borrowed from <a class="reference external" href="https://xarray-simlab.readthedocs.io/en/latest/index.html">xarray-simlab</a></p></li>
 </ul>
 </dd>
@@ -1234,13 +1234,13 @@ document.write(`
 <section id="id62">
 <h3>Enhancements<a class="headerlink" href="#id62" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added support for parallel downloads in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code>, from the <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads" title="geowombat.util.GeoDownloads"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code></a> class.</p></li>
+<li><p>Added support for parallel downloads in <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code>, from the <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code> class.</p></li>
 </ul>
 </section>
 <section id="id63">
 <h3>New<a class="headerlink" href="#id63" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added Landsat and Sentinel 2 URL parsing in <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#geowombat.util.GeoDownloads" title="geowombat.util.GeoDownloads"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code></a> for data on the Google Cloud Platform.</p></li>
+<li><p>Added Landsat and Sentinel 2 URL parsing in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads</span></code> for data on the Google Cloud Platform.</p></li>
 </ul>
 </section>
 </section>
@@ -1300,14 +1300,14 @@ document.write(`
 <section id="id75">
 <h3>Bug fixes<a class="headerlink" href="#id75" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.sr.MetaData" title="geowombat.radiometry.sr.MetaData"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code></a>.</p></li>
+<li><p>Changed Landsat 5 metadata flag for SWIR2 from 6 to 7 in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.sr.MetaData</span></code>.</p></li>
 <li><p>Removed logger file writing, which conflicted with read-only containers.</p></li>
 </ul>
 </section>
 <section id="id76">
 <h3>Enhancements<a class="headerlink" href="#id76" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Reorganized the <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.brdf.BRDF" title="geowombat.radiometry.brdf.BRDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.BRDF()</span></code></a> module.</p></li>
+<li><p>Reorganized the <a class="reference internal" href="api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF" title="geowombat.radiometry.brdf.BRDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.brdf.BRDF()</span></code></a> module.</p></li>
 </ul>
 </section>
 </section>
@@ -1358,7 +1358,7 @@ document.write(`
 <section id="id85">
 <h3>Bug fixes<a class="headerlink" href="#id85" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added check for None row/column chunks in <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>.</p></li>
+<li><p>Added check for None row/column chunks in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </section>
 <section id="id86">
@@ -1385,7 +1385,7 @@ document.write(`
 <section id="id90">
 <h3>New<a class="headerlink" href="#id90" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Created <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>.</p></li>
+<li><p>Created <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -1467,13 +1467,13 @@ document.write(`
 <section id="id104">
 <h3>Bug fixes<a class="headerlink" href="#id104" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Fixed ‘no data’ clipping error in <a class="reference internal" href="api/geowombat.util.GeoDownloads.html#id0" title="geowombat.util.GeoDownloads.download_cube"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads.download_cube()</span></code></a>.</p></li>
+<li><p>Fixed ‘no data’ clipping error in <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.util.GeoDownloads.download_cube()</span></code>.</p></li>
 </ul>
 </section>
 <section id="id105">
 <h3>New<a class="headerlink" href="#id105" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added <cite>file_list</cite> to <a class="reference internal" href="api/geowombat.core.html#geowombat.core.sort_images_by_date" title="geowombat.core.sort_images_by_date"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code></a>.</p></li>
+<li><p>Added <cite>file_list</cite> to <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code>.</p></li>
 <li><p>Added <cite>nodata</cite> keyword argument to <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.open</span></code></a>.</p></li>
 </ul>
 </section>
@@ -1493,7 +1493,7 @@ document.write(`
 <section id="id108">
 <h3>New<a class="headerlink" href="#id108" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.angles.estimate_cloud_shadows" title="geowombat.radiometry.angles.estimate_cloud_shadows"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.radiometry.angles.estimate_cloud_shadows()</span></code></a> to estimate cloud shadows from a cloud mask.</p></li>
+<li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.radiometry.angles.estimate_cloud_shadows()</span></code> to estimate cloud shadows from a cloud mask.</p></li>
 </ul>
 </section>
 <section id="id109">
@@ -1517,7 +1517,7 @@ document.write(`
 <section id="id112">
 <h3>New<a class="headerlink" href="#id112" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added support for <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.windows.Window()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox()</span></code> objects in the <a class="reference internal" href="api/geowombat.html#geowombat.config.update" title="geowombat.config.update"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.config.update()</span></code></a> manager.</p></li>
+<li><p>Added support for <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.windows.Window()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">rasterio.coords.BoundingBox()</span></code> objects in the <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.config.update()</span></code> manager.</p></li>
 </ul>
 </section>
 </section>
@@ -1575,7 +1575,7 @@ document.write(`
 <li><p>Added padding to image edges when using the <cite>padding</cite> option in <a class="reference internal" href="api/geowombat.to_raster.html#geowombat.to_raster" title="geowombat.to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.to_raster()</span></code></a>.</p></li>
 <li><p>Added checks for empty CRS objects.</p></li>
 <li><p>Added the Advanced Vegetation Index.</p></li>
-<li><p>Added <a class="reference internal" href="api/geowombat.core.html#geowombat.core.lonlat_to_xy" title="geowombat.core.lonlat_to_xy"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.lonlat_to_xy()</span></code></a> and <a class="reference internal" href="api/geowombat.core.html#geowombat.core.xy_to_lonlat" title="geowombat.core.xy_to_lonlat"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_lonlat()</span></code></a> functions.</p></li>
+<li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.lonlat_to_xy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_lonlat()</span></code> functions.</p></li>
 </ul>
 </section>
 <section id="id120">
@@ -1655,7 +1655,7 @@ document.write(`
 <ul class="simple">
 <li><p>Added new class <a class="reference internal" href="api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo" title="geowombat.radiometry.Topo"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.radiometry.Topo</span></code></a> for topographic corrections.</p></li>
 <li><p>Added new <cite>xarray.DataArray</cite> <cite>geowombat</cite> accessor <code class="xref py py-func docutils literal notranslate"><span class="pre">to_crs()</span></code> for CRS transformations.</p></li>
-<li><p>Added new function <a class="reference internal" href="api/geowombat.core.html#geowombat.core.sort_images_by_date" title="geowombat.core.sort_images_by_date"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code></a>.</p></li>
+<li><p>Added new function <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.sort_images_by_date()</span></code>.</p></li>
 <li><p>Added <cite>geowombat.radiometry</cite> module to the documentation.</p></li>
 <li><p>Added new <cite>xarray.DataArray</cite> <cite>geowombat</cite> property <cite>bounds_as_namedtuple</cite>.</p></li>
 <li><p>Rearranged documentation and fixed minor docstring issues.</p></li>
@@ -1664,7 +1664,7 @@ document.write(`
 <section id="id129">
 <h2>1.0.7 (23 January 2020)<a class="headerlink" href="#id129" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
-<li><p>Added new functions <a class="reference internal" href="api/geowombat.core.html#geowombat.core.indices_to_coords" title="geowombat.core.indices_to_coords"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.indices_to_coords()</span></code></a> and <a class="reference internal" href="api/geowombat.core.html#geowombat.core.coords_to_indices" title="geowombat.core.coords_to_indices"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.coords_to_indices()</span></code></a> to replace <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.ij_to_xy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_ij()</span></code>.</p></li>
+<li><p>Added new functions <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.indices_to_coords()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.coords_to_indices()</span></code> to replace <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.ij_to_xy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.core.xy_to_ij()</span></code>.</p></li>
 </ul>
 </section>
 <section id="id130">
@@ -1818,7 +1818,7 @@ document.write(`
 <section id="id151">
 <h3>New<a class="headerlink" href="#id151" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code> function in <a class="reference internal" href="api/geowombat.util.html#geowombat.util.web.GeoDownloads" title="geowombat.util.web.GeoDownloads"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.web.GeoDownloads</span></code></a>.</p></li>
+<li><p>Added <code class="xref py py-func docutils literal notranslate"><span class="pre">download_cube()</span></code> function in <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.util.web.GeoDownloads</span></code>.</p></li>
 </ul>
 </section>
 </section>

@@ -409,7 +409,7 @@ document.write(`
     <span class="k">return</span> <span class="n">elev</span>
 
 
-<div class="viewcode-block" id="calc_slope"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.calc_slope">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_slope</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_slope</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates slope from elevation.</span>
 
@@ -461,10 +461,10 @@ document.write(`
         <span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="calc_aspect"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.calc_aspect">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_aspect</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_aspect</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates aspect from elevation.</span>
 
@@ -518,7 +518,7 @@ document.write(`
         <span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span>
 
 
 <span class="n">calc_slope_delayed</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">calc_slope</span><span class="p">)</span>

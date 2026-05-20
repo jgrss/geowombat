@@ -622,7 +622,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="geowombat.core.geoxarray.GeoWombatAccessor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.core.geoxarray.</span></span><span class="sig-name descname"><span class="pre">GeoWombatAccessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xarray_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geowombat/core/geoxarray.html#GeoWombatAccessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.core.geoxarray.GeoWombatAccessor" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_UpdateConfig</span></code>, <a class="reference internal" href="api/geowombat.core.html#geowombat.core.properties.DataProperties" title="geowombat.core.properties.DataProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataProperties</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_UpdateConfig</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DataProperties</span></code></p>
 <p>A method to access a <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>. This class is typically not
 accessed directly, but rather through a call to <code class="docutils literal notranslate"><span class="pre">geowombat.open</span></code>.</p>
 <ul class="simple">
@@ -3792,7 +3792,7 @@ Default is 1.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="geowombat.series">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.</span></span><span class="sig-name descname"><span class="pre">series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transfer_lib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jax'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warp_mem_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geowombat/core/api.html#series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.series" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="api/geowombat.core.html#geowombat.core.series.BaseSeries" title="geowombat.core.series.BaseSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSeries</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSeries</span></code></p>
 <p>A class for time series concurrent processing on a GPU.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -6177,7 +6177,7 @@ incorporating human review.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="geowombat.radiometry.BRDF">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></span><span class="sig-name descname"><span class="pre">BRDF</span></span><a class="reference internal" href="_modules/geowombat/radiometry/brdf.html#BRDF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.radiometry.BRDF" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.brdf.GeoVolKernels" title="geowombat.radiometry.brdf.GeoVolKernels"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoVolKernels</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoVolKernels</span></code></p>
 <p>A class for Bidirectional Reflectance Distribution Function (BRDF)
 normalization.</p>
 <p class="rubric">Methods</p>
@@ -6435,7 +6435,7 @@ surface reflectance values.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="geowombat.radiometry.RadTransforms">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></span><span class="sig-name descname"><span class="pre">RadTransforms</span></span><a class="reference internal" href="_modules/geowombat/radiometry/sr.html#RadTransforms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.radiometry.RadTransforms" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.sr.MetaData" title="geowombat.radiometry.sr.MetaData"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaData</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MetaData</span></code></p>
 <p>A class for radiometric transformations.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
@@ -6650,7 +6650,7 @@ technical-guides/sentinel-2-msi/level-2a/algorithm-overview</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="geowombat.radiometry.SixS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.radiometry.</span></span><span class="sig-name descname"><span class="pre">SixS</span></span><a class="reference internal" href="_modules/geowombat/radiometry/sixs.html#SixS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.radiometry.SixS" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.sixs.Altitude" title="geowombat.radiometry.sixs.Altitude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Altitude</span></code></a>, <a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.sixs.SixSMixin" title="geowombat.radiometry.sixs.SixSMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SixSMixin</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Altitude</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SixSMixin</span></code></p>
 <p>A class to handle loading, downloading and interpolating of LUTs (look
 up tables) used by the 6S emulator.</p>
 <dl class="field-list simple">
@@ -6867,7 +6867,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.angles.AngleInfo" title="geowombat.radiometry.angles.AngleInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">AngleInfo</span></code></a></p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AngleInfo</span></code></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>zenith and azimuth angles as a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> of angle file names</p>
@@ -6892,7 +6892,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.angles.AngleInfo" title="geowombat.radiometry.angles.AngleInfo"><em>AngleInfo</em></a></p>
+<dd class="field-even"><p><em>AngleInfo</em></p>
 </dd>
 </dl>
 <p class="rubric">References</p>
@@ -6900,7 +6900,7 @@ Choices are [‘average’, ‘bilinear’, ‘cubic’, ‘cubic_spline’, ‘
 <a class="github reference external" href="https://github.com/marujore/sentinel_angle_bands/blob/master/sentinel2_angle_bands.py">marujore/sentinel_angle_bands</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="api/geowombat.radiometry.html#geowombat.radiometry.angles.AngleInfo" title="geowombat.radiometry.angles.AngleInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">AngleInfo</span></code></a></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AngleInfo</span></code></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>zenith and azimuth angles as a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> of angle file names</p>

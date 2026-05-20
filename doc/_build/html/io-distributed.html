@@ -742,7 +742,7 @@ a <a class="reference external" href="https://distributed.dask.org/en/latest/cli
 <section id="use-geowombat-to-gather-block-level-results-in-parallel">
 <h2>Use GeoWombat to gather block-level results in parallel<a class="headerlink" href="#use-geowombat-to-gather-block-level-results-in-parallel" title="Permalink to this heading">#</a></h2>
 <p>If you wish to retrieve values for each block without writing the entire blocks to file,
-use <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a>. In the example below, a custom function (<code class="docutils literal notranslate"><span class="pre">user_func</span></code>) is
+use <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code>. In the example below, a custom function (<code class="docutils literal notranslate"><span class="pre">user_func</span></code>) is
 processed in parallel over each raster chunk/block.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
@@ -780,7 +780,7 @@ processed in parallel over each raster chunk/block.</p>
     <span class="n">res</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">user_func</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the example above, <a class="reference internal" href="api/geowombat.core.html#geowombat.core.parallel.ParallelTask" title="geowombat.core.parallel.ParallelTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code></a> reads row and column chunks of <code class="docutils literal notranslate"><span class="pre">src.gw.row_chunks</span></code>
+<p>In the example above, <code class="xref py py-class docutils literal notranslate"><span class="pre">geowombat.core.parallel.ParallelTask</span></code> reads row and column chunks of <code class="docutils literal notranslate"><span class="pre">src.gw.row_chunks</span></code>
 and <code class="docutils literal notranslate"><span class="pre">src.gw.col_chunks</span></code> size (which is set with <a class="reference internal" href="api/geowombat.open.html#geowombat.open" title="geowombat.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.open()</span></code></a>). Let’s say we open a raster with chunks of 512x512.
 In the above example, the <code class="docutils literal notranslate"><span class="pre">data.data.sum().compute(scheduler='threads',</span> <span class="pre">num_workers=num_workers)</span></code> <code class="docutils literal notranslate"><span class="pre">dask</span></code> computation only
 has 1 chunk to process because the chunk sizes are the same size as the blocks being passed to <code class="docutils literal notranslate"><span class="pre">user_func</span></code>. We can

@@ -440,13 +440,13 @@ document.write(`
     <span class="k">yield</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="get_image_chunks"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.get_image_chunks">[docs]</a><span class="nd">@singledispatch</span>
+<span class="nd">@singledispatch</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_</span><span class="p">:</span>
         <span class="n">w</span> <span class="o">=</span> <span class="n">src_</span><span class="o">.</span><span class="n">block_window</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">chunks</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">chunks</span></div>
+    <span class="k">return</span> <span class="n">chunks</span>
 
 
 <span class="nd">@get_image_chunks</span><span class="o">.</span><span class="n">register</span>
@@ -532,11 +532,11 @@ document.write(`
         <span class="k">return</span> <span class="n">data_slice</span>
 
 
-<div class="viewcode-block" id="read_list"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.read_list">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read_list</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">read_delayed</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_list</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">read_delayed</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.read">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">band_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">time_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -650,7 +650,7 @@ document.write(`
             <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">data</span></div>
+    <span class="k">return</span> <span class="n">data</span>
 
 
 <span class="n">data_</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1048,7 +1048,7 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="k">yield</span>
 
-<div class="viewcode-block" id="open.close"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.open.close">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;gw&quot;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">,</span> <span class="s2">&quot;_obj&quot;</span><span class="p">):</span>
@@ -1061,7 +1061,7 @@ document.write(`
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optional_lock</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
                 <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gw&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="load"><a class="viewcode-back" href="../../../api/geowombat.load.html#geowombat.load">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span>

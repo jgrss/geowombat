@@ -432,8 +432,8 @@ document.write(`
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">letters_digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">string_length</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="Altitude"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Altitude">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Altitude</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Altitude.get_mean_altitude"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Altitude.get_mean_altitude">[docs]</a>    <span class="nd">@staticmethod</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Altitude</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mean_altitude</span><span class="p">(</span>
         <span class="n">data</span><span class="p">,</span>
         <span class="n">out_dir</span><span class="p">,</span>
@@ -514,10 +514,10 @@ document.write(`
             <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">hgt_files</span><span class="p">:</span>
                 <span class="n">fn</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">mean_elev</span></div></div>
+        <span class="k">return</span> <span class="n">mean_elev</span>
 
 
-<div class="viewcode-block" id="SixSMixin"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.SixSMixin">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SixSMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SixSMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">interp_method</span><span class="p">,</span> <span class="n">from_toar</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
@@ -571,7 +571,7 @@ document.write(`
 
         <span class="n">y</span> <span class="o">=</span> <span class="n">xa</span> <span class="o">*</span> <span class="n">rad</span> <span class="o">-</span> <span class="n">xb</span>
 
-        <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">xc</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">xc</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SixS"><a class="viewcode-back" href="../../../api/geowombat.radiometry.SixS.html#geowombat.radiometry.SixS">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SixS</span><span class="p">(</span><span class="n">Altitude</span><span class="p">,</span> <span class="n">SixSMixin</span><span class="p">):</span>
@@ -614,9 +614,9 @@ document.write(`
 
         <span class="k">return</span> <span class="n">sr_s</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">sr_s</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SixS.prepare_coeff"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.SixS.prepare_coeff">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_coeff</span><span class="p">(</span><span class="n">band_data</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">cindex</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ndarray_to_xarray</span><span class="p">(</span><span class="n">band_data</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cindex</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;coeff&#39;</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="n">ndarray_to_xarray</span><span class="p">(</span><span class="n">band_data</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cindex</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;coeff&#39;</span><span class="p">])</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_mask_nodata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">other_data</span><span class="p">,</span> <span class="n">src_nodata</span><span class="p">,</span> <span class="n">dst_nodata</span><span class="p">):</span>
@@ -853,8 +853,8 @@ document.write(`
         <span class="k">return</span> <span class="n">sr</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AOT"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.AOT">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">AOT</span><span class="p">(</span><span class="n">SixSMixin</span><span class="p">):</span>
-<div class="viewcode-block" id="AOT.get_optimized_aot"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.AOT.get_optimized_aot">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_optimized_aot</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AOT</span><span class="p">(</span><span class="n">SixSMixin</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_optimized_aot</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">blue_rad_dark</span><span class="p">,</span>
         <span class="n">blue_p_dark</span><span class="p">,</span>
@@ -910,7 +910,7 @@ document.write(`
             <span class="n">aot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">score</span> <span class="o">&lt;</span> <span class="n">min_score</span><span class="p">,</span> <span class="n">aot_iter</span><span class="p">,</span> <span class="n">aot</span><span class="p">)</span>
             <span class="n">min_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">score</span> <span class="o">&lt;</span> <span class="n">min_score</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">min_score</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">aot</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_aot</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">aot</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_aot</span><span class="p">)</span>
 </pre></div>
 
                 </article>
