@@ -9,6 +9,16 @@ inside the familiar ``with gw.open(...) as src:`` / ``src.gw.<method>``
 pattern, with module-level wrappers in ``gw.ml`` that mirror
 ``fit`` / ``predict`` / ``fit_predict`` for classification.
 
+.. seealso::
+
+   **Live, executed companion notebook** — :doc:`object_detection` walks
+   the full real-world workflow on NAIP aerial imagery with OpenStreetMap
+   building footprints: dataset construction, pretrained inference,
+   fine-tuning, accuracy comparison, the QGIS review export, and
+   SAM-based polygon refinement. Outputs (plots, metrics, training logs)
+   are baked into the notebook so you can scan the full pipeline without
+   running anything yourself.
+
 Three detectors are included:
 
 .. list-table::

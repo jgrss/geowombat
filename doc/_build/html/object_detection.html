@@ -1,0 +1,1962 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Object Detection with geowombat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'object_detection';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Moving windows" href="moving.html" />
+    <link rel="prev" title="Object detection" href="object-detection.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object-detection.html">Object detection</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Object Detection with geowombat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/object_detection.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Object Detection with geowombat</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#1.-Quickstart:-pretrained-YOLO-on-NWPU-VHR-10">1. Quickstart: pretrained YOLO on NWPU VHR-10</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Picking-a-YOLO-variant">Picking a YOLO variant</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Improved:-DOTA-pretrained-YOLO-OBB">Improved: DOTA-pretrained YOLO-OBB</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#2.-Geowombat-native-workflow:-NAIP-+-OpenStreetMap-buildings">2. Geowombat-native workflow: NAIP + OpenStreetMap buildings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Inference-with-pretrained-YOLO">Inference with pretrained YOLO</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Reading-the-accuracy-output">Reading the accuracy output</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#3.-Fine-tune-YOLO-on-the-building-dataset">3. Fine-tune YOLO on the building dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Re-run-inference-with-the-fine-tuned-model">Re-run inference with the fine-tuned model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Before-vs.-after">Before vs. after</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#4.-Refine-boxes-to-polygons-with-SAM">4. Refine boxes to polygons with SAM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#How-to-make-the-fine-tune-actually-good">How to make the fine-tune actually good</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Summary-—-the-geowombat-native-idiom">Summary — the geowombat-native idiom</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="Object-Detection-with-geowombat">
+<h1>Object Detection with geowombat<a class="headerlink" href="#Object-Detection-with-geowombat" title="Permalink to this heading">#</a></h1>
+<p>This notebook walks through the geowombat object-detection module:</p>
+<ol class="arabic simple">
+<li><p><strong>Quickstart</strong> — run a pretrained YOLO model on a public satellite detection benchmark (NWPU VHR-10 via TorchGeo) and score its accuracy.</p></li>
+<li><p><strong>Geowombat-native workflow</strong> — fetch a NAIP aerial image from Microsoft Planetary Computer plus OpenStreetMap building footprints, build a YOLO training dataset, run inference, score it, and export a GeoPackage you can review feature-by-feature in QGIS (e.g. with the GoToNextFeature3+ plugin).</p></li>
+<li><p><strong>Optional fine-tuning</strong> — fine-tune YOLO on the dataset built in step 2 so detections are actually useful for buildings.</p></li>
+<li><p><strong>Refine boxes to polygons with SAM</strong> — turn the fine-tuned bounding-box detections into precise vector footprints using Meta’s Segment Anything Model.</p></li>
+</ol>
+<p>Required installs:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install geowombat[dl,detect,sam,stac]
+pip install osmnx torchgeo
+</pre></div>
+</div>
+<section id="Setup">
+<h2>Setup<a class="headerlink" href="#Setup" title="Permalink to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.detect</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">YOLODetector</span><span class="p">,</span>
+    <span class="n">boxes_from_polygons</span><span class="p">,</span>
+    <span class="n">build_dataset</span><span class="p">,</span>
+    <span class="n">detection_accuracy</span><span class="p">,</span>
+    <span class="n">export_for_review</span><span class="p">,</span>
+    <span class="n">plot_detections</span><span class="p">,</span>
+    <span class="n">predict</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="n">WORK_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;object_detection_demo&#39;</span><span class="p">)</span>
+<span class="n">WORK_DIR</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/mmann1123/miniconda3/envs/geowombat_dev/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div></div>
+</div>
+</section>
+<section id="1.-Quickstart:-pretrained-YOLO-on-NWPU-VHR-10">
+<h2>1. Quickstart: pretrained YOLO on NWPU VHR-10<a class="headerlink" href="#1.-Quickstart:-pretrained-YOLO-on-NWPU-VHR-10" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://gcheng-nwpu.github.io/">NWPU VHR-10</a> is a small (~715 images, 10 classes) public satellite-imagery detection benchmark. TorchGeo auto-downloads it. We’ll run a pretrained Ultralytics YOLO model on a few images and score the result.</p>
+<p><strong>Caveat:</strong> YOLO’s default weights are trained on COCO, which only overlaps with VHR-10 on a couple of classes (e.g. <em>airplane</em>, <em>ship</em>, <em>vehicle</em>). Expect low mAP — this section is about exercising the API, not about state-of-the-art accuracy. The geowombat-native section below shows the full train-and-score loop.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torchgeo.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">VHR10</span>
+
+<span class="n">vhr_dir</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;vhr10&#39;</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">VHR10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">vhr_dir</span><span class="p">),</span> <span class="n">split</span><span class="o">=</span><span class="s1">&#39;positive&#39;</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dataset size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="si">}</span><span class="s1"> positive images&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Classes:&#39;</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">categories</span><span class="p">[:</span><span class="mi">5</span><span class="p">],</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Files already downloaded and verified
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Dataset size: 650 positive images
+Classes: (&#39;background&#39;, &#39;airplane&#39;, &#39;ships&#39;, &#39;storage tank&#39;, &#39;baseball diamond&#39;) ...
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Inspect a single sample. TorchGeo 0.9 keys: image, label, bbox_xyxy, mask</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="n">boxes</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;bbox_xyxy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">),</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="p">,</span> <span class="n">y2</span><span class="o">-</span><span class="n">y1</span><span class="p">,</span>
+                               <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="n">lbl</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;NWPU VHR-10 sample with ground-truth boxes&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_5_0.png" src="_images/object_detection_5_0.png" />
+</div>
+</div>
+<section id="Picking-a-YOLO-variant">
+<h3>Picking a YOLO variant<a class="headerlink" href="#Picking-a-YOLO-variant" title="Permalink to this heading">#</a></h3>
+<p>Ultralytics ships several pretrained YOLO weight families. The right choice depends on <strong>what you’re detecting</strong>, not just how fast you need it to run.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Weight family</p></th>
+<th class="head"><p>Trained on</p></th>
+<th class="head"><p>Classes</p></th>
+<th class="head"><p>When to use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">yolov8{n,s,m,l,x}.pt</span></code></p></td>
+<td><p>COCO</p></td>
+<td><p>80 everyday classes (person, car, dog, …)</p></td>
+<td><p>Ground-level photos. <strong>Wrong tool for overhead imagery</strong> — most COCO classes never appear from above.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">yolo11{n,s,m,l,x}.pt</span></code></p></td>
+<td><p>COCO</p></td>
+<td><p>Same 80 classes</p></td>
+<td><p>Newer architecture, same training set as YOLOv8 COCO. Same caveat for aerial data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">yolov8{n,s,m,l,x}-obb.pt</span></code></p></td>
+<td><p><strong>DOTA-v1</strong> (aerial)</p></td>
+<td><p>15 aerial classes: <em>plane, ship, storage tank, baseball diamond, tennis court, basketball court, ground track field,
+harbor, bridge, large vehicle, small vehicle, helicopter, roundabout, soccer ball field, swimming pool</em></p></td>
+<td><p><strong>Best out-of-the-box choice for satellite/aerial imagery</strong>. Predicts rotated boxes (OBB).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">yolov8{s,m,l,x}-worldv2.pt</span></code></p></td>
+<td><p>LVIS + grounding</p></td>
+<td><p><strong>Open-vocabulary</strong> — you pass text prompts at inference time</p></td>
+<td><p>When DOTA classes don’t cover what you need. Use <code class="docutils literal notranslate"><span class="pre">model.set_classes(['airplane',</span> <span class="pre">'truck',</span> <span class="pre">...])</span></code> before predicting.</p></td>
+</tr>
+<tr class="row-even"><td><p>Custom-trained checkpoint</p></td>
+<td><p>Your dataset</p></td>
+<td><p>Whatever you trained on</p></td>
+<td><p>After fine-tuning — see Section 3 below.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Size suffix (<code class="docutils literal notranslate"><span class="pre">n</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">s</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">m</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">l</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">x</span></code>) trades inference speed for accuracy. Default to <code class="docutils literal notranslate"><span class="pre">n</span></code> or <code class="docutils literal notranslate"><span class="pre">s</span></code> for prototyping, <code class="docutils literal notranslate"><span class="pre">m</span></code>+ for production.</p>
+<p><strong>Non-YOLO option</strong>: <code class="docutils literal notranslate"><span class="pre">geowombat.detect.TorchGeoDetector</span></code> wraps torchvision Faster R-CNN / RetinaNet and can load TorchGeo’s xView pretrained weights — a richer 60-class aerial label set. Use it when the AGPL license on Ultralytics is a problem or when xView’s class set is a better fit than DOTA’s.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Default `yolov8n.pt` — trained on COCO, the wrong tool for overhead</span>
+<span class="c1"># imagery. We expect garbage detections (a &#39;train&#39; box covering the</span>
+<span class="c1"># entire chip, etc.) because COCO classes don&#39;t generalize.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+
+<span class="c1"># Load the smallest YOLOv8 weights (auto-downloaded on first run).</span>
+<span class="n">yolo_coco</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="s1">&#39;yolov8n.pt&#39;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">yolo_coco</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">img</span><span class="p">,</span>        <span class="c1"># the image to run on</span>
+    <span class="n">conf</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>          <span class="c1"># keep detections above this confidence</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)[</span><span class="mi">0</span><span class="p">]</span>                   <span class="c1"># one image in, one result out</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">boxes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">xyxy</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                       <span class="n">result</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">cls</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+                       <span class="n">result</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()):</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="p">,</span> <span class="n">y2</span><span class="o">-</span><span class="n">y1</span><span class="p">,</span>
+                                    <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">yolo_coco</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">s</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;YOLOv8n (COCO weights) on VHR-10 — note the misfires&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_7_0.png" src="_images/object_detection_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Improved:-DOTA-pretrained-YOLO-OBB">
+<h3>Improved: DOTA-pretrained YOLO-OBB<a class="headerlink" href="#Improved:-DOTA-pretrained-YOLO-OBB" title="Permalink to this heading">#</a></h3>
+<p>Same model architecture, different training data. <code class="docutils literal notranslate"><span class="pre">yolov8n-obb.pt</span></code> was trained on <strong>DOTA-v1</strong>, a satellite/aerial benchmark with the 15 classes listed above. It produces <strong>oriented bounding boxes</strong> (four corner points each) instead of axis-aligned rectangles, which is what you want for objects on a runway, ship in a harbor, etc.</p>
+<p>On the same VHR-10 chip you should now see clean <em>plane</em> detections with reasonable confidence — no fine-tuning required.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 2. yolov8n-obb.pt — DOTA-trained. Same call, different weights.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patheffects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pe</span>
+
+<span class="c1"># `-obb.pt` weights predict rotated boxes instead of axis-aligned ones.</span>
+<span class="n">yolo_obb</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="s1">&#39;yolov8n-obb.pt&#39;</span><span class="p">)</span>
+<span class="n">result_obb</span> <span class="o">=</span> <span class="n">yolo_obb</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">img</span><span class="p">,</span>
+    <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>     <span class="c1"># this model is more confident, so we can raise the threshold</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result_obb</span><span class="o">.</span><span class="n">obb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result_obb</span><span class="o">.</span><span class="n">obb</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">quads</span> <span class="o">=</span> <span class="n">result_obb</span><span class="o">.</span><span class="n">obb</span><span class="o">.</span><span class="n">xyxyxyxy</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># (N, 4, 2)</span>
+    <span class="n">clses</span> <span class="o">=</span> <span class="n">result_obb</span><span class="o">.</span><span class="n">obb</span><span class="o">.</span><span class="n">cls</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">confs</span> <span class="o">=</span> <span class="n">result_obb</span><span class="o">.</span><span class="n">obb</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">quad</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">conf</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">quads</span><span class="p">,</span> <span class="n">clses</span><span class="p">,</span> <span class="n">confs</span><span class="p">):</span>
+        <span class="n">polygon</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span><span class="n">quad</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+        <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">quad</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">yolo_obb</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">conf</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                <span class="n">path_effects</span><span class="o">=</span><span class="p">[</span><span class="n">pe</span><span class="o">.</span><span class="n">withStroke</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                            <span class="n">foreground</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;YOLOv8n-OBB (DOTA weights) on VHR-10 — proper aerial classes&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_9_0.png" src="_images/object_detection_9_0.png" />
+</div>
+</div>
+<p>Same <code class="docutils literal notranslate"><span class="pre">YOLODetector</span></code> interface, just point <code class="docutils literal notranslate"><span class="pre">weights=</span></code> at the OBB checkpoint and set <code class="docutils literal notranslate"><span class="pre">oriented=True</span></code> (auto-detected from the filename ending in <code class="docutils literal notranslate"><span class="pre">-obb.pt</span></code>). It then plugs into <code class="docutils literal notranslate"><span class="pre">src.gw.detect</span></code> exactly like the COCO variant — but the resulting <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> carries rotated polygon geometries instead of axis-aligned boxes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.detect</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLODetector</span>
+
+<span class="n">det</span> <span class="o">=</span> <span class="n">YOLODetector</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;yolov8n-obb.pt&#39;</span><span class="p">)</span>   <span class="c1"># oriented=True inferred</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;aerial.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="2.-Geowombat-native-workflow:-NAIP-+-OpenStreetMap-buildings">
+<h2>2. Geowombat-native workflow: NAIP + OpenStreetMap buildings<a class="headerlink" href="#2.-Geowombat-native-workflow:-NAIP-+-OpenStreetMap-buildings" title="Permalink to this heading">#</a></h2>
+<p>Now the full pipeline using a <em>georeferenced</em> raster and <em>georeferenced</em> vector labels:</p>
+<ol class="arabic simple">
+<li><p>Pull a NAIP scene from Microsoft Planetary Computer for a small AOI.</p></li>
+<li><p>Pull OSM building footprints for the same AOI with <code class="docutils literal notranslate"><span class="pre">osmnx</span></code>.</p></li>
+<li><p>Build a YOLO-format training dataset with <code class="docutils literal notranslate"><span class="pre">build_yolo_dataset</span></code>.</p></li>
+<li><p>Run inference; observe that COCO-pretrained YOLO won’t see buildings.</p></li>
+<li><p>Score with <code class="docutils literal notranslate"><span class="pre">detection_accuracy</span></code> and export a review GeoPackage.</p></li>
+<li><p>Optional: fine-tune YOLO on the dataset from step 3.</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># AOI: ~2 km square over Capitol Hill, Washington DC. Row-house</span>
+<span class="c1"># residential gives the fine-tune cell good signal (dense, regular,</span>
+<span class="c1"># visually distinctive buildings). Adjust the bounds for any other</span>
+<span class="c1"># city — wider bounds give more training data but a slower download.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span> <span class="k">as</span> <span class="n">shapely_box</span>
+
+<span class="n">AOI_BOUNDS</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">77.012</span><span class="p">,</span> <span class="mf">38.882</span><span class="p">,</span> <span class="o">-</span><span class="mf">77.000</span><span class="p">,</span> <span class="mf">38.898</span><span class="p">)</span>  <span class="c1"># west, south, east, north (~1 km x 1.8 km, ~half the original AOI)</span>
+<span class="n">aoi</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+    <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;demo&#39;</span><span class="p">]},</span>
+    <span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">shapely_box</span><span class="p">(</span><span class="o">*</span><span class="n">AOI_BOUNDS</span><span class="p">)],</span>
+    <span class="n">crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">aoi</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Demo AOI: Capitol Hill, Washington DC&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_12_0.png" src="_images/object_detection_12_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch a recent NAIP scene via geowombat&#39;s STAC interface. This</span>
+<span class="c1"># searches Planetary Computer, signs the URL, clips to the AOI, and</span>
+<span class="c1"># returns both the DataArray and a GeoDataFrame of the matching</span>
+<span class="c1"># STAC items (with each item&#39;s true scene polygon as its geometry).</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.core.stac</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_stac</span>
+
+<span class="n">naip_local</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;naip_aoi.tif&#39;</span>
+
+<span class="n">data</span><span class="p">,</span> <span class="n">naip_items</span> <span class="o">=</span> <span class="n">open_stac</span><span class="p">(</span>
+    <span class="n">stac_catalog</span><span class="o">=</span><span class="s1">&#39;microsoft_v1&#39;</span><span class="p">,</span>
+    <span class="n">collection</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="n">AOI_BOUNDS</span><span class="p">,</span>            <span class="c1"># lat/lon (left, bottom, right, top)</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2021-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2023-12-31&#39;</span><span class="p">,</span>
+    <span class="n">max_items</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>                  <span class="c1"># take the most recent scene</span>
+    <span class="n">epsg</span><span class="o">=</span><span class="mi">26918</span><span class="p">,</span>                   <span class="c1"># NAD83 / UTM 18N for the DC area</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>               <span class="c1"># NAIP native ground sample distance</span>
+    <span class="n">compute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                 <span class="c1"># eagerly download into memory</span>
+<span class="p">)</span>
+
+<span class="c1"># Materialize to disk so later cells can re-open with chunked I/O.</span>
+<span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">naip_crs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">crs_to_pyproj</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;NAIP scene: </span><span class="si">{</span><span class="n">naip_items</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrote local AOI clip: </span><span class="si">{</span><span class="n">naip_local</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># The STAC item carries the actual scene polygon (not just a bbox).</span>
+<span class="c1"># Intersect with the AOI to get the *valid* coverage area — buildings</span>
+<span class="c1"># outside this polygon would sit on no-data pixels.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span> <span class="k">as</span> <span class="n">shapely_box</span>
+<span class="n">aoi_poly_4326</span> <span class="o">=</span> <span class="n">shapely_box</span><span class="p">(</span><span class="o">*</span><span class="n">AOI_BOUNDS</span><span class="p">)</span>
+<span class="n">valid_polygon_4326</span> <span class="o">=</span> <span class="n">naip_items</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">aoi_poly_4326</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Searching microsoft_v1 for naip...
+Found 1 items.
+NAIP scene: va_m_3807708_se_18_060_20231113_20240103
+Wrote local AOI clip: object_detection_demo/naip_aoi.tif
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch OSM buildings within the NAIP coverage polygon (not the raw</span>
+<span class="c1"># AOI bbox), so we don&#39;t ingest labels in areas with no imagery.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">osmnx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ox</span>
+
+<span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;building&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">buildings</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">features_from_polygon</span><span class="p">(</span><span class="n">valid_polygon_4326</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="n">buildings</span> <span class="o">=</span> <span class="n">buildings</span><span class="p">[</span><span class="n">buildings</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;Polygon&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiPolygon&#39;</span><span class="p">])]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">buildings</span><span class="p">[</span><span class="s1">&#39;class_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;building&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Fetched </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span><span class="si">}</span><span class="s1"> building footprints inside NAIP coverage&#39;</span><span class="p">)</span>
+<span class="n">buildings</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Fetched 2061 building footprints inside NAIP coverage
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>geometry</th>
+      <th>addr:state</th>
+      <th>building</th>
+      <th>ele</th>
+      <th>gnis:feature_id</th>
+      <th>name</th>
+      <th>source</th>
+      <th>wikidata</th>
+      <th>wikipedia</th>
+      <th>fax</th>
+      <th>...</th>
+      <th>dcgis:ssl</th>
+      <th>dcgis:update_date</th>
+      <th>name:br</th>
+      <th>year_of_construction</th>
+      <th>name:etymology</th>
+      <th>contact:flickr</th>
+      <th>contact:pinterest</th>
+      <th>contact:twitter</th>
+      <th>ref:isil</th>
+      <th>class_name</th>
+    </tr>
+    <tr>
+      <th>element</th>
+      <th>id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="3" valign="top">relation</th>
+      <th>286501</th>
+      <td>POLYGON ((-77.00392 38.89077, -77.00375 38.890...</td>
+      <td>DC</td>
+      <td>office</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Supreme Court of the United States</td>
+      <td>NaN</td>
+      <td>Q11201</td>
+      <td>en:Supreme Court of the United States</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0728 0843</td>
+      <td>Mon Mar 21 00:00:00 UTC 2005</td>
+      <td>Lez-veur ar Stadoù-Unanet</td>
+      <td>1935</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>building</td>
+    </tr>
+    <tr>
+      <th>286503</th>
+      <td>POLYGON ((-77.00614 38.88635, -77.00614 38.886...</td>
+      <td>DC</td>
+      <td>government</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cannon House Office Building</td>
+      <td>NaN</td>
+      <td>Q1033452</td>
+      <td>en:Cannon House Office Building</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0690 0800</td>
+      <td>Mon Mar 21 00:00:00 UTC 2005</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>building</td>
+    </tr>
+    <tr>
+      <th>554408</th>
+      <td>POLYGON ((-77.00188 38.89778, -77.0019 38.8977...</td>
+      <td>NaN</td>
+      <td>apartments</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>dcgis</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>building</td>
+    </tr>
+  </tbody>
+</table>
+<p>3 rows × 150 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reproject buildings into the raster CRS and double-check they fall</span>
+<span class="c1"># inside the NAIP scene polygon.</span>
+<span class="n">buildings_proj</span> <span class="o">=</span> <span class="n">buildings</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">naip_crs</span><span class="p">)</span>
+<span class="n">valid_polygon_naip_crs</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">([</span><span class="n">valid_polygon_4326</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">naip_crs</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">buildings_proj</span> <span class="o">=</span> <span class="n">buildings_proj</span><span class="p">[</span>
+    <span class="n">buildings_proj</span><span class="o">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">valid_polygon_naip_crs</span><span class="p">)</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># sensor=&#39;naip&#39; tells geowombat NAIP&#39;s bands are red/green/blue/nir</span>
+<span class="c1"># (4-band RGBN). Inside this context we can select bands by name,</span>
+<span class="c1"># and detection helpers also resolve `band_indices` themselves — no</span>
+<span class="c1"># need to pass `band_indices=[0, 1, 2]` per call.</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;NAIP scene: </span><span class="si">{</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="si">}</span><span class="s1"> x </span><span class="si">{</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="si">}</span><span class="s1">, &#39;</span>
+              <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="si">}</span><span class="s1"> bands, </span><span class="si">{</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> m&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+        <span class="c1"># `.gw.imshow` handles the (band, y, x) -&gt; (y, x, band) reorder</span>
+        <span class="c1"># and uses the raster&#39;s geographic extent automatically.</span>
+        <span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">buildings_proj</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;NAIP + OSM buildings (truth labels)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+NAIP scene: 2997 x 1799, 4 bands, 0.60 m
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_15_1.png" src="_images/object_detection_15_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build a YOLO-format training dataset from the NAIP raster + buildings.</span>
+<span class="c1"># NAIP bands 0,1,2 are R,G,B already 8-bit — no scaling needed. We use</span>
+<span class="c1"># the `.gw.to_yolo_dataset(...)` accessor so the call stays inside the</span>
+<span class="c1"># `with gw.open(...) as src:` block, like every other geowombat workflow.</span>
+<span class="n">yolo_dir</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;naip_buildings_yolo&#39;</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">to_yolo_dataset</span><span class="p">(</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">buildings_proj</span><span class="p">,</span>    <span class="c1"># vector labels to use</span>
+            <span class="n">class_col</span><span class="o">=</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span>   <span class="c1"># column with the class name</span>
+            <span class="n">out_dir</span><span class="o">=</span><span class="n">yolo_dir</span><span class="p">,</span>         <span class="c1"># where to write the dataset</span>
+            <span class="n">tile_size</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span>            <span class="c1"># tile size in pixels</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>              <span class="c1"># how much tiles overlap (0–0.9)</span>
+            <span class="n">val_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>            <span class="c1"># fraction of tiles used for validation</span>
+            <span class="n">min_box_pixels</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>        <span class="c1"># drop boxes smaller than this</span>
+            <span class="n">background_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>     <span class="c1"># keep some empty tiles as negatives</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>               <span class="c1"># NAIP is already 8-bit, no rescaling</span>
+        <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;out_dir&#39;: &#39;object_detection_demo/naip_buildings_yolo&#39;, &#39;classes&#39;: [&#39;building&#39;], &#39;n_train&#39;: 17, &#39;n_val&#39;: 7, &#39;n_boxes&#39;: 2296, &#39;empty_kept&#39;: 0, &#39;empty_skipped&#39;: 0}
+</pre></div></div>
+</div>
+<section id="Inference-with-pretrained-YOLO">
+<h3>Inference with pretrained YOLO<a class="headerlink" href="#Inference-with-pretrained-YOLO" title="Permalink to this heading">#</a></h3>
+<p>We run <code class="docutils literal notranslate"><span class="pre">YOLODetector</span></code> directly on the NAIP scene. Pretrained COCO weights have no ‘building’ class, so we expect very few or no useful detections — but this verifies the inference pipeline (tile windowing, cross-tile NMS, pixel→CRS box conversion) end-to-end.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># `YOLODetector` holds the loaded model. `src.gw.detect(detector, ...)`</span>
+<span class="c1"># is the geowombat-native call site — same shape as `src.gw.predict()`</span>
+<span class="c1"># for classification.</span>
+<span class="c1"># Load the model once and reuse it.</span>
+<span class="n">det</span> <span class="o">=</span> <span class="n">YOLODetector</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;yolov8n.pt&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span>
+            <span class="n">det</span><span class="p">,</span>
+            <span class="n">tile_size</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span>            <span class="c1"># tile size for inference</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>              <span class="c1"># overlap so objects on tile edges aren&#39;t missed</span>
+            <span class="n">conf</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>                <span class="c1"># low threshold: COCO weights don&#39;t know buildings</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">nms_iou</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>              <span class="c1"># how much overlap before duplicates are merged</span>
+            <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span><span class="si">}</span><span class="s1"> detections from pretrained YOLO&#39;</span><span class="p">)</span>
+<span class="n">preds</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+YOLODetector: 100%|██████████| 24/24 [00:01&lt;00:00, 21.15it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+32 detections from pretrained YOLO
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>class_id</th>
+      <th>class_name</th>
+      <th>score</th>
+      <th>tile_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POLYGON ((326168.456 4306310.848, 326168.456 4...</td>
+      <td>74</td>
+      <td>clock</td>
+      <td>0.621648</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POLYGON ((325846.515 4305680.666, 325846.515 4...</td>
+      <td>74</td>
+      <td>clock</td>
+      <td>0.437652</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POLYGON ((326326.227 4305785.563, 326326.227 4...</td>
+      <td>9</td>
+      <td>traffic light</td>
+      <td>0.375044</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>POLYGON ((326341.092 4306383.421, 326341.092 4...</td>
+      <td>7</td>
+      <td>truck</td>
+      <td>0.351716</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>POLYGON ((325744.14 4306727.808, 325744.14 430...</td>
+      <td>2</td>
+      <td>car</td>
+      <td>0.338790</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Reading-the-accuracy-output">
+<h3>Reading the accuracy output<a class="headerlink" href="#Reading-the-accuracy-output" title="Permalink to this heading">#</a></h3>
+<p>Before we compute metrics, a quick glossary — these terms appear in the tables below and in the per-feature <code class="docutils literal notranslate"><span class="pre">status</span></code> column of the review GeoPackage.</p>
+<p><strong>Per-detection / per-truth labels</strong></p>
+<ul class="simple">
+<li><p><strong>TP — True Positive.</strong> A predicted box that overlaps a ground-truth box with IoU ≥ the threshold <em>and</em> has the correct class. A hit.</p></li>
+<li><p><strong>FP — False Positive.</strong> A predicted box with no matching truth at the chosen IoU. A hallucination.</p></li>
+<li><p><strong>FP_class — Wrong-class False Positive.</strong> Predicted box landed in about the right place (IoU ≥ threshold against <em>some</em> truth) but the class label was wrong. Useful to separate ‘model can’t see it’ from ‘model sees it but mislabels it’.</p></li>
+<li><p><strong>FN — False Negative.</strong> A ground-truth box no detection matched. A miss.</p></li>
+</ul>
+<p><strong>IoU — Intersection over Union.</strong> The area of overlap divided by the area of union between two boxes. 1.0 = perfect overlap, 0.0 = no overlap. The IoU threshold (<code class="docutils literal notranslate"><span class="pre">0.3</span></code>, <code class="docutils literal notranslate"><span class="pre">0.5</span></code>, …) controls how strict the spatial agreement needs to be to count as a match. 0.5 is the standard PASCAL VOC threshold; 0.3 is more lenient and useful for noisy or very small targets.</p>
+<p><strong>Aggregate metrics</strong></p>
+<ul class="simple">
+<li><p><strong>precision = TP / (TP + FP)</strong> — of what the model predicted, what fraction was right? Penalizes false alarms.</p></li>
+<li><p><strong>recall = TP / (TP + FN)</strong> — of all the real objects, what fraction did the model find? Penalizes misses.</p></li>
+<li><p><strong>F1 = 2 · (precision · recall) / (precision + recall)</strong> — harmonic mean of the two; one number that drops if either side is poor.</p></li>
+<li><p><strong>AP — Average Precision.</strong> Sweeps the confidence threshold from high to low and integrates the precision-recall curve. A single per-class number that captures the precision/recall tradeoff over all confidence levels.</p></li>
+<li><p><strong>mAP&#64;0.5</strong> — the mean of per-class AP at IoU ≥ 0.5. The standard single-number summary for a detector.</p></li>
+<li><p><strong>mAP&#64;[.5:.95]</strong> — average of mAP at IoU thresholds 0.5, 0.55, …, 0.95. COCO’s stricter measure; rewards tightly localized boxes.</p></li>
+<li><p><strong>support</strong> — number of ground-truth boxes for that class (the denominator for recall). Small support = noisy estimate.</p></li>
+</ul>
+<p>Higher is better for everything except the bucket counts (where higher is better only for TP).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Accuracy assessment vs. OSM truth. We re-tag predictions as &#39;building&#39;</span>
+<span class="c1"># so the comparison is meaningful — pretrained YOLO labels things</span>
+<span class="c1"># &#39;car&#39;, &#39;truck&#39;, etc., but we just want to see what it *boxed*.</span>
+<span class="n">preds_as_building</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">preds_as_building</span><span class="p">[</span><span class="s1">&#39;class_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;building&#39;</span>
+
+<span class="n">results_pretrained</span> <span class="o">=</span> <span class="n">detection_accuracy</span><span class="p">(</span>
+    <span class="n">predictions</span><span class="o">=</span><span class="n">preds_as_building</span><span class="p">,</span>
+    <span class="n">truth</span><span class="o">=</span><span class="n">buildings_proj</span><span class="p">[[</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]],</span>
+    <span class="n">class_col</span><span class="o">=</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span>
+    <span class="n">iou_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Per-class metrics (pretrained YOLO, no fine-tuning):&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_pretrained</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Summary:&#39;</span><span class="p">,</span> <span class="n">results_pretrained</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">])</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">results_pretrained</span>  <span class="c1"># alias kept for the cells below</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Per-class metrics (pretrained YOLO, no fine-tuning):
+                              ap  precision    recall        f1  tp  fp    fn  \
+iou_threshold class
+0.3           building  0.022727    0.09375  0.001456  0.002867   3  29  2058
+0.5           building  0.022727    0.09375  0.001456  0.002867   3  29  2058
+
+                        support
+iou_threshold class
+0.3           building     2061
+0.5           building     2061
+
+Summary: {&#39;mAP@0.3&#39;: 0.022727272727272728, &#39;mAP@0.5&#39;: 0.022727272727272728}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visualize TP / FP / FN</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="n">plot_detections</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span>
+            <span class="n">predictions</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;matched&#39;</span><span class="p">],</span>
+            <span class="n">truth</span><span class="o">=</span><span class="n">buildings_proj</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_21_0.png" src="_images/object_detection_21_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export the review GeoPackage. Open this in QGIS, use the attribute</span>
+<span class="c1"># form or GoToNextFeature3+ to step through each detection, and fill in</span>
+<span class="c1"># `reviewer_label` (TP/FP/FN/unclear). Then call recompute_from_review.</span>
+<span class="n">review_path</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;review.gpkg&#39;</span>
+<span class="n">export_for_review</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;matched&#39;</span><span class="p">],</span> <span class="n">review_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Review file: </span><span class="si">{</span><span class="n">review_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  In QGIS: Open layer → switch to Form view → use&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;&quot;GoToNextFeature3+&quot; or built-in next-feature shortcut.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Review file: /home/mmann1123/Documents/github/geowombat/notebooks/object_detection_demo/review.gpkg
+  In QGIS: Open layer → switch to Form view → use &#34;GoToNextFeature3+&#34; or built-in next-feature shortcut.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="3.-Fine-tune-YOLO-on-the-building-dataset">
+<h2>3. Fine-tune YOLO on the building dataset<a class="headerlink" href="#3.-Fine-tune-YOLO-on-the-building-dataset" title="Permalink to this heading">#</a></h2>
+<p>Pretrained COCO YOLO can’t recognize buildings. Fine-tuning teaches it to. We train <code class="docutils literal notranslate"><span class="pre">yolov8n</span></code> (the smallest variant, ~3M parameters) on the dataset we just built. Settings chosen for CPU-friendliness: small <code class="docutils literal notranslate"><span class="pre">imgsz</span></code>, small <code class="docutils literal notranslate"><span class="pre">batch</span></code>, modest <code class="docutils literal notranslate"><span class="pre">epochs</span></code>. On a typical laptop CPU expect a few minutes total; on GPU, well under one minute.</p>
+<p>We send Ultralytics’ <code class="docutils literal notranslate"><span class="pre">runs/</span></code> output into <code class="docutils literal notranslate"><span class="pre">WORK_DIR</span></code> so the demo leaves no clutter at the repo root.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+
+<span class="c1"># Start from COCO weights and fine-tune on our buildings dataset.</span>
+<span class="n">yolo_train</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="s1">&#39;yolov8n.pt&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">yolo_train</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">yolo_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;data.yaml&#39;</span><span class="p">),</span>  <span class="c1"># the dataset we just built</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>           <span class="c1"># how many passes over the data</span>
+    <span class="n">imgsz</span><span class="o">=</span><span class="mi">416</span><span class="p">,</span>           <span class="c1"># training image size</span>
+    <span class="n">batch</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>             <span class="c1"># batch size (small for CPU)</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;gw_buildings&#39;</span><span class="p">,</span> <span class="c1"># folder name for this run</span>
+    <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># overwrite previous run if present</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Ultralytics writes runs/ relative to its own cwd regardless of the</span>
+<span class="c1"># project= kwarg, so we read the actual save_dir from the trainer.</span>
+<span class="n">best_weights</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">yolo_train</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">save_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;weights&#39;</span> <span class="o">/</span> <span class="s1">&#39;best.pt&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Best weights: </span><span class="si">{</span><span class="n">best_weights</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Exists: </span><span class="si">{</span><span class="n">best_weights</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+New https://pypi.org/project/ultralytics/8.4.52 available 😃 Update with &#39;pip install -U ultralytics&#39;
+Ultralytics 8.4.51 🚀 Python-3.11.14 torch-2.10.0+cu128 CUDA:0 (NVIDIA GeForce RTX 3080 Ti, 11911MiB)
+<span class="ansi-blue-intense-fg ansi-bold">engine/trainer: </span>agnostic_nms=False, amp=True, angle=1.0, augment=False, auto_augment=randaugment, batch=4, bgr=0.0, box=7.5, cache=False, cfg=None, classes=None, close_mosaic=10, cls=0.5, cls_pw=0.0, compile=False, conf=None, copy_paste=0.0, copy_paste_mode=flip, cos_lr=False, cutmix=0.0, data=/home/mmann1123/Documents/github/geowombat/notebooks/object_detection_demo/naip_buildings_yolo/data.yaml, degrees=0.0, deterministic=True, device=0, dfl=1.5, dnn=False, dropout=0.0, dynamic=False, embed=None, end2end=None, epochs=15, erasing=0.4, exist_ok=True, fliplr=0.5, flipud=0.0, format=torchscript, fraction=1.0, freeze=None, half=False, hsv_h=0.015, hsv_s=0.7, hsv_v=0.4, imgsz=416, int8=False, iou=0.7, keras=False, kobj=1.0, line_width=None, lr0=0.01, lrf=0.01, mask_ratio=4, max_det=300, mixup=0.0, mode=train, model=yolov8n.pt, momentum=0.937, mosaic=1.0, multi_scale=0.0, name=gw_buildings, nbs=64, nms=False, opset=None, optimize=False, optimizer=auto, overlap_mask=True, patience=100, perspective=0.0, plots=False, pose=12.0, pretrained=True, profile=False, project=None, rect=False, resume=False, retina_masks=False, rle=1.0, save=True, save_conf=False, save_crop=False, save_dir=/home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings, save_frames=False, save_json=False, save_period=-1, save_txt=False, scale=0.5, seed=0, shear=0.0, show=False, show_boxes=True, show_conf=True, show_labels=True, simplify=True, single_cls=False, source=None, split=val, stream_buffer=False, task=detect, time=None, tracker=botsort.yaml, translate=0.1, val=True, verbose=False, vid_stride=1, visualize=False, warmup_bias_lr=0.1, warmup_epochs=3.0, warmup_momentum=0.8, weight_decay=0.0005, workers=8, workspace=None
+Overriding model.yaml nc=80 with nc=1
+
+                   from  n    params  module                                       arguments
+  0                  -1  1       464  ultralytics.nn.modules.conv.Conv             [3, 16, 3, 2]
+  1                  -1  1      4672  ultralytics.nn.modules.conv.Conv             [16, 32, 3, 2]
+  2                  -1  1      7360  ultralytics.nn.modules.block.C2f             [32, 32, 1, True]
+  3                  -1  1     18560  ultralytics.nn.modules.conv.Conv             [32, 64, 3, 2]
+  4                  -1  2     49664  ultralytics.nn.modules.block.C2f             [64, 64, 2, True]
+  5                  -1  1     73984  ultralytics.nn.modules.conv.Conv             [64, 128, 3, 2]
+  6                  -1  2    197632  ultralytics.nn.modules.block.C2f             [128, 128, 2, True]
+  7                  -1  1    295424  ultralytics.nn.modules.conv.Conv             [128, 256, 3, 2]
+  8                  -1  1    460288  ultralytics.nn.modules.block.C2f             [256, 256, 1, True]
+  9                  -1  1    164608  ultralytics.nn.modules.block.SPPF            [256, 256, 5]
+ 10                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, &#39;nearest&#39;]
+ 11             [-1, 6]  1         0  ultralytics.nn.modules.conv.Concat           [1]
+ 12                  -1  1    148224  ultralytics.nn.modules.block.C2f             [384, 128, 1]
+ 13                  -1  1         0  torch.nn.modules.upsampling.Upsample         [None, 2, &#39;nearest&#39;]
+ 14             [-1, 4]  1         0  ultralytics.nn.modules.conv.Concat           [1]
+ 15                  -1  1     37248  ultralytics.nn.modules.block.C2f             [192, 64, 1]
+ 16                  -1  1     36992  ultralytics.nn.modules.conv.Conv             [64, 64, 3, 2]
+ 17            [-1, 12]  1         0  ultralytics.nn.modules.conv.Concat           [1]
+ 18                  -1  1    123648  ultralytics.nn.modules.block.C2f             [192, 128, 1]
+ 19                  -1  1    147712  ultralytics.nn.modules.conv.Conv             [128, 128, 3, 2]
+ 20             [-1, 9]  1         0  ultralytics.nn.modules.conv.Concat           [1]
+ 21                  -1  1    493056  ultralytics.nn.modules.block.C2f             [384, 256, 1]
+ 22        [15, 18, 21]  1    751507  ultralytics.nn.modules.head.Detect           [1, 16, None, [64, 128, 256]]
+Model summary: 130 layers, 3,011,043 parameters, 3,011,027 gradients, 8.2 GFLOPs
+
+Transferred 319/355 items from pretrained weights
+Freezing layer &#39;model.22.dfl.conv.weight&#39;
+<span class="ansi-blue-intense-fg ansi-bold">AMP: </span>running Automatic Mixed Precision (AMP) checks...
+<span class="ansi-blue-intense-fg ansi-bold">AMP: </span>checks passed ✅
+<span class="ansi-blue-intense-fg ansi-bold">train: </span>Fast image access ✅ (ping: 0.0±0.0 ms, read: 4462.3±2704.2 MB/s, size: 107.7 KB)
+<span class="ansi-blue-intense-fg ansi-bold">train: </span>Scanning /home/mmann1123/Documents/github/geowombat/notebooks/object_detection_demo/naip_buildings_yolo/labels/train.cache... 17 images, 0 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 17/17 6.5Mit/s 0.0s
+<span class="ansi-blue-intense-fg ansi-bold">val: </span>Fast image access ✅ (ping: 0.0±0.0 ms, read: 4503.8±2277.7 MB/s, size: 104.8 KB)
+<span class="ansi-blue-intense-fg ansi-bold">val: </span>Scanning /home/mmann1123/Documents/github/geowombat/notebooks/object_detection_demo/naip_buildings_yolo/labels/val.cache... 7 images, 0 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 7/7 699.1Kit/s 0.0s
+<span class="ansi-blue-intense-fg ansi-bold">optimizer:</span> &#39;optimizer=auto&#39; found, ignoring &#39;lr0=0.01&#39; and &#39;momentum=0.937&#39; and determining best &#39;optimizer&#39;, &#39;lr0&#39; and &#39;momentum&#39; automatically...
+<span class="ansi-blue-intense-fg ansi-bold">optimizer:</span> AdamW(lr=0.002, momentum=0.9) with parameter groups 57 weight(decay=0.0), 64 weight(decay=0.0005), 63 bias(decay=0.0)
+Image sizes 416 train, 416 val
+Using 8 dataloader workers
+Logging results to <span class="ansi-bold">/home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings</span>
+Starting training for 15 epochs...
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       1/15     0.586G      3.617      3.546      2.075        122        416: 100% ━━━━━━━━━━━━ 5/5 5.2it/s 1.0s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 13.7it/s 0.1s
+                   all          7        513       0.01     0.0409    0.00541    0.00165
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       2/15     0.789G      3.402      3.535      1.934         80        416: 100% ━━━━━━━━━━━━ 5/5 35.8it/s 0.1s.2s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 47.8it/s 0.0s
+                   all          7        513     0.0148     0.0604    0.00527    0.00191
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       3/15     0.789G      3.555      3.409      1.876        184        416: 100% ━━━━━━━━━━━━ 5/5 41.5it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 46.4it/s 0.0s
+                   all          7        513     0.0157     0.0643      0.007    0.00328
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       4/15     0.789G      3.327      3.314       1.64        141        416: 100% ━━━━━━━━━━━━ 5/5 35.5it/s 0.1s.2s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 48.6it/s 0.0s
+                   all          7        513     0.0219     0.0897     0.0211     0.0108
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       5/15     0.789G      3.456      3.183      1.571        239        416: 100% ━━━━━━━━━━━━ 5/5 40.8it/s 0.1s.2s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 48.1it/s 0.0s
+                   all          7        513     0.0214     0.0877     0.0237     0.0115
+Closing dataloader mosaic
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       6/15     0.789G        3.1      2.863      1.485         16        416: 100% ━━━━━━━━━━━━ 5/5 41.2it/s 0.1s.2s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 41.7it/s 0.0s
+                   all          7        513      0.021     0.0858     0.0286     0.0129
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       7/15     0.789G      3.471      2.822      1.402        180        416: 100% ━━━━━━━━━━━━ 5/5 42.3it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 24.4it/s 0.0s
+                   all          7        513     0.0238     0.0975     0.0245      0.012
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       8/15     0.789G      3.232      2.558      1.404         16        416: 100% ━━━━━━━━━━━━ 5/5 30.0it/s 0.2s.6s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 41.2it/s 0.0s
+                   all          7        513     0.0238     0.0975     0.0245      0.012
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+       9/15     0.789G       3.38      2.591      1.383        172        416: 100% ━━━━━━━━━━━━ 5/5 38.4it/s 0.1s.2s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 41.0it/s 0.0s
+                   all          7        513     0.0271      0.111     0.0265     0.0113
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      10/15     0.789G      3.297      2.386      1.309         96        416: 100% ━━━━━━━━━━━━ 5/5 43.3it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 42.9it/s 0.0s
+                   all          7        513     0.0367       0.15     0.0326    0.00991
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      11/15     0.789G      3.157      2.331      1.327         53        416: 100% ━━━━━━━━━━━━ 5/5 48.0it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 42.5it/s 0.0s
+                   all          7        513     0.0367       0.15     0.0326    0.00991
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      12/15     0.789G      3.354      2.286      1.309        172        416: 100% ━━━━━━━━━━━━ 5/5 42.8it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 42.3it/s 0.0s
+                   all          7        513     0.0652      0.267     0.0723     0.0203
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      13/15     0.789G       3.11      2.249      1.361         11        416: 100% ━━━━━━━━━━━━ 5/5 44.1it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 44.0it/s 0.0s
+                   all          7        513     0.0652      0.267     0.0723     0.0203
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      14/15     0.789G      3.139       2.37      1.408         96        416: 100% ━━━━━━━━━━━━ 5/5 45.9it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 44.2it/s 0.0s
+                   all          7        513     0.0652      0.267     0.0723     0.0203
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      15/15     0.789G      3.321      2.229      1.319         96        416: 100% ━━━━━━━━━━━━ 5/5 44.1it/s 0.1s0.1s
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 43.7it/s 0.0s
+                   all          7        513      0.079      0.324      0.107     0.0297
+
+15 epochs completed in 0.002 hours.
+Optimizer stripped from /home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings/weights/last.pt, 6.2MB
+Optimizer stripped from /home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings/weights/best.pt, 6.2MB
+
+Validating /home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings/weights/best.pt...
+Ultralytics 8.4.51 🚀 Python-3.11.14 torch-2.10.0+cu128 CUDA:0 (NVIDIA GeForce RTX 3080 Ti, 11911MiB)
+Model summary (fused): 73 layers, 3,005,843 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 1/1 66.6it/s 0.0s
+                   all          7        513     0.0786      0.322      0.106     0.0298
+Speed: 0.1ms preprocess, 0.4ms inference, 0.0ms loss, 0.8ms postprocess per image
+Best weights: /home/mmann1123/Documents/github/geowombat/notebooks/runs/detect/gw_buildings/weights/best.pt
+Exists: True
+</pre></div></div>
+</div>
+<section id="Re-run-inference-with-the-fine-tuned-model">
+<h3>Re-run inference with the fine-tuned model<a class="headerlink" href="#Re-run-inference-with-the-fine-tuned-model" title="Permalink to this heading">#</a></h3>
+<p>Same <code class="docutils literal notranslate"><span class="pre">YOLODetector</span></code> API, just point it at our new weights. We use a low confidence threshold (<code class="docutils literal notranslate"><span class="pre">0.05</span></code>) because with only ~17 training tiles and 15 epochs the model is heavily under-trained and hesitant — production weights would justify a much higher threshold like <code class="docutils literal notranslate"><span class="pre">0.25</span></code>.</p>
+<p>The point of this section is to show the <em>fine-tuning pipeline</em> works end-to-end. The numbers themselves will improve substantially with more data (a wider AOI), more epochs (50–100), and a larger backbone (<code class="docutils literal notranslate"><span class="pre">yolov8s.pt</span></code> or <code class="docutils literal notranslate"><span class="pre">yolov8m.pt</span></code>).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">det_ft</span> <span class="o">=</span> <span class="n">YOLODetector</span><span class="p">(</span>
+    <span class="n">weights</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">best_weights</span><span class="p">),</span>   <span class="c1"># our fine-tuned weights</span>
+    <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;building&#39;</span><span class="p">],</span>        <span class="c1"># class names for the output</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">preds_ft</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span>
+            <span class="n">det_ft</span><span class="p">,</span>
+            <span class="n">tile_size</span><span class="o">=</span><span class="mi">416</span><span class="p">,</span>           <span class="c1"># match the training image size</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+            <span class="n">conf</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>               <span class="c1"># short training run, so use a low threshold</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">nms_iou</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds_ft</span><span class="p">)</span><span class="si">}</span><span class="s1"> detections from fine-tuned YOLO&#39;</span><span class="p">,</span>
+      <span class="sa">f</span><span class="s1">&#39;(was </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span><span class="si">}</span><span class="s1"> pretrained)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+YOLODetector: 100%|██████████| 54/54 [00:01&lt;00:00, 31.32it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+119 detections from fine-tuned YOLO (was 32 pretrained)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Score the fine-tuned predictions</span>
+<span class="n">results_ft</span> <span class="o">=</span> <span class="n">detection_accuracy</span><span class="p">(</span>
+    <span class="n">predictions</span><span class="o">=</span><span class="n">preds_ft</span><span class="p">,</span>
+    <span class="n">truth</span><span class="o">=</span><span class="n">buildings_proj</span><span class="p">[[</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]],</span>
+    <span class="n">class_col</span><span class="o">=</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span>
+    <span class="n">iou_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Per-class metrics (fine-tuned YOLO):&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_ft</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Summary:&#39;</span><span class="p">,</span> <span class="n">results_ft</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Per-class metrics (fine-tuned YOLO):
+                              ap  precision    recall        f1  tp  fp    fn  \
+iou_threshold class
+0.3           building  0.090909   0.596639  0.034449  0.065138  71  48  1990
+0.5           building  0.090909   0.252101  0.014556  0.027523  30  89  2031
+
+                        support
+iou_threshold class
+0.3           building     2061
+0.5           building     2061
+
+Summary: {&#39;mAP@0.3&#39;: 0.09090909090909091, &#39;mAP@0.5&#39;: 0.09090909090909091}
+</pre></div></div>
+</div>
+</section>
+<section id="Before-vs.-after">
+<h3>Before vs. after<a class="headerlink" href="#Before-vs.-after" title="Permalink to this heading">#</a></h3>
+<p>Side-by-side comparison of the pretrained and fine-tuned runs at IoU ≥ 0.3. Look at TP/FN going up/down for recall and FP for precision — the F1 column is the single-number summary.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">iou</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># use the more lenient threshold for the comparison</span>
+<span class="n">row_pre</span> <span class="o">=</span> <span class="n">results_pretrained</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">iou</span><span class="p">,</span> <span class="s1">&#39;building&#39;</span><span class="p">)]</span>
+<span class="n">row_ft</span> <span class="o">=</span> <span class="n">results_ft</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">iou</span><span class="p">,</span> <span class="s1">&#39;building&#39;</span><span class="p">)]</span>
+<span class="n">compare</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span><span class="s1">&#39;pretrained&#39;</span><span class="p">:</span> <span class="n">row_pre</span><span class="p">,</span> <span class="s1">&#39;fine-tuned&#39;</span><span class="p">:</span> <span class="n">row_ft</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">compare</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compare</span><span class="p">[</span><span class="s1">&#39;fine-tuned&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">compare</span><span class="p">[</span><span class="s1">&#39;pretrained&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Comparison at IoU &gt;= </span><span class="si">{</span><span class="n">iou</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">compare</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Comparison at IoU &gt;= 0.3:
+           pretrained  fine-tuned   delta
+ap              0.023       0.091   0.068
+precision       0.094       0.597   0.503
+recall          0.001       0.034   0.033
+f1              0.003       0.065   0.062
+tp              3.000      71.000  68.000
+fp             29.000      48.000  19.000
+fn           2058.000    1990.000 -68.000
+support      2061.000    2061.000   0.000
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visualize TP / FP / FN from the fine-tuned run</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="n">plot_detections</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span>
+            <span class="n">predictions</span><span class="o">=</span><span class="n">results_ft</span><span class="p">[</span><span class="s1">&#39;matched&#39;</span><span class="p">],</span>
+            <span class="n">truth</span><span class="o">=</span><span class="n">buildings_proj</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Fine-tuned YOLO: TP (lime) / FP (red) / FN (magenta)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_30_0.png" src="_images/object_detection_30_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="4.-Refine-boxes-to-polygons-with-SAM">
+<h2>4. Refine boxes to polygons with SAM<a class="headerlink" href="#4.-Refine-boxes-to-polygons-with-SAM" title="Permalink to this heading">#</a></h2>
+<p>Detector output is bounding boxes — fine for counting and georeferencing, but downstream GIS work usually wants the actual <em>footprint</em>: a polygon that hugs the roof outline, the ship hull, the storage-tank circle. <code class="docutils literal notranslate"><span class="pre">SAMRefiner</span></code> takes each detected box as a prompt to Meta’s <a class="reference external" href="https://segment-anything.com/">Segment Anything Model</a>, returns a tight mask, and polygonizes it back into a vector geometry in the source CRS.</p>
+<p>Requirements:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install geowombat[sam]
+</pre></div>
+</div>
+<p>Plus a one-time checkpoint download. We use <code class="docutils literal notranslate"><span class="pre">sam_vit_b</span></code> (~375 MB) for speed in this notebook; <code class="docutils literal notranslate"><span class="pre">sam_vit_l</span></code> and <code class="docutils literal notranslate"><span class="pre">sam_vit_h</span></code> are slower but produce slightly cleaner masks on tricky targets.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># One-time download of the SAM ViT-B checkpoint (~375 MB).</span>
+<span class="c1"># Cached under WORK_DIR so subsequent runs skip the download.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+
+<span class="n">SAM_URL</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://dl.fbaipublicfiles.com/segment_anything/&#39;</span>
+           <span class="s1">&#39;sam_vit_b_01ec64.pth&#39;</span><span class="p">)</span>
+<span class="n">sam_ckpt</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;sam_vit_b.pth&#39;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">sam_ckpt</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading SAM checkpoint to </span><span class="si">{</span><span class="n">sam_ckpt</span><span class="si">}</span><span class="s1"> (~375 MB) ...&#39;</span><span class="p">)</span>
+    <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">SAM_URL</span><span class="p">,</span> <span class="n">sam_ckpt</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using cached checkpoint at </span><span class="si">{</span><span class="n">sam_ckpt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using cached checkpoint at object_detection_demo/sam_vit_b.pth
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Refine the fine-tuned YOLO boxes to building polygons with SAM.</span>
+<span class="c1"># We feed the top-confidence detections so SAM has clean prompts —</span>
+<span class="c1"># noisy boxes give noisy masks.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.detect</span><span class="w"> </span><span class="kn">import</span> <span class="n">SAMRefiner</span>
+
+<span class="n">refiner</span> <span class="o">=</span> <span class="n">SAMRefiner</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="n">sam_ckpt</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;vit_b&#39;</span><span class="p">)</span>
+
+<span class="n">prompts</span> <span class="o">=</span> <span class="p">(</span><span class="n">preds_ft</span>
+           <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+           <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+           <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">polygons</span> <span class="o">=</span> <span class="n">refiner</span><span class="o">.</span><span class="n">refine</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span>
+            <span class="n">prompts</span><span class="p">,</span>
+            <span class="n">pad_pixels</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>           <span class="c1"># context around each box for SAM</span>
+            <span class="n">simplify_tolerance</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>  <span class="c1"># polygon smoothing, in CRS units (meters)</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">polygons</span><span class="p">)</span><span class="si">}</span><span class="s1"> refined polygons &#39;</span>
+      <span class="sa">f</span><span class="s1">&#39;(from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span><span class="si">}</span><span class="s1"> input boxes)&#39;</span><span class="p">)</span>
+<span class="n">polygons</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+30 refined polygons (from 30 input boxes)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>class_id</th>
+      <th>class_name</th>
+      <th>score</th>
+      <th>tile_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POLYGON ((326038.425 4305873.359, 326038.425 4...</td>
+      <td>0</td>
+      <td>building</td>
+      <td>0.389653</td>
+      <td>44</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POLYGON ((325657.425 4307063.159, 325657.425 4...</td>
+      <td>0</td>
+      <td>building</td>
+      <td>0.292006</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>POLYGON ((326541.825 4305962.759, 326541.825 4...</td>
+      <td>0</td>
+      <td>building</td>
+      <td>0.289485</td>
+      <td>41</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Side-by-side: YOLO rectangle vs. SAM polygon for the same set of</span>
+<span class="c1"># detections. Look for polygons that track the roof outline instead</span>
+<span class="c1"># of the bounding rectangle.</span>
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="s1">&#39;naip&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">naip_local</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">gdf</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">prompts</span><span class="p">,</span> <span class="s1">&#39;YOLO boxes (input prompts)&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">polygons</span><span class="p">,</span> <span class="s1">&#39;SAM polygons (refined footprints)&#39;</span><span class="p">),</span>
+        <span class="p">]:</span>
+            <span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">gdf</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/object_detection_34_0.png" src="_images/object_detection_34_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the refined polygons for GIS downstream (QGIS, ArcGIS, etc.).</span>
+<span class="n">refined_path</span> <span class="o">=</span> <span class="n">WORK_DIR</span> <span class="o">/</span> <span class="s1">&#39;naip_buildings_sam.gpkg&#39;</span>
+<span class="n">polygons</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">refined_path</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GPKG&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrote </span><span class="si">{</span><span class="n">refined_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wrote object_detection_demo/naip_buildings_sam.gpkg
+</pre></div></div>
+</div>
+<p><strong>Tips for getting clean SAM masks</strong></p>
+<ul class="simple">
+<li><p><strong>Prompt quality matters.</strong> SAM uses the box as a prompt, so loose, oversized YOLO boxes will produce loose masks. Filter by <code class="docutils literal notranslate"><span class="pre">score</span></code> (as above) or use the tighter-fit <code class="docutils literal notranslate"><span class="pre">oriented=True</span></code> OBB output from <code class="docutils literal notranslate"><span class="pre">yolov8*-obb.pt</span></code> weights for better prompts.</p></li>
+<li><p><strong>``pad_pixels``</strong> controls how much context SAM sees around each box. Too small and SAM may snap to a sub-part of the object; too large and it may grab a neighbor. 8–16 px is a good range.</p></li>
+<li><p><strong>``simplify_tolerance``</strong> is in CRS units (meters here). Raise it for cleaner-looking outlines, lower it (or set to 0) to preserve exact mask edges.</p></li>
+<li><p><strong>Backbone size</strong>: swap <code class="docutils literal notranslate"><span class="pre">model_type='vit_l'</span></code> or <code class="docutils literal notranslate"><span class="pre">'vit_h'</span></code> (and the matching checkpoint URL) for finer masks at the cost of speed and ~3–7× more memory.</p></li>
+</ul>
+</section>
+<section id="How-to-make-the-fine-tune-actually-good">
+<h2>How to make the fine-tune actually good<a class="headerlink" href="#How-to-make-the-fine-tune-actually-good" title="Permalink to this heading">#</a></h2>
+<p>The numbers above are deliberately weak — we trained for 15 epochs on a tiny AOI just to keep the demo fast. Here’s what to change when you want results that you’d ship, in rough order of payoff:</p>
+<ol class="arabic simple">
+<li><p><strong>Get more training data.</strong> This is by far the biggest lever. YOLO needs to see hundreds to thousands of examples of the object to learn what it looks like under different lighting, angles, and surroundings. Widen the AOI, pull more cities, or merge multiple <code class="docutils literal notranslate"><span class="pre">build_dataset</span></code> runs into one folder. A 5× larger label set will usually beat any hyperparameter tweak.</p></li>
+<li><p><strong>Clean up the labels.</strong> A small set of <em>accurate</em> boxes is worth more than a large set of sloppy ones. OpenStreetMap is crowdsourced and noisy — buildings get demolished, traced imprecisely, or sit a few meters off where they actually are. A short pass through QGIS removing or fixing the worst examples pays off more than another 50 epochs.</p></li>
+<li><p><strong>Train longer.</strong> 15 epochs is a sketch. Real fine-tunes run 50–200 epochs. The training process saves the best checkpoint along the way, so longer training rarely hurts — it just costs time. Watch the validation mAP curve flatten and stop there.</p></li>
+<li><p><strong>Use a bigger model.</strong> We trained <code class="docutils literal notranslate"><span class="pre">yolov8n</span></code> (nano, ~3M parameters) because it’s fast. Swap to <code class="docutils literal notranslate"><span class="pre">yolov8s</span></code> (small), <code class="docutils literal notranslate"><span class="pre">yolov8m</span></code> (medium), or <code class="docutils literal notranslate"><span class="pre">yolov8l</span></code> (large) for steady accuracy gains. Each step roughly doubles training time. On a GPU, <code class="docutils literal notranslate"><span class="pre">yolov8s</span></code> or <code class="docutils literal notranslate"><span class="pre">yolov8m</span></code> is the sweet spot for aerial imagery.</p></li>
+<li><p><strong>Start from satellite-pretrained weights.</strong> We started from <code class="docutils literal notranslate"><span class="pre">yolov8n.pt</span></code> (trained on COCO — everyday photos). For overhead imagery, <strong>``yolov8n-obb.pt``</strong> is a much better starting point: it’s pretrained on DOTA, an aerial benchmark with planes, ships, vehicles, buildings, harbors, etc. The model already knows what bird’s-eye-view objects look like — you’re just teaching it your specific class.</p></li>
+<li><p><strong>Tune the tile size.</strong> If your objects are tiny inside the tile (e.g. cars in a 1024-px tile), YOLO will struggle to see them. As a rule of thumb, an object should be at least ~32 pixels across after tiling. For dense small objects, shrink the tile (256–416 px) or use higher overlap so each object gets seen in at least one un-cropped tile.</p></li>
+<li><p><strong>Sweep the confidence threshold after training.</strong> Don’t pick <code class="docutils literal notranslate"><span class="pre">conf=0.05</span></code> blindly — once the model is trained, re-run inference at several thresholds (0.1, 0.25, 0.5) and look at the precision/recall trade-off via <code class="docutils literal notranslate"><span class="pre">detection_accuracy</span></code>. Higher thresholds give fewer, more reliable detections; lower ones catch more but include more false positives. Pick the spot that matches what your downstream use case cares about.</p></li>
+<li><p><strong>Add hard negatives.</strong> If the model keeps flagging the same non-building things (parking lots, dark roofs), give it some <em>empty</em> tiles of those features in training. The <code class="docutils literal notranslate"><span class="pre">build_dataset(background_ratio=0.2,</span> <span class="pre">...)</span></code> argument keeps a fraction of empty tiles in the dataset for exactly this reason.</p></li>
+<li><p><strong>Use the QGIS review loop.</strong> After inference, <code class="docutils literal notranslate"><span class="pre">export_for_review</span></code> writes a GeoPackage you open in QGIS to tag each detection as TP / FP / FN by hand. Feed the corrected file back into <code class="docutils literal notranslate"><span class="pre">recompute_from_review</span></code> for honest numbers — and use the FP/FN polygons as <strong>additional training data</strong> in the next round. Two or three cycles of this usually matter more than any single training tweak.</p></li>
+</ol>
+<p>If you do (1) and (5) and nothing else, expect a large jump. Everything else past that is fine-grained tuning.</p>
+</section>
+<section id="Summary-—-the-geowombat-native-idiom">
+<h2>Summary — the geowombat-native idiom<a class="headerlink" href="#Summary-—-the-geowombat-native-idiom" title="Permalink to this heading">#</a></h2>
+<p>Everything in this notebook fits the same shape as the rest of geowombat. Inside a <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">gw.open(...)</span> <span class="pre">as</span> <span class="pre">src:</span></code> block:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src.gw.to_yolo_dataset(labels,</span> <span class="pre">class_col=...,</span> <span class="pre">out_dir=...)</span></code> tiles the raster + labels into a YOLO training corpus on disk.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src.gw.detect(detector,</span> <span class="pre">...)</span></code> runs tiled, windowed inference with cross-tile NMS and returns a georeferenced <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code>.</p></li>
+</ul>
+<p>Outside the block, in <code class="docutils literal notranslate"><span class="pre">gw.detect</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">YOLODetector</span></code> (Ultralytics) and <code class="docutils literal notranslate"><span class="pre">TorchGeoDetector</span></code> (Faster R-CNN / RetinaNet) are the detector classes you pass into <code class="docutils literal notranslate"><span class="pre">src.gw.detect</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gw.detect.predict</span></code>, <code class="docutils literal notranslate"><span class="pre">gw.detect.fit</span></code>, <code class="docutils literal notranslate"><span class="pre">gw.detect.fit_predict</span></code> are module-level wrappers that mirror <code class="docutils literal notranslate"><span class="pre">gw.ml.fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> / <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> for classification.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">build_dataset</span></code> is the function form of <code class="docutils literal notranslate"><span class="pre">src.gw.to_yolo_dataset</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SAMRefiner</span></code> (requires <code class="docutils literal notranslate"><span class="pre">geowombat[sam]</span></code>) refines boxes to polygon masks using each box as a SAM prompt — see Section 4 for the end-to-end example on the fine-tuned building detections.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detection_accuracy</span></code> computes per-class precision/recall/F1/AP at one or more IoU thresholds and returns a <em>review-ready</em> GeoDataFrame.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">export_for_review</span></code> writes a GeoPackage for QGIS attribute-form review; <code class="docutils literal notranslate"><span class="pre">recompute_from_review</span></code> recomputes metrics after a human has labeled the review file.</p></li>
+</ul>
+<p>When <code class="docutils literal notranslate"><span class="pre">gw.config.update(sensor='rgb')</span></code> (or <code class="docutils literal notranslate"><span class="pre">'bgr'</span></code>) is active, the accessor methods derive the RGB band indices from the active config — you don’t need to pass <code class="docutils literal notranslate"><span class="pre">band_indices=[...]</span></code> per call.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="object-detection.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Object detection</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="moving.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Moving windows</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#1.-Quickstart:-pretrained-YOLO-on-NWPU-VHR-10">1. Quickstart: pretrained YOLO on NWPU VHR-10</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Picking-a-YOLO-variant">Picking a YOLO variant</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Improved:-DOTA-pretrained-YOLO-OBB">Improved: DOTA-pretrained YOLO-OBB</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#2.-Geowombat-native-workflow:-NAIP-+-OpenStreetMap-buildings">2. Geowombat-native workflow: NAIP + OpenStreetMap buildings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Inference-with-pretrained-YOLO">Inference with pretrained YOLO</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Reading-the-accuracy-output">Reading the accuracy output</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#3.-Fine-tune-YOLO-on-the-building-dataset">3. Fine-tune YOLO on the building dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Re-run-inference-with-the-fine-tuned-model">Re-run inference with the fine-tuned model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Before-vs.-after">Before vs. after</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#4.-Refine-boxes-to-polygons-with-SAM">4. Refine boxes to polygons with SAM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#How-to-make-the-fine-tune-actually-good">How to make the fine-tune actually good</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Summary-—-the-geowombat-native-idiom">Summary — the geowombat-native idiom</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -55,7 +55,15 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_autodoc_typehints',
     'numpydoc',
+    'nbsphinx',
 ]
+
+# nbsphinx: never execute notebooks during the Sphinx build. Cached
+# outputs already saved in the .ipynb files are rendered as-is. To
+# refresh outputs, re-execute the notebook locally (e.g. via
+# `jupyter nbconvert --to notebook --execute ...`) and commit it.
+nbsphinx_execute = 'never'
+nbsphinx_allow_errors = False
 
 # sphinxcontrib-bibtex configuration (required for version 2.x+)
 bibtex_bibfiles = [
@@ -76,7 +84,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # -- Options for HTML output -------------------------------------------------
 

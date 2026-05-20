@@ -45,6 +45,7 @@
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorial-edit';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -155,6 +156,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ml.html">Machine learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dl.html">Deep learning classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object_detection_examples.html">Object detection — executed examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l2"><a class="reference internal" href="coreg.html">Co-registration</a></li>
@@ -514,7 +516,7 @@ file the ‘no data’ attributes should be set as 0.</p>
 <span class="gp">   ....: </span>            <span class="nb">print</span><span class="p">(</span><span class="n">src_nodata</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="gp">   ....: </span>
 <span class="go">&lt;xarray.DataArray (band: 3, y: 1860, x: 2041)&gt; Size: 91MB</span>
-<span class="go">dask.array&lt;open_rasterio-e80eafe7bea63456f3f872ae87821bfe&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=float64, chunksize=(3, 256, 256), chunktype=numpy.ndarray&gt;</span>
+<span class="go">dask.array&lt;open_rasterio-9c9a4ce725d78aaf00ba41c161bd31c1&lt;this-array&gt;, shape=(3, 1860, 2041), dtype=float64, chunksize=(3, 256, 256), chunktype=numpy.ndarray&gt;</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * band     (band) int64 24B 1 2 3</span>
 <span class="go">  * y        (y) float64 15kB -2.777e+06 -2.777e+06 ... -2.833e+06 -2.833e+06</span>
@@ -528,7 +530,7 @@ file the ‘no data’ attributes should be set as 0.</p>
 <span class="go">    _FillValue:          nan</span>
 <span class="go">    ...                  ...</span>
 <span class="go">    offsets:             (0.0, 0.0, 0.0)</span>
-<span class="go">    filename:            /tmp/tmpqnxbtprf/tmp_raster.tif</span>
+<span class="go">    filename:            /tmp/tmp_jenzdis/tmp_raster.tif</span>
 <span class="go">    resampling:          nearest</span>
 <span class="go">    AREA_OR_POINT:       Area</span>
 <span class="go">    _data_are_separate:  0</span>

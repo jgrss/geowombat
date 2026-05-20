@@ -45,6 +45,7 @@
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'quick-overview';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -155,6 +156,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ml.html">Machine learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dl.html">Deep learning classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object_detection_examples.html">Object detection — executed examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="moving.html">Moving windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
 <li class="toctree-l2"><a class="reference internal" href="coreg.html">Co-registration</a></li>
@@ -452,14 +454,14 @@ an <code class="xref py py-class docutils literal notranslate"><span class="pre"
 
 <span class="gp">In [5]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="go">&lt;xarray.DataArray (x: 2, y: 3)&gt; Size: 48B</span>
-<span class="go">array([[-0.08009443, -0.83148675,  0.16457511],</span>
-<span class="go">       [ 0.13936105,  1.92285925, -0.36630603]])</span>
+<span class="go">array([[-1.40704114,  0.01653461,  0.47354459],</span>
+<span class="go">       [-0.00656504,  1.56831576,  1.23646814]])</span>
 <span class="go">Coordinates:</span>
 <span class="go">  * x        (x) int64 16B 10 20</span>
 <span class="go">Dimensions without coordinates: y</span>
 
 <span class="gp">In [6]: </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">)</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7500bc49c350&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7e402c240250&gt;</span>
 </pre></div>
 </div>
 </section>
@@ -492,7 +494,7 @@ an <code class="xref py py-class docutils literal notranslate"><span class="pre"
 <span class="go">    AREA_OR_POINT:       Area</span>
 <span class="go">    _data_are_separate:  0</span>
 <span class="go">    _data_are_stacked:   0</span>
-<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7501d66cc950&gt;</span>
+<span class="go">&lt;geowombat.core.geoxarray.GeoWombatAccessor object at 0x7e402d4cde50&gt;</span>
 </pre></div>
 </div>
 </section>

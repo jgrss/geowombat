@@ -55,6 +55,8 @@ docs = [
     "ipython",
     "graphviz",
     "sklearn-xarray-ext",
+    "nbsphinx",
+    "ipykernel",
 ]
 
 tests = [

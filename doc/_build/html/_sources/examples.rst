@@ -14,6 +14,7 @@ Examples
    ml
    dl
    object-detection
+   object_detection
    moving
    radiometry
    coreg
